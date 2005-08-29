@@ -1,0 +1,1194 @@
+VERSION 5.00
+Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
+Begin VB.Form Journal 
+   Caption         =   "Журнал хозяйственных операций"
+   ClientHeight    =   6225
+   ClientLeft      =   60
+   ClientTop       =   630
+   ClientWidth     =   11790
+   KeyPreview      =   -1  'True
+   LinkTopic       =   "Form1"
+   LockControls    =   -1  'True
+   ScaleHeight     =   6225
+   ScaleWidth      =   11790
+   StartUpPosition =   2  'CenterScreen
+   Begin VB.CommandButton cmExcel 
+      Caption         =   "Печать в Excel"
+      Height          =   315
+      Left            =   5700
+      TabIndex        =   18
+      Top             =   5760
+      Width           =   1275
+   End
+   Begin VB.TextBox tbInform 
+      BeginProperty Font 
+         Name            =   "MS Sans Serif"
+         Size            =   9.75
+         Charset         =   204
+         Weight          =   400
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   285
+      Left            =   200
+      Locked          =   -1  'True
+      MaxLength       =   150
+      TabIndex        =   16
+      Top             =   300
+      Width           =   11355
+   End
+   Begin VB.CheckBox ckStartDate 
+      Caption         =   " "
+      Height          =   315
+      Left            =   1140
+      TabIndex        =   13
+      Top             =   0
+      Width           =   195
+   End
+   Begin VB.TextBox tbStartDate 
+      Enabled         =   0   'False
+      Height          =   285
+      Left            =   1440
+      TabIndex        =   12
+      Top             =   0
+      Width           =   795
+   End
+   Begin VB.CheckBox ckEndDate 
+      Caption         =   " "
+      Height          =   315
+      Left            =   2700
+      TabIndex        =   11
+      Top             =   0
+      Width           =   195
+   End
+   Begin VB.TextBox tbEndDate 
+      Enabled         =   0   'False
+      Height          =   285
+      Left            =   3000
+      TabIndex        =   10
+      Top             =   0
+      Width           =   915
+   End
+   Begin VB.CommandButton cmDel 
+      Caption         =   "Удалить"
+      Height          =   315
+      Left            =   3180
+      TabIndex        =   9
+      Top             =   5760
+      Width           =   975
+   End
+   Begin VB.CommandButton cmLoad 
+      Caption         =   "Загрузить"
+      Height          =   315
+      Left            =   120
+      TabIndex        =   8
+      Top             =   5760
+      Width           =   1095
+   End
+   Begin VB.Timer Timer1 
+      Left            =   2820
+      Top             =   5640
+   End
+   Begin VB.ListBox lbGuids 
+      Height          =   450
+      ItemData        =   "Journal.frx":0000
+      Left            =   2280
+      List            =   "Journal.frx":000A
+      TabIndex        =   7
+      Top             =   1260
+      Visible         =   0   'False
+      Width           =   2415
+   End
+   Begin VB.TextBox tbMobile 
+      Height          =   315
+      Left            =   780
+      TabIndex        =   6
+      Text            =   "tbMobile"
+      Top             =   1740
+      Visible         =   0   'False
+      Width           =   975
+   End
+   Begin VB.CommandButton cmAdd 
+      Caption         =   "Добавить"
+      Height          =   315
+      Left            =   1920
+      TabIndex        =   5
+      Top             =   5760
+      Width           =   1095
+   End
+   Begin VB.ListBox lbDebKreditor 
+      Height          =   255
+      Left            =   2280
+      TabIndex        =   4
+      Top             =   1800
+      Visible         =   0   'False
+      Width           =   2415
+   End
+   Begin VB.TextBox tbKurs 
+      Height          =   285
+      Left            =   6600
+      TabIndex        =   3
+      Top             =   0
+      Width           =   615
+   End
+   Begin VB.CommandButton cmExit 
+      Caption         =   "Выход"
+      Height          =   315
+      Left            =   10860
+      TabIndex        =   1
+      Top             =   5760
+      Width           =   855
+   End
+   Begin MSFlexGridLib.MSFlexGrid Grid 
+      Height          =   4995
+      Left            =   180
+      TabIndex        =   0
+      Top             =   600
+      Width           =   11415
+      _ExtentX        =   20135
+      _ExtentY        =   8811
+      _Version        =   393216
+      AllowUserResizing=   1
+   End
+   Begin VB.Label laFiltr 
+      Caption         =   "Записи, дающие Кредит = 23412"
+      ForeColor       =   &H000000C0&
+      Height          =   255
+      Left            =   7560
+      TabIndex        =   21
+      Top             =   60
+      Visible         =   0   'False
+      Width           =   2955
+   End
+   Begin VB.Label laSum 
+      BackColor       =   &H8000000E&
+      BorderStyle     =   1  'Fixed Single
+      Height          =   285
+      Left            =   4800
+      TabIndex        =   20
+      Top             =   0
+      Width           =   795
+   End
+   Begin VB.Label Label1 
+      Caption         =   "Сумма:"
+      Height          =   195
+      Left            =   4140
+      TabIndex        =   19
+      Top             =   60
+      Width           =   555
+   End
+   Begin VB.Label Label2 
+      Caption         =   "Договор"
+      Height          =   195
+      Left            =   10860
+      TabIndex        =   17
+      Top             =   120
+      Width           =   675
+   End
+   Begin VB.Label laPeriod 
+      Caption         =   "Период с  "
+      Height          =   195
+      Left            =   240
+      TabIndex        =   15
+      Top             =   60
+      Width           =   795
+   End
+   Begin VB.Label laPo 
+      Caption         =   "пос"
+      Height          =   195
+      Left            =   2340
+      TabIndex        =   14
+      Top             =   60
+      Width           =   195
+   End
+   Begin VB.Label laKurs 
+      Caption         =   "Курс:"
+      Height          =   255
+      Left            =   6180
+      TabIndex        =   2
+      Top             =   60
+      Width           =   435
+   End
+   Begin VB.Menu mnReport 
+      Caption         =   "Отчеты"
+      Begin VB.Menu mnSOborot 
+         Caption         =   "Оборот по счету"
+      End
+      Begin VB.Menu mnDohod 
+         Caption         =   "Реализация"
+      End
+   End
+   Begin VB.Menu mnMyGuide 
+      Caption         =   "Справочники"
+      Begin VB.Menu mnGuide 
+         Caption         =   "Справочник счетов"
+      End
+      Begin VB.Menu mnPurpose 
+         Caption         =   "Справочник Операций"
+      End
+      Begin VB.Menu mnPurpDet 
+         Caption         =   "Назначения и Уточнения"
+      End
+      Begin VB.Menu mnKreditors 
+         Caption         =   "Дебиторы \ Кредиторы"
+      End
+   End
+   Begin VB.Menu mnNasroy 
+      Caption         =   "Настройка"
+      Visible         =   0   'False
+   End
+End
+Attribute VB_Name = "Journal"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Explicit
+Public isLoad As Boolean
+Dim oldHeight As Integer, oldWidth As Integer ' нач размер формы
+Dim quantity As Long
+Dim mousCol As Long, mousRow As Long
+
+Const cNewLbLine = "-new-"
+
+Const jnDate = 1
+Const jnM = 2
+Const jnRub = 3
+Const jnVal = 4
+Const jnDebit = 5
+Const jnSubDebit = 6
+Const jnKredit = 7
+Const jnSubKredit = 8
+Const jnFirm = 9 ' временно
+Const jnDebKreditor = 10
+Const jnOrdersNum = 11
+Const jnNote = 12
+Const jnPurpose = 13
+Const jnDetail = 14
+
+Private Sub mnDohod_Click()
+Pribil.Show
+End Sub
+
+Private Sub mnGuide_Click()
+jGuideSchets.Show vbModal
+End Sub
+
+Private Sub mnKreditors_Click()
+GuideDebKreditor.Show vbModal
+
+End Sub
+
+Private Sub mnNasroy_Click()
+Nastroy.Show vbModal
+End Sub
+
+Private Sub mnPurpDet_Click()
+jGuidePurpDet.Regim = ""
+jGuidePurpDet.Show vbModal
+End Sub
+
+Private Sub mnPurpose_Click()
+jGuidePurpose.Show vbModal
+End Sub
+
+Private Sub mnSOborot_Click()
+jKassaReport.Show
+End Sub
+
+Private Sub ckEndDate_Click()
+If ckEndDate.value = 1 Then
+    tbEndDate.Enabled = True
+Else
+    tbEndDate.Enabled = False
+End If
+cmLoad.Caption = "Загрузить"
+
+End Sub
+
+Private Sub ckStartDate_Click()
+If ckStartDate.value = 1 Then
+    tbStartDate.Enabled = True
+Else
+    tbStartDate.Enabled = False
+End If
+cmLoad.Caption = "Загрузить"
+End Sub
+
+Private Sub cmAdd_Click()
+Dim i As Integer
+Dim str As String
+
+cmAdd.Enabled = False 'нельзя жать чаще 1с, т.к. дата это ключ
+'frmMode = "sourceAdd"
+Set tbDocs = myOpenRecordSet("##324", "yBook", dbOpenTable) 'dbOpenForwardOnly)
+If tbDocs Is Nothing Then Exit Sub
+i = InStr(cmAdd.Caption, "+")
+If i > 0 Then
+    If Not IsDate(Grid.TextMatrix(mousRow, jnDate)) Then
+        MsgBox "Образец не определен"
+        GoTo AA
+    End If
+    tbDocs.Index = "Key"
+    tbDocs.Seek "=", Grid.TextMatrix(mousRow, jnDate)
+    If tbDocs.NoMatch Then
+        MsgBox "Образец не найден в базе", , ""
+AA:     cmAdd.Caption = Left$(cmAdd.Caption, i - 2)
+        tbDocs.Close
+        Exit Sub
+    End If
+    purposeId = tbDocs!purposeId
+    detailId = tbDocs!detailId
+    KredDebitor = tbDocs!KredDebitor
+End If
+tbDocs.AddNew
+tmpDate = Format(Now(), "dd/mm/yy hh:nn:ss")
+tbDocs!xDate = tmpDate
+
+tbDocs!m = AUTO.cbM.Text
+If i > 0 Then
+    tbDocs!debit = Grid.TextMatrix(mousRow, jnDebit)
+    str = Grid.TextMatrix(mousRow, jnSubDebit)
+    If Not IsNumeric(str) Then str = 0
+    tbDocs!subDebit = str
+    tbDocs!kredit = Grid.TextMatrix(mousRow, jnKredit)
+    str = Grid.TextMatrix(mousRow, jnSubKredit)
+    If Not IsNumeric(str) Then str = 0
+    tbDocs!subKredit = str
+    tbDocs!ordersNum = Grid.TextMatrix(mousRow, jnOrdersNum)
+    tbDocs!note = Grid.TextMatrix(mousRow, jnNote)
+    tbDocs!purposeId = purposeId
+    tbDocs!detailId = detailId
+    tbDocs!KredDebitor = KredDebitor
+End If
+
+tbDocs.Update
+tbDocs.Close
+
+
+If quantity > 0 Then Grid.AddItem ("")
+quantity = quantity + 1
+noClick = True
+Grid.row = Grid.Rows - 1
+Grid.col = jnRub
+noClick = False
+
+Grid.TextMatrix(Grid.row, jnDate) = Format(tmpDate, "dd/mm/yy hh:nn:ss")
+Grid.TextMatrix(Grid.row, jnM) = AUTO.cbM.Text
+If i > 0 Then
+    Grid.TextMatrix(Grid.row, jnDebit) = Grid.TextMatrix(mousRow, jnDebit)
+    Grid.TextMatrix(Grid.row, jnSubDebit) = Grid.TextMatrix(mousRow, jnSubDebit)
+    Grid.TextMatrix(Grid.row, jnKredit) = Grid.TextMatrix(mousRow, jnKredit)
+    Grid.TextMatrix(Grid.row, jnSubKredit) = Grid.TextMatrix(mousRow, jnSubKredit)
+    Grid.TextMatrix(Grid.row, jnDebKreditor) = Grid.TextMatrix(mousRow, jnDebKreditor)
+    Grid.TextMatrix(Grid.row, jnOrdersNum) = Grid.TextMatrix(mousRow, jnOrdersNum)
+    Grid.TextMatrix(Grid.row, jnNote) = Grid.TextMatrix(mousRow, jnNote)
+    Grid.TextMatrix(Grid.row, jnPurpose) = Grid.TextMatrix(mousRow, jnPurpose)
+    Grid.TextMatrix(Grid.row, jnDetail) = Grid.TextMatrix(mousRow, jnDetail)
+    cmAdd.Caption = Left$(cmAdd.Caption, i - 2)
+End If
+mousRow = Grid.Rows - 1
+mousCol = jnRub
+rowViem quantity, Grid
+On Error Resume Next
+Grid.SetFocus
+Grid_EnterCell
+'textBoxInGridCell tbMobile, Grid
+Timer1.Interval = 1100
+Timer1.Enabled = True ' разблокировка cmAdd
+End Sub
+
+
+Private Sub cmDel_Click()
+If quantity <= 0 Then Exit Sub
+If MsgBox("После нажатия <Да> текущая запись будет удалена.", _
+vbDefaultButton2 Or vbYesNo, "Удалить, Вы уверены?") = vbNo Then Exit Sub
+
+If valueToBookField("##358", 0, "delete") Then
+    quantity = quantity - 1
+    If quantity > 0 Then
+        Grid.RemoveItem mousRow
+    Else
+        clearGridRow Grid, 1
+    End If
+End If
+On Error Resume Next
+Grid.SetFocus
+Grid_EnterCell
+
+End Sub
+
+Private Sub cmExcel_Click()
+GridToExcel Grid, "Журнал хоз.операций с " & tbStartDate.Text & _
+"  по  " & tbEndDate.Text
+End Sub
+
+Private Sub cmExit_Click()
+Unload Me
+End Sub
+
+Private Sub cmLoad_Click()
+laFiltr.Visible = False
+loadBook
+cmLoad.Caption = "Обновить"
+Grid_EnterCell
+On Error Resume Next
+Grid.SetFocus
+
+End Sub
+
+Sub loadLbFromDebKreditor()
+Dim i As Long
+
+Set Table = myOpenRecordSet("##353", "select * from yDebKreditor order by Name", dbOpenTable)
+If Table Is Nothing Then myBase.Close: End
+lbDebKreditor.Clear
+'Table.Index = "Name"
+While Not Table.EOF
+    lbDebKreditor.AddItem Table!Name
+    Table.MoveNext
+Wend
+Table.Close
+'i = 195 * lbDebKreditor.ListCount + 100
+'If i > Grid.Height - 1000 Then i = Grid.Height - 1000
+'If i > 2000 Then i = 2000
+'lbDebKreditor.Height = i
+
+
+End Sub
+
+
+Sub loadLbFromSchets(lb As ListBox, Optional selNum As Integer = -1, _
+Optional selSubNum As Integer = -1)
+Dim str As String, Table As Recordset, heig As Integer
+
+If selNum = -2 Then ' без суб.счетов
+    sql = "SELECT number From yGuideSchets GROUP BY number ORDER BY number;"
+    Set Table = myOpenRecordSet("##325", sql, dbOpenForwardOnly)
+'    If Table Is Nothing Then Exit Sub
+Else
+'    Set Table = myOpenRecordSet("##325", "yGuideSchets", dbOpenTable)
+    sql = "SELECT * FROM yGuideSchets"
+    Set Table = myOpenRecordSet("##325", sql, dbOpenForwardOnly)
+'    If Table Is Nothing Then Exit Sub
+'    Table.Index = "Key"
+End If
+lb.Clear
+While Not Table.EOF
+  If Table!number < 255 Then
+    str = Format(Table!number, "00")
+    If selNum <> -2 Then
+      If Table!subNumber > 0 Then str = str & " " & Format(Table!subNumber, "00")
+    End If
+    lb.AddItem str
+    If selNum <> -2 Then
+        If selNum = Table!number And selSubNum = Table!subNumber _
+            Then lb.ListIndex = lb.ListCount - 1
+    End If
+  End If
+  Table.MoveNext
+Wend
+Table.Close
+
+End Sub
+
+Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
+Dim i As Integer, row As Long, str As String
+Static prevRow As Long, value As String
+
+If KeyCode = vbKeyMenu Then
+    If InStr(cmAdd.Caption, "+") = 0 Then cmAdd.Caption = cmAdd.Caption & " +"
+ElseIf KeyCode = vbKeyF7 Then
+    If quantity = 0 Then
+        MsgBox "Сначала произведите загрузку. При необходимости установите " & _
+        "даты загрузки.", , ""
+        Exit Sub
+    End If
+    If Shift = 1 And prevRow > 0 Then
+'        value = InputBox("Введите образец для поиска или фрагмент.", _
+'        "Продолжение поиска в поле '" & Grid.TextMatrix(0, mousCol) & "'", value)
+        row = prevRow
+        str = "Больше"
+    Else
+        value = InputBox("Введите образец для поиска или фрагмент. " & vbCrLf & _
+        vbCrLf & "Далее для проджения поиска этого образца со следующей " & _
+        "позииции Вы можете нажимать <Shift><F7>.", "Поиск в поле '" & _
+        Grid.TextMatrix(0, mousCol) & "'", value)
+        row = -1
+        str = "Среди загруженных"
+    End If
+    If value = "" Then Exit Sub
+    prevRow = findExValInCol(Grid, value, CInt(mousCol), row) + 1
+    If prevRow < 1 Then _
+        MsgBox str & " образец '" & value & "' не найден!", , ""
+    
+ End If
+End Sub
+
+Private Sub Form_KeyUp(KeyCode As Integer, Shift As Integer)
+Dim i As Integer
+
+If KeyCode = vbKeyMenu Then
+    i = InStr(cmAdd.Caption, "+")
+    If i > 0 Then cmAdd.Caption = Left$(cmAdd.Caption, i - 2)
+End If
+
+
+End Sub
+
+Private Sub Form_Load()
+Dim s As Single
+
+oldHeight = Me.Height
+oldWidth = Me.Width
+
+isLoad = True
+ckStartDate.value = 1
+
+If dostup = "a" Then mnNasroy.Visible = True
+
+Me.Caption = Me.Caption & "      " & mainTitle
+tbStartDate.Text = "01." & Format(CurDate, "mm/yy")
+'tbStartDate.Text = Format(DateAdd("d", 0, begDate), "dd/mm/yy")
+tbEndDate.Text = Format(CurDate, "dd/mm/yy")
+If otlad = "otlaD" Then ckStartDate.value = 1
+
+sql = "SELECT Kurs FROM System;"
+If byErrSqlGetValues("##321", sql, s) Then
+    If s > 0.01 Then tbKurs.Text = s ' с "-" - это вчерашний курс
+End If
+
+Grid.FormatString = "|<Дата|М|Рубли|Валюта|Дб|Сс|Кр|Сс|<Заказчик(временная)" & _
+"|<Кредитор\Дебитор|<Договор|<Примечание|<Назначение|<Уточнение"
+Grid.ColWidth(0) = 0
+Grid.ColWidth(jnDate) = 780
+Grid.ColWidth(jnDebKreditor) = 2580
+Grid.ColWidth(jnOrdersNum) = 1200
+Grid.ColWidth(jnFirm) = 1395
+Grid.ColWidth(jnDetail) = 1500
+'jnNote
+
+
+loadLbFromDebKreditor
+quantity = 0
+End Sub
+
+Sub loadBook()
+ Dim i As Integer, str As String
+
+Grid.Visible = False
+quantity = 0
+clearGrid Grid
+    
+If laFiltr.Visible = True Then
+    strWhere = "WHERE (" & jKassaReport.filtrWhere & ")"
+Else
+    strWhere = getWhereByDateBoxes(Me, "b.xDate", CDate("01.01.2003"))
+    If strWhere = "error" Then GoTo EN1
+    If strWhere <> "" Then strWhere = "WHERE ((" & strWhere & "))"
+End If
+ 
+sql = "SELECT b.xDate , b.UEsumm , b.Debit , b.subDebit , b.Kredit , b.subKredit , b.KredDebitor , b.ordersNum , b.Note , isnull(p.pDescript, '') pDescript, isnull(d.descript, '') descript, b.M , b.firm " & _
+"from ybook b " & _
+"left join yGuidePurpose p  " & _
+"   ON (p.pId = b.purposeId)  " & _
+"   AND (p.subKredit = b.subKredit)  " & _
+"   AND (p.Kredit = b.Kredit)  " & _
+"   AND (p.subDebit = b.subDebit)  " & _
+"   AND (p.Debit = b.Debit)  " & _
+"left join yGuideDetail d " & _
+"   ON (d.purposeId = b.purposeId)  " & _
+"   AND (d.id = b.detailId)  " & _
+"   AND (d.subKredit = b.subKredit)  " & _
+"   AND (d.Kredit = b.Kredit)  " & _
+"   AND (d.subDebit = b.subDebit)  " & _
+"   AND (d.Debit = b.Debit)  " & _
+strWhere & _
+"ORDER BY b.xDate; "
+
+
+'sql = "SELECT yBook.xDate, yBook.UEsumm, yBook.Debit, yBook.subDebit, " & _
+"yBook.Kredit, yBook.subKredit, yBook.KredDebitor, yBook.ordersNum, " & _
+"yBook.Note, " & _
+"yGuidePurpose.pDescript, yGuideDetail.descript, yBook.M, yBook.firm " & _
+"FROM yGuidePurpose INNER JOIN (yGuideDetail INNER JOIN yBook ON (yGuideDetail.id = yBook.detailId) AND (yGuideDetail.purposeId = yBook.purposeId) AND (yGuideDetail.subKredit = yBook.subKredit) AND (yGuideDetail.Kredit = yBook.Kredit) AND (yGuideDetail.subDebit = yBook.subDebit) AND (yGuideDetail.Debit = yBook.Debit)) ON (yGuidePurpose.pId = yBook.purposeId) AND (yGuidePurpose.subKredit = yBook.subKredit) AND (yGuidePurpose.Kredit = yBook.Kredit) AND (yGuidePurpose.subDebit = yBook.subDebit) AND (yGuidePurpose.Debit = yBook.Debit) " & _
+strWhere & "  ORDER BY yBook.xDate;"
+'Debug.Print sql
+
+Set tbDocs = myOpenRecordSet("##323", sql, dbOpenForwardOnly)
+If tbDocs Is Nothing Then GoTo EN1
+Me.MousePointer = flexHourglass
+
+If Not tbDocs.BOF Then
+ While Not tbDocs.EOF
+    quantity = quantity + 1
+    i = tbDocs!KredDebitor
+    Grid.TextMatrix(quantity, 0) = i
+    Grid.TextMatrix(quantity, jnDate) = Format(tbDocs!xDate, "dd/mm/yy hh:nn:ss")
+'    Grid.TextMatrix(quantity, jnRub) =
+    Grid.TextMatrix(quantity, jnVal) = Round(tbDocs!UEsumm, 2)
+    Grid.TextMatrix(quantity, jnDebit) = schType(tbDocs!debit, 255)
+    Grid.TextMatrix(quantity, jnSubDebit) = schType(tbDocs!subDebit)
+    Grid.TextMatrix(quantity, jnKredit) = schType(tbDocs!kredit, 255)
+    Grid.TextMatrix(quantity, jnSubKredit) = schType(tbDocs!subKredit)
+    If i > 0 Then
+        sql = "SELECT Name From GuideFirms WHERE (((FirmId)=" & i & "));"
+        GoTo AA
+    ElseIf i < 0 Then
+        sql = "SELECT Name From yDebKreditor WHERE (((id)=" & i & "));"
+'"W##.." - Если фирму или дебкредитора удалили, то поле б пустым
+AA:     If byErrSqlGetValues("W##428", sql, str) Then _
+            Grid.TextMatrix(quantity, jnDebKreditor) = str
+    End If
+
+    If Not IsNull(tbDocs!firm) Then _
+        Grid.TextMatrix(quantity, jnFirm) = tbDocs!firm
+    Grid.TextMatrix(quantity, jnOrdersNum) = tbDocs!ordersNum
+    Grid.TextMatrix(quantity, jnNote) = tbDocs!note
+    Grid.TextMatrix(quantity, jnPurpose) = tbDocs!pDescript
+    Grid.TextMatrix(quantity, jnDetail) = tbDocs!descript
+    Grid.TextMatrix(quantity, jnM) = tbDocs!m
+    Grid.AddItem ""
+    tbDocs.MoveNext
+ Wend
+End If
+tbDocs.Close
+Grid.Visible = True
+rowViem quantity, Grid
+
+'laQuant.Caption = quantity
+If quantity > 0 Then
+    Grid.RemoveItem quantity + 1
+    Grid.row = quantity
+    Grid.col = 1
+    tbInform.Locked = False
+'    Grid.SetFocus
+End If
+EN1:
+Grid.Visible = True
+Me.MousePointer = flexDefault
+
+End Sub
+
+Function schType(number As Integer, Optional pass As Integer = 0) As String
+If number = pass Then
+    schType = ""
+Else
+    schType = Format(number, "00")
+End If
+End Function
+
+Sub setSchetsAndPurpose(purpose As String, detail As String)
+Grid.TextMatrix(mousRow, jnDebit) = schType(debit, 255)
+Grid.TextMatrix(mousRow, jnSubDebit) = schType(subDebit)
+Grid.TextMatrix(mousRow, jnKredit) = schType(kredit, 255)
+Grid.TextMatrix(mousRow, jnSubKredit) = schType(subKredit)
+Grid.TextMatrix(mousRow, jnPurpose) = purpose
+Grid.TextMatrix(mousRow, jnDetail) = detail
+End Sub
+
+
+Function valueToBookField(myErrCod As String, value As String, field As String) As Boolean
+Dim pId As Integer, dId As Integer, str As String
+
+valueToBookField = False
+
+wrkDefault.BeginTrans 'lock01
+sql = "update system set resursLock = resursLock" 'lock02
+myBase.Execute (sql) 'lock03
+
+
+If field = "schets" Then
+    pId = getPurposeIdByDescript(jGuidePurpose.lbPurpose.Text)
+    dId = getDetailIdByDescript(pId, jGuidePurpose.lbDetail.Text)
+    If pId < 0 Or dId < 0 Then
+        wrkDefault.Rollback
+        MsgBox "Непонятное дейсвие", , "Error-453"
+        Exit Function
+    End If
+End If
+
+str = Grid.TextMatrix(mousRow, jnDate)
+strWhere = " WHERE xDate = '20" & Mid$(str, 7, 2) & "-" & Mid$(str, 4, 2) & _
+"-" & Left$(str, 2) & Mid$(str, 9) & "'"
+If field = "delete" Then
+    sql = "DELETE FROM yBook " & strWhere
+    GoTo AA
+ElseIf field = "schets" Then
+    sql = "UPDATE yBook set debit = " & debit & ", subDebit = " & subDebit & _
+    ", kredit = " & kredit & ", subKredit = " & subKredit & ", purposeId = " & _
+    pId & ", detailId = " & dId & strWhere
+    GoTo AA
+Else
+    sql = "UPDATE yBook set " & field & " = " & value & strWhere
+AA: 'MsgBox sql
+    If myExecute(myErrCod, sql) <> 0 Then Exit Function
+End If
+
+wrkDefault.CommitTrans
+
+'Set tbDocs = myOpenRecordSet(myErrCod, "yBook", dbOpenTable) 'dbOpenForwardOnly)
+'If tbDocs Is Nothing Then Exit Function
+
+'tmpDate = Grid.TextMatrix(mousRow, jnDate)
+'bDocs.Index = "Key"
+'tbDocs.Seek "=", tmpDate
+'If tbDocs.NoMatch Then
+'    MsgBox "Запись не обнаружена по Дате! Сообщите администратору.", , "Err = " & myErrCod
+'    tbDocs.Close
+'    Exit Function
+'Else
+'    If field = "delete" Then
+'        tbDocs.Delete
+'        GoTo EN1
+'    End If
+'    tbDocs.Edit
+'    If field = "schets" Then
+'        jGuidePurpose.getSchetsFromLb
+'        tbDocs!debit = debit
+'        tbDocs!subDebit = subDebit
+'        tbDocs!kredit = kredit
+'        tbDocs!subKredit = subKredit
+'        tbDocs!purposeId = pId
+'        tbDocs!detailId = dId
+'    Else
+'        tbDocs.fields(field) = value
+'    End If
+'    On Error GoTo ERR1
+'    tbDocs.Update
+'End If
+EN1:
+'tbDocs.Close
+valueToBookField = True
+'Exit Function
+'
+'ERR1:
+'If Err = 3201 Then
+'
+'Else
+'    MsgBox Error, , "Ошибка 345-" & Err & ":  " '##345
+'End If
+'On Error Resume Next
+'tbDocs.Close
+End Function
+
+
+Private Sub Form_Resize()
+Dim h As Integer, w As Integer
+If WindowState = vbMinimized Then Exit Sub
+On Error Resume Next
+h = Me.Height - oldHeight
+oldHeight = Me.Height
+w = Me.Width - oldWidth
+oldWidth = Me.Width
+Grid.Height = Grid.Height + h
+Grid.Width = Grid.Width + w
+
+laKurs.Left = laKurs.Left + w
+tbKurs.Left = tbKurs.Left + w
+cmLoad.Top = cmLoad.Top + h
+cmAdd.Top = cmAdd.Top + h
+cmDel.Top = cmDel.Top + h
+cmExit.Top = cmExit.Top + h
+cmExcel.Top = cmExcel.Top + h
+'cmExit.Left = cmExit.Left + w
+
+'Grid_EnterCell
+'Grid.SetFocus
+End Sub
+
+Private Sub Form_Unload(Cancel As Integer)
+isLoad = False
+If beChange Then KursUpdate
+If jKassaReport.isLoad Then Unload jKassaReport
+End Sub
+
+Private Sub Grid_Click()
+If noClick Then Exit Sub
+mousCol = Grid.MouseCol
+mousRow = Grid.MouseRow
+If quantity = 0 Then Exit Sub
+If mousRow = 0 Then
+    Grid.CellBackColor = Grid.BackColor
+    
+    If mousCol > jnM And mousCol <= jnSubKredit Or mousCol = jnOrdersNum Then
+        SortCol Grid, mousCol, "numeric"
+    ElseIf mousCol = jnDate Then
+        SortCol Grid, mousCol, "date"
+    Else
+        SortCol Grid, mousCol
+    End If
+    Grid.row = 1    ' только чтобы снять выделение
+    Grid_EnterCell
+End If
+
+End Sub
+
+Private Sub Grid_Compare(ByVal Row1 As Long, ByVal Row2 As Long, Cmp As Integer)
+Dim date1 As Date, date2 As Date ' в 2 х местах
+Dim date1S, date2S As String
+
+date1S = sortGrid.TextMatrix(Row1, mousCol)
+date2S = sortGrid.TextMatrix(Row2, mousCol)
+
+'If Not IsDate(date1S) = "" And date2S = "" Then
+'    Cmp = 0
+'    Exit Sub
+If Not IsDate(date1S) Then
+    Cmp = -1
+    GoTo CC:
+ElseIf Not IsDate(date2S) Then
+    Cmp = 1
+    GoTo CC:
+End If
+
+date1 = date1S
+date2 = date2S
+If date1 > date2 Then
+    Cmp = 1
+ElseIf date1 < date2 Then
+    Cmp = -1
+Else
+    Cmp = 0
+End If
+CC:
+If trigger Then Cmp = -Cmp
+
+
+End Sub
+
+
+Private Sub Grid_DblClick()
+If Grid.CellBackColor <> &H88FF88 Then Exit Sub
+
+If mousCol = jnSubKredit Or mousCol = jnSubDebit Or mousCol = jnDetail _
+Or mousCol = jnDebit Or mousCol = jnKredit Or mousCol = jnPurpose Then
+    jGuidePurpose.Regim = "select"
+    getSchetsFromGrid Grid, jnDebit
+    jGuidePurpose.purpose = Grid.TextMatrix(mousRow, jnPurpose)
+    jGuidePurpose.detail = Grid.TextMatrix(mousRow, jnDetail)
+    jGuidePurpose.Show vbModal
+ElseIf mousCol = jnDate Then
+    textBoxInGridCell tbMobile, Grid, Left$(Grid.TextMatrix(mousRow, mousCol), 8)
+ElseIf mousCol = jnDebKreditor Then
+    listBoxInGridCell lbGuids, Grid, "select" 'lbDebKreditor
+ElseIf mousCol = jnRub Then
+    If Not IsNumeric(tbKurs.Text) Then GoTo EE
+    If CSng(tbKurs.Text) < 0.01 Then
+EE:     tbKurs.SelStart = 0: tbKurs.SelLength = Len(tbKurs.Text)
+        MsgBox "Введите курс!", , "Предупреждение"
+        tbKurs.SetFocus
+        Exit Sub
+    End If
+    textBoxInGridCell tbMobile, Grid
+Else
+    textBoxInGridCell tbMobile, Grid
+End If
+End Sub
+
+Private Sub Grid_EnterCell()
+If noClick Then Exit Sub
+If quantity = 0 Then Exit Sub
+mousRow = Grid.row
+mousCol = Grid.col
+tbInform.Text = Grid.TextMatrix(mousRow, jnOrdersNum)
+
+If mousCol <> jnM Then  ' чтобы м.б. копировать из jnFirm
+'If mousCol > 2 Then  ' чтобы м.б. копировать из jnFirm
+   Grid.CellBackColor = &H88FF88
+Else
+   Grid.CellBackColor = vbYellow
+End If
+
+'If mousCol = nkNomer Then
+'   tbMobile.MaxLength = 20
+'Else
+'   tbMobile.MaxLength = 10
+'End If
+
+End Sub
+
+Private Sub Grid_KeyDown(KeyCode As Integer, Shift As Integer)
+If KeyCode = vbKeyReturn Then
+    Grid_DblClick
+ElseIf KeyCode = vbKeyEscape Then
+    lbHide
+End If
+
+End Sub
+
+Sub lbHide()
+tbMobile.Visible = False
+lbDebKreditor.Visible = False
+lbGuids.Visible = False
+Grid.Enabled = True
+On Error Resume Next
+Grid.SetFocus
+Grid_EnterCell
+
+End Sub
+
+Private Sub Grid_KeyUp(KeyCode As Integer, Shift As Integer)
+If KeyCode = vbKeyEscape Then Grid_EnterCell
+End Sub
+
+Private Sub Grid_LeaveCell()
+Grid.CellBackColor = Grid.BackColor
+End Sub
+
+Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+
+If Grid.MouseRow = 0 And Shift = 2 Then
+        MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
+'ElseIf quantity > 0 And Grid.row <> Grid.RowSel Then
+ElseIf mousCol = jnRub Or mousCol = jnVal Then
+    laSum.Caption = Round(sumInGridCol(Grid, mousCol), 2)
+End If
+End Sub
+
+Private Sub lbDebKreditor_DblClick()
+Dim id As String
+
+id = getIdFromTableByLb("yDebKreditor", lbDebKreditor.Text)
+If IsNumeric(id) Then
+    If valueToBookField("##354", id, "KredDebitor") Then
+        Grid.Text = lbDebKreditor.Text
+        If jKassaReport.isLoad Then jKassaReport.laInform.Visible = True
+    End If
+End If
+lbHide
+
+End Sub
+
+Private Sub lbDebKreditor_KeyDown(KeyCode As Integer, Shift As Integer)
+If KeyCode = vbKeyReturn Then
+    lbDebKreditor_DblClick
+ElseIf KeyCode = vbKeyEscape Then
+    lbHide
+End If
+
+End Sub
+
+Private Sub lbGuids_DblClick()
+lbHide
+If lbGuids.ListIndex = 0 Then
+    listBoxInGridCell lbDebKreditor, Grid
+Else
+    FindFirm.Regim = "edit"
+    FindFirm.cmSelect.Visible = True
+    FindFirm.tb.Text = Grid.TextMatrix(mousRow, jnDebKreditor)
+    FindFirm.Show vbModal
+End If
+
+
+End Sub
+
+Private Sub lbGuids_KeyDown(KeyCode As Integer, Shift As Integer)
+If KeyCode = vbKeyReturn Then
+    lbGuids_DblClick
+ElseIf KeyCode = vbKeyEscape Then
+    lbHide
+End If
+
+End Sub
+
+Private Sub tbEndDate_Change()
+cmLoad.Caption = "Загрузить"
+
+End Sub
+
+Private Sub tbInform_GotFocus()
+    tbInform.SelStart = Len(tbInform.Text)
+End Sub
+
+Private Sub tbInform_KeyDown(KeyCode As Integer, Shift As Integer)
+If KeyCode = vbKeyReturn Then
+    If valueToBookField("##326", tbInform.Text, "ordersNum") Then
+        Grid.TextMatrix(mousRow, jnOrdersNum) = tbInform.Text
+        Grid.col = jnOrdersNum
+        On Error Resume Next
+        Grid.SetFocus
+    End If
+End If
+
+End Sub
+
+Private Sub tbKurs_Change()
+beChange = True
+End Sub
+
+Private Sub tbKurs_GotFocus()
+beChange = False
+End Sub
+Sub addRowToGrid(sum As String, note As String)
+
+If quantity > 0 Then Grid.AddItem ("")
+quantity = quantity + 1
+noClick = True
+Grid.row = Grid.Rows - 1
+Grid.col = jnRub
+noClick = False
+Grid.TextMatrix(Grid.row, jnDate) = tmpStr
+Grid.TextMatrix(Grid.row, jnVal) = sum
+Grid.TextMatrix(Grid.row, jnM) = AUTO.cbM.Text
+Grid.TextMatrix(Grid.row, jnDebit) = schType(debit)
+Grid.TextMatrix(Grid.row, jnSubDebit) = schType(subDebit)
+Grid.TextMatrix(Grid.row, jnKredit) = schType(kredit)
+Grid.TextMatrix(Grid.row, jnSubKredit) = schType(subKredit)
+Grid.TextMatrix(Grid.row, jnNote) = note 'tbDocs!note
+
+
+sql = "SELECT pDescript from yGuidePurpose WHERE (((Debit)=" & debit & _
+") AND ((subDebit)=" & subDebit & ") AND ((Kredit)=" & kredit & _
+") AND ((subKredit)=" & subKredit & ") AND ((pId)=" & purposeId & "));"
+
+If byErrSqlGetValues("##377", sql, tmpStr) Then _
+    Grid.TextMatrix(Grid.row, jnPurpose) = tmpStr
+    
+sql = "SELECT descript FROM yGuideDetail WHERE (((Debit)=" & debit & _
+") AND ((subDebit)=" & subDebit & ") AND ((Kredit)=" & kredit & _
+") AND ((subKredit)=" & subKredit & ") AND ((purposeId)=" & purposeId & _
+") AND ((id)=" & detailId & "));"
+'MsgBox sql
+If byErrSqlGetValues("##378", sql, tmpStr) Then _
+    Grid.TextMatrix(Grid.row, jnDetail) = tmpStr
+
+Grid_EnterCell
+End Sub
+
+Function getFreeDate(dayDate As String)
+Dim sek As Long, str As String, l As Long
+
+
+getFreeDate = Null
+
+sql = "SELECT xDate from yBook Where (((xDate) Like '" & dayDate & "%')) ORDER BY xDate;"
+'MsgBox sql
+Set Table = myOpenRecordSet("##374", sql, dbOpenForwardOnly)
+If Table Is Nothing Then Exit Function
+sek = 0
+While Not Table.EOF
+'  If Table!xDate <> DateAdd("s", sek, dayDate) Then
+  If DateDiff("s", dayDate, Table!xDate) <> sek Then GoTo EN1
+  sek = sek + 1
+  Table.MoveNext
+Wend
+
+EN1:
+
+If sek < 86400 Then 'число секунд в сутках
+    getFreeDate = DateAdd("s", sek, dayDate)
+End If
+Table.Close
+
+
+End Function
+
+Function getIdFromTableByLb(Table As String, lbText As String) As String
+Dim id As Integer
+
+getIdFromTableByLb = ""
+
+sql = "SELECT id From " & Table & "  WHERE (((Name)='" & lbText & "'));"
+'MsgBox sql
+If Not byErrSqlGetValues("##330", sql, id) Then Exit Function
+
+getIdFromTableByLb = id
+End Function
+
+'Sub getSchetsFromGrid()
+Sub getSchetsFromGrid(Grid As MSFlexGrid, begCol As Integer)
+Dim str As String
+
+str = Grid.TextMatrix(Grid.row, begCol)
+debit = 255
+If IsNumeric(str) Then debit = str
+
+str = Grid.TextMatrix(Grid.row, begCol + 1)
+subDebit = 0
+If IsNumeric(str) Then subDebit = str
+
+
+str = Grid.TextMatrix(Grid.row, begCol + 2)
+kredit = 255
+If IsNumeric(str) Then kredit = str
+
+str = Grid.TextMatrix(Grid.row, begCol + 3)
+subKredit = 0
+If IsNumeric(str) Then subKredit = str
+
+End Sub
+
+Sub KursUpdate()
+    If Not isNumericTbox(tbKurs, 0.01) Then Exit Sub
+    If beChange Then
+        sql = "UPDATE System SET System.Kurs = " & tbKurs.Text & ";"
+        myExecute "##322", sql
+        beChange = False
+    End If
+End Sub
+
+Private Sub tbKurs_KeyDown(KeyCode As Integer, Shift As Integer)
+If KeyCode = vbKeyReturn Then
+    KursUpdate
+    On Error Resume Next
+    Grid.SetFocus
+End If
+End Sub
+
+Private Sub tbKurs_LostFocus()
+If beChange Then KursUpdate
+End Sub
+
+Private Sub tbMobile_DblClick()
+lbHide
+End Sub
+
+Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
+Dim str As String
+
+If KeyCode = vbKeyReturn Then
+  If mousCol = jnDate Then
+    
+     If Not isDateTbox(tbMobile) Then Exit Sub
+'     str = getFreeDate(Format(tmpDate, "dd.mm.yyyy"))
+     tmpDate = getFreeDate(Format(tmpDate, "yyyy-mm-dd"))
+     If IsNull(tmpDate) Then GoTo EN1  '
+     str = "'" & Format(tmpDate, "yyyy-mm-dd hh:nn:ss") & "'"
+     If valueToBookField("##375", str, "xDate") Then _
+        Grid.TextMatrix(mousRow, mousCol) = Format(tmpDate, "dd.mm.yy hh:nn:ss")
+     GoTo EN1
+  ElseIf mousCol = jnRub Then
+    If Not isNumericTbox(tbMobile, 0.1) Then Exit Sub
+    str = Round(CSng(tbMobile.Text) / CSng(tbKurs.Text), 2)
+    If Not valueToBookField("##326", str, "UEsumm") Then GoTo EN1
+    Grid.TextMatrix(mousRow, jnVal) = str
+  ElseIf mousCol = jnVal Then
+    If Not isNumericTbox(tbMobile, 0.1) Then Exit Sub
+    If Not valueToBookField("##326", tbMobile.Text, "UEsumm") Then GoTo EN1
+    Grid.TextMatrix(mousRow, jnRub) = ""
+  ElseIf mousCol = jnOrdersNum Then
+    If Not valueToBookField("##326", "'" & tbMobile.Text & "'", "ordersNum") Then GoTo EN1
+  ElseIf mousCol = jnNote Then
+    If Not valueToBookField("##326", "'" & tbMobile.Text & "'", "Note") Then GoTo EN1
+    
+  End If
+  Grid.TextMatrix(mousRow, mousCol) = tbMobile.Text
+  If jKassaReport.isLoad Then jKassaReport.laInform.Visible = True
+EN1: lbHide
+ElseIf KeyCode = vbKeyEscape Then
+    lbHide
+End If
+
+End Sub
+
+Private Sub tbStartDate_Change()
+cmLoad.Caption = "Загрузить"
+
+End Sub
+
+Private Sub Timer1_Timer()
+Timer1.Enabled = False
+cmAdd.Enabled = True
+End Sub
