@@ -1,5 +1,70 @@
 
 -------------------------------------------------------------------------
+--------------             GuideFirms      ----------------------
+-------------------------------------------------------------------------
+if exists (select 1 from systriggers where trigname = 'wf_delete_firm' and tname = 'GuideFirms') then 
+	drop trigger GuideFirms.wf_delete_firm;
+end if;
+
+create TRIGGER wf_delete_firm before delete on
+GuideFirms
+referencing old as old_name
+for each row
+begin
+	if old_name.id_voc_names is not null then
+		call delete_host('voc_names', 'id = ' + convert(varchar(20), old_name.id_voc_names));
+	end if;
+end;
+
+
+if exists (select 1 from systriggers where trigname = 'wf_update_firm' and tname = 'GuideFirms') then 
+	drop trigger GuideFirms.wf_update_firm;
+end if;
+
+create TRIGGER wf_update_firm before update on
+GuideFirms
+referencing old as old_name new as new_name
+for each row
+begin
+	if update(phone) then
+		call update_host('voc_names', 'phone', '''''' + new_name.phone + '''''', 'id = ' + convert(varchar(20), old_name.id_voc_names));
+	end if;
+	if update(fio) then 
+		call update_host('voc_names', 'rem', '''''' + new_name.fio + '''''', 'id = ' + convert(varchar(20), old_name.id_voc_names));
+	end if;
+end;
+
+
+if exists (select 1 from systriggers where trigname = 'wf_insert_firm' and tname = 'GuideFirms') then 
+	drop trigger GuideFirms.wf_insert_firm;
+end if;
+
+create TRIGGER wf_insert_firm before insert on
+GuideFirms
+referencing new as new_name
+for each row
+begin
+	declare v_zakaz_id integer;
+	declare v_params varchar(2000);
+	declare v_firms_id integer;
+
+	select id_voc_names into v_zakaz_id from guidefirms where firmid = 0;
+
+	-- id  фирмы в базе Комтеха
+	set v_firms_id = get_nextid ('voc_names');
+	set v_params =
+		 convert(varchar(20), v_firms_id)
+		+ ', '''''+ substring(new_name.name,1,203) + ''''''
+	;
+	set v_params = v_params + ', ' + convert(varchar(20), v_zakaz_id);
+
+	call insert_host('voc_names', 'id, nm, belong_id', v_params);
+
+	set new_name.id_voc_names = v_firms_id;
+	
+end;
+
+-------------------------------------------------------------------------
 --------------             System      ----------------------------
 -------------------------------------------------------------------------
 if exists (select 1 from systriggers where trigname = 'wf_update_System' and tname = 'System') then 
@@ -945,7 +1010,9 @@ sGuideKlass
 referencing old as old_name
 for each row
 begin
-	call delete_host('inv', 'id = ' + convert(varchar(20), old_name.id_inv));
+	if old_name.id_inv is not null then
+		call delete_host('inv', 'id = ' + convert(varchar(20), old_name.id_inv));
+	end if;
 --  delete from inv where id = old_name.id_inv;
 end;
 
@@ -1045,8 +1112,9 @@ sGuideSeries
 referencing old as old_name
 for each row
 begin
-	call delete_host('inv', 'id = ' + convert(varchar(20), old_name.id_inv));
---  delete from inv where id = old_name.id_inv;
+	if old_name.id_inv is not null then
+		call delete_host('inv', 'id = ' + convert(varchar(20), old_name.id_inv));
+	end if;
 end;
 
 
@@ -1171,7 +1239,9 @@ sGuideNomenk
 referencing old as old_name
 for each row
 begin
-	call delete_host('inv', 'id = ' + convert(varchar(20), old_name.id_inv));
+	if old_name.id_inv is not null then
+		call delete_host('inv', 'id = ' + convert(varchar(20), old_name.id_inv));
+	end if;
 end;
 
 --------------------------------------------------------------------------
@@ -1285,7 +1355,9 @@ sGuideProducts
 referencing old as old_name
 for each row
 begin
-	call delete_host('inv', 'id = ' + convert(varchar(20), old_name.id_inv));
+	if old_name.id_inv is not null then
+		call delete_host('inv', 'id = ' + convert(varchar(20), old_name.id_inv));
+	end if;
 end;
 
 
@@ -1420,8 +1492,9 @@ begin
 	if namedFromAfter <= 0 then
 		delete from sGuideVariant where productid = old_name.productId and xgroup = old_name.xgroup;
 	end if;
-	call delete_host('compl', 'id = ' + convert(varchar(20), old_name.id_compl));
-
+	if old_name.id_compl is not null then
+		call delete_host('compl', 'id = ' + convert(varchar(20), old_name.id_compl));
+	end if;
 end;
 ----------------------------------------------------------------------
 --------------             sGuideVariant      ------------------------
@@ -4141,4 +4214,67 @@ begin
 end;
 
 
-			-- ищем товар под названием "услуга"
+-------------------------------------------------------------------------
+--------------             BayGuideFirms      ----------------------
+-------------------------------------------------------------------------
+if exists (select 1 from systriggers where trigname = 'wf_delete_firm' and tname = 'BayGuideFirms') then 
+	drop trigger BayGuideFirms.wf_delete_firm;
+end if;
+
+create TRIGGER wf_delete_firm before delete on
+BayGuideFirms
+referencing old as old_name
+for each row
+begin
+	if old_name.id_voc_names is not null then
+		call delete_host('voc_names', 'id = ' + convert(varchar(20), old_name.id_voc_names));
+	end if;
+end;
+
+
+if exists (select 1 from systriggers where trigname = 'wf_update_firm' and tname = 'BayGuideFirms') then 
+	drop trigger BayGuideFirms.wf_update_firm;
+end if;
+
+create TRIGGER wf_update_firm before update on
+BayGuideFirms
+referencing old as old_name new as new_name
+for each row
+begin
+	if update(phone) then
+		call update_host('voc_names', 'phone', '''''' + new_name.phone + '''''', 'id = ' + convert(varchar(20), old_name.id_voc_names));
+	end if;
+	if update(fio) then 
+		call update_host('voc_names', 'rem', '''''' + new_name.fio + '''''', 'id = ' + convert(varchar(20), old_name.id_voc_names));
+	end if;
+end;
+
+
+if exists (select 1 from systriggers where trigname = 'wf_insert_firm' and tname = 'BayGuideFirms') then 
+	drop trigger BayGuideFirms.wf_insert_firm;
+end if;
+
+create TRIGGER wf_insert_firm before insert on
+BayGuideFirms
+referencing new as new_name
+for each row
+begin
+	declare v_zakaz_id integer;
+	declare v_params varchar(2000);
+	declare v_firms_id integer;
+
+	select id_voc_names into v_zakaz_id from BayGuideFirms where firmid = 0;
+
+	-- id  фирмы в базе Комтеха
+	set v_firms_id = get_nextid ('voc_names');
+	set v_params =
+		 convert(varchar(20), v_firms_id)
+		+ ', '''''+ substring(new_name.name,1,203) + ''''''
+	;
+	set v_params = v_params + ', ' + convert(varchar(20), v_zakaz_id);
+
+	call insert_host('voc_names', 'id, nm, belong_id', v_params);
+
+	set new_name.id_voc_names = v_firms_id;
+	
+end;
