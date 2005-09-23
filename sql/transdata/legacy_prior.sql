@@ -174,8 +174,6 @@ begin
 			+ ', 1'
 		);
 
-		UPDATE guidefirms set id_voc_names = v_zakaz_id WHERE firmId = 0;
-		UPDATE bayguidefirms set id_voc_names = v_zakaz_id WHERE firmId = 0;
 	end if;
 
 
@@ -270,7 +268,11 @@ begin
 		end if;
 
 		set v_firms_id = v_firms_id + 1;
+
 	end for;
+
+	UPDATE guidefirms set id_voc_names = v_zakaz_id WHERE firmId = 0;
+	UPDATE bayguidefirms set id_voc_names = v_zakaz_id WHERE firmId = 0;
 	
 	message 'legacy_firms() ended successful.' to client;
 			
