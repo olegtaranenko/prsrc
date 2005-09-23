@@ -550,7 +550,7 @@ Set wrkDefault = DBEngine.CreateWorkspace("wrkDefault", "dba", "sql", dbUseODBC)
 If otlad = "otlaD" Then
    Set myBase = wrkDefault.OpenDatabase("Connection1", _
       dbDriverNoPrompt, False, _
-      "ODBC;UID=dba;PWD=sql;DSN=priorNext")
+      "ODBC;UID=dba;PWD=sql;DSN=prr")
       mainTitle = "    otlad"
 Else
    Set myBase = wrkDefault.OpenDatabase("Connection1", _

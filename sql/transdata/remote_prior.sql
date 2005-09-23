@@ -1,13 +1,13 @@
 --Создание remote серверов
 
-if not exists (select '*' from sys.sysservers where srvname = 'stime') then  
-	create server stime class 'ASAODBC' USING 'DSN=stime;UID=admin;PWD=z';
+if not exists (select '*' from sys.sysservers where srvname = 'st') then  
+	create server st class 'ASAODBC' USING 'DSN=st;UID=admin;PWD=z';
 end if;
-if not exists (select '*' from sys.sysservers where srvname = 'accountN') then  
-	create server accountN class 'ASAODBC' USING 'DSN=accountN;UID=admin;PWD=z';
+if not exists (select '*' from sys.sysservers where srvname = 'pm') then  
+	create server pm class 'ASAODBC' USING 'DSN=pm;UID=admin;PWD=z';
 end if;
-if not exists (select '*' from sys.sysservers where srvname = 'markmaster') then  
-	create server markmaster class 'ASAODBC' USING 'DSN=markmaster;UID=admin;PWD=z';
+if not exists (select '*' from sys.sysservers where srvname = 'mm') then  
+	create server mm class 'ASAODBC' USING 'DSN=mm;UID=admin;PWD=z';
 end if;
 
 

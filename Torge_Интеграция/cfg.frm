@@ -554,7 +554,7 @@ If otlad = "work" Or otlad = "" Then
 Else
      mainTitle = "    otlad"
     Set myBase = wrkDefault.OpenDatabase("Connection1", _
-    dbDriverNoPrompt, False, "ODBC;UID=dba;PWD=sql;DSN=priorNext")
+    dbDriverNoPrompt, False, "ODBC;UID=dba;PWD=sql;DSN=prr")
 End If
 If myBase Is Nothing Then End
 

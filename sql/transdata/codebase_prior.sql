@@ -50,7 +50,7 @@ begin
 					+', ' + convert(varchar(20), v_id_cur)
 					+', ''''' + convert(varchar(20), now(), 112) +''''''
 					+', ''''' + convert(varchar(20), v_currency_rate) + ''''''
-					+', ''''Установлено в Prior'''''
+					+', ''''Установлено в prr'''''
 				;
 	
 				call insert_host('cur_rate', v_fields, v_values);
@@ -191,11 +191,11 @@ begin
 	declare v_tp4 integer;
 	declare v_id_guide integer;
 
-	call slave_select_stime(v_id_guide, 'jmat', 'id_guide', 'id = ' + convert(varchar(20), p_id_jmat));
-	call slave_select_stime(v_tp1, 'jmat', 'tp1', 'id = ' + convert(varchar(20), p_id_jmat));
-	call slave_select_stime(v_tp2, 'jmat', 'tp2', 'id = ' + convert(varchar(20), p_id_jmat));
-	call slave_select_stime(v_tp3, 'jmat', 'tp3', 'id = ' + convert(varchar(20), p_id_jmat));
-	call slave_select_stime(v_tp4, 'jmat', 'tp4', 'id = ' + convert(varchar(20), p_id_jmat));
+	call slave_select_st(v_id_guide, 'jmat', 'id_guide', 'id = ' + convert(varchar(20), p_id_jmat));
+	call slave_select_st(v_tp1, 'jmat', 'tp1', 'id = ' + convert(varchar(20), p_id_jmat));
+	call slave_select_st(v_tp2, 'jmat', 'tp2', 'id = ' + convert(varchar(20), p_id_jmat));
+	call slave_select_st(v_tp3, 'jmat', 'tp3', 'id = ' + convert(varchar(20), p_id_jmat));
+	call slave_select_st(v_tp4, 'jmat', 'tp4', 'id = ' + convert(varchar(20), p_id_jmat));
 
 //	set v_tp = wf_get_comtex_tp(v_id_guide);
 	set v_tp = convert(varchar(20), v_tp1)
@@ -391,7 +391,7 @@ begin
 end;
 
 /************************************************************/
-/*                  PRIOR SPECIFIC PROCS                    */
+/*                  prr SPECIFIC PROCS                    */
 /************************************************************/
 
 
@@ -491,7 +491,7 @@ if exists (select '*' from sysprocedure where proc_name like 'wf_getEdizmId') th
 	drop procedure wf_getEdizmId;
 end if;
 
-create FUNCTION wf_getEdizmId (edizm varchar(100), p_rem varchar(100) default 'created by stime') returns integer
+create FUNCTION wf_getEdizmId (edizm varchar(100), p_rem varchar(100) default 'created by st') returns integer
 begin
 	declare edizmId integer;
 	declare v_values varchar(200);
@@ -520,7 +520,7 @@ if exists (select '*' from sysprocedure where proc_name like 'wf_getSizeId') the
 	drop procedure wf_getSizeId;
 end if;
 
-create FUNCTION wf_getSizeId (sz varchar(100), p_rem varchar(100) default 'created by stime') returns integer
+create FUNCTION wf_getSizeId (sz varchar(100), p_rem varchar(100) default 'created by st') returns integer
 begin
 	declare sizeId integer;
 	declare v_values varchar(200);
@@ -1550,21 +1550,21 @@ for each row
 begin
 	declare remoteServer varchar(32);
 
-	call call_host('block_table', '''prior'', ''mat''');
+	call call_host('block_table', '''prr'', ''mat''');
 
 	if (old_name.id_mat is not null) then
-		call delete_remote('stime', 'mat', 'id = ' + convert(varchar(20), old_name.id_mat));
+		call delete_remote('st', 'mat', 'id = ' + convert(varchar(20), old_name.id_mat));
 	end if;
 
 	select sysname into remoteServer 
 	from  guideventure v 
 	join orders o on o.ventureId = v.ventureId and v.standalone = 0 and o.numorder = old_name.numDoc;
 
-	if remoteServer is not null and remoteServer != 'stime' then
+	if remoteServer is not null and remoteServer != 'st' then
 		call delete_remote(remoteServer, 'mat', 'id = ' + convert(varchar(20), old_name.id_mat));
 	end if;
 
-	call call_host('unblock_table', '''prior'', ''mat''');
+	call call_host('unblock_table', '''prr'', ''mat''');
 end;
 
 
@@ -1604,8 +1604,8 @@ begin
 	set v_id_mat = get_nextid('mat');
 
 	set v_id_currency = system_currency();
-	call slave_currency_rate_stime(v_datev, v_currency_rate);
-	call slave_select_stime(v_mat_nu, 'mat', 'max(nu)', 'id_jmat = ' + convert(varchar(20), v_id_jmat));
+	call slave_currency_rate_st(v_datev, v_currency_rate);
+	call slave_select_st(v_mat_nu, 'mat', 'max(nu)', 'id_jmat = ' + convert(varchar(20), v_id_jmat));
 	
 	set v_mat_nu = convert(varchar(20), convert(integer, isnull(v_mat_nu, 0)) + 1);
 
@@ -1624,10 +1624,10 @@ begin
 	set v_quant = new_name.quant; -- / v_perList;
 
 
-		call call_host('block_table', '''prior'', ''mat''');
+		call call_host('block_table', '''prr'', ''mat''');
 	
 		call wf_insert_mat (
-			'stime'
+			'st'
 			,v_id_mat
 			,v_Id_jmat
 			,v_id_inv
@@ -1641,7 +1641,7 @@ begin
 		);
 
 		set new_name.id_mat = v_id_mat;
-		call call_host('unblock_table', '''prior'', ''mat''');
+		call call_host('unblock_table', '''prr'', ''mat''');
 end;
 
 
@@ -1660,10 +1660,10 @@ begin
 	declare remoteServer varchar(32);
 
 
-	call call_host('block_table', '''prior'', ''jmat''');
-	call call_host('block_table', '''prior'', ''mat''');
+	call call_host('block_table', '''prr'', ''jmat''');
+	call call_host('block_table', '''prr'', ''mat''');
 	if (old_name.id_jmat is not null) then
-		call delete_remote('stime', 'jmat', 'id = ' + convert(varchar(20), old_name.id_jmat));
+		call delete_remote('st', 'jmat', 'id = ' + convert(varchar(20), old_name.id_jmat));
 	end if;
 
 	select sysname into remoteServer 
@@ -1671,12 +1671,12 @@ begin
 	join orders o on o.ventureId = v.ventureId and v.standalone = 0 and o.numorder = old_name.numDoc;
 
 	message 'remoteServer = ', remoteServer to client;
-	if remoteServer is not null and remoteServer != 'stime' then
+	if remoteServer is not null and remoteServer != 'st' then
 //		message '' to client;
 		call delete_remote(remoteServer, 'jmat', 'id = ' + convert(varchar(20), old_name.id_jmat));
 	end if;
-	call call_host('unblock_table', '''prior'', ''mat''');
-	call call_host('unblock_table', '''prior'', ''jmat''');
+	call call_host('unblock_table', '''prr'', ''mat''');
+	call call_host('unblock_table', '''prr'', ''jmat''');
 end;
 
 
@@ -1745,14 +1745,14 @@ begin
 
 		set v_id_jmat = get_nextid('jmat');
 		set v_id_currency = system_currency();
-		call slave_currency_rate_stime(v_datev, v_currency_rate);
+		call slave_currency_rate_st(v_datev, v_currency_rate);
 		set v_jmat_nu = new_name.numdoc;
 		select id_voc_names into v_id_source from sguidesource where sourceid = new_name.sourid;
 		select id_voc_names into v_id_dest from sguidesource where sourceid = new_name.destid;
-		set v_osn = '[Prior: '+ convert(varchar(20), new_name.numdoc) +']';
+		set v_osn = '[prr: '+ convert(varchar(20), new_name.numdoc) +']';
 	    
 		call wf_insert_jmat (
-			'stime'
+			'st'
 			,v_id_guide_jmat
 			,v_id_jmat
 			,now() --v_jmat_date
@@ -1792,15 +1792,15 @@ begin
 
 	if update(sourid) and old_name.numext = 254 then
 		select id_voc_names into v_id_source from sguidesource where sourceid = new_name.sourid;
-		call slave_update_stime('jmat', 'id_s', convert(varchar(20), v_id_source), 'id = ' + convert(varchar(20), old_name.id_jmat));
+		call slave_update_st('jmat', 'id_s', convert(varchar(20), v_id_source), 'id = ' + convert(varchar(20), old_name.id_jmat));
 	end if;
 	if update(destid) and old_name.numext = 254  then
 		select id_voc_names into v_id_dest from sguidesource where sourceid = new_name.destid;
-		call slave_update_stime('jmat', 'id_d', convert(varchar(20), v_id_dest), 'id = ' + convert(varchar(20), old_name.id_jmat));
+		call slave_update_st('jmat', 'id_d', convert(varchar(20), v_id_dest), 'id = ' + convert(varchar(20), old_name.id_jmat));
 	end if;
 	if update(note) then
-		set v_osn = '[Prior: '+ new_name.note +']';
-		call slave_update_stime('jmat', 'osn', '''' +v_osn + '''', 'id = ' + convert(varchar(20), old_name.id_jmat));
+		set v_osn = '[prr: '+ new_name.note +']';
+		call slave_update_st('jmat', 'osn', '''' +v_osn + '''', 'id = ' + convert(varchar(20), old_name.id_jmat));
 	end if;
 end;
 
@@ -2531,10 +2531,10 @@ begin
 
 	call wf_otgruz_remove (
 		v_id_jmat
-		,'stime'
+		,'st'
 	);
 
-	if v_sysname is not null and v_sysname != 'stime' then
+	if v_sysname is not null and v_sysname != 'st' then
 		call wf_otgruz_remove (
 			v_id_jmat
 			,v_sysname
@@ -2583,10 +2583,10 @@ begin
 			,v_id_jmat
 			,new_name.quant
 			,v_cena
-			,'stime'
+			,'st'
 		);
 
-		if v_sysname is not null and v_sysname != 'stime' then
+		if v_sysname is not null and v_sysname != 'st' then
 			call wf_otgruz_quant(
 				v_id_mat
 				,v_id_jmat
@@ -2631,8 +2631,8 @@ begin
 	declare v_cur_otgruz_date date;
 
 
-	if get_standalone('stime') = 1 then
-		call log_warning('Информация об отгрузке по заказу ' + convert(varchar(20), new_name.numorder) + ' не попадает в аналитическую базу stime.');
+	if get_standalone('st') = 1 then
+		call log_warning('Информация об отгрузке по заказу ' + convert(varchar(20), new_name.numorder) + ' не попадает в аналитическую базу st.');
 		return;
 	end if;
 
@@ -2666,7 +2666,7 @@ begin
 
 	
 	set v_id_currency = system_currency();
-	call slave_currency_rate_stime(v_datev, v_currency_rate);
+	call slave_currency_rate_st(v_datev, v_currency_rate);
 
 --	select id_voc_names into v_id_dest from guidefirms where firmid = v_firm_id;
 --	    message 'v_id_dest = ', v_id_dest to client;
@@ -2692,7 +2692,7 @@ begin
 	end if;
 
 	set v_id_mat = get_nextid('mat');
-	call slave_select_stime(v_mat_nu, 'mat', 'max(nu)', 'id_jmat = ' + convert(varchar(20), v_id_jmat));
+	call slave_select_st(v_mat_nu, 'mat', 'max(nu)', 'id_jmat = ' + convert(varchar(20), v_id_jmat));
 	set v_mat_nu = convert(varchar(20), convert(integer, isnull(v_mat_nu, 0)) + 1);
 	select cenaEd into v_cena from xPredmetybyNomenk where numOrder = new_name.numOrder and nomnom = new_name.nomNom;
 
@@ -2810,10 +2810,10 @@ begin
 	select id_inv, perList into v_id_inv, v_perList from sguidenomenk where nomnom = p_nomnom;
 
 
-	call call_host('block_table', '''prior'', ''mat''');
+	call call_host('block_table', '''prr'', ''mat''');
 	
 	call wf_insert_mat (
-		'stime'
+		'st'
 		,p_id_mat
 		,p_Id_jmat
 		,v_id_inv
@@ -2826,7 +2826,7 @@ begin
 		,v_perList
 	);
 	
-	if p_sysname is not null and p_sysname != 'stime' then
+	if p_sysname is not null and p_sysname != 'st' then
 		call wf_insert_mat (
 			p_sysname
 			,p_id_mat
@@ -2844,7 +2844,7 @@ begin
 	end if;
 
 
-	call call_host('unblock_table', '''prior'', ''mat''');
+	call call_host('unblock_table', '''prr'', ''mat''');
 	--	set wf_otgruz_nom = v_id_mat;
 end;
 
@@ -2885,15 +2885,15 @@ begin
 
 		set v_id_jmat = get_nextid('jmat');
 --		set v_id_currency = system_currency();
---		call slave_currency_rate_stime(v_datev, v_currency_rate);
-		set v_jmat_nu = nextnu_remote('stime', 'jmat');
+--		call slave_currency_rate_st(v_datev, v_currency_rate);
+		set v_jmat_nu = nextnu_remote('st', 'jmat');
 		--select id_voc_names into v_id_source from sguidesource where sourceid = new_name.sourid;
 		--select id_voc_names into v_id_dest from sguidesource where sourceid = new_name.destid;
 
 		set v_osn = 'заказ N ' + convert(varchar(20), p_numorder);
 	    
 		call wf_insert_jmat (
-			'stime'
+			'st'
 			,'1210' --v_id_guide_jmat
 			,v_id_jmat
 			,p_date --v_jmat_date
@@ -2906,7 +2906,7 @@ begin
 			,p_id_dest
 		);
 
-		if p_sysname is not null and p_sysname != 'stime' then
+		if p_sysname is not null and p_sysname != 'st' then
 			call wf_insert_jmat (
 				p_sysname
 				,'1210' --v_id_guide_jmat
@@ -2958,10 +2958,10 @@ begin
 
 	call wf_otgruz_remove (
 		v_id_jmat
-		,'stime'
+		,'st'
 	);
 
-	if v_sysname is not null and v_sysname != 'stime' then
+	if v_sysname is not null and v_sysname != 'st' then
 		call wf_otgruz_remove (
 			v_id_jmat
 			,v_sysname
@@ -3016,10 +3016,10 @@ begin
 			,v_id_jmat
 			,new_name.quant
 			,v_cena
-			,'stime'
+			,'st'
 		);
 
-		if v_sysname is not null and v_sysname != 'stime' then
+		if v_sysname is not null and v_sysname != 'st' then
 			call wf_otgruz_quant(
 				v_id_mat
 				,v_id_jmat
@@ -3097,7 +3097,7 @@ begin
 
 	
 	set v_id_currency = system_currency();
-	call slave_currency_rate_stime(v_datev, v_currency_rate);
+	call slave_currency_rate_st(v_datev, v_currency_rate);
 
 	if v_id_jmat is null then
 		set v_id_jmat = wf_otgruz_jmat(
@@ -3117,7 +3117,7 @@ begin
 --	message 'v_id_jscet = ', v_id_jscet to client;
 --	message 'v_id_jmat = ', v_id_jmat to client;
 	set v_id_mat = get_nextid('mat');
---	call slave_select_stime(v_mat_nu, 'mat', 'max(nu)', 'id_jmat = ' + convert(varchar(20), v_id_jmat));
+--	call slave_select_st(v_mat_nu, 'mat', 'max(nu)', 'id_jmat = ' + convert(varchar(20), v_id_jmat));
 --	set v_mat_nu = convert(varchar(20), convert(integer, isnull(v_mat_nu, 0)) + 1);
 
 	select cenaEd 
@@ -3181,9 +3181,9 @@ begin
 --	declare v_cost float;
 --	declare v_quant float;
 	
---	call call_host('block_table', '''prior'', ''mat''');
+--	call call_host('block_table', '''prr'', ''mat''');
 
-	call slave_select_stime(v_mat_nu, 'mat', 'max(nu)', 'id_jmat = ' + convert(varchar(20), p_id_jmat));
+	call slave_select_st(v_mat_nu, 'mat', 'max(nu)', 'id_jmat = ' + convert(varchar(20), p_id_jmat));
 --	set v_mat_nu = convert(varchar(20), convert(integer, isnull(v_mat_nu, 0)) + 1);
    
 	for aCursor as a dynamic scroll cursor for
@@ -3212,7 +3212,7 @@ begin
 		
 		set v_mat_nu = convert(varchar(20), convert(integer, isnull(v_mat_nu, 0)) + 1);
 		call wf_insert_mat (
-			'stime'
+			'st'
 			,p_id_mat
 			,p_Id_jmat
 			,r_id_inv
@@ -3229,7 +3229,7 @@ begin
 	end for;
 
 	
-	if p_sysname is not null and p_sysname != 'stime' then
+	if p_sysname is not null and p_sysname != 'st' then
 	
 --	message 'p_prId = ', p_prId to client;
 		if not exists (select 1 from svariantpower where productId = p_prid) then
@@ -3265,7 +3265,7 @@ begin
 	end if;
 
 
---	call call_host('unblock_table', '''prior'', ''mat''');
+--	call call_host('unblock_table', '''prr'', ''mat''');
 	--	set wf_otgruz_izd = v_id_mat;
 end;
 
@@ -3677,10 +3677,10 @@ begin
 
 	call wf_otgruz_remove (
 		v_id_jmat
-		,'stime'
+		,'st'
 	);
 
-	if v_sysname is not null and v_sysname != 'stime' then
+	if v_sysname is not null and v_sysname != 'st' then
 		call wf_otgruz_remove (
 			v_id_jmat
 			,v_sysname
@@ -3729,10 +3729,10 @@ begin
 			,v_id_jmat
 			,new_name.quant
 			,v_cena
-			,'stime'
+			,'st'
 		);
 
-		if v_sysname is not null and v_sysname != 'stime' then
+		if v_sysname is not null and v_sysname != 'st' then
 			call wf_otgruz_quant(
 				v_id_mat
 				,v_id_jmat
@@ -3802,7 +3802,7 @@ begin
 
 	
 	set v_id_currency = system_currency();
-	call slave_currency_rate_stime(v_datev, v_currency_rate);
+	call slave_currency_rate_st(v_datev, v_currency_rate);
 
 --	select id_voc_names into v_id_dest from guidefirms where firmid = v_firm_id;
 --	    message 'v_id_dest = ', v_id_dest to client;
@@ -3828,7 +3828,7 @@ begin
 	end if;
 
 	set v_id_mat = get_nextid('mat');
-	call slave_select_stime(v_mat_nu, 'mat', 'max(nu)', 'id_jmat = ' + convert(varchar(20), v_id_jmat));
+	call slave_select_st(v_mat_nu, 'mat', 'max(nu)', 'id_jmat = ' + convert(varchar(20), v_id_jmat));
 	set v_mat_nu = convert(varchar(20), convert(integer, isnull(v_mat_nu, 0)) + 1);
 	select intQuant into v_cena from sDmcRez where numDoc = new_name.numOrder and nomnom = new_name.nomNom;
 
@@ -3881,10 +3881,10 @@ begin
 
 	call wf_otgruz_remove (
 		v_id_jmat
-		,'stime'
+		,'st'
 	);
 
-	if v_sysname is not null and v_sysname != 'stime' then
+	if v_sysname is not null and v_sysname != 'st' then
 		call wf_otgruz_remove (
 			v_id_jmat
 			,v_sysname
@@ -3935,10 +3935,10 @@ begin
 			,v_id_jmat
 			,new_name.quant
 			,v_cena
-			,'stime'
+			,'st'
 		);
 
-		if v_sysname is not null and v_sysname != 'stime' then
+		if v_sysname is not null and v_sysname != 'st' then
 			call wf_otgruz_quant(
 				v_id_mat
 				,v_id_jmat
@@ -4016,7 +4016,7 @@ begin
 
 	
 	set v_id_currency = system_currency();
-	call slave_currency_rate_stime(v_datev, v_currency_rate);
+	call slave_currency_rate_st(v_datev, v_currency_rate);
 
 --	select id_voc_names into v_id_dest from guidefirms where firmid = v_firm_id;
 --	    message 'v_id_dest = ', v_id_dest to client;
@@ -4041,7 +4041,7 @@ begin
 	end if;
 
 	set v_id_mat = get_nextid('mat');
-	call slave_select_stime(v_mat_nu, 'mat', 'max(nu)', 'id_jmat = ' + convert(varchar(20), v_id_jmat));
+	call slave_select_st(v_mat_nu, 'mat', 'max(nu)', 'id_jmat = ' + convert(varchar(20), v_id_jmat));
 	set v_mat_nu = convert(varchar(20), convert(integer, isnull(v_mat_nu, 0)) + 1);
 --	select intQuant into v_cena from sDmcRez where numDoc = new_name.numOrder and nomnom = new_name.nomNom;
 

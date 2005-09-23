@@ -1,6 +1,6 @@
 --
 -- Триггера и функции которые обеспечивают коммуникацию
--- от комтеховской базы sTime к базе Приора
+-- от комтеховской базы st к базе Приора
 --	Описание Функциональности:
 --		1. При заведении приходных накладных средствами Комтеха
 -- добавляются нужные данные в базу приора.
@@ -26,7 +26,7 @@ begin
 	set no_echo = 0;
 
   	begin
-		select @prior_jmat into no_echo; 
+		select @prr_jmat into no_echo; 
 	exception 
 		when other then
 			set no_echo = 0;
@@ -49,28 +49,28 @@ begin
 		+ ', '''+ convert(varchar(25),new_name.dat) + ''''
 		+ ', ''оприходовано через Komtex'''
 		;
-		call admin.slave_insert_prior('sdocs',v_fields,v_values);
-		call admin.slave_select_prior(v_numdoc, 'sdocs', 'numdoc', 'id_jmat = ' + convert(varchar(10), new_name.id));
+		call admin.slave_insert_prr('sdocs',v_fields,v_values);
+		call admin.slave_select_prr(v_numdoc, 'sdocs', 'numdoc', 'id_jmat = ' + convert(varchar(10), new_name.id));
 		set new_name.nu = v_numdoc;
 	end if;
 
 	if update(id_s) then
-		call admin.slave_select_prior(cur_id,'sguidesource','sourceId','id_voc_names = '+convert(varchar(20),new_name.id_s));
+		call admin.slave_select_prr(cur_id,'sguidesource','sourceId','id_voc_names = '+convert(varchar(20),new_name.id_s));
 		if cur_Id is not null then
 		    set v_fields='sourId';
 		    set v_values = convert(varchar(25),cur_id);
 				set v_where = 'id_jmat = ' + convert(varchar(20), old_name.id);
-			call admin.slave_update_prior('sdocs',v_fields,v_values,v_where);
+			call admin.slave_update_prr('sdocs',v_fields,v_values,v_where);
 		end if;
 	end if;
 	if update(id_d) then
-		call admin.slave_select_prior (cur_id, 'sguidesource', 'sourceId', 'id_voc_names = ' + convert(varchar(20), new_name.id_d));
+		call admin.slave_select_prr (cur_id, 'sguidesource', 'sourceId', 'id_voc_names = ' + convert(varchar(20), new_name.id_d));
 		if cur_Id is not null then
 			set v_fields='destId';
 			set v_values
 			=convert(varchar(25),cur_id);
 				set v_where = 'id_jmat = ' + convert(varchar(20), old_name.id);
-			call admin.slave_update_prior('sdocs',v_fields,v_values,v_where);
+			call admin.slave_update_prr('sdocs',v_fields,v_values,v_where);
 		end if;
 	end if
 end;
@@ -105,7 +105,7 @@ begin
 	set no_echo = 0;
 
   	begin
-		select @prior_mat into no_echo; 
+		select @prr_mat into no_echo; 
 	exception 
 		when other then
 			set no_echo = 0;
@@ -129,7 +129,7 @@ begin
 		;
 	
 		--message 'new_name.id_jmat', new_name.id_jmat to client;
-		call admin.slave_insert_prior('sdmc',v_fields,v_values);
+		call admin.slave_insert_prr('sdmc',v_fields,v_values);
 		--set new_name.nu = v_numdoc;
 	end if;
 end;
@@ -153,7 +153,7 @@ begin
 	set no_echo = 0;
 
   	begin
-		select @prior_mat into no_echo; 
+		select @prr_mat into no_echo; 
 	exception 
 		when other then
 			set no_echo = 0;
@@ -164,15 +164,15 @@ begin
 	end if;
 
 	if update(kol1) then
-		call admin.slave_update_prior('sdmc','quant',convert(varchar(20),new_name.kol1),'id_mat = '+convert(varchar(20),old_name.id) )
+		call admin.slave_update_prr('sdmc','quant',convert(varchar(20),new_name.kol1),'id_mat = '+convert(varchar(20),old_name.id) )
 	end if;
 	if update(id_inv) then
 		select nomen into v_nomNom from inv where id = new_name.id_inv;
-		call admin.slave_update_prior('sdmc','nomnom',''''+v_nomNom + '''','id_mat = '+convert(varchar(20),old_name.id) )
+		call admin.slave_update_prr('sdmc','nomnom',''''+v_nomNom + '''','id_mat = '+convert(varchar(20),old_name.id) )
 	end if;
 	if update(id_jmat) then
 		select nu into v_numDoc from jmat where id = new_name.id_jmat;
-		call admin.slave_update_prior('sdmc','numDoc',''''+v_numDoc + '''','id_mat = '+convert(varchar(20),old_name.id) )
+		call admin.slave_update_prr('sdmc','numDoc',''''+v_numDoc + '''','id_mat = '+convert(varchar(20),old_name.id) )
 	end if
 end;
 
@@ -194,7 +194,7 @@ begin
 	message 'no_echo = ' + convert(varchar(20), no_echo) to log;
 
   	begin
-		select @prior_mat into no_echo; 
+		select @prr_mat into no_echo; 
 	exception 
 		when other then
 			message 'Exception! no_echo = ' + convert(varchar(20), no_echo) to log;
@@ -205,9 +205,9 @@ begin
 		return;
 	end if;
 
-	message 'before delete from prior :: no_echo = ' + convert(varchar(20), no_echo) to client;
-    call admin.slave_delete_prior('sdmc','id_mat = '+convert(varchar(20),old_name.id) );
-	message 'after delete from prior :: no_echo = ' + convert(varchar(20), no_echo) to client;
+	message 'before delete from prr :: no_echo = ' + convert(varchar(20), no_echo) to client;
+    call admin.slave_delete_prr('sdmc','id_mat = '+convert(varchar(20),old_name.id) );
+	message 'after delete from prr :: no_echo = ' + convert(varchar(20), no_echo) to client;
 end;
 
 
@@ -225,7 +225,7 @@ begin
 	set no_echo = 0;
 
   	begin
-		select @prior_jmat into no_echo; 
+		select @prr_jmat into no_echo; 
 	exception 
 		when other then
 			set no_echo = 0;
@@ -235,7 +235,7 @@ begin
 		return;
 	end if;
 
-    call admin.slave_delete_prior('sdocs','id_jmat = '+convert(varchar(20),old_name.id) );
+    call admin.slave_delete_prr('sdocs','id_jmat = '+convert(varchar(20),old_name.id) );
 end;
 
 

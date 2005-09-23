@@ -6,27 +6,27 @@ shift
 set ALIAS_DSN=%1
 if "%ALIAS_DSN%"=="" goto ext_dsn
 
-if /i not %ALIAS_DSN%==prior goto check_stime 
-set DSN=%DSN_PRIOR%
-if "%DSN%"=="" set DSN=DSN=prior;UID=dba;PWD=sql 
+if /i not %ALIAS_DSN%==prior goto check_st 
+set DSN=%DSN_prr%
+if "%DSN%"=="" set DSN=DSN=prr;UID=dba;PWD=sql 
 goto check_isql_home
 
-:check_stime
+:check_st
 if /i not %ALIAS_DSN%==stime goto check_pm
-set DSN=%DSN_STIME%
-if "%DSN%"=="" set DSN=DSN=stime;UID=admin;PWD=z 
+set DSN=%DSN_st%
+if "%DSN%"=="" set DSN=DSN=st;UID=admin;PWD=z 
 goto check_isql_home
 
 :check_pm
 if /i not %ALIAS_DSN%==pm goto check_mm 
 set DSN=%DSN_PM%
-if "%DSN%"=="" set DSN=DSN=accountN;UID=admin;PWD=z 
+if "%DSN%"=="" set DSN=DSN=pm;UID=admin;PWD=z 
 goto check_isql_home
 
 :check_mm
 if /i not %ALIAS_DSN%==mm goto ext_dsn
 set DSN=%DSN_MM%
-if "%DSN%"=="" set DSN=DSN=markmaster;UID=admin;PWD=z 
+if "%DSN%"=="" set DSN=DSN=mm;UID=admin;PWD=z 
 goto check_isql_home
 
 :ext_dsn

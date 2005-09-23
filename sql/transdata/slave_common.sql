@@ -211,7 +211,7 @@ create function slave_select (in table_name char(50), in field_claus char(256), 
 returns varchar(1000)
 begin
 	declare ret varchar(1000);
-	call slave_select_prior (ret, table_name, field_claus, where_claus);
+	call slave_select_prr (ret, table_name, field_claus, where_claus);
 	return ret;
 end;
 */

@@ -138,7 +138,7 @@ end;
 
 
 --****************************************************************
---              INTEGRATION PRIOR/COMTEX
+--              INTEGRATION prr/COMTEX
 --****************************************************************
 
 if exists (select 1 from sysprocedure where proc_name = 'get_standalone') then

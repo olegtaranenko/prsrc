@@ -67,7 +67,7 @@ begin
 	FOR UPDATE 
 	DO
 
-		select id into v_folder_id from voc_names_stime where nm = 'Склады';
+		select id into v_folder_id from voc_names_st where nm = 'Склады';
 	
 		
 		call insert_host('voc_names', 'id, nm, belong_id', 
@@ -109,7 +109,7 @@ begin
 	FOR UPDATE 
 	DO
 
-		select id into v_folder_id from voc_names_stime where nm = 'Объекты затрат';
+		select id into v_folder_id from voc_names_st where nm = 'Объекты затрат';
 	
 		
 		call insert_host('voc_names', 'id, nm, belong_id', 
@@ -146,10 +146,10 @@ begin
 	
 	
 	-- корень
-	select id into v_folder_id from voc_names_stime where nm = 'Сторонние организации' and belong_Id = 0;
+	select id into v_folder_id from voc_names_st where nm = 'Сторонние организации' and belong_Id = 0;
 
 	-- Получить id папки поставщиков
-	select id into v_postav_id from voc_names_stime where nm = postav_name and belong_id = v_folder_id and is_group = 1;
+	select id into v_postav_id from voc_names_st where nm = postav_name and belong_id = v_folder_id and is_group = 1;
 	if v_postav_id is null then
 		set v_postav_id = get_nextid ('voc_names');
 		call insert_host('voc_names', 'id, nm, belong_id, is_group', 
@@ -163,7 +163,7 @@ begin
 	end if;
 
 	-- Получить id папки заказчиков
-	select id into v_zakaz_id from voc_names_stime where nm = zakaz_name and belong_id = v_folder_id and is_group = 1;
+	select id into v_zakaz_id from voc_names_st where nm = zakaz_name and belong_id = v_folder_id and is_group = 1;
 	if v_zakaz_id is null then
 		set v_zakaz_id = get_nextid ('voc_names');
 
@@ -611,16 +611,16 @@ begin
 
 
 	-- Находим Id папки - фирм-контрагентов
-	select nm into v_belong_name from voc_names_stime where id = p_belong_id;
+	select nm into v_belong_name from voc_names_st where id = p_belong_id;
 	
 	-- имя папки, куда будем переносить унаследованные элементы
 	set v_old_folder_name = v_belong_name + ' (old)';
 	
-	if exists (select 1 from voc_names_stime where belong_Id = p_belong_id and nm = v_old_folder_name) then
+	if exists (select 1 from voc_names_st where belong_Id = p_belong_id and nm = v_old_folder_name) then
 		return;
 	end if;
 	
---	call slave_select_stime ('voc_names', id_folder_name, 'id', 'nm = ''' + folder_name + '''');
+--	call slave_select_st ('voc_names', id_folder_name, 'id', 'nm = ''' + folder_name + '''');
 
 
 	-- Получить общий id, который будет иметь папка для унаследованных элементов.
@@ -663,12 +663,12 @@ begin
 	declare v_belong_name varchar(255);
 
 	-- Находим Id папки
-	select nm into v_belong_name from inv_stime where id = p_belong_id;
+	select nm into v_belong_name from inv_st where id = p_belong_id;
 	
 	-- имя папки, куда будем переносить унаследованные элементы
 	set v_old_folder_name = v_belong_name + ' (old)';
 	
-	if exists (select 1 from inv_stime where belong_Id = p_belong_id and nm = v_old_folder_name) then
+	if exists (select 1 from inv_st where belong_Id = p_belong_id and nm = v_old_folder_name) then
 		return;
 	end if;
 	
@@ -754,7 +754,7 @@ begin
 		+', ''''' + 		convert(varchar(20), v_id_cur) + ''''''
 		+', ''''' + convert(varchar(20), '2005-03-17', 112) +''''''
 		+', ''''' + convert(varchar(20), v_currency_rate) + ''''''
-		+', ''''Установлено в Prior'''''
+		+', ''''Установлено в prr'''''
 	;
 	
 --	set v_where = 'id_cur = ' + convert(varchar(20), v_id) + 'and dat ' + convert(varchar(20), now, 112);
@@ -793,10 +793,10 @@ begin
 
 	message 'legacy_income_order() started ...' to client;
 
-	set v_legacy = 'Переход на режим совместного использования Prior/Komtex (сгенерировано)';
+	set v_legacy = 'Переход на режим совместного использования prr/Komtex (сгенерировано)';
 	select trans_date into v_gemacht from system;
 
---	call slave_select_stime(v_gemacht, 'jmat', 'count(*)', 'osn = ''' + v_legacy + '''');
+--	call slave_select_st(v_gemacht, 'jmat', 'count(*)', 'osn = ''' + v_legacy + '''');
 	if v_gemacht is not null then
 		message 'Входящие остатки уже загружены' to client;
 		return;
@@ -825,8 +825,8 @@ begin
     group by nomnom, id;
 
 --    begin
-		call call_host('block_table', '''prior'', ''jmat''');
-		call call_host('block_table', '''prior'', ''mat''');
+		call call_host('block_table', '''prr'', ''jmat''');
+		call call_host('block_table', '''prr'', ''mat''');
 
         -- глобальный для загловков накладных
 		set v_id_jmat = get_nextid('jmat');
@@ -835,7 +835,7 @@ begin
 		set v_id_mat = get_nextid('mat');
 --		set v_currency_rate = system_currency_rate();
 		set v_id_currency = system_currency();
-		call slave_currency_rate_stime(v_datev, v_currency_rate);
+		call slave_currency_rate_st(v_datev, v_currency_rate);
 
 
    	   	for sklad_cur as s dynamic scroll cursor for
@@ -843,13 +843,13 @@ begin
 			from sguidesource
 			where sourceid <= -1001
 		do
-			call slave_select_stime(v_nu, 'jmat', 'max(nu)', '1=1');
+			call slave_select_st(v_nu, 'jmat', 'max(nu)', '1=1');
 			set v_nu = convert(varchar(20), convert(integer, isnull(v_nu, 0)) + 1);
 			select id_voc_names into v_id_inventar from sguidesource where sourceName = 'Инвентаризация';
 
 
 			call wf_insert_jmat (
-				'stime'
+				'st'
 				,'1023' --инветаризация
 				,v_id_jmat
 				,now() --v_jmat_date
@@ -878,7 +878,7 @@ begin
 					select cost, perList into v_cost, v_perList from sguidenomenk where nomnom = r_nomnom;
 
 					call wf_insert_mat (
-						'stime'
+						'st'
 						,v_id_mat
 						,v_Id_jmat
 						,r_nomenklature_id
@@ -900,8 +900,8 @@ begin
 		end for;
 
 
-		call call_host('unblock_table', '''prior'', ''jmat''');
-		call call_host('unblock_table', '''prior'', ''mat''');
+		call call_host('unblock_table', '''prr'', ''jmat''');
+		call call_host('unblock_table', '''prr'', ''mat''');
 --	exception 
 --		when others then
 --			set v_perList = v_perList;

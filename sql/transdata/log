@@ -11,7 +11,7 @@ D:\devNext\sql\transdata>set ALIAS_DSN=prior
 
 D:\devNext\sql\transdata>if "prior" == "" goto ext_dsn 
 
-D:\devNext\sql\transdata>if /I not prior == prior goto check_stime  
+D:\devNext\sql\transdata>if /I not prior == prior goto check_st  
 
 D:\devNext\sql\transdata>set DSN= 
 
