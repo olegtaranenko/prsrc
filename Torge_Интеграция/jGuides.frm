@@ -38,7 +38,7 @@ Begin VB.Form jGuidePurpose
    End
    Begin VB.Frame Frame1 
       BackColor       =   &H00E0E0E0&
-      BorderStyle     =   0  'Нет
+      BorderStyle     =   0  'None
       Height          =   315
       Left            =   1560
       TabIndex        =   13
@@ -103,7 +103,7 @@ Begin VB.Form jGuidePurpose
       Width           =   2835
    End
    Begin VB.Label laPurpose 
-      Alignment       =   2  'Центровка
+      Alignment       =   2  'Center
       Caption         =   "Назначение"
       Height          =   195
       Left            =   1740
@@ -321,7 +321,7 @@ End Sub
 Sub loadListboxes()
 
 'If Regim = "select" And debit < 255 Then
-If Left$(Regim, 6) = "select" And debit < 255 Then
+If Left$(Regim, 6) = "select" And debit <> "255" Then
     Journal.loadLbFromSchets lbDebit, debit, subDebit
     Journal.loadLbFromSchets lbKredit, kredit, subKredit
     loadLbFromPurpose lbPurpose, purpose

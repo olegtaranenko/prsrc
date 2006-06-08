@@ -195,7 +195,8 @@ ElseIf Regim = "fromFiltr" Then
     Filtr.lbFirm.AddItem lb.Text, 0
     Filtr.lbFirm.Selected(0) = True
 End If
-    
+refreshTimestamp gNzak
+
 Unload Me
 
 End Sub

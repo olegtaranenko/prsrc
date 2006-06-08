@@ -65,6 +65,179 @@ begin
 end;
 
 
+if exists (select 1 from sysprocedure where proc_name = 'slave_bind_zakaz') then
+	drop function slave_bind_zakaz;
+end if;
+
+create 
+	procedure slave_bind_zakaz
+	(
+		  out v_orderNum varchar(150)
+		, p_server     varchar(50) // от какого сервера
+		, p_invoice    varchar(10) // номер счета, к которому нужно найти все заказы
+		, in p_summa      float        // сумма в рублях
+		, in p_sc_credit  varchar(10)
+		, in p_id_xoz     integer default null   // можно ли делать сразу update?
+	)
+begin
+    declare v_sep            char(1)    ;
+    declare v_order_ordered  float      ;
+    declare v_order_paid     float      ;
+    declare v_balans_ok      integer    ;
+	declare v_ordered        float      ;
+    declare v_order_count    integer    ;
+	declare v_invCode        varchar(10);
+	declare v_ventureId      integer    ;
+	declare v_summav         float      ;
+
+    set v_balans_ok = 0;
+    set v_sep = '';
+    set v_orderNum = '';
+
+    select invCode, ventureId
+    into v_invCode, v_ventureId
+    from guideventure 
+    where sysname = p_server;
+
+    message 'in slave_bind_zakaz_', @@servername to client;
+
+	if v_invCode is not null and char_length(p_invoice) > 0 then
+		set v_order_count = 0;
+		set v_orderNum = '';
+		set v_order_ordered = 0.0;
+		set v_order_paid = 0.0;
+
+		set v_summav = p_summa / system_currency_rate();
+
+
+		for v_server_name as a dynamic scroll cursor for
+			select numOrder
+				, isnull(ordered,0) as ordered
+				, isnull(paid,0) as paid 
+			from orders 
+			where invoice = v_invCode + p_invoice 
+				and isnull(ordered, 0) != isnull(paid, 0)
+			order by invoice desc
+		do
+			set v_order_count = v_order_count + 1;
+			set v_orderNum = v_orderNum + v_sep + convert(varchar(20), numOrder);
+			set v_order_ordered = v_order_ordered + ordered;
+			set v_order_paid  = v_order_paid + paid;
+			set v_sep = '/';
+		end for;
+
+
+
+		if v_order_count > 0 then
+			if round(v_order_ordered, 2) = round(v_order_paid + v_summav, 2) then
+				set v_balans_ok = 1;
+			else
+				set v_orderNum = 'Заказ(ы): ' + v_orderNum + '. Ошибка при контроле суммы. '
+					+ ' зак-но всего='+convert(varchar(20), round(v_order_ordered, 2))
+					+ ';опл-но раньше='+convert(varchar(20), round(v_order_paid, 2))
+					+ ';сумма тек.оплаты='+convert(varchar(20), round(v_summav, 2))
+				;
+			end if;
+			if p_sc_credit != '62' then
+				set v_orderNum = 'Заказ(ы): ' + v_orderNum +'. Сумма совпадает, но счет Неправильный (дб. 62).';
+				set v_balans_ok = 0;
+			end if;
+		end if;
+
+		if v_balans_ok = 1 then
+			for v_server_name as aa dynamic scroll cursor for
+				select paid from orders 
+				where invoice like v_invCode + p_invoice 
+					and isnull(ordered, 0) != isnull(paid, 0)
+				for update
+			do
+
+				UPDATE orders set paid = ordered WHERE CURRENT OF aa;
+
+			end for;
+		end if;
+
+	-- Теперь проверяем в продажах
+		if v_order_count = 0 then
+
+			for v_server_name as b dynamic scroll cursor for
+				select numOrder
+					, isnull(paid,0) as paid 
+				from bayorders 
+				where invoice like v_invCode + p_invoice 
+				order by invoice desc
+			do
+				-- в bayorders поле ordered не заполняется,
+				-- а высчитывается динамически :-(
+				select sum (d.quantity / n.perlist * d.intquant) 
+				into v_ordered
+				from sdmcrez d
+				join sguidenomenk n on d.nomnom = n.nomnom
+				where numdoc = numOrder;
+				    
+				if isnull(v_ordered, 0) != isnull(paid, 0) then 
+					set v_order_count = v_order_count + 1;
+					set v_orderNum = v_orderNum + v_sep + convert(varchar(20), numOrder);
+					set v_order_ordered = v_order_ordered + v_ordered;
+					set v_order_paid  = v_order_paid + paid;
+					set v_sep = '/';
+				end if;
+			end for;
+	    
+	    
+			if v_order_count > 0 then
+				if round(v_order_ordered, 2) = round(v_order_paid + v_summav, 2) then
+					set v_balans_ok = 1;
+				else
+					set v_orderNum = 'Заказ(ы): ' + v_orderNum + ' Ошибка при контроле суммы. '
+						+ ' зак-но всего='+convert(varchar(20), round(v_order_ordered, 2))
+						+ ';опл-но раньше='+convert(varchar(20), round(v_order_paid, 2))
+						+ ';сумма тек.оплаты='+convert(varchar(20), round(v_summav, 2))
+					;
+				end if;
+				if p_sc_credit != '62' then
+					set v_orderNum = 'Заказ(ы): ' + v_orderNum +'. Ошибка при контроле номера счета (' + p_sc_credit + ')';
+					set v_balans_ok = 0;
+				end if;
+			end if;
+	    
+			if v_balans_ok = 1 then
+				for v_server_name as bu dynamic scroll cursor for
+					select numorder, paid 
+					from bayorders 
+					where invoice = v_invCode + p_invoice 
+					for update
+				do
+	    
+					select sum (d.quantity / n.perlist * d.intquant) 
+					into v_ordered
+					from sdmcrez d
+					join sguidenomenk n on d.nomnom = n.nomnom
+					where numdoc = numOrder;
+	            
+					if isnull(v_ordered, 0) != isnull(paid, 0) then 
+						UPDATE bayorders set paid = v_ordered WHERE CURRENT OF bu;
+					end if;
+	    
+				end for;
+			end if;
+
+		end if;
+	end if;
+
+	if p_id_xoz is not null and char_length(v_orderNum) > 0 then
+		update ybook set ordersNum = 
+				if isnull(ordersNum, '') != '' 
+				then ordersNum + ' ' + v_orderNum 
+				else v_orderNum 
+				endif
+		where id_xoz = p_id_xoz and ventureId = v_ventureId;
+		;
+	end if;
+	
+end;
+
+
 if exists (select 1 from sysprocedure where proc_name = 'slave_put_xoz') then
 	drop procedure slave_put_xoz;
 end if;
@@ -84,22 +257,27 @@ create
 		, p_id_curr    integer
 		, p_detail     varchar(99)
 		, p_purposeId  integer
+		, p_kredDebitor integer
+		, p_invoice       varchar(10)
 	)
 begin
     declare v_ventureid integer;
     declare v_currency_rate float;
     declare v_currency float;
     declare v_date datetime;
+    declare v_orderNum       varchar(150);
+
     if p_dat is not null and char_length(p_dat) > 0 then
 	    set v_date = convert(datetime, p_dat);
 	else
 		set v_date = now();
 	end if;
 
-    select ventureid into v_ventureid from guideventure where sysname = p_server;
-    if v_ventureid is null then
-    	raiserror 17000, 'Сервер %1! не существует', p_server;
-    end if;
+    select ventureid
+    into v_ventureid
+    from guideventure 
+    where sysname = p_server;
+
 
 	set v_currency_rate = system_currency_rate();
 	set v_currency = p_sum / v_currency_rate;
@@ -108,6 +286,8 @@ begin
 	set p_debit_sub   = cast_acc (p_debit_sub  );
 	set p_credit_sc   = cast_acc (p_credit_sc  );
 	set p_credit_sub  = cast_acc (p_credit_sub );
+
+	call slave_bind_zakaz (v_orderNum, p_server, p_invoice, p_sum, p_credit_sc);
 
 
 	insert into yBook(
@@ -133,13 +313,12 @@ begin
 		, p_debit_sub
 		, p_credit_sc
 		, p_credit_sub
-		, 0
-		, ''
+		, p_kredDebitor
+		, v_orderNum
 		, p_purposeId
 		, p_detail
-		, 'из Komtex'
+		, p_invoice
 	);
-
 end;
 
 

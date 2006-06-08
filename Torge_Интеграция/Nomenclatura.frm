@@ -1,6 +1,6 @@
 VERSION 5.00
 Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCTL.OCX"
-Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "msflxgrd.ocx"
+Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Nomenklatura 
    BackColor       =   &H8000000A&
    Caption         =   "Справочник по номенклатуре"
@@ -34,7 +34,7 @@ Begin VB.Form Nomenklatura
       Width           =   855
    End
    Begin VB.Frame Frame1 
-      BorderStyle     =   0  'Нет
+      BorderStyle     =   0  'None
       Caption         =   "Frame1"
       Height          =   3435
       Left            =   4860
@@ -119,8 +119,8 @@ Begin VB.Form Nomenklatura
          Width           =   975
       End
       Begin VB.Label lab1 
-         Appearance      =   0  'Плоска
-         BorderStyle     =   1  'Фиксировано один
+         Appearance      =   0  'Flat
+         BorderStyle     =   1  'Fixed Single
          Caption         =   " "
          ForeColor       =   &H80000008&
          Height          =   3435
@@ -167,7 +167,7 @@ Begin VB.Form Nomenklatura
    End
    Begin VB.Frame frTitle 
       BackColor       =   &H00FF0000&
-      BorderStyle     =   0  'Нет
+      BorderStyle     =   0  'None
       Height          =   315
       Left            =   2880
       TabIndex        =   24
@@ -175,7 +175,7 @@ Begin VB.Form Nomenklatura
       Visible         =   0   'False
       Width           =   7335
       Begin VB.Label laTitle 
-         Alignment       =   1  'Правая привязка
+         Alignment       =   1  'Right Justify
          BackColor       =   &H0080FFFF&
          Caption         =   "laTitle"
          Height          =   255
@@ -399,7 +399,7 @@ Begin VB.Form Nomenklatura
       Width           =   1275
    End
    Begin VB.Label laQuant 
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Height          =   315
       Left            =   4260
       TabIndex        =   5
@@ -433,6 +433,12 @@ Begin VB.Form Nomenklatura
          Caption         =   "Отменить"
          Visible         =   0   'False
       End
+      Begin VB.Menu mnSep11 
+         Caption         =   "-"
+      End
+      Begin VB.Menu mnCost 
+         Caption         =   "Себестоимость (из Komtex)"
+      End
    End
    Begin VB.Menu mnContext2 
       Caption         =   "Context2"
@@ -461,6 +467,18 @@ Begin VB.Form Nomenklatura
       Begin VB.Menu mnKartaAdd 
          Caption         =   "Добавить к Карточке"
          Visible         =   0   'False
+      End
+      Begin VB.Menu mnKartaVenture 
+         Caption         =   "Движения по предприятиям"
+      End
+      Begin VB.Menu mnKartaVentureAdd 
+         Caption         =   "Добавить по предприятиям"
+      End
+      Begin VB.Menu mnSep4 
+         Caption         =   "-"
+      End
+      Begin VB.Menu mnPriceHistory 
+         Caption         =   "История изменения цены"
       End
    End
    Begin VB.Menu mnContext3 
@@ -565,6 +583,20 @@ Dim nkCena2W As Integer
 Dim nkWebFormula As Integer 'скрыта
 Dim nkYesNo As Integer
 Dim nkMark As Integer
+
+Private Sub setMnPriceHistoryStatus()
+Dim cnt As Integer
+    sql = "select count(*) from sPriceHistory where nomnom = '" & Grid.TextMatrix(mousRow, nkNomer) & "'"
+    byErrSqlGetValues "##05.05", sql, cnt
+    If cnt > 0 Then
+        mnPriceHistory.Visible = True
+        mnSep4.Visible = True
+    Else
+        mnPriceHistory.Visible = False
+        mnSep4.Visible = False
+    End If
+    
+End Sub
 
 Private Sub cbInside_Click()
 'If isRegimLoad Then loadKlassNomenk
@@ -1061,6 +1093,7 @@ End Function
 Function valueToNomencField(myErr As String, val As Variant, field As String) As Boolean
 valueToNomencField = False
 
+On Error GoTo SqlFail
 sql = "SELECT * FROM sGuideNomenk WHERE nomNom = '" & gNomNom & "'"
 Set tbNomenk = myOpenRecordSet(myErr, sql, dbOpenForwardOnly)
 'Set tbNomenk = myOpenRecordSet(myErr, "sGuideNomenk", dbOpenTable)
@@ -1084,6 +1117,9 @@ If Not tbNomenk.BOF Then
     valueToNomencField = True
 End If
 tbNomenk.Close
+Exit Function
+SqlFail:
+errorCodAndMsg "##valueToNomenkField"
 End Function
 
 
@@ -1224,7 +1260,7 @@ End Sub
 
 Sub loadKlass()
 Dim key As String, pKey As String, k() As String, pK()  As String
-Dim i As Integer, iErr As Integer
+Dim i As Integer, iErr As Integer, groupText As String
 
 If Regim = "sourOborot" Then
 '    i = i
@@ -1271,7 +1307,7 @@ If Not tbKlass.BOF Then
 NXT1:
     tbKlass.MoveNext
  Wend
- tv.Nodes.Item("all").Text = "Весь перечень"
+ tv.Nodes.Item("all").Text = "00 Весь перечень"
 End If
 tbKlass.Close
 
@@ -1291,6 +1327,29 @@ Wend
 tv.Nodes.Item("k0").Expanded = True
 
 'tv.SetFocus
+If Regim = "" Then
+    Set Node = tv.Nodes.Add("all", tvwLast, "p0", "Пересчет себестоимости номенклатуры")
+    
+    sql = "SELECT pbc.*, k.klassName from sPriceBulkChange pbc " _
+    & " join sGuideKlass k on k.klassId = pbc.guide_klass_id " _
+    & " order by xDate"
+    
+    Set tbKlass = myOpenRecordSet("##102.1", sql, dbOpenForwardOnly)
+    If tbKlass Is Nothing Then End
+    If Not tbKlass.BOF Then
+     While Not tbKlass.EOF
+        If tbKlass!guide_klass_id <> 0 Then
+            groupText = " по группе " + tbKlass!klassName
+        Else
+            groupText = " по всей номенклатуре"
+        End If
+        
+        Set Node = tv.Nodes.Add("p0", tvwChild, "p" + CStr(tbKlass!id), Format(tbKlass!xDate, "dd.mm.yyyy hh:mm") + groupText)
+        tbKlass.MoveNext
+     Wend
+    End If
+    tbKlass.Close
+End If ' пересчет себестоимости
 
 Exit Sub
 ERR1:
@@ -1335,8 +1394,8 @@ isRegimLoad = False
 End Sub
 
 Private Sub Grid_Click()
-mousCol = Grid.MouseCol
-mousRow = Grid.MouseRow
+'mousCol = Grid.MouseCol
+'mousRow = Grid.MouseRow
 If quantity = 0 Then Exit Sub
 If mousRow = 0 Then
     Grid.CellBackColor = Grid.BackColor
@@ -1453,6 +1512,7 @@ If noClick Then Exit Sub
 If quantity > 0 And frmMode = "" Then
  mousRow = Grid.row
  mousCol = Grid.col
+ setMnPriceHistoryStatus
  gNomNom = Grid.TextMatrix(mousRow, nkNomer) 'нужно и для правой Mouse
  
  oldCellColor = Grid.CellBackColor
@@ -1564,11 +1624,11 @@ ElseIf Button = 2 And frmMode = "" Then
         If KartaDMC.Grid.Visible Then mnKartaAdd.Visible = True
     End If
     If quantity > 0 And Grid.row <> Grid.RowSel Then
-        ReDim NN(Grid.RowSel - Grid.row + 1)
+        ReDim NN(Abs(Grid.RowSel - Grid.row) + 1)
         For i = Grid.row To Grid.RowSel
             NN(i - Grid.row + 1) = Grid.TextMatrix(i, nkNomer) 'только для перемещения
         Next i
-        mnKarta.Visible = False
+'        mnKarta.Visible = False
 '        mnKartaAdd.Visible = False
         mnAdd2.Visible = False
         GoTo CC
@@ -1913,6 +1973,51 @@ Private Sub mnCopy_Click()
 nomenkAdd "obraz"
 End Sub
 
+Private Sub mnCost_Click()
+Dim msgOk As VbMsgBoxResult
+Dim tvKlass As String
+Dim tvNode As Node
+Dim klassId As String
+Dim newKey As String, xDate As String, groupText As String
+Dim queryTimeout As Variant
+
+    msgOk = MsgBox("Вы уверены, что хотите пересчитать себестоимоть?" _
+        , vbOKCancel, "Предупреждение")
+    If msgOk <> vbOK Then
+        Exit Sub
+    End If
+    
+    Set tvNode = tv.Nodes(tv.SelectedItem.Index)
+    klassId = Mid(tvNode.key, 2)
+    
+    sql = "select wf_cost_bulk_change( " & klassId & ")"
+    queryTimeout = myBase.queryTimeout
+    myBase.queryTimeout = 6000
+    
+    byErrSqlGetValues "##nomenklatura.1", sql, newKey
+    myBase.queryTimeout = queryTimeout
+    If newKey <> "" Then
+        sql = "select xDate from sPriceBulkChange where id = " & newKey
+        byErrSqlGetValues "##nomenklatura.3", sql, xDate
+        If klassId <> "0" Then
+            groupText = " по группе " + tvNode.Text
+        Else
+            groupText = " по всей номенклатуре группе "
+        End If
+        Set tvNode = tv.Nodes.Add("p0", tvwChild, "p" + newKey, CStr(xDate) + groupText)
+        
+        MsgBox "Себестоимоть номенклатуры по категории '" & tvNode.Text & "' успешно пересчитана." _
+            , vbOKOnly, "Предупреждение"
+        tvNode.EnsureVisible
+        tv.SelectedItem = tvNode
+        tv_NodeClick tvNode
+    Else
+        MsgBox "Себестоимость номенклатуры по категории '" & tvNode.Text & "' не изменилась." _
+            , vbOKOnly, "Предупреждение"
+    End If
+    
+End Sub
+
 Private Sub mnDel_Click()
 Dim i As Integer
 If MsgBox("Для удаления класса  нажмите <Да>." & Chr(13) & Chr(13) & _
@@ -2067,6 +2172,45 @@ KartaDMC.Show
 Me.MousePointer = flexDefault
 End Sub
 
+Private Sub mnKartaVenture_Click()
+Dim selectedRows As Integer
+Dim i As Integer
+Dim curRow As Integer, startRow As Integer, stopRow As Integer
+    
+    selectedRows = Abs(Grid.row - Grid.RowSel) + 1
+    ReDim DMCnomNom(selectedRows)
+    
+    If Grid.row >= Grid.RowSel Then
+        startRow = Grid.RowSel
+        stopRow = Grid.row
+    Else
+        startRow = Grid.row
+        stopRow = Grid.RowSel
+    End If
+    
+    i = 0
+    curRow = Grid.row
+    For curRow = startRow To stopRow
+        DMCnomNom(i + 1) = Grid.TextMatrix(curRow, nkNomer)
+        i = i + 1
+    Next curRow
+    
+    Me.MousePointer = flexHourglass
+    If VentureHistory.ckPerList.value <> 1 Then
+        VentureHistory.ckPerList.value = 1
+    Else
+        VentureHistory.fillGrid
+    End If
+    VentureHistory.Show
+    Me.MousePointer = flexDefault
+    
+End Sub
+
+Private Sub mnPriceHistory_Click()
+    ' История изменения цены
+    PriceHistory.Show
+End Sub
+
 Private Sub mnRen_Click()
 tv.StartLabelEdit
 End Sub
@@ -2160,7 +2304,7 @@ End If
 Set tbDMC = myOpenRecordSet("##117", "sDMC", dbOpenTable) '
 If tbDMC Is Nothing Then Exit Sub
 tbDMC.AddNew
-tbDMC!nomNom = gNomNom
+tbDMC!nomnom = gNomNom
 tbDMC!numDoc = numDoc
 tbDMC!numExt = numExt
 On Error GoTo ERR1
@@ -2193,7 +2337,7 @@ Set tbProduct = myOpenRecordSet("##117", "sProducts", dbOpenTable) '
 If tbProduct Is Nothing Then Exit Function
 tbProduct.AddNew
 tbProduct!ProductId = gProductId
-tbProduct!nomNom = gNomNom
+tbProduct!nomnom = gNomNom
 On Error GoTo ERR1
 tbProduct.Update
 tbProduct.Close
@@ -2272,7 +2416,7 @@ If KeyCode = vbKeyReturn Then
         tbNomenk.Edit
     End If
     On Error GoTo ERR1
-    tbNomenk!nomNom = str
+    tbNomenk!nomnom = str
     tbNomenk!klassId = gKlassId
     tbNomenk.Update
     tbNomenk.Close
@@ -2465,6 +2609,7 @@ Else
 End If
 
 controlVisible True
+Grid.Visible = False
 If filtr = "obrez" Then
     strWhere = "WHERE (((sGuideNomenk.perList)>1.0))"
 ElseIf filtr <> "" Then
@@ -2482,12 +2627,18 @@ ElseIf tv.SelectedItem.key = "all" Then
     quantity = 0
 ElseIf Regim = "sourOborot" Then
     strWhere = "WHERE (((sGuideNomenk.sourId)=" & gKlassId & "))"
+ElseIf gKlassType = "p" Then
+    strWhere = "join sPriceBulkChange pbc on pbc.id = " & gKlassId _
+    & " join sPriceHistory sph on sph.bulk_id = pbc.id and sGuideNomenk.nomnom = sph.nomnom "
 Else
     strWhere = "WHERE (((sGuideNomenk.klassId)=" & gKlassId & "))"
 End If
 sql = "SELECT sGuideNomenk.*, sGuideFormuls.Formula, " & _
-"sGuideSource.sourceName, sGuideFormuls_1.Formula AS formulaW " & _
-"FROM sGuideFormuls AS sGuideFormuls_1 INNER JOIN ((sGuideNomenk INNER JOIN sGuideSource ON sGuideNomenk.sourId = sGuideSource.sourceId) INNER JOIN sGuideFormuls ON sGuideNomenk.formulaNom = sGuideFormuls.nomer) ON sGuideFormuls_1.nomer = sGuideNomenk.formulaNomW " _
+"sGuideSource.sourceName, sGuideFormuls_1.Formula AS formulaW, ph.nomnom as priceChanged " & _
+"FROM sGuideFormuls AS sGuideFormuls_1 INNER JOIN sGuideNomenk ON sGuideFormuls_1.nomer = sGuideNomenk.formulaNomW " _
+& " INNER JOIN sGuideSource ON sGuideNomenk.sourId = sGuideSource.sourceId " _
+& " INNER JOIN sGuideFormuls ON sGuideNomenk.formulaNom = sGuideFormuls.nomer " _
+& " left join (select distinct nomnom from spricehistory h where datediff(hour, change_date, now()) < 80) ph on ph.nomnom = sguidenomenk.nomnom " _
 & strWhere & " ORDER BY sGuideNomenk.nomNom ;"
 'Debug.Print sql;
 'MsgBox sql
@@ -2496,7 +2647,7 @@ If tbNomenk Is Nothing Then GoTo EN1
 If Not tbNomenk.BOF Then
  tbNomenk.MoveFirst
  While Not tbNomenk.EOF
-    gNomNom = tbNomenk!nomNom
+    gNomNom = tbNomenk!nomnom
 '    beg = tbNomenk!begOstatki
     cenaFact = tbNomenk!cost 'цена фактическая
     CenaFreight = nomenkFormula("noOpen")
@@ -2596,6 +2747,9 @@ If Not tbNomenk.BOF Then
         If Regim = "checkCurOstat" Then
             Grid.TextMatrix(quantity, nkCurOstat) = Round(gain * oldNow, 2)
         Else
+            If Not IsNull(tbNomenk!priceChanged) Then
+                colorGridCell Grid, quantity, nkCena, vbRed
+            End If
             Grid.TextMatrix(quantity, nkCena) = cenaFact
             Grid.TextMatrix(quantity, nkCENA1) = tbNomenk!CENA1
             Grid.TextMatrix(quantity, nkVES) = tbNomenk!VES
@@ -2635,6 +2789,7 @@ laQuant = quantity
 Grid.Visible = True
 ckUnUsed.Visible = True
 On Error Resume Next
+Grid.Visible = True
 Grid.SetFocus
 Grid_EnterCell
 
@@ -2780,7 +2935,11 @@ If mousRight = 2 Then
     Me.PopupMenu mnContext3
   ElseIf Regim = "" Then
     str = tv.SelectedItem.key
-    If str = "all" Then Exit Sub
+    If str = "all" Then
+        mnSep11.Visible = False
+        mnCost.Visible = False
+        Exit Sub
+    End If
     If str = "k0" Then
         mnRen.Visible = False
         mnDel.Visible = False
@@ -2792,6 +2951,15 @@ If mousRight = 2 Then
         mnRepl.Visible = True
         mnSep.Visible = True
     End If
+    
+    If bulkChangEnabled And Mid(str, 1, 1) <> "p" Then
+        mnSep11.Visible = True
+        mnCost.Visible = True
+    Else
+        mnSep11.Visible = False
+        mnCost.Visible = False
+    End If
+    
     Me.PopupMenu mnContext
   End If
 '    Timer1.Interval = 10
@@ -2802,6 +2970,7 @@ End Sub
 Private Sub tv_NodeClick(ByVal Node As MSComctlLib.Node)
 
 gKlassId = Mid$(tv.SelectedItem.key, 2)
+gKlassType = Mid$(tv.SelectedItem.key, 1, 1)
 gSourceId = gKlassId
 If mousRight = 1 Then
     mousRight = 2 ' правый клик был именно из Node

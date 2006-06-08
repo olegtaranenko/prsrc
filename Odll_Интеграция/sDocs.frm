@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "msflxgrd.ocx"
+Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form sDocs 
    BackColor       =   &H8000000A&
    Caption         =   "Расходные накладные"
@@ -69,7 +69,7 @@ Begin VB.Form sDocs
       Width           =   1755
    End
    Begin VB.Frame frZakaz 
-      BorderStyle     =   0  'Нет
+      BorderStyle     =   0  'None
       Caption         =   "Frame1"
       Height          =   5115
       Left            =   1560
@@ -103,7 +103,7 @@ Begin VB.Form sDocs
          Width           =   675
       End
       Begin VB.Label Label3 
-         Alignment       =   2  'Центровка
+         Alignment       =   2  'Center
          Caption         =   "Выберите заказ."
          Height          =   255
          Left            =   180
@@ -112,9 +112,9 @@ Begin VB.Form sDocs
          Width           =   1695
       End
       Begin VB.Label Label1 
-         Appearance      =   0  'Плоска
+         Appearance      =   0  'Flat
          BackColor       =   &H00E0E0E0&
-         BorderStyle     =   1  'Фиксировано один
+         BorderStyle     =   1  'Fixed Single
          ForeColor       =   &H80000008&
          Height          =   5115
          Left            =   0
@@ -406,7 +406,7 @@ tbSystem.Edit
 l = tbSystem!lastDocNum + 1
 If l < il Then l = il
 tbSystem!lastDocNum = l
-tbSystem.Update
+tbSystem.update
 tbSystem.Close
 numDoc = l
 
@@ -437,7 +437,7 @@ If Regim = "fromCeh" Then
 Else
     numExt = 254
 End If
-tbDocs.Update
+tbDocs.update
 tbDocs.Close
 
 wrkDefault.CommitTrans  ' подтверждение транзакции
@@ -446,7 +446,7 @@ loadDocs "add" ' не загружать все док-ты
 Exit Sub
 ER1:
 errorCodAndMsg ("Добавить расход")
-wrkDefault.Rollback
+wrkDefault.rollback
 End Sub
 
 Private Sub cmAdd2_Click()
@@ -571,7 +571,7 @@ MsgBox "Списание прошло успешно!", , ""
 GoTo EN1
 
 ER2: tbDMC.Close
-ER1: wrkDefault.Rollback
+ER1: wrkDefault.rollback
 EN1: lockSklad "un"
 
 End Sub
@@ -600,7 +600,7 @@ If numExt = 0 Then
   I = myExecute("##338", sql, 0)
   If I = 0 Or I = -1 Then GoTo CC ' документ м.б. и пустым
 ER1:
-  wrkDefault.Rollback ' отммена транзакции
+  wrkDefault.rollback ' отммена транзакции
   Exit Sub
 End If
 
@@ -677,7 +677,7 @@ Grid.SetFocus
 Exit Sub
 
 ERR1:
-wrkDefault.Rollback ' отммена транзакции
+wrkDefault.rollback ' отммена транзакции
 On Error Resume Next
 tbDMC.Close
 tbDocs.Close
@@ -715,7 +715,7 @@ Dim I As Integer, middle As Integer
 cmBay.Enabled = True
 
 If Not lockSklad Then Exit Sub
-sql = "SELECT sDMCrez.nomNom, sDMCrez.quantity, sDMCrez.curQuant, " & _
+    sql = "SELECT sDMCrez.nomNom, sDMCrez.quantity, sDMCrez.curQuant, " & _
 "sGuideNomenk.perList " & _
 "FROM sGuideNomenk INNER JOIN sDMCrez ON sGuideNomenk.nomNom = sDMCrez.nomNom " & _
 "WHERE (((sDMCrez.numDoc)=" & numDoc & " AND (sDMCrez.curQuant)>0 ));"
@@ -725,28 +725,20 @@ If Not sqlDeficitToNNQQ(lbInside.List(0), "bay") Then GoTo EN1
 
 wrkDefault.BeginTrans
 
-Set tbDocs = myOpenRecordSet("##425", "select * from sDocs", dbOpenForwardOnly) 'dbOpenForwardOnly)
-If tbDocs Is Nothing Then GoTo ER3
-
-'Set tbDMC = myOpenRecordSet("##347", "select * from sDMC", dbOpenForwardOnly)
-'If tbDMC Is Nothing Then GoTo ER1
-'tbDMC.index = "NomDoc"
-
 numExt = getNextNumExt()
-tbDocs.AddNew
-tbDocs!numDoc = numDoc
-tbDocs!numExt = numExt
-tbDocs!xDate = Now
-tbDocs!sourId = -1001
-tbDocs!destId = -8
-tbDocs.Update
+sql = "insert into sDocs (numDoc, numExt, xDate, sourId, destId) values (" _
+    & numDoc & ", " & numExt & ", now(), -1001, -8) "
+
+Debug.Print sql
+If myExecute("##367.0", sql, 0) <> 0 Then GoTo ER3
+
 For I = 1 To UBound(NN)
     gNomNom = NN(I)
     If Not sProducts.nomenkToDMC(QQ(I), "noLock") Then GoTo ER2
 Next I
 
 'tbDMC.Close
-tbDocs.Close
+'tbDocs.Close
 
 sql = "UPDATE sDMCrez SET curQuant = 0 WHERE (((numDoc)=" & numDoc & "));"
 If myExecute("##367", sql) <> 0 Then GoTo ER3
@@ -761,9 +753,9 @@ Exit Sub
 ER2:
 'tbDMC.Close
 ER1:
-tbDocs.Close
+'tbDocs.Close
 ER3:
-wrkDefault.Rollback
+wrkDefault.rollback
 lockSklad "un"
 End Sub
 
@@ -977,7 +969,7 @@ tbDocs.Close
 rowViem quantity, Grid
 Grid.Visible = True
 If quantity > 0 Then
-    If reg <> "add" Or quantity = 1 Then Grid.RemoveItem quantity + 1
+    If reg <> "add" Or quantity = 1 Then Grid.removeItem quantity + 1
     Grid.row = quantity
     Grid.col = 1
     gridIzLoad = True '
@@ -1022,7 +1014,7 @@ Sub gridRowDel()
     If quantity = 0 Then
         clearGridRow Grid, mousRow
     Else
-        Grid.RemoveItem mousRow
+        Grid.removeItem mousRow
     End If
 
 End Sub
@@ -1123,7 +1115,7 @@ noClick = False
 byClick = False
 
 If quantity2 > 0 Then
-    Grid2.RemoveItem quantity2 + 1
+    Grid2.removeItem quantity2 + 1
 End If
 
 Grid2.Visible = True

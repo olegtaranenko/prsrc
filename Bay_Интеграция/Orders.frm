@@ -1,8 +1,8 @@
 VERSION 5.00
 Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCTL.OCX"
-Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "msflxgrd.ocx"
+Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Orders 
-   Appearance      =   0  'Плоска
+   Appearance      =   0  'Flat
    BackColor       =   &H8000000A&
    Caption         =   "Продажа"
    ClientHeight    =   6135
@@ -17,7 +17,7 @@ Begin VB.Form Orders
    ScaleWidth      =   11880
    StartUpPosition =   2  'CenterScreen
    Begin VB.ListBox lbVenture 
-      Appearance      =   0  'Плоска
+      Appearance      =   0  'Flat
       Height          =   615
       Left            =   5500
       TabIndex        =   26
@@ -266,7 +266,7 @@ Begin VB.Form Orders
       Width           =   975
    End
    Begin MSComctlLib.Toolbar Toolbar1 
-      Align           =   1  'Привязать вверх
+      Align           =   1  'Align Top
       Height          =   420
       Left            =   0
       TabIndex        =   14
@@ -288,7 +288,7 @@ Begin VB.Form Orders
       Width           =   855
    End
    Begin VB.Label laInform 
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       ForeColor       =   &H00000000&
       Height          =   315
       Left            =   1260
@@ -355,6 +355,15 @@ Begin VB.Form Orders
          Caption         =   "Отчет ""Все заказы Фирмы"""
          Visible         =   0   'False
       End
+      Begin VB.Menu mnBillFirma 
+         Caption         =   "Плательщик: "
+         Visible         =   0   'False
+      End
+      Begin VB.Menu mnQuickBill 
+         Caption         =   "-"
+         Index           =   0
+         Visible         =   0   'False
+      End
    End
 End
 Attribute VB_Name = "Orders"
@@ -370,6 +379,7 @@ Dim oldHeight As Integer, oldWidth As Integer ' нач размер формы
 Dim beClick As Boolean
 Dim flDelRowInMobile As Boolean
 Dim minut As Integer
+Public g_id_bill As String
 
 
 Const AddCaption = "Добавить"
@@ -382,8 +392,11 @@ Const rowFromOrdersSQL = "SELECT BayOrders.numOrder, BayOrders.inDate, " & _
 "BayOrders.lastManagId, BayOrders.Invoice, " & _
 "BayOrders.Ves, BayOrders.Size, BayOrders.Places " & _
 ",guideventure.venturename as venture " & _
-"FROM BayOrders INNER JOIN BayGuideFirms ON BayGuideFirms.FirmId = BayOrders.FirmId " & _
-"left join guideventure on guideventure.ventureId = bayOrders.ventureid "
+",id_bill " & _
+",BayGuideFirms.id_voc_names as id_voc_names" & _
+",guideventure.sysname as servername" & _
+" FROM BayOrders INNER JOIN BayGuideFirms ON BayGuideFirms.FirmId = BayOrders.FirmId " & _
+" left join guideventure on guideventure.ventureId = bayOrders.ventureid "
 
 Private Sub cbClose_Click()
 cmRefr.Caption = "Загрузить"
@@ -733,6 +746,7 @@ mousCol = 1
 orColNumber = 0
 initOrCol orNomZak, "№ заказа", 1050, "nBayOrders.numOrder"
 initOrCol orInvoice, "№ счета", 950, "sBayOrders.Invoice"
+initOrCol orVenture, "Предпр.", 700, "sOrders.ventureId"
 initOrCol orData, "Дата", 810, "dBayOrders.inDate"
 initOrCol orMen, "М", 255, "sGuideManag.Manag"
 initOrCol orStatus, "Статус", 810, "sGuideStatus.Status"
@@ -747,7 +761,9 @@ initOrCol orZakazano, "заказано", 660 ', "nBayOrders.ordered" $$6
 initOrCol orOplacheno, "согласовано", 645, "nBayOrders.paid"
 initOrCol orOtgrugeno, "отгружено", 645 ', "nBayOrders.shipped"$$6
 initOrCol orLastMen, "M", 255, "sGuideManag_1.Manag"
-initOrCol orVenture, "Предпр.", 700, "sOrders.ventureId"
+initOrCol orBillId, "", 0, "sOrders.id_bill"
+initOrCol orVocnameId, "", 0, "nOrders.id_voc_names"
+initOrCol orServername, "", 0, "sOrders.servername"
 
 ReDim Preserve orSqlWhere(orColNumber)
 zakazNum = 0
@@ -973,6 +989,9 @@ End Function
 
 Private Sub Grid_DblClick()
 Dim str As String, statId As Integer
+Dim billCompany As String
+Dim i As Integer
+
 
 If zakazNum = 0 Then Exit Sub
 If mousRow = 0 Then Exit Sub
@@ -1019,6 +1038,76 @@ If Grid.CellBackColor = vbYellow Then Exit Sub
 If mousCol = orVenture Then
      listBoxInGridCell lbVenture, Grid, Grid.TextMatrix(mousRow, orVenture)
 ElseIf mousCol = orFirma Then
+     
+    If Grid.TextMatrix(mousRow, orVenture) <> "" Then
+        
+        billCompany = "Установить"
+    
+        If Grid.CellForeColor = vbRed Then
+            sql = "select wf_retrieve_bill_company(" + Grid.TextMatrix(mousRow, orBillId) + ", '" + Grid.TextMatrix(mousRow, orVenture) + "')"
+'            Debug.Print sql
+            If byErrSqlGetValues("W##102.1", sql, billCompany) Then
+                mnBillFirma.Tag = Grid.TextMatrix(mousRow, orBillId)
+            End If
+            If billCompany = "" Then
+                billCompany = "Id = [" & Grid.TextMatrix(mousRow, orBillId) & "]"
+            End If
+        Else
+            mnBillFirma.Tag = ""
+        End If
+        
+        mnBillFirma.Visible = True
+        mnBillFirma.Caption = "Плательщик: " + billCompany
+        
+        For i = mnQuickBill.UBound To 1 Step -1
+            Unload mnQuickBill(i)
+        Next i
+        
+        If serverIsAccessible(Grid.TextMatrix(mousRow, orVenture)) Then
+        
+            sql = _
+                 " select o.id_bill, max(o.inDate) as lastDate " _
+                & " from bayorders o" _
+                & " join bayorders z on z.firmid = o.firmid and z.ventureid = o.ventureid and z.numorder = " & gNzak _
+                & " where " _
+                & "     o.id_bill is not null " _
+                & " group by o.id_bill" _
+                & " order by lastDate desc"
+                  
+            
+            Set tbOrders = myOpenRecordSet("##102.2", sql, 0)
+            If Not tbOrders.BOF Then
+    '            Load mnQuickBill(0)
+    '            mnQuickBill(0).Caption = "-"
+                i = 0
+                While Not tbOrders.EOF
+                    If CStr(tbOrders!id_bill) <> Grid.TextMatrix(mousRow, orBillId) Then
+                        mnQuickBill(0).Visible = True
+                        Load mnQuickBill(1 + i)
+                        mnQuickBill(i + 1).Tag = tbOrders!id_bill
+                        sql = "select wf_retrieve_bill_company(" + CStr(tbOrders!id_bill) + ", '" + Grid.TextMatrix(mousRow, orVenture) + "')"
+                        byErrSqlGetValues "W##102.1", sql, billCompany
+                        mnQuickBill(i + 1).Caption = billCompany
+                        i = i + 1
+                    End If
+                    tbOrders.MoveNext
+                Wend
+                tbOrders.Close
+            End If
+        End If
+        If i = 0 Then
+            mnQuickBill(0).Visible = False
+        End If
+        
+'        success = byErrSqlGetValues("##102.2", sql, lastBillCompany)
+        
+    Else
+        mnBillFirma.Visible = False
+        mnQuickBill(0).Visible = False
+        For i = mnQuickBill.UBound To 1 Step -1
+            Unload mnQuickBill(i)
+        Next i
+    End If
     Me.PopupMenu mnContext
 ElseIf mousCol = orZakazano Then
     sql = "SELECT nomNom From sDMCrez WHERE (((sDMCrez.numDoc)='" & gNzak & "'));"
@@ -1480,7 +1569,7 @@ End If
 End Sub
 
 Private Sub lbVenture_DblClick()
-Dim str As String, i As Integer, newInv As String
+Dim str As Variant, i As Integer, newInv As String
 
 If noClick Then Exit Sub
 If lbVenture.Visible = False Then Exit Sub
@@ -1492,6 +1581,9 @@ If i = 0 Then
     If Not byErrSqlGetValues("W##72.1", sql, newInv) Then myBase.Close: End
 '    newInv = getValueFromTable("Orders", "invoice", "numOrder = " & Grid.TextMatrix(mousRow, orNomZak))
     Grid.TextMatrix(mousRow, orInvoice) = newInv
+    str = getValueFromTable("GuideVenture", "sysname", "ventureId = " & lbVenture.ListIndex)
+    If IsNull(str) Then str = ""
+    Grid.TextMatrix(mousRow, orServername) = str
 End If
 
 lbHide
@@ -1517,6 +1609,19 @@ cfg.Regim = "baseChoise"
 cfg.setRegim
 cfg.Show vbModal
 
+End Sub
+
+Private Sub mnBillFirma_Click()
+Dim ventureName As String
+
+    ventureName = Grid.TextMatrix(mousRow, orVenture)
+    If serverIsAccessible(ventureName) Then
+        g_id_bill = mnBillFirma.Tag
+        FirmComtex.Show vbModal
+    Else
+        MsgBox "Сервер " & ventureName & " не доступен ", , "Предупреждение"
+    End If
+    
 End Sub
 
 Private Sub mnExit_Click()
@@ -1589,6 +1694,12 @@ cfg.loadCfg ' обновляем информацию на всякий случай $$2
 cfg.Regim = "pathSet"
 cfg.setRegim
 cfg.Show vbModal
+
+End Sub
+
+Private Sub mnQuickBill_Click(Index As Integer)
+    If Index = 0 Then Exit Sub
+    FirmComtex.makeBillChoice mnQuickBill(Index).Tag, Grid.TextMatrix(mousRow, orServername)
 
 End Sub
 
@@ -1797,6 +1908,12 @@ While Not tqOrders.EOF
  zakazNum = zakazNum + 1
  
  Grid.TextMatrix(zakazNum, orNomZak) = gNzak
+
+    If Not IsNull(tqOrders!id_bill) Then 'срочный
+         Grid.col = orFirma
+         Grid.row = zakazNum
+         Grid.CellForeColor = vbRed
+    End If
  
 ' If tqOrders!StatusId < 6 Then '***************
     v = predmetiIsClose
@@ -1983,8 +2100,18 @@ Dim str  As String
  Grid.TextMatrix(row, orSize) = tqOrders!Size
  Grid.TextMatrix(row, orPlaces) = tqOrders!Places
  Grid.TextMatrix(row, orLastMen) = Manag(tqOrders!lastManagId)
- If Not IsNull(tqOrders!Venture) Then _
+ If Not IsNull(tqOrders!Venture) Then
     Grid.TextMatrix(row, orVenture) = tqOrders!Venture
+ End If
+ If Not IsNull(tqOrders!id_bill) Then
+    Grid.TextMatrix(row, orBillId) = CStr(tqOrders!id_bill)
+ End If
+ If Not IsNull(tqOrders!id_voc_names) Then
+    Grid.TextMatrix(row, orVocnameId) = CStr(tqOrders!id_voc_names)
+ End If
+ If Not IsNull(tqOrders!serverName) Then
+    Grid.TextMatrix(row, orServername) = CStr(tqOrders!serverName)
+ End If
 
 End Sub
 

@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "msflxgrd.ocx"
+Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form jGuideSchets 
    BackColor       =   &H8000000A&
    BorderStyle     =   1  'Fixed Single
@@ -331,20 +331,18 @@ End Sub
 
 Function ValueToGuideSchetField(myErrCod As String, value As String, _
 field As String) As Boolean
-Dim i As Integer, j As Integer
+Dim i As String, j As String
         
 ValueToGuideSchetField = False
 i = Grid.TextMatrix(mousRow, gsNumber)
-If Grid.TextMatrix(mousRow, gsSubNumber) = "" Then
-    j = 0
-Else
-    j = Grid.TextMatrix(mousRow, gsSubNumber)
-End If
+If i = "" Then i = "00"
+j = Grid.TextMatrix(mousRow, gsSubNumber)
+If j = "" Then j = "00"
 
 sql = "UPDATE yGuideSchets SET [" & field & "] = " & value & _
-" WHERE (((number)=" & i & ") AND ((subNumber)=" & j & "));"
+" WHERE (((number)='" & i & "') AND ((subNumber)='" & j & "'));"
 
-'MsgBox "sql = " & sql
+Debug.Print sql
 If myExecute(myErrCod, sql) = 0 Then ValueToGuideSchetField = True
 
 End Function

@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "msflxgrd.ocx"
+Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
 Begin VB.Form cfg 
    BackColor       =   &H8000000A&
@@ -121,7 +121,7 @@ Begin VB.Form cfg
    End
    Begin VB.Label laProducts 
       BackColor       =   &H80000009&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Caption         =   "Label2"
       Height          =   255
       Left            =   2280
@@ -131,7 +131,7 @@ Begin VB.Form cfg
    End
    Begin VB.Label laNomenks 
       BackColor       =   &H80000009&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Caption         =   "Label2"
       Height          =   255
       Left            =   2280
@@ -141,7 +141,7 @@ Begin VB.Form cfg
    End
    Begin VB.Label laSvodka 
       BackColor       =   &H80000009&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Caption         =   "Label2"
       Height          =   255
       Left            =   2280
@@ -151,7 +151,7 @@ Begin VB.Form cfg
    End
    Begin VB.Label laLogins 
       BackColor       =   &H80000009&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Caption         =   "Label2"
       Height          =   255
       Left            =   2280
@@ -193,7 +193,7 @@ Begin VB.Form cfg
    End
    Begin VB.Label laGlobal 
       BackColor       =   &H80000009&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Caption         =   "Label2"
       Height          =   255
       Left            =   2280
@@ -551,12 +551,21 @@ If otlad = "work" Or otlad = "" Then
     Set myBase = wrkDefault.OpenDatabase("Connection1", _
     dbDriverNoPrompt, False, "ODBC;UID=dba;PWD=sql;DSN=prior")
     mainTitle = "    New"
+    'myBase.queryTimeout = 120
 Else
      mainTitle = "    otlad"
     Set myBase = wrkDefault.OpenDatabase("Connection1", _
-    dbDriverNoPrompt, False, "ODBC;UID=dba;PWD=sql;DSN=prr")
+    dbDriverNoPrompt, False, "ODBC;UID=dba;PWD=sql;DSN=prior")
 End If
 If myBase Is Nothing Then End
+
+CheckIntegration
+sql = "call bootstrap_blocking"
+If myExecute("##0.1", sql, 0) = 0 Then End
+
+sql = "create variable @manager varchar(20)"
+If myExecute("##0.2", sql, 0) = 0 Then End
+
 
 Exit Sub
 

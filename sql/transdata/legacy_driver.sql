@@ -1,3 +1,46 @@
+-- Исправления в фирмах. Зачем-то вместо адреса вписал контакты
+-- переносим их в поле rem
+begin 
+	for aCursor as b1 dynamic scroll cursor for
+		select 
+			f.firmId as f_id
+			,f.name as r_name
+			,f.fio as f_fio
+			,f.phone as f_phone
+			,f.email as f_email
+			,id_voc_names as r_id_voc_names
+		from guidefirms f
+	DO
+		call update_host ('voc_names', 'rem', 'address', 'id = ' + convert(varchar(20), r_id_voc_names));
+		call update_host ('voc_names', 'address', '''''''''', 'id = ' + convert(varchar(20), r_id_voc_names));
+	end for;
+end;
+
+begin 
+	declare v_rem varchar(100);
+	for aCursor as b1 dynamic scroll cursor for
+		select 
+			f.firmId as f_id
+			,f.name as r_name
+			,f.fio as f_fio
+			,f.phone as f_phone
+			,f.email as f_email
+			,id_voc_names as r_id_voc_names
+		from bayguidefirms f
+	DO
+		set v_rem = select_remote('stime', 'voc_names', 'rem', 'id = ' + convert(varchar(20), r_id_voc_names));
+		if v_rem is null or char_length(v_rem) = 0 then
+			call update_host ('voc_names', 'rem', 'address', 'id = ' + convert(varchar(20), r_id_voc_names));
+			call update_host ('voc_names', 'address', '''''''''', 'id = ' + convert(varchar(20), r_id_voc_names));
+		end if;
+	end for;
+end;
+
+
+
+commit;
+
+/*
 begin
 declare icount int;
 declare folder_id integer;
@@ -44,9 +87,11 @@ call host_legacy_variant();
 -- Загрузить приходный ордера на склады в аналитическую базу st
 call legacy_income_order();
 
+call legacy_purpose();
 
 update system set trans_date = now();
 
 commit;
 
 end;
+*/

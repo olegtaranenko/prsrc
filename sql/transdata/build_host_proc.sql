@@ -1,6 +1,85 @@
 --****************************************************************
 --                      BUILD HOST PROCEDURE
 --****************************************************************
+
+
+if exists (select '*' from sysprocedure where proc_name like 'build_rp_procedure') then
+	drop procedure build_rp_procedure;
+end if;
+
+create procedure build_rp_procedure(
+	  p_slave_server varchar(30)
+	, p_proc_name varchar(100)
+	, p_params varchar(2000)
+	, p_checking integer default 1
+)
+begin
+	declare v_proc_name varchar(64);
+
+	declare v_rp_proc_name varchar(64);
+
+	declare v_strip_params varchar(1000);
+	declare v_sql varchar(3000);
+
+	set v_proc_name = p_proc_name +'_' + p_slave_server;
+	set v_rp_proc_name = 'r_' + v_proc_name;
+
+	if exists (select 1 from sysprocedure where proc_name like v_rp_proc_name ) then 
+		execute immediate 
+			'drop procedure ' + v_rp_proc_name;
+    end if;
+	
+	execute immediate 
+		  ' create procedure ' + v_rp_proc_name
+		+ ' ('
+		+ 	p_params
+		+ ' )'
+		+ ' at '''+p_slave_server+';;;' + p_proc_name + '''';
+
+
+	if exists (select 1 from sysprocedure where proc_name like v_proc_name ) then 
+		execute immediate 
+			'drop procedure ' + v_proc_name;
+	end if;
+
+	set v_strip_params = parse_params(p_params);
+	
+	set v_sql =
+		  '\ncreate PROCEDURE ' + v_proc_name
+		+ '\n('
+		+ 	p_params
+		+ '\n)'
+		+ '\nbegin'
+	;
+	if p_checking = 1 then
+		set v_sql = v_sql
+			+ '\n	if get_standalone('''+ p_slave_server + ''') = 0 then'
+		;
+	end if;
+
+	set v_sql = v_sql
+		+ '\n		call ' + v_rp_proc_name + '( ' +  v_strip_params + ');'
+	;
+
+	if p_checking = 1 then
+		set v_sql = v_sql
+			+ '\n	else'
+			+ '\n		call log_debug (''function '+ v_proc_name +''');'
+			+ '\n	end if;'
+		;
+	end if;
+
+	set v_sql = v_sql
+		+ '\nend'
+	;
+
+	execute immediate v_sql;
+end;
+
+
+
+
+
 if exists (select '*' from sysprocedure where proc_name like 'build_host_procedure') then
 	drop procedure build_host_procedure;
 end if;
@@ -11,77 +90,25 @@ create procedure build_host_procedure(
 	, p_checking integer default 1
 )
 begin
-	declare v_proc_name varchar(64);
-	declare v_slave_name varchar(64);
-
-	declare v_rp_proc_name varchar(64);
-
-//	declare p_proc_name varchar(64);
-//	declare v_slave_server varchar(32);
 	declare v_slave_proc_name varchar(64);
-	declare p_strip_params varchar(1000);
-	declare v_sql varchar(3000);
 
+	set v_slave_proc_name = 'slave_' + p_proc_name;
 	for c_rmt_servers as a dynamic scroll cursor for
-		select srvname as v_slave_server from sys.sysservers 
+		select srvname as r_slave_server from sys.sysservers 
 	do
 
-		set v_slave_proc_name = 'slave_' + p_proc_name;
-		set v_proc_name = v_slave_proc_name +'_' + v_slave_server;
-		set v_rp_proc_name = 'r_' + v_proc_name;
-    
-		if exists (select 1 from sysprocedure where proc_name like v_rp_proc_name ) then 
-			execute immediate 
-				'drop procedure ' + v_rp_proc_name;
-        end if;
-		
-		execute immediate 
-			  ' create PROCEDURE ' + v_rp_proc_name
-			+ ' ('
-			+ 	p_params
-			+ ' )'
-			+ ' at '''+v_slave_server+';;;' + v_slave_proc_name + '''';
+		call build_rp_procedure (
+			  r_slave_server
+			, v_slave_proc_name
+			, p_params
+			, p_checking
+		);
 
-
-		if exists (select 1 from sysprocedure where proc_name like v_proc_name ) then 
-			execute immediate 
-				'drop procedure ' + v_proc_name;
-		end if;
-
-		set p_strip_params = parse_params(p_params);
-		
-		set v_sql =
-			  '\ncreate PROCEDURE ' + v_proc_name
-			+ '\n('
-			+ 	p_params
-			+ '\n)'
-			+ '\nbegin'
-		;
-		if p_checking = 1 then
-			set v_sql = v_sql
-				+ '\n	if get_standalone('''+ v_slave_server + ''') = 0 then'
-			;
-		end if;
-
-		set v_sql = v_sql
-			+ '\n		call ' + v_rp_proc_name + '( ' +  parse_params(p_params) + ');'
-		;
-
-		if p_checking = 1 then
-			set v_sql = v_sql
-				+ '\n	else'
-				+ '\n		call log_debug (''function '+ v_proc_name +''');'
-				+ '\n	end if;'
-			;
-		end if;
-
-		set v_sql = v_sql
-			+ '\nend'
-		;
-
-		execute immediate v_sql;
 	end for;
 end;
+
+
+
 
 if exists (select '*' from sysprocedure where proc_name like 'parse_params') then
 	drop function parse_params;

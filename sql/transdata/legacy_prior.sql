@@ -1,3 +1,52 @@
+if exists (select 1 from sysprocedure where proc_name = 'legacy_size_izd') then
+	drop procedure legacy_size_izd;
+end if;
+
+-- Из-за ошибки при трансдатации не попали размеры для готовых изделий
+-- Эта процедура исправляет эту ошибку
+CREATE PROCEDURE legacy_size_izd()
+begin
+	declare glbId integer;
+	declare v_table_name varchar(100);
+	declare v_fields varchar(1000);
+	declare v_values varchar(1000);
+	declare v_belong_root varchar(100);
+
+	message 'legacy_size_izd() started ...' to client;
+
+	set v_table_name = 'size';
+	set glbId = get_nextId (v_table_name);
+
+	-- размеры, которые не были трансдатированы
+	for aCursor as b dynamic scroll cursor for
+		select distinct prsize as sz from sguideproducts g
+		where not exists (select 1 from size s where s.name = g.prsize)
+	do
+		insert into size (id_size, name) values (glbId, sz);
+		call insert_host(v_table_name, 'id, nm', convert(varchar(10), glbId) + ', ''''' + sz +'''''');
+		set glbId = glbId + 1;
+	end for;
+
+	-- изменить единицу измерения в комтехах для изделий,
+	-- которая трансдатирована была ошибочно
+
+	for aCursor as a dynamic scroll cursor for
+		select prId as r_prid
+			, prsize as r_prsize
+			, id_size as r_id_size
+			, id_inv as r_id_inv
+		from sguideproducts g
+		join size s on s.name = g.prsize
+	do
+		call update_host('inv', 'id_size', convert(varchar(20), r_id_size), 'id = '+ convert(varchar(20), r_id_inv));
+		call update_host('inv', 'id_size', convert(varchar(20), r_id_size), 'belong_id = '+ convert(varchar(20), r_id_inv));
+	end for;
+	
+	message 'legacy_size_izd() ended successful.' to client;
+
+end;
+
+
 if exists (select 1 from sysprocedure where proc_name = 'legacy_guides') then
 	drop procedure legacy_guides;
 end if;
@@ -67,7 +116,7 @@ begin
 	FOR UPDATE 
 	DO
 
-		select id into v_folder_id from voc_names_st where nm = 'Склады';
+		select id into v_folder_id from voc_names_stime where nm = 'Склады';
 	
 		
 		call insert_host('voc_names', 'id, nm, belong_id', 
@@ -109,7 +158,7 @@ begin
 	FOR UPDATE 
 	DO
 
-		select id into v_folder_id from voc_names_st where nm = 'Объекты затрат';
+		select id into v_folder_id from voc_names_stime where nm = 'Объекты затрат';
 	
 		
 		call insert_host('voc_names', 'id, nm, belong_id', 
@@ -139,17 +188,29 @@ begin
 	declare v_params varchar(1000);
 	declare postav_name varchar(32);
 	declare zakaz_name varchar(32);
+	declare v_gemacht datetime;
+	declare v_phone varchar(37);
+	declare v_fio varchar(98);
+	declare v_rem varchar(98);
+	declare v_email varchar(98);
 
 	message 'legacy_firms() started ...' to client;
 	set postav_name = 'Поставщики';
 	set zakaz_name = 'Заказчики';
 	
+	select trans_date into v_gemacht from system;
+
+--	call slave_select_stime(v_gemacht, 'jmat', 'count(*)', 'osn = ''' + v_legacy + '''');
+	if v_gemacht is not null then
+		message 'Унаследованные фирмы уже загружены' to client;
+		return;
+	end if;
 	
 	-- корень
-	select id into v_folder_id from voc_names_st where nm = 'Сторонние организации' and belong_Id = 0;
+	select id into v_folder_id from voc_names_stime where nm = 'Сторонние организации' and belong_Id = 0;
 
 	-- Получить id папки поставщиков
-	select id into v_postav_id from voc_names_st where nm = postav_name and belong_id = v_folder_id and is_group = 1;
+	select id into v_postav_id from voc_names_stime where nm = postav_name and belong_id = v_folder_id and is_group = 1;
 	if v_postav_id is null then
 		set v_postav_id = get_nextid ('voc_names');
 		call insert_host('voc_names', 'id, nm, belong_id, is_group', 
@@ -163,7 +224,7 @@ begin
 	end if;
 
 	-- Получить id папки заказчиков
-	select id into v_zakaz_id from voc_names_st where nm = zakaz_name and belong_id = v_folder_id and is_group = 1;
+	select id into v_zakaz_id from voc_names_stime where nm = zakaz_name and belong_id = v_folder_id and is_group = 1;
 	if v_zakaz_id is null then
 		set v_zakaz_id = get_nextid ('voc_names');
 
@@ -204,8 +265,7 @@ begin
 		select 
 			f.firmId as f_id
 			,b.firmId as b_id
-			,f.name as f_name
-			,b.name as b_name
+			,isnull(f.name, b.name) as r_name
 			,f.fio as f_fio
 			,b.fio as b_fio
 			,f.phone as f_phone
@@ -213,51 +273,32 @@ begin
 			,f.email as f_email
 			,b.email as b_email
 		from guidefirms f
-		full join bayguidefirms b on b.name = f.name and b.firmid > 0 and b.id_voc_names is null
-		where f.firmid > 0
-		and f.id_voc_names is null or b.id_voc_names is null
+		full join bayguidefirms b on b.name = f.name 
 	DO
-		if f_id is not null and b_id is null then
-			set v_params =
-				 convert(varchar(20), v_firms_id)
-				+ ', '''''+ substring(f_name,1,203) + ''''''
-				+ ', ''''' + substring(f_phone,1,37) + ''''''
-				+ ', ''''' + substring(f_email,1,37) + ''''''
-			;
-		elseif f_id is null and b_id is not null then
-			set v_params =
-				 convert(varchar(20), v_firms_id)
-				+ ', '''''+ substring(b_name,1,203) + ''''''
-				+ ', ''''' + substring(b_phone,1,37) + ''''''
-				+ ', ''''' + substring(b_email,1,37) + ''''''
-			;
-		else
-			set v_params =
-				 convert(varchar(20), v_firms_id)
-				+ ', '''''+ substring(f_name,1,203) + ''''''
-			;
-			if (f_phone != b_phone) then
-				set v_params = v_params 
-					+ ', ''''' + substring(f_phone + '/' +b_phone,1,37) + ''''''
-				;
-			else
-				set v_params = v_params 
-					+ ', ''''' + substring(f_phone,1,37) + ''''''
-				;
-			end if;
-			if (f_email != b_email) then
-				set v_params = v_params 
-					+ ', ''''' + substring(f_email + '/' +b_email,1,37) + ''''''
-				;
-			else
-				set v_params = v_params 
-					+ ', ''''' + substring(f_email,1,37) + ''''''
-				;
-			end if;
+
+		set v_fio = isnull(f_fio, b_fio);
+		if b_fio is not null and v_fio != b_fio then
+			set v_fio = v_fio + ', ' + b_fio;
 		end if;
-		
-		set v_params = v_params + ', ' + convert(varchar(20), v_zakaz_id);
-		call insert_host('voc_names', 'id, nm, phone, rem, belong_id', v_params);
+		set v_email = isnull(f_email, b_email);
+		if b_email is not null and v_email != b_email then
+			set v_email = v_email + ', ' + b_email;
+		end if;
+
+		set v_phone = isnull(f_phone, b_phone);
+		if b_phone is not null and v_phone != b_phone then
+			set v_phone = v_phone + ',' + b_phone;
+		end if;
+
+			set v_params =
+				 convert(varchar(20), v_firms_id)
+				+ ', '''''+ substring(r_name,1,203) + ''''''
+				+ ', ''''' + substring(v_phone,1,37) + ''''''
+				+ ', ''''' + substring(v_fio,1,98) + ''''''
+				+ ', ''''' + substring(v_email,1,98) + ''''''
+				+ ', ' + convert(varchar(20), v_zakaz_id);
+
+		call insert_host('voc_names', 'id, nm, phone, address, address_fact, belong_id', v_params);
 
 		if f_id is not null then
 			UPDATE guidefirms set id_voc_names = v_firms_id WHERE firmid = f_id;
@@ -417,25 +458,12 @@ begin
 			set v_id_size = 'null' ;
 		end if;
 	
-	    set v_nm = '''''';
-	    if (r_cod is not null and char_length(r_cod) > 0) then
-	    	set v_nm = v_nm 
-	    		+ r_cod + ' ';
-	    end if;
-
-	    set v_nm = v_nm + nomname;
-	    if (r_size is not null and char_length(r_size) > 0) then
-	    	set v_nm = v_nm 
-	    		+ ' ' + r_size;
-	    end if;
-    	set v_nm = v_nm + '''''';
-
+		set v_nm = '''''' + wf_make_invnm (nomname, r_size, r_cod) + '''''';
 
 		set v_values =
 			 convert(varchar(20), glbId)
 			+ ', ' + convert(varchar(20), p_id_inv)
 			+ ', ''''' + v_nomnom + ''''''
-//			+ ' , ''''' + r_cod + ' ' + nomname + ' ' + r_size + ''''''
 			+ ', ' + v_nm
 			+ ', ' + convert(varchar(20), id_edizm1)
 			+ ', ' + convert(varchar(20), id_edizm2)
@@ -469,39 +497,41 @@ begin
 
 	for aCursor as c_izd dynamic scroll cursor for
 		select 
-			  prName as v_nomNom
+			  prName as r_nomNom
 			, prDescript as nomName
-			, n.prsize as p_size
+			, n.prsize as r_size
 			, n.cena4 as prc1
 			, n.prseriaid as p_prseriaid
 		from sguideproducts n
 --		join sguideseries p on p.seriaid = n.prseriaid
---		join edizm e1 on e1.name = 'ив.'
+--		join edizm e1 on e1.name = 'шт.'
 --		left join size s on s.name = n.prsize
 		where n.id_inv is null
 	FOR UPDATE 
 	DO
 
 	
-		select isnull(id_size, 0) into v_id_size from size where name = p_size;
+		select isnull(id_size, 0) into v_id_size from size where name = r_size;
 		if v_id_size is null then
 			set v_id_size = 0;
 		end if;
 		select id_inv into v_id_inv from sguideseries where seriaid = p_prseriaid;
 		
+		set v_nm = '''''' + wf_make_invnm (nomname, r_size, r_nomnom) + '''''';
+
 		set v_values =
 			 convert(varchar(20), glbId)
 			+ ', ' + convert(varchar(20), v_id_inv)
-			+ ', ''''' + v_nomnom + ''''''
-			+ ' , ''''' + nomname  + ''''''
+			+ ', ''''' + r_nomNom + ''''''
+			+ ', ' + v_nm
 			+ ', ' + convert(varchar(20), v_id_edizm1)
 			+ ', ' + convert(varchar(20), v_id_size)
 			+ ', ' + convert(varchar(50), prc1)
 			+ ', 1' -- is_compl
 			+ ', 0' -- is_group
 			+ ', ' + convert(varchar(50), v_id_currency)
-		;	
-    
+		;
+
 		call insert_host (v_table_name, v_fields, v_values);
 		UPDATE sguideproducts set id_inv = glbId WHERE CURRENT OF c_izd;
 		set glbId = glbId + 1;
@@ -613,16 +643,16 @@ begin
 
 
 	-- Находим Id папки - фирм-контрагентов
-	select nm into v_belong_name from voc_names_st where id = p_belong_id;
+	select nm into v_belong_name from voc_names_stime where id = p_belong_id;
 	
 	-- имя папки, куда будем переносить унаследованные элементы
 	set v_old_folder_name = v_belong_name + ' (old)';
 	
-	if exists (select 1 from voc_names_st where belong_Id = p_belong_id and nm = v_old_folder_name) then
+	if exists (select 1 from voc_names_stime where belong_Id = p_belong_id and nm = v_old_folder_name) then
 		return;
 	end if;
 	
---	call slave_select_st ('voc_names', id_folder_name, 'id', 'nm = ''' + folder_name + '''');
+--	call slave_select_stime ('voc_names', id_folder_name, 'id', 'nm = ''' + folder_name + '''');
 
 
 	-- Получить общий id, который будет иметь папка для унаследованных элементов.
@@ -665,12 +695,12 @@ begin
 	declare v_belong_name varchar(255);
 
 	-- Находим Id папки
-	select nm into v_belong_name from inv_st where id = p_belong_id;
+	select nm into v_belong_name from inv_stime where id = p_belong_id;
 	
 	-- имя папки, куда будем переносить унаследованные элементы
 	set v_old_folder_name = v_belong_name + ' (old)';
 	
-	if exists (select 1 from inv_st where belong_Id = p_belong_id and nm = v_old_folder_name) then
+	if exists (select 1 from inv_stime where belong_Id = p_belong_id and nm = v_old_folder_name) then
 		return;
 	end if;
 	
@@ -733,7 +763,7 @@ begin
 		convert(varchar(20), v_id_cur)
 		 +', ''''УЕ'''''
 		 +', ''''условная единица'''''
-		 +', ''''условные единиц'''''
+		 +', ''''условные единицы'''''
 		 +', ''''условных единиц'''''
 		 +', ''''цент УЕ'''''
 		 +', ''''цента УЕ'''''
@@ -756,7 +786,7 @@ begin
 		+', ''''' + 		convert(varchar(20), v_id_cur) + ''''''
 		+', ''''' + convert(varchar(20), '2005-03-17', 112) +''''''
 		+', ''''' + convert(varchar(20), v_currency_rate) + ''''''
-		+', ''''Установлено в prr'''''
+		+', ''''Установлено в Prior'''''
 	;
 	
 --	set v_where = 'id_cur = ' + convert(varchar(20), v_id) + 'and dat ' + convert(varchar(20), now, 112);
@@ -793,12 +823,14 @@ begin
 	declare v_gemacht datetime;
 	declare v_perList float;
 
+	declare sync char(1);
+
 	message 'legacy_income_order() started ...' to client;
 
-	set v_legacy = 'Переход на режим совместного использования prr/Komtex (сгенерировано)';
+	set v_legacy = 'Переход на режим совместного использования Prior/Komtex (сгенерировано)';
 	select trans_date into v_gemacht from system;
 
---	call slave_select_st(v_gemacht, 'jmat', 'count(*)', 'osn = ''' + v_legacy + '''');
+--	call slave_select_stime(v_gemacht, 'jmat', 'count(*)', 'osn = ''' + v_legacy + '''');
 	if v_gemacht is not null then
 		message 'Входящие остатки уже загружены' to client;
 		return;
@@ -827,8 +859,10 @@ begin
     group by nomnom, id;
 
 --    begin
-		call call_host('block_table', '''prr'', ''jmat''');
-		call call_host('block_table', '''prr'', ''mat''');
+--		call call_host('block_table', 'sync, ''prior'', ''jmat''');
+--		call call_host('block_table', 'sync, ''prior'', ''mat''');
+		call block_remote('stime', @@servername, 'jmat');
+		call block_remote('stime', @@servername, 'mat');
 
         -- глобальный для загловков накладных
 		set v_id_jmat = get_nextid('jmat');
@@ -837,7 +871,7 @@ begin
 		set v_id_mat = get_nextid('mat');
 --		set v_currency_rate = system_currency_rate();
 		set v_id_currency = system_currency();
-		call slave_currency_rate_st(v_datev, v_currency_rate);
+		call slave_currency_rate_stime(v_datev, v_currency_rate);
 
 
    	   	for sklad_cur as s dynamic scroll cursor for
@@ -845,13 +879,13 @@ begin
 			from sguidesource
 			where sourceid <= -1001
 		do
-			call slave_select_st(v_nu, 'jmat', 'max(nu)', '1=1');
+			call slave_select_stime(v_nu, 'jmat', 'max(nu)', '1=1');
 			set v_nu = convert(varchar(20), convert(integer, isnull(v_nu, 0)) + 1);
 			select id_voc_names into v_id_inventar from sguidesource where sourceName = 'Инвентаризация';
 
 
 			call wf_insert_jmat (
-				'st'
+				'stime'
 				,'1023' --инветаризация
 				,v_id_jmat
 				,now() --v_jmat_date
@@ -870,8 +904,7 @@ begin
 				select i.nomnom as r_nomnom, n.id_inv as r_nomenklature_id, debet as r_debet, kredit as r_kredit 
 				from #itogo i
 				join sguidenomenk n on n.nomnom = i.nomnom
-
-            where id = r_sourceid
+	            where id = r_sourceid
 			do
 				set v_quant = r_debet - r_kredit;
 
@@ -880,7 +913,7 @@ begin
 					select cost, perList into v_cost, v_perList from sguidenomenk where nomnom = r_nomnom;
 
 					call wf_insert_mat (
-						'st'
+						'stime'
 						,v_id_mat
 						,v_Id_jmat
 						,r_nomenklature_id
@@ -902,8 +935,10 @@ begin
 		end for;
 
 
-		call call_host('unblock_table', '''prr'', ''jmat''');
-		call call_host('unblock_table', '''prr'', ''mat''');
+		call unblock_remote('stime', @@servername, 'jmat');
+		call unblock_remote('stime', @@servername, 'mat');
+--		call call_host('unblock_table', 'sync, ''prior'', ''jmat''');
+--		call call_host('unblock_table', 'sync, ''prior'', ''mat''');
 --	exception 
 --		when others then
 --			set v_perList = v_perList;
@@ -913,4 +948,48 @@ begin
 	drop table #itogo;
     
 	message 'legacy_income_order() ended successful.' to client;
+end;
+
+
+if exists (select 1 from sysprocedure where proc_name = 'legacy_purpose') then
+	drop procedure legacy_purpose;
+end if;
+
+create
+	PROCEDURE legacy_purpose () 
+begin
+	declare v_param varchar(512);
+	declare i_subSchet integer;
+
+	message 'legacy_purpose() started ...' to client;
+		
+	for nom_cur as n dynamic scroll cursor for
+		select pDescript as r_nm, debit, subdebit, kredit, subkredit
+		from yguidePurpose
+	do
+		set i_subSchet = convert(integer, subdebit);
+		if i_subSchet = 0 then
+			set subdebit = '';
+		else
+			set subdebit = convert(varchar(10), i_subSchet);
+		end if;
+
+		set i_subSchet = convert(integer, subkredit);
+		if i_subSchet = 0 then
+			set subkredit = '';
+		else
+			set subkredit = convert(varchar(10), i_subSchet);
+		end if;
+
+		set v_param = 
+			'''' + r_nm + ''''
+			+ ', '''+debit + ''''
+			+ ', '''+subdebit + ''''
+			+ ', '''+kredit + ''''
+			+ ', '''+subkredit + ''''
+		;
+		call call_host('legacy_purpose', v_param);
+	end for;
+
+	message 'legacy_purpose() ended successful.' to client;
 end;

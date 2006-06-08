@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "msflxgrd.ocx"
+Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form GuideSource 
    BackColor       =   &H8000000A&
    Caption         =   "Справочник поставщиков"
@@ -10,6 +10,16 @@ Begin VB.Form GuideSource
    LinkTopic       =   "Form1"
    ScaleHeight     =   6060
    ScaleWidth      =   9195
+   Begin VB.ListBox lbCurrency 
+      Height          =   255
+      ItemData        =   "GuideSource.frx":0000
+      Left            =   3240
+      List            =   "GuideSource.frx":0010
+      TabIndex        =   5
+      Top             =   1200
+      Visible         =   0   'False
+      Width           =   1035
+   End
    Begin VB.TextBox tbMobile 
       Height          =   315
       Left            =   900
@@ -69,14 +79,32 @@ Dim quantity As Integer 'количество найденных фирм
 Dim frmMode As String
 
 Const gpNazwFirm = 1
-Const gpFIO = 2
-Const gpTlf = 3
-Const gpFax = 4
-Const gpEmail = 5
-Const gpSourceId = 6 ' скрытый
+Const gpCurrency = 2
+Const gpFIO = 3
+Const gpTlf = 4
+Const gpFax = 5
+Const gpEmail = 6
+Const gpSourceId = 7 ' скрытый
 
+Public Sub initCurrencyLB()
+' Сначала удаляем старые значения
+While lbCurrency.ListCount
+    lbCurrency.RemoveItem (0)
+Wend
 
-Private Sub Command3_Click()
+sql = "select currency_iso, id_guide from GuideCurrency order by currency_iso"
+
+Set Table = myOpenRecordSet("##72", sql, dbOpenForwardOnly)
+If Table Is Nothing Then myBase.Close: End
+
+lbCurrency.AddItem "", 0
+While Not Table.EOF
+    lbCurrency.AddItem "" & Table!Currency_iso & ""
+    lbCurrency.ItemData(lbCurrency.ListCount - 1) = Table!id_guide
+    Table.MoveNext
+Wend
+Table.Close
+lbCurrency.Height = 255 * lbCurrency.ListCount
 
 End Sub
 
@@ -121,16 +149,17 @@ Private Sub Form_Load()
 oldHeight = Me.Height
 oldWidth = Me.Width
 
-Grid.FormatString = "|< Название поставщиака|<Конт.лицо|<Телефон|<Факс|<e-mail|"
+Grid.FormatString = "|< Название поставщиака|<Валюта|<Конт.лицо|<Телефон|<Факс|<e-mail|"
 Grid.ColWidth(0) = 0
 Grid.ColWidth(gpNazwFirm) = 2025
+Grid.ColWidth(gpCurrency) = 880
 Grid.ColWidth(gpFIO) = 2880
 Grid.ColWidth(gpTlf) = 1440
 Grid.ColWidth(gpFax) = 1260
 Grid.ColWidth(gpEmail) = 1005
 Grid.ColWidth(gpSourceId) = 0
 sql = "SELECT sGuideSource.sourceName, sGuideSource.FIO, sGuideSource.Phone, " & _
-"sGuideSource.Fax, sGuideSource.Email, sGuideSource.sourceId " & _
+"sGuideSource.Fax, sGuideSource.Email, sGuideSource.sourceId, sGuideSource.currency_iso " & _
 "From sGuideSource " & _
 "Where (((sGuideSource.sourceId) > 0)) ORDER BY sGuideSource.sourceName;"
 Set tbGuide = myOpenRecordSet("##140", sql, dbOpenForwardOnly)
@@ -145,6 +174,8 @@ While Not tbGuide.EOF
     Grid.TextMatrix(quantity, gpFax) = tbGuide!Fax
     Grid.TextMatrix(quantity, gpEmail) = tbGuide!Email
     Grid.TextMatrix(quantity, gpSourceId) = tbGuide!sourceId
+    If Not IsNull(tbGuide!Currency_iso) Then _
+        Grid.TextMatrix(quantity, gpCurrency) = tbGuide!Currency_iso
     Grid.AddItem ""
 
     tbGuide.MoveNext
@@ -152,6 +183,9 @@ Wend
 tbGuide.Close
 If quantity > 0 Then Grid.RemoveItem quantity + 1
 Grid_EnterCell
+
+initCurrencyLB
+
 isLoad = True
 End Sub
 
@@ -202,12 +236,16 @@ End Sub
 
 Private Sub Grid_DblClick()
 If Grid.CellBackColor = &H88FF88 Then
+    If mousCol = gpCurrency Then
+        listBoxInGridCell lbCurrency, Grid, Grid.TextMatrix(mousRow, gpCurrency)
+    Else
         tbMobile.MaxLength = 50
         If gSourceId = 34 Or gSourceId = 40 Then 'Инвентаризация и Коррекция
             MsgBox "Это не поставщик, а системная статья прихода. " & _
             "Изменение названия не изменит ее суть!", , "Внимание!"
         End If
         textBoxInGridCell tbMobile, Grid
+    End If
 End If
 
 End Sub
@@ -236,12 +274,13 @@ End If
 End Sub
 
 Sub lbHide()
-tbMobile.Visible = False
+    tbMobile.Visible = False
+    lbCurrency.Visible = False
 
-Grid.Enabled = True
-On Error Resume Next
-Grid.SetFocus
-Grid_EnterCell
+    Grid.Enabled = True
+    On Error Resume Next
+    Grid.SetFocus
+    Grid_EnterCell
 End Sub
 
 Private Sub Grid_LeaveCell()
@@ -252,6 +291,29 @@ End Sub
 Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
+
+End Sub
+
+Private Sub lbCurrency_DblClick()
+    If lbCurrency.Visible = False Then Exit Sub
+    
+      sql = "UPDATE sGuideSource SET currency_iso = "
+      If lbCurrency.Text = "" Then
+        sql = sql & "null"
+      Else
+        sql = sql & "'" & lbCurrency.Text & "'"
+      End If
+      sql = sql & " WHERE sourceId=" & Grid.TextMatrix(mousRow, gpSourceId)
+      myBase.Execute (sql)
+      wrkDefault.CommitTrans
+    Grid.Text = lbCurrency.Text
+    lbHide
+    
+End Sub
+
+Private Sub lbCurrency_KeyDown(KeyCode As Integer, Shift As Integer)
+    If KeyCode = vbKeyReturn Then lbCurrency_DblClick
+    If KeyCode = vbKeyEscape Then lbHide
 
 End Sub
 

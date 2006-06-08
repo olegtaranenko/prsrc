@@ -15,16 +15,21 @@ end;
 
 
 
+--****************************************************************
+--                               NEXT NU
+--****************************************************************
 
 if exists (select 1 from sysprocedure where proc_name = 'slave_nextnu') then
 	drop procedure slave_nextnu;
 end if;
 
 create PROCEDURE slave_nextnu(
-		  in p_table_name varchar(100)
-		, out p_nu varchar(32)
-		, in p_dat_field varchar(32) default null
-	)
+	  in p_table_name varchar(100)
+	, out p_nu varchar(32)
+	, in p_nu_old varchar(32)    default null
+	, in p_dat_field varchar(32) default null
+	, in p_dat varchar(32) default null
+)
 begin
 	declare v_sql varchar(1000);
 
@@ -32,28 +37,85 @@ begin
 		set p_dat_field = 'dat';
 	end if;
 
-	set v_sql = 
-		 ' select nu as r_nu from ' + p_table_name
-		+'	where convert(varchar(4), ' + p_dat_field + ', 112) = convert(varchar(4), now(), 112)'
-		+' order by'
-		+'	if isnumeric(nu) = 1 then convert(integer, nu) else 0 endif desc'
-	;
-		
-	begin
-		declare c_product_variants cursor using v_sql;
-	    
-		open  c_product_variants;
-		fetch c_product_variants into p_nu;
-		set p_nu = convert(varchar(20), convert(integer, p_nu) + 1);
-		close c_product_variants;
-	end;
-
-	if p_nu is null then
-		set p_nu = '1';
+	if p_dat is null then
+		set p_dat = now();
 	end if;
 
+	set v_sql = 
+		 ' select isnull(max(convert(integer, nu)), 0) + 1 ' 
+		+' into p_nu'
+		+' from ' + p_table_name
+		+'  where convert(varchar(4), ' + p_dat_field + ', 112) = convert(varchar(4), ''' + p_dat + ''', 112)'
+		+'  and isnumeric(nu) = 1'
+	;
+
+
+	if p_nu_old is not null then
+		set v_sql = v_sql
+			+ ' and nu != ''' + convert(varchar(20), p_nu_old) + ''''
+		;
+	end if;
+
+	message v_sql to client;
+	execute immediate v_sql;
+		
+end;
+
+
+if exists (select 1 from sysprocedure where proc_name = 'slave_renu_scet') then
+	drop procedure slave_renu_scet;
+end if;
+
+create PROCEDURE slave_renu_scet(
+	in p_id_jscet integer
+)
+begin
+	declare new_nu integer;
+	set new_nu = 1;
+	for v_server_name as a dynamic scroll cursor for
+		select id_jmat, nu from scet where id_jmat = p_id_jscet
+		order by isnull(nu, 999999999)
+		for update
+	do
+		
+		update scet set nu = new_nu where current of a;
+		set new_nu = new_nu + 1;
+
+	end for
 end;
 	
+
+if exists (select 1 from sysprocedure where proc_name = 'slave_move_uslug') then
+	drop procedure slave_move_uslug;
+end if;
+
+create PROCEDURE slave_move_uslug(
+	  in p_id_jscet integer
+	, in p_id_jscet_new integer
+	, in p_quant float
+	, in p_id_inv integer
+)
+begin
+
+	a:
+	for v_server_name as a dynamic scroll cursor for
+		select
+			id, id_jmat
+		from scet
+		where
+			id_jmat = p_id_jscet
+		and id_inv =  p_id_inv
+		and summa_salev = p_quant
+		for update
+	do
+		update scet set id_jmat = p_id_jscet_new
+		where current of a;
+
+		leave a;
+	end for;
+end;
+
+
 
 --****************************************************************
 --                      CURRENCY AND RATES
@@ -96,14 +158,6 @@ begin
 
 end;
 
-/*
-begin
-	declare o_date date;
-	declare o_curse float;
-	call slave_currency_rate(now()-1,11,o_curse, o_date);
-	select o_curse;
-end;
-*/
 
 if exists (select 1 from sysprocedure where proc_name = 'slave_date_currency_rate') then
 	drop function slave_date_currency_rate;
@@ -202,5 +256,68 @@ CREATE procedure slave_set_standalone(
 begin
 	set p_succes = set_standalone(p_standalone);
 end;
+
+
+
+if exists (select 1 from sysprocedure where proc_name = 'slave_legacy_purpose') then
+	drop procedure slave_legacy_purpose;
+end if;
+
+create PROCEDURE slave_legacy_purpose(
+		in purpose_name varchar(100)
+		,in debit varchar(26)
+		,in subdebit varchar(10)
+		,in kredit varchar(26)
+		,in subkredit varchar(10)
+	)
+begin
+	declare v_id_d integer;
+	declare v_id_c integer;
+
+	select id into v_id_d from account d where d.sc = debit and d.sub_sc = subdebit;
+	select id into v_id_c from account c where c.sc = kredit and c.sub_sc = subkredit;
+	if v_id_d is null or v_id_c is null then
+		return;
+	end if;
+
+	if not exists (select 1 from m_xoz where nm = purpose_name and id_accd = v_id_d and id_accc = v_id_d) then
+		insert into m_xoz(nm, id_accd, id_accc)
+		select purpose_name, v_id_d, v_id_c;
+	end if;
+end;
+
+
+if exists (select 1 from sysprocedure where proc_name = 'slave_list_customer') then
+	drop procedure slave_list_customer;
+end if;
+/*
+create PROCEDURE slave_list_customer(
+	  in p_id_vocnames integer
+) result (
+	 id       integer
+	,FirmName varchar(98)
+	,Inn      varchar(14)
+	,Okonx    varchar(5)
+	,Okpo     varchar(10)
+	,Kpp      varchar(10)
+	,Address  varchar(98)
+	,phone    varchar(37)
+)
+begin
+	select 
+		 v.id      as id
+		,v.nm      as FirmName 
+		,p.inn     as inn
+		,p.okonx   as okonx
+		,p.okpo    as okpo
+		,p.kpp     as kpp
+		,v.address as address
+	 	,v.phone   as phone
+	from voc_names v
+	join post p on p.id = v.id
+	where 
+		v.id = isnull(p_id_vocnames, v.id);
+end;
+*/
 
 

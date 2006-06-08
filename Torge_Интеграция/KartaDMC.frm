@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "msflxgrd.ocx"
+Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form KartaDMC 
    BackColor       =   &H8000000A&
    Caption         =   "Карточка движения"
@@ -121,7 +121,7 @@ Begin VB.Form KartaDMC
       Width           =   195
    End
    Begin VB.Label laEnd 
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Caption         =   "Label4"
       Height          =   285
       Left            =   6960
@@ -131,7 +131,7 @@ Begin VB.Form KartaDMC
       Width           =   795
    End
    Begin VB.Label laStart 
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Caption         =   "Label3"
       Height          =   285
       Left            =   5880
@@ -150,7 +150,7 @@ Begin VB.Form KartaDMC
       Width           =   1515
    End
    Begin VB.Label laQuant 
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Height          =   315
       Left            =   2460
       TabIndex        =   10
@@ -284,7 +284,7 @@ Public Sub getKartaDMC(nNom As String, Optional reg As String = "")
 Dim str2 As String, i As Integer, str As String, per As Single
 Dim firstBad As Long, head As Integer, ed_izm As String, ed_izm2 As String
 Dim prev As Integer, ost As Single, bOst As Single, iBef As Integer
-
+Dim ost_outcome As Single, ost_income As Single
 
 'нач. остатки
 'sql = "SELECT sGuideNomenk.begOstatki, sGuideNomenk.nomName, "
@@ -306,11 +306,16 @@ str = getWhereByDateBoxes(Me, "sDocs.xDate", begDate, "befo") 'до startDate
 str2 = getWhereByDateBoxes(Me, "sDocs.xDate", begDate) ' между
 If str = "error" Or str2 = "error" Then Exit Sub
 If str <> "" Then
-    sql = "SELECT Sum(sDMC.quant) AS Sum_quant FROM sDocs INNER JOIN " & _
-    "sDMC ON (sDocs.numExt = sDMC.numExt) AND (sDocs.numDoc = sDMC.numDoc) " & _
-    "WHERE ((" & str & ") AND (" & strWhere & "));"
+    sql = "SELECT " _
+        & "Sum(if sourId <= -1000 then sDMC.quant else 0 endif) AS outcome" _
+        & ", Sum(if destId <= -1000 then sDMC.quant else 0 endif) AS income" _
+        & " FROM sDocs INNER JOIN " & _
+        " sDMC ON (sDocs.numExt = sDMC.numExt) AND (sDocs.numDoc = sDMC.numDoc) " & _
+        " WHERE (sourId >= -1000 or destId >= -1000) and " & str & " and " & strWhere
 '    MsgBox "sql1=" & sql
-    byErrSqlGetValues "##132", sql, ost
+'Debug.Print sql
+    byErrSqlGetValues "##132", sql, ost_outcome, ost_income
+    ost = ost_income - ost_outcome
     bOst = bOst + ost
 End If
 

@@ -709,7 +709,7 @@ If isMzagruz Then
 'не сработали, т.е. надо проверить и сработать
 '  If OzDay < maxDay + 1 Then  '
   If ObDay > -32000 Then  '
-    dayCorrect ZbDay, OeDay
+    dayCorrect ObDay, OeDay
     ukladka ost, OeDay, ObDay, tbVrVipO.Text 'обратная укладка  (в bef не попадает)
     zakazToGrid reg, "образец", tbVrVipO.Text
   End If

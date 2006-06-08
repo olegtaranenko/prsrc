@@ -6,6 +6,7 @@ if exists (select 1 from sysprocedure where proc_name = 'insert_host') then
 	drop function insert_host;
 end if;
 
+/*
 create 
 	procedure insert_host(
 		in table_name char(50)
@@ -43,14 +44,14 @@ begin
     	execute immediate 'call slave_insert_' + cur_remote + sqls;
 	end for;
 end;
-
+*/
 
 
 
 if exists (select 1 from sysprocedure where proc_name = 'insert_count_host') then
 	drop function insert_count_host;
 end if;
-
+/*
 create 
 	function insert_count_host(
 			in table_name char(50)
@@ -94,7 +95,7 @@ begin
 
 	return inserted;
 end;
-
+*/
 
 
 --****************************************************************
@@ -104,6 +105,9 @@ end;
 if exists (select '*' from sysprocedure where proc_name like 'update_host') then 
 	drop procedure update_host;
 end if;
+
+
+/*
 create 
 	procedure update_host(
 		in table_name varchar(50)
@@ -149,11 +153,13 @@ begin
     	execute immediate 'call slave_update_' + cur_remote + sqls;
 	end for;
 end;
-
+*/
 
 if exists (select '*' from sysprocedure where proc_name like 'update_count_host') then 
 	drop function update_count_host;
 end if;
+
+/*
 create 
 	function update_count_host(
 		in table_name varchar(50)
@@ -214,7 +220,7 @@ begin
 	end for;
 	return updated;
 end;
-
+*/
 
 
 --****************************************************************
@@ -224,6 +230,7 @@ if exists (select 1 from sysprocedure where proc_name = 'delete_host') then
 	drop function delete_host;
 end if;
 
+/*
 create 
 	procedure delete_host(in table_name varchar(50), in where_cond varchar(1000))
 begin
@@ -235,7 +242,7 @@ begin
     	execute immediate 'call slave_delete_' + cur_remote + '('''  + table_name + ''', ''' + where_cond + ''')';
 	  end for;
 end;
-
+*/
 
 
 ----------------
@@ -243,6 +250,7 @@ if exists (select 1 from sysprocedure where proc_name = 'delete_count_host') the
 	drop function delete_count_host;
 end if;
 
+/*
 create 
 	function delete_count_host(
 			in table_name varchar(50)
@@ -273,7 +281,7 @@ begin
 	return deleted;
 end;
 
-
+*/
 
 --****************************************************************
 --                               CALL
@@ -283,22 +291,23 @@ if exists (select '*' from sysprocedure where proc_name like 'call_host') then
 	drop function call_host;
 end if;
 
+/*
 create procedure call_host(
 		p_proc_name varchar(100)
-		, p_params varchar(2000)
+		, p_params varchar(500)
 	)
 
 begin
-	declare v_sql varchar(254);
+	declare v_sql varchar(1000);
 
 	for v_remote_name as a dynamic scroll cursor for
-		select srvname as cur_remote from sys.sysservers  
+		select srvname as cur_remote from sys.sysservers
 	do
 		set v_sql = 'call slave_' + p_proc_name + '_'+ cur_remote + '(' + p_params + ')';
 		message v_sql to client;
 		execute immediate v_sql;
 	end for;
 end;
-
+*/
 
 

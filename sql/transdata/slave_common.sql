@@ -1,4 +1,3 @@
-
 --****************************************************************
 --                               DELETE
 --****************************************************************
@@ -8,7 +7,7 @@ end if;
 
 create 
 	procedure slave_delete(
-		in table_name varchar(50)
+		  in table_name varchar(50)
 		, in where_claus varchar(1000)
 		, in from_claus varchar(256) default null
 	)
@@ -111,7 +110,6 @@ create
 begin
 	
 	declare sqls varchar(3000);
-	declare inserted integer;
 	declare f_return_id integer;
 	set f_return_id = 0;
 
@@ -133,7 +131,7 @@ begin
 	execute immediate  sqls;
 	select @@rowcount into inserted;
 	if f_return_id = 1 then
-		set inserted = @id;
+		set inserted = @@id;
 	end if;
 end;
 
@@ -258,22 +256,29 @@ end if;
 
 create 
 	procedure slave_block_table (
-		  in emitter_server_name varchar(1000)
+		  out ack integer
+		, in emitter_server_name varchar(1000)
 		, in block_table_name varchar(50)
 	)
 begin
 	declare var_name varchar(100);
-	declare var_value char(1);
+	set var_name = '@'+make_block_name (emitter_server_name, block_table_name);
 
-	set var_name = make_block_name (emitter_server_name, block_table_name);
+	--if var_value = 1 then
+	--	raiserror 17010 'Переменная %1! уже была определена. \n Запомните условия возникновения этой ошибки и сообщите администратору', var_name;
+	--end if;
 
-//	execute immediate 'select ' + var_name + ' into var_value' ;
-	if var_value = 1 then
-		raiserror 17010 'Переменная %1! уже была определена. \n Запомните условия возникновения этой ошибки и сообщите администратору', var_name;
-	end if;
+	--message 'block_table(', @@servername, ') =>', emitter_server_name, block_table_name to client;
+	message 'Server ', @@servername, ' ::block_table(', emitter_server_name, ', ', block_table_name, ')' to log;
 
-	execute immediate 'create variable ' + var_name +' integer';
+	--execute immediate 'create variable ' + var_name +' integer';
 	execute immediate 'set ' + var_name + ' = 1';
+	execute immediate 'select ' + var_name + ' into ack';
+	--execute immediate 'select ' + var_name + ' into ack';
+	--message 'block_table(', @@servername, ') =>', var_name to log;
+	message '... var_name = ', var_name to log;
+	message '... ack = ', ack;
+--	waitfor delay convert(time, '00:00:00.500');
 
 end;
 
@@ -284,20 +289,25 @@ end if;
 
 create 
 	procedure slave_unblock_table (
-		  in emitter_server_name varchar(50)
-		, in unblock_table_name varchar(50)
+		  out ack integer
+		, in emitter_server_name varchar(50)
+		, in unblock_table_name  varchar(50)
 	)
 begin
 	declare var_name varchar(100);
-	declare var_value char(1);
+--	declare var_value char(1);
 
-	set var_name = make_block_name (emitter_server_name, unblock_table_name);
-//	execute immediate 'select ' + var_name + ' into var_value' ;
-	if var_value = 1 then
-		raiserror 17010 'Ошибка при разблокировке таблицы.\n Переменная %1! НЕ была определена. \n Запомните условия возникновения этой ошибки и сообщите администратору', var_name;
-	end if;
+	set var_name = '@'+make_block_name (emitter_server_name, unblock_table_name);
 
-	execute immediate 'drop variable ' + var_name;
+	--if var_value = 1 then
+	--	raiserror 17010 'Ошибка при разблокировке таблицы.\n Переменная %1! НЕ была определена. \n Запомните условия возникновения этой ошибки и сообщите администратору', var_name;
+	--end if;
+
+	message 'unblock_table(', @@servername, ') =>', emitter_server_name, unblock_table_name to log;
+	execute immediate 'set ' + var_name + ' = 0';
+	execute immediate 'select ' + var_name + ' into ack';
+	--select 'a' into ack;
+	--message 'unblock_table(', @@servername, ') => ack ', ack to log;
 
 end;
 
@@ -313,9 +323,35 @@ create
 	)
 	returns varchar(100)
 begin
-	return '@'+emitter_server_name + '_' + table_name;
+	return emitter_server_name + '_' + table_name;
 
 end;
 
+
+if exists (select '*' from sysprocedure where proc_name like 'cre_block_var') then  
+	drop procedure cre_block_var;
+end if;
+
+create 
+	procedure cre_block_var (
+		 in var_name varchar(100)
+	)
+begin
+	execute immediate 'create variable @' + var_name +' integer';
+end;
+
+
+
+if exists (select '*' from sysprocedure where proc_name like 'slave_cre_block_var') then  
+	drop procedure slave_cre_block_var;
+end if;
+
+create 
+	procedure slave_cre_block_var (
+		  in var_name varchar(50)
+	)
+begin
+	execute immediate 'call cre_block_var (''' + var_name + ''')';
+end;
 
 

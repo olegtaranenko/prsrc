@@ -44,6 +44,7 @@ Public Manag() As String
 Public Status() As String
 Public insideId() As String
 Public gKlassId As String
+Public gKlassType As String
 Public gNomNom As String
 Public gSeriaId As String
 Public gProduct As String
@@ -70,6 +71,88 @@ Public numDoc As Long, numExt As Integer
 Public begDate As Date ' Дата вступительных остатков
 Public NN() As String, QQ() As Single ' откатываемая номенклатура и кол-во
 Public QQ3() As Single, QQ2() As Single ' вспомагательое откатываемое кол-во
+Public bulkChangEnabled As Boolean
+
+
+Sub CheckIntegration()
+Dim servers As Recordset
+Dim fromComtexRS As Recordset
+Dim msgOk As VbMsgBoxResult
+Dim fromComtex As Integer
+
+
+
+'sql = "call wf_load_session()"
+
+'If myExecute("##0.1", sql) = 1 Then
+    
+'End If
+
+' для каждого сервера проверяем условия соответствия режима интеграции
+' установленного в настройках и действительной доступности серверов
+' на момент запуска программы
+' Если обнаружено рассогласование, то выдаем предупреждение
+' Предупреждение можно подавлять настройкой в System
+sql = "select * from guideVenture"
+Set servers = myOpenRecordSet("##0.2", sql, 0)
+If servers Is Nothing Then Exit Sub
+While Not servers.EOF
+    On Error GoTo no_access
+    If byErrSqlGetValues("##0.3" _
+        , "select get_standalone_remote ('" & servers!sysname & "')" _
+        , fromComtex) _
+    Then
+        
+    End If
+    
+    If servers!sysname = "stime" Then
+        If servers!standalone = 1 Then
+            bulkChangEnabled = False
+        Else
+            bulkChangEnabled = True
+        End If
+    End If
+
+        
+    If fromComtex = 1 And servers!standalone = 0 Then
+        msgOk = MsgBox("Сервер """ & servers!ventureName & """ (" & servers!sysname & ") " _
+        & " доступен, но он со своей стороны НЕ настроен на режим совместного использования с программой " _
+        & vbCr & "Чтобы выйти и исправить ситуацию нажмите кнопку Отмена(Cancel)" _
+        & vbCr & "Если же вы все-таки хотите продолжить работу, нажмите кнопку Ок" _
+        , vbOKCancel, "Предупреждение")
+        
+        If msgOk <> vbOK Then myBase.Close: End
+         
+    ElseIf fromComtex = 0 And servers!standalone = 1 Then
+        msgOk = MsgBox("Сервер """ & servers!ventureName & """ (" & servers!sysname & ") " _
+        & " доступен и настроен на режим совместной работы с программой." _
+        & vbCr & "В тоже время сама программа настроена так, что она не будет работать с этим сервером." _
+        & " Поэтому некоторая информации не будет попадать туда." _
+        & vbCr & "Чтобы выйти и исправить ситуацию нажмите кнопку Отмена(Cancel)" _
+        & vbCr & "Если же вы все-таки хотите продолжить работу, нажмите кнопку Ок" _
+        , vbOKCancel, "Предупреждение")
+        
+        If msgOk <> vbOK Then myBase.Close: End
+    
+    ElseIf fromComtex = -1 And servers!standalone <> 1 Then
+        msgOk = MsgBox("Сервер """ & servers!ventureName & """ (" & servers!sysname & ") " _
+        & " НЕ ДОСТУПЕН, хотя в настройках указано, что программа будет работать совместно. " _
+        & vbCr & vbCr & " Такой режим может вызывать ошибки в работе программы!" _
+        & vbCr & "Чтобы выйти и исправить ситуацию нажмите кнопку Отмена(Cancel)" _
+        , vbOKCancel, "Предупреждение")
+        
+        If msgOk <> vbOK Then myBase.Close: End
+    End If
+    GoTo cont
+no_access:
+cont:
+    servers.MoveNext
+Wend
+servers.Close
+
+
+End Sub
+
 
 Sub clearGridRow(Grid As MSFlexGrid, row As Long)
 Dim il As Long
@@ -98,6 +181,16 @@ Dim il As Long
     Grid.col = 1
     noClick = False
 End Sub
+
+Sub colorGridCell(Grid As MSFlexGrid, ByVal row As Long, ByVal col As Long, ByVal color As Long)
+Dim il As Long
+    noClick = True
+    Grid.row = row
+    Grid.col = col
+    Grid.CellForeColor = color
+    noClick = False
+End Sub
+
 
 Sub GridToExcel(Grid As MSFlexGrid, Optional title As String = "")
 
@@ -130,6 +223,80 @@ Next r
 End With
 Set objExel = Nothing
 End Sub
+
+
+Function myIsDate(ByVal dt As String) As Variant
+Dim dotPos As Integer
+Dim v_dd As Integer
+Dim v_mm As Integer
+Dim v_yyyy As Integer
+    
+    On Error GoTo catch
+    dotPos = InStr(dt, ".")
+    If IsNull(dotPos) Or dotPos = 0 Then
+        v_dd = CInt(dt)
+        dt = ""
+    Else
+        v_dd = CInt(Left(dt, dotPos))
+        dt = Mid(dt, dotPos + 1)
+    End If
+    
+    If Len(dt) > 0 Then
+        dotPos = InStr(dt, ".")
+        If IsNull(dotPos) Or dotPos = 0 Then
+            v_mm = CInt(dt)
+            dt = ""
+        Else
+            v_mm = CInt(Left(dt, dotPos))
+            dt = Mid(dt, dotPos + 1)
+        End If
+    Else
+        v_mm = Format(Now(), "mm")
+    End If
+    
+    If Len(dt) <= 2 And Len(dt) > 0 Then
+        v_yyyy = CInt("20" & Format(CInt(dt), "0#"))
+    Else
+        v_yyyy = Format(Now(), "yyyy")
+    End If
+    
+    myIsDate = Format(CDate(CStr(v_yyyy) & "-" & Format(v_mm, "0#") & "-" & Format(v_dd, "0#")), "dd.mm.yy")
+    Exit Function
+catch:
+    myIsDate = False
+End Function
+
+
+Function isDateEmpty(tBox As TextBox, Optional warn As Boolean = True) As Boolean
+Dim str As String
+Dim dt As String
+Dim ret As Variant
+    
+    dt = tBox.Text
+    If IsEmpty(dt) Or Len(CStr(dt)) = 0 Then
+        isDateEmpty = False
+        Exit Function
+    End If
+    
+    dt = tBox.Text
+    
+    ret = myIsDate(dt)
+    If IsDate(ret) Then
+        isDateEmpty = True
+        tBox.Text = ret
+    Else
+        If warn Then
+            MsgBox "Неверная дата: " & CStr(dt)
+        End If
+        isDateEmpty = False
+        tBox.SetFocus
+        tBox.SelStart = 0
+        tBox.SelLength = Len(tBox.Text)
+    End If
+    
+End Function
+
+
 'в случеу true также возвращает дату в tmpDate
 Function isDateTbox(tBox As TextBox, Optional fryDays As String = "") As Boolean
 Dim str As String
@@ -277,6 +444,8 @@ KartaDMC.isLoad = False
 Nomenklatura.isRegimLoad = False
 Products.isLoad = False
 ReDim DMCnomNom(0)
+
+
 
 CurDate = Now
 
@@ -687,6 +856,10 @@ Else
     checkNumeric = False
 End If
 End Function
+Sub clearGrid1(Grid As MSFlexGrid)
+    Grid.Rows = 1
+End Sub
+
 
 Sub clearGrid(Grid As MSFlexGrid)
 Dim il As Long
@@ -865,7 +1038,7 @@ field As String, Optional by As String = "") As Boolean
 Dim sql As String, byStr As String  ', numOrd As String
 
 ValueToTableField = False
-If value = "" Then value = Chr(34) & Chr(34)
+If value = "" Then value = "''"
 If by = "" Then
     byStr = ".numOrder)= " & gNzak
 ElseIf by = "byFirmId" Then
@@ -886,17 +1059,36 @@ ElseIf by = "byNumDoc" Then
         ".numExt)=" & numExt & " ));"
     GoTo AA
 Else
-    Exit Function
+    byStr = "." & by
+    'Exit Function
 End If
 sql = "UPDATE " & Table & " SET " & Table & "." & field & _
 " = " & value & " WHERE (((" & Table & byStr & " ));"
 AA:
 'MsgBox "sql = " & sql
+'Debug.Print sql
 If myExecute(myErrCod, sql) = 0 Then ValueToTableField = True
 End Function
 
+Public Function vo_deleteNomnom(nomnom As String, numDoc As String) As Boolean
+    vo_deleteNomnom = False
+    sql = " delete from sDmcVenture where " _
+        & " nomnom = '" & nomnom & "'" _
+        & " and sdv_id = " & numDoc
+    If myExecute("##122.2", sql) = 0 Then
+        vo_deleteNomnom = True
+    End If
+End Function
 
+Function getValueFromTable(tabl As String, field As String, where As String) As Variant
+Dim table As Recordset
 
-
-
+getValueFromTable = Null
+sql = "SELECT " & field & " as fff  From " & tabl & _
+      " WHERE " & where & ";"
+Set table = myOpenRecordSet("##59.1", sql, dbOpenForwardOnly)
+If table Is Nothing Then Exit Function
+If Not table.BOF Then getValueFromTable = table!fff
+table.Close
+End Function
 

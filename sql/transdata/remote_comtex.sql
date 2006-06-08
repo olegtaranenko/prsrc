@@ -14,8 +14,19 @@ call build_host_procedure (
 );
 
 call build_host_procedure (
-		  'put_xoz', 
+		  'bind_zakaz', 
+		  '  out v_orderNum char(150)'
+		+ ', p_server     char(50)'
+		+ ', p_invoice	  char(10)'
+		+ ', in p_sum        real'
+		+ ', in p_sc_credit char(10)'
+		+ ', in p_id_xoz  integer default null'
+);
 
+
+
+call build_host_procedure (
+		  'put_xoz', 
 		  '  p_server     char(50)'
 		+ ', p_id_xoz	  integer'
 		+ ', inout p_debit_sc   char(26)'
@@ -28,7 +39,10 @@ call build_host_procedure (
 		+ ', p_id_curr    integer'
 		+ ', p_detail  char(99)'
 		+ ', p_purposeId  integer'
+		+ ', p_kredDebitor     integer'
+		+ ', p_note       char(10)'
 );
+
 
 call build_host_procedure (
 		  'set_purpose', 
@@ -39,4 +53,5 @@ call build_host_procedure (
 		+ ', inout p_credit_sub  char(10)'
 		+ ', out p_purposeId integer'
 );
+
 

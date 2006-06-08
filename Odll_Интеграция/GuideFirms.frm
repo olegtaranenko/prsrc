@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "msflxgrd.ocx"
+Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form GuideFirms 
    BackColor       =   &H8000000A&
    BorderStyle     =   1  'Fixed Single
@@ -191,7 +191,7 @@ Begin VB.Form GuideFirms
    End
    Begin VB.Label laQuant 
       BackColor       =   &H8000000A&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Caption         =   " "
       Height          =   315
       Left            =   5520
@@ -457,6 +457,8 @@ Dim sqlReq As String, firmId As String, DNM As String
     Close #2
     Filtr.lbFirm.AddItem Grid.Text, 0
     Filtr.lbFirm.Selected(0) = True
+    refreshTimestamp gNzak
+    
     
 Unload Me
 End Sub

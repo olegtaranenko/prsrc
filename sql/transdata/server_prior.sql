@@ -229,12 +229,14 @@ create
 	procedure delete_host(in table_name varchar(50), in where_cond varchar(1000))
 begin
 	
-	  for v_remote_name as a dynamic scroll cursor for
-		select srvname as cur_remote from sys.sysservers s join guideventure v on s.srvname = v.sysname and v.standalone = 0 do
+	for v_remote_name as a dynamic scroll cursor for
+		select srvname as cur_remote from sys.sysservers s 
+		join guideventure v on s.srvname = v.sysname and v.standalone = 0 
+	do
 --		raiserror 17002 'call slave_delete_' + cur_remote + '('''  + table_name + ''', ''' + where_cond + ''')';
 		
     	execute immediate 'call slave_delete_' + cur_remote + '('''  + table_name + ''', ''' + where_cond + ''')';
-	  end for;
+	end for;
 end;
 
 
@@ -257,7 +259,9 @@ begin
 
 
 	for v_remote_name as a dynamic scroll cursor for
-		select srvname as cur_remote from sys.sysservers s join guideventure v on s.srvname = v.sysname and v.standalone = 0 do
+		select srvname as cur_remote from sys.sysservers s 
+		join guideventure v on s.srvname = v.sysname and v.standalone = 0 
+	do
 
 
 		set sqls = 
@@ -297,7 +301,6 @@ begin
 		execute immediate v_sql;
 	end for;
 end;
-
 
 
 call build_host_procedure (

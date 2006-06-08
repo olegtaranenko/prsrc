@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "msflxgrd.ocx"
+Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Report 
    BackColor       =   &H8000000A&
    Caption         =   "Отчет"
@@ -57,7 +57,7 @@ Begin VB.Form Report
    End
    Begin VB.Label laCount 
       BackColor       =   &H8000000E&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Caption         =   " "
       Height          =   255
       Left            =   6600
@@ -66,9 +66,9 @@ Begin VB.Form Report
       Width           =   495
    End
    Begin VB.Label laRecSum 
-      Alignment       =   1  'Правая привязка
+      Alignment       =   1  'Right Justify
       BackColor       =   &H8000000E&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Height          =   315
       Left            =   1980
       TabIndex        =   6
@@ -76,7 +76,7 @@ Begin VB.Form Report
       Width           =   915
    End
    Begin VB.Label laSum 
-      Alignment       =   1  'Правая привязка
+      Alignment       =   1  'Right Justify
       Caption         =   "Сумма:"
       Height          =   195
       Left            =   660
@@ -85,7 +85,7 @@ Begin VB.Form Report
       Width           =   1035
    End
    Begin VB.Label laHeader 
-      Alignment       =   2  'Центровка
+      Alignment       =   2  'Center
       ForeColor       =   &H00000000&
       Height          =   195
       Left            =   60
@@ -384,8 +384,12 @@ Grid.ColWidth(4) = 1200
 'сделать исправления в переводом цен на Целые кол-ва ном-р !!!
 sumD = 0: sumK = 0
 Grid.TextMatrix(1, 1) = "Склад - максимальный запас"
-sql = "SELECT Sum((([mark]='Used')*[Zakup]+([mark]<>'Used')*[nowOstatki])" & _
-"*[cost]/[perList]) AS sum  FROM sGuideNomenk;" '!!!
+sql = "SELECT " _
+    & " Sum((if mark='Used' then Zakup else nowOstatki endif) " _
+    & " * cost/perList) AS sum " _
+    & "FROM sGuideNomenk "
+'Debug.Print sql
+
 byErrSqlGetValues "##387", sql, s
 Grid.TextMatrix(1, 3) = Round(-s, 2)
 sumK = sumK - s
@@ -434,15 +438,17 @@ sumK = sumK + k
 
 
 d = 0: k = 0
-sql = "SELECT Sum(([paid]>[shipped])*([shipped]-[paid])) AS k, " & _
-"Sum(([paid]<[shipped])*([paid]-[shipped])) AS d " & _
-"from Orders WHERE (((StatusId)<6));"
+sql = "SELECT Sum(if paid > shipped then shipped - paid endif ) AS k" _
+        & "    , Sum(if paid < shipped then paid - shipped endif) AS d " _
+        & "    from Orders WHERE StatusId < 6 "
 'не вылавливает строки где paid или shipped Null
+Debug.Print sql
+
 byErrSqlGetValues "##392", sql, k, d
 s = 0: s2 = 0
-sql = "SELECT Sum(([paid]>[shipped])*([shipped]-[paid])) AS k, " & _
-"Sum(([paid]<[shipped])*([paid]-[shipped])) AS d " & _
-"from bayOrders WHERE (((StatusId)<6));"
+sql = "SELECT Sum(if paid > shipped then shipped - paid endif ) AS k" _
+        & "    , Sum(if paid < shipped then paid - shipped endif) AS d " _
+        & "    from BayOrders WHERE StatusId < 6 "
 'не вылавливает строки где paid или shipped Null
 byErrSqlGetValues "##392", sql, s, s2
 k = k + s

@@ -1,8 +1,8 @@
 VERSION 5.00
 Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCTL.OCX"
-Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "msflxgrd.ocx"
+Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Orders 
-   Appearance      =   0  'Плоска
+   Appearance      =   0  'Flat
    BackColor       =   &H8000000A&
    Caption         =   "Предварительная обработка заказов"
    ClientHeight    =   6225
@@ -16,7 +16,7 @@ Begin VB.Form Orders
    ScaleWidth      =   11880
    StartUpPosition =   2  'CenterScreen
    Begin VB.ListBox lbVenture 
-      Appearance      =   0  'Плоска
+      Appearance      =   0  'Flat
       Height          =   615
       Left            =   5500
       TabIndex        =   41
@@ -379,7 +379,7 @@ Begin VB.Form Orders
       Width           =   975
    End
    Begin MSComctlLib.Toolbar Toolbar1 
-      Align           =   1  'Привязать вверх
+      Align           =   1  'Align Top
       Height          =   630
       Left            =   0
       TabIndex        =   38
@@ -418,7 +418,7 @@ Begin VB.Form Orders
       Width           =   855
    End
    Begin VB.Label laInform 
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       ForeColor       =   &H00000000&
       Height          =   315
       Left            =   1260
@@ -518,6 +518,15 @@ Begin VB.Form Orders
          Caption         =   "Отчет ""Все заказы Фирмы"""
          Visible         =   0   'False
       End
+      Begin VB.Menu mnBillFirma 
+         Caption         =   ""
+         Visible         =   0   'False
+      End
+      Begin VB.Menu mnQuickBill 
+         Caption         =   "-"
+         Index           =   0
+         Visible         =   0   'False
+      End
    End
 End
 Attribute VB_Name = "Orders"
@@ -541,6 +550,7 @@ Public mousRow As Long
 Public mousCol As Long
 Public mousRow4 As Long
 Public mousCol4 As Long
+Public g_id_bill As String
 Private loadBaseTimestamp As Date
 
 Dim quantity4 As Long
@@ -559,43 +569,31 @@ Dim gain2 As Single, gain3 As Single, gain4 As Single
 
 Const AddCaption = "Добавить"
 Const t17_00 = 61200 ' в секундах
-'Const rowFromOrdersSQL = "SELECT Orders.numOrder, GuideCeh.Ceh, Orders.inDate, " & _
-    "GuideManag.Manag, GuideStatus.Status, Orders.StatusId, GuideProblem.Problem, " & _
-    "Orders.DateRS, GuideFirms.Name, Orders.outDateTime, Orders.Type, " & _
-    "Orders.workTime, Orders.Logo, Orders.Product, Orders.ordered, " & _
-    "Orders.temaId, Orders.paid, Orders.shipped,  Orders.Invoice, " & _
-    "OrdersMO.DateTimeMO, OrdersMO.workTimeMO, OrdersMO.StatM, OrdersMO.StatO, " & _
-    "GuideManag_1.Manag AS lastManag, OrdersInCeh.urgent " & _
-    "FROM orders join GuideStatus ON GuideStatus.StatusId = Orders.StatusId  JOIN GuideProblem ON GuideProblem.ProblemId = Orders.ProblemId JOIN GuideManag ON GuideManag.ManagId = Orders.ManagId  left JOIN GuideFirms ON GuideFirms.FirmId = Orders.FirmId   left JOIN GuideCeh ON GuideCeh.CehId = Orders.CehId     LEFT JOIN GuideManag AS GuideManag_1 ON Orders.lastManagId = GuideManag_1.ManagId   LEFT JOIN OrdersMO ON Orders.numOrder = OrdersMO.numOrder   LEFT JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder"
-'Const rowFromOrdersSQL = "SELECT Orders.numOrder, GuideCeh.Ceh, Orders.inDate, " & _
-    "GuideManag.Manag, GuideStatus.Status, Orders.StatusId, GuideProblem.Problem, " & _
-    "Orders.DateRS, GuideFirms.Name, Orders.outDateTime, Orders.Type, " & _
-    "Orders.workTime, Orders.Logo, Orders.Product, Orders.ordered, " & _
-    "Orders.temaId, Orders.paid, Orders.shipped,  Orders.Invoice, " & _
-    "OrdersMO.DateTimeMO, OrdersMO.workTimeMO, OrdersMO.StatM, OrdersMO.StatO, " & _
-    "GuideManag_1.Manag AS lastManag, OrdersInCeh.urgent " & _
-    "FROM ((GuideStatus INNER JOIN (GuideProblem INNER JOIN (GuideManag INNER JOIN (GuideFirms INNER JOIN (GuideCeh INNER JOIN (Orders LEFT JOIN GuideManag AS GuideManag_1 ON Orders.lastManagId = GuideManag_1.ManagId) ON GuideCeh.CehId = Orders.CehId) ON GuideFirms.FirmId = Orders.FirmId) ON GuideManag.ManagId = Orders.ManagId) ON GuideProblem.ProblemId = Orders.ProblemId) ON GuideStatus.StatusId = Orders.StatusId) LEFT JOIN OrdersMO ON Orders.numOrder = OrdersMO.numOrder) LEFT JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder"
 
 Const rowFromOrdersSQL = "select " & _
-"Orders.numOrder, GuideCeh.Ceh, Orders.inDate,  " & _
-"    GuideManag.Manag, GuideStatus.Status, Orders.StatusId, GuideProblem.Problem,  " & _
-"    Orders.DateRS, GuideFirms.Name, Orders.outDateTime, Orders.Type,  " & _
-"    Orders.workTime, Orders.Logo, Orders.Product, Orders.ordered,  " & _
-"    Orders.temaId, Orders.paid, Orders.shipped,  Orders.Invoice,  " & _
-"    OrdersMO.DateTimeMO, OrdersMO.workTimeMO, OrdersMO.StatM, OrdersMO.StatO,  " & _
-"    GuideManag_1.Manag AS lastManag, OrdersInCeh.urgent  " & _
-"   ,guideventure.venturename as venture " & _
-"   ,lastModified " & _
-"from orders " & _
-"JOIN GuideStatus ON GuideStatus.StatusId = Orders.StatusId " & _
-"JOIN GuideProblem ON GuideProblem.ProblemId = Orders.ProblemId " & _
-"JOIN GuideManag ON GuideManag.ManagId = Orders.ManagId " & _
-"JOIN GuideFirms ON GuideFirms.FirmId = Orders.FirmId " & _
-"JOIN GuideCeh ON GuideCeh.CehId = Orders.CehId " & _
-"LEFT JOIN GuideManag AS GuideManag_1 ON Orders.lastManagId = GuideManag_1.ManagId " & _
-"LEFT JOIN OrdersMO ON Orders.numOrder = OrdersMO.numOrder " & _
-"LEFT JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder " & _
-"left join guideventure on guideventure.ventureId = orders.ventureid "
+"    Orders.numOrder, GuideCeh.Ceh, Orders.inDate" & _
+"   ,GuideManag.Manag, GuideStatus.Status, Orders.StatusId, GuideProblem.Problem" & _
+"   ,Orders.DateRS, GuideFirms.Name, Orders.outDateTime, Orders.Type" & _
+"   ,Orders.workTime, Orders.Logo, Orders.Product, Orders.ordered" & _
+"   ,Orders.temaId, Orders.paid, Orders.shipped,  Orders.Invoice" & _
+"   ,OrdersMO.DateTimeMO, OrdersMO.workTimeMO, OrdersMO.StatM, OrdersMO.StatO" & _
+"   ,GuideManag_1.Manag AS lastManag, OrdersInCeh.urgent" & _
+"   ,guideventure.venturename as venture" & _
+"   ,lastModified" & _
+"   ,id_bill" & _
+"   ,GuideFirms.id_voc_names as id_voc_names" & _
+"   ,guideventure.sysname as servername" & _
+"   ,Orders.zalog, Orders.nal" & _
+" from orders " & _
+" JOIN GuideStatus ON GuideStatus.StatusId = Orders.StatusId " & _
+" JOIN GuideProblem ON GuideProblem.ProblemId = Orders.ProblemId " & _
+" JOIN GuideManag ON GuideManag.ManagId = Orders.ManagId " & _
+" JOIN GuideFirms ON GuideFirms.FirmId = Orders.FirmId " & _
+" JOIN GuideCeh ON GuideCeh.CehId = Orders.CehId " & _
+" LEFT JOIN GuideManag AS GuideManag_1 ON Orders.lastManagId = GuideManag_1.ManagId " & _
+" LEFT JOIN OrdersMO ON Orders.numOrder = OrdersMO.numOrder " & _
+" LEFT JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder " & _
+" left join guideventure on guideventure.ventureId = orders.ventureid "
     
     
 Private Sub cbClose_Click()
@@ -760,7 +758,7 @@ If isBaseOrder Then
   tbOrders!firmId = baseFirmId
   tbOrders!ProblemId = baseProblemId
 End If
-tbOrders.Update
+tbOrders.update
 
 If zakazNum > 0 Then Grid.AddItem ""
 zakazNum = zakazNum + 1
@@ -1000,7 +998,7 @@ If Not tqOrders.BOF Then
         'удаление файла
         MsgBox "Поскольку были обнаружены противоречия, в Реестр будут " & _
         "помещены только заказы с противоречиями. Текст противоречия по " & _
-        "конкретному заказу можно получить нажатием <Ctrl>+<i>.", , "Файл не записан!"
+        "конкретному заказу можно получить нажатием <Ctrl>+<I>.", , "Файл не записан!"
         chConflict.value = 1
         cmRefr_Click
         Close #1
@@ -1296,6 +1294,7 @@ orColNumber = 0
 mousCol = 1
 initOrCol orNomZak, "nOrders.numOrder"
 initOrCol orInvoice, "sOrders.Invoice"
+initOrCol orVenture, "sOrders.ventureName"
 initOrCol orCeh, "sGuideCeh.Ceh"
 initOrCol orData, "dOrders.inDate"
 initOrCol orMen, "sGuideManag.Manag"
@@ -1315,12 +1314,16 @@ initOrCol orLogo, "sOrders.Logo"
 initOrCol orIzdelia, "sOrders.Product"
 initOrCol orType, "sOrders.Type"
 initOrCol orTema, "nOrders.temaId"
+initOrCol orZalog, "nOrders.zalog"
+initOrCol orNal, "nOrders.nal"
 initOrCol orZakazano, "nOrders.ordered"
 initOrCol orOplacheno, "nOrders.paid"
 initOrCol orOtgrugeno, "nOrders.shipped"
 initOrCol orLastMen, "sGuideManag_1.Manag"
-initOrCol orVenture, "sOrders.ventureId"
-initOrCol orlastModified, "sOrders.lastModified"
+initOrCol orlastModified, "dOrders.lastModified"
+initOrCol orBillId, "nOrders.id_bill"
+initOrCol orVocnameId, "nOrders.id_voc_names"
+initOrCol orServername, "sOrders.servername"
 
 ReDim Preserve orSqlWhere(orColNumber)
 
@@ -1333,11 +1336,11 @@ zakazNum = 0
 tbStartDate.Text = Format(DateAdd("d", -7, curDate), "dd/mm/yy")
 tbEndDate.Text = Format(curDate, "dd/mm/yy")
 
-Grid.FormatString = "|>№ заказа|>№ счета| Цех |^Дата |^ М|<Статус |<Проблемы|" & _
+Grid.FormatString = "|>№ заказа|>№ счета|<Предпр| Цех |^Дата |^ М|<Статус |<Проблемы|" & _
 "<ДатаРС|<Название Фирмы|<Дата выдачи|Вр.выдачи|Вр.выполнения|Макет|Образец|" & _
 "<дата выдачи MO|<вр.выдачи MO|O в.выполнения|<Лого|<Изделия|" & _
-"Категория|<Тема|заказано|согласовано|отгружено|^ M|<Предпр"
-Grid.Cols = Grid.Cols + 1 ' lastModified
+"Категория|<Тема|Залог|Нал.опл.|заказано|согласовано|отгружено|^ M"
+Grid.Cols = Grid.Cols + 4 ' lastModified, id_bill, id_voc_names, servername
 Grid.ColWidth(0) = 0
 Grid.ColWidth(orData) = 840
 Grid.ColWidth(orDataVid) = 975
@@ -1347,12 +1350,17 @@ Grid.ColWidth(orO) = 720
 Grid.ColWidth(orMOData) = 795 + 50
 Grid.ColWidth(orMOVrVid) = 570 + 50
 Grid.ColWidth(orOVrVip) = 810
+Grid.ColWidth(orZalog) = 540
+Grid.ColWidth(orNal) = 540
 Grid.ColWidth(orZakazano) = 540
 Grid.ColWidth(orOplacheno) = 540
 Grid.ColWidth(orOtgrugeno) = 615
 Grid.ColWidth(orType) = 450
 'Grid.ColWidth(orVenture) = 650
 Grid.ColWidth(orlastModified) = 0
+Grid.ColWidth(orBillId) = 0
+Grid.ColWidth(orVocnameId) = 0
+Grid.ColWidth(orServername) = 0
 
 '*********************************************************************$$7
 managLoad 'загрузка Manag() cbM lbM и Filtr.lbM
@@ -1387,7 +1395,7 @@ End Sub
 Public Sub initVentureLB()
 ' Сначала удаляем старые значения
 While lbVenture.ListCount
-    lbVenture.RemoveItem (0)
+    lbVenture.removeItem (0)
 Wend
 
 sql = "select * from GuideVenture where standalone = 0"
@@ -1574,7 +1582,8 @@ If mousRow = 0 Then
     Grid.CellBackColor = Grid.BackColor
     If mousCol = 0 Then Exit Sub
     If mousCol = orNomZak Or mousCol = orZakazano Or mousCol = orOplacheno _
-    Or mousCol = orOtgrugeno Or mousCol = orVrVip Or mousCol = orOVrVip Then
+    Or mousCol = orOtgrugeno Or mousCol = orVrVip Or mousCol = orOVrVip _
+    Or mousCol = orZalog Or mousCol = orNal Then
         SortCol Grid, mousCol, "numeric"
     ElseIf mousCol = orData Or mousCol = orDataRS Or mousCol = orDataVid Then
         SortCol Grid, mousCol, "date"
@@ -1600,16 +1609,130 @@ Function stopOrderAtVenture() As Boolean
 '    If ((mousCol <> orZakazano And mousCol <> orVenture And Grid.TextMatrix(mousRow, orZakazano) = "") Or Not isVentureGreen) Then
     stopOrderAtVenture = False
     If Not isVentureGreen Or Grid.TextMatrix(mousRow, orVenture) <> "" Or mousCol = orVenture Then Exit Function
-    If Grid.TextMatrix(mousRow, orZakazano) <> "" And (mousCol <> orZakazano) Then
+    If mousCol <> orFirma And Grid.TextMatrix(mousRow, orZakazano) <> "" And (mousCol <> orZakazano) Then
         stopOrderAtVenture = True
     End If
 End Function
+
+
+
+
+Function checkInvoiceMerge(p_numOrder As String, p_newInvoice As String) As Integer
+Dim ret As Integer
+
+    sql = "select wf_check_jscet_merge (" & p_numOrder & ", '" & p_newInvoice & "')"
+On Error GoTo sqle
+    byErrSqlGetValues "##100.2", sql, checkInvoiceMerge
+    If checkInvoiceMerge < 0 Then
+        MsgBox "Для объединения заказов в один счет требуется, чтобы фирма-заказчик и предприятие были одинаковые" _
+        & vbCr & "Исправьте эти поля и попробуйте еще раз", , "Нельзя присоединить заказ"
+    End If
+    
+    Exit Function
+sqle:
+    errorCodAndMsg "checkInvoiceMerge"
+End Function
+
+
+Function checkInvoiceSplit(p_numOrder As String, p_newInvoice As String) As Integer
+    sql = "select wf_check_jscet_split (" & p_numOrder & ")"
+On Error GoTo sqle
+    byErrSqlGetValues "##100.1", sql, checkInvoiceSplit
+    Exit Function
+sqle:
+    errorCodAndMsg "checkInvoiceSplit"
+End Function
+
+
+Function tryInvoiceMove(p_numOrder As String, p_Invoice As String, id_jscet_new As Integer, p_newInvoice As String) As Boolean
+Dim mText As String
+    tryInvoiceMove = True
+On Error GoTo sqle
+    mText = "Подтвердите, что вы хотите " _
+        & "перенести заказ из счета " & p_Invoice & " в счет " & p_newInvoice
+    sql = "call wf_move_jscet (" & p_numOrder & ", " & CStr(id_jscet_new) & ")"
+    Debug.Print sql
+    If MsgBox(mText, vbOKCancel, "Вы уверены?") = vbOK Then
+        myBase.Execute sql
+    Else
+        tryInvoiceMove = False
+    End If
+    Exit Function
+sqle:
+    errorCodAndMsg "tryInvoiceMove"
+    tryInvoiceMove = False
+End Function
+
+
+Function tryInvoiceSplit(p_numOrder As String, p_Invoice As String) As Boolean
+Dim mText As String
+    
+    tryInvoiceSplit = True
+On Error GoTo sqle
+    mText = "Подтвердите, что вы хотите " _
+        & "выделить заказ из счета " & p_Invoice & " в отдельный счет"
+    If MsgBox(mText, vbOKCancel, "Вы уверены?") = vbOK Then
+        sql = "call wf_split_jscet (" & p_numOrder & ")"
+        myBase.Execute sql
+    Else
+        tryInvoiceSplit = False
+    End If
+    Exit Function
+sqle:
+    errorCodAndMsg "tryInvoiceSplit"
+    tryInvoiceSplit = False
+End Function
+
+
+Function tryInvoiceMerge(p_numOrder As String, id_jscet_new As Integer, p_newInvoice As String) As Boolean
+Dim mText As String
+    
+    tryInvoiceMerge = True
+On Error GoTo sqle
+    If id_jscet_new > 0 Then
+        If MsgBox("Подтвердите, что вы хотите присоединить предметы заказа к счету " & p_newInvoice, vbOKCancel, "Вы уверены?") = vbOK Then
+            sql = "call wf_merge_jscet (" & p_numOrder & ", " & CStr(id_jscet_new) & ", " & p_newInvoice & ")"
+            Debug.Print sql
+            myBase.Execute sql
+        Else
+            tryInvoiceMerge = False
+        End If
+    End If
+    Exit Function
+sqle:
+    errorCodAndMsg "tryInvoiceSplit"
+    tryInvoiceMerge = False
+    
+End Function
+Function OrderIsMerged() As Boolean
+Dim Exists As Integer
+
+    OrderIsMerged = False
+    sql = "select count(*) from orders o" _
+        & " join guideventure v on o.ventureid = v.ventureid" _
+        & " where statusid < 6 " _
+        & " and v.venturename = '" & Grid.TextMatrix(mousRow, orVenture) & "'" _
+        & " and invoice = '" & Grid.TextMatrix(mousRow, orInvoice) & "'" _
+        & " and numorder != " & Grid.TextMatrix(mousRow, orNomZak)
+        Debug.Print sql
+        
+    byErrSqlGetValues "##OrderIsMerged", sql, Exists
+    If Exists > 0 Then
+        OrderIsMerged = True
+    End If
+    
+End Function
+
+
 '$odbc08!$
 Private Sub Grid_DblClick()
 Dim str As String, statId As Integer, s As Single
 Dim orderTimestamp As Date
 Dim lastManager As String
 Dim strDate As String
+Dim billCompany As String
+Dim I As Integer
+
 
 If zakazNum = 0 Then Exit Sub
 If mousRow = 0 Then Exit Sub
@@ -1703,7 +1826,7 @@ Else
 End If
     
 
-If orderTimestamp > loadBaseTimestamp Then
+If orderTimestamp > loadBaseTimestamp And lastManager <> cbM.Text Then
     MsgBox "После того, как вы загрузили информацию о заказе, он был изменен менеджером " _
     & lastManager & " в " & orderTimestamp & "." _
     & vbCr & "Обновите данные и попробуйте повторить операцию снова." _
@@ -1711,8 +1834,89 @@ If orderTimestamp > loadBaseTimestamp Then
     Exit Sub
 End If
 If mousCol = orVenture Then
+    If Grid.TextMatrix(mousRow, orVenture) <> "" Then
+        ' Проверить, если заказ входит в счет вместе с другим, то не позволить даже поднять меню
+        If OrderIsMerged Then
+            MsgBox "Заказ входит в состав счета, в который входят другие заказы" _
+                & vbCr & "Необходимо сначала выделить заказ в отдельный счет и уже потом менять этому заказу предприятие" _
+                , , "Нельзя изменить предприятие"
+            Exit Sub
+        End If
+    End If
      listBoxInGridCell lbVenture, Grid, Grid.TextMatrix(mousRow, orVenture)
 ElseIf mousCol = orFirma Then
+    
+    If Grid.TextMatrix(mousRow, orVenture) <> "" Then
+        ' Проверить, если заказ входит в счет вместе с другим, то не позволить даже поднять меню
+        
+        billCompany = "Установить"
+    
+        If Grid.CellForeColor = vbRed Then
+            sql = "select wf_retrieve_bill_company(" + Grid.TextMatrix(mousRow, orBillId) + ", '" + Grid.TextMatrix(mousRow, orVenture) + "')"
+'            Debug.Print sql
+            If byErrSqlGetValues("W##102.1", sql, billCompany) Then
+                mnBillFirma.Tag = Grid.TextMatrix(mousRow, orBillId)
+            End If
+            If billCompany = "" Then
+                billCompany = "Id = [" & Grid.TextMatrix(mousRow, orBillId) & "]"
+            End If
+        Else
+            mnBillFirma.Tag = ""
+        End If
+        
+        mnBillFirma.Visible = True
+        mnBillFirma.Caption = "Плательщик: " + billCompany
+        
+        For I = mnQuickBill.UBound To 1 Step -1
+            Unload mnQuickBill(I)
+        Next I
+        
+        If serverIsAccessible(Grid.TextMatrix(mousRow, orVenture)) Then
+        
+            sql = _
+                 " select o.id_bill, max(o.inDate) as lastDate " _
+                & " from orders o" _
+                & " join orders z on z.firmid = o.firmid and z.ventureid = o.ventureid and z.numorder = " & gNzak _
+                & " where " _
+                & "     o.id_bill is not null " _
+                & " group by o.id_bill" _
+                & " order by lastDate desc"
+                  
+            
+            Set tbOrders = myOpenRecordSet("##102.2", sql, 0)
+            If Not tbOrders.BOF Then
+    '            Load mnQuickBill(0)
+    '            mnQuickBill(0).Caption = "-"
+                I = 0
+                While Not tbOrders.EOF
+                    If CStr(tbOrders!id_bill) <> Grid.TextMatrix(mousRow, orBillId) Then
+                        mnQuickBill(0).Visible = True
+                        Load mnQuickBill(1 + I)
+                        mnQuickBill(I + 1).Tag = tbOrders!id_bill
+                        sql = "select wf_retrieve_bill_company(" + CStr(tbOrders!id_bill) + ", '" + Grid.TextMatrix(mousRow, orVenture) + "')"
+                        byErrSqlGetValues "W##102.1", sql, billCompany
+                        mnQuickBill(I + 1).Caption = billCompany
+                        I = I + 1
+                    End If
+                    tbOrders.MoveNext
+                Wend
+                tbOrders.Close
+            End If
+        End If
+        If I = 0 Then
+            mnQuickBill(0).Visible = False
+        End If
+        
+'        success = byErrSqlGetValues("##102.2", sql, lastBillCompany)
+        
+    Else
+        mnBillFirma.Visible = False
+        mnQuickBill(0).Visible = False
+        For I = mnQuickBill.UBound To 1 Step -1
+            Unload mnQuickBill(I)
+        Next I
+    End If
+    
     Me.PopupMenu mnContext
 ElseIf mousCol = orCeh Then
     ' есть ли накладные
@@ -1756,12 +1960,13 @@ ElseIf mousCol = orStatus Then
     End If
     tbOrders.Edit
     tbOrders!rowLock = Orders.cbM.Text
-    tbOrders.Update ' снимаем блокировку
+    tbOrders.update ' снимаем блокировку
     statId = tbOrders!StatusId
     If Not IsNull(tbOrders!workTime) Then _
         neVipolnen = tbOrders!workTime
     wrkDefault.CommitTrans ' снимаем блокировку
     tbOrders.Close
+    
  ' конец блока ==============================================================
    
    If statId = 4 Then ' "готов"
@@ -1794,6 +1999,7 @@ ElseIf mousCol = orStatus Then
         End If                                    '
         If startParams Then
             Zakaz.Show vbModal
+            refreshTimestamp gNzak
         Else
             msgOfZakaz ("##19")
         End If
@@ -1810,7 +2016,7 @@ ALL:    listBoxInGridCell lbAnnul, Grid, "select"
 ElseIf mousCol = orMen Then
     listBoxInGridCell lbM, Grid
 ElseIf mousCol = orProblem Then
-    listBoxInGridCell lbProblem, Grid, Grid.TextMatrix(mousRow, mousCol)
+    listBoxInGridCell lbProblem, Grid ', Grid.TextMatrix(mousRow, mousCol)
 ElseIf mousCol = orType Then
     listBoxInGridCell lbType, Grid
 ElseIf mousCol = orTema Then
@@ -1819,7 +2025,7 @@ ElseIf mousCol = orVrVid Or mousCol = orMOVrVid Or mousCol = orLogo _
 Or mousCol = orIzdelia Or mousCol = orType Or mousCol = orInvoice Then
     textBoxInGridCell tbMobile, Grid
 #If Not COMTEC = 1 Then '----------------------------------------------------
-ElseIf mousCol = orOplacheno Then
+ElseIf mousCol = orOplacheno Or mousCol = orZalog Or mousCol = orNal Then
     textBoxInGridCell tbMobile, Grid
 ElseIf mousCol = orZakazano Then
   If havePredmetiNew Then
@@ -1873,16 +2079,16 @@ Public Sub Grid_EnterCell()
 If noClick Then Exit Sub
 mousRow = Grid.row
 mousCol = Grid.col
+If mousCol = orFirma And Grid.CellForeColor = vbRed Then
+    mousCol = mousCol
+End If
+
 flDelRowInMobile = False
 If zakazNum = 0 Then Exit Sub
 beClick = True
 tbInform.Text = Grid.TextMatrix(mousRow, mousCol)
 
-#If COMTEC = 1 Then  '----------------------------------------------------
-    bilo = False
-#Else
-    bilo = (mousCol = orZakazano Or mousCol = orOplacheno Or mousCol = orOtgrugeno)
-#End If
+bilo = (mousCol = orZakazano Or mousCol = orOplacheno Or mousCol = orOtgrugeno Or mousCol = orZalog Or mousCol = orNal)
 If (dostup = "a" Or Grid.TextMatrix(mousRow, orStatus) <> "закрыт") _
    And ( _
        mousCol = orFirma _
@@ -1897,7 +2103,7 @@ If (dostup = "a" Or Grid.TextMatrix(mousRow, orStatus) <> "закрыт") _
        Or mousCol = orIzdelia _
        Or bilo _
        Or (mousCol = orTema And Grid.TextMatrix(mousRow, orType) = "Н") _
-       Or (mousCol = orInvoice And (dostup = "b" Or Grid.TextMatrix(mousRow, orVenture) = "")) _
+       Or (mousCol = orInvoice And (dostup = "b" Or Grid.TextMatrix(mousRow, orVenture) = "" Or Grid.TextMatrix(mousRow, orMen) = cbM.Text)) _
        Or (mousCol = orVenture And isVentureGreen) _
    ) _
 Then
@@ -1919,6 +2125,15 @@ Private Sub Grid_KeyDown(KeyCode As Integer, Shift As Integer)
 If KeyCode = vbKeyReturn Then
 
     If mousCol = orFirma Then
+        If Grid.TextMatrix(mousRow, orVenture) <> "" Then
+            ' Проверить, если заказ входит в счет вместе с другим, то не позволить даже поднять меню
+            If OrderIsMerged Then
+                MsgBox "Заказ входит в состав счета, в который входят другие заказы" _
+                    & vbCr & "Необходимо сначала выделить заказ в отдельный счет и уже потом менять этому заказу фирму" _
+                    , , "Нельзя изменить фирму-заказчик"
+                Exit Sub
+            End If
+        End If
         gNzak = Grid.TextMatrix(mousRow, orNomZak)
     
         If zakazNum = 0 Then Exit Sub
@@ -1982,7 +2197,7 @@ BB: wrkDefault.BeginTrans
 '        End If
         wrkDefault.CommitTrans
     Else
-        wrkDefault.Rollback
+        wrkDefault.rollback
     End If
 End If
 EN1:
@@ -2051,7 +2266,7 @@ Dim str As String
         Grid.TextMatrix(mousRow, mousCol) = "аннулирован"
         wrkDefault.CommitTrans
     Else
-        wrkDefault.Rollback
+        wrkDefault.rollback
     End If
 
 End Function
@@ -2081,7 +2296,7 @@ Sub do_Del()
         delZakazFromGrid
         wrkDefault.CommitTrans
     Else
-ERR1:   wrkDefault.Rollback
+ERR1:   wrkDefault.rollback
     End If
   End If
 
@@ -2102,7 +2317,7 @@ Sub delZakazFromGrid()
     If zakazNum = 0 Then
         clearGridRow Grid, mousRow
     Else
-        Grid.RemoveItem mousRow
+        Grid.removeItem mousRow
     End If
     Grid.col = orNomZak
 
@@ -2151,6 +2366,8 @@ On Error Resume Next ' в некот.ситуациях один из Open logFile дает Err: файл уже
 Open logFile For Append As #2
 Print #2, DNM & " проблема=" & lbProblem.Text & _
 "   зак=" & Grid.TextMatrix(mousRow, orZakazano) & _
+" залог=" & Grid.TextMatrix(mousRow, orZalog) & _
+" нал=" & Grid.TextMatrix(mousRow, orNal) & _
 " опл=" & Grid.TextMatrix(mousRow, orOplacheno) & _
 " отг=" & Grid.TextMatrix(mousRow, orOtgrugeno)
 Close #2
@@ -2340,7 +2557,7 @@ If KeyCode = vbKeyReturn Then lbType_DblClick
 End Sub
 
 Private Sub lbVenture_DblClick()
-Dim str As String, I As Integer, newInv As String
+Dim str As Variant, I As Integer, newInv As String
 
 If noClick Then Exit Sub
 If lbVenture.Visible = False Then Exit Sub
@@ -2348,8 +2565,11 @@ I = orderUpdate("##72", lbVenture.ItemData(lbVenture.ListIndex), "Orders", "vent
 If I = 0 Then
     Grid.Text = lbVenture.Text
     If (lbVenture.ListIndex = 0) Then Grid.Text = ""
-    newInv = getValueFromTable("Orders", "invoice", "numOrder = " & Grid.TextMatrix(mousRow, orNomZak))
+    newInv = getValueFromTable("Orders", "invoice", "numOrder = " & gNzak)
     Grid.TextMatrix(mousRow, orInvoice) = newInv
+    str = getValueFromTable("GuideVenture", "sysname", "ventureId = " & lbVenture.ListIndex)
+    If IsNull(str) Then str = ""
+    Grid.TextMatrix(mousRow, orServername) = str
 End If
 
 lbHide
@@ -2384,6 +2604,19 @@ webLoginsPath = cfg.loginsPath          '
 
 End Sub
 
+Private Sub mnBillFirma_Click()
+Dim ventureName As String
+
+    ventureName = Grid.TextMatrix(mousRow, orVenture)
+    If serverIsAccessible(ventureName) Then
+        g_id_bill = mnBillFirma.Tag
+        FirmComtex.Show vbModal
+    Else
+        MsgBox "Сервер " & ventureName & " не доступен ", , "Предупреждение"
+    End If
+    
+End Sub
+
 Private Sub mnComtexAdmin_Click()
 cfg.Regim = "comtexAdmin"
 cfg.setRegim
@@ -2395,21 +2628,30 @@ Private Sub mnExit_Click()
 End Sub
 
 Private Sub mnFirmFind_Click()
-        If tbEnable.Visible Then
-            FindFirm.cmAllOrders.Visible = True
-            FindFirm.cmNoClose.Visible = True
-            FindFirm.cmNoCloseFiltr.Visible = True
-        End If
-        FindFirm.Show vbModal
+    If tbEnable.Visible Then
+        FindFirm.cmAllOrders.Visible = True
+        FindFirm.cmNoClose.Visible = True
+        FindFirm.cmNoCloseFiltr.Visible = True
+    End If
+    FindFirm.Show vbModal
 
 End Sub
 
 Private Sub mnFirmsGuide_Click()
-Me.MousePointer = flexHourglass
-GuideFirms.Regim = "fromContext"
-
-GuideFirms.Show vbModal
-Me.MousePointer = flexDefault
+    If Grid.TextMatrix(mousRow, orVenture) <> "" Then
+        ' Проверить, если заказ входит в счет вместе с другим, то не позволить даже поднять меню
+        If OrderIsMerged Then
+            MsgBox "Заказ входит в состав счета, в который входят другие заказы" _
+                & vbCr & "Необходимо сначала выделить заказ в отдельный счет и уже потом менять этому заказу фирму" _
+                , , "Нельзя изменить фирму-заказчик"
+            Exit Sub
+        End If
+    End If
+    Me.MousePointer = flexHourglass
+    GuideFirms.Regim = "fromContext"
+    
+    GuideFirms.Show vbModal
+    Me.MousePointer = flexDefault
 
 End Sub
 
@@ -2481,6 +2723,11 @@ Private Sub mnProduct_Click()
     MsgBox "Здесь необходимо выдать форму с возможностью просмотра " & _
     "Доступных остатков по номенклатуре, входящей в изделие.", , "" '$comtec$
 #End If '------------------------------------------------------------------
+End Sub
+
+Private Sub mnQuickBill_Click(Index As Integer)
+    If Index = 0 Then Exit Sub
+    FirmComtex.makeBillChoice mnQuickBill(Index).Tag, Grid.TextMatrix(mousRow, orServername)
 End Sub
 
 Private Sub mnReports_Click()
@@ -2612,7 +2859,12 @@ End Sub
 
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
 Dim str As String, DNM As String, s As Single
-
+Dim id_jscet_split As Integer
+Dim id_jscet_merge As Integer
+Dim mFault As String
+Dim bFault As Boolean
+Dim p_newInvoice As String, p_Invoice As String
+Dim next_nu As String
 
 If KeyCode = vbKeyReturn Then
 DNM = Format(Now(), "dd.mm.yy hh:nn") & vbTab & cbM.Text & " " & gNzak ' именно vbTab
@@ -2646,6 +2898,10 @@ DNM = Format(Now(), "dd.mm.yy hh:nn") & vbTab & cbM.Text & " " & gNzak ' именно 
         If Not isFloatFromMobile("ordered") Then Exit Sub
     ElseIf mousCol = orOplacheno Then
         If Not isFloatFromMobile("paid") Then Exit Sub
+    ElseIf mousCol = orZalog Then
+        If Not isFloatFromMobile("zalog") Then Exit Sub
+    ElseIf mousCol = orNal Then
+        If Not isFloatFromMobile("nal") Then Exit Sub
     ElseIf mousCol = orOtgrugeno Then
         If Not isFloatFromMobile("shipped") Then Exit Sub
         s = Round(tbMobile.Text, 2)
@@ -2659,6 +2915,19 @@ DNM = Format(Now(), "dd.mm.yy hh:nn") & vbTab & cbM.Text & " " & gNzak ' именно 
             delZakazFromGrid
         End If
     ElseIf mousCol = orInvoice Then
+        If Grid.TextMatrix(mousRow, orVenture) <> "" Then
+            sql = "select nextnu_remote( '" & Grid.TextMatrix(mousRow, orServername) & "', 'jscet')"
+            byErrSqlGetValues "##78.1", sql, next_nu
+            If tbMobile.Text <> next_nu Then
+                If vbYes <> MsgBox("Следующий номер по бухгалтерии должен быть равен " _
+                    & next_nu & ". Нажмите да, если вы действительно хотите изменить номер заказа на " _
+                    & tbMobile.Text, vbYesNo, "Внимание") _
+                Then
+                    GoTo AA
+                End If
+            End If
+        End If
+        
         If InStr(tbMobile.Text, "счет") > 0 Or tbMobile.Text = "0" Then
             str = Grid.TextMatrix(mousRow, orOtgrugeno)
             If IsNumeric(str) And dostup <> "a" Then
@@ -2674,6 +2943,35 @@ DNM = Format(Now(), "dd.mm.yy hh:nn") & vbTab & cbM.Text & " " & gNzak ' именно 
             End If
             orderUpdate "##77", "'" & "счет ?" & "'", "Orders", "Invoice"
         Else
+            If Grid.TextMatrix(mousRow, orVenture) <> "" Then
+        
+                id_jscet_split = checkInvoiceSplit(gNzak, tbMobile.Text)
+                id_jscet_merge = checkInvoiceMerge(gNzak, tbMobile.Text)
+                
+                p_newInvoice = tbMobile.Text
+                p_Invoice = Grid.TextMatrix(mousRow, orInvoice)
+                mFault = ""
+                bFault = False
+                
+                If id_jscet_merge < 0 Then
+                    mFault = "Заказ " & gNzak & " не был присоединен к счету " & p_newInvoice
+                ElseIf id_jscet_split > 0 And id_jscet_merge > 0 Then
+                    bFault = tryInvoiceMove(gNzak, p_Invoice, id_jscet_merge, p_newInvoice)
+                    mFault = mFault = "Заказ " & gNzak & " не был переведен из счета " & gNzak & " в счет " & p_newInvoice
+                ElseIf id_jscet_split > 0 Then
+                    bFault = tryInvoiceSplit(gNzak, p_Invoice)
+                    mFault = "Заказ " & gNzak & " не был выделен в отдельный счет"
+                ElseIf id_jscet_merge > 0 Then
+                    bFault = tryInvoiceMerge(gNzak, id_jscet_merge, p_newInvoice)
+                    mFault = "Заказ " & gNzak & " не был присоединен к счету " & p_newInvoice
+                End If
+                
+                If Not bFault And mFault <> "" Then
+                    MsgBox "Произошла ошибка" & vbCr & mFault, , "Сообщите администратору"
+                    Exit Sub
+                End If
+            End If
+            
             If Not isFloatFromMobile("Invoice") Then Exit Sub
         End If
     End If
@@ -2737,6 +3035,11 @@ While Not tqOrders.EOF
  
  Grid.TextMatrix(zakazNum, orNomZak) = numZak
  noClick = True
+    If Not IsNull(tqOrders!id_bill) Then 'срочный
+         Grid.col = orFirma
+         Grid.row = zakazNum
+         Grid.CellForeColor = vbRed
+    End If
  If tqOrders!StatusId < 6 Then '***************
 #If Not COMTEC = 1 Then '----------------------------------------------------
    For I = 1 To UBound(tmpL)
@@ -2821,7 +3124,7 @@ For I = 0 To orColNumber
     Else
         getSqlWhere = getSqlWhere & " AND " & "(" & orSqlWhere(I) & ")"
     End If
-'    MsgBox "orSqlWhere=" & orSqlWhere(i) & "  getSqlWhere=" & getSqlWhere
+'    MsgBox "orSqlWhere=" & orSqlWhere(I) & "  getSqlWhere=" & getSqlWhere
   End If
 Next I
 If getSqlWhere <> "" Then getSqlWhere = " WHERE (" & getSqlWhere & ")"
@@ -2934,15 +3237,24 @@ Sub copyRowToGrid(row As Long)
     Grid.TextMatrix(row, orTema) = lbTema.List(tqOrders!temaId)
  LoadNumeric Grid, row, orZakazano, tqOrders!ordered
  LoadNumeric Grid, row, orOplacheno, tqOrders!paid
+ LoadNumeric Grid, row, orZalog, tqOrders!zalog
+ LoadNumeric Grid, row, orNal, tqOrders!nal
  LoadNumeric Grid, row, orOtgrugeno, tqOrders!shipped
  If Not IsNull(tqOrders!lastManag) Then _
     Grid.TextMatrix(row, orLastMen) = tqOrders!lastManag
  If Not IsNull(tqOrders!Venture) Then _
     Grid.TextMatrix(row, orVenture) = tqOrders!Venture
  If Not IsNull(tqOrders!LastModified) Then
-    
-'Debug.Print tqOrders!LastModified
     Grid.TextMatrix(row, orlastModified) = CStr(tqOrders!LastModified)
+ End If
+ If Not IsNull(tqOrders!id_bill) Then
+    Grid.TextMatrix(row, orBillId) = CStr(tqOrders!id_bill)
+ End If
+ If Not IsNull(tqOrders!id_voc_names) Then
+    Grid.TextMatrix(row, orVocnameId) = CStr(tqOrders!id_voc_names)
+ End If
+ If Not IsNull(tqOrders!serverName) Then
+    Grid.TextMatrix(row, orServername) = CStr(tqOrders!serverName)
  End If
 End Sub
 
@@ -3094,7 +3406,7 @@ For I = 1 To maxDay
 Next I
 str = "DateDiff(day,'" & Format(curDate, "yyyy-mm-dd") & "',outDateTime)"
 sql = "SELECT " & str & " AS day, Orders.FirmId From Orders " & _
-"Where (((Orders.cehId) = " & cehId & ") And ((Orders.StatusId) < 6)) " & _
+"Where (((Orders.cehId) = " & cehId & ") And ((Orders.StatusId) < 4)) " & _
 "GROUP BY " & str & ", Orders.FirmId  HAVING (((" & str & ")>=0));"
 'MsgBox str & Chr(13) & Chr(13) & sql
 'Debug.Print sql
@@ -3169,6 +3481,8 @@ If minut <= 0 Then
     laConflict.Visible = False
     chConflict.Visible = False
     cmToWeb.Visible = False
+    mnQuickBill(0).Visible = False
+    mnBillFirma.Visible = False
 End If
 End Sub
 
@@ -3317,7 +3631,7 @@ AA: 'tbGuide.Seek "=", findId
     "WHERE (((klassId)=" & findId & "));"
     If Not byErrSqlGetValues("##417", sql, str, findId) Then tbNomenk.Close: Exit Sub
             
-'    NN(i) = tbGuide!klassName & " / " & NN(i) ' к имени добавляем Id
+'    NN(I) = tbGuide!klassName & " / " & NN(I) ' к имени добавляем Id
     NN(I) = str & " / " & NN(I) ' к имени добавляем Id
 '    findId = tbGuide!parentKlassId
   
@@ -3524,7 +3838,7 @@ AA: ' tbGuide.Seek "=", findId
     "WHERE (((seriaId)=" & findId & "));"
     If Not byErrSqlGetValues("##414", sql, str, findId) Then tbProduct.Close: Exit Sub
     
-'    NN(i) = tbGuide!seriaName & " / " & NN(i) ' к имени добавляем Id
+'    NN(I) = tbGuide!seriaName & " / " & NN(I) ' к имени добавляем Id
     NN(I) = str & " / " & NN(I) ' к имени добавляем Id
 '    findId = tbGuide!parentSeriaId
     If findId > 0 Then GoTo AA 'к имени текущей группы спереди приклеиваются
@@ -3705,7 +4019,7 @@ If tbProduct.BOF Then 'т.е. отгрузка началась по старому и не закончилась
         tbProduct!outDate = tmpDate
         tbProduct!numOrder = gNzak
         tbProduct!quant = s
-        tbProduct.Update
+        tbProduct.update
     End If
 End If
 tbProduct.Close

@@ -111,6 +111,29 @@ Public orVrVid As Integer, orInvoice As Integer, orZakazano As Integer
 Public orVes As Integer, orSize As Integer, orPlaces As Integer
 Public orOplacheno As Integer, orOtgrugeno As Integer, orLastMen As Integer
 Public orVenture As Integer
+Public orBillId As Integer
+Public orVocnameId As Integer
+Public orServername As Integer
+
+'Grid в FirmComtex
+Public Const fcId = 0
+Public Const fcFirmName = 1
+Public Const fcInn = 2
+Public Const fcOkonx = 3
+Public Const fcOkpo = 4
+Public Const fcKpp = 5
+Public Const fcAddress = 6
+Public Const fcPhone = 7
+
+Public Const fcFormatString = _
+  "|< Название  фирмы" _
+& "|>ИНН" _
+& "|>ОКОНХ" _
+& "|>ОКПО" _
+& "|>КПП" _
+& "|<Адрес" _
+& "|<Телефон" _
+
 
 Public NN() As String, QQ() As Single ' откатываемая номенклатура и кол-во
 Public QQ2() As Single, QQ3() As Single
@@ -140,6 +163,34 @@ Public Const gfType = 16
 Public Const gfLogin = 17
 Public Const gfPass = 18
 Public Const gfId = 19
+
+Function getValueFromTable(tabl As String, field As String, where As String) As Variant
+Dim table As Recordset
+
+getValueFromTable = Null
+sql = "SELECT " & field & " as fff  From " & tabl & _
+      " WHERE " & where & ";"
+Set table = myOpenRecordSet("##59.1", sql, dbOpenForwardOnly)
+If table Is Nothing Then Exit Function
+If Not table.BOF Then getValueFromTable = table!fff
+table.Close
+End Function
+
+
+Function serverIsAccessible(ventureName As String) As Boolean
+Dim i As Integer
+
+    serverIsAccessible = False
+    For i = 0 To Orders.lbVenture.ListCount
+        If Orders.lbVenture.List(i) = ventureName Then
+            serverIsAccessible = True
+            Exit For
+        End If
+    Next i
+    
+End Function
+
+
 
 'Если первый пораметр ="W.." - не выдавать Err по невып-ю Where, а все
 'параметры обнулить, если для всех них нуль это возможное значение, то в sql

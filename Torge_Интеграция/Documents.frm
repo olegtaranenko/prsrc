@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "msflxgrd.ocx"
+Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Documents 
    BackColor       =   &H8000000A&
    Caption         =   "Склад"
@@ -14,6 +14,15 @@ Begin VB.Form Documents
    ScaleHeight     =   6195
    ScaleWidth      =   11745
    StartUpPosition =   2  'CenterScreen
+   Begin VB.ListBox lbVenture 
+      Appearance      =   0  'Flat
+      Height          =   615
+      Left            =   5500
+      TabIndex        =   31
+      Top             =   1000
+      Visible         =   0   'False
+      Width           =   1095
+   End
    Begin VB.CommandButton Command1 
       Caption         =   "между"
       Height          =   315
@@ -36,7 +45,9 @@ Begin VB.Form Documents
    End
    Begin VB.ListBox lbInside 
       Height          =   255
+      ItemData        =   "Documents.frx":0000
       Left            =   9000
+      List            =   "Documents.frx":0002
       TabIndex        =   26
       Top             =   2520
       Visible         =   0   'False
@@ -44,9 +55,9 @@ Begin VB.Form Documents
    End
    Begin VB.ListBox lbGroup 
       Height          =   450
-      ItemData        =   "Documents.frx":0000
+      ItemData        =   "Documents.frx":0004
       Left            =   9000
-      List            =   "Documents.frx":000A
+      List            =   "Documents.frx":000E
       TabIndex        =   28
       Top             =   1680
       Visible         =   0   'False
@@ -84,7 +95,7 @@ Begin VB.Form Documents
       Width           =   975
    End
    Begin VB.Frame frBad 
-      BorderStyle     =   0  'Нет
+      BorderStyle     =   0  'None
       Height          =   3735
       Left            =   600
       TabIndex        =   19
@@ -109,13 +120,15 @@ Begin VB.Form Documents
       End
       Begin VB.ListBox lbBad 
          Height          =   2595
+         ItemData        =   "Documents.frx":002F
          Left            =   60
+         List            =   "Documents.frx":0031
          TabIndex        =   20
          Top             =   540
          Width           =   4395
       End
       Begin VB.Label laFrame 
-         Alignment       =   2  'Центровка
+         Alignment       =   2  'Center
          Caption         =   "laFrame"
          Height          =   435
          Left            =   180
@@ -125,8 +138,8 @@ Begin VB.Form Documents
          WordWrap        =   -1  'True
       End
       Begin VB.Label Label3 
-         Appearance      =   0  'Плоска
-         BorderStyle     =   1  'Фиксировано один
+         Appearance      =   0  'Flat
+         BorderStyle     =   1  'Fixed Single
          ForeColor       =   &H80000008&
          Height          =   3735
          Left            =   0
@@ -287,7 +300,7 @@ Begin VB.Form Documents
       End
    End
    Begin VB.Label laGrid2 
-      Alignment       =   2  'Центровка
+      Alignment       =   2  'Center
       Height          =   195
       Left            =   6120
       TabIndex        =   12
@@ -295,7 +308,7 @@ Begin VB.Form Documents
       Width           =   5535
    End
    Begin VB.Label Label1 
-      Alignment       =   2  'Центровка
+      Alignment       =   2  'Center
       Caption         =   "Реестр документов"
       Height          =   195
       Left            =   120
@@ -317,6 +330,9 @@ Begin VB.Form Documents
       Begin VB.Menu mnBaseChoise 
          Caption         =   "Выбор базы"
       End
+      Begin VB.Menu mnVentureIncomeSetting 
+         Caption         =   "Приход по предприятиям"
+      End
    End
    Begin VB.Menu mnReports 
       Caption         =   "Отчеты"
@@ -329,6 +345,10 @@ Begin VB.Form Documents
       End
       Begin VB.Menu sourOborot 
          Caption         =   "Оборотная по поставщикам"
+         Visible         =   0   'False
+      End
+      Begin VB.Menu ventureOborot 
+         Caption         =   "Оборотная по предприятиям"
          Visible         =   0   'False
       End
       Begin VB.Menu mnFiltrOborot 
@@ -358,6 +378,9 @@ Begin VB.Form Documents
       End
       Begin VB.Menu mnCurOstat 
          Caption         =   "Сверка текущих остатков"
+      End
+      Begin VB.Menu mnVentureOrder 
+         Caption         =   "Накладные между предприятиями"
       End
       Begin VB.Menu mnSep2 
          Caption         =   "-"
@@ -442,7 +465,8 @@ Const dcNumDoc = 2
 'Const dcM = 3
 Const dcSour = 3
 Const dcDest = 4
-Const dcNote = 5
+Const dcNote = 6
+Const dcVenture = 5
 'Grid2
 Const dnNomNom = 1
 Const dnNomName = 2
@@ -475,11 +499,16 @@ Dim strWhere As String, i As Integer, str As String
  
  sql = "SELECT sDocs.xDate, sDocs.Note, sDocs.numDoc, sDocs.numExt, " & _
  "sDocs.destId, sGuideSource.sourceName, GS.sourceName AS destName " & _
+ ", isnull(v.ventureName, gv.ventureName) as venture_name " & _
  "FROM (sDocs INNER JOIN sGuideSource ON sDocs.sourId = sGuideSource.sourceId) " & _
  "INNER JOIN sGuideSource AS GS ON sDocs.destId = GS.sourceId " & _
+ "left JOIN sdocsIncome i ON i.numdoc = sDocs.numDoc and i.numExt = sDocs.numExt " & _
+ "left JOIN guideVenture v ON v.ventureId = i.ventureId " & _
+ "join system s on 1=1 " & _
+ "left join guideventure gv on gv.id_analytic = s.id_analytic_default " & _
  "WHERE (((sDocs.numExt)=255 " & strWhere & "))  ORDER BY sDocs.xDate; "
 ' "WHERE ((" & str & " AND (GuideManag.Manag)='" & cbM.Text & "' " & strWhere & "));"
-' MsgBox sql
+' Debug.Print sql
  Set tbDocs = myOpenRecordSet("##176", sql, dbOpenForwardOnly)
  If tbDocs Is Nothing Then End
  If Not tbDocs.BOF Then
@@ -494,10 +523,12 @@ Dim strWhere As String, i As Integer, str As String
     Grid.TextMatrix(quantity, dcSour) = tbDocs!SourceName
     Grid.TextMatrix(quantity, dcDest) = tbDocs!destName
     Grid.TextMatrix(quantity, dcNote) = tbDocs!note
+    Grid.TextMatrix(quantity, dcVenture) = tbDocs!venture_name
 
     tbDocs.MoveNext
   Wend
 End If
+'Debug.Print sql
 tbDocs.Close
 rowViem quantity, Grid
 Grid.Visible = True
@@ -572,7 +603,7 @@ Sub addDoc()
 Set tbDocs = myOpenRecordSet("##129", "sDocs", dbOpenTable) 'dbOpenForwardOnly)
 If tbDocs Is Nothing Then Exit Sub
 
-'On Error GoTo ERR1
+On Error GoTo ERR1
 tbDocs.AddNew
 'If mnIn.Checked Then
     tbDocs!sourId = 0
@@ -590,7 +621,9 @@ tbDocs.Update
 tbDocs.Close
 
 loadDocs "add" ' не загружать все док-ты
-
+Exit Sub
+ERR1:
+errorCodAndMsg "##tDocs update"
 End Sub
 
 Private Sub cmAdd2_Click()
@@ -800,6 +833,7 @@ Me.Caption = "Склад. Приходные накладные.     " & mainTitle
 If dostup = "a" Then
     mnOborot.Visible = True
     sourOborot.Visible = True
+    ventureOborot.Visible = True
     mnFiltrOborot.Visible = True
     mnSep1.Visible = True
     mnKarta.Visible = True
@@ -820,13 +854,14 @@ Table.Close
 'lbSource.Height = 195 * lbSource.ListCount + 100
 
 loadLbInside
+initVentureLB
 
 'Set wrkDefault = DBEngine.Workspaces(0) ' для орг-ии транзакций
 
 tbStartDate.Text = Format(DateAdd("d", -7, CurDate), "dd/mm/yy")
 tbEndDate.Text = Format(CurDate, "dd/mm/yy")
 
-Grid.FormatString = "|<Дата|<№ Док-та|<Откуда|<Куда|<Примечание"
+Grid.FormatString = "|<Дата|<№ Док-та|<Откуда|<Куда|<Предпр|<Примечание"
 Grid.ColWidth(0) = 0
 Grid.ColWidth(dcDate) = 800
 Grid.ColWidth(dcNumDoc) = 915
@@ -834,6 +869,7 @@ Grid.ColWidth(dcNumDoc) = 915
 Grid.ColWidth(dcSour) = 1100
 Grid.ColWidth(dcDest) = 1100
 Grid.ColWidth(dcNote) = 1530
+Grid.ColWidth(dcVenture) = 800
 
 Grid2.FormatString = "|<Номер|<Название|кол-во|<Ед.измерения|кол-во|<Ед.изм.производства"
 Grid2.ColWidth(0) = 0
@@ -899,6 +935,7 @@ If KartaDMC.isLoad Then Unload KartaDMC
 If Nomenklatura.isRegimLoad Then Unload Nomenklatura
 If Products.isLoad Then Unload Products
 If cfg.isLoad Then Unload cfg '$$2
+If VentureOrder.isLoad Then Unload VentureOrder
 
 'myBase.Close
 End Sub
@@ -922,6 +959,8 @@ If Grid.CellBackColor = &H88FF88 Then
         "результаты Отчетов. Если вы уверены в необходимости изменения даты " & _
         "нажмите <Да>.", vbYesNo Or vbDefaultButton2, "Подтвердите изменение " & _
         "Даты!") = vbYes Then textBoxInGridCell tbMobile, Grid
+    ElseIf mousCol = dcVenture Then
+        listBoxInGridCell lbVenture, Grid, Grid.TextMatrix(mousRow, mousCol)
     Else
         tbMobile.MaxLength = 50
         textBoxInGridCell tbMobile, Grid
@@ -960,10 +999,10 @@ If tbNomenk Is Nothing Then Exit Function
 If Not tbNomenk.BOF Then
   While Not tbNomenk.EOF
     quantity2 = quantity2 + 1
-    Grid2.TextMatrix(quantity2, dnNomNom) = tbNomenk!nomNom
+    Grid2.TextMatrix(quantity2, dnNomNom) = tbNomenk!nomnom
     
     str = gNomNom
-    If KartaDMC.DMCnomNomCur = tbNomenk!nomNom Then Grid2.row = quantity2  ' если загружена карта тек. номенклатуры - то подсветим ее
+    If KartaDMC.DMCnomNomCur = tbNomenk!nomnom Then Grid2.row = quantity2  ' если загружена карта тек. номенклатуры - то подсветим ее
     gNomNom = str                                                          ' это вызывает Enter_Cell т.е. меняет gNomNom
     Grid2.TextMatrix(quantity2, dnNomName) = tbNomenk!cod & " " & _
             tbNomenk!nomName & " " & tbNomenk!Size
@@ -1031,6 +1070,7 @@ tbMobile.Visible = False
 lbGroup.Visible = False
 lbSource.Visible = False
 lbInside.Visible = False
+lbVenture.Visible = False
 Grid.Enabled = True
 On Error Resume Next
 Grid.SetFocus
@@ -1044,6 +1084,29 @@ On Error Resume Next
 Grid2.SetFocus
 Grid2_EnterCell
 End Sub
+
+Public Sub initVentureLB()
+' Сначала удаляем старые значения
+While lbVenture.ListCount
+    lbVenture.RemoveItem (0)
+Wend
+
+sql = "select * from GuideVenture where standalone = 0 and id_analytic is not null"
+
+Set Table = myOpenRecordSet("##72", sql, dbOpenForwardOnly)
+If Table Is Nothing Then myBase.Close: End
+
+'lbVenture.AddItem "", 0
+While Not Table.EOF
+    lbVenture.AddItem "" & Table!ventureName & ""
+    lbVenture.ItemData(lbVenture.ListCount - 1) = Table!ventureId
+    Table.MoveNext
+Wend
+Table.Close
+lbVenture.Height = 225 * lbVenture.ListCount
+
+End Sub
+
 
 Private Sub Grid_KeyUp(KeyCode As Integer, Shift As Integer)
 'If KeyCode = vbKeyEscape Then Grid.CellBackColor = Grid.BackColor
@@ -1246,6 +1309,37 @@ End If
 
 End Sub
 
+
+Private Sub lbVenture_DblClick()
+Dim newNote As String, ncount As Integer
+
+If lbVenture.Visible = False Then Exit Sub
+sql = "select wf_make_venture_income(" & Grid.TextMatrix(mousRow, dcNumDoc) & ", " & lbVenture.ItemData(lbVenture.ListIndex) & ")"
+
+'i = orderUpdate("##72", lbVenture.ItemData(lbVenture.ListIndex), "Orders", "ventureId")
+byErrSqlGetValues "##126.1", sql, ncount
+If ncount > 0 Then
+    Grid.Text = lbVenture.Text
+    newNote = getValueFromTable("sDocs", "Note", "numDoc = " & Grid.TextMatrix(mousRow, dcNumDoc))
+    If IsNull(newNote) Then newNote = ""
+    Grid.TextMatrix(mousRow, dcNote) = newNote
+Else
+    MsgBox "Изменение не произошло. Вероятно, была попытка измененить приход, который был сделан до начала работы предприятия", , "Передупреждение"
+End If
+
+lbHide
+
+
+End Sub
+
+Private Sub lbVenture_KeyDown(KeyCode As Integer, Shift As Integer)
+    If KeyCode = vbKeyReturn Then
+        lbVenture_DblClick
+    ElseIf KeyCode = vbKeyEscape Then
+        lbHide
+    End If
+End Sub
+
 Private Sub mnAreport_Click()
 Report.Regim = "aReport"
 Report.Show vbModal
@@ -1347,7 +1441,7 @@ While Not tbNomenk.EOF
   
   sql = "SELECT sDMC.quant, sDocs.xDate, sDocs.sourId, sDocs.destId " & _
   "FROM sDocs INNER JOIN sDMC ON (sDocs.numExt = sDMC.numExt) AND " & _
-  "(sDocs.numDoc = sDMC.numDoc) WHERE (((sDMC.nomNom)='" & tbNomenk!nomNom & "')) " & _
+  "(sDocs.numDoc = sDMC.numDoc) WHERE (((sDMC.nomNom)='" & tbNomenk!nomnom & "')) " & _
   " ORDER BY sDocs.xDate;"
   Set tbDMC = myOpenRecordSet("##135", sql, dbOpenForwardOnly)
   If tbDMC Is Nothing Then GoTo EN1
@@ -1433,6 +1527,10 @@ ostatToWeb "toExcel"
 
 End Sub
 
+Private Sub mnVentureOrder_Click()
+    VentureOrder.Show
+End Sub
+
 Private Sub mnViewOst_Click()
 
 Me.MousePointer = flexHourglass
@@ -1448,7 +1546,7 @@ If tbNomenk.BOF Then
     MsgBox "Записей с отрицательными остатками не обнаружено.", , "Результаты проверки"
 Else
     While Not tbNomenk.EOF
-        lbBad.AddItem tbNomenk!nomNom & "  " & tbNomenk!nomName
+        lbBad.AddItem tbNomenk!nomnom & "  " & tbNomenk!nomName
         tbNomenk.MoveNext
     Wend
     tbNomenk.Close
@@ -1599,7 +1697,7 @@ For i = 1 To UBound(NN) ' перебор всех групп
   If Not tbNomenk.BOF Then
       bilo = False
       While Not tbNomenk.EOF
-        gNomNom = tbNomenk!nomNom
+        gNomNom = tbNomenk!nomnom
         tmpSng = Nomenklatura.nomencDostupOstatki
         
 'Этот блок не требует изменения (здесь выдаются заголовки групп)------------
@@ -1630,7 +1728,7 @@ For i = 1 To UBound(NN) ' перебор всех групп
         Dim cena2w As String
         cena2w = Chr(160) & Format(tbNomenk!CENA_W, "0.00") ' выводим как текст, т.к. "3.00" все равностанет "3"
         If toExel = "" Then
-            Print #1, tbNomenk!nomNom & vbTab & tbNomenk!nomName & vbTab & _
+            Print #1, tbNomenk!nomnom & vbTab & tbNomenk!nomName & vbTab & _
             str & vbTab & Round(tmpSng, 2) & vbTab & cena2w & _
             vbTab & tbNomenk!cod & vbTab & tbNomenk!Size
         Else
@@ -1727,7 +1825,7 @@ If Not tbProduct Is Nothing Then
 '      "WHERE (((sProducts.ProductId)=" & tbProduct!prId & "));"
 '      myExecute "##372", sql
     
-      Print #1, tbProduct!prName & vbTab & tbProduct!nomNom
+      Print #1, tbProduct!prName & vbTab & tbProduct!nomnom
       tbProduct.MoveNext
     Wend
     Close #1
@@ -1915,3 +2013,8 @@ Dim i As Integer
     Me.MousePointer = flexDefault
 End Sub
 
+Private Sub ventureOborot_Click()
+    Nomenklatura.Regim = "ventureOborot"
+    Nomenklatura.Show
+    Nomenklatura.setRegim
+End Sub

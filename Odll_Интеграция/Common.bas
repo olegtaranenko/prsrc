@@ -25,6 +25,10 @@ Public tbCeh As Recordset
 Public tbDMC As Recordset
 Public tbDocs As Recordset
 Public tbGuide As Recordset
+Public tbSeries As Recordset
+Public Node As Node
+
+
 Public isBlock As Boolean
 Public Ceh(10) As String
 Public cehId As Integer
@@ -50,7 +54,7 @@ Public begDate As Date ' Дата вступительных остатков
 Public logFile As String
 Public dostup As String
 Public otlad As String
-Public tbSIze As Integer
+Public tbSize As Integer
 Public cErr As String 'позволяет выявить место возникновения Err, если по
                       'всем местам сообщение об Err выдает один MsgBox
 Public zakazNum As Long  ' кол-во заказов в  Mен.реестре
@@ -112,9 +116,13 @@ Public orVrVid As Integer, orVrVip As Integer, orM As Integer, orO As Integer
 Public orType As Integer, orInvoice As Integer
 Public orMOData As Integer, orMOVrVid As Integer, orOVrVip As Integer
 Public orLogo As Integer, orIzdelia As Integer, orZakazano As Integer
+Public orZalog As Integer, orNal As Integer
 Public orOplacheno As Integer, orOtgrugeno As Integer, orLastMen As Integer
 Public orVenture As Integer
 Public orlastModified As Integer
+Public orBillId As Integer
+Public orVocnameId As Integer
+Public orServername As Integer
 
 Public NN() As String, QQ() As Single ' откатываемая номенклатура и кол-во
 Public QQ2() As Single, QQ3() As Single
@@ -129,6 +137,25 @@ Public Const dcNumDoc = 2
 Public Const dcSour = 3
 Public Const dcDest = 4
 Public Const dcNote = 5
+
+'Grid в FirmComtex
+Public Const fcId = 0
+Public Const fcFirmName = 1
+Public Const fcInn = 2
+Public Const fcOkonx = 3
+Public Const fcOkpo = 4
+Public Const fcKpp = 5
+Public Const fcAddress = 6
+Public Const fcPhone = 7
+
+Public Const fcFormatString = _
+  "|< Название  фирмы" _
+& "|>ИНН" _
+& "|>ОКОНХ" _
+& "|>ОКПО" _
+& "|>КПП" _
+& "|<Адрес" _
+& "|<Телефон" _
 
 
 Public Const gfNazwFirm = 1
@@ -198,7 +225,7 @@ Public Const prId = 0
 Public Const prType = 1
 Public Const prName = 2
 Public Const prDescript = 3
-Public Const prEdIzm = 4
+Public Const prEdizm = 4
 Public Const prCenaEd = 5
 Public Const prQuant = 6
 Public Const prSumm = 7
@@ -219,9 +246,28 @@ Public tmp() As Single
 Public tmpL() As Long
 Public ost() As Single, befOst() As Single
 
+' список выбранных позиций в таблице предметов к заказу
+' (по CtrlLeftClick) в sProducts.Grid5
+Public selectedItems() As Long
+
+
+Function serverIsAccessible(ventureName As String) As Boolean
+Dim I As Integer
+
+    serverIsAccessible = False
+    For I = 0 To Orders.lbVenture.ListCount
+        If Orders.lbVenture.List(I) = ventureName Then
+            serverIsAccessible = True
+            Exit For
+        End If
+    Next I
+    
+End Function
+
+
 'Если первый пораметр ="W.." - не выдавать Err по невып-ю Where, а все
 'параметры обнулить, если для всех них нуль это возможное значение, то в sql
-'м. задать константу "1" и принять ее в i. Тогда если i=0 то была Err Where
+'м. задать константу "1" и принять ее в I. Тогда если I=0 то была Err Where
 '$odbc15$
 Function byErrSqlGetValues(ParamArray val() As Variant) As Boolean
 Dim tabl As Recordset, I As Integer, maxi As Integer, str As String, c As String
@@ -229,7 +275,7 @@ Dim tabl As Recordset, I As Integer, maxi As Integer, str As String, c As String
 byErrSqlGetValues = False
 maxi = UBound(val())
 If maxi < 1 Then
-    wrkDefault.Rollback
+    wrkDefault.rollback
     MsgBox "мало параметров для п\п byErrSqlGetValues()"
     Exit Function
 End If
@@ -243,7 +289,7 @@ If tabl.BOF Then
         GoTo EN1
     Else
 '        msgOfEnd CStr(val(0)), "Нет записей удовлетворяющих Where."
-        wrkDefault.Rollback
+        wrkDefault.rollback
         MsgBox "Нет записей удовлетворяющих Where!", , "Error-" & str
         GoTo EN2
     End If
@@ -252,14 +298,14 @@ End If
 For I = 2 To maxi
     str = TypeName(val(I))
     If (str = "Single" Or str = "Integer" Or str = "Long" Or str = "Double") _
-    And IsNull(tabl.Fields(I - 2)) Then
+    And IsNull(tabl.fields(I - 2)) Then
         val(I) = 0
-    ElseIf str = "String" And IsNull(tabl.Fields(I - 2)) Then
+    ElseIf str = "String" And IsNull(tabl.fields(I - 2)) Then
         val(I) = ""
-    ElseIf str = "Date" And IsNull(tabl.Fields(I - 2)) Then
+    ElseIf str = "Date" And IsNull(tabl.fields(I - 2)) Then
 '        val(I) = tabl.Fil
     Else
-        val(I) = tabl.Fields(I - 2)
+        val(I) = tabl.fields(I - 2)
     End If
 Next I
 EN1:
@@ -446,7 +492,7 @@ getSystemField = Null
 sql = "SELECT " & field & " From System;"
 Set tbSystem = myOpenRecordSet("##147", sql, dbOpenForwardOnly)
 'If tbSystem Is Nothing Then myBase.Close: End
-getSystemField = tbSystem.Fields(field)
+getSystemField = tbSystem.fields(field)
 tbSystem.Close
 End Function
 
@@ -622,7 +668,7 @@ End Function
 '          либо "error" если даты не пересекаются
 'reg<>"" - выдает аргумент для WHERE для промежутка До startDate
 '          либо "" если startDate раньше begDate(не следует запускать SQL)
-Function getWhereByDateBoxes(frm As Form, dateField As String, _
+Function getWhereByDateBoxes(Frm As Form, dateField As String, _
 begDate As Date, Optional reg As String = "") As String
 
 Dim str As String, ckStart As Boolean, ckEnd  As Boolean
@@ -631,20 +677,20 @@ getWhereByDateBoxes = "": str = "":
 
 ckStart = False: ckEnd = False
 On Error Resume Next ' на случай, если в этой форме у дат нет флажков
-If frm.ckEndDate.value > 0 Then ckEnd = True  'то они как бы установлены
-If frm.ckStartDate.value > 0 And frm.ckStartDate.Visible Then ckStart = True
+If Frm.ckEndDate.value > 0 Then ckEnd = True  'то они как бы установлены
+If Frm.ckStartDate.value > 0 And Frm.ckStartDate.Visible Then ckStart = True
 On Error GoTo 0
 
 If ckStart Then
-    If Not isDateTbox(frm.tbStartDate) Then GoTo ERRd  'tmpDate
+    If Not isDateTbox(Frm.tbStartDate) Then GoTo ERRd  'tmpDate
 End If
 If reg = "" Then ' если период Между
     If DateDiff("d", begDate, tmpDate) > 0 And ckStart Then _
         str = "(" & dateField & ") >=" & Format(tmpDate, "'yyyy-mm-dd'")
     If ckEnd Then
-      If Not isDateTbox(frm.tbEndDate) Then GoTo ERRd
+      If Not isDateTbox(Frm.tbEndDate) Then GoTo ERRd
       If ckStart Then
-        If DateDiff("d", frm.tbStartDate.Text, tmpDate) < 0 Then
+        If DateDiff("d", Frm.tbStartDate.Text, tmpDate) < 0 Then
           MsgBox "Начальная дата периода загрузки не должна превышать конечную ", , "Предупреждение"
 ERRd:     getWhereByDateBoxes = "error"
           Exit Function
@@ -903,7 +949,7 @@ Else
     Else                    '
         I = 0               'в цеху всегда рабочая
     End If                  '
-'    mainTitle = "         " & base(i) '$$2
+'    mainTitle = "         " & base(I) '$$2
     cfg.baseOpen I
 '    mainTitle = "              New"
 End If
@@ -1038,6 +1084,8 @@ MsgBox "Система не смогла синхронизировать часы", , "Сообщите администратору!"
 Resume Next
 
 End Sub
+
+
 Sub CheckIntegration()
 Dim servers As Recordset
 Dim fromComtexRS As Recordset
@@ -1151,7 +1199,7 @@ If valueToSystemField("##389", I, "lastYear") Then
     lastYear = I
     MsgBox "База переведена в новый(" & I & ") год!"
 Else
-ER1: wrkDefault.Rollback
+ER1: wrkDefault.rollback
     MsgBox "Программа не смогла перевести базу в новый(" & I & ") год! " & _
     "Перезапустите программу еще раз или свяжитесь с Администратором.", , "Error"
 End If
@@ -1201,6 +1249,7 @@ On Error GoTo ERR1
 RETR:
 'wrkDefault.BeginTrans ' так рекомендуется обрамлять Execute но нельзя без wrkDefault.Rollback
 myBase.Execute sql ', dbFailOnError  ' выдавать Err если все или часть записей заблокировано
+'Debug.Print sql
 If myBase.RecordsAffected < 1 Then
   If passErr > 0 Or passErr = -11111 Then _
     MsgBox "Нет записей, удовлетворяющих условию WHERE. Сообщите " & _
@@ -1211,7 +1260,7 @@ myExecute = 0
 Exit Function
 
 ERR1:
-wrkDefault.Rollback
+wrkDefault.rollback
 cErr = Mid$(myErrCod, 3) ' - использовался наруже только в Prior
     
 'MsgBox Error, , "Error " & cErr & "-" & Err & ":  "
@@ -1352,7 +1401,7 @@ MsgBox "База переведена на новую дату!"
 Exit Sub
 
 ER1:
-wrkDefault.Rollback
+wrkDefault.rollback
 End Sub
 
 '$odbc08!$
@@ -1379,7 +1428,7 @@ If tbSystem Is Nothing Then Exit Sub
                       'вплоть до Update
 
 If tbSystem!resursLock = "nextDay" Then
-   wrkDefault.Rollback
+   wrkDefault.rollback
    MsgBox "Срочно сообщите Администратору! А пока можно работать с программой, " & _
     "но c ограниченной функциональностью.", , "Error при переводе Базы на новую дату!"
 
@@ -1695,7 +1744,7 @@ I = 1
 While j < 3 '         задание смещения зеленого коридора (3-й день)
 
     day = Weekday(DateAdd("d", k + I - befDays, curDate))
-'    day = Weekday(CurDate - befDays + K + i)
+'    day = Weekday(CurDate - befDays + K + I)
     If Not (day = vbSunday Or day = vbSaturday) Then j = j + 1
     I = I + 1
 Wend
@@ -1904,14 +1953,14 @@ NXT:
         If tbFirms!year04 <> year04 Then errCurYear = errCurYear + 1
         tbFirms!year04 = year04
     End If
-    tbFirms.Update
+    tbFirms.update
  End If
  tbFirms.MoveNext
 Wend '*******************
 EN1:
 tbFirms.Close
 If year = "" Then
-  If nRow > 1 Then Report.Grid.RemoveItem (nRow)
+  If nRow > 1 Then Report.Grid.removeItem (nRow)
   Report.laCount.Caption = nRow - 1
 Else
 '  If errBefYear > 0 Then !!!не стирать
@@ -2065,16 +2114,23 @@ Sub unLockBase()
 valueToSystemField "##148", "", "resursLock"
 End Sub
 
-Sub getIdFromGrid5Row(frm As Form)
+Sub getIdFromGrid5Row(Frm As Form, Optional p_row As Long = -1)
 Dim str As String, I As Integer
+Dim v_row As Long
 
-If frm.Grid5.TextMatrix(frm.mousRow5, prType) = "изделие" Then
-    str = frm.Grid5.TextMatrix(frm.mousRow5, prName) '
+If IsMissing(p_row) Or p_row = -1 Then
+    v_row = Frm.mousRow5
+Else
+    v_row = p_row
+End If
+
+If Frm.Grid5.TextMatrix(v_row, prType) = "изделие" Then
+    str = Frm.Grid5.TextMatrix(v_row, prName) '
     I = InStr(str, "/")
     prExt = 0: If I > 1 Then prExt = Left$(str, I - 1)   'номер поставки
-    gProductId = frm.Grid5.TextMatrix(frm.mousRow5, prId)
+    gProductId = Frm.Grid5.TextMatrix(v_row, prId)
 Else
-    gNomNom = frm.Grid5.TextMatrix(frm.mousRow5, prId)
+    gNomNom = Frm.Grid5.TextMatrix(v_row, prId)
 End If
 End Sub
 
@@ -2110,7 +2166,7 @@ Dim I As Integer, lockYear As Integer
 
 lockYear = getLockYear
 I = Format(checkDate, "yyyy")
-'If i <= lockYear Then
+'If I <= lockYear Then
 '    getYearField = "lock" 'этот год учавствовал в отсечении базы
 '    Exit Function
 'End If
@@ -2143,7 +2199,7 @@ str & "] " & oper & " 1  WHERE (((GuideFirms.FirmId)=" & I & "));"
 'Debug.Print sql
 I = myExecute("##87", sql, -143)
 
-'If i <> 3061 And i <> 0 Then '3061 - колонки этого года уже(или еще) нет в базе
+'If I <> 3061 And I <> 0 Then '3061 - колонки этого года уже(или еще) нет в базе
 If I = -2 Then '3061 - колонки этого года уже(или еще) нет в базе
 ER1:    MsgBox "Ошибка коррекции посещения фирм. Сообщите администратору!", , "Error-87"
 End If
@@ -2340,7 +2396,7 @@ End If
 sql = "SELECT Sum(sDMC.quant) AS Sum_quantity FROM sDocs INNER JOIN " & _
 "sDMC ON (sDocs.numExt = sDMC.numExt) AND (sDocs.numDoc = sDMC.numDoc) " & _
 "WHERE (((sDMC.nomNom) = '" & gNomNom & "' " & qWhere & ");"
-'MsgBox sql
+Debug.Print sql
 byErrSqlGetValues "##157", sql, PrihodRashod
 
 End Function
@@ -2381,14 +2437,15 @@ End Function
 
 'исп-ся при формировании предметов, а также отвечает за часть Надлежит
 'отпустить в Otgruz.frm
-Sub loadPredmeti(frm As Form, Optional reg As String = "")
+Sub loadPredmeti(Frm As Form, Optional reg As String = "")
 Dim I As Integer
+
 Screen.MousePointer = flexHourglass
-frm.Grid5.Visible = False
-frm.quantity5 = 0
+Frm.Grid5.Visible = False
+Frm.quantity5 = 0
 I = 0: If reg = "fromOtgruz" Then I = 1
 
-clearGrid frm.Grid5, 1 + I
+clearGrid Frm.Grid5, 1 + I
 
 '******** изделия ************************************************
 sql = "SELECT sGuideProducts.prName, sGuideProducts.prDescript, " & _
@@ -2398,34 +2455,34 @@ sql = "SELECT sGuideProducts.prName, sGuideProducts.prDescript, " & _
 "prExt = xEtapByIzdelia.prExt ) AND (xPredmetyByIzdelia.prId = " & _
 "xEtapByIzdelia.prId) AND (xPredmetyByIzdelia.numOrder = xEtapByIzdelia.numOrder)" & _
 "WHERE (((xPredmetyByIzdelia.numOrder)= " & gNzak & "));"
-'MsgBox sql
+'Debug.Print sql
 
 Set tbNomenk = myOpenRecordSet("##183", sql, dbOpenForwardOnly)
 If tbNomenk Is Nothing Then Exit Sub
 If Not tbNomenk.BOF Then
   While Not tbNomenk.EOF
-    frm.quantity5 = frm.quantity5 + 1
-    frm.Grid5.TextMatrix(frm.quantity5 + I, prId) = tbNomenk!prId
-    frm.Grid5.TextMatrix(frm.quantity5 + I, prType) = "изделие"
-    frm.Grid5.TextMatrix(frm.quantity5 + I, prName) = getStrPrEx(tbNomenk!prName, tbNomenk!prExt)
-    frm.Grid5.TextMatrix(frm.quantity5 + I, prDescript) = tbNomenk!prDescript
-    frm.Grid5.TextMatrix(frm.quantity5 + I, prEdIzm) = "шт."
+    Frm.quantity5 = Frm.quantity5 + 1
+    Frm.Grid5.TextMatrix(Frm.quantity5 + I, prId) = tbNomenk!prId
+    Frm.Grid5.TextMatrix(Frm.quantity5 + I, prType) = "изделие"
+    Frm.Grid5.TextMatrix(Frm.quantity5 + I, prName) = getStrPrEx(tbNomenk!prName, tbNomenk!prExt)
+    Frm.Grid5.TextMatrix(Frm.quantity5 + I, prDescript) = tbNomenk!prDescript
+    Frm.Grid5.TextMatrix(Frm.quantity5 + I, prEdizm) = "шт."
     If Not IsNull(tbNomenk!cenaEd) Then
-        frm.Grid5.TextMatrix(frm.quantity5 + I, prCenaEd) = Round(tbNomenk!cenaEd, 2)
-        frm.Grid5.TextMatrix(frm.quantity5 + I, prSumm) = _
+        Frm.Grid5.TextMatrix(Frm.quantity5 + I, prCenaEd) = Round(tbNomenk!cenaEd, 2)
+        Frm.Grid5.TextMatrix(Frm.quantity5 + I, prSumm) = _
                                 Round(tbNomenk!cenaEd * tbNomenk!quant, 2)
     End If
-    frm.Grid5.TextMatrix(frm.quantity5 + I, prQuant) = tbNomenk!quant
+    Frm.Grid5.TextMatrix(Frm.quantity5 + I, prQuant) = tbNomenk!quant
 ' все изменения проделать и для ном-ры (см. ниже)
     If reg = "fromOtgruz" Then
-        Otgruz.getOtgrugeno frm.quantity5 + I
+        Otgruz.getOtgrugeno Frm.quantity5 + I
     ElseIf Not IsNull(tbNomenk!eQuant) Then
-        frm.Grid5.TextMatrix(frm.quantity5 + I, prEtap) = tbNomenk!eQuant
-        frm.Grid5.TextMatrix(frm.quantity5 + I, prEQuant) = _
+        Frm.Grid5.TextMatrix(Frm.quantity5 + I, prEtap) = tbNomenk!eQuant
+        Frm.Grid5.TextMatrix(Frm.quantity5 + I, prEQuant) = _
                             Round(tbNomenk!eQuant - tbNomenk!prevQuant, 2)
     End If
     
-    frm.Grid5.AddItem ""
+    Frm.Grid5.AddItem ""
     tbNomenk.MoveNext
   Wend
 End If
@@ -2441,58 +2498,58 @@ sql = "SELECT sGuideNomenk.nomNom, sGuideNomenk.nomName, " & _
 "nomNom = xEtapByNomenk.nomNom) AND (xPredmetyByNomenk.numOrder = xEtapByNomenk.numOrder) " & _
 "WHERE (((xPredmetyByNomenk.numOrder)=" & gNzak & "));"
 
-'MsgBox sql
+'Debug.Print sql
 Set tbNomenk = myOpenRecordSet("##184", sql, dbOpenForwardOnly)
 If tbNomenk Is Nothing Then Exit Sub
 If Not tbNomenk.BOF Then
   While Not tbNomenk.EOF
-    frm.quantity5 = frm.quantity5 + 1
-    frm.Grid5.TextMatrix(frm.quantity5 + I, prId) = tbNomenk!nomNom
-    frm.Grid5.TextMatrix(frm.quantity5 + I, prType) = "номенклатура"
-    frm.Grid5.TextMatrix(frm.quantity5 + I, prName) = tbNomenk!cod
-    frm.Grid5.TextMatrix(frm.quantity5 + I, prDescript) = _
+    Frm.quantity5 = Frm.quantity5 + 1
+    Frm.Grid5.TextMatrix(Frm.quantity5 + I, prId) = tbNomenk!nomNom
+    Frm.Grid5.TextMatrix(Frm.quantity5 + I, prType) = "номенклатура"
+    Frm.Grid5.TextMatrix(Frm.quantity5 + I, prName) = tbNomenk!cod
+    Frm.Grid5.TextMatrix(Frm.quantity5 + I, prDescript) = _
         tbNomenk!nomName & " " & tbNomenk!Size
-    frm.Grid5.TextMatrix(frm.quantity5 + I, prEdIzm) = tbNomenk!ed_Izmer
+    Frm.Grid5.TextMatrix(Frm.quantity5 + I, prEdizm) = tbNomenk!ed_Izmer
     If Not IsNull(tbNomenk!cenaEd) Then
-        frm.Grid5.TextMatrix(frm.quantity5 + I, prCenaEd) = Round(tbNomenk!cenaEd, 2)
-        frm.Grid5.TextMatrix(frm.quantity5 + I, prSumm) = _
+        Frm.Grid5.TextMatrix(Frm.quantity5 + I, prCenaEd) = Round(tbNomenk!cenaEd, 2)
+        Frm.Grid5.TextMatrix(Frm.quantity5 + I, prSumm) = _
                                 Round(tbNomenk!cenaEd * tbNomenk!quant, 2)
     End If
 
-    frm.Grid5.TextMatrix(frm.quantity5 + I, prQuant) = tbNomenk!quant
+    Frm.Grid5.TextMatrix(Frm.quantity5 + I, prQuant) = tbNomenk!quant
 
     If reg = "fromOtgruz" Then
-        Otgruz.getOtgrugeno frm.quantity5 + I, "byNomenk"
+        Otgruz.getOtgrugeno Frm.quantity5 + I, "byNomenk"
     ElseIf Not IsNull(tbNomenk!eQuant) Then
-        frm.Grid5.TextMatrix(frm.quantity5 + I, prEtap) = tbNomenk!eQuant
-        frm.Grid5.TextMatrix(frm.quantity5 + I, prEQuant) = _
+        Frm.Grid5.TextMatrix(Frm.quantity5 + I, prEtap) = tbNomenk!eQuant
+        Frm.Grid5.TextMatrix(Frm.quantity5 + I, prEQuant) = _
                             Round(tbNomenk!eQuant - tbNomenk!prevQuant, 2)
     End If
     
     
-    frm.Grid5.AddItem ""
+    Frm.Grid5.AddItem ""
     tbNomenk.MoveNext
   Wend
 End If
 tbNomenk.Close
 
-If frm.quantity5 > 0 Then
-    frm.Grid5.row = frm.quantity5 + 1 + I
-    frm.Grid5.col = prQuant
-    frm.Grid5.Text = "Итого:"
-    frm.Grid5.col = prSumm
-    frm.Grid5.Text = sProducts.saveOrdered
-    frm.Grid5.CellFontBold = True
+If Frm.quantity5 > 0 Then
+    Frm.Grid5.row = Frm.quantity5 + 1 + I
+    Frm.Grid5.col = prQuant
+    Frm.Grid5.Text = "Итого:"
+    Frm.Grid5.col = prSumm
+    Frm.Grid5.Text = sProducts.saveOrdered(False)
+    Frm.Grid5.CellFontBold = True
     If reg = "fromOtgruz" Then
-        frm.Grid5.col = prOutSum
-        frm.Grid5.Text = Otgruz.saveShipped
-        frm.Grid5.CellFontBold = True
-        frm.Grid5.col = prNowSum
-        frm.Grid5.Text = "0"
-        frm.Grid5.CellFontBold = True
+        Frm.Grid5.col = prOutSum
+        Frm.Grid5.Text = Otgruz.saveShipped
+        Frm.Grid5.CellFontBold = True
+        Frm.Grid5.col = prNowSum
+        Frm.Grid5.Text = "0"
+        Frm.Grid5.CellFontBold = True
     End If
 End If
-frm.Grid5.Visible = True
+Frm.Grid5.Visible = True
 
 Screen.MousePointer = flexDefault
 End Sub
@@ -2537,16 +2594,74 @@ End Function
     
 Function orderUpdate(myErrCod As String, value As String, table As String, _
 field As String, Optional by As String = "") As Integer
-Dim orderTimestamp As Date
 
         orderUpdate = ValueToTableField(myErrCod, value, table, field, by)
         If table = "Orders" Then
-            sql = "SELECT O.lastModified From Orders o " _
-                & " WHERE (((O.numOrder)=" & gNzak & "));"
-            If Not byErrSqlGetValues("##174.2", sql, orderTimestamp) Then Exit Function
-
-            Orders.Grid.TextMatrix(Orders.mousRow, orlastModified) = orderTimestamp
+            refreshTimestamp (gNzak)
         End If
 End Function
 
+Function refreshTimestamp(gNzak)
+    Dim orderTimestamp As Date
+    
+    sql = "SELECT O.lastModified From Orders o " _
+        & " WHERE (((O.numOrder)=" & gNzak & "));"
+    If Not byErrSqlGetValues("##174.2", sql, orderTimestamp) Then Exit Function
+
+    Orders.Grid.TextMatrix(Orders.mousRow, orlastModified) = orderTimestamp
+End Function
+
 #End If
+
+Sub loadSeria(ByRef p_tv As TreeView)
+Dim key As String, pKey As String, k() As String, pK()  As String
+Dim I As Integer, iErr As Integer
+bilo = False
+sql = "SELECT sGuideSeries.*  From sGuideSeries ORDER BY sGuideSeries.seriaId;"
+Set tbSeries = myOpenRecordSet("##110", sql, dbOpenForwardOnly)
+If tbSeries Is Nothing Then myBase.Close: End
+If Not tbSeries.BOF Then
+ p_tv.Nodes.Clear
+ Set Node = p_tv.Nodes.Add(, , "k0", "Справочник по сериям")
+ Node.Sorted = True
+ 
+ ReDim k(0): ReDim pK(0): ReDim NN(0): iErr = 0
+ While Not tbSeries.EOF
+    If tbSeries!seriaId = 0 Then GoTo NXT1
+    key = "k" & tbSeries!seriaId
+    pKey = "k" & tbSeries!parentSeriaId
+    On Error GoTo ERR1 ' назначить второй проход
+    Set Node = p_tv.Nodes.Add(pKey, tvwChild, key, tbSeries!seriaName)
+    On Error GoTo 0
+    Node.Sorted = True
+NXT1:
+    tbSeries.MoveNext
+ Wend
+End If
+tbSeries.Close
+
+While bilo ' необходимы еще проходы
+  bilo = False
+  For I = 1 To UBound(k())
+    If k(I) <> "" Then
+        On Error GoTo ERR2 ' назначить еще проход
+        Set Node = p_tv.Nodes.Add(pK(I), tvwChild, k(I), NN(I))
+        On Error GoTo 0
+        k(I) = ""
+        Node.Sorted = True
+    End If
+NXT:
+  Next I
+Wend
+p_tv.Nodes.item("k0").Expanded = True
+Exit Sub
+ERR1:
+ iErr = iErr + 1: bilo = True
+ ReDim Preserve k(iErr): ReDim Preserve pK(iErr): ReDim Preserve NN(iErr)
+ k(iErr) = key: pK(iErr) = pKey: NN(iErr) = tbSeries!seriaName
+ Resume Next
+
+ERR2: bilo = True: Resume NXT
+
+End Sub
+

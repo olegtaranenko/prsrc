@@ -48,12 +48,19 @@ alter table xPredmetyByNomenkOut add (id_mat integer, id_jmat integer);
 alter table xUslugOut add (id_mat integer, id_jmat integer);
 alter table xVariantNomenc add id_scet integer;
 alter table yBook add (id_xoz integer, ventureid integer);
---alter table yDebKreditor
+--alter table yDebKreditor add (id_voc_names integer, ventureid integer);
 --alter table yGuideDet
 --alter table yGuideDetail
 --alter table yGuidePurp
 --alter table yGuidePurpose
---alter table yGuideSchets
+/* 
+Может и не нужно, если подсчета не повторяются для разных фирм
+Нужно уточнить у бухгалтеров
+
+alter table yGuideSchets add ventureid integer;
+update yGuideSchets set ventureid = 0;
+alter table yGuideSchets modify ventureid integer not null default 0;
+*/
 
 ------------------------------------------
 -- мусор от которого слудует избавиться --
@@ -169,8 +176,8 @@ create unique index unique_purpose on yGuidePurpose (Debit, subDebit, Kredit, su
 
 
 -- денормализация "Уточнения" ЖХО
-alter table ybook add descript varchar(50);
-alter table ybook add purpose varchar(50);
+alter table ybook add descript varchar(50) default '';
+alter table ybook add purpose varchar(50) default '';
 
 
 -- Триггер, автоматически контролирующий (и корректирующей)

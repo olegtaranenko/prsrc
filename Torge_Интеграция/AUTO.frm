@@ -106,7 +106,7 @@ Begin VB.Form AUTO
       Width           =   2295
    End
    Begin VB.Label laInform 
-      Alignment       =   2  'Центровка
+      Alignment       =   2  'Center
       Height          =   255
       Left            =   120
       TabIndex        =   1
@@ -243,8 +243,10 @@ Table.Close
 End Sub
 
 Private Sub cbM_Click()
-cmSklad.Enabled = True
-cmBook.Enabled = True
+    cmSklad.Enabled = True
+    cmBook.Enabled = True
+    sql = "set @manager = '" & cbM.Text & "'"
+    If myExecute("##1.2", sql, 0) = 0 Then End
 
 End Sub
 
@@ -295,6 +297,7 @@ If Len(Command()) > 4 Then
     otlad = Left$(Command(), 4)
 End If
 
+
 'If InStr(Command(), "       wkdh") <> 0 Then
 If Right$(Command(), 4) = "wkdh" Then
     dostup = "a"
@@ -319,7 +322,6 @@ Else
     Shell "C:\WINDOWS\net time \\server /WORKGROUP:JOBSHOP /SET /YES", vbHide
 End If
 On Error GoTo 0
-
 
 
 Timer1.Interval = 100 ' 0.1 c

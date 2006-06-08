@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "msflxgrd.ocx"
+Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Journal 
    BackColor       =   &H8000000A&
    Caption         =   "∆урнал хоз€йственных операций"
@@ -487,7 +487,7 @@ If selNum = -2 Then ' без суб.счетов
 '    If Table Is Nothing Then Exit Sub
 Else
 '    Set Table = myOpenRecordSet("##325", "yGuideSchets", dbOpenTable)
-    sql = "SELECT * FROM yGuideSchets"
+    sql = "SELECT * FROM yGuideSchets order by number + subnumber;"
     Set Table = myOpenRecordSet("##325", sql, dbOpenForwardOnly)
 '    If Table Is Nothing Then Exit Sub
 '    Table.Index = "Key"

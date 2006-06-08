@@ -1,6 +1,6 @@
 VERSION 5.00
 Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCTL.OCX"
-Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "msflxgrd.ocx"
+Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Products 
    BackColor       =   &H8000000A&
    Caption         =   "Справочник готовых изделий"
@@ -25,7 +25,7 @@ Begin VB.Form Products
       Width           =   795
    End
    Begin VB.Frame Frame1 
-      BorderStyle     =   0  'Нет
+      BorderStyle     =   0  'None
       Caption         =   "Frame1"
       Height          =   5415
       Left            =   10720
@@ -115,7 +115,7 @@ Begin VB.Form Products
          Width           =   495
       End
       Begin VB.Label Label14 
-         BorderStyle     =   1  'Фиксировано один
+         BorderStyle     =   1  'Fixed Single
          Caption         =   "1"
          Height          =   285
          Left            =   540
@@ -242,7 +242,7 @@ Begin VB.Form Products
    End
    Begin VB.Frame frTitle 
       BackColor       =   &H00FF0000&
-      BorderStyle     =   0  'Нет
+      BorderStyle     =   0  'None
       Height          =   315
       Left            =   5100
       TabIndex        =   15
@@ -250,7 +250,7 @@ Begin VB.Form Products
       Visible         =   0   'False
       Width           =   5475
       Begin VB.Label laTitle 
-         Alignment       =   1  'Правая привязка
+         Alignment       =   1  'Right Justify
          BackColor       =   &H0080FFFF&
          Caption         =   "laTitle"
          Height          =   255
@@ -397,7 +397,7 @@ Begin VB.Form Products
       Width           =   4335
    End
    Begin VB.Label Label1 
-      Alignment       =   2  'Центровка
+      Alignment       =   2  'Center
       Caption         =   "Список Серий"
       Height          =   195
       Left            =   120
@@ -700,7 +700,7 @@ While Not tbNomenk.EOF
 '    End If
     If reg = "" Then
         If tbNomenk!formula = "" Then
-            getSumCena = "Error: Не определена формула для номенклатуры '" & tbNomenk!nomNom & "'"
+            getSumCena = "Error: Не определена формула для номенклатуры '" & tbNomenk!nomnom & "'"
             GoTo ER
         End If
         v = nomenkFormula("noOpen") 'Цена2
@@ -721,7 +721,7 @@ While Not tbNomenk.EOF
             prevGroup = tbNomenk!xgroup
         End If
     Else
-        getSumCena = v & " в формуле для  '" & tbNomenk!nomNom & "'"
+        getSumCena = v & " в формуле для  '" & tbNomenk!nomnom & "'"
         GoTo ER
     End If
 
@@ -744,6 +744,7 @@ If Not isNumericTbox(tbQuant, 1) Then Exit Sub
 n = tbQuant.Text
 wrkDefault.BeginTrans
 
+
 sql = "SELECT sProducts.nomNom, sProducts.quantity From sProducts " & _
 "WHERE (((sProducts.ProductId)=" & gProductId & "));"
 Set tbProduct = myOpenRecordSet("##139", sql, dbOpenForwardOnly)
@@ -754,12 +755,12 @@ While Not tbProduct.EOF
     q = Round(tbProduct!quantity * n, 2)
     If q = 0 Then GoTo NXT
     rr = rr + 1: ReDim Preserve QQ(rr): ReDim Preserve NN(rr)
-    QQ(rr) = -q: NN(rr) = tbProduct!nomNom ' если придется делать откат
+    QQ(rr) = -q: NN(rr) = tbProduct!nomnom ' если придется делать откат
     
     Set tbNomenk = myOpenRecordSet("##150", "sGuideNomenk", dbOpenTable)
     If tbNomenk Is Nothing Then GoTo EN1
     tbNomenk.Index = "PrimaryKey"
-    tbNomenk.Seek "=", tbProduct!nomNom
+    tbNomenk.Seek "=", tbProduct!nomnom
     If tbNomenk.NoMatch Then
         tbNomenk.Close
         GoTo EN1
@@ -774,7 +775,7 @@ While Not tbProduct.EOF
     str = Format(gDocDate, "yyyy-mm-dd") 'сначала пробуем добавить запись
     sql = "INSERT INTO sDMC ([xDate], nomNom, quantity, numDoc, numExt, lastM ) " & _
     "SELECT DateDiff('d',[System].[begOstatDate],'" & str & "'), '" & _
-    tbProduct!nomNom & "', -" & q & ", " & numDoc & ", " & numExt & ", '" & _
+    tbProduct!nomnom & "', -" & q & ", " & numDoc & ", " & numExt & ", '" & _
     AUTO.cbM.Text & "' " & " From System;"
     'MsgBox sql
     i = myExecute("##151", sql, -196)
@@ -783,7 +784,7 @@ While Not tbProduct.EOF
         Set tbDMC = myOpenRecordSet("##152", "sDMC", dbOpenTable)
         If tbDMC Is Nothing Then GoTo EN1
         tbDMC.Index = "nomDoc"
-        tbDMC.Seek "=", numDoc, numExt, tbProduct!nomNom
+        tbDMC.Seek "=", numDoc, numExt, tbProduct!nomnom
         If tbDMC.NoMatch Then
             tbDMC.Close
             GoTo EN1
@@ -1666,6 +1667,7 @@ If frmMode = "productCopy" Then
     Grid.TextMatrix(Grid.Rows - 1, gpPage) = Grid.TextMatrix(mousRow, gpPage)
     Grid.TextMatrix(Grid.Rows - 1, gpSize) = Grid.TextMatrix(mousRow, gpSize)
     Grid.TextMatrix(Grid.Rows - 1, gpDescript) = Grid.TextMatrix(mousRow, gpDescript)
+    Grid.TextMatrix(Grid.Rows - 1, gpPrWeb) = Grid.TextMatrix(mousRow, gpPrWeb)
 Else
     Grid.TextMatrix(Grid.Rows - 1, gpSumCenaFreight) = "Error: Не обнаружены комплектующие"
     Grid.TextMatrix(Grid.Rows - 1, gpSumCenaSale) = "Error: Не обнаружены комплектующие"
@@ -1811,6 +1813,7 @@ Private Sub mnDel5_Click() 'см. mnEdit5_Click
 sql = "DELETE From sProducts WHERE (((sProducts.ProductId)=" & gProductId & ") " & _
 "AND ((sProducts.nomNom)='" & Grid2.TextMatrix(Grid2.row, gpNomNom) & "'));"
 'MsgBox sql
+'Debug.Print sql
 myBase.Execute sql
 quantity2 = quantity2 - 1
 If quantity2 = 0 Then
@@ -1948,65 +1951,43 @@ If KeyCode = vbKeyReturn Then
     myBase.Execute (sql) 'lock03
 
 
-'    sql = "SELECT sGuideProducts.* From sGuideProducts " & _
-          "ORDER BY sGuideProducts.prId;"
     sql = "SELECT max(prId) From sGuideProducts"
     If Not byErrSqlGetValues("##463", sql, i) Then Exit Sub
     i = i + 1
-'    Set tbProduct = myOpeformulaNomnRecordSet("##111", sql, dbOpenDynaset)
-'    If tbProduct Is Nothing Then GoTo EN1
-'    If tbProduct.BOF Then
-'        i = 1
-'    Else
-'        tbProduct.MoveLast
-'        i = tbProduct!prId + 1
-'    End If
-'    tbProduct.AddNew
-'    tbProduct!prId = i
-'    tbProduct!prName = str
-'    tbProduct!prSeriaId = gSeriaId
     Dim flds As String, vals As String
     flds = "prId, prName, prSeriaId"
     vals = i & ", '" & str & "', " & gSeriaId
     If frmMode = "productCopy" Then
-'        On Error Resume Next ' т.к. исходная м.б. почти пустая
-'        tbProduct!SortNom = Grid.TextMatrix(mousRow, gpSortNom)
+        On Error GoTo Rollback ' т.к. исходная м.б. почти пустая
         str = Grid.TextMatrix(mousRow, gpSortNom)
         If str <> "" Then flds = flds & ", SortNom": vals = vals & ", '" & str & "'"
-'        tbProduct!VremObr = Grid.TextMatrix(mousRow, gpVremObr)
-        'str = Grid.TextMatrix(mousRow, gpVremObr)
-        'If str <> "" Then flds = flds & ", VremObr": vals = vals & ", " & str
-'        tbProduct!formulaNom = Grid.TextMatrix(mousRow, gpFormulaNom)
-        'str = Grid.TextMatrix(mousRow, gpFormulaNom)
-        'If str <> "" Then flds = flds & ", formulaNom": vals = vals & ", " & str
-'        tbProduct!Cena4 = Grid.TextMatrix(mousRow, gpCol1)
-        'str = Grid.TextMatrix(mousRow, gpCol1)
-        'If str <> "" Then flds = flds & ", Cena4": vals = vals & ", " & str
-'        tbProduct!Page = Grid.TextMatrix(mousRow, gpPage)
+        str = Grid.TextMatrix(mousRow, gpVremObr)
+        If str <> "" Then flds = flds & ", VremObr": vals = vals & ", '" & str & "'"
+        str = Grid.TextMatrix(mousRow, gpFormulaNom)
+        If str <> "" Then flds = flds & ", FormulaNom": vals = vals & ", '" & str & "'"
+        str = Grid.TextMatrix(mousRow, gpCol1)
+        If str <> "" Then flds = flds & ", Cena4": vals = vals & ", '" & str & "'"
         str = Grid.TextMatrix(mousRow, gpPage)
         If str <> "" Then flds = flds & ", Page": vals = vals & ", '" & str & "'"
-'        tbProduct!prSize = Grid.TextMatrix(mousRow, gpSize)
         str = Grid.TextMatrix(mousRow, gpSize)
         If str <> "" Then flds = flds & ", prSize": vals = vals & ", '" & str & "'"
-'        tbProduct!prDescript = Grid.TextMatrix(mousRow, gpDescript)
+        str = Grid.TextMatrix(mousRow, gpPrWeb)
+        If str <> "" Then flds = flds & ", web": vals = vals & ", '" & str & "'"
         str = Grid.TextMatrix(mousRow, gpDescript)
         If str <> "" Then flds = flds & ", prDescript": vals = vals & ", '" & str & "'"
 '        On Error GoTo 0
     End If
     sql = "INSERT INTO sGuideProducts (" & flds & ") VALUES (" & vals & ")"
-MsgBox sql
-    If myExecute("##111", sql) <> 0 Then Exit Sub
+    If myExecute("##111", sql) <> 0 Then GoTo Rollback
     wrkDefault.CommitTrans
     
-'    tbProduct.Update
-'    tbProduct.Close
     Grid.TextMatrix(mousRow, gpName) = tmpStr
     Grid.TextMatrix(mousRow, gpId) = i
     quantity = quantity + 1
     Grid.TextMatrix(mousRow, gpNomenk) = quantity
     If frmMode = "productCopy" Then
-        sql = "INSERT INTO sProducts ( ProductId, nomNom, quantity ) " & _
-        "SELECT " & i & ", sProducts.nomNom, sProducts.quantity " & _
+        sql = "INSERT INTO sProducts ( ProductId, nomNom, quantity, xGroup ) " & _
+        "SELECT " & i & ", sProducts.nomNom, sProducts.quantity, sProducts.xGroup " & _
         "From sProducts WHERE (((sProducts.ProductId)=" & gProductId & "));"
         myExecute "##155", sql, 0 'предметов м. и не быть
     End If
@@ -2039,8 +2020,10 @@ ElseIf KeyCode = vbKeyEscape Then
     frmMode = ""
     If quantity > 0 Then Grid.RemoveItem Grid.Rows - 1
  End If
+Rollback:
+  wrkDefault.Rollback
 EN1:
- lbHide
+  lbHide
 End If
 End Sub
 
@@ -2129,7 +2112,7 @@ If Not tbNomenk.BOF Then
   While Not tbNomenk.EOF
     quantity2 = quantity2 + 1
        
-    Grid2.TextMatrix(quantity2, gpNomNom) = tbNomenk!nomNom
+    Grid2.TextMatrix(quantity2, gpNomNom) = tbNomenk!nomnom
     Grid2.TextMatrix(quantity2, gpNomName) = tbNomenk!cod & " " & _
         tbNomenk!nomName & " " & tbNomenk!Size
     Grid2.TextMatrix(quantity2, gpEdIzm) = tbNomenk!ed_izmer
@@ -2318,7 +2301,7 @@ If Not tbProduct.BOF Then
     If Not IsNull(tbProduct!prSize) Then _
             Grid.TextMatrix(quantity, gpSize) = tbProduct!prSize
     Grid.TextMatrix(quantity, gpVremObr) = tbProduct!VremObr
-    Grid.TextMatrix(quantity, gpFormulaNom) = tbProduct!formulaNom
+    Grid.TextMatrix(quantity, gpFormulaNom) = tbProduct!FormulaNom
     If Not IsNull(tbProduct!prDescript) Then _
             Grid.TextMatrix(quantity, gpDescript) = tbProduct!prDescript
 'If tbProduct!prName = "штучки22" Then
