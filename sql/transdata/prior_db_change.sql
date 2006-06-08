@@ -1,5 +1,5 @@
 /**************************
-* Изменить текущие таблицы схемы prr для связывания 
+* Изменить текущие таблицы схемы Prior для связывания 
 * значений с сущностями-аналогами из Comtec 
 */
 
@@ -426,13 +426,13 @@ alter table orders add ventureId integer;
 alter table orders add foreign key fk_venture (ventureId) references GuideVenture(ventureId);
 
 insert into GuideVenture (ventureName, sysname, invCode)
-values ('Петровские мастерские', 'pm', '50');
+values ('Петровские мастерские', 'accountN', '50');
 
 insert into GuideVenture (ventureName, sysname, invCode)
-values ('Маркмастер', 'mm', '55');
+values ('Маркмастер', 'markmaster', '55');
 
 insert into GuideVenture (ventureName, sysname, invCode)
-values ('Аналитика', 'st', '');
+values ('Аналитика', 'stime', '');
 
 -- фиктивный товар "услуга гравировки"
 insert into sguidenomenk (nomnom, nomname, klassid) select 'УСЛ', 'Услуга гравировки', 0

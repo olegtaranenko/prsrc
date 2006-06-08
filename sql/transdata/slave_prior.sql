@@ -57,7 +57,7 @@ begin
 /*	
 	set out_exists = 1;
 	if out_exists = 0 and GLOBALSETTING_CHECK_ACCOUNT = 1 then
-		raiserror 17001 'В базе prr не существует счета %1!/%2!'
+		raiserror 17001 'В базе Prior не существует счета %1!/%2!'
 			+ 'Проверьте согласованность планов счетов.'
 		, p_sc, p_sub;
 	end if;

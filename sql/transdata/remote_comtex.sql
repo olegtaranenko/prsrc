@@ -1,5 +1,5 @@
-if not exists (select 1 from sys.sysservers where srvname = 'prr') then  
-	create server prr class 'ASAODBC' USING 'DSN=prr;UID=dba;PWD=sql';
+if not exists (select 1 from sys.sysservers where srvname = 'prior') then  
+	create server prior class 'ASAODBC' USING 'DSN=prior;UID=dba;PWD=sql';
 end if;
 
 

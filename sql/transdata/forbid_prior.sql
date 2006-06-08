@@ -35,8 +35,8 @@ create
 ;
 
 insert into zz_forbid (server_name, table_name, operation, fallback, table_field) 
-select 'st', 'mat', '', '', '' union
-select 'st', 'jmat', '', 'delete', 'y' union
+select 'stime', 'mat', '', '', '' union
+select 'stime', 'jmat', '', 'delete', 'y' union
 select 'pm', '', '', '', '' union
 select 'pm', 'mat', '', '', '';
 

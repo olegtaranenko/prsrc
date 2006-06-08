@@ -101,7 +101,7 @@ begin
 //	message 'nm = '+v_nm to client;
 //	message 'rem = '+v_rem to client;
 
-	call admin.slave_put_account_prr(
+	call admin.slave_put_account_prior(
 		f_account_exists
 		, v_debit_sc
 		, v_debit_sub
@@ -123,7 +123,7 @@ begin
 //	message 'rem = '+v_rem to client;
 
 
-	call admin.slave_put_account_prr(
+	call admin.slave_put_account_prior(
 		f_account_exists
 		, v_credit_sc
 		, v_credit_sub
@@ -139,7 +139,7 @@ begin
 		from m_xoz m
 		where m.id = new_name.id_m_xoz;
 
-		call admin.slave_set_purpose_prr (
+		call admin.slave_set_purpose_prior (
 	    	  v_purpose
 	    	, v_debit_sc, v_debit_sub, v_credit_sc, v_credit_sub 
 	    	, v_purpose_id
@@ -295,7 +295,7 @@ begin
 		where d.id = new_name.id_accd;
 
 	    
-		call admin.slave_put_account_prr(
+		call admin.slave_put_account_prior(
 			f_account_exists
 			, v_debit_sc
 			, v_debit_sub
@@ -306,7 +306,7 @@ begin
 		end if;
 
 		call admin.update_remote(
-			'prr'
+			'prior'
 			, 'ybook y'
 			, 'Debit'
 			, ''''''+v_debit_sc+''''''
@@ -318,7 +318,7 @@ begin
 		);
 
 		call admin.update_remote(
-			'prr'
+			'prior'
 			, 'ybook y'
 			, 'subDebit'
 			, '''''' + v_debit_sub + ''''''
@@ -336,7 +336,7 @@ begin
 		from account c 
 		where c.id = new_name.id_accc;
 	    
-		call admin.slave_put_account_prr(
+		call admin.slave_put_account_prior(
 			f_account_exists
 			, v_credit_sc
 			, v_credit_sub
@@ -347,7 +347,7 @@ begin
 		end if;
 
 		call admin.update_remote(
-			'prr'
+			'prior'
 			, 'ybook y'
 			, 'Kredit'
 			, ''''''+v_credit_sc+''''''
@@ -359,7 +359,7 @@ begin
 		);
 
 		call admin.update_remote(
-			'prr'
+			'prior'
 			, 'ybook y'
 			, 'subKredit'
 			, ''''''+v_credit_sub+''''''
@@ -372,7 +372,7 @@ begin
 	end if;
 
 	if update(sum) then
-		call admin.slave_select_prr(
+		call admin.slave_select_prior(
 			v_currency_rate
 			,'system'
 			,'Kurs'
@@ -382,7 +382,7 @@ begin
 		set v_currency = new_name.sum / convert(float, abs(v_currency_rate));
 
 		call admin.update_remote(
-			'prr'
+			'prior'
 			, 'ybook y'
 			, 'UEsumm'
 			, v_currency
@@ -410,14 +410,14 @@ begin
 		select nm into v_m_xoz from m_xoz where id = new_name.id_m_xoz;
 
 		if v_debit_sc is not null and v_credit_sc is not null then
-			call admin.slave_set_purpose_prr(
+			call admin.slave_set_purpose_prior(
 				 v_m_xoz
 				, v_debit_sc, v_debit_sub, v_credit_sc, v_credit_sub
 				, v_purposeid
 			);
 			//message 'v_purposeid = ' + convert(varchar(20), v_purposeid) to client;	
 			call admin.update_remote(
-				'prr'
+				'prior'
 				, 'ybook y'
 				, 'purposeId'
 				, v_purposeid
@@ -442,7 +442,7 @@ begin
 		where c.id = old_name.id_accc;
 
 		call admin.update_remote(
-			'prr'
+			'prior'
 			, 'ybook y'
 			, 'descript'
 			, ''''''+new_name.rem+''''''
@@ -466,7 +466,7 @@ xoz
 referencing old as old_name
 for each row
 begin
-	call admin.slave_delete_prr(
+	call admin.slave_delete_prior(
 		 'ybook y'
 		, 'v.sysname = '''
 				+ @@servername 

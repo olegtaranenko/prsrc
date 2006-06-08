@@ -1,8 +1,8 @@
 PRIOR:
 -n priorNext -m -gp 2048 -c 10M -ch 40M c:\comtec81\prior\prior.db -o c:\comtec81\logs\prior.log
 
-st:
--n st -m -c 10M -ch 40M C:\comtec81\st\comtec.db -o c:\comtec81\logs\prior.log
+STIME:
+-n stime -m -c 10M -ch 40M C:\comtec81\stime\comtec.db -o c:\comtec81\logs\prior.log
 
 PM:
 -n pm -m  -c 10M -ch 40M C:\comtec81\PM\comtec.db -o c:\comtec81\logs\prior.log

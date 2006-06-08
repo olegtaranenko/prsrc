@@ -53,19 +53,19 @@ end if;
 
 
 --Производственные склады
-select id into folder_id from voc_names_st where nm = 'Склады' and belong_id = 0;
+select id into folder_id from voc_names_stime where nm = 'Склады' and belong_id = 0;
 call move_old_voc_names(folder_id);
 call legacy_sklad();
 
 
 --Объекты затрат
-select id into folder_id from voc_names_st where nm = 'Объекты затрат' and belong_id = 0;
+select id into folder_id from voc_names_stime where nm = 'Объекты затрат' and belong_id = 0;
 call move_old_voc_names(folder_id);
 call legacy_zatr();
 
 
 --Сторонние организации
-select id into folder_id from voc_names_st where nm = 'Сторонние организации' and belong_id = 0;
+select id into folder_id from voc_names_stime where nm = 'Сторонние организации' and belong_id = 0;
 call move_old_voc_names(folder_id);
 call legacy_firms();
 
@@ -74,9 +74,9 @@ call legacy_currency();
 
 
 -- Номенклатура
-select id into folder_id from inv_st where nm = 'Материалы' and belong_id = 0;
+select id into folder_id from inv_stime where nm = 'Материалы' and belong_id = 0;
 call move_old_inv(folder_id);
-select id into folder_id from inv_st where nm = 'Изделия' and belong_id = 0;
+select id into folder_id from inv_stime where nm = 'Изделия' and belong_id = 0;
 call move_old_inv(folder_id);
 call legacy_inv();
 
@@ -84,7 +84,7 @@ call legacy_inv();
 -- Заполнение вспомогательных таблиц для вариантных изделий
 call host_legacy_variant();
 
--- Загрузить приходный ордера на склады в аналитическую базу st
+-- Загрузить приходный ордера на склады в аналитическую базу stime
 call legacy_income_order();
 
 call legacy_purpose();
