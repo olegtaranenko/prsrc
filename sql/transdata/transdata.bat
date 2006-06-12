@@ -45,7 +45,7 @@ call isql server_comtex.sql mm
 call isql servertables_prior.sql prior
 
 rem call isql dml_before_prior.sql prior
-call isql dbcc_prior.sql prior
+::call isql dbcc_prior.sql prior
 
 call isql codebase_prior.sql prior
 
@@ -60,7 +60,7 @@ call isql comtex_db_change mm
 
 rem call isql dml_after_prior.sql prior
 
-call isql dbcc_stime.sql stime
+::call isql dbcc_stime.sql stime
 rem call isql dbcc_comtex.sql pm
 rem call isql dbcc_comtex.sql mm
 rem call isql dbcc_comtex.sql stime

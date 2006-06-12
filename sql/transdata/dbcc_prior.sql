@@ -1,3 +1,140 @@
+-- По тем или иным причинам в накладных появились записи,
+-- которые не имеют ссылки в базу Аналитики.
+-- Исправление этих данных накладных Приора, 
+call bootstrap_blocking();
+
+begin
+	declare v_id_guide integer;
+
+	declare v_id_inventar integer;
+	declare v_id_jmat integer;
+	declare v_prev_jmat integer;
+	declare v_id_mat integer;
+	declare v_nu varchar(20);
+	declare v_mat_nu integer;
+	declare v_quant float;
+	declare v_cost float;
+	declare v_currency_rate real;
+	declare v_datev date;
+	declare v_id_currency integer;
+	declare v_legacy varchar(100);
+	declare v_gemacht datetime;
+	declare v_perList float;
+	declare v_osn varchar(100);
+
+
+        -- глобальный для загловков накладных
+		set v_id_mat = get_nextid('mat');
+		set v_prev_jmat = -1;
+		call slave_currency_rate_stime(v_datev, v_currency_rate);
+
+		set v_osn = 'osn';
+		set v_id_currency = system_currency();
+		
+
+	all_i:	
+	for all_inc as iii sensitive cursor for
+		select 
+			  j.numdoc as r_numdoc
+			, j.sourId as r_sourId, j.destId as r_destId
+			, j.xDate as r_xdate
+			, s.currency_iso as r_currency_iso
+			, s.id_voc_names as r_id_s
+			, d.id_voc_names as r_id_d
+			, j.numext as r_numext
+			, m.nomnom as r_nomnom
+			, k.id_inv as r_nomenklature_id
+			, m.quant as r_quant
+			, k.perlist as r_perlist
+			, k.cost as r_cost
+			, j.id_jmat as r_id_jmat
+		from sdmc m
+			join sguidenomenk k on k.nomnom = m.nomnom
+			join sdocs j on j.numdoc = m.numdoc and j.xdate >= '20051014' 
+			join sguidesource s on s.sourceid = j.sourid
+			join sguidesource d on d.sourceid = j.destid
+		where j.id_jmat is null or (m.id_mat is null and m.numext = 254)
+--		order by j.id_jmat
+	do
+		message '*>>>', r_numdoc, ' ', r_sourId, ' ', r_destId, ' ', r_currency_iso to client;
+		set v_id_guide = recognize_guide(r_sourId, r_destId, r_currency_iso);
+		call gualify_guide(v_id_guide, v_tp1, v_tp2, v_tp3, v_tp4);
+		--set 
+		set v_id_jmat = select_remote('stime', 'jmat', 'id', 'id = ' + convert(varchar(20), isnull(r_id_jmat, -1446465)));
+
+		message 'v_id_jmat = ', v_id_jmat to client;
+		if v_id_jmat is null then
+		    message 'insert into jmat' to client;
+			set v_id_jmat = get_nextid('jmat');
+
+			call wf_insert_jmat (
+				 'stime'
+				,v_id_guide
+				,v_id_jmat
+				,r_xdate
+				,r_numdoc
+				,v_osn
+				,v_id_currency
+				,v_datev
+				,v_currency_rate
+				,r_id_s
+				,r_id_d
+			);
+
+			update sdocs set id_jmat = v_id_jmat where numdoc = r_numdoc and numext = r_numext;
+		end if;
+
+--		leave all_i;
+
+        -- Добавляем предметы к накладной
+		if v_prev_jmat <> v_id_jmat then
+			set v_mat_nu = 1;
+		end if;
+
+		call wf_insert_mat (
+			'stime'
+			,v_id_mat
+			,v_Id_jmat
+			,r_nomenklature_id
+			,v_mat_nu
+			,r_quant
+			,r_cost
+			,v_currency_rate
+			,r_id_s
+			,r_id_d
+			,r_perList
+		);
+
+		update sdmc set id_mat = v_id_mat where numdoc = r_numdoc and numext = r_numext and nomnom = r_nomnom;
+
+		set v_id_mat = v_id_mat + 1;
+		set v_mat_nu = v_mat_nu + 1;
+		set v_prev_jmat = v_id_jmat;
+
+--	leave all_i;
+	end for;
+end;
+
+
+
+/*
+-- номенклатура, которая изменилась при 
+-- where numdoc >= '5301301' and id_jmat is null
+1002ДБ22
+102п8032
+1001C024
+
+-- а это если все накладные из приора у которых дата >= 20051013
+эти позиции обнуляются
+1002ДБ20 - 
+1002S1007
+1001П154
+1001П160
+1002M3001
+1002L328	BR017M-BL Акрил  с цвет. отражением синий 10х15 см
+
+*/
+
 /*
 alter table guideVenture add intInvoice integer;
 
@@ -813,6 +950,8 @@ end if;
 */
 
 
+
+-- в продакш => 8.06.2006
 begin 
 	declare v_id integer;
 	declare default_income_text varchar(100);
@@ -827,6 +966,7 @@ begin
 	update guideventure set id_analytic = v_id, activity_start = '20051013'  where sysname = 'stime' ;
 end;
 
+
 if not exists(select 1 from sys.syscolumns where creator = 'dba' and tname = 'orders' and cname = 'zalog') then
 	alter table orders add zalog float null;
 end if;
@@ -835,4 +975,73 @@ if not exists(select 1 from sys.syscolumns where creator = 'dba' and tname = 'or
 	alter table orders add nal float null;
 end if;
 
-commit;
+
+
+-- в продакш => ?????.2006
+if not exists(select 1 from sys.syscolumns where creator = 'dba' and tname = 'guideventure' and cname = 'id_sklad') then
+	alter table guideventure add id_sklad integer null;
+
+	begin
+		declare v_id_sklad integer;
+
+		for venture_cur as v dynamic scroll cursor for
+			select 
+				ventureid as r_ventureid
+				, sysname as r_server
+				, id_sklad as r_id_sklad
+				, rusAbbrev as r_rusabbrev
+			from guideventure v
+			where isnull(v.invCode, '' ) != '' 
+		do
+			set v_id_sklad = insert_count_remote(r_server, 'voc_names', 'nm, is_group, belong_id', '''''Склад '+ r_rusabbrev + ''''', 1, 2' );
+			update guideventure set id_sklad = v_id_sklad where ventureid = r_ventureid;
+		end for;
+	end;
+end if;
+
+
+
+-- в продакш => ?????.2006
+begin
+	declare v_id_guide integer;
+
+	all_i:	
+	for all_inc as a dynamic scroll cursor for
+		select distinct r_id_jmat, r_table from 
+		dummy
+		join 
+		(
+			select id_jmat as r_id_jmat, 'baynomenkout' as r_table
+			from baynomenkout where id_jmat is not null
+				union
+			select id_jmat as r_id_jmat, 'xpredmetybynomenkout'
+			from xpredmetybynomenkout where id_jmat is not null
+				union
+			select id_jmat as r_id_jmat, 'xpredmetybyizdeliaout'
+			from xpredmetybyizdeliaout where id_jmat is not null
+				union
+			select id_jmat as r_id_jmat, 'xuslugout'
+			from xuslugout where id_jmat is not null
+		) xx on 1=1
+		 --		order by 1,2
+	do
+		call delete_remote('stime', 'jmat' , ' id = ' + convert(varchar(20), r_id_jmat));
+
+		execute immediate 'update ' + r_table + ' set id_mat = null, id_jmat = null where id_jmat = ' + convert(varchar(20), r_id_jmat);
+	end for;
+
+end;	
+
+
+--commit;
+--rollback;
+
+--rollback
+-- инвентаризация по предприятиям
+call v_inventory_order();
+
+-- Пересчитать вступительную инвентаризацию
+call inventory_order( '20051013 21:00', 1, null);
+
+
+commit
