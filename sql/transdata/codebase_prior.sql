@@ -1,3 +1,481 @@
+----------------------------------------------------------------------
+--------------             sdmc      ------------------------
+----------------------------------------------------------------------
+if exists (select 1 from systriggers where trigname = 'wf_sdmc_income_bu' and tname = 'sdmc') then 
+	drop trigger sdmc.wf_sdmc_income_bu;
+end if;
+
+create 
+	trigger wf_sdmc_income_bu before update  on 
+sdmc
+referencing new as new_name old as old_name
+for each row
+begin
+	declare v_id_mat integer;
+	declare v_perList float;
+	declare v_curr float;
+	declare v_id_jmat integer;
+	declare v_summa float;
+	declare v_summav float;
+	declare v_quant float;
+
+	if update(quant) --and isnull(new_name.quant, 0.0) != isnull(old_name.quant, 0.0) 
+	then
+		set v_id_mat = old_name.id_mat;
+		select perList into v_perList from sGuideNomenk where nomnom = old_name.nomNom;
+		if v_id_mat is not null then
+			select id_jmat into v_id_jmat from sdocs where numdoc = old_name.numdoc and numext = old_name.numext;
+			set v_quant = new_name.quant/v_perList;
+
+			call change_mat_qty_stime(v_id_mat, v_quant);
+		end if;
+	end if;
+/*
+	-- Ќе нужно, потому что в интерфейсе stime нельз€ заменить номенклатуру.
+	-- ћожно только сначала удалить позицию, а потом завести новую.
+	if update (nomnom) and isnull(new_name.nomnom, '') != isnull(old_name.nomnom, '') then
+		set v_id_mat = old_name.id_mat;
+		if v_id_mat is not null then
+			select id_inv into v_id_inv from sguidenomenk where nomnom = new_name.nomnom;
+			if v_id_inv is not null then
+				call update_remote('stime', 'mat', 'id_inv', '''''' + v_id_inv + '''''', 'id = ' + convert(varchar(20), v_id_mat)); 
+			end if;
+		end if;
+	end if;
+*/
+end;
+
+
+if exists (select 1 from systriggers where trigname = 'wf_delete_sdmc' and tname = 'sdmc') then 
+	drop trigger sdmc.wf_delete_sdmc;
+end if;
+
+create TRIGGER wf_delete_sdmc before delete on
+sdmc
+referencing old as old_name
+for each row
+begin
+	declare remoteServer varchar(32);
+	declare no_echo integer;
+	set no_echo = 0;
+
+
+  	begin
+  		message '@stime_sdmc = ', @stime_sdmc to log;
+		select @stime_sdmc into no_echo; 
+	exception 
+		when other then
+			message 'Exception! no_echo = ' + convert(varchar(20), no_echo) to log;
+			set no_echo = 0;
+	end;
+
+	--message 'trigger sdmc.wf_delete_sdmc::no_echo = ' + convert(varchar(20), no_echo) to log;
+	if no_echo = 1 then
+		return;
+	end if;
+
+
+
+
+	if (old_name.id_mat is not null) then
+		call block_remote('stime', @@servername, 'mat');
+		call delete_remote('stime', 'mat', 'id = ' + convert(varchar(20), old_name.id_mat));
+		call unblock_remote('stime', @@servername, 'mat');
+	end if;
+
+	--message 'old_name.id_mat = ', old_name.id_mat to client;
+
+	select sysname into remoteServer 
+	from  guideventure v 
+	join orders o on o.ventureId = v.ventureId and v.standalone = 0 and o.numorder = old_name.numDoc;
+
+	--message 'remoteServer = ', remoteServer to client;
+
+	if remoteServer is not null and remoteServer != 'stime' then
+		call block_remote(remoteServer, @@servername, 'mat');
+		call delete_remote(remoteServer, 'mat', 'id = ' + convert(varchar(20), old_name.id_mat));
+		call unblock_remote(remoteServer, @@servername, 'mat');
+	end if;
+
+end;
+
+
+if exists (select 1 from systriggers where trigname = 'wf_sdmc_outcome_bi' and tname = 'sdmc') then 
+	drop trigger sdmc.wf_sdmc_outcome_bi;
+end if;
+
+create 
+	trigger wf_sdmc_outcome_bi before insert order 3 on 
+sdmc
+referencing new as new_name
+for each row
+begin
+	declare v_id_jmat integer;
+	declare v_id_mat integer;
+	declare v_mat_nu varchar(20);
+	declare v_currency_rate float;
+	declare v_datev date;
+	declare v_id_currency integer;
+	declare v_id_inv integer;
+	declare v_id_source integer;
+	declare v_id_dest integer;
+	declare v_cost float;
+	declare v_quant float;
+	declare v_perList float;
+	declare sync char(1);
+	declare no_echo integer;
+
+	set no_echo = 0;
+
+	--message 'no_echo = ' + convert(varchar(20), no_echo) to log;
+
+  	begin
+  		message '@stime_sdmc = ', @stime_sdmc to log;
+		select @stime_sdmc into no_echo; 
+	exception 
+		when other then
+			--message 'Exception! no_echo = ' + convert(varchar(20), no_echo) to log;
+			set no_echo = 0;
+	end;
+
+	if no_echo = 1 then
+		return;
+	end if;
+
+	select id_jmat, s.id_voc_names, d.id_voc_names
+	into v_id_jmat, v_id_source, v_id_dest
+	from sdocs n 
+		join sguidesource s on s.sourceid = n.sourid 
+		join sguidesource d on d.sourceid = n.destid
+	where n.numdoc = new_name.numdoc and n.numext = new_name.numext;
+
+	if v_id_jmat is null then
+		return;
+	end if;
+
+	set v_id_mat = get_nextid('mat');
+
+	set v_id_currency = system_currency();
+	call slave_currency_rate_stime(v_datev, v_currency_rate);
+	call slave_select_stime(v_mat_nu, 'mat', 'max(nu)', 'id_jmat = ' + convert(varchar(20), v_id_jmat));
+	
+	set v_mat_nu = convert(varchar(20), convert(integer, isnull(v_mat_nu, 0)) + 1);
+
+	select 
+		id_inv
+		, cost 
+		, perList
+	into 
+		v_id_inv
+		, v_cost 
+		, v_perList
+	from sguidenomenk 
+	where nomnom = new_name.nomnom;
+
+
+	set v_quant = new_name.quant; -- / v_perList;
+
+--		call call_host('block_table', 'sync, ''prior'', ''mat''');
+		call block_remote('stime', @@servername, 'mat');
+	
+		call wf_insert_mat (
+			'stime'
+			,v_id_mat
+			,v_Id_jmat
+			,v_id_inv
+			,v_mat_nu
+			,v_quant 
+			,v_cost
+			,v_currency_rate
+			,v_id_source
+			,v_id_dest
+			,v_perList
+		);
+
+		set new_name.id_mat = v_id_mat;
+		call unblock_remote('stime', @@servername, 'mat');
+end;
+
+
+
+----------------------------------------------------------------------
+--------------                 sdocs          ------------------------
+----------------------------------------------------------------------
+if exists (select 1 from systriggers where trigname = 'wf_delete_sdocs' and tname = 'sdocs') then 
+	drop trigger sdocs.wf_delete_sdocs;
+end if;
+
+create TRIGGER wf_delete_sdocs before delete on
+sdocs
+referencing old as old_name
+for each row
+begin
+	declare remoteServer varchar(32);
+	declare no_echo integer;
+
+	set no_echo = 0;
+
+  	begin
+  		message '@stime_sdocs = ', @stime_sdocs to log;
+		select @stime_sdocs into no_echo; 
+	exception 
+		when other then
+			set no_echo = 0;
+	end;
+
+	if no_echo = 1 then
+		return;
+	end if;
+
+
+
+	if (old_name.id_jmat is not null) then
+		call block_remote('stime', @@servername, 'jmat');
+		call block_remote('stime', @@servername, 'mat');
+		call delete_remote('stime', 'jmat', 'id = ' + convert(varchar(20), old_name.id_jmat));
+		call unblock_remote('stime', @@servername, 'jmat');
+		call unblock_remote('stime', @@servername, 'mat');
+	end if;
+
+	select sysname into remoteServer 
+	from  guideventure v 
+	join orders o on o.ventureId = v.ventureId and v.standalone = 0 and o.numorder = old_name.numDoc;
+
+--	message 'remoteServer = ', remoteServer to client;
+	if remoteServer is not null and remoteServer != 'stime' then
+		call block_remote(remoteServer, @@servername, 'jmat');
+		call block_remote(remoteServer, @@servername, 'mat');
+		call delete_remote(remoteServer, 'jmat', 'id = ' + convert(varchar(20), old_name.id_jmat));
+		call unblock_remote(remoteServer, @@servername, 'jmat');
+		call unblock_remote(remoteServer, @@servername, 'mat');
+	end if;
+end;
+
+
+if exists (select 1 from systriggers where trigname = 'wf_set_numdoc' and tname = 'sdocs') then 
+	drop trigger sdocs.wf_set_numdoc;
+end if;
+
+create 
+	trigger wf_set_numdoc before insert order 1 on 
+sdocs
+referencing new as new_name
+for each row
+when (new_name.numdoc = 0 or new_name.numdoc is null)
+begin
+	set new_name.numdoc = wf_next_numdoc();
+end;
+
+
+if exists (select 1 from systriggers where trigname = 'wf_insert_income' and tname = 'sdocs') then 
+	drop trigger sdocs.wf_insert_income;
+end if;
+
+
+create 
+	trigger wf_insert_income before insert order 2 on 
+sdocs
+referencing new as new_name
+for each row
+when (new_name.numext = 255)
+begin
+	
+end;
+
+
+
+if exists (select 1 from systriggers where trigname = 'wf_sdocs_outcome_bi' and tname = 'sdocs') then 
+	drop trigger sdocs.wf_sdocs_outcome_bi;
+end if;
+
+create 
+	trigger wf_sdocs_outcome_bi before insert order 3 on 
+sdocs
+referencing new as new_name
+for each row
+--when (new_name.numext <= 254)
+begin
+	declare v_id_jmat integer;
+	declare v_id_mat integer;
+	declare v_jmat_nu varchar(20);
+	declare v_currency_rate float;
+	declare v_datev date;
+	declare v_id_currency integer;
+	declare v_id_source integer;
+	declare v_id_dest integer;
+	declare v_osn varchar(100);
+	declare v_id_guide_jmat integer;
+	declare v_currency_iso varchar(10);
+	declare no_echo integer;
+
+	set no_echo = 0;
+
+  	begin
+  		message '@stime_sdocs = ', @stime_sdocs to log;
+		select @stime_sdocs into no_echo; 
+	exception 
+		when other then
+			set no_echo = 0;
+	end;
+
+	if no_echo = 1 then
+		return;
+	end if;
+
+	if new_name.numext = 254 then
+		set v_id_guide_jmat = 1220;
+	elseif new_name.numext = 255 and new_name.sourId is not null then
+		select 
+			  isnull(c.id_guide, ru.id_guide) 
+			, isnull(c.id_currency, ru.id_currency) 
+			, isnull(c.currency_iso, ru.currency_iso)
+		into v_id_guide_jmat, v_id_currency, v_currency_iso
+		from sguideSource s
+		join GuideCurrency ru on ru.currency_iso = 'RUR'
+		left join GuideCurrency c on c.currency_iso = s.currency_iso
+		where s.sourceId = new_name.sourId;
+	else 
+		set v_id_guide_jmat = 1210;
+	end if;
+
+	set v_id_jmat = get_nextid('jmat');
+	
+
+	if isnull(v_currency_iso, 'RUR') = 'RUR' then
+		set v_id_currency = system_currency();
+	end if;
+
+	call slave_currency_rate_stime(v_datev, v_currency_rate, null, v_id_currency);
+
+	set v_jmat_nu = new_name.numdoc;
+	select id_voc_names into v_id_source from sguidesource where sourceid = new_name.sourid;
+	select id_voc_names into v_id_dest from sguidesource where sourceid = new_name.destid;
+	set v_osn = '[Prior: '+ convert(varchar(20), new_name.numdoc) +']';
+    
+	call wf_insert_jmat_dual (
+		'stime'
+		,v_id_guide_jmat
+		,v_id_jmat
+		,now() --v_jmat_date
+		,v_jmat_nu
+		,v_osn
+		,v_id_currency
+		,v_datev
+		,v_currency_rate
+		,v_id_source
+		,v_id_dest
+	);
+	set new_name.id_jmat = v_id_jmat;
+
+
+
+end;
+
+if exists (select 1 from systriggers where trigname = 'wf_sdocs_outcome_bu' and tname = 'sdocs') then 
+	drop trigger sdocs.wf_sdocs_outcome_bu;
+end if;
+
+create 
+	trigger wf_sdocs_outcome_bu before update on 
+sdocs
+referencing new as new_name old as old_name
+for each row
+--when (old_name.numext = 254)
+begin
+	declare v_id_jmat integer;
+	declare v_id_mat integer;
+	declare v_jmat_nu varchar(20);
+	declare v_currency_rate float;
+	declare v_datev date;
+	declare v_id_currency integer;
+	declare v_id_source integer;
+	declare v_id_dest integer;
+	declare v_osn varchar(100);
+
+	declare v_id_guide integer;
+	declare v_tp1 integer;
+	declare v_tp2 integer;
+	declare v_tp3 integer;
+	declare v_tp4 integer;
+	declare v_currency_iso varchar(20);
+	
+	declare no_echo integer;
+
+	set no_echo = 0;
+
+	if old_name.id_jmat is null then 
+		return;
+	end if;
+	
+	begin
+  		message '@stime_sdocs = ', @stime_sdocs to log;
+		select @stime_sdocs into no_echo;
+	exception 
+		when other then
+			message '.... exception ' to log;
+			set no_echo = 0;
+	end;
+
+	if no_echo = 1 then
+		return;
+	end if;
+
+
+	message 'sdocs.wf_sdocs_outcome_bu old_id = ' to log;
+	call block_remote ('stime', @@servername, 'jmat');
+
+	if update(sourid) then
+		select id_voc_names into v_id_source from sguidesource where sourceid = new_name.sourid;
+		if v_Id_source is not null then
+			call update_remote('stime', 'jmat', 'id_s', convert(varchar(20), v_id_source), 'id = ' + convert(varchar(20), old_name.id_jmat));
+		end if;
+		if old_name.numext = 255 and old_name.id_jmat is not null then
+			select 
+				  isnull(c.id_guide, ru.id_guide)
+				, isnull(c.id_currency, ru.id_currency) 
+				, isnull(c.currency_iso, ru.currency_iso)
+			into v_id_guide, v_id_currency, v_currency_iso
+			from sguideSource s
+			join GuideCurrency ru on ru.currency_iso = 'RUR'
+			left join GuideCurrency c on c.currency_iso = s.currency_iso
+			where s.sourceId = new_name.sourId;
+	    
+			if isnull(v_currency_iso, 'RUR') = 'RUR' then
+				set v_id_currency = system_currency();
+			end if;
+			call gualify_guide(v_id_guide, v_tp1, v_tp2, v_tp3, v_tp4);
+			call order_import_stime(
+				  old_name.id_jmat
+				, v_id_currency
+				, v_id_guide
+				, v_tp1
+				, v_tp2
+				, v_tp3
+				, v_tp4
+			);
+		end if;
+
+	end if;
+	if update(destid) then
+		select id_voc_names into v_id_dest from sguidesource where sourceid = new_name.destid;
+		call update_remote('stime', 'jmat', 'id_d', convert(varchar(20), v_id_dest), 'id = ' + convert(varchar(20), old_name.id_jmat));
+	end if;
+	if update(xDate) then
+		call update_remote('stime', 'jmat', 'dat', '''''' + convert(varchar(20), new_name.xDate) + '''''', 'id = ' + convert(varchar(20), old_name.id_jmat));
+	end if;
+
+	--if update(note) then
+		-- set v_osn = '[Prior: '+ new_name.note +']';
+		-- пришлось отключить из-за ошибки при установки 
+		-- признака предпри€ти€ в приходной накладной
+		-- call update_remote ('stime', 'jmat', 'osn', '''' +v_osn + '''', 'id = ' + convert(varchar(20), old_name.id_jmat));
+	--end if;
+	call unblock_remote ('stime', @@servername, 'jmat');
+end;
+
+
+---------------------------------------- inventory_order.sql ----------------------------------------
+
 if exists (select 1 from sysprocedure where proc_name = 'inventory_order') then
 	drop procedure inventory_order;
 end if;
@@ -192,12 +670,12 @@ begin
 				end if;
 
 			end for;
+			if p_cost_preserve = 1 then
+				call delete_remote('stime', 'mat', 'id_jmat = ' + convert(varchar(20), v_id_jmat) + ' and kol1 = ' + c_deleted);
+			end if;
 			set v_id_jmat = v_id_jmat + 1;
 		end for;
 
-		if p_cost_preserve = 1 then
-			call delete_remote('stime', 'mat', 'id_jmat = ' + convert(varchar(20), v_id_jmat) + ' and kol1 = ' + c_deleted);
-		end if;
 		call unblock_remote('stime', @@servername, 'jmat');
 		call unblock_remote('stime', @@servername, 'mat');
 --		call call_host('unblock_table', 'sync, ''prior'', ''jmat''');
@@ -4194,481 +4672,6 @@ begin
 	call update_host('inv', 'is_group', '0', 'id = ' + convert(varchar(20), v_id_inv));
 	call update_host('inv', 'is_compl', '1', 'id = ' + convert(varchar(20), v_id_inv));
 end;
-
-----------------------------------------------------------------------
---------------             sdmc      ------------------------
-----------------------------------------------------------------------
-if exists (select 1 from systriggers where trigname = 'wf_sdmc_income_bu' and tname = 'sdmc') then 
-	drop trigger sdmc.wf_sdmc_income_bu;
-end if;
-
-create 
-	trigger wf_sdmc_income_bu before update  on 
-sdmc
-referencing new as new_name old as old_name
-for each row
-begin
-	declare v_id_mat integer;
-	declare v_perList float;
-	declare v_curr float;
-	declare v_id_jmat integer;
-	declare v_summa float;
-	declare v_summav float;
-	declare v_quant float;
-
-	if update(quant) --and isnull(new_name.quant, 0.0) != isnull(old_name.quant, 0.0) 
-	then
-		set v_id_mat = old_name.id_mat;
-		select perList into v_perList from sGuideNomenk where nomnom = old_name.nomNom;
-		if v_id_mat is not null then
-			select id_jmat into v_id_jmat from sdocs where numdoc = old_name.numdoc and numext = old_name.numext;
-			set v_quant = new_name.quant/v_perList;
-
-			call change_mat_qty_stime(v_id_mat, v_quant);
-		end if;
-	end if;
-/*
-	-- Ќе нужно, потому что в интерфейсе stime нельз€ заменить номенклатуру.
-	-- ћожно только сначала удалить позицию, а потом завести новую.
-	if update (nomnom) and isnull(new_name.nomnom, '') != isnull(old_name.nomnom, '') then
-		set v_id_mat = old_name.id_mat;
-		if v_id_mat is not null then
-			select id_inv into v_id_inv from sguidenomenk where nomnom = new_name.nomnom;
-			if v_id_inv is not null then
-				call update_remote('stime', 'mat', 'id_inv', '''''' + v_id_inv + '''''', 'id = ' + convert(varchar(20), v_id_mat)); 
-			end if;
-		end if;
-	end if;
-*/
-end;
-
-
-if exists (select 1 from systriggers where trigname = 'wf_delete_sdmc' and tname = 'sdmc') then 
-	drop trigger sdmc.wf_delete_sdmc;
-end if;
-
-create TRIGGER wf_delete_sdmc before delete on
-sdmc
-referencing old as old_name
-for each row
-begin
-	declare remoteServer varchar(32);
-	declare no_echo integer;
-	set no_echo = 0;
-
-
-  	begin
-  		message '@stime_sdmc = ', @stime_sdmc to log;
-		select @stime_sdmc into no_echo; 
-	exception 
-		when other then
-			message 'Exception! no_echo = ' + convert(varchar(20), no_echo) to log;
-			set no_echo = 0;
-	end;
-
-	--message 'trigger sdmc.wf_delete_sdmc::no_echo = ' + convert(varchar(20), no_echo) to log;
-	if no_echo = 1 then
-		return;
-	end if;
-
-
-
-
-	if (old_name.id_mat is not null) then
-		call block_remote('stime', @@servername, 'mat');
-		call delete_remote('stime', 'mat', 'id = ' + convert(varchar(20), old_name.id_mat));
-		call unblock_remote('stime', @@servername, 'mat');
-	end if;
-
-	--message 'old_name.id_mat = ', old_name.id_mat to client;
-
-	select sysname into remoteServer 
-	from  guideventure v 
-	join orders o on o.ventureId = v.ventureId and v.standalone = 0 and o.numorder = old_name.numDoc;
-
-	--message 'remoteServer = ', remoteServer to client;
-
-	if remoteServer is not null and remoteServer != 'stime' then
-		call block_remote(remoteServer, @@servername, 'mat');
-		call delete_remote(remoteServer, 'mat', 'id = ' + convert(varchar(20), old_name.id_mat));
-		call unblock_remote(remoteServer, @@servername, 'mat');
-	end if;
-
-end;
-
-
-if exists (select 1 from systriggers where trigname = 'wf_sdmc_outcome_bi' and tname = 'sdmc') then 
-	drop trigger sdmc.wf_sdmc_outcome_bi;
-end if;
-
-create 
-	trigger wf_sdmc_outcome_bi before insert order 3 on 
-sdmc
-referencing new as new_name
-for each row
-begin
-	declare v_id_jmat integer;
-	declare v_id_mat integer;
-	declare v_mat_nu varchar(20);
-	declare v_currency_rate float;
-	declare v_datev date;
-	declare v_id_currency integer;
-	declare v_id_inv integer;
-	declare v_id_source integer;
-	declare v_id_dest integer;
-	declare v_cost float;
-	declare v_quant float;
-	declare v_perList float;
-	declare sync char(1);
-	declare no_echo integer;
-
-	set no_echo = 0;
-
-	--message 'no_echo = ' + convert(varchar(20), no_echo) to log;
-
-  	begin
-  		message '@stime_sdmc = ', @stime_sdmc to log;
-		select @stime_sdmc into no_echo; 
-	exception 
-		when other then
-			--message 'Exception! no_echo = ' + convert(varchar(20), no_echo) to log;
-			set no_echo = 0;
-	end;
-
-	if no_echo = 1 then
-		return;
-	end if;
-
-	select id_jmat, s.id_voc_names, d.id_voc_names
-	into v_id_jmat, v_id_source, v_id_dest
-	from sdocs n 
-		join sguidesource s on s.sourceid = n.sourid 
-		join sguidesource d on d.sourceid = n.destid
-	where n.numdoc = new_name.numdoc and n.numext = new_name.numext;
-
-	if v_id_jmat is null then
-		return;
-	end if;
-
-	set v_id_mat = get_nextid('mat');
-
-	set v_id_currency = system_currency();
-	call slave_currency_rate_stime(v_datev, v_currency_rate);
-	call slave_select_stime(v_mat_nu, 'mat', 'max(nu)', 'id_jmat = ' + convert(varchar(20), v_id_jmat));
-	
-	set v_mat_nu = convert(varchar(20), convert(integer, isnull(v_mat_nu, 0)) + 1);
-
-	select 
-		id_inv
-		, cost 
-		, perList
-	into 
-		v_id_inv
-		, v_cost 
-		, v_perList
-	from sguidenomenk 
-	where nomnom = new_name.nomnom;
-
-
-	set v_quant = new_name.quant; -- / v_perList;
-
---		call call_host('block_table', 'sync, ''prior'', ''mat''');
-		call block_remote('stime', @@servername, 'mat');
-	
-		call wf_insert_mat (
-			'stime'
-			,v_id_mat
-			,v_Id_jmat
-			,v_id_inv
-			,v_mat_nu
-			,v_quant 
-			,v_cost
-			,v_currency_rate
-			,v_id_source
-			,v_id_dest
-			,v_perList
-		);
-
-		set new_name.id_mat = v_id_mat;
-		call unblock_remote('stime', @@servername, 'mat');
-end;
-
-
-----------------------------------------------------------------------
---------------                 sdocs          ------------------------
-----------------------------------------------------------------------
-if exists (select 1 from systriggers where trigname = 'wf_delete_sdocs' and tname = 'sdocs') then 
-	drop trigger sdocs.wf_delete_sdocs;
-end if;
-
-create TRIGGER wf_delete_sdocs before delete on
-sdocs
-referencing old as old_name
-for each row
-begin
-	declare remoteServer varchar(32);
-	declare no_echo integer;
-
-	set no_echo = 0;
-
-  	begin
-  		message '@stime_sdocs = ', @stime_sdocs to log;
-		select @stime_sdocs into no_echo; 
-	exception 
-		when other then
-			set no_echo = 0;
-	end;
-
-	if no_echo = 1 then
-		return;
-	end if;
-
-
-
-	if (old_name.id_jmat is not null) then
-		call block_remote('stime', @@servername, 'jmat');
-		call block_remote('stime', @@servername, 'mat');
-		call delete_remote('stime', 'jmat', 'id = ' + convert(varchar(20), old_name.id_jmat));
-		call unblock_remote('stime', @@servername, 'jmat');
-		call unblock_remote('stime', @@servername, 'mat');
-	end if;
-
-	select sysname into remoteServer 
-	from  guideventure v 
-	join orders o on o.ventureId = v.ventureId and v.standalone = 0 and o.numorder = old_name.numDoc;
-
---	message 'remoteServer = ', remoteServer to client;
-	if remoteServer is not null and remoteServer != 'stime' then
-		call block_remote(remoteServer, @@servername, 'jmat');
-		call block_remote(remoteServer, @@servername, 'mat');
-		call delete_remote(remoteServer, 'jmat', 'id = ' + convert(varchar(20), old_name.id_jmat));
-		call unblock_remote(remoteServer, @@servername, 'jmat');
-		call unblock_remote(remoteServer, @@servername, 'mat');
-	end if;
-end;
-
-
-if exists (select 1 from systriggers where trigname = 'wf_set_numdoc' and tname = 'sdocs') then 
-	drop trigger sdocs.wf_set_numdoc;
-end if;
-
-create 
-	trigger wf_set_numdoc before insert order 1 on 
-sdocs
-referencing new as new_name
-for each row
-when (new_name.numdoc = 0 or new_name.numdoc is null)
-begin
-	set new_name.numdoc = wf_next_numdoc();
-end;
-
-
-if exists (select 1 from systriggers where trigname = 'wf_insert_income' and tname = 'sdocs') then 
-	drop trigger sdocs.wf_insert_income;
-end if;
-
-
-create 
-	trigger wf_insert_income before insert order 2 on 
-sdocs
-referencing new as new_name
-for each row
-when (new_name.numext = 255)
-begin
-	
-end;
-
-
-
-if exists (select 1 from systriggers where trigname = 'wf_sdocs_outcome_bi' and tname = 'sdocs') then 
-	drop trigger sdocs.wf_sdocs_outcome_bi;
-end if;
-
-create 
-	trigger wf_sdocs_outcome_bi before insert order 3 on 
-sdocs
-referencing new as new_name
-for each row
---when (new_name.numext <= 254)
-begin
-	declare v_id_jmat integer;
-	declare v_id_mat integer;
-	declare v_jmat_nu varchar(20);
-	declare v_currency_rate float;
-	declare v_datev date;
-	declare v_id_currency integer;
-	declare v_id_source integer;
-	declare v_id_dest integer;
-	declare v_osn varchar(100);
-	declare v_id_guide_jmat integer;
-	declare v_currency_iso varchar(10);
-	declare no_echo integer;
-
-	set no_echo = 0;
-
-  	begin
-  		message '@stime_sdocs = ', @stime_sdocs to log;
-		select @stime_sdocs into no_echo; 
-	exception 
-		when other then
-			set no_echo = 0;
-	end;
-
-	if no_echo = 1 then
-		return;
-	end if;
-
-	if new_name.numext = 254 then
-		set v_id_guide_jmat = 1220;
-	elseif new_name.numext = 255 and new_name.sourId is not null then
-		select 
-			  isnull(c.id_guide, ru.id_guide) 
-			, isnull(c.id_currency, ru.id_currency) 
-			, isnull(c.currency_iso, ru.currency_iso)
-		into v_id_guide_jmat, v_id_currency, v_currency_iso
-		from sguideSource s
-		join GuideCurrency ru on ru.currency_iso = 'RUR'
-		left join GuideCurrency c on c.currency_iso = s.currency_iso
-		where s.sourceId = new_name.sourId;
-	else 
-		set v_id_guide_jmat = 1210;
-	end if;
-
-	set v_id_jmat = get_nextid('jmat');
-	
-
-	if isnull(v_currency_iso, 'RUR') = 'RUR' then
-		set v_id_currency = system_currency();
-	end if;
-
-	call slave_currency_rate_stime(v_datev, v_currency_rate, null, v_id_currency);
-
-	set v_jmat_nu = new_name.numdoc;
-	select id_voc_names into v_id_source from sguidesource where sourceid = new_name.sourid;
-	select id_voc_names into v_id_dest from sguidesource where sourceid = new_name.destid;
-	set v_osn = '[Prior: '+ convert(varchar(20), new_name.numdoc) +']';
-    
-	call wf_insert_jmat_dual (
-		'stime'
-		,v_id_guide_jmat
-		,v_id_jmat
-		,now() --v_jmat_date
-		,v_jmat_nu
-		,v_osn
-		,v_id_currency
-		,v_datev
-		,v_currency_rate
-		,v_id_source
-		,v_id_dest
-	);
-	set new_name.id_jmat = v_id_jmat;
-
-
-
-end;
-
-if exists (select 1 from systriggers where trigname = 'wf_sdocs_outcome_bu' and tname = 'sdocs') then 
-	drop trigger sdocs.wf_sdocs_outcome_bu;
-end if;
-
-create 
-	trigger wf_sdocs_outcome_bu before update on 
-sdocs
-referencing new as new_name old as old_name
-for each row
---when (old_name.numext = 254)
-begin
-	declare v_id_jmat integer;
-	declare v_id_mat integer;
-	declare v_jmat_nu varchar(20);
-	declare v_currency_rate float;
-	declare v_datev date;
-	declare v_id_currency integer;
-	declare v_id_source integer;
-	declare v_id_dest integer;
-	declare v_osn varchar(100);
-
-	declare v_id_guide integer;
-	declare v_tp1 integer;
-	declare v_tp2 integer;
-	declare v_tp3 integer;
-	declare v_tp4 integer;
-	declare v_currency_iso varchar(20);
-	
-	declare no_echo integer;
-
-	set no_echo = 0;
-
-	if old_name.id_jmat is null then 
-		return;
-	end if;
-	
-	begin
-  		message '@stime_sdocs = ', @stime_sdocs to log;
-		select @stime_sdocs into no_echo;
-	exception 
-		when other then
-			message '.... exception ' to log;
-			set no_echo = 0;
-	end;
-
-	if no_echo = 1 then
-		return;
-	end if;
-
-
-	message 'sdocs.wf_sdocs_outcome_bu old_id = ' to log;
-	call block_remote ('stime', @@servername, 'jmat');
-
-	if update(sourid) then
-		select id_voc_names into v_id_source from sguidesource where sourceid = new_name.sourid;
-		if v_Id_source is not null then
-			call update_remote('stime', 'jmat', 'id_s', convert(varchar(20), v_id_source), 'id = ' + convert(varchar(20), old_name.id_jmat));
-		end if;
-		if old_name.numext = 255 and old_name.id_jmat is not null then
-			select 
-				  isnull(c.id_guide, ru.id_guide)
-				, isnull(c.id_currency, ru.id_currency) 
-				, isnull(c.currency_iso, ru.currency_iso)
-			into v_id_guide, v_id_currency, v_currency_iso
-			from sguideSource s
-			join GuideCurrency ru on ru.currency_iso = 'RUR'
-			left join GuideCurrency c on c.currency_iso = s.currency_iso
-			where s.sourceId = new_name.sourId;
-	    
-			if isnull(v_currency_iso, 'RUR') = 'RUR' then
-				set v_id_currency = system_currency();
-			end if;
-			call gualify_guide(v_id_guide, v_tp1, v_tp2, v_tp3, v_tp4);
-			call order_import_stime(
-				  old_name.id_jmat
-				, v_id_currency
-				, v_id_guide
-				, v_tp1
-				, v_tp2
-				, v_tp3
-				, v_tp4
-			);
-		end if;
-
-	end if;
-	if update(destid) then
-		select id_voc_names into v_id_dest from sguidesource where sourceid = new_name.destid;
-		call update_remote('stime', 'jmat', 'id_d', convert(varchar(20), v_id_dest), 'id = ' + convert(varchar(20), old_name.id_jmat));
-	end if;
-	if update(xDate) then
-		call update_remote('stime', 'jmat', 'dat', '''''' + convert(varchar(20), new_name.xDate) + '''''', 'id = ' + convert(varchar(20), old_name.id_jmat));
-	end if;
-
-	--if update(note) then
-		-- set v_osn = '[Prior: '+ new_name.note +']';
-		-- пришлось отключить из-за ошибки при установки 
-		-- признака предпри€ти€ в приходной накладной
-		-- call update_remote ('stime', 'jmat', 'osn', '''' +v_osn + '''', 'id = ' + convert(varchar(20), old_name.id_jmat));
-	--end if;
-	call unblock_remote ('stime', @@servername, 'jmat');
-end;
-
 
 
 -------------------------------------------------------------------------
