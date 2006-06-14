@@ -4548,7 +4548,7 @@ begin
 	select id_voc_names into v_id_dest from sguidesource where sourceid = new_name.destid;
 	set v_osn = '[Prior: '+ convert(varchar(20), new_name.numdoc) +']';
     
-	call wf_insert_jmat (
+	call wf_insert_jmat_dual (
 		'stime'
 		,v_id_guide_jmat
 		,v_id_jmat
