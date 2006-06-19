@@ -3,6 +3,7 @@
 -- При занесении их в базу комтеха они учитывались как расходные
 -- Реально же они есть межсклад
 --
+/*
 -- Сначала создать прокси таблицу на базу Prior
 call build_remote_table('sdocs', 1);
 
@@ -59,7 +60,7 @@ update mat m set summa = summa_sale, summa_sale = 0, summa_salev = 0, summav = s
 from jmat j
 where 
 j.id = m.id_jmat and j.id_guide in ( 1127 );
-
+*/
 
 /*
 --**********************************************

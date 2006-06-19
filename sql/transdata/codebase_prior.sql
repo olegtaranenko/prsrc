@@ -1,3 +1,4 @@
+
 ----------------------------------------------------------------------
 --------------             sdmc      ------------------------
 ----------------------------------------------------------------------
@@ -130,7 +131,7 @@ begin
 	--message 'no_echo = ' + convert(varchar(20), no_echo) to log;
 
   	begin
-  		message '@stime_sdmc = ', @stime_sdmc to log;
+--  		message '@stime_sdmc = ', @stime_sdmc to log;
 		select @stime_sdmc into no_echo; 
 	exception 
 		when other then
@@ -198,6 +199,7 @@ end;
 
 
 
+
 ----------------------------------------------------------------------
 --------------                 sdocs          ------------------------
 ----------------------------------------------------------------------
@@ -256,6 +258,7 @@ if exists (select 1 from systriggers where trigname = 'wf_set_numdoc' and tname 
 	drop trigger sdocs.wf_set_numdoc;
 end if;
 
+/*
 create 
 	trigger wf_set_numdoc before insert order 1 on 
 sdocs
@@ -265,13 +268,13 @@ when (new_name.numdoc = 0 or new_name.numdoc is null)
 begin
 	set new_name.numdoc = wf_next_numdoc();
 end;
-
+*/
 
 if exists (select 1 from systriggers where trigname = 'wf_insert_income' and tname = 'sdocs') then 
 	drop trigger sdocs.wf_insert_income;
 end if;
 
-
+/*
 create 
 	trigger wf_insert_income before insert order 2 on 
 sdocs
@@ -282,14 +285,150 @@ begin
 	
 end;
 
+*/
+
+if exists (select 1 from sysprocedure where proc_name = 'wf_dual_insert_jmat') then
+	drop procedure wf_dual_insert_jmat;
+end if;
+
+create
+	procedure wf_dual_insert_jmat (
+		  p_servername varchar(20)
+		, p_id_guide_pmm integer
+		, p_id_guide_anl integer
+		, p_id_jmat integer
+		, p_jmat_date date
+		, p_jmat_nu integer
+		, p_osn varchar(100)
+		, p_id_currency integer
+		, p_datev date
+		, p_currency_rate float
+		, p_id_s integer
+		, p_id_d integer
+		, p_id_jscet integer default 0
+		, p_id_code integer default 0
+	) 
+begin
+
+	call wf_insert_jmat (
+		'stime'
+		,p_id_guide_anl
+		,p_id_jmat
+		,p_jmat_date
+		,p_jmat_nu
+		,p_osn
+		,p_id_currency
+		,p_datev
+		,p_currency_rate
+		,p_id_s
+		,p_id_d
+		,p_id_jscet
+		,p_id_code
+	);
+
+	if p_id_guide_pmm is not null then
+		
+		call wf_insert_jmat (
+			 p_servername 
+			,p_id_guide_pmm 
+			,p_id_jmat
+			,p_jmat_date
+			,p_jmat_nu
+			,p_osn
+			,p_id_currency
+			,p_datev
+			,p_currency_rate
+			,p_id_s
+			,p_id_d
+			,p_id_jscet
+			,p_id_code
+		);
+
+	end if;
+end;
 
 
+if exists (select 1 from sysprocedure where proc_name = 'wf_id_guide_sdocs') then
+	drop procedure wf_id_guide_sdocs;
+end if;
+
+create
+	procedure wf_id_guide_sdocs (
+		  out o_id_guide_pmm integer
+		, out o_id_guide_anl integer
+		, out o_currency_iso varchar(10)
+		, p_venture_id integer -- через предприятие (ПМ или ММ). Может быть null
+		, p_new_numext tinyint
+		, p_new_sourId integer
+		, p_new_destId integer
+		, p_old_numext tinyint
+	) 
+begin
+
+	declare v_ventureid_anl integer;
+
+
+	if p_new_numext = 255 then
+		-- по умолчанию - рублевый приход 
+		set o_id_guide_anl = 1120;
+		set o_currency_iso = 'RUR';
+		select 
+			  c.id_guide
+--			, isnull(c.id_currency, ru.id_currency) 
+			, s.currency_iso
+		into 
+			o_id_guide_anl
+--			, o_id_currency
+			, o_currency_iso
+		from sguideSource s
+		join GuideCurrency c on c.currency_iso = s.currency_iso
+		where s.sourceId = p_new_sourId;
+	elseif p_new_numext = 254 then
+		if isnull(p_old_numext, 0) = 254 then
+			set o_id_guide_anl = 1220;
+		else
+			set o_id_guide_anl = 1210;
+		end if;
+	else
+		set o_id_guide_anl = 1210;
+	end if;
+
+	set v_ventureid_anl = 3; -- todo! лучше взять из настроек system
+
+	-- чтобы избежать повтора isnull(..)
+	set p_venture_id = isnull(p_venture_id, v_ventureid_anl);
+
+	if 
+		-- если проводим заказ через аналитику
+		p_venture_id = v_ventureid_anl
+		-- или межсклад 
+	    or o_id_guide_anl = 1220
+	then
+		-- НЕ БУДЕМ СОЗДАВАТЬ НАКЛАДНУЮ В ПММ
+		set o_id_guide_pmm = null;
+	else
+		if p_new_numext = 255 then
+			-- приходуем в офиц. бухгалтерию накладные, как и в аналитику
+			set o_id_guide_pmm = o_id_guide_anl;
+		else
+			-- чтобы не путались с автоформировательными накладными;
+			set o_id_guide_pmm = 1217;
+		end if;
+	end if;
+end;
+
+
+-- триггер переименован wf_sdocs_bi
 if exists (select 1 from systriggers where trigname = 'wf_sdocs_outcome_bi' and tname = 'sdocs') then 
 	drop trigger sdocs.wf_sdocs_outcome_bi;
 end if;
 
+if exists (select 1 from systriggers where trigname = 'wf_sdocs_bi' and tname = 'sdocs') then 
+	drop trigger sdocs.wf_sdocs_bi;
+end if;
+
 create 
-	trigger wf_sdocs_outcome_bi before insert order 3 on 
+	trigger wf_sdocs_bi before insert order 3 on 
 sdocs
 referencing new as new_name
 for each row
@@ -306,37 +445,28 @@ begin
 	declare v_osn varchar(100);
 	declare v_id_guide_jmat integer;
 	declare v_currency_iso varchar(10);
-	declare no_echo integer;
+	declare v_id_guide_anl integer;
+	declare v_id_guide_pmm integer;
+	declare v_venture_id integer;
+	declare v_sysname varchar(50);
 
-	set no_echo = 0;
 
-  	begin
-  		message '@stime_sdocs = ', @stime_sdocs to log;
-		select @stime_sdocs into no_echo; 
-	exception 
-		when other then
-			set no_echo = 0;
-	end;
 
-	if no_echo = 1 then
-		return;
+	select ventureId into v_ventureId from orders where numorder = new_name.numdoc;
+
+	if v_venture_id is null then
+		select ventureId into v_ventureId from bayorders where numorder = new_name.numdoc;
 	end if;
 
-	if new_name.numext = 254 then
-		set v_id_guide_jmat = 1220;
-	elseif new_name.numext = 255 and new_name.sourId is not null then
-		select 
-			  isnull(c.id_guide, ru.id_guide) 
-			, isnull(c.id_currency, ru.id_currency) 
-			, isnull(c.currency_iso, ru.currency_iso)
-		into v_id_guide_jmat, v_id_currency, v_currency_iso
-		from sguideSource s
-		join GuideCurrency ru on ru.currency_iso = 'RUR'
-		left join GuideCurrency c on c.currency_iso = s.currency_iso
-		where s.sourceId = new_name.sourId;
-	else 
-		set v_id_guide_jmat = 1210;
+	if v_venture_id is not null then
+		select sysname into v_sysname from guideVenture where ventureId = v_venture_id;
 	end if;
+
+	call wf_id_guide_sdocs (
+		v_id_guide_pmm, v_id_guide_anl, v_currency_iso
+		, v_venture_id, new_name.numext, new_name.sourId, new_name.destId
+		, null
+	);
 
 	set v_id_jmat = get_nextid('jmat');
 	
@@ -352,9 +482,9 @@ begin
 	select id_voc_names into v_id_dest from sguidesource where sourceid = new_name.destid;
 	set v_osn = '[Prior: '+ convert(varchar(20), new_name.numdoc) +']';
     
-	call wf_insert_jmat_dual (
-		'stime'
-		,v_id_guide_jmat
+	call wf_dual_insert_jmat (
+		  v_sysname
+		, v_id_guide_pmm, v_id_guide_anl
 		,v_id_jmat
 		,now() --v_jmat_date
 		,v_jmat_nu
@@ -375,8 +505,12 @@ if exists (select 1 from systriggers where trigname = 'wf_sdocs_outcome_bu' and 
 	drop trigger sdocs.wf_sdocs_outcome_bu;
 end if;
 
+if exists (select 1 from systriggers where trigname = 'wf_sdocs_bu' and tname = 'sdocs') then 
+	drop trigger sdocs.wf_sdocs_bu;
+end if;
+
 create 
-	trigger wf_sdocs_outcome_bu before update on 
+	trigger wf_sdocs_bu before update on 
 sdocs
 referencing new as new_name old as old_name
 for each row
@@ -399,30 +533,11 @@ begin
 	declare v_tp4 integer;
 	declare v_currency_iso varchar(20);
 	
-	declare no_echo integer;
-
-	set no_echo = 0;
 
 	if old_name.id_jmat is null then 
 		return;
 	end if;
 	
-	begin
-  		message '@stime_sdocs = ', @stime_sdocs to log;
-		select @stime_sdocs into no_echo;
-	exception 
-		when other then
-			message '.... exception ' to log;
-			set no_echo = 0;
-	end;
-
-	if no_echo = 1 then
-		return;
-	end if;
-
-
-	message 'sdocs.wf_sdocs_outcome_bu old_id = ' to log;
-	call block_remote ('stime', @@servername, 'jmat');
 
 	if update(sourid) then
 		select id_voc_names into v_id_source from sguidesource where sourceid = new_name.sourid;
@@ -470,7 +585,6 @@ begin
 		-- признака предприятия в приходной накладной
 		-- call update_remote ('stime', 'jmat', 'osn', '''' +v_osn + '''', 'id = ' + convert(varchar(20), old_name.id_jmat));
 	--end if;
-	call unblock_remote ('stime', @@servername, 'jmat');
 end;
 
 
@@ -748,7 +862,7 @@ begin
 						null 
     				else 
     					if n.destid <= -1001 then 
-    						isnull(i.ventureid, v.ventureid) 
+    						isnull(n.ventureid, v.ventureid) 
     					else 
     						isnull(
     							isnull(
@@ -760,10 +874,8 @@ begin
     				endif 
 				as r_ventureid 
         		from sdocs n
-	    		left join sdocsincome i on i.numdoc = n.numdoc and i.numext = n.numext
     			join sdmc m on n.numdoc = m.numdoc 
     					and n.numext = m.numext 
-    					and isnull(i.nomnom, m.nomnom) = m.nomnom
     			join sguidenomenk k on k.nomnom = m.nomnom
     			join sguidesource s on s.sourceId = n.sourId
     			join sguidesource d on d.sourceId = n.destId
@@ -933,7 +1045,7 @@ begin
 							null 
     					else 
     						if n.destid <= -1001 then 
-    							isnull(i.ventureid, v.ventureid) 
+    							isnull(n.ventureid, v.ventureid) 
     						else 
     							isnull(
     								isnull(
@@ -945,10 +1057,8 @@ begin
     					endif 
 					as r_ventureid 
         			from sdocs n
-    					left join sdocsincome i on i.numdoc = n.numdoc and i.numext = n.numext
     				join sdmc m on n.numdoc = m.numdoc 
     						and n.numext = m.numext 
-    						and isnull(i.nomnom, m.nomnom) = m.nomnom
     				join sguidenomenk k on k.nomnom = m.nomnom
     			    join sguidesource s on s.sourceId = n.sourId
     				join sguidesource d on d.sourceId = n.destId
@@ -1084,11 +1194,13 @@ begin
 	set v_numext = 255;
 	set v_numdoc = p_numdoc;
 
-	select d.id_jmat, i.id_analytic, v.id_analytic, s.id_analytic_default, v.activity_start, d.xdate
+	select d.id_jmat, ov.id_analytic
+		, v.id_analytic, s.id_analytic_default, v.activity_start, d.xdate
 	into v_id_jmat, old_id_analytic, new_id_analytic, v_id_analytic_default, v_activity_start, v_xdate
 	from sdocs d
-	left join sdocsIncome i on i.numdoc = d.numdoc and i.numext = d.numext
+--	left join sdocsIncome i on i.numdoc = d.numdoc and i.numext = d.numext
 	left join guideventure v on v.ventureId = p_venture_id
+	left join guideventure ov on d.ventureId = ov.ventureId
 	join system s on 1=1
 	where d.numdoc = v_numdoc and d.numext = v_numext;
 
@@ -1098,28 +1210,32 @@ begin
 		return;
 	end if;
 
+	update sdocs set ventureId = p_venture_id where numdoc = p_numdoc and numext = 255;
+
 	if v_id_jmat is not null then
 		call update_remote('stime', 'jmat', 'id_code', isnull(new_id_analytic, 0), 'id = ' + convert(varchar(20), v_id_jmat));
 	else
 --		set wf_make_venture_income = 0;
 	end if;
+
 	-- Приходуем накладную на то или иное предприятие в зависимости от 
 	-- кода аналитики
 	-- для этого в таблицу sDocsIncome добавляем/удаляем строку со
 	-- ссылкой на предприятие
-	if new_id_analytic is null or new_id_analytic = v_id_analytic_default then
-		delete from sdocsincome where numdoc = v_numdoc and numext = v_numext;
-	else
-		if old_id_analytic is null then
-			insert into sdocsIncome (numdoc, numext, id_analytic, ventureId, id_jmat)
-			values (v_numdoc, v_numext, new_id_analytic, p_venture_id, v_id_jmat);
-	   	else 
-	   		update sdocsIncome set id_analytic = new_id_analytic 
-	   		where numdoc = v_numdoc and numext = v_numext;
-		end if;
+--	if new_id_analytic is null then
+--		update sdocs set ventureId = null;
+--		delete from sdocsincome where numdoc = v_numdoc and numext = v_numext;
+--	else
+--		if old_id_analytic is null then
+--			insert into sdocsIncome (numdoc, numext, id_analytic, ventureId, id_jmat)
+--			values (v_numdoc, v_numext, new_id_analytic, p_venture_id, v_id_jmat);
+--	   	else 
+--	   		update sdocsIncome set id_analytic = new_id_analytic 
+--	   		where numdoc = v_numdoc and numext = v_numext;
+--		end if;
 
 
-	end if;
+--	end if;
 	-- выставить признак того, что взаимозачеты необходимо пересчитать
 	update sdocsventure dv set invalid = 1
 	where v_xdate between dv.termFrom and dv.termTo
@@ -2103,7 +2219,7 @@ begin
 						null 
 					else 
 						if n.destid <= -1001 then 
-							isnull(i.ventureid, v.ventureid) 
+							isnull(n.ventureid, v.ventureid) 
 						else 
 							isnull(
 								isnull(
@@ -2117,10 +2233,10 @@ begin
 				, 0 as r_destVentureId
 				, convert(varchar(20), n.numdoc) + '/' + convert(varchar(20),n.numext) as r_numdoc
 			from sdocs n
-				left join sdocsincome i on i.numdoc = n.numdoc and i.numext = n.numext
+--				left join sdocsincome i on i.numdoc = n.numdoc and i.numext = n.numext
 				join sdmc m on n.numdoc = m.numdoc 
 						and n.numext = m.numext 
-						and isnull(i.nomnom, m.nomnom) = m.nomnom
+--						and isnull(i.nomnom, m.nomnom) = m.nomnom
 				join sguidenomenk k on k.nomnom = m.nomnom
 			    join sguidesource s on s.sourceId = n.sourId
 				join sguidesource d on d.sourceId = n.destId
@@ -2184,6 +2300,7 @@ begin
 							where 
 								round(rest - vo_summa, 3) >= 0
 								and vr.ventureId != dv_dstVentureId
+							order by rest desc
 						do
 							-- Проверка на "паразитное" добавление после прихода товара на 
 							-- фирму у которой не было отрицательного остатка, а у другой фирме

@@ -428,7 +428,7 @@ Dim doShowRow As Boolean
         & "     null " _
         & " else " _
         & "     if n.destid <= -1001 then " _
-        & "         isnull(i.ventureid, v.ventureid) " _
+        & "         isnull(n.ventureid, v.ventureid) " _
         & "     else " _
         & "      isnull(" _
         & "         isnull(" _
@@ -443,8 +443,7 @@ Dim doShowRow As Boolean
 
     sql = sql _
         & " from sdocs n" _
-        & "     left join sdocsincome i on i.numdoc = n.numdoc and i.numext = n.numext" _
-        & "     join sdmc m on n.numdoc = m.numdoc and n.numext = m.numext and m.nomnom = isnull (i.nomnom, m.nomnom)" _
+        & "     join sdmc m on n.numdoc = m.numdoc and n.numext = m.numext " _
         & "     join sguidesource s on s.sourceId = n.sourId" _
         & "     join sguidesource d on d.sourceId = n.destId" _
         & "     join system sys on 1 = 1" _

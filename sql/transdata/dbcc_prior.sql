@@ -832,7 +832,7 @@ end if;
 */
 
 
-
+/*
 -- в продакш => 8.06.2006
 begin 
 	declare v_id integer;
@@ -857,9 +857,10 @@ if not exists(select 1 from sys.syscolumns where creator = 'dba' and tname = 'or
 	alter table orders add nal float null;
 end if;
 
+*/
 
 
-
+-- в продакш => нет
 -- По тем или иным причинам в накладных появились записи,
 -- которые не имеют ссылки в базу Аналитики.
 -- Исправление этих данных накладных Приора, 
@@ -1044,11 +1045,27 @@ end;
 
 -- в продакш => нет
 -- инвентаризация по предприятиям
-call v_inventory_order();
+--call v_inventory_order();
 
 -- в продакш => нет
 -- Пересчитать вступительную инвентаризацию
-call inventory_order('20051013 21:00', 1, null);
+--call inventory_order('20051013 21:00', 1, null);
 
 
+
+if not exists(select 1 from sys.syscolumns where creator = 'dba' and tname = 'sdocs' and cname = 'ventureId') then
+	alter table sdocs add ventureId integer null;
+end if;                                          
+
+if exists (select 1 from systable where createor= 'dba' and tname = 'sdocsincome') then
+
+	update sdocs set ventureid = 1 
+	where numext = 255 and destid = -1001
+	and sourId not in (34, 0);
+
+	update sdocs d set ventureId = i.ventureId
+	from sdocsIncome i
+	where i.numdoc = d.numdoc and i.numext = d.numext;
+
+	drop table sdocsIncome;
 commit

@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "msflxgrd.ocx"
+Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Nakladna 
    BackColor       =   &H8000000A&
    Caption         =   "Предметы "
@@ -34,7 +34,7 @@ Begin VB.Form Nakladna
    End
    Begin VB.Frame gridFrame 
       BackColor       =   &H00800000&
-      BorderStyle     =   0  'Нет
+      BorderStyle     =   0  'None
       Height          =   915
       Left            =   2760
       TabIndex        =   15
@@ -55,7 +55,7 @@ Begin VB.Form Nakladna
          AllowUserResizing=   1
       End
       Begin VB.Label laGrid4 
-         Alignment       =   2  'Центровка
+         Alignment       =   2  'Center
          Caption         =   "laGid4"
          Height          =   195
          Left            =   60
@@ -482,7 +482,7 @@ If moveNum = "yes" Then
     tbDocs!Note = gNzak & "/" & numExtO
     tbDocs!sourId = -1001
     tbDocs!destId = -1002
-    tbDocs.Update
+    tbDocs.update
     For k = 1 To j
       If QQ3(k) > 0 Then
         gNomNom = NN2(k)
@@ -501,7 +501,7 @@ If j > 0 Then
   tbDocs!Note = moveNum
   tbDocs!sourId = -1002
   tbDocs!destId = id
-  tbDocs.Update
+  tbDocs.update
   For k = 1 To j
     gNomNom = NN2(k): numExt = numExtO
     If Not sProducts.nomenkToDMC(QQ2(k), "noLock") Then GoTo ER2
@@ -519,7 +519,7 @@ If I > 0 Then
   tbDocs!xDate = tmpDate
   tbDocs!sourId = -1001
   tbDocs!destId = id
-  tbDocs.Update
+  tbDocs.update
   For k = 1 To I
     gNomNom = NN(k)
     If Not sProducts.nomenkToDMC(QQ(k), "noLock") Then GoTo ER2
@@ -540,7 +540,7 @@ ER2:
 ER1:
 tbDocs.Close
 ER3:
-wrkDefault.Rollback
+wrkDefault.rollback
 lockSklad "un"
 MsgBox "Списание не прошло. Сообщите администратору.", , "Error - " & cErr
 
@@ -759,6 +759,7 @@ ElseIf Regim = "" Then
   "FROM sGuideSource AS sGuideDest INNER JOIN (sGuideSource INNER JOIN " & _
   "sDocs ON sGuideSource.sourceId = sDocs.sourId) ON sGuideDest.sourceId = sDocs.destId " & _
   "WHERE (((sDocs.numDoc)=" & numDoc & ") AND ((sDocs.numExt)=" & numExt & "));"
+  Debug.Print sql
   If byErrSqlGetValues("##172", sql, str, str2) Then
       laSours(ind).Caption = str
       laDest(ind).Caption = str2
@@ -854,7 +855,7 @@ For I = 1 To UBound(NN)
 Next I
 tbNomenk.Close
 If quantity2 > 0 Then
-    Grid2(ind).RemoveItem quantity2 + 1
+    Grid2(ind).removeItem quantity2 + 1
 End If
 If ind = 0 Then
   If QQ2(0) = 0 Then  'если не этапный убираем колонки
@@ -914,13 +915,13 @@ Private Sub Form_Unload(Cancel As Integer)
 Regim = "" 'нужно для lbInside_LostFocus
 End Sub
 
-Private Sub Grid2_DblClick(index As Integer)
+Private Sub Grid2_DblClick(Index As Integer)
 Dim str As String, per As Single, ed_Izmer As String
 
-If Grid2(index).CellBackColor = &H88FF88 Then '****************************
+If Grid2(Index).CellBackColor = &H88FF88 Then '****************************
  
 If mousCol2 = nkIntQuant Then
-    str = Grid2(index).TextMatrix(mousRow2, nkQuant)
+    str = Grid2(Index).TextMatrix(mousRow2, nkQuant)
     If Not IsNumeric(str) Then GoTo AA
     If CSng(str) <= 0 Then
 AA:     MsgBox "Сначала проставте значение в колонке 'кол-во'", , "Предупреждение"
@@ -931,9 +932,9 @@ End If
 Me.MousePointer = flexHourglass
  
 tmpStr = "Фактические остатки по подразделению '"
-gNomNom = Grid2(index).TextMatrix(mousRow2, fnNomNom)
+gNomNom = Grid2(Index).TextMatrix(mousRow2, fnNomNom)
  
-If Grid2(index).TextMatrix(mousRow2, 0) = "" Or mousCol2 = nkIntQuant Then 'штучная
+If Grid2(Index).TextMatrix(mousRow2, 0) = "" Or mousCol2 = nkIntQuant Then 'штучная
     sql = "SELECT perList, ed_Izmer2 From sGuideNomenk " & _
     "WHERE (((nomNom)='" & gNomNom & "'));"
     byErrSqlGetValues "##364", sql, per, ed_Izmer
@@ -943,7 +944,7 @@ If Grid2(index).TextMatrix(mousRow2, 0) = "" Or mousCol2 = nkIntQuant Then 'штуч
     skladId = -1001
 Else ' обрезная
     per = 1
-    ed_Izmer = Grid2(index).TextMatrix(mousRow2, fnEdIzm)
+    ed_Izmer = Grid2(Index).TextMatrix(mousRow2, fnEdIzm)
     
     laGrid4.Caption = tmpStr & sDocs.lbInside.List(1) & "'"
     skladId = -1002
@@ -956,8 +957,8 @@ End If
  Grid4.ColWidth(3) = 645
  Grid4.ColWidth(4) = 900
 
- Grid4.TextMatrix(1, 1) = Grid2(index).TextMatrix(mousRow2, fnNomNom)
- Grid4.TextMatrix(1, 2) = Grid2(index).TextMatrix(mousRow2, fnNomName)
+ Grid4.TextMatrix(1, 1) = Grid2(Index).TextMatrix(mousRow2, fnNomNom)
+ Grid4.TextMatrix(1, 2) = Grid2(Index).TextMatrix(mousRow2, fnNomName)
  Grid4.TextMatrix(1, 3) = ed_Izmer
  Grid4.TextMatrix(1, 4) = Round((PrihodRashod("+", skladId) - _
                     PrihodRashod("-", skladId)) / per, 2) 'Ф. остатки по складу
@@ -970,34 +971,34 @@ EN1:
 End If '*************************************************************
 End Sub
 
-Private Sub Grid2_EnterCell(index As Integer)
+Private Sub Grid2_EnterCell(Index As Integer)
 Dim t As Single, s As Single
-If index > 0 Then Exit Sub
-mousRow2 = Grid2(index).row
-mousCol2 = Grid2(index).col
+If Index > 0 Then Exit Sub
+mousRow2 = Grid2(Index).row
+mousCol2 = Grid2(Index).col
 If quantity2 = 0 Or Regim <> "predmeti" Or dostup = "" Then Exit Sub
 
 If mousCol2 = nkQuant Or (mousCol2 = nkIntQuant And _
-Grid2(index).TextMatrix(mousRow2, 0) <> "") Then
-    Grid2(index).CellBackColor = &H88FF88
+Grid2(Index).TextMatrix(mousRow2, 0) <> "") Then
+    Grid2(Index).CellBackColor = &H88FF88
 Else
-    Grid2(index).CellBackColor = vbYellow
+    Grid2(Index).CellBackColor = vbYellow
 End If
 
 End Sub
 
-Private Sub Grid2_KeyDown(index As Integer, KeyCode As Integer, Shift As Integer)
-If KeyCode = vbKeyReturn Then Grid2_DblClick (index)
+Private Sub Grid2_KeyDown(Index As Integer, KeyCode As Integer, Shift As Integer)
+If KeyCode = vbKeyReturn Then Grid2_DblClick (Index)
 End Sub
 
-Private Sub Grid2_LeaveCell(index As Integer)
-Grid2(index).CellBackColor = Grid2(index).BackColor
+Private Sub Grid2_LeaveCell(Index As Integer)
+Grid2(Index).CellBackColor = Grid2(Index).BackColor
 
 End Sub
 
-Private Sub Grid2_MouseUp(index As Integer, Button As Integer, Shift As Integer, x As Single, y As Single)
-If Grid2(index).MouseRow = 0 And Shift = 2 Then _
-        MsgBox "ColWidth = " & Grid2(index).ColWidth(Grid2(index).MouseCol)
+Private Sub Grid2_MouseUp(Index As Integer, Button As Integer, Shift As Integer, x As Single, y As Single)
+If Grid2(Index).MouseRow = 0 And Shift = 2 Then _
+        MsgBox "ColWidth = " & Grid2(Index).ColWidth(Grid2(Index).MouseCol)
 
 End Sub
 

@@ -499,14 +499,11 @@ Dim strWhere As String, i As Integer, str As String
  
  sql = "SELECT sDocs.xDate, sDocs.Note, sDocs.numDoc, sDocs.numExt, " & _
  "sDocs.destId, sGuideSource.sourceName, GS.sourceName AS destName " & _
- ", isnull(v.ventureName, gv.ventureName) as venture_name " & _
- "FROM (sDocs INNER JOIN sGuideSource ON sDocs.sourId = sGuideSource.sourceId) " & _
- "INNER JOIN sGuideSource AS GS ON sDocs.destId = GS.sourceId " & _
- "left JOIN sdocsIncome i ON i.numdoc = sDocs.numDoc and i.numExt = sDocs.numExt " & _
- "left JOIN guideVenture v ON v.ventureId = i.ventureId " & _
- "join system s on 1=1 " & _
- "left join guideventure gv on gv.id_analytic = s.id_analytic_default " & _
- "WHERE (((sDocs.numExt)=255 " & strWhere & "))  ORDER BY sDocs.xDate; "
+ ", v.ventureName as venture_name " & _
+ "FROM sDocs INNER JOIN sGuideSource ON sDocs.sourId = sGuideSource.sourceId " & _
+ "JOIN sGuideSource AS GS ON sDocs.destId = GS.sourceId " & _
+ "left JOIN guideVenture v ON v.ventureId = sDocs.ventureId " & _
+ "WHERE sDocs.numExt =255 " & strWhere & "  ORDER BY sDocs.xDate; "
 ' "WHERE ((" & str & " AND (GuideManag.Manag)='" & cbM.Text & "' " & strWhere & "));"
 ' Debug.Print sql
  Set tbDocs = myOpenRecordSet("##176", sql, dbOpenForwardOnly)
@@ -523,7 +520,8 @@ Dim strWhere As String, i As Integer, str As String
     Grid.TextMatrix(quantity, dcSour) = tbDocs!SourceName
     Grid.TextMatrix(quantity, dcDest) = tbDocs!destName
     Grid.TextMatrix(quantity, dcNote) = tbDocs!note
-    Grid.TextMatrix(quantity, dcVenture) = tbDocs!venture_name
+    If Not IsNull(tbDocs!venture_name) Then _
+        Grid.TextMatrix(quantity, dcVenture) = tbDocs!venture_name
 
     tbDocs.MoveNext
   Wend
@@ -943,7 +941,13 @@ End Sub
 Private Sub Grid_Click()
 mousCol = Grid.MouseCol
 mousRow = Grid.MouseRow
-
+If Grid.TextMatrix(mousRow, dcVenture) = "" Then
+    cmAdd2.Enabled = False
+    cmDel2.Enabled = False
+Else
+    cmAdd2.Enabled = True
+    cmDel2.Enabled = True
+End If
 End Sub
 
 Private Sub Grid_DblClick()
