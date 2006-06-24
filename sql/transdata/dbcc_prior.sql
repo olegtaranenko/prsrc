@@ -1071,4 +1071,68 @@ if exists (select 1 from systable where createor= 'dba' and tname = 'sdocsincome
 	drop table sdocsIncome;
 end if;
 
+
+if not exists(select 1 from sys.syscolumns where creator = 'dba' and tname = 'system' and cname = 'total_account') then
+	alter table system add total_account datetime;
+end if;
+
+
+begin
+	declare v_fields varchar(1000);
+	declare v_values varchar(2000);
+	declare v_where varchar(1000);
+	declare v_id_cur integer;
+
+	set v_id_cur = 12;
+	
+
+	set v_fields = 'id, nm, base_1, base_2, base_0, sub_1, sub_2, sub_0, rem, iso_code';
+	set v_values = 
+		convert(varchar(20), v_id_cur)
+		 +', ''''Доллар США'''''
+		 +', ''''доллар'''''
+		 +', ''''доллара'''''
+		 +', ''''долларов'''''
+		 +', ''''цент'''''
+		 +', ''''цента'''''
+		 +', ''''центов'''''
+		 +', ''''Доллар США'''''
+		 +', ''''USD'''''
+	;
+
+	call insert_remote('accountN','currency', v_fields, v_values);
+	call insert_remote('markmaster','currency', v_fields, v_values);
+
+	set v_id_cur = v_id_cur + 1;
+	
+
+	set v_fields = 'id, nm, base_1, base_2, base_0, sub_1, sub_2, sub_0, rem, iso_code';
+	set v_values = 
+		convert(varchar(20), v_id_cur)
+		 +', ''''Евро'''''
+		 +', ''''евро'''''
+		 +', ''''евро'''''
+		 +', ''''евро'''''
+		 +', ''''евроцент'''''
+		 +', ''''евроцента'''''
+		 +', ''''евроцентов'''''
+		 +', ''''Евро'''''
+		 +', ''''EUR'''''
+	;
+
+	call insert_remote('accountN','currency', v_fields, v_values);
+	call insert_remote('markmaster','currency', v_fields, v_values);
+
+	-- Избавление от старых записей по валюте. Доллар имеет единый id по всем базам.
+	call update_host('jfact', 'id_curr', 12, 'id_curr between 2 and 10');
+	call update_host('jmat', 'id_curr', 12, 'id_curr between 2 and 10');
+	call update_host('cur_rate', 'id_cur', 12, 'id_cur between 2 and 10');
+	call update_host('jscet', 'id_curr', 12, 'id_curr between 2 and 10');
+	call update_host('xoz', 'id_curr', 12, 'id_curr between 2 and 10');
+	call update_host('bank', 'id_curr', 12, 'id_curr between 2 and 10');
+	call delete_host('currency', 'id between 2 and 10');
+
+
+end;
+
 commit
