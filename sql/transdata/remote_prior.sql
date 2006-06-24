@@ -63,12 +63,11 @@ call build_host_procedure (
 
 
 -- для перевода накладных в режим простых или импортных
-call build_rp_procedure (
-	  'stime'
-	, 'order_import'
+call build_remote_host (
+	 'change_id_guide'
 	, 'in p_id_jmat integer'
-	+ ', in p_currency_id integer'
 	+ ', in p_id_guide integer'
+	+ ', in p_id_currency integer'
 	+ ', in p_tp1 integer'
 	+ ', in p_tp2 integer'
 	+ ', in p_tp3 integer'

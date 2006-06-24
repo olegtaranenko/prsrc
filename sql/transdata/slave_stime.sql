@@ -36,6 +36,7 @@ if exists (select '*' from sysprocedure where proc_name like 'order_import') the
 	drop procedure order_import;
 end if;
 
+/*
 create procedure order_import (
 -- процедура должна вызываться при смене типа накладной с рублевой
 -- на импортную или наоборот
@@ -71,13 +72,13 @@ begin
 		where 
 			id = p_id_jmat;
 
-/*
-		update mat set
-			summa_salev = kol1 * v_rate
-		where id_jmat = p_id_jmat;
-*/
+
+--		update mat set
+--			summa_salev = kol1 * v_rate
+--		where id_jmat = p_id_jmat;
+--
 		end if;
 
 
 end;
-
+*/

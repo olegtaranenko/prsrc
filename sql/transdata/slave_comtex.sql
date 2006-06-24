@@ -1,3 +1,51 @@
+
+if exists (select '*' from sysprocedure where proc_name like 'order_import') then
+	drop procedure order_import;
+end if;
+
+if exists (select '*' from sysprocedure where proc_name like 'change_id_guide') then
+	drop procedure change_id_guide;
+end if;
+
+
+create procedure change_id_guide (
+-- процедура должна вызываться при смене типа накладной с рублевой
+-- на импортную или наоборот
+-- Пересчет денежных значений по позициям должен осуществляться 
+-- вне этой функции.
+	  in p_id_jmat integer
+	, in p_id_guide integer
+	, in p_id_currency integer
+	, in p_tp1 integer
+	, in p_tp2 integer
+	, in p_tp3 integer
+	, in p_tp4 integer
+)
+begin
+
+	declare out_cur_date varchar(20);
+	declare v_rate float;
+
+
+		-- текущий курс валюты
+		call slave_currency_rate(out_cur_date, v_rate, null, p_id_currency);
+
+		update jmat set 
+			id_guide = p_id_guide
+			, id_curr = p_id_currency 
+			, tp1 = p_tp1
+			, tp2 = p_tp2
+			, tp3 = p_tp3
+			, tp4 = p_tp4
+			, curr = isnull(v_rate, 1.0)
+		where 
+			id = p_id_jmat;
+
+end;
+
+
+
+
 --****************************************************************
 --                               NEXT ID
 --****************************************************************

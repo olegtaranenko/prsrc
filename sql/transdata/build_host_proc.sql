@@ -2,6 +2,87 @@
 --                      BUILD HOST PROCEDURE
 --****************************************************************
 
+if exists (select '*' from sysprocedure where proc_name like 'build_remote_host') then
+	drop procedure build_remote_host;
+end if;
+
+create procedure build_remote_host (
+	  p_proc_name varchar(100)
+	, p_params varchar(2000)
+)
+begin
+	declare v_proc_name varchar(64);
+	declare v_rp_proc_name varchar(64);
+	declare v_rhost_proc_name varchar(64);
+	declare v_strip_params varchar(1000);
+	declare v_sql varchar(8000);
+	declare v_params_len integer;
+
+--	declare v_proc_name_remote varchar(64);
+
+	set v_proc_name = p_proc_name + '_remote';
+
+	for c_rmt_servers as a dynamic scroll cursor for
+		select srvname as r_slave_server from sys.sysservers 
+	do
+
+		call build_rp_procedure (
+			  r_slave_server
+			, p_proc_name
+			, p_params
+		);
+
+	end for;
+
+
+	set v_params_len = char_length(trim(p_params));
+	set v_strip_params = parse_params(p_params);
+
+	if exists (select 1 from sysprocedure where proc_name like v_proc_name ) then 
+		execute immediate 
+			'drop procedure ' + v_proc_name;
+	end if;
+	
+	set v_sql =
+		  '\ncreate PROCEDURE ' + v_proc_name
+		+ '\n('
+		+ '\n	p_sysname varchar(64)'
+	;
+	if v_params_len > 0 then
+		set v_sql = v_sql
+			+', ' + 	p_params;
+	end if;
+	set v_sql = v_sql +
+		+ '\n)'
+		+ '\nbegin'
+		+ '\n	declare v_sysname varchar(64);'
+		+ '\n	declare v_proc_name varchar(64);'
+		+ '\n	select srvname into v_sysname from sys.sysservers where srvname = p_sysname;'
+		+ '\n	--message ''v_sysname = ''+ v_sysname to client;'
+		+ '\n	if v_sysname is null then raiserror 17000, ''Error in remote procedure %1!'', ' + v_proc_name + '; end if;'
+		+ '\n	set v_proc_name = ''' + p_proc_name + '_'' + p_sysname;'
+		+ '\n	--message ''v_proc_name = ''+ v_proc_name to client;'
+		+ '\n	execute immediate ''call '' + v_proc_name '
+	;
+
+	if v_params_len > 0 then
+		set v_sql = v_sql
+			+' + ''( ' + v_strip_params + ')''';
+	end if;
+	set v_sql = v_sql +
+		+ '\n'
+		+ '\nend;'
+	;
+
+	message v_sql to client;
+	
+	
+	execute immediate v_sql;
+
+end;
+
+
+
 
 if exists (select '*' from sysprocedure where proc_name like 'build_rp_procedure') then
 	drop procedure build_rp_procedure;
@@ -43,7 +124,7 @@ begin
 	end if;
 
 	set v_strip_params = parse_params(p_params);
-	
+
 	set v_sql =
 		  '\ncreate PROCEDURE ' + v_proc_name
 		+ '\n('
@@ -64,7 +145,7 @@ begin
 	if p_checking = 1 then
 		set v_sql = v_sql
 			+ '\n	else'
-			+ '\n		call log_debug (''function '+ v_proc_name +''');'
+			+ '\n		--call log_debug (''function '+ v_proc_name +''');'
 			+ '\n	end if;'
 		;
 	end if;

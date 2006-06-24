@@ -348,20 +348,152 @@ begin
 end;
 
 
+if exists (select 1 from sysprocedure where proc_name = 'wf_jmat_drop') then
+	drop procedure wf_jmat_drop;
+end if;
+
+create
+	procedure wf_jmat_drop (
+		  in p_sysname varchar(32)
+		, in p_id_jmat integer
+	) 
+begin
+	if p_id_jmat is null or p_sysname is null then
+		raiserror 17000 'Ошибка в параметрах wf_jmat_drop';
+	end if;
+
+	call delete_remote (p_sysname, 'jmat', 'id = ' + convert(varchar(20), p_id_Jmat));
+end;
+
+
+if exists (select 1 from sysprocedure where proc_name = 'wf_jmat_distribute') then
+	drop procedure wf_jmat_distribute;
+end if;
+
+create
+	procedure wf_jmat_distribute (
+		  in p_sysname varchar(32)
+		, in p_id_jmat integer
+		, in p_id_guide integer
+		, in p_osn varchar(100) default null
+	) 
+begin
+	declare v_tp1 integer;
+	declare v_tp2 integer;
+	declare v_tp3 integer;
+	declare v_tp4 integer;
+	declare f_inserted integer;
+	declare v_osn varchar(100);
+	declare v_mat_nu integer;
+	declare v_id_currency integer;
+	declare v_datev date;
+	declare v_currency_rate float;
+
+	if p_id_guide is null then
+		return;
+	end if;
+
+	call qualify_guide(p_id_guide, v_tp1, v_tp2, v_tp3, v_tp4);
+
+	set f_inserted = 0;
+	set v_mat_nu = 1;
+
+	for all_inc as iii sensitive cursor for
+		select 
+			  j.numdoc as r_numdoc
+			, j.sourId as r_sourId, j.destId as r_destId
+			, j.xDate as r_xdate
+			, s.currency_iso as r_currency_iso
+			, s.id_voc_names as r_id_s
+			, d.id_voc_names as r_id_d
+			, j.numext as r_numext
+			, m.nomnom as r_nomnom
+			, k.id_inv as r_id_inv
+			, m.quant as r_quant
+			, k.perlist as r_perlist
+			, k.cost as r_cost
+			, j.id_jmat as r_id_jmat
+			, m.id_mat as r_id_mat
+		from sdocs j 
+			left join sdmc m on j.numdoc = m.numdoc and j.numext = m.numext 
+			left join sguidenomenk k on k.nomnom = m.nomnom
+			join sguidesource s on s.sourceid = j.sourid
+			join sguidesource d on d.sourceid = j.destid
+			left join guideventure v on v.ventureId = j.ventureId
+		where j.id_jmat = p_id_jmat
+		order by k.nomName
+	do
+
+		message '*>>>', r_numdoc, ' ', r_sourId, ' ', r_destId, ' ', r_currency_iso to client;
+		if f_inserted = 0 then
+			set f_inserted = 1;
+
+			if p_osn is null then
+				set v_osn = select_remote('stime', 'jmat', 'osn', 'id = ' + convert(varchar(20), isnull(p_id_jmat, -1)));
+			else 
+				set v_osn = p_osn;
+			end if;
+
+			set v_id_currency = select_remote('stime', 'jmat', 'id_curr', 'id = ' + convert(varchar(20), p_id_jmat));
+			set v_datev = select_remote('stime', 'jmat', 'datv', 'id = ' + convert(varchar(20), p_id_jmat));
+			set v_currency_rate = select_remote('stime', 'jmat', 'curr', 'id = ' + convert(varchar(20), p_id_jmat));
+
+			call wf_insert_jmat (
+				 p_sysname
+				,p_id_guide
+				,p_id_jmat
+				,r_xdate
+				,r_numdoc
+				,v_osn
+				,v_id_currency
+				,v_datev
+				,v_currency_rate
+				,r_id_s
+				,r_id_d
+			);
+		end if;
+		
+		call wf_insert_mat (
+			 p_sysname
+			,r_id_mat
+			,p_id_jmat
+			,r_id_inv
+			,v_mat_nu
+			,r_quant
+			,r_cost
+			,v_currency_rate
+			,r_id_s
+			,r_id_d
+			,r_perList
+		);
+
+		set v_mat_nu = v_mat_nu + 1;
+	end for;
+
+end;
+
+
+
 if exists (select 1 from sysprocedure where proc_name = 'wf_id_guide_sdocs') then
 	drop procedure wf_id_guide_sdocs;
 end if;
 
+
+if exists (select 1 from sysprocedure where proc_name = 'wf_jmat_id_guide') then
+	drop procedure wf_jmat_id_guide;
+end if;
+
 create
-	procedure wf_id_guide_sdocs (
+	procedure wf_jmat_id_guide (
 		  out o_id_guide_pmm integer
 		, out o_id_guide_anl integer
 		, out o_currency_iso varchar(10)
+		, out o_id_currency  integer
 		, p_venture_id integer -- через предприятие (ПМ или ММ). Может быть null
-		, p_new_numext tinyint
+		, p_new_numext integer
 		, p_new_sourId integer
 		, p_new_destId integer
-		, p_old_numext tinyint
+		, p_old_numext integer
 	) 
 begin
 
@@ -374,14 +506,15 @@ begin
 		set o_currency_iso = 'RUR';
 		select 
 			  c.id_guide
---			, isnull(c.id_currency, ru.id_currency) 
+			, isnull(c.id_currency, ru.id_currency) 
 			, s.currency_iso
 		into 
 			o_id_guide_anl
---			, o_id_currency
+			, o_id_currency
 			, o_currency_iso
 		from sguideSource s
 		join GuideCurrency c on c.currency_iso = s.currency_iso
+		join GuideCurrency ru on ru.currency_iso = 'RUR'
 		where s.sourceId = p_new_sourId;
 	elseif p_new_numext = 254 then
 		if isnull(p_old_numext, 0) = 254 then
@@ -402,7 +535,7 @@ begin
 		-- если проводим заказ через аналитику
 		p_venture_id = v_ventureid_anl
 		-- или межсклад 
-	    or o_id_guide_anl = 1220
+		or o_id_guide_anl = 1220
 	then
 		-- НЕ БУДЕМ СОЗДАВАТЬ НАКЛАДНУЮ В ПММ
 		set o_id_guide_pmm = null;
@@ -462,7 +595,7 @@ begin
 		select sysname into v_sysname from guideVenture where ventureId = v_venture_id;
 	end if;
 
-	call wf_id_guide_sdocs (
+	call wf_jmat_id_guide (
 		v_id_guide_pmm, v_id_guide_anl, v_currency_iso
 		, v_venture_id, new_name.numext, new_name.sourId, new_name.destId
 		, null
@@ -483,8 +616,8 @@ begin
 	set v_osn = '[Prior: '+ convert(varchar(20), new_name.numdoc) +']';
     
 	call wf_dual_insert_jmat (
-		  v_sysname
-		, v_id_guide_pmm, v_id_guide_anl
+		 v_sysname
+		,v_id_guide_pmm, v_id_guide_anl
 		,v_id_jmat
 		,now() --v_jmat_date
 		,v_jmat_nu
@@ -526,43 +659,55 @@ begin
 	declare v_id_dest integer;
 	declare v_osn varchar(100);
 
-	declare v_id_guide integer;
+--	declare v_id_guide integer;
 	declare v_tp1 integer;
 	declare v_tp2 integer;
 	declare v_tp3 integer;
 	declare v_tp4 integer;
 	declare v_currency_iso varchar(20);
 	
+	declare v_id_guide_jmat integer;
+	declare v_id_guide_anl integer;
+	declare v_id_guide_pmm integer;
+	declare old_id_guide_pmm integer;
+	declare v_venture_id integer;
+	declare v_sysname varchar(50);
+	declare v_venture_anl_Id integer;
+	declare v_old_numext integer;
+	declare old_id_guide_anl integer;
+	declare f_distribute integer;
 
-	if old_name.id_jmat is null then 
-		return;
-	end if;
-	
 
-	if update(sourid) then
-		select id_voc_names into v_id_source from sguidesource where sourceid = new_name.sourid;
-		if v_Id_source is not null then
-			call update_remote('stime', 'jmat', 'id_s', convert(varchar(20), v_id_source), 'id = ' + convert(varchar(20), old_name.id_jmat));
-		end if;
-		if old_name.numext = 255 and old_name.id_jmat is not null then
-			select 
-				  isnull(c.id_guide, ru.id_guide)
-				, isnull(c.id_currency, ru.id_currency) 
-				, isnull(c.currency_iso, ru.currency_iso)
-			into v_id_guide, v_id_currency, v_currency_iso
-			from sguideSource s
-			join GuideCurrency ru on ru.currency_iso = 'RUR'
-			left join GuideCurrency c on c.currency_iso = s.currency_iso
-			where s.sourceId = new_name.sourId;
-	    
-			if isnull(v_currency_iso, 'RUR') = 'RUR' then
-				set v_id_currency = system_currency();
-			end if;
-			call gualify_guide(v_id_guide, v_tp1, v_tp2, v_tp3, v_tp4);
-			call order_import_stime(
-				  old_name.id_jmat
+	set v_venture_anl_id = 3; -- todo! system.venture_anl_id
+
+	if update(ventureId) or update(sourId) or update (destId) then
+		-- при смене "от кого" и "кому" может произойти изменение типа накладной
+		-- Поэтому нужно каждый раз проверять тип
+		set v_old_numext = old_name.numext;
+		call wf_jmat_id_guide (
+			  v_id_guide_pmm, v_id_guide_anl, v_currency_iso, v_id_currency
+			, new_name.ventureid, new_name.numext, new_name.sourId, new_name.destId
+			, v_old_numext
+		);
+--	end if;
+
+--	if update (ventureId) then
+		set f_distribute = 1;
+		set old_id_guide_anl = select_remote('stime', 'jmat', 'id_guide', 'id = ' + convert(varchar(20), old_name.id_jmat));
+		if old_id_guide_anl != v_id_guide_anl then
+			call qualify_guide(
+				  v_id_guide_anl
+				, v_tp1
+				, v_tp2
+				, v_tp3
+				, v_tp4
+			);
+
+			call change_id_guide_remote (
+				  'stime'
+				, old_name.id_jmat
+				, v_id_guide_anl
 				, v_id_currency
-				, v_id_guide
 				, v_tp1
 				, v_tp2
 				, v_tp3
@@ -570,13 +715,69 @@ begin
 			);
 		end if;
 
+		if old_name.ventureId is not null then
+			select sysname into v_sysname from guideventure where ventureid = old_name.ventureId;
+		    -- исправить в базе старого предприятия если накладная меняет предприятие
+			if isnull(new_name.ventureId, -old_name.ventureId) != old_name.ventureId then
+				-- если предпирятие другое - удадляем накладную
+				call wf_jmat_drop(v_sysname, old_name.id_jmat);
+			else
+				set f_distribute = 0; -- предприятие осталось тем же, добавлять не нужно
+				-- если тоже самое, то тогда проверяем, а может быть нужно поменять тип накладной
+				set old_id_guide_pmm = select_remote(v_sysname, 'jmat', 'id_guide', 'id = ' + convert(varchar(20), old_name.id_jmat));
+				if isnull(old_id_guide_pmm, -v_id_guide_pmm) != v_id_guide_pmm then
+
+					call qualify_guide(
+						  v_id_guide_anl
+						, v_tp1
+						, v_tp2
+						, v_tp3
+						, v_tp4
+					);
+
+					call change_id_guide_remote (
+						  v_sysname
+						, old_name.id_jmat
+						, v_id_guide_pmm
+						, v_id_currency
+						, v_tp1
+						, v_tp2
+						, v_tp3
+						, v_tp4
+	    			);
+    			end if;
+			end if;
+		end if;
+
+		if f_distribute = 1 and v_id_guide_pmm is not null then
+			select sysname into v_sysname from guideventure where ventureid = new_name.ventureId;
+			call wf_jmat_distribute(
+					  v_sysname
+					, old_name.id_jmat
+					, v_id_guide_pmm
+	    		);
+
+		end if;
 	end if;
-	if update(destid) then
+		
+--		call qualify_guide(v_id_guide_pmm, v_tp1, v_tp2, v_tp3, v_tp4);
+
+	if update(sourId) then
+		select id_voc_names into v_id_source from sguidesource where sourceid = new_name.sourid;
+		if v_Id_source is not null then
+			call update_host('jmat', 'id_s', convert(varchar(20), v_id_source), 'id = ' + convert(varchar(20), old_name.id_jmat));
+		end if;
+	end if;
+		
+	if update(destId) then
 		select id_voc_names into v_id_dest from sguidesource where sourceid = new_name.destid;
-		call update_remote('stime', 'jmat', 'id_d', convert(varchar(20), v_id_dest), 'id = ' + convert(varchar(20), old_name.id_jmat));
+		if v_id_dest is not null then
+			call update_host('jmat', 'id_d', convert(varchar(20), v_id_dest), 'id = ' + convert(varchar(20), old_name.id_jmat));
+		end if;
 	end if;
+
 	if update(xDate) then
-		call update_remote('stime', 'jmat', 'dat', '''''' + convert(varchar(20), new_name.xDate) + '''''', 'id = ' + convert(varchar(20), old_name.id_jmat));
+		call update_host('jmat', 'dat', '''''' + convert(varchar(20), new_name.xDate) + '''''', 'id = ' + convert(varchar(20), old_name.id_jmat));
 	end if;
 
 	--if update(note) then
@@ -3004,7 +3205,11 @@ if exists (select '*' from sysprocedure where proc_name like 'gualify_guide') th
 	drop procedure gualify_guide;
 end if;
 
-create procedure gualify_guide (
+if exists (select '*' from sysprocedure where proc_name like 'qualify_guide') then  
+	drop procedure qualify_guide;
+end if;
+
+create procedure qualify_guide (
 	  p_id_guide_jmat integer
 	, out p_tp1 integer
 	, out p_tp2 integer
@@ -3024,6 +3229,9 @@ begin
 		elseif p_id_guide_jmat = 1210 then 
 		-- расход
 			set p_tp1 = 3; set p_tp2 = 2; set p_tp3 = 1; set p_tp4 = 0; 
+		elseif p_id_guide_jmat = 1217 then 
+		-- расход в валюте
+			set p_tp1 = 3; set p_tp2 = 2; set p_tp3 = 1; set p_tp4 = 7; 
 		elseif p_id_guide_jmat = 1023 then 
 		-- инвентаризация
 			set p_tp1 = 0; set p_tp2 = 0; set p_tp3 = 2; set p_tp4 = 3; 
@@ -3040,7 +3248,26 @@ create function wf_get_comtex_tp (
 	p_id_guide_jmat integer
 ) returns varchar(20)
 begin
-	declare v_ret_char varchar(20);
+	declare v_tp1 integer;
+	declare v_tp2 integer;
+	declare v_tp3 integer;
+	declare v_tp4 integer;
+
+	call qualify_guide (
+		  p_id_guide_jmat 	
+		, v_tp1 
+		, v_tp2 
+		, v_tp3 
+		, v_tp4 
+	);
+
+	set wf_get_comtex_tp = convert(varchar(20), v_tp1)
+	                +', '+ convert(varchar(20), v_tp2)
+	                +', '+ convert(varchar(20), v_tp3)
+	                +', '+ convert(varchar(20), v_tp4)
+	;
+
+	/*
 	-- приход
 	if p_id_guide_jmat = 1120 then
 		return '1,1,2,0';
@@ -3063,6 +3290,7 @@ begin
 		+ ', '+ substring (v_ret_char, 3, 1) 
 		+ ', '+ substring (v_ret_char, 4, 1) 
 	;
+	*/
 
 end;
 

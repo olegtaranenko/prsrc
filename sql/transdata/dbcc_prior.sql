@@ -1052,9 +1052,10 @@ end;
 --call inventory_order('20051013 21:00', 1, null);
 
 
-
+-- в продакш => нет
 if not exists(select 1 from sys.syscolumns where creator = 'dba' and tname = 'sdocs' and cname = 'ventureId') then
 	alter table sdocs add ventureId integer null;
+	alter table sdocs add constraint ventureId foreign key (ventureId) references guideVenture (ventureId) on update cascade on delete set null;
 end if;                                          
 
 if exists (select 1 from systable where createor= 'dba' and tname = 'sdocsincome') then
@@ -1068,4 +1069,6 @@ if exists (select 1 from systable where createor= 'dba' and tname = 'sdocsincome
 	where i.numdoc = d.numdoc and i.numext = d.numext;
 
 	drop table sdocsIncome;
+end if;
+
 commit
