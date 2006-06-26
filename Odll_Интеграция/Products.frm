@@ -1893,9 +1893,9 @@ End If
 '    tbDMC!quant = Round(tbDMC!quant + delta, 2)
 'End If
 'tbDMC.Update
-sql = "UPDATE sDMC SET quant = [quant] + " & delta & _
-" WHERE (((numDoc)=" & numDoc & ") AND ((numExt)=" & numExt & _
-") AND ((nomNom)='" & gNomNom & "'));"
+sql = "UPDATE sDMC SET quant = quant + " & delta & _
+" WHERE numDoc=" & numDoc & " AND numExt=" & numExt & _
+" AND nomNom='" & gNomNom & "';"
 I = myExecute("W##123", sql, 0)
 If I > 0 Then
     GoTo EN1

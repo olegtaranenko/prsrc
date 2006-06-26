@@ -921,7 +921,7 @@ begin
 	do
 		message '*>>>', r_numdoc, ' ', r_sourId, ' ', r_destId, ' ', r_currency_iso to client;
 		set v_id_guide = recognize_guide(r_sourId, r_destId, r_currency_iso);
-		call gualify_guide(v_id_guide, v_tp1, v_tp2, v_tp3, v_tp4);
+		call qualify_guide(v_id_guide, v_tp1, v_tp2, v_tp3, v_tp4);
 		--set 
 		set v_id_jmat = select_remote('stime', 'jmat', 'id', 'id = ' + convert(varchar(20), isnull(r_id_jmat, -1446465)));
 
@@ -1052,28 +1052,12 @@ end;
 --call inventory_order('20051013 21:00', 1, null);
 
 
--- в продакш => нет
-if not exists(select 1 from sys.syscolumns where creator = 'dba' and tname = 'sdocs' and cname = 'ventureId') then
-	alter table sdocs add ventureId integer null;
-	alter table sdocs add constraint ventureId foreign key (ventureId) references guideVenture (ventureId) on update cascade on delete set null;
-end if;                                          
-
-if exists (select 1 from systable where createor= 'dba' and tname = 'sdocsincome') then
-
-	update sdocs set ventureid = 1 
-	where numext = 255 and destid = -1001
-	and sourId not in (34, 0);
-
-	update sdocs d set ventureId = i.ventureId
-	from sdocsIncome i
-	where i.numdoc = d.numdoc and i.numext = d.numext;
-
-	drop table sdocsIncome;
-end if;
 
 
-if not exists(select 1 from sys.syscolumns where creator = 'dba' and tname = 'system' and cname = 'total_account') then
+
+if not exists (select 1 from sys.syscolumns where creator = 'dba' and tname = 'system' and cname = 'total_account') then
 	alter table system add total_account datetime;
+	update system set total_account = '20060601';
 end if;
 
 

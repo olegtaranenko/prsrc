@@ -996,7 +996,7 @@ Grid2(Index).CellBackColor = Grid2(Index).BackColor
 
 End Sub
 
-Private Sub Grid2_MouseUp(Index As Integer, Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid2_MouseUp(Index As Integer, Button As Integer, Shift As Integer, X As Single, Y As Single)
 If Grid2(Index).MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid2(Index).ColWidth(Grid2(Index).MouseCol)
 
@@ -1010,7 +1010,7 @@ Grid2(0).SetFocus
 Grid2_EnterCell 0
 End Sub
 
-Private Sub Grid4_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid4_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
 If Grid4.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid4.ColWidth(Grid4.MouseCol)
 

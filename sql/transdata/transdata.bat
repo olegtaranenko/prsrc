@@ -44,7 +44,7 @@ call isql server_comtex.sql mm
 
 call isql servertables_prior.sql prior
 
-rem call isql dml_before_prior.sql prior
+call isql dml_before_prior.sql prior
 ::call isql dbcc_prior.sql prior
 
 call isql codebase_prior.sql prior

@@ -105,8 +105,12 @@ if exists (select 1 from systriggers where trigname = 'wf_sdmc_outcome_bi' and t
 	drop trigger sdmc.wf_sdmc_outcome_bi;
 end if;
 
+if exists (select 1 from systriggers where trigname = 'wf_sdmc_bi' and tname = 'sdmc') then 
+	drop trigger sdmc.wf_sdmc_bi;
+end if;
+
 create 
-	trigger wf_sdmc_outcome_bi before insert order 3 on 
+	trigger wf_sdmc_bi before insert on 
 sdmc
 referencing new as new_name
 for each row
@@ -124,30 +128,17 @@ begin
 	declare v_quant float;
 	declare v_perList float;
 	declare sync char(1);
-	declare no_echo integer;
+	declare v_sysname varchar(32);
+	declare v_venture_id integer;
+	declare v_venture_anl integer;
+	declare v_sysname_anl varchar(32);
 
-	set no_echo = 0;
-
-	--message 'no_echo = ' + convert(varchar(20), no_echo) to log;
-
-  	begin
---  		message '@stime_sdmc = ', @stime_sdmc to log;
-		select @stime_sdmc into no_echo; 
-	exception 
-		when other then
-			--message 'Exception! no_echo = ' + convert(varchar(20), no_echo) to log;
-			set no_echo = 0;
-	end;
-
-	if no_echo = 1 then
-		return;
-	end if;
-
-	select id_jmat, s.id_voc_names, d.id_voc_names
-	into v_id_jmat, v_id_source, v_id_dest
+	select id_jmat, s.id_voc_names, d.id_voc_names, n.ventureId, v.sysname
+	into v_id_jmat, v_id_source, v_id_dest, v_venture_id, v_sysname
 	from sdocs n 
 		join sguidesource s on s.sourceid = n.sourid 
 		join sguidesource d on d.sourceid = n.destid
+		left join guideVenture v on n.ventureId = v.ventureId
 	where n.numdoc = new_name.numdoc and n.numext = new_name.numext;
 
 	if v_id_jmat is null then
@@ -174,13 +165,29 @@ begin
 	where nomnom = new_name.nomnom;
 
 
-	set v_quant = new_name.quant; -- / v_perList;
+	set v_quant = new_name.quant;
 
---		call call_host('block_table', 'sync, ''prior'', ''mat''');
-		call block_remote('stime', @@servername, 'mat');
+	call get_venture_anl(v_venture_anl, v_sysname_anl);
 	
+	call wf_insert_mat (
+		 v_sysname_anl
+		,v_id_mat
+		,v_Id_jmat
+		,v_id_inv
+		,v_mat_nu
+		,v_quant 
+		,v_cost
+		,v_currency_rate
+		,v_id_source
+		,v_id_dest
+		,v_perList
+	);
+
+	set new_name.id_mat = v_id_mat;
+
+	if isnull(v_venture_id, v_venture_anl) != v_venture_anl then
 		call wf_insert_mat (
-			'stime'
+			v_sysname
 			,v_id_mat
 			,v_Id_jmat
 			,v_id_inv
@@ -192,9 +199,7 @@ begin
 			,v_id_dest
 			,v_perList
 		);
-
-		set new_name.id_mat = v_id_mat;
-		call unblock_remote('stime', @@servername, 'mat');
+	end if;
 end;
 
 
@@ -348,6 +353,22 @@ begin
 end;
 
 
+if exists (select 1 from sysprocedure where proc_name = 'get_venture_anl') then
+	drop procedure get_venture_anl;
+end if;
+
+create
+	procedure get_venture_anl (
+		  out p_venture_id integer
+		, out p_sysname varchar(32)
+	) 
+begin
+	--!todo
+	set p_venture_id = 3;
+	set p_sysname = 'stime';
+end;
+
+
 if exists (select 1 from sysprocedure where proc_name = 'wf_jmat_drop') then
 	drop procedure wf_jmat_drop;
 end if;
@@ -489,6 +510,7 @@ create
 		, out o_id_guide_anl integer
 		, out o_currency_iso varchar(10)
 		, out o_id_currency  integer
+		, out o_osn varchar(64)
 		, p_venture_id integer -- через предприятие (ПМ или ММ). Может быть null
 		, p_new_numext integer
 		, p_new_sourId integer
@@ -509,13 +531,14 @@ begin
 			, isnull(c.id_currency, ru.id_currency) 
 			, s.currency_iso
 		into 
-			o_id_guide_anl
+			  o_id_guide_anl
 			, o_id_currency
 			, o_currency_iso
 		from sguideSource s
 		join GuideCurrency c on c.currency_iso = s.currency_iso
 		join GuideCurrency ru on ru.currency_iso = 'RUR'
 		where s.sourceId = p_new_sourId;
+		set o_osn = 'Приход по накл. ';
 	elseif p_new_numext = 254 then
 		if isnull(p_old_numext, 0) = 254 then
 			set o_id_guide_anl = 1220;
@@ -524,6 +547,7 @@ begin
 		end if;
 	else
 		set o_id_guide_anl = 1210;
+		set o_osn = 'Расход по ';
 	end if;
 
 	set v_ventureid_anl = 3; -- todo! лучше взять из настроек system
@@ -561,7 +585,7 @@ if exists (select 1 from systriggers where trigname = 'wf_sdocs_bi' and tname = 
 end if;
 
 create 
-	trigger wf_sdocs_bi before insert order 3 on 
+	trigger wf_sdocs_bi before insert on 
 sdocs
 referencing new as new_name
 for each row
@@ -582,21 +606,27 @@ begin
 	declare v_id_guide_pmm integer;
 	declare v_venture_id integer;
 	declare v_sysname varchar(50);
+	declare v_osn_type varchar(10);
 
 
 
-	select ventureId into v_ventureId from orders where numorder = new_name.numdoc;
+	select ventureId into v_venture_id from orders where numorder = new_name.numdoc;
 
 	if v_venture_id is null then
-		select ventureId into v_ventureId from bayorders where numorder = new_name.numdoc;
+		select ventureId into v_venture_id from bayorders where numorder = new_name.numdoc;
+		set v_osn_type = ' продаже ';
+	else 
+		set v_osn_type = ' заказу ';
 	end if;
 
 	if v_venture_id is not null then
 		select sysname into v_sysname from guideVenture where ventureId = v_venture_id;
+	else
+		set v_osn_type = ' внутр. ';
 	end if;
 
 	call wf_jmat_id_guide (
-		v_id_guide_pmm, v_id_guide_anl, v_currency_iso
+		  v_id_guide_pmm, v_id_guide_anl, v_currency_iso, v_id_currency, v_osn
 		, v_venture_id, new_name.numext, new_name.sourId, new_name.destId
 		, null
 	);
@@ -613,7 +643,10 @@ begin
 	set v_jmat_nu = new_name.numdoc;
 	select id_voc_names into v_id_source from sguidesource where sourceid = new_name.sourid;
 	select id_voc_names into v_id_dest from sguidesource where sourceid = new_name.destid;
-	set v_osn = '[Prior: '+ convert(varchar(20), new_name.numdoc) +']';
+	set v_osn = v_osn + v_osn_type + convert(varchar(20), new_name.numdoc);
+	if new_name.numext < 254 then
+		set v_osn = v_osn + '/' + convert(varchar(20), new_name.numext);
+	end if;
     
 	call wf_dual_insert_jmat (
 		 v_sysname
@@ -629,8 +662,7 @@ begin
 		,v_id_dest
 	);
 	set new_name.id_jmat = v_id_jmat;
-
-
+	set new_name.ventureId = v_venture_id;
 
 end;
 
@@ -685,7 +717,7 @@ begin
 		-- Поэтому нужно каждый раз проверять тип
 		set v_old_numext = old_name.numext;
 		call wf_jmat_id_guide (
-			  v_id_guide_pmm, v_id_guide_anl, v_currency_iso, v_id_currency
+			  v_id_guide_pmm, v_id_guide_anl, v_currency_iso, v_id_currency, v_osn
 			, new_name.ventureid, new_name.numext, new_name.sourId, new_name.destId
 			, v_old_numext
 		);
@@ -5068,6 +5100,7 @@ begin
 	declare v_id_inv integer;
 	declare v_numorder integer;
 	declare v_updated integer;
+	declare v_total_account_date datetime;
 
 	declare sync char(1);
 
@@ -5105,7 +5138,18 @@ begin
 				set new_name.invoice = v_invCode + convert(varchar(20), v_nu_jscet);
 				call wf_set_invoice_detail(remoteServerNew, r_id, new_name.numOrder, v_order_date);
 			end if;
+
+			-- исправление расходных накладных, связанных с заказом
+			select total_account into v_total_account_date from system;
+
+			-- это можно делать только для тех заказов, которые 
+			update sdocs set ventureId = new_name.ventureId 
+			where 
+					sdocs.numdoc = new_name.numorder
+				and xDate >= v_total_account_date;
+
 		end if;
+
 	end if;
 	if update (firmId) and (old_name.id_bill is null or old_name.id_bill = 0) then
 		
