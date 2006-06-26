@@ -456,6 +456,7 @@ begin
 			end if;
 
 			set v_id_currency = select_remote('stime', 'jmat', 'id_curr', 'id = ' + convert(varchar(20), p_id_jmat));
+			message '	v_id_currency = ', v_id_currency to client;
 			set v_datev = select_remote('stime', 'jmat', 'datv', 'id = ' + convert(varchar(20), p_id_jmat));
 			set v_currency_rate = select_remote('stime', 'jmat', 'curr', 'id = ' + convert(varchar(20), p_id_jmat));
 
@@ -723,9 +724,19 @@ begin
 		);
 --	end if;
 
+
 --	if update (ventureId) then
-		set f_distribute = 1;
+		if		isnull(new_name.ventureId, v_venture_anl_id) != v_venture_anl_id
+			and isnull(old_name.ventureId, v_venture_anl_id) != isnull(new_name.ventureId, v_venture_anl_id)
+		then
+			set f_distribute = 1;
+		else 
+			set f_distribute = 0;
+		end if;
+
 		set old_id_guide_anl = select_remote('stime', 'jmat', 'id_guide', 'id = ' + convert(varchar(20), old_name.id_jmat));
+		message 'old_id_guide_anl = ',old_id_guide_anl to client;
+		message 'v_id_guide_anl = ',v_id_guide_anl to client;
 		if old_id_guide_anl != v_id_guide_anl then
 			call qualify_guide(
 				  v_id_guide_anl
@@ -747,14 +758,17 @@ begin
 			);
 		end if;
 
-		if old_name.ventureId is not null then
+		if isnull(old_name.ventureId, v_venture_anl_id) != v_venture_anl_id then
 			select sysname into v_sysname from guideventure where ventureid = old_name.ventureId;
 		    -- исправить в базе старого предприятия если накладная меняет предприятие
-			if isnull(new_name.ventureId, -old_name.ventureId) != old_name.ventureId then
+			if 
+					isnull(new_name.ventureId, -old_name.ventureId) != old_name.ventureId 
+				and old_name.ventureId != v_venture_anl_id
+			then
 				-- если предпирятие другое - удадляем накладную
 				call wf_jmat_drop(v_sysname, old_name.id_jmat);
 			else
-				set f_distribute = 0; -- предприятие осталось тем же, добавлять не нужно
+				--set f_distribute = 0; -- предприятие осталось тем же, добавлять не нужно
 				-- если тоже самое, то тогда проверяем, а может быть нужно поменять тип накладной
 				set old_id_guide_pmm = select_remote(v_sysname, 'jmat', 'id_guide', 'id = ' + convert(varchar(20), old_name.id_jmat));
 				if isnull(old_id_guide_pmm, -v_id_guide_pmm) != v_id_guide_pmm then
