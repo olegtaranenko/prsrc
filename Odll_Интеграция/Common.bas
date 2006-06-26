@@ -136,6 +136,7 @@ Public Const dcDate = 1
 Public Const dcNumDoc = 2
 Public Const dcSour = 3
 Public Const dcDest = 4
+Public Const dcVenture = 6
 Public Const dcNote = 5
 
 'Grid â FirmComtex

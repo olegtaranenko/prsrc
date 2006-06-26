@@ -12,6 +12,15 @@ Begin VB.Form sDocs
    ScaleHeight     =   5895
    ScaleWidth      =   11880
    StartUpPosition =   1  'CenterOwner
+   Begin VB.ListBox lbVenture 
+      Appearance      =   0  'Flat
+      Height          =   615
+      Left            =   5500
+      TabIndex        =   31
+      Top             =   1000
+      Visible         =   0   'False
+      Width           =   1095
+   End
    Begin VB.CheckBox ckPerList 
       Caption         =   "В целых"
       Height          =   195
@@ -318,6 +327,62 @@ Const dnLists = 5
 Const dnQuantRez = 4
 Const dnQntClose = 5
 Const dnNowOstatRez = 6
+
+
+Public Sub initVentureLB()
+' Сначала удаляем старые значения
+While lbVenture.ListCount
+    lbVenture.removeItem (0)
+Wend
+
+sql = "select * from GuideVenture where standalone = 0 and id_analytic is not null"
+
+Set table = myOpenRecordSet("##72", sql, dbOpenForwardOnly)
+If table Is Nothing Then myBase.Close: End
+
+'lbVenture.AddItem "", 0
+While Not table.EOF
+    lbVenture.AddItem "" & table!ventureName & ""
+    lbVenture.ItemData(lbVenture.ListCount - 1) = table!ventureId
+    table.MoveNext
+Wend
+table.Close
+lbVenture.Height = 225 * lbVenture.ListCount
+
+End Sub
+
+
+
+Private Sub lbVenture_DblClick()
+Dim newNote As String, ncount As Integer
+
+If lbVenture.Visible = False Then Exit Sub
+sql = "select wf_make_venture_income(" & Grid.TextMatrix(mousRow, dcNumDoc) & ", " & lbVenture.ItemData(lbVenture.ListIndex) & ")"
+
+'i = orderUpdate("##72", lbVenture.ItemData(lbVenture.ListIndex), "Orders", "ventureId")
+byErrSqlGetValues "##126.1", sql, ncount
+If ncount > 0 Then
+    Grid.Text = lbVenture.Text
+    newNote = getValueFromTable("sDocs", "Note", "numDoc = " & Grid.TextMatrix(mousRow, dcNumDoc))
+    If IsNull(newNote) Then newNote = ""
+    Grid.TextMatrix(mousRow, dcNote) = newNote
+Else
+    MsgBox "Изменение не произошло. Вероятно, была попытка измененить приход, который был сделан до начала работы предприятия", , "Передупреждение"
+End If
+
+lbHide
+
+
+End Sub
+
+Private Sub lbVenture_KeyDown(KeyCode As Integer, Shift As Integer)
+    If KeyCode = vbKeyReturn Then
+        lbVenture_DblClick
+    ElseIf KeyCode = vbKeyEscape Then
+        lbHide
+    End If
+End Sub
+
 
 Private Sub cbEndDate_Click()
 tbEndDate.Enabled = Not tbEndDate.Enabled
@@ -844,12 +909,13 @@ tbStartDate.Text = Format(DateAdd("d", -14, curDate), "dd/mm/yy")
 tbEndDate.Text = Format(curDate, "dd/mm/yy")
 If otlad = "otlaD" Then ckStartDate.value = 1
 
-Grid.FormatString = "|<Дата|<№ Док-та|<Окуда|<Куда|<Примечание"
+Grid.FormatString = "|<Дата|<№ Док-та|<Окуда|<Куда|<Примечание|<Предпр"
 Grid.ColWidth(dcSourId) = 0
 Grid.ColWidth(dcDate) = 800
 Grid.ColWidth(dcNumDoc) = 915
 Grid.ColWidth(dcSour) = 1100
 Grid.ColWidth(dcDest) = 1520
+Grid.ColWidth(dcVenture) = 600
 Grid.ColWidth(dcNote) = 1100
 
 sql = "SELECT sGuideSource.sourceId, sGuideSource.sourceName From sGuideSource " & _
@@ -884,6 +950,7 @@ If Regim = "fromCeh" Then
     Timer1.Enabled = True ' loadDocs
 End If
 
+initVentureLB
 
 
 isLoad = True
@@ -937,10 +1004,12 @@ Dim strWhere As String, moveWhere As String, I As Integer, str As String
  End If
   sql = "SELECT sDocs.xDate, sDocs.Note, sDocs.numDoc, sDocs.numExt, " & _
  "sGuideSource.sourceName, GS.sourceName AS destName, sDocs.sourId, sDocs.destId " & _
- "FROM (sDocs INNER JOIN sGuideSource ON sDocs.sourId = sGuideSource.sourceId) " & _
+ ", v.ventureName as venture_name " & _
+ "FROM sDocs INNER JOIN sGuideSource ON sDocs.sourId = sGuideSource.sourceId " & _
  "INNER JOIN sGuideSource AS GS ON sDocs.destId = GS.sourceId " & _
- "WHERE (" & moveWhere & "(" & strWhere & ")) ORDER BY sDocs.xDate;"
- Debug.Print sql
+ "left JOIN guideVenture v ON v.ventureId = sDocs.ventureId " & _
+ "WHERE " & moveWhere & " " & strWhere & " ORDER BY sDocs.xDate;"
+' Debug.Print sql
  
  'MsgBox sql
  
@@ -961,6 +1030,8 @@ Dim strWhere As String, moveWhere As String, I As Integer, str As String
     End If
     Grid.TextMatrix(quantity, dcSour) = tbDocs!SourceName
     Grid.TextMatrix(quantity, dcDest) = tbDocs!destName
+    If Not IsNull(tbDocs!venture_name) Then _
+        Grid.TextMatrix(quantity, dcVenture) = tbDocs!venture_name
 
     tbDocs.MoveNext
   Wend
@@ -1024,6 +1095,7 @@ lbGroup.Visible = False
 lbInside.Visible = False
 lbStatia.Visible = False
 tbMobile.Visible = False
+lbVenture.Visible = False
 Grid.Enabled = True
 Grid.SetFocus
 Grid_EnterCell
@@ -1227,6 +1299,8 @@ ElseIf mousCol = dcDest Then
     Else
         listBoxInGridCell lbGroup, Grid
     End If
+ElseIf mousCol = dcVenture Then
+    listBoxInGridCell lbVenture, Grid, Grid.TextMatrix(mousRow, mousCol)
 Else
     tbMobile.MaxLength = 50
     textBoxInGridCell tbMobile, Grid
