@@ -734,28 +734,30 @@ begin
 			set f_distribute = 0;
 		end if;
 
-		set old_id_guide_anl = select_remote('stime', 'jmat', 'id_guide', 'id = ' + convert(varchar(20), old_name.id_jmat));
-		message 'old_id_guide_anl = ',old_id_guide_anl to client;
-		message 'v_id_guide_anl = ',v_id_guide_anl to client;
-		if old_id_guide_anl != v_id_guide_anl then
-			call qualify_guide(
-				  v_id_guide_anl
-				, v_tp1
-				, v_tp2
-				, v_tp3
-				, v_tp4
-			);
-
-			call change_id_guide_remote (
-				  'stime'
-				, old_name.id_jmat
-				, v_id_guide_anl
-				, v_id_currency
-				, v_tp1
-				, v_tp2
-				, v_tp3
-				, v_tp4
-			);
+		if old_name.id_jmat is not null then
+			set old_id_guide_anl = select_remote('stime', 'jmat', 'id_guide', 'id = ' + convert(varchar(20), old_name.id_jmat));
+			message 'old_id_guide_anl = ',old_id_guide_anl to client;
+			message 'v_id_guide_anl = ',v_id_guide_anl to client;
+			if old_id_guide_anl != v_id_guide_anl then
+				call qualify_guide(
+					  v_id_guide_anl
+					, v_tp1
+					, v_tp2
+					, v_tp3
+					, v_tp4
+				);
+	    
+				call change_id_guide_remote (
+					  'stime'
+					, old_name.id_jmat
+					, v_id_guide_anl
+					, v_id_currency
+					, v_tp1
+					, v_tp2
+					, v_tp3
+					, v_tp4
+				);
+			end if;
 		end if;
 
 		if isnull(old_name.ventureId, v_venture_anl_id) != v_venture_anl_id then
