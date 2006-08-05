@@ -2378,7 +2378,7 @@ If KeyCode = vbKeyReturn Then lbProblem_DblClick
 End Sub
 
 Function orderClose() As Boolean
-Dim sql2 As String, str As String
+Dim sql2 As String, str As String, account_is_closed As Integer
 
 orderClose = False
 
@@ -2395,26 +2395,28 @@ End If
     
 If Not bilo Then
     If Grid.TextMatrix(mousRow, orProblem) = "" Then
-#If Not COMTEC = 1 Then '------------------------------------------------
         If Not predmetiIsClose Then ' эта проверка нужна для заказов без работы
             MsgBox "У этого заказа есть несписанные предметы.", , "Закрытие невозможно!"
             Exit Function
         End If
-#End If '-----------------------------------------------------------------
+        sql = "select wf_order_closed_comtex (" & gNzak & ", '" & Grid.TextMatrix(mousRow, orServername) & "')"
+        byErrSqlGetValues "##45.1", sql, account_is_closed
+        If account_is_closed <> 1 Then
+            MsgBox "Нельзя закрыть заказ, до тех пор, пока он не закрыт в Бухгалтерии.", , "Закрытие невозможно!"
+            Exit Function
+        End If
+        
         wrkDefault.BeginTrans   ' начало транзакции
         str = manId(cbM.ListIndex)
         orderUpdate "##45", 6, "Orders", "StatusId"
         orderUpdate "##48", str, "Orders", "lastManagId"
         delZakazFromCeh
-#If Not COMTEC = 1 Then '------------------------------------------------
-        
         sql = "DELETE From sDMCrez WHERE (((numDoc)=" & gNzak & "));"
         myExecute "##326", sql, 0
         sql = "DELETE From xEtapByIzdelia WHERE (((numOrder)=" & gNzak & "));"
         myExecute "##327", sql, 0
         sql = "DELETE From xEtapByNomenk WHERE (((numOrder)=" & gNzak & "));"
         myExecute "##328", sql, 0
-#End If '------------------------------------------------------------------
         
         wrkDefault.CommitTrans  ' подтверждение транзакции
         orderClose = True
