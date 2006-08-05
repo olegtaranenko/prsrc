@@ -76,6 +76,9 @@ begin
 	and nm like '%guid%' 
 	and namer like '%зак%';
 
+	if v_table_name is null then 
+		return;
+	end if;
 	-- очищаем до  'GUIDE_803','USER_129573'
 	set v_table_name = 'GUIDE_' + substring(v_table_name, 7, charindex('_', substring(v_table_name, 7))-1);
 	set v_column_name =  substring(v_column_name, charindex('__', v_column_name)+2);
