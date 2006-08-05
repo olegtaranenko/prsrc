@@ -25,4 +25,12 @@ if exists (select 1 from systable where table_name = 'sdocsincome') then
 	drop table sdocsIncome;
 end if;
 
+
+-- в продакш => нет
+create view all_orders (numorder, tp, xdate) as 
+select numorder, 'orders', indate from orders
+union 
+select numorder, 'bayorders', indate from bayorders;
+
+
 commit;

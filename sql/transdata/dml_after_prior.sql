@@ -92,16 +92,28 @@ begin
 end;
 */
 
+call bootstrap_blocking;
+
 begin 
 	declare v_procent float;
-
-	call bootstrap_blocking;
+	declare v_date date;
+	declare v_date_end date;
+	declare v_nomnom varchar(20);
+--	set v_nomnom = '1002ˆ6110';
 
 	select ivo_procent into v_procent from system;
+--	select activity_start into v_date from guideventure where sysname = 'markmaster';
+--	set v_date_end = now();
 
-	call fill_venture_order (v_procent);
+	delete from sdocsventure;
+
+	call fill_venture_order (
+		  v_procent
+		, v_date
+		, v_date_end
+		, v_nomnom
+	);
 end;
-
 
 
 

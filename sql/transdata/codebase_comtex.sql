@@ -1,3 +1,107 @@
+if exists (select '*' from sysprocedure where proc_name like 'wf_order_closed_set') then  
+	drop procedure wf_order_closed_set;
+end if;
+
+
+create procedure wf_order_closed_set (
+	  in p_id_jscet integer
+	, in p_do_close integer
+) 
+begin
+	declare v_id_jmat integer;
+	declare v_numorder varchar(20);
+	declare v_tp1_close char(1);
+	declare v_tp2_close char(1);
+	declare v_tp3_close char(1);
+	declare v_tp4_close char(1);
+
+	declare v_tp1_open char(1); 
+	declare v_tp2_open char(1); 
+	declare v_tp3_open char(1); 
+	declare v_tp4_open char(1); 
+	
+	set v_tp1_close = '2';
+	set v_tp2_close = '2';
+	set v_tp3_close = '2';
+	set v_tp4_close = '0';
+
+	set v_tp1_open = '3';
+	set v_tp2_open = '2';
+	set v_tp3_open = '1';
+	set v_tp4_open = '7';
+
+	--set v_id_jmat = select_remote('prior', 'all_orders', 'id_jmat', 'id_jscet = ' + convert(varchar(20), p_id_jscet));
+	if isnull(p_id_jscet,0) != 0 then
+		if p_do_close = 1 then
+			update jmat set 
+				  tp1 = v_tp1_close
+				, tp2 = v_tp2_close
+				, tp3 = v_tp3_close
+				, tp4 = v_tp4_close
+			where id_jscet = p_id_jscet;
+	    
+			insert into guides_access_data  (guide_id, data_id, access_level)
+			select 1005, p_id_jscet, 1
+			from dummy
+			where not exists (select 1 from guides_access_data o where o.guide_id = 1005 and o.data_id = p_id_jscet and access_level = 1);
+		else
+			update jmat set 
+				tp1 = v_tp1_open
+				, tp2 = v_tp2_open
+				, tp3 = v_tp3_open
+				, tp4 = v_tp4_open
+			where id_jscet = p_id_jscet;
+
+		end if;
+	end if;
+end;
+        	                            		
+
+if exists (select 1 from systriggers where trigname = 'wf_jscet_close' and tname = 'jscet' and event='update') then 
+	drop trigger jscet.wf_jscet_close;
+end if;
+
+begin
+	declare v_table_name varchar(128);
+	declare v_column_name varchar(128);
+	declare v_status_close_id integer;
+	declare v_trigger_sql varchar(3000);
+	
+
+	-- Найти пользовательский справочник и колонку в журнале ордеров
+	-- получаем что-то типа этого 'GUIDE_803_129574.NM','JSCET__USER_129573'
+	select nm, parent_col_name
+	into v_table_name, v_column_name
+	from browsers where id_guides = 1005 
+	and nm like '%guid%' 
+	and namer like '%зак%';
+
+	-- очищаем до  'GUIDE_803','USER_129573'
+	set v_table_name = 'GUIDE_' + substring(v_table_name, 7, charindex('_', substring(v_table_name, 7))-1);
+	set v_column_name =  substring(v_column_name, charindex('__', v_column_name)+2);
+	-- 
+	execute immediate 'select id into v_status_close_id from ' + v_table_name + ' where nm = ''ДА''';
+
+	set v_trigger_sql = 
+		'\ncreate TRIGGER wf_jscet_close before update order 212 on'
+		+ '\njscet'
+		+ '\nreferencing new as new_name old as old_name'
+		+ '\nfor each row'
+		+ '\nwhen (update (' + v_column_name + ') and old_name.' + v_column_name + ' != new_name.' + v_column_name + ')'
+		+ '\nbegin'
+		+ '\n	if new_name.' + v_column_name + ' = ' + convert(varchar(20), v_status_close_id) + ' then'
+		+ '\n		call admin.wf_order_closed_set(old_name.id, 1);'
+		+ '\n	elseif old_name.' + v_column_name + ' = ' + convert(varchar(20), v_status_close_id) + ' then'
+		+ '\n		call admin.wf_order_closed_set(old_name.id, 0);'
+		+ '\n	end if;'
+		+ '\nend;'
+	;
+	execute immediate v_trigger_sql;
+
+end;
+
+
+
 if exists (select '*' from sysprocedure where proc_name like 'bootstrap_blocking') then  
 	drop procedure bootstrap_blocking;
 end if;

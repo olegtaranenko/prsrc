@@ -1064,6 +1064,9 @@ if exists (select 1 from sysprocedure where proc_name = 'v_inventory_order') the
 end if;
 
 create
+-- Процедура инвентаризации по предприятию на дату
+-- если первый параметр null - по всем придприятиям
+-- если второй параметр null - на текущую дату
 	procedure v_inventory_order (
 		 p_venture_id integer default null
 		, p_inventory_date date default null
@@ -1082,31 +1085,31 @@ begin
 	declare v_id_currency integer;
 	declare v_osn varchar(200);
 
-    if p_inventory_date is null then
-    	set p_inventory_date = convert(date, now());
-    end if;
+	if p_inventory_date is null then
+		set p_inventory_date = convert(date, now());
+	end if;
 
 	create table #saldo(nomnom varchar(20), id integer, debit float, kredit float);
 
 	create table #itogo(nomnom varchar(20), id integer, debit float, kredit float);
 
 	insert into #saldo (nomnom, id, debit, kredit)
-    select r_nomnom, r_ventureid, sum(r_qty * r_kredit) as debit, 0
-    from dummy
-    	join (	
-    		select
-    			 quant/k.perlist as r_qty
-    			, m.nomnom as r_nomnom
-    			, if (n.sourid <= -1001 and n.destid <= -1001) then 
-    					0 
-    				else 
-    					if n.destid <= -1001 then 
-    						1
-    					else
-    						-1
-						endif
-    				endif as 
-				r_kredit
+	select r_nomnom, r_ventureid, sum(r_qty * r_kredit) as debit, 0
+	from dummy
+		join (	
+			select
+				 quant/k.perlist as r_qty
+				, m.nomnom as r_nomnom
+				, if (n.sourid <= -1001 and n.destid <= -1001) then 
+						0 
+					else 
+						if n.destid <= -1001 then 
+							1
+						else
+							-1
+   						endif
+    			  endif 
+    			as r_kredit
     			, if (n.sourid <= -1001 and n.destid <= -1001) then 
 						null 
     				else 
@@ -1256,12 +1259,12 @@ if exists (select 1 from sysprocedure where proc_name = 'venture_inv_qty') then
 end if;
 
 create
+	-- возвращает остаток по позиции для заданного предприятия
 	function venture_inv_qty (
 		  p_nomnom varchar(20)
 		, p_venture_id integer
 		, p_inventory_date date default null
 	) returns float
-	-- возвращает остаток по позиции для заданного предприятия
 begin
 
     if p_nomnom is null or p_venture_id is null then
@@ -1357,14 +1360,14 @@ if exists (select 1 from sysprocedure where proc_name = 'inventory_qty') then
 end if;
 
 create
+	-- возвращает остаток по позиции если задана номенклатура p_nomnom
+	-- Если номенклатура не задана, возвращаем 0, сохране
 	function inventory_qty (
 		  p_nomnom varchar(20)
 		, p_inventory_date date default null
 		, p_sklad integer default null
 		, p_perlist float default 1.0
 	) returns float
-	-- возвращает остаток по позиции если задана номенклатура p_nomnom
-	-- Если номенклатура не задана, возвращаем 0, сохране
 begin
 
     if p_nomnom is null then
@@ -1422,12 +1425,13 @@ if exists (select '*' from sysprocedure where proc_name like 'wf_make_venture_in
 end if;
 
 
-create function wf_make_venture_income(
+create 
+-- для накладной устанавливает признак, 
+-- на какое предприятие был осуществлен приход
+	function wf_make_venture_income(
 	p_numdoc integer
 	, p_venture_id integer
 ) returns integer
--- устанавливает признак, на какое придриятие был осуществлен
--- приход
 begin
 	declare v_numdoc varchar(20);
 	declare v_numext varchar(20);
@@ -1509,7 +1513,9 @@ if exists (select '*' from sysprocedure where proc_name like 'wf_cost_bulk_chang
 end if;
 
 
-create function wf_cost_bulk_change (
+create 
+-- массовое обновление фактической цены для группы номенклатуры
+	function wf_cost_bulk_change (
 	p_klassid integer
 	, p_cur_rate float default null
 ) returns integer
@@ -1798,7 +1804,7 @@ begin
 
 		if update(costed) then
 			-- пропорционально изменить сумму в дневных накладных
-			-- так, чтобы сумма сводной билась с дневными
+			-- так, чтобы сумма сводной накладной билась с суммой по дневными накладным
 --			execute immediate 'create variable @supress_diary_update integer';
 			set @supress_diary_update = 1;
 			select @supress_diary_update into no_echo;
@@ -2060,7 +2066,9 @@ begin
 	declare v_cumulative_id integer;
 	-- предполагаем, что дневной взаимозачет вставляем с id = 0
 	if new_name.cumulative_id = 0 then
-		select id into v_cumulative_id from sDocsVenture
+		select id 
+		into v_cumulative_id 
+		from sDocsVenture
 		where 
 				termFrom = isnull(new_name.termFrom, firstDayMonth(new_name.nDate))
 			and termTo   = isnull(new_name.termTo, lastDayMonth(new_name.nDate))
@@ -2108,7 +2116,10 @@ if exists (select '*' from sysprocedure where proc_name like 'ivo_validate') the
 end if;
 
 
-create procedure ivo_validate (
+create 
+	-- Проверка признака были ли исправления задним числом в накладных
+	-- Если да, то вызывается пересчет накладной
+	procedure ivo_validate (
 	  p_procentOver float default null
 ) 
 begin
@@ -2352,7 +2363,12 @@ if exists (select '*' from sysprocedure where proc_name like 'wf_put_ivo_nomnom'
 end if;
 
 
-create function wf_put_ivo_nomnom (
+create 
+    -- загрузка информации о взаимозачету по позиции номенклатуры на дату p_target_date
+    -- между предприятиями p_srcVentureId и p_dstVentureId
+    -- Функция ищет дневную накладную и если находит использует ее
+    -- Если нет, то создает новую дневную накладную
+	function wf_put_ivo_nomnom (
 	  p_target_date date
 	, p_nomnom varchar(50)
 	, p_qty    float
@@ -2406,11 +2422,17 @@ if exists (select '*' from sysprocedure where proc_name like 'fill_venture_order
 	drop procedure fill_venture_order;
 end if;
 
-create procedure fill_venture_order (
+create 
+	-- автоматическое формирование взаимозачета между предприятиями
+	-- p_nomnom задан - только для этой номенклатуры. Иначе по всей
+	-- p_nomorder задан - только для номенклатуры, входящей в заказ. Иначе - не учитывать параметр
+	-- 
+	procedure fill_venture_order (
 	  p_procentOver float
 	, p_term_start date    default null
 	, p_term_end date      default null
 	, p_nomnom varchar(50) default null
+	, p_numorder integer   default null
 )
 
 begin
@@ -2437,6 +2459,7 @@ begin
 	select ventureId, 0.0
 	from guideVenture where id_analytic is not null;
 
+	guide_loop:
 	for cur_nom as cn sensitive cursor for
 		select nomnom as r_nomnom, perList as r_perList 
 		from sguidenomenk n 
@@ -2449,7 +2472,7 @@ begin
 		for cur_history as his sensitive cursor for
 			select 
 				if destId <= -1001 then 2 else 3 endif 
-    			        as sec_sort
+    				as sec_sort
 				, convert(date, xDate) as r_nDate
 				, n.sourid 
 				, n.destid 
@@ -2464,7 +2487,7 @@ begin
 						endif
 					endif as 
 				r_activeOper
-				, if (n.sourid <= -1001 and n.destid <= -1001) then 
+				,	if (n.sourid <= -1001 and n.destid <= -1001) then 
 						null 
 					else 
 						if n.destid <= -1001 then 
@@ -2592,7 +2615,7 @@ join sdmcventure m2 on m2.nomnom = m1.nomnom
 join sdocsventure d2 on d2.ndate = d1.ndate and m2.sdv_id = d2.id and d1.srcventureId = d2.dstventureId
 */
 		end for;
-			
+--		leave guide_loop;
 	end for;
 	drop table #vntRest;
 end;
@@ -2604,16 +2627,17 @@ if exists (select '*' from sysprocedure where proc_name like 'wf_make_invnm') th
 end if;
 
 
-create function wf_make_invnm (
-/* * * * * * * * * * * * * * * * * * * * * * * * * * *
- * Функция wf_make_invnm используется для получения
- * такого названия НЕВАРИАНТНОГО ИЗДЕЛИЯ или НОМЕНКЛАТУРЫ,
- * как оно будет выглядеть в базах Комтех.
- * В приоре это название не хранится в базе, а составляется
- * динамически из Cod, NomName, Size при показе в гриде.
- * В Комтехе это приходится прописывать жестко, как название 
- * позиции номенклатуры
- * * * * * * * * * * * * * * * * * * * * * * * * * * */
+create 
+	/* * * * * * * * * * * * * * * * * * * * * * * * * * *
+	 * Функция wf_make_invnm используется для получения
+	 * такого названия НЕВАРИАНТНОГО ИЗДЕЛИЯ или НОМЕНКЛАТУРЫ,
+	 * как оно будет выглядеть в базах Комтех.
+	 * В приоре это название не хранится в базе, а составляется
+	 * динамически из Cod, NomName, Size при показе в гриде.
+	 * В Комтехе это приходится прописывать жестко, как название 
+	 * позиции номенклатуры
+	 * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ 	function wf_make_invnm (
 	  p_nomname varchar(50) default null
 	, p_size varchar(30) default null
 	, p_cod varchar(20) default null
@@ -2635,12 +2659,13 @@ if exists (select '*' from sysprocedure where proc_name like 'wf_make_variant_nm
 	drop function wf_make_variant_nm;
 end if;
 
-create function wf_make_variant_nm (
-/* * * * * * * * * * * * * * * * * * * * * * * * * * *
- * Функция wf_make_variant_nm используется для получения
- * такого названия ВАРИАНТНОГО ИЗДЕЛИЯ, 
- * как оно будет выглядеть в базах Комтех.
- * * * * * * * * * * * * * * * * * * * * * * * * * * */
+create 
+	/* * * * * * * * * * * * * * * * * * * * * * * * * * *
+	 * Функция wf_make_variant_nm используется для получения
+	 * такого названия ВАРИАНТНОГО ИЗДЕЛИЯ, 
+	 * как оно будет выглядеть в базах Комтех.
+	 * * * * * * * * * * * * * * * * * * * * * * * * * * */
+	function wf_make_variant_nm (
 	  p_nomname varchar(50) default null
 	, p_size varchar(30) default null
 	, p_cod varchar(20) default null
@@ -2694,9 +2719,9 @@ begin
 	declare v_invoice varchar(10);
 	declare f_exists integer;
 
-	// аттрибуты заказа который может быть слит с други
+	// аттрибуты заказа который может быть слит с другим
 	// (тот у которого руками меняем номер счета)
-	declare old_invoice varchar(10);      
+	declare old_invoice varchar(10);
 	declare old_ventureId integer;
 	declare old_id_jscet integer;
 	declare old_invCode varchar(20);
@@ -5117,8 +5142,10 @@ begin
 	declare v_numorder integer;
 	declare v_updated integer;
 	declare v_total_account_date datetime;
-
 	declare sync char(1);
+	declare c_status_close_id integer;
+
+	set c_status_close_id = 6;  -- закрыт
 
 	select sysname, invCode into remoteServerOld, v_invcode from GuideVenture where ventureId = old_name.ventureId;
 
@@ -5252,6 +5279,51 @@ begin
 
 
 	end if;
+	if 	update (statusId)
+		and new_name.statusId = c_status_close_id
+		and wf_order_closed_comtex(old_name.numorder, remoteServerOld) = 1 
+	then
+		-- генерить взаимозачеты
+	end if;
+
+end;
+
+
+if exists (select '*' from sysprocedure where proc_name like 'wf_order_closed_comtex') then  
+	drop procedure wf_order_closed_comtex;
+end if;
+
+create 
+	function wf_order_closed_comtex(
+		  in p_numorder integer
+		, in p_sysname varchar(32) default null
+	) returns integer
+begin
+	declare v_orders_table varchar(32);
+	declare v_old_statusId integer;
+	declare v_old_id_jscet integer;
+	declare v_gad_level varchar(8);
+
+	set wf_order_closed_comtex = 1;
+
+	select tp into v_orders_table from all_orders where numorder = p_numorder;
+
+	execute immediate 'select id_jscet into v_old_id_jscet '
+		+ 'from '+ v_orders_table + ' where numorder = ' + convert(varchar(20), p_numorder);
+
+	if      v_old_id_jscet is not null
+		and p_sysname != 'stime' -- только для ПМ и ММ
+	then
+		-- проверить закрыт ли заказ в бухгалтерии
+		set v_gad_level = select_remote(p_sysname, 'guides_access_data', 'access_level', 
+			'guide_id = 1005 and data_id = ' + convert(varchar(20), v_old_id_jscet) + ' and access_level = 1 '
+		);
+		if v_gad_level is null then
+			set wf_order_closed_comtex = 0;
+			--raiserror 17001 'Нельзя закрыть заказ, до тех пор, пока он не закрыт в Бухгалтерии';
+		end if;
+	end if;
+
 end;
 
 
@@ -6572,7 +6644,6 @@ begin
 	declare v_currency_rate float;
 	declare v_inv_date varchar(20);
 	declare v_numOrder integer;
-
 	declare sync char(1);
 
 	if update(ventureId) then
