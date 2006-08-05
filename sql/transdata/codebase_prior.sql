@@ -5306,6 +5306,11 @@ begin
 
 	set wf_order_closed_comtex = 1;
 
+	if p_sysname = 'stime' then
+		-- для аналитики - не делаем проверку на закрытие.
+		return;
+	end if;
+
 	select tp into v_orders_table from all_orders where numorder = p_numorder;
 
 	execute immediate 'select id_jscet into v_old_id_jscet '

@@ -60,10 +60,13 @@ call isql comtex_db_change mm
 
 rem call isql dml_after_prior.sql prior
 
-::call isql dbcc_stime.sql stime
-rem call isql dbcc_comtex.sql pm
-rem call isql dbcc_comtex.sql mm
-rem call isql dbcc_comtex.sql stime
+:: »справлени€ по валютным накладным (пропали цены)
+call isql dbcc_stime.sql stime
+
+:: ¬сем закрытым заказам проставить признак "«акрыт дл€ редактировани€"
+call isql dbcc_comtex.sql pm
+call isql dbcc_comtex.sql mm
+call isql dbcc_comtex.sql stime
 
 rem call isql legacy_buh.sql stime
 rem call isql legacy_buh.sql pm

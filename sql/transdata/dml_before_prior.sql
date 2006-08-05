@@ -27,10 +27,11 @@ end if;
 
 
 -- в продакш => нет
-create view all_orders (numorder, tp, xdate) as 
-select numorder, 'orders', indate from orders
-union 
-select numorder, 'bayorders', indate from bayorders;
-
+if not exists(select 1 from sys.sysviews where viewname = 'all_orders') then
+	create view all_orders (numorder, tp, xdate) as 
+	select numorder, 'orders', indate from orders
+		union 
+	select numorder, 'bayorders', indate from bayorders;
+end if;
 
 commit;
