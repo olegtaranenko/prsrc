@@ -83,6 +83,9 @@ end;
 */
 
 
+update mat set summa_sale = summa, summa_salev = summav 
+from jmat where mat.id_jmat = jmat.id and jmat.id_guide = 1127
+
 
 commit;
 
