@@ -1,4 +1,4 @@
---Создание remote серверов
+--╤ючфрэшх remote ёхЁтхЁют
 
 if not exists (select '*' from sys.sysservers where srvname = 'stime') then  
 	create server stime class 'ASAODBC' USING 'DSN=stime;UID=admin;PWD=z';
@@ -62,7 +62,7 @@ call build_host_procedure (
 );
 
 
--- для перевода накладных в режим простых или импортных
+-- фы  яхЁхтюфр эръырфэ√ї т Ёхцшь яЁюёЄ√ї шыш шьяюЁЄэ√ї
 call build_remote_host (
 	 'change_id_guide'
 	, 'in p_id_jmat integer'
@@ -74,7 +74,7 @@ call build_remote_host (
 	+ ', in p_tp4 integer'
 );
 
--- при изменени количества в приходной накладной Prior(stime)
+-- яЁш шчьхэхэш ъюышўхёЄтр т яЁшїюфэющ эръырфэющ Prior(stime)
 call build_rp_procedure (
 	  'stime'
 	, 'change_mat_qty'

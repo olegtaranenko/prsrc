@@ -25,7 +25,6 @@ if exists (select 1 from systable where table_name = 'sdocsincome') then
 	drop table sdocsIncome;
 end if;
 
-
 -- в продакш => нет
 if not exists(select 1 from sys.sysviews where viewname = 'all_orders') then
 	create view all_orders (numorder, tp, xdate) as 
@@ -33,5 +32,6 @@ if not exists(select 1 from sys.sysviews where viewname = 'all_orders') then
 		union 
 	select numorder, 'bayorders', indate from bayorders;
 end if;
+
 
 commit;

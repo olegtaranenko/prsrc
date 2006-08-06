@@ -1,10 +1,11 @@
 if exists (select '*' from sysprocedure where proc_name like 'change_mat_qty') then
 	drop procedure change_mat_qty;
 end if;
+
+create 
 	-- процедура вызывается для коррекции суммы по позиции
 	-- при изменении количества в интерфейсе stime
-
-create procedure change_mat_qty (
+procedure change_mat_qty (
 	  in p_id_mat integer
 	, in p_new_quant float
 )

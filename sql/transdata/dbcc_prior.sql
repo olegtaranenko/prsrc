@@ -1119,4 +1119,12 @@ begin
 
 end;
 
+
+if not exists (select 1 from sys.syscolumns where creator = 'dba' and tname = 'sguidesource' and cname = 'inventory') then
+	alter table sguidesource add inventory char(1) null;
+	update sguidesource set inventory = '1' where sourcename like '%инвент%'
+end if;
+
+
+
 commit

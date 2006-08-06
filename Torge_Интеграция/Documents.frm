@@ -3,20 +3,20 @@ Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Documents 
    BackColor       =   &H8000000A&
    Caption         =   "Склад"
-   ClientHeight    =   6195
+   ClientHeight    =   6192
    ClientLeft      =   60
-   ClientTop       =   630
-   ClientWidth     =   11745
+   ClientTop       =   636
+   ClientWidth     =   11748
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    LockControls    =   -1  'True
    MinButton       =   0   'False
-   ScaleHeight     =   6195
-   ScaleWidth      =   11745
+   ScaleHeight     =   6192
+   ScaleWidth      =   11748
    StartUpPosition =   2  'CenterScreen
    Begin VB.ListBox lbVenture 
       Appearance      =   0  'Flat
-      Height          =   615
+      Height          =   600
       Left            =   5500
       TabIndex        =   31
       Top             =   1000
@@ -44,7 +44,7 @@ Begin VB.Form Documents
       Width           =   315
    End
    Begin VB.ListBox lbInside 
-      Height          =   255
+      Height          =   240
       ItemData        =   "Documents.frx":0000
       Left            =   9000
       List            =   "Documents.frx":0002
@@ -54,7 +54,7 @@ Begin VB.Form Documents
       Width           =   1155
    End
    Begin VB.ListBox lbGroup 
-      Height          =   450
+      Height          =   432
       ItemData        =   "Documents.frx":0004
       Left            =   9000
       List            =   "Documents.frx":000E
@@ -64,7 +64,7 @@ Begin VB.Form Documents
       Width           =   1395
    End
    Begin VB.ListBox lbSource 
-      Height          =   2400
+      Height          =   2352
       Left            =   6300
       TabIndex        =   27
       Top             =   780
@@ -119,7 +119,7 @@ Begin VB.Form Documents
          Width           =   915
       End
       Begin VB.ListBox lbBad 
-         Height          =   2595
+         Height          =   2544
          ItemData        =   "Documents.frx":002F
          Left            =   60
          List            =   "Documents.frx":0031
@@ -199,8 +199,8 @@ Begin VB.Form Documents
       Top             =   735
       Visible         =   0   'False
       Width           =   5835
-      _ExtentX        =   10292
-      _ExtentY        =   8493
+      _ExtentX        =   10287
+      _ExtentY        =   8509
       _Version        =   393216
       AllowUserResizing=   1
    End
@@ -210,8 +210,8 @@ Begin VB.Form Documents
       TabIndex        =   9
       Top             =   735
       Width           =   5775
-      _ExtentX        =   10186
-      _ExtentY        =   8493
+      _ExtentX        =   10181
+      _ExtentY        =   8509
       _Version        =   393216
       AllowBigSelection=   0   'False
       AllowUserResizing=   1
@@ -267,7 +267,7 @@ Begin VB.Form Documents
          Caption         =   "Документ из Карты ДМЦ!"
          BeginProperty Font 
             Name            =   "MS Sans Serif"
-            Size            =   8.25
+            Size            =   7.8
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -484,11 +484,11 @@ Dim strWhere As String, i As Integer, str As String
  If reg = "" Then
     strWhere = getWhereByDateBoxes(Me, "sDocs.xDate", CDate("01.11.2000"))
  ElseIf reg = "docsFind" Then
-    strWhere = "(sDocs.numDoc)=" & numDoc
+    strWhere = "sDocs.numDoc=" & numDoc
  Else
-    strWhere = "(sDocs.numDoc)=" & numDoc & " AND (sDocs.numExt)=" & numExt
+    strWhere = "sDocs.numDoc=" & numDoc & " AND sDocs.numExt=" & numExt
  End If
- If strWhere <> "" Then strWhere = ") AND (" & strWhere
+ If strWhere <> "" Then strWhere = " AND " & strWhere
  
  Me.MousePointer = flexHourglass
  If reg <> "add" Then

@@ -475,21 +475,22 @@ begin
 			);
 		end if;
 		
-		call wf_insert_mat (
-			 p_sysname
-			,r_id_mat
-			,p_id_jmat
-			,r_id_inv
-			,v_mat_nu
-			,r_quant
-			,r_cost
-			,v_currency_rate
-			,r_id_s
-			,r_id_d
-			,r_perList
-		);
-
-		set v_mat_nu = v_mat_nu + 1;
+		if r_id_mat is not null then
+			call wf_insert_mat (
+				 p_sysname
+				,r_id_mat
+				,p_id_jmat
+				,r_id_inv
+				,v_mat_nu
+				,r_quant
+				,r_cost
+				,v_currency_rate
+				,r_id_s
+				,r_id_d
+				,r_perList
+			);
+			set v_mat_nu = v_mat_nu + 1;
+		end if;
 	end for;
 
 end;
@@ -511,7 +512,7 @@ create
 		, out o_id_guide_anl integer
 		, out o_currency_iso varchar(10)
 		, out o_id_currency  integer
-		, out o_osn varchar(64)
+		, out o_osn varchar(100)
 		, p_venture_id integer -- через предприятие (ПМ или ММ). Может быть null
 		, p_new_numext integer
 		, p_new_sourId integer
@@ -527,6 +528,7 @@ begin
 		-- по умолчанию - рублевый приход 
 		set o_id_guide_anl = 1120;
 		set o_currency_iso = 'RUR';
+		set o_id_currency = 1;
 		select 
 			  c.id_guide
 			, isnull(c.id_currency, ru.id_currency) 
@@ -697,7 +699,7 @@ begin
 	declare v_tp2 integer;
 	declare v_tp3 integer;
 	declare v_tp4 integer;
-	declare v_currency_iso varchar(20);
+	declare v_currency_iso varchar(10);
 	
 	declare v_id_guide_jmat integer;
 	declare v_id_guide_anl integer;
@@ -805,6 +807,8 @@ begin
 					, v_id_guide_pmm
 	    		);
 
+	    	message 'after wf_jmat_distribute...' to client;
+
 		end if;
 	end if;
 		
@@ -862,7 +866,7 @@ begin
 	declare v_currency_rate real;
 	declare v_datev date;
 	declare v_id_currency integer;
-	declare v_osn varchar(200);
+	declare v_osn varchar(100);
 
 	declare sync char(1);
 	declare f_update tinyint;
@@ -1083,7 +1087,7 @@ begin
 	declare v_currency_rate real;
 	declare v_datev date;
 	declare v_id_currency integer;
-	declare v_osn varchar(200);
+	declare v_osn varchar(100);
 
 	if p_inventory_date is null then
 		set p_inventory_date = convert(date, now());
@@ -2173,7 +2177,9 @@ if exists (select '*' from sysprocedure where proc_name like 'ivo_comtex_delete'
 end if;
 
 
-create procedure ivo_comtex_delete (
+create 
+-- Удаляет из базы Комтеха информацию о взаимозачетной накладной
+procedure ivo_comtex_delete (
 	 p_ivo_id integer
 ) 
 begin
@@ -2213,7 +2219,10 @@ if exists (select '*' from sysprocedure where proc_name like 'ivo_to_comtex') th
 end if;
 
 
-create procedure ivo_to_comtex (
+create 
+-- Перевести информацию о взаимозачете из базы приора в базу Комтеха
+-- требует переделки.
+procedure ivo_to_comtex (
 	 p_ivo_id integer
 ) 
 begin
@@ -3473,8 +3482,10 @@ begin
 	declare v_id_guide integer;
 
 	if p_id_mat is null then
-		execute immediate 'set p_id_mat = slave_nextid_' + p_servername + '(''mat'')';
+		set p_id_mat = get_nextid('mat');
+--		execute immediate 'call slave_nextid_' + p_servername + '(''mat'', p_id_mat)';
 	end if;
+
 
 	set wf_insert_mat = p_id_mat;
 
@@ -5185,7 +5196,7 @@ begin
 			-- исправление расходных накладных, связанных с заказом
 			select total_account into v_total_account_date from system;
 
-			-- это можно делать только для тех заказов, которые 
+			-- это можно делать только для тех заказов, которые после перехода на режим полного учета по предприятиям
 			update sdocs set ventureId = new_name.ventureId 
 			where 
 					sdocs.numdoc = new_name.numorder
