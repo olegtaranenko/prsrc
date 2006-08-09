@@ -107,7 +107,7 @@ begin
 
 	delete from sdocsventure;
 
-	call fill_venture_order (
+	call ivo_generate (
 		  v_procent
 		, v_date
 		, v_date_end

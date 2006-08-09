@@ -663,7 +663,7 @@ Dim queryTimeout As Variant
                 & " по " & Format(tbEndDate.Text, "dd.mm.yyyy") _
                 , vbOK Or vbDefaultButton2, "Подтвердите") = vbOK _
             Then
-                sql = "call fill_venture_order(" _
+                sql = "call ivo_generate(" _
                     & tbProcent.Text _
                     & ", convert(date, '" & Format(tbStartDate.Text, "yyyymmdd") & "')" _
                     & ", convert(date, '" & Format(tbEndDate.Text, "yyyymmdd") & "')"
@@ -672,7 +672,7 @@ Dim queryTimeout As Variant
                     & " ) "
                 
                 myBase.queryTimeout = 600
-                If myExecute("##fill_venture_order", sql, 0) = 0 Then
+                If myExecute("##ivo_generate", sql, 0) = 0 Then
                     wrkDefault.CommitTrans
                     loadVentureOrders
                 Else

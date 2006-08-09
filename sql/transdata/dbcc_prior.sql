@@ -987,9 +987,15 @@ end;
 -- движение товара и номенклатуры.
 if not exists(select 1 from sys.syscolumns where creator = 'dba' and tname = 'guideventure' and cname = 'id_sklad') then
 	alter table guideventure add id_sklad integer null;
+--	alter table system add id_ivo_voc_names integer null;
 
 	begin
 		declare v_id_sklad integer;
+--		declare v_id_ivo integer;
+
+--		set v_id_ivo = get_nextid('voc_names');
+
+--		update system set id_ivo_voc_names = v_id_ivo;
 
 		for venture_cur as v dynamic scroll cursor for
 			select 
@@ -1000,11 +1006,16 @@ if not exists(select 1 from sys.syscolumns where creator = 'dba' and tname = 'gu
 			from guideventure v
 			where isnull(v.invCode, '' ) != '' 
 		do
-			set v_id_sklad = insert_count_remote(r_server, 'voc_names', 'nm, is_group, belong_id', '''''Склад '+ r_rusabbrev + ''''', 1, 2' );
+			set v_id_sklad = insert_count_remote(r_server, 'voc_names', 'nm, is_group, belong_id', '''''Склад '+ r_rusabbrev + ''''', 0, 2' );
 			update guideventure set id_sklad = v_id_sklad where ventureid = r_ventureid;
+
+--			call insert_remote(r_server, 'voc_names', 'id,nm, is_group, belong_id', convert(varchar(20), v_id_ivo) + ', ''''Взаимозачет'''',0,6');
 		end for;
 	end;
 end if;
+
+
+insert into sguidesource (sourceid, sourceName) values (-10, 'Взаимозачет');
 
 
 
@@ -1043,22 +1054,11 @@ begin
 end;	
 
 
--- в продакш => нет
--- инвентаризация по предприятиям
---call v_inventory_order();
 
--- в продакш => нет
--- Пересчитать вступительную инвентаризацию
---call inventory_order('20051013 21:00', 1, null);
-
-
-
-
-
-if not exists (select 1 from sys.syscolumns where creator = 'dba' and tname = 'system' and cname = 'total_account') then
-	alter table system add total_account datetime;
-	update system set total_account = '20060601';
-end if;
+--if not exists (select 1 from sys.syscolumns where creator = 'dba' and tname = 'system' and cname = 'total_account') then
+--	alter table system add total_account datetime;
+--	update system set total_account = '20060601';
+--end if;
 
 
 begin
@@ -1120,10 +1120,10 @@ begin
 end;
 
 
-if not exists (select 1 from sys.syscolumns where creator = 'dba' and tname = 'sguidesource' and cname = 'inventory') then
-	alter table sguidesource add inventory char(1) null;
-	update sguidesource set inventory = '1' where sourcename like '%инвент%'
-end if;
+--if not exists (select 1 from sys.syscolumns where creator = 'dba' and tname = 'sguidesource' and cname = 'inventory') then
+--	alter table sguidesource add inventory char(1) null;
+--	update sguidesource set inventory = '1' where sourcename like '%инвент%'
+--end if;
 
 
 

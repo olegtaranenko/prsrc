@@ -1100,7 +1100,7 @@ begin
 	insert into #saldo (nomnom, id, debit, kredit)
 	select r_nomnom, r_ventureid, sum(r_qty * r_kredit) as debit, 0
 	from dummy
-		join (	
+		join (
 			select
 				 quant/k.perlist as r_qty
 				, m.nomnom as r_nomnom
@@ -1191,7 +1191,7 @@ begin
 		where isnull(v.invCode, '' ) != '' and isnull(p_venture_id, v.ventureid) = v.ventureid
 	do
 		
-			call slave_select_stime(v_nu, 'jmat', 'max(nu)', 'id_guide = 1023');
+			set v_nu = select_remote(r_server, 'jmat', 'max(nu)', 'id_guide = 1023');
 			set v_nu = convert(varchar(20), convert(integer, isnull(v_nu, 0)) + 1);
 
 
@@ -1222,6 +1222,7 @@ begin
 				from #itogo i
 				join sguidenomenk n on n.nomnom = i.nomnom
 	            where i.id = r_ventureid
+	            order by n.nomname
 			do
 				set v_quant = r_debit - r_kredit;
 
@@ -2240,6 +2241,16 @@ begin
 	declare v_folder_id integer;
 	declare char_id_jmat varchar(20);
 
+	declare v_src_id_sklad  integer;
+	declare v_src_id_guide  integer;
+	declare v_src_osn       varchar(100);
+	declare v_dst_id_sklad  integer;
+	declare v_dst_id_guide  integer;
+	declare v_dst_osn       varchar(100);
+
+
+	declare v_note varchar(50);
+
 
 
 	for ivo_c as ivo dynamic scroll cursor for
@@ -2253,74 +2264,124 @@ begin
 			, nDate as r_nDate
 			, s.rusAbbrev as r_srcAbbrev
 			, d.rusAbbrev as r_dstAbbrev
+			, s.sysname as r_src_server
+			, d.sysname as r_dst_server
+			, n.srcVentureId as r_src_venture_id
+			, n.dstVentureId as r_dst_venture_id
 		from sDocsVenture n
 		join guideVenture s on s.ventureId = n.srcVentureId
 		join guideVenture d on d.ventureId = n.dstVentureId
 		where id = p_ivo_id
 	do
-		if r_id_jmat is not null then
-			-- проверим, не удалена ли она в Комехе?
-			set char_id_jmat = select_remote('stime', 'jmat', 'id', 'id = ' + convert(varchar(20), r_id_jmat));
-			if char_id_jmat is not null then
-				-- удалить деталировку
-				call delete_remote('stime', 'mat', 'jmat = '+ char_id_jmat);
+
+		call ivo_recognize_jmats (
+			  r_src_venture_id 
+			, r_dst_venture_id 
+			, v_src_id_sklad 
+			, v_src_id_guide 
+			, v_src_osn 
+			, v_dst_id_sklad 
+			, v_dst_id_guide 
+			, v_dst_osn 
+		);
+
+		set v_id_currency = system_currency();
+		call slave_currency_rate_stime(v_datev, v_currency_rate);
+		set v_jmat_nu = convert(varchar(20), p_ivo_id);
+
+
+		message 'dst_sklad =', v_dst_id_sklad, ', src_sklad =', v_src_id_sklad to client;
+		if v_src_id_sklad is not null then
+			if v_dst_id_sklad is not null then
+				select id_voc_names into v_id_dest from sguidesource where sourceName like '%взаимозачет%' and sourceid < 0;
+			else
+				select id_voc_names into v_id_dest from sguidesource where sourceName like '%инвентаризация%' and sourceid < 0;
 			end if;
-		else 
-			set r_id_jmat = get_nextid('jmat');
-			set char_id_jmat = null;
-		end if;
+			message 'v_id_dest =', v_id_dest to client;
 
-		if char_id_jmat is null then
-			-- вставить запись в журнал накладных.
+			if r_id_jmat is not null then
+				-- проверим, не удалена ли она в Комехе?
+				set char_id_jmat = select_remote(r_src_server, 'jmat', 'id', 'id = ' + convert(varchar(20), r_id_jmat));
+				if char_id_jmat is not null then
+					-- удалить деталировку
+					call delete_remote(r_src_server, 'mat', 'id_jmat = '+ char_id_jmat);
+				end if;
+			else 
+				set r_id_jmat = get_nextid('jmat');
+				set char_id_jmat = null;
+				update sDocsVenture d set 
+					id_jmat = r_id_jmat
+				where 
+					id = p_ivo_id;
+			end if;
+			message 'r_id_jmat =', r_id_jmat to client;
 
-			set v_id_guide_jmat = 1220;
-	    
-			set v_id_currency = system_currency();
-			call slave_currency_rate_stime(v_datev, v_currency_rate);
-			set v_jmat_nu = convert(varchar(20), p_ivo_id);
-			--message 'v_jmat_nu = ', v_jmat_nu to client;
---			set v_jmat_nu = nextnu
-	    
-			select id_voc_names 
-			into v_id_source 
-			from sguidesource 
-			where sourceid = -1001;
-	    
-			set v_id_dest = v_id_source;
-			set v_osn = 'Вз/зачет с '
-				+ convert(varchar(20), r_term_start, 104)
-				+ ' по '+ convert(varchar(20), r_term_end, 104)
-				+ '. Передача материалов от ' + r_srcAbbrev + ' => ' + r_dstAbbrev
-			;
-		    
-			call block_remote('stime', @@servername, 'jmat');
+			call block_remote(r_src_server, @@servername, 'jmat');
 			call wf_insert_jmat (
-				'stime'
-				,v_id_guide_jmat
+				 r_src_server
+				,v_src_id_guide
 				,r_id_jmat
 				,r_nDate
 				,v_jmat_nu
-				,v_osn
+				,v_src_osn
+				,v_id_currency
+				,v_datev
+				,v_currency_rate
+				,v_src_id_sklad
+				,v_id_dest
+				,0 -- id_jscet
+				,0 -- r_id_analytic
+			);
+			call unblock_remote(r_src_server, @@servername, 'jmat');
+
+
+		end if;
+
+		if v_dst_id_sklad is not null then
+			if v_src_id_sklad is not null then
+				select id_voc_names into v_id_source from sguidesource where sourceName like '%взаимозачет%' and sourceid < 0;
+			else
+				select id_voc_names into v_id_source from sguidesource where sourceName like '%инвентаризация%' and sourceid > 0;
+			end if;
+			message 'v_id_source =', v_id_source to client;
+
+			if r_id_jmat is not null then
+				-- проверим, не удалена ли она в Комехе?
+				set char_id_jmat = select_remote(r_dst_server, 'jmat', 'id', 'id = ' + convert(varchar(20), r_id_jmat));
+				if char_id_jmat is not null then
+					-- удалить деталировку
+					call delete_remote(r_dst_server, 'mat', 'id_jmat = '+ char_id_jmat);
+				end if;
+			else 
+				set r_id_jmat = get_nextid('jmat');
+				set char_id_jmat = null;
+				update sDocsVenture d set 
+					id_jmat = r_id_jmat
+				where 
+					id = p_ivo_id;
+			end if;
+
+			message 'r_id_jmat =', r_id_jmat to client;
+			call block_remote(r_dst_server, @@servername, 'jmat');
+			call wf_insert_jmat (
+				 r_dst_server
+				,v_dst_id_guide
+				,r_id_jmat
+				,r_nDate
+				,v_jmat_nu
+				,v_dst_osn
 				,v_id_currency
 				,v_datev
 				,v_currency_rate
 				,v_id_source
-				,v_id_dest
-				,0
-				,r_id_analytic
+				,v_dst_id_sklad
+				,0 -- id_jscet
+				,0 -- r_id_analytic
 			);
-			call unblock_remote('stime', @@servername, 'jmat');
-	    
-			update sDocsVenture d set 
-				id_jmat = r_id_jmat
-			where 
-				id = p_ivo_id;
-			;
+			call unblock_remote(r_dst_server, @@servername, 'jmat');
 		end if;
 
-
-
-
+		
 		set v_mat_nu = 1;
 		-- добавить деталировку по сводной накладной
 		for anomnom as c_nomnom dynamic scroll cursor for
@@ -2337,22 +2398,44 @@ begin
 				d.id_jmat = r_id_jmat
 		do
 			
+			set v_id_mat = null;
 			--message r_nomnom to client;
-			call block_remote('stime', @@servername, 'mat');
-			set v_id_mat = wf_insert_mat (
-				'stime'
-				,null
-				,r_id_jmat
-				,r_id_inv
-				,v_mat_nu
-				,r_qty 
-				,r_cost
-				,v_currency_rate
-				,v_id_source
-				,v_id_dest
-				,r_perList
-			);
-			call unblock_remote('stime', @@servername, 'mat');
+
+			if v_src_id_sklad is not null then
+				call block_remote(r_src_server, @@servername, 'mat');
+				set v_id_mat = wf_insert_mat (
+					r_src_server
+					,v_id_mat
+					,r_id_jmat
+					,r_id_inv
+					,v_mat_nu
+					,r_qty 
+					,r_cost
+					,v_currency_rate
+					,v_src_id_sklad
+					,v_id_dest
+					,r_perList
+				);
+				call unblock_remote(r_src_server, @@servername, 'mat');
+			end if;
+	    
+			if v_dst_id_sklad is not null then
+				call block_remote(r_dst_server, @@servername, 'mat');
+				set v_id_mat = wf_insert_mat (
+					r_dst_server
+					,v_id_mat
+					,r_id_jmat
+					,r_id_inv
+					,v_mat_nu
+					,r_qty 
+					,r_cost
+					,v_currency_rate
+					,v_id_source
+					,v_dst_id_sklad
+					,r_perList
+				);
+				call unblock_remote(r_dst_server, @@servername, 'mat');
+			end if;
 	    
 	        update sdmcventure m set m.id_mat = v_id_mat 
 	        where   r_id_jmat = m.sdv_id
@@ -2426,9 +2509,58 @@ begin
 end;
 
 
+if exists (select '*' from sysprocedure where proc_name like 'ivo_recognize_jmats') then  
+	drop procedure ivo_recognize_jmats;
+end if;
+
+create 
+	-- При переносе взаимоозачетов в Комтех требуются получить данные по складу и типу накладной 
+	-- в зависимости от того, какие предприятия задействованы в нем.
+	procedure ivo_recognize_jmats (
+		  p_src_venture_id integer
+		, p_dst_venture_id integer
+		, out o_src_id_sklad integer
+		, out o_src_id_guide integer
+		, out o_src_osn varchar(100)
+		, out o_dst_id_sklad integer
+		, out o_dst_id_guide integer
+		, out o_dst_osn varchar(100)
+)
+
+begin
+	declare v_analytic_id integer;
+	declare v_src_abbrev varchar(20);
+	declare v_dst_abbrev varchar(20);
+
+
+	select id_sklad into o_src_id_sklad from guideventure where ventureId = p_src_venture_id;
+	set o_src_id_guide = get_id_guide_by_key('outcome', 1); -- валютные - чтобы не путались с "нормальными" по автоформированию
+	set o_src_osn = 'Расход по взаимозачету с ' + v_dst_abbrev;
+
+	select id_sklad into o_dst_id_sklad from guideventure where ventureId = p_dst_venture_id;
+	set o_dst_id_guide = get_id_guide_by_key('income', 1);
+	set o_dst_osn = 'Приход по взаимозачету с ' + v_dst_abbrev;
+
+	set v_analytic_id = 3; -- todo
+	if p_src_venture_id = v_analytic_id then
+		set o_src_id_sklad = null;
+		set o_src_id_guide = null;
+		set o_dst_osn = 'Приход по инвентаризации';
+	elseif p_dst_venture_id = v_analytic_id then
+		set o_dst_id_sklad = null;
+		set o_dst_id_guide = null;
+		set o_src_osn = 'Расход на внутр. цели';
+	end if;
+end;
+
+
 
 if exists (select '*' from sysprocedure where proc_name like 'fill_venture_order') then  
 	drop procedure fill_venture_order;
+end if;
+
+if exists (select '*' from sysprocedure where proc_name like 'ivo_generate') then  
+	drop procedure ivo_generate;
 end if;
 
 create 
@@ -2436,7 +2568,7 @@ create
 	-- p_nomnom задан - только для этой номенклатуры. Иначе по всей
 	-- p_nomorder задан - только для номенклатуры, входящей в заказ. Иначе - не учитывать параметр
 	-- 
-	procedure fill_venture_order (
+	procedure ivo_generate (
 	  p_procentOver float
 	, p_term_start date    default null
 	, p_term_end date      default null
@@ -3277,7 +3409,7 @@ begin
 			set recognize_guide = 1127;
 		end if;
 	else
-		raiserror 17000 'Error in recognize_guide() . Обратитесь к администратору. ';
+		raiserror 17000 'Error in recognize_guide(). Обратитесь к администратору. ';
 	end if;
 
 end;
@@ -3321,6 +3453,36 @@ begin
 end;
 
 
+if exists (select '*' from sysprocedure where proc_name like 'get_id_guide_by_key') then  
+	drop function get_id_guide_by_key;
+end if;
+
+create 
+	-- чтобы не запоминать цифры справочников - перевести на мнемонические описания
+function get_id_guide_by_key (
+	  p_key varchar(20)
+	  , p_import integer default null
+) returns integer
+begin
+	if p_key = 'приход' or p_key = 'income' then
+		if isnull(p_import, 0) = 0 then
+			set get_id_guide_by_key = 1120;
+		else
+			set get_id_guide_by_key = 1127;
+		end if;
+	elseif p_key = 'расход' or p_key = 'outcome' then
+		if isnull(p_import, 0) = 0 then
+			set get_id_guide_by_key = 1210;
+		else
+			set get_id_guide_by_key = 1217;
+		end if;
+	elseif p_key = 'инвентаризация' or p_key = 'inventory' then
+			set get_id_guide_by_key = 1023;
+	elseif p_key = 'межсклад' or p_key = 'intern' then
+			set get_id_guide_by_key = 1220;
+	end if;
+end;
+
 
 if exists (select '*' from sysprocedure where proc_name like 'wf_get_comtex_tp') then  
 	drop function wf_get_comtex_tp;
@@ -3348,31 +3510,6 @@ begin
 	                +', '+ convert(varchar(20), v_tp3)
 	                +', '+ convert(varchar(20), v_tp4)
 	;
-
-	/*
-	-- приход
-	if p_id_guide_jmat = 1120 then
-		return '1,1,2,0';
-	end if;
-	-- межсклад
-	if p_id_guide_jmat = 1220 then
-		return '2,2,2,0';
-	end if;
-	-- расход
-	if p_id_guide_jmat = 1210 then
-		return '3,2,1,0';
-	end if;
-	-- инвентаризация
-	if p_id_guide_jmat = 1023 then
-		return '0,0,2,3';
-	end if;
-	set v_ret_char = convert(varchar(20), p_id_guide_jmat);
-	return		substring (v_ret_char, 1, 1)
-		+ ', '+ substring (v_ret_char, 2, 1) 
-		+ ', '+ substring (v_ret_char, 3, 1) 
-		+ ', '+ substring (v_ret_char, 4, 1) 
-	;
-	*/
 
 end;
 
@@ -3416,9 +3553,24 @@ begin
 		+ ', osn'
 		+ ', id_guide'
 		+ ', tp1, tp2, tp3, tp4'
-		+ ', id_curr'
-		+ ', datv'
-		+ ', curr'
+	;
+
+	if p_id_currency is not null then
+		set v_fields = v_fields
+			+ ', id_curr'
+		;
+	end if;
+	if p_datev is not null then
+		set v_fields = v_fields
+			+ ', datv'
+		;
+	end if;
+	if p_currency_rate is not null then
+		set v_fields = v_fields
+			+ ', curr'
+		;
+	end if;
+	set v_fields = v_fields
 		+ ', id_jscet'
 		+ ', id_code'
 
@@ -3431,18 +3583,28 @@ begin
 		+ ', ''''' + p_osn + ''''''
 		+ ', ' + convert(varchar(20), p_id_guide_jmat)
 		+ ', ' + v_tp
-		+ ', ' + convert(varchar(20), p_id_currency)
-		+ ', ''''' + convert(varchar(20), p_datev, 112) + ''''''
-		+ ', ' + convert(varchar(20), p_currency_rate)
+	;
+	if p_id_currency is not null then
+		set v_values = v_values
+			+ ', ' + convert(varchar(20), p_id_currency)
+		;
+	end if;
+	if p_datev is not null then
+		set v_values = v_values
+			+ ', ''''' + convert(varchar(20), p_datev, 112) + ''''''
+		;
+	end if;
+	if p_currency_rate is not null then
+		set v_values = v_values
+			+ ', ' + convert(varchar(20), p_currency_rate)
+		;
+	end if;
+	set v_values = v_values
 		+ ', ' + convert(varchar(20), p_id_jscet)
 		+ ', ' + convert(varchar(20), p_id_code)
 
 	;
---	message 'Накладная JMAT:fields = ', v_fields to client;
---	message '	values = ', v_values to client;
---	execute immediate 'call slave_insert_'+ p_servername +' (''jmat'', ''' +v_fields + ''', ''' + v_values + ''')'
 	call insert_remote(p_servername, 'jmat', v_fields, v_values);
---	execute immediate 'call slave_insert_'+ p_servername +' (''mat'', ''' +v_fields + ''', ''' + v_values + ''')'
 
 end;
 
@@ -7611,7 +7773,11 @@ begin
 	declare v_params varchar(2000);
 	declare v_sources_id integer;
 
-	select id_voc_names into v_postav_id from sGuideSource where sourceid = 0;
+	if isnull(new_name.sourceId, 0) >= 0 then
+		select id_voc_names into v_postav_id from sGuideSource where sourceid = 0;
+	else 
+		set v_postav_id = select_remote('stime', 'voc_names', 'id', 'belong_id = 0 and nm = ''''Объекты затрат''''');
+	end if;
 
 	-- id  фирмы в базе Комтеха
 	set v_sources_id = get_nextid ('voc_names');

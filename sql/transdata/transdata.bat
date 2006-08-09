@@ -1,5 +1,8 @@
 @echo off
-
+if not %1. == . (
+	echo Executing from point %1 
+	goto %1
+)
 call isql logging_common prior
 call isql logging_common stime
 call isql logging_common pm
@@ -68,6 +71,8 @@ call isql dbcc_comtex.sql pm
 call isql dbcc_comtex.sql mm
 call isql dbcc_comtex.sql stime
 
+call isql dbcc_prior.sql prior
+
 rem call isql legacy_buh.sql stime
 rem call isql legacy_buh.sql pm
 rem call isql legacy_buh.sql mm
@@ -80,3 +85,12 @@ rem call isql drop_remote_prior.sql prior
 rem call isql fill_venture_order.sql prior
 
 rem exit
+goto done
+
+:v20
+:: Перед запуском этой ветки нужно зайти в Комтех/Аналитика и сделать "Перерасчет учетных цен" по всей номенклатуре
+call isql prior_total_accounting.sql prior
+goto done
+
+:done
+echo Done.
