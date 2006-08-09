@@ -4,7 +4,7 @@ Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Nomenklatura 
    BackColor       =   &H8000000A&
    Caption         =   "Справочник по номенклатуре"
-   ClientHeight    =   6390
+   ClientHeight    =   6396
    ClientLeft      =   60
    ClientTop       =   1740
    ClientWidth     =   11880
@@ -12,7 +12,7 @@ Begin VB.Form Nomenklatura
    LinkTopic       =   "Form1"
    LockControls    =   -1  'True
    MinButton       =   0   'False
-   ScaleHeight     =   6390
+   ScaleHeight     =   6396
    ScaleWidth      =   11880
    Visible         =   0   'False
    Begin VB.CommandButton cmExit 
@@ -43,7 +43,7 @@ Begin VB.Form Nomenklatura
       Visible         =   0   'False
       Width           =   4095
       Begin VB.ListBox lbEdIzm 
-         Height          =   840
+         Height          =   816
          ItemData        =   "Nomenclatura.frx":0000
          Left            =   1860
          List            =   "Nomenclatura.frx":0010
@@ -52,7 +52,7 @@ Begin VB.Form Nomenklatura
          Width           =   495
       End
       Begin VB.ListBox lbEdIzm2 
-         Height          =   645
+         Height          =   624
          ItemData        =   "Nomenclatura.frx":0024
          Left            =   480
          List            =   "Nomenclatura.frx":0031
@@ -140,7 +140,7 @@ Begin VB.Form Nomenklatura
       Width           =   1335
    End
    Begin VB.ListBox lbWeb 
-      Height          =   450
+      Height          =   432
       ItemData        =   "Nomenclatura.frx":0047
       Left            =   3240
       List            =   "Nomenclatura.frx":0051
@@ -158,7 +158,7 @@ Begin VB.Form Nomenklatura
       Width           =   1035
    End
    Begin VB.ListBox lbSource 
-      Height          =   2790
+      Height          =   2736
       Left            =   8640
       TabIndex        =   26
       Top             =   360
@@ -186,7 +186,7 @@ Begin VB.Form Nomenklatura
       End
    End
    Begin VB.ListBox lbMark 
-      Height          =   450
+      Height          =   432
       ItemData        =   "Nomenclatura.frx":005C
       Left            =   3000
       List            =   "Nomenclatura.frx":0066
@@ -196,7 +196,7 @@ Begin VB.Form Nomenklatura
       Width           =   675
    End
    Begin VB.ListBox lbYesNo 
-      Height          =   450
+      Height          =   432
       ItemData        =   "Nomenclatura.frx":0078
       Left            =   3060
       List            =   "Nomenclatura.frx":0082
@@ -325,8 +325,8 @@ Begin VB.Form Nomenklatura
       TabIndex        =   4
       Top             =   300
       Width           =   8895
-      _ExtentX        =   15690
-      _ExtentY        =   9763
+      _ExtentX        =   15685
+      _ExtentY        =   9758
       _Version        =   393216
       AllowBigSelection=   0   'False
       AllowUserResizing=   1
@@ -337,8 +337,8 @@ Begin VB.Form Nomenklatura
       TabIndex        =   0
       Top             =   60
       Width           =   2715
-      _ExtentX        =   4789
-      _ExtentY        =   10186
+      _ExtentX        =   4784
+      _ExtentY        =   10181
       _Version        =   393217
       HideSelection   =   0   'False
       Indentation     =   706
@@ -563,6 +563,7 @@ Dim nkPrihod As Integer
 Dim nkRashod As Integer
 Dim nkEndOstat As Integer
 Dim nkCena As Integer
+Dim nkPrevCost As Integer
 Dim nkSkladOst As Integer
 Dim nkCENA1 As Integer
 Dim nkCenaFreight As Integer
@@ -778,6 +779,7 @@ If curCol = -99 Then
     nkRashod = -1
     nkEndOstat = -1
     nkCena = -1
+    nkPrevCost = -1
     nkSkladOst = -1
     nkCENA1 = -1
     nkCenaFreight = -1
@@ -972,6 +974,7 @@ Else
     initCol nkPerList, "Коэф.производства", 735
     initCol nkEdIzm, "Ед.изм.производства", 435
 '    initCol nkBegOstat, "Нач.остатки", 675
+    initCol nkPrevCost, "Пред.Факт.Цена", 735
     initCol nkCena, "Цена фактическая(cenaFact)", 735
     initCol nkCENA1, "Цена поставщика(CENA1)", 795
     initCol nkVES, "Bec", 555
@@ -2399,7 +2402,7 @@ If KeyCode = vbKeyReturn Then
         tbNomenk!CENA1 = Grid.TextMatrix(mousRow, nkCENA1)
         tbNomenk!VES = Grid.TextMatrix(mousRow, nkVES)
         tbNomenk!STAVKA = Grid.TextMatrix(mousRow, nkSTAVKA)
-        tbNomenk!formulaNom = Grid.TextMatrix(mousRow, nkFormulaNom)
+        tbNomenk!FormulaNom = Grid.TextMatrix(mousRow, nkFormulaNom)
 '        tbNomenk! = Grid.TextMatrix(mousRow, nkCenaFreight)
 '        tbNomenk! = Grid.TextMatrix(mousRow, nkWebFormula)
         tbNomenk!formulaNomW = Grid.TextMatrix(mousRow, nkWebFormulaNom)
@@ -2633,14 +2636,14 @@ ElseIf gKlassType = "p" Then
 Else
     strWhere = "WHERE (((sGuideNomenk.klassId)=" & gKlassId & "))"
 End If
-sql = "SELECT sGuideNomenk.*, sGuideFormuls.Formula, " & _
+sql = "SELECT ph.prev_cost, sGuideNomenk.*, sGuideFormuls.Formula, " & _
 "sGuideSource.sourceName, sGuideFormuls_1.Formula AS formulaW, ph.nomnom as priceChanged " & _
 "FROM sGuideFormuls AS sGuideFormuls_1 INNER JOIN sGuideNomenk ON sGuideFormuls_1.nomer = sGuideNomenk.formulaNomW " _
 & " INNER JOIN sGuideSource ON sGuideNomenk.sourId = sGuideSource.sourceId " _
 & " INNER JOIN sGuideFormuls ON sGuideNomenk.formulaNom = sGuideFormuls.nomer " _
-& " left join (select distinct nomnom from spricehistory h where datediff(hour, change_date, now()) < 80) ph on ph.nomnom = sguidenomenk.nomnom " _
+& " left join (select h.cost as prev_cost, h.nomnom from spricehistory h join (select max(change_date) as change_date, nomnom from spricehistory m group by nomnom) mx on mx.nomnom = h.nomnom and mx.change_date = h.change_date ) ph on ph.nomnom = sguidenomenk.nomnom  " _
 & strWhere & " ORDER BY sGuideNomenk.nomNom ;"
-'Debug.Print sql;
+Debug.Print sql;
 'MsgBox sql
 Set tbNomenk = myOpenRecordSet("##165", sql, dbOpenForwardOnly) ' dbOpenDynaset)
 If tbNomenk Is Nothing Then GoTo EN1
@@ -2747,16 +2750,21 @@ If Not tbNomenk.BOF Then
         If Regim = "checkCurOstat" Then
             Grid.TextMatrix(quantity, nkCurOstat) = Round(gain * oldNow, 2)
         Else
-            If Not IsNull(tbNomenk!priceChanged) Then
-                colorGridCell Grid, quantity, nkCena, vbRed
-            End If
+'            If Not IsNull(tbNomenk!priceChanged) Then
+'                colorGridCell Grid, quantity, nkCena, vbRed
+'            End If
             Grid.TextMatrix(quantity, nkCena) = cenaFact
+            If Not IsNull(tbNomenk!prev_cost) Then
+                Grid.TextMatrix(quantity + 1, nkPrevCost) = tbNomenk!prev_cost
+            Else
+                Grid.TextMatrix(quantity + 1, nkPrevCost) = "--"
+            End If
             Grid.TextMatrix(quantity, nkCENA1) = tbNomenk!CENA1
             Grid.TextMatrix(quantity, nkVES) = tbNomenk!VES
             Grid.TextMatrix(quantity, nkSTAVKA) = tbNomenk!STAVKA
             Grid.TextMatrix(quantity, 0) = tbNomenk!formula
             Grid.TextMatrix(quantity, nkCenaFreight) = CenaFreight
-            Grid.TextMatrix(quantity, nkFormulaNom) = tbNomenk!formulaNom
+            Grid.TextMatrix(quantity, nkFormulaNom) = tbNomenk!FormulaNom
             Grid.TextMatrix(quantity, nkYesNo) = tbNomenk!YesNo
             If Not IsNull(tbNomenk!SourceName) Then _
                 Grid.TextMatrix(quantity, nkSource) = tbNomenk!SourceName
