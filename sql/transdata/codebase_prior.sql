@@ -4712,6 +4712,40 @@ begin
 end;
 
 
+
+if exists (select '*' from sysprocedure where proc_name like 'wf_price_revert') then  
+	drop function wf_price_revert;
+end if;
+
+
+create 
+-- возвращает цену из истории 
+	function wf_price_revert (
+		p_nomnom varchar(20)
+		, p_prev_cost float default null
+) returns float
+begin
+	declare sv_manager char(1);
+	declare v_change_date datetime;
+	declare v_cost float;
+	begin
+		set sv_manager = @manager;
+		set @manager = '.';
+    
+		select max(change_date) into v_change_date from sPriceHistory where nomnom = p_nomnom;
+		if v_change_date is not null then
+			select cost into v_cost from sPriceHistory where nomnom = p_nomnom and change_date = v_change_date;
+			delete from sPriceHistory where nomnom = p_nomnom and change_date = v_change_date;
+			update sguideNomenk set cost = v_cost where nomnom = p_nomnom;
+			-- возвращаем текущую предыдущую дату
+			select max(change_date) into v_change_date from sPriceHistory where nomnom = p_nomnom;
+			select cost into wf_price_revert from sPriceHistory where nomnom = p_nomnom and change_date = v_change_date;
+		end if;
+		set @manager = sv_manager;
+	exception when others then
+	end;
+end;
+
 if exists (select 1 from systriggers where trigname = 'wf_price_history' and tname = 'sGuideNomenk') then 
 	drop trigger sGuideNomenk.wf_price_history;
 end if;
@@ -4723,15 +4757,20 @@ for each row
 when (update (cost))
 begin
 	declare v_changed_by_id tinyint;
+	declare no_history char(1);
 	if update(cost) and isnull(old_name.cost, 0) != isnull(new_name.cost, 0)  then
 	    begin
 			select  managId into v_changed_by_id
 			from Guidemanag where manag = @manager;
+			set no_history = @manager;
 	    exception when others then
 	    	set v_changed_by_id = null;
+	    	set no_history = '.';
 	    end;
-		insert into sPriceHistory (nomnom, cost, change_date, changed_by_id)
-		values ( old_name.nomnom, old_name.cost, now(), v_changed_by_id);
+	    if no_history <> '.' then
+			insert into sPriceHistory (nomnom, cost, change_date, changed_by_id)
+			values ( old_name.nomnom, old_name.cost, now(), v_changed_by_id);
+		end if;
 	end if;
 end;
 

@@ -586,16 +586,23 @@ Dim nkYesNo As Integer
 Dim nkMark As Integer
 
 Private Sub setMnPriceHistoryStatus()
-Dim cnt As Integer
-    sql = "select count(*) from sPriceHistory where nomnom = '" & Grid.TextMatrix(mousRow, nkNomer) & "'"
-    byErrSqlGetValues "##05.05", sql, cnt
-    If cnt > 0 Then
+Dim cnt As String
+'    sql = "select count(*) from sPriceHistory where nomnom = '" & Grid.TextMatrix(mousRow, nkNomer) & "'"
+    cnt = Grid.TextMatrix(mousRow, nkPrevCost)
+'    byErrSqlGetValues "##05.05", sql, cnt
+    If cnt <> "--" Then
         mnPriceHistory.Visible = True
         mnSep4.Visible = True
+        If mousCol = nkPrevCost Then
+            mnPriceHistory.Caption = "Вернуть предыдущую цену"
+        Else
+            mnPriceHistory.Caption = "Просмотреть полную историю"
+        End If
     Else
         mnPriceHistory.Visible = False
         mnSep4.Visible = False
     End If
+        
     
 End Sub
 
@@ -974,7 +981,7 @@ Else
     initCol nkPerList, "Коэф.производства", 735
     initCol nkEdIzm, "Ед.изм.производства", 435
 '    initCol nkBegOstat, "Нач.остатки", 675
-    initCol nkPrevCost, "Пред.Факт.Цена", 735
+    initCol nkPrevCost, "Пред.Ф.Цена", 735
     initCol nkCena, "Цена фактическая(cenaFact)", 735
     initCol nkCENA1, "Цена поставщика(CENA1)", 795
     initCol nkVES, "Bec", 555
@@ -1545,6 +1552,9 @@ Else
     Exit Sub
  ElseIf Regim = "" Then
     Grid.CellBackColor = &H88FF88
+    If mousCol = nkPrevCost Then
+        Grid.CellBackColor = vbYellow
+    End If
     GoTo BB
  ElseIf Regim = "asOstat" Or Regim = "fltOborot" Or Regim = "checkCurOstat" Then
     Exit Sub
@@ -2210,8 +2220,35 @@ Dim curRow As Integer, startRow As Integer, stopRow As Integer
 End Sub
 
 Private Sub mnPriceHistory_Click()
+Dim stRow As Long, enRow As Long, i As Integer
+Dim lNomnom As String, oldPrevCost As String, newPrevCost As Variant
+    If mousCol <> nkPrevCost Then
     ' История изменения цены
-    PriceHistory.Show
+        PriceHistory.Show
+    Else
+        If Grid.RowSel < mousRow Then
+            stRow = Grid.RowSel
+            enRow = mousRow
+        Else
+            stRow = mousRow
+            enRow = Grid.RowSel
+        End If
+        If MsgBox("Вы уверены, что хотите вернуть предыдущую цену?", vbYesNo Or vbDefaultButton2, "Подтверждение") <> vbYes Then Exit Sub
+        For i = stRow To enRow
+            lNomnom = Grid.TextMatrix(i, nkNomer)
+            oldPrevCost = Grid.TextMatrix(i, nkPrevCost)
+            newPrevCost = Null
+            If oldPrevCost <> "--" Then
+                sql = "select wf_price_revert ( '" & lNomnom & "', " & oldPrevCost & ")"
+                byErrSqlGetValues "##price_revert", sql, newPrevCost
+                If IsNull(newPrevCost) Then
+                    newPrevCost = "--"
+                End If
+                Grid.TextMatrix(i, nkCena) = oldPrevCost
+                Grid.TextMatrix(i, nkPrevCost) = newPrevCost
+            End If
+        Next i
+    End If
 End Sub
 
 Private Sub mnRen_Click()
@@ -2370,8 +2407,9 @@ lbHide
 End Sub
 
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim str As String, i As Integer, old As String, row As Long, col As Integer
+Dim str As String, i As Integer, old As String, row As Long, col As Integer, newPrevCost As String
 Dim s As Single, result As String 'field() As Variant,
+
 
 If KeyCode = vbKeyReturn Then
  
@@ -2443,7 +2481,11 @@ AA: Grid.TextMatrix(mousRow, mousCol) = str
     GoTo EN1
  ElseIf mousCol = nkCena Then
     If Not isNumericTbox(tbMobile, 0) Then Exit Sub
-    If Not valueToNomencField("##104", CSng(str), "cost") Then GoTo EN1
+    newPrevCost = Grid.TextMatrix(mousRow, nkCena)
+    If Not valueToNomencField("##104", CSng(str), "cost") Then
+        GoTo EN1
+    End If
+    Grid.TextMatrix(mousRow, nkPrevCost) = newPrevCost
     cenaFact = str
     GoTo CC
 ' ElseIf mousCol = nkBegOstat Then ' при этом на столько же изм-ся тек.ост-ки
@@ -2643,7 +2685,7 @@ sql = "SELECT ph.prev_cost, sGuideNomenk.*, sGuideFormuls.Formula, " & _
 & " INNER JOIN sGuideFormuls ON sGuideNomenk.formulaNom = sGuideFormuls.nomer " _
 & " left join (select h.cost as prev_cost, h.nomnom from spricehistory h join (select max(change_date) as change_date, nomnom from spricehistory m group by nomnom) mx on mx.nomnom = h.nomnom and mx.change_date = h.change_date ) ph on ph.nomnom = sguidenomenk.nomnom  " _
 & strWhere & " ORDER BY sGuideNomenk.nomNom ;"
-Debug.Print sql;
+'Debug.Print sql;
 'MsgBox sql
 Set tbNomenk = myOpenRecordSet("##165", sql, dbOpenForwardOnly) ' dbOpenDynaset)
 If tbNomenk Is Nothing Then GoTo EN1
@@ -2755,9 +2797,9 @@ If Not tbNomenk.BOF Then
 '            End If
             Grid.TextMatrix(quantity, nkCena) = cenaFact
             If Not IsNull(tbNomenk!prev_cost) Then
-                Grid.TextMatrix(quantity + 1, nkPrevCost) = tbNomenk!prev_cost
+                Grid.TextMatrix(quantity, nkPrevCost) = tbNomenk!prev_cost
             Else
-                Grid.TextMatrix(quantity + 1, nkPrevCost) = "--"
+                Grid.TextMatrix(quantity, nkPrevCost) = "--"
             End If
             Grid.TextMatrix(quantity, nkCENA1) = tbNomenk!CENA1
             Grid.TextMatrix(quantity, nkVES) = tbNomenk!VES
