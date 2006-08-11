@@ -2555,58 +2555,33 @@ end;
 
 
 
-if exists (select '*' from sysprocedure where proc_name like 'fill_venture_order') then  
-	drop procedure fill_venture_order;
-end if;
-
-if exists (select '*' from sysprocedure where proc_name like 'ivo_generate') then  
-	drop procedure ivo_generate;
+if exists (select '*' from sysprocedure where proc_name like 'ivo_generate_nomnom') then  
+	drop procedure ivo_generate_nomnom;
 end if;
 
 create 
-	-- автоматическое формирование взаимозачета между предприятиями
-	-- p_nomnom задан - только для этой номенклатуры. Иначе по всей
-	-- p_nomorder задан - только для номенклатуры, входящей в заказ. Иначе - не учитывать параметр
+	-- автоматическое формирование взаимозачета между предприятиями по одной номенклатуре
 	-- 
-	procedure ivo_generate (
-	  p_procentOver float
+	procedure ivo_generate_nomnom (
+	  p_nomnom varchar(50)
+	, p_procentOver float
+	, p_defaultVentureId integer
 	, p_term_start date    default null
 	, p_term_end date      default null
-	, p_nomnom varchar(50) default null
-	, p_numorder integer   default null
 )
 
 begin
 	declare total_rest float;
 	declare rest1 float;
 	declare rest2 float;
-	declare v_defaultVentureId integer;
+--	declare v_defaultVentureId integer;
 	declare v integer;
 	declare cnt integer;
 	declare vo_summa float;
 	declare ivo_id integer;
 
+	message 'Generate ivo for ', p_nomnom to client;
 
-	
-	select v.ventureId into v_defaultVentureId 
-	from guideventure v 
-	join system s on s.id_analytic_default = v.id_analytic;
---	message v_defaultVentureId to client;
-
-
-	create table #vntRest (ventureId integer, rest float);
-		
-	insert into #vntRest (ventureId, rest)
-	select ventureId, 0.0
-	from guideVenture where id_analytic is not null;
-
-	guide_loop:
-	for cur_nom as cn sensitive cursor for
-		select nomnom as r_nomnom, perList as r_perList 
-		from sguidenomenk n 
-		where nomnom = isnull(p_nomnom, nomnom)
-	do
-	
 		update #vntRest set rest = 0.00;
 		
 		nomnom_loop:
@@ -2658,7 +2633,7 @@ begin
 				left join orders o on o.numorder = n.numdoc
 				left join bayorders bo on bo.numorder = n.numdoc
 			where
-					m.nomnom = r_nomnom
+					m.nomnom = p_nomnom
 				and convert(date, n.xDate) <= isnull(p_term_end, convert(date, n.xDate))
 						union
 			select 
@@ -2673,7 +2648,7 @@ begin
 			from sdmcventure m
 			join sdocsventure n on m.sdv_id = n.id and n.cumulative_id is not null
 			join sguidenomenk k on k.nomnom = m.nomnom
-			where m.nomnom = r_nomnom
+			where m.nomnom = p_nomnom
 				and n.nDate <= isnull(p_term_end, n.nDate)
 			order by 2, 1
 		do
@@ -2686,7 +2661,7 @@ begin
 				update #vntRest set rest = rest - r_qty where ventureId = r_ventureId;
 			else
 				if not exists (select 1 from #vntRest where ventureId = r_ventureId) then
-					set r_ventureId = v_defaultVentureId;
+					set r_ventureId = p_defaultVentureId;
 				end if; 
 				update #vntRest set rest = rest + r_qty * r_activeOper where ventureId = r_ventureId;
 			end if;
@@ -2724,7 +2699,7 @@ begin
 								--message 'sv_rest = ', sv_rest to client;
 								set ivo_id = wf_put_ivo_nomnom (
 									  convert(date, r_nDate)
-									, r_nomnom
+									, p_nomnom
 									, vo_summa
 									, p_procentOver
 									, sv_srcVentureId
@@ -2732,6 +2707,7 @@ begin
 									, p_term_start
 									, p_term_end
 								);
+								message '	cоздана/изменена накладная №', ivo_id to client;
 								update #vntRest set rest = rest + vo_summa where ventureId = dv_dstVentureId;
 								update #vntRest set rest = rest - vo_summa where ventureId = sv_srcVentureId;
 								leave compensate;
@@ -2748,6 +2724,7 @@ begin
 			, '      ', r_destventureId
 			to client;
 */
+		end for;
 /*
 select d1.ndate , m1.nomnom
 from sdmcventure m1
@@ -2755,7 +2732,106 @@ join sdocsventure d1 on m1.sdv_id = d1.id
 join sdmcventure m2 on m2.nomnom = m1.nomnom
 join sdocsventure d2 on d2.ndate = d1.ndate and m2.sdv_id = d2.id and d1.srcventureId = d2.dstventureId
 */
-		end for;
+end;
+
+
+--------------------------------------------------------------
+if exists (select '*' from sysprocedure where proc_name like 'fill_venture_order') then  
+	drop procedure fill_venture_order;
+end if;
+
+if exists (select '*' from sysprocedure where proc_name like 'ivo_generate') then  
+	drop procedure ivo_generate;
+end if;
+
+create 
+	-- автоматическое формирование взаимозачета между предприятиями
+	-- если p_nomnom задан - только для этой номенклатуры. Иначе по всему справочнику номенклатуры.
+	-- 
+	procedure ivo_generate (
+	  p_procentOver float
+	, p_term_start date    default null
+	, p_term_end date      default null
+	, p_nomnom varchar(50) default null
+)
+
+begin
+	declare v_defaultVentureId integer;
+	
+	select v.ventureId into v_defaultVentureId 
+	from guideventure v 
+	join system s on s.id_analytic_default = v.id_analytic;
+--	message v_defaultVentureId to client;
+
+
+	create table #vntRest (ventureId integer, rest float);
+		
+	insert into #vntRest (ventureId, rest)
+	select ventureId, 0.0
+	from guideVenture where id_analytic is not null;
+
+	guide_loop:
+	for cur_nom as cn sensitive cursor for
+		select nomnom as r_nomnom
+		from sguidenomenk n 
+		where nomnom = isnull(p_nomnom, nomnom)
+	do
+		call ivo_generate_nomnom (
+			  r_nomnom
+			, p_procentOver
+			, v_defaultVentureId
+			, p_term_start
+			, p_term_end
+		);
+--		leave guide_loop;
+	end for;
+	drop table #vntRest;
+end;
+		
+	
+if exists (select '*' from sysprocedure where proc_name like 'ivo_generate_numdoc') then  
+	drop procedure ivo_generate_numdoc;
+end if;
+
+create 
+	-- автоматическое формирование взаимозачета между предприятиями по номенклатуре, входящей в накладную (группу для одного закакза)
+	-- 
+	procedure ivo_generate_numdoc (
+	  in p_numdoc integer
+	, p_procentOver float
+	, p_term_start date default null
+	, p_term_end date default null
+)
+
+begin
+	declare v_defaultVentureId integer;
+	
+	select v.ventureId into v_defaultVentureId 
+	from guideventure v 
+	join system s on s.id_analytic_default = v.id_analytic;
+	message 'Взаимозачет дляя накладной №', p_numdoc to client;
+
+
+	create table #vntRest (ventureId integer, rest float);
+		
+	insert into #vntRest (ventureId, rest)
+	select ventureId, 0.0
+	from guideVenture where id_analytic is not null;
+
+	guide_loop:
+	for cur_nom as cn sensitive cursor for
+		select distinct nomnom as r_nomnom
+		from sdocs n
+		join sdmc m on m.numdoc = n.numdoc and m.numext = n.numext
+		where n.numdoc = p_numdoc 
+	do
+		call ivo_generate_nomnom (
+			  r_nomnom
+			, p_procentOver
+			, v_defaultVentureId
+			, p_term_start
+			, p_term_end
+		);
 --		leave guide_loop;
 	end for;
 	drop table #vntRest;
@@ -4767,7 +4843,9 @@ begin
 	    	set v_changed_by_id = null;
 	    	set no_history = '.';
 	    end;
+	    message 'no_hostory = ', no_history to client;
 	    if no_history <> '.' then
+		    message 'insert inot ' to client;
 			insert into sPriceHistory (nomnom, cost, change_date, changed_by_id)
 			values ( old_name.nomnom, old_name.cost, now(), v_changed_by_id);
 		end if;
@@ -5353,9 +5431,10 @@ begin
 	declare v_id_inv integer;
 	declare v_numorder integer;
 	declare v_updated integer;
-	declare v_total_account_date datetime;
+--	declare v_total_account_date datetime;
 	declare sync char(1);
 	declare c_status_close_id integer;
+	declare v_ivo_procent float;
 
 	set c_status_close_id = 6;  -- закрыт
 
@@ -5395,14 +5474,14 @@ begin
 			end if;
 
 			-- исправление расходных накладных, связанных с заказом
-			select total_account into v_total_account_date from system;
+			--select total_account into v_total_account_date from system;
 
 			-- это можно делать только для тех заказов, которые после перехода на режим полного учета по предприятиям
 			update sdocs set ventureId = new_name.ventureId 
 			where 
-					sdocs.numdoc = new_name.numorder
-				and xDate >= v_total_account_date;
-
+				sdocs.numdoc = new_name.numorder
+				--and xDate >= v_total_account_date
+			;
 		end if;
 
 	end if;
@@ -5493,9 +5572,13 @@ begin
 	end if;
 	if 	update (statusId)
 		and new_name.statusId = c_status_close_id
-		and wf_order_closed_comtex(old_name.numorder, remoteServerOld) = 1 
+--		and wf_order_closed_comtex(old_name.numorder, remoteServerOld) = 1 
 	then
+		select ivo_procent into v_ivo_procent from system;
+--		set v_numorder = old_name.numorder;
 		-- генерить взаимозачеты
+		call ivo_generate_numdoc(old_name.numorder, v_ivo_procent);
+
 	end if;
 
 end;
