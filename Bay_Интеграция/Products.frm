@@ -1,18 +1,18 @@
 VERSION 5.00
 Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCTL.OCX"
-Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "msflxgrd.ocx"
+Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form sProducts 
    BackColor       =   &H8000000A&
    BorderStyle     =   1  'Fixed Single
    Caption         =   "Формирование накладной"
-   ClientHeight    =   6390
-   ClientLeft      =   45
-   ClientTop       =   1725
+   ClientHeight    =   6384
+   ClientLeft      =   48
+   ClientTop       =   1728
    ClientWidth     =   11880
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    MinButton       =   0   'False
-   ScaleHeight     =   6390
+   ScaleHeight     =   6384
    ScaleWidth      =   11880
    StartUpPosition =   1  'CenterOwner
    Begin VB.CommandButton cmExel2 
@@ -48,7 +48,7 @@ Begin VB.Form sProducts
    End
    Begin VB.Frame gridFrame 
       BackColor       =   &H00800000&
-      BorderStyle     =   0  'Нет
+      BorderStyle     =   0  'None
       Height          =   2055
       Left            =   3180
       TabIndex        =   10
@@ -62,19 +62,19 @@ Begin VB.Form sProducts
          Top             =   300
          Visible         =   0   'False
          Width           =   7215
-         _ExtentX        =   12726
-         _ExtentY        =   2566
+         _ExtentX        =   12721
+         _ExtentY        =   2561
          _Version        =   393216
          AllowBigSelection=   0   'False
          AllowUserResizing=   1
       End
       Begin VB.Label laGrid4 
-         Alignment       =   2  'Центровка
+         Alignment       =   2  'Center
          BackColor       =   &H00800000&
          Caption         =   "laGrid4"
          BeginProperty Font 
             Name            =   "MS Sans Serif"
-            Size            =   8.25
+            Size            =   7.8
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -89,7 +89,7 @@ Begin VB.Form sProducts
          Width           =   7215
       End
       Begin VB.Label Label2 
-         Alignment       =   2  'Центровка
+         Alignment       =   2  'Center
          Caption         =   "Если остатки позволяют, введите треб. кол-во изделий и нажмите <Enter>, иначе - <ESC>.."
          Height          =   255
          Left            =   60
@@ -105,14 +105,14 @@ Begin VB.Form sProducts
       Top             =   240
       Visible         =   0   'False
       Width           =   4695
-      _ExtentX        =   8281
-      _ExtentY        =   9869
+      _ExtentX        =   8276
+      _ExtentY        =   9864
       _Version        =   393216
       AllowBigSelection=   0   'False
       AllowUserResizing=   1
    End
    Begin VB.Frame Frame 
-      BorderStyle     =   0  'Нет
+      BorderStyle     =   0  'None
       Height          =   255
       Left            =   60
       TabIndex        =   8
@@ -168,7 +168,7 @@ Begin VB.Form sProducts
       TabIndex        =   15
       Top             =   240
       Width           =   2175
-      _ExtentX        =   3836
+      _ExtentX        =   3831
       _ExtentY        =   9843
       _Version        =   393217
       HideSelection   =   0   'False
@@ -183,8 +183,8 @@ Begin VB.Form sProducts
       TabIndex        =   17
       Top             =   240
       Width           =   4635
-      _ExtentX        =   8176
-      _ExtentY        =   9869
+      _ExtentX        =   8170
+      _ExtentY        =   9864
       _Version        =   393216
       AllowBigSelection=   0   'False
       HighLight       =   0
@@ -329,6 +329,7 @@ Private Sub cmSel_Click() '<Добавить>
 'Dim befColor As Long, il As Long, nl As Long, n As Integer, str As String
 
 'laQuant.Visible = False
+If Regim = "ostat" Then Exit Sub
 If beNaklads() Then Exit Sub
 
 dostupOstatkiToGrid
@@ -1191,7 +1192,7 @@ End If
 
 
 sql = "SELECT nomNom, nomName, Size, cod, ed_Izmer, ed_Izmer2, nowOstatki " & _
-"From sGuideNomenk " & strWhere & ";"
+"From sGuideNomenk " & strWhere & " order by nomnom"
 '"WHERE (((sGuideNomenk.klassId)=" & gKlassId & "));"
 
 Set tbNomenk = myOpenRecordSet("##103", sql, dbOpenDynaset)

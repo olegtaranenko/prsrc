@@ -1502,7 +1502,7 @@ End Function
 
 
 Function orderClose() As Boolean
-Dim sql2 As String, str As String
+Dim sql2 As String, str As String, account_is_closed As Integer
 
 orderClose = False
 lbHide
@@ -1515,6 +1515,13 @@ If isConflict() Then Exit Function
         MsgBox "У этого заказа есть несписанные предметы.", , "Закрытие невозможно!"
         Exit Function
     End If
+    sql = "select wf_order_closed_comtex (" & gNzak & ", '" & Grid.TextMatrix(mousRow, orServername) & "')"
+    byErrSqlGetValues "##45.1", sql, account_is_closed
+    If account_is_closed <> 1 Then
+        MsgBox "Нельзя закрыть заказ, до тех пор, пока он не закрыт в Бухгалтерии.", , "Закрытие невозможно!"
+        Exit Function
+    End If
+        
     
     wrkDefault.BeginTrans   ' начало транзакции
         

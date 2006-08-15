@@ -6945,6 +6945,10 @@ begin
 	declare v_inv_date varchar(20);
 	declare v_numOrder integer;
 	declare sync char(1);
+	declare c_status_close_id integer;
+	declare v_ivo_procent float;
+
+	set c_status_close_id = 6;  -- закрыт
 
 	if update(ventureId) then
 		if new_name.ventureId = 0 then
@@ -6984,6 +6988,16 @@ begin
 			call update_remote(remoteServerOld, 'jscet', 'id_d_cargo', convert(varchar(20), v_id_dest ), 'id = ' + convert(varchar(20), old_name.id_jscet));
 			call unblock_remote(remoteServerOld, @@servername, 'jscet');
 		end if;
+	end if;
+	if 	update (statusId)
+		and new_name.statusId = c_status_close_id
+--		and wf_order_closed_comtex(old_name.numorder, remoteServerOld) = 1 
+	then
+		select ivo_procent into v_ivo_procent from system;
+--		set v_numorder = old_name.numorder;
+		-- генерить взаимозачеты
+		call ivo_generate_numdoc(old_name.numorder, v_ivo_procent);
+
 	end if;
 end;
 
