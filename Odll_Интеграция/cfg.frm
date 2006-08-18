@@ -4,13 +4,13 @@ Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
 Begin VB.Form cfg 
    BackColor       =   &H8000000A&
    Caption         =   "Form1"
-   ClientHeight    =   4530
+   ClientHeight    =   4524
    ClientLeft      =   60
-   ClientTop       =   345
+   ClientTop       =   348
    ClientWidth     =   8700
    LinkTopic       =   "Form1"
    LockControls    =   -1  'True
-   ScaleHeight     =   4530
+   ScaleHeight     =   4524
    ScaleWidth      =   8700
    StartUpPosition =   1  'CenterOwner
    Begin VB.CommandButton cmExit 
@@ -22,7 +22,7 @@ Begin VB.Form cfg
       Width           =   795
    End
    Begin VB.ListBox lbActive 
-      Height          =   450
+      Height          =   432
       ItemData        =   "cfg.frx":0000
       Left            =   1500
       List            =   "cfg.frx":000A
@@ -109,8 +109,8 @@ Begin VB.Form cfg
       TabIndex        =   0
       Top             =   1860
       Width           =   8475
-      _ExtentX        =   14949
-      _ExtentY        =   3519
+      _ExtentX        =   14944
+      _ExtentY        =   3514
       _Version        =   393216
       AllowUserResizing=   1
    End
@@ -377,7 +377,7 @@ If Grid.TextMatrix(Grid.row, bsWork) <> "" Or Grid.TextMatrix(Grid.row, bsCurr) 
 Else
     base(Grid.TextMatrix(Grid.row, 0)) = ""
     saveCfg
-    Grid.RemoveItem Grid.row
+    Grid.removeItem Grid.row
     Grid.row = 1
     Grid_EnterCell
 End If
@@ -494,7 +494,7 @@ If Regim = "pathSet" Then
         If I = curBaseInd Then Grid.TextMatrix(I + 1, bsCurr) = "Да"
         Grid.AddItem ""
       Next I
-      Grid.RemoveItem Grid.Rows - 1
+      Grid.removeItem Grid.Rows - 1
     End If
 ElseIf Regim = "comtexAdmin" Then
     Me.Caption = "Выбор базы"
@@ -545,7 +545,7 @@ ElseIf Regim = "comtexAdmin" Then
         I = I + 1
     Wend
     table.Close
-    Grid.RemoveItem Grid.Rows - 1
+    Grid.removeItem Grid.Rows - 1
 ElseIf Regim = "baseChoise" Then
     Me.Caption = "Выбор базы"
     laGlobal.Visible = False
@@ -580,7 +580,7 @@ ElseIf Regim = "baseChoise" Then
         If I = curBaseInd Then Grid.TextMatrix(I + 1, bsCurr) = "Да"
         Grid.AddItem ""
     Next I
-    Grid.RemoveItem Grid.Rows - 1
+    Grid.removeItem Grid.Rows - 1
 End If
   
 
@@ -647,6 +647,10 @@ If errorCodAndMsg("388", -100) Then '##388
     MsgBox "Не обнаружен Сервер базы", , "Сообщите Администратору!"
     End
 End If
+
+sql = "call bootstrap_blocking"
+If myExecute("##0.1", sql, 0) = 0 Then End
+
 '   Dim strError As String
 '   Dim errLoop
 '   For Each errLoop In Errors

@@ -571,6 +571,9 @@ End If
    
 End
 
+sql = "call bootstrap_blocking"
+If myExecute("##0.1", sql, 0) = 0 Then End
+
 End Sub
 
 Function getParamOrDefault(paramKey As String, defPath As String) As String
