@@ -53,12 +53,20 @@ if exists (select 1 from sysprocedure where proc_name = 'slave_nextid') then
 	drop procedure slave_nextid;
 end if;
 
-create PROCEDURE slave_nextid(
-		in table_name varchar(100)
-		,out mid integer
-	)
+create PROCEDURE slave_nextid
+(
+	in table_name varchar(100)
+	,out mid integer
+)
 begin
-  execute immediate 'select isnull(max(id), -1)+1 into mid from ' + table_name;
+	select next_id into mid from inc_table where table_nm = table_name;
+	if mid is null then
+		execute immediate 'select isnull(max(id), 0)+1 into mid from ' + table_name;
+--		update inc_table set next_id = mid where current of dc;
+		execute immediate 'insert into inc_table  (table_nm, next_id) select upper(''' + table_name + '''), mid';
+
+		call build_id_track_trigger(table_name);
+	end if;
 end;
 
 

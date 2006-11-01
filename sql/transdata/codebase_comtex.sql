@@ -161,8 +161,9 @@ begin
 		+ '\n referencing old as old_name new as new_name'
 		+ '\nbegin'
 		+ '\n	declare idd integer;'
-		+ '\n	select isnull(max(id), 0) + 1 into idd from ' + p_table_name + ';'
-		+ '\n	update inc_table set next_id = idd where table_nm = ''' + p_table_name + ''';'
+--		+ '\n	select isnull(max(id), 0) + 1 into idd from ' + p_table_name + ';'
+		+ '\n	select next_id into idd from inc_table where table_nm = ''' + p_table_name + ''';'
+		+ '\n	update inc_table set next_id = idd + 1 where table_nm = ''' + p_table_name + ''';'
 		+ '\nend;';
 	execute immediate sqls;
 end;

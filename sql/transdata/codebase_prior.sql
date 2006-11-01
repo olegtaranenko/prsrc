@@ -3908,6 +3908,8 @@ begin
 		set maxId = curId;
 	end if;
   end for;
+  -- получение следующего глобального id опирается на таблицу inc_table, где хранятся эти самые id
+  call update_host('inc_table', 'next_id', convert(varchar(20), maxId + 1), 'table_nm = ''''' + table_name + '''''');
   return maxId;
 end;
 

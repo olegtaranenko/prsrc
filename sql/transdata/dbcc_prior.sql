@@ -860,6 +860,8 @@ end if;
 */
 
 
+/*
+
 -- в продакш => нет
 -- По тем или иным причинам в накладных появились записи,
 -- которые не имеют ссылки в базу Аналитики.
@@ -1118,7 +1120,7 @@ begin
 
 
 end;
-
+*/
 
 --if not exists (select 1 from sys.syscolumns where creator = 'dba' and tname = 'sguidesource' and cname = 'inventory') then
 --	alter table sguidesource add inventory char(1) null;
@@ -1127,4 +1129,33 @@ end;
 
 
 
-commit
+
+begin
+    declare v_id integer;
+    declare f_update integer;
+for jmat_cur as j dynamic scroll cursor for
+    select numdoc as r_numdoc, id_jmat as r_id_jmat from sdocs where numdoc in( 6302408,  6302406,  6302407)
+do
+    message r_id_jmat to client;
+    set v_id = get_nextid('jmat');
+    message v_id to client;
+    set f_update = update_count_remote('stime', 'jmat', 'id', v_id, 'id = ' + convert(varchar(20), r_id_jmat));
+    message f_update to client;
+    update sdocs set id_jmat = v_id where id_jmat = r_id_jmat;
+
+end for;
+
+for mat_cur as m dynamic scroll cursor for
+    select numdoc as r_numdoc, numext as r_numext, id_mat as r_id_mat from sdmc where numdoc in( 6302408,  6302406,  6302407)
+do
+    set v_id = get_nextid('mat');
+    set f_update = update_count_remote('stime', 'mat', 'id', v_id, 'id = ' + convert(varchar(20), r_id_mat));
+    update sdmc set id_mat = v_id where id_mat = r_id_mat;
+
+end for;
+
+end;
+
+--rollback;
+
+commit;
