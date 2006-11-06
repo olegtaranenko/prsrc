@@ -7,7 +7,7 @@ if exists (select 1 from systriggers where trigname = 'wf_sdmc_income_bu' and tn
 end if;
 
 create 
-	trigger wf_sdmc_income_bu before update  on 
+	trigger wf_sdmc_income_bu before update on 
 sdmc
 referencing new as new_name old as old_name
 for each row
@@ -185,7 +185,9 @@ begin
 
 	set new_name.id_mat = v_id_mat;
 
-	if isnull(v_venture_id, v_venture_anl) != v_venture_anl then
+	if		isnull(v_venture_id, v_venture_anl) != v_venture_anl 
+		and wf_dual_term(v_sysname, v_id_jmat) = 1
+	then
 		call wf_insert_mat (
 			v_sysname
 			,v_id_mat
@@ -384,6 +386,20 @@ begin
 	end if;
 
 	call delete_remote (p_sysname, 'jmat', 'id = ' + convert(varchar(20), p_id_Jmat));
+end;
+
+
+if exists (select 1 from sysprocedure where proc_name = 'wf_dual_term') then
+	drop procedure wf_dual_term;
+end if;
+
+create
+	function wf_dual_term (
+		  in p_sysname varchar(32)
+		, in p_id_jmat integer
+	) returns integer
+begin
+	set wf_dual_term = select_remote(p_sysname, 'jmat', 'count(*)', 'id = ' + convert(varchar(20), p_id_jmat));
 end;
 
 
@@ -762,7 +778,9 @@ begin
 			end if;
 		end if;
 
-		if isnull(old_name.ventureId, v_venture_anl_id) != v_venture_anl_id then
+		if 		isnull(old_name.ventureId, v_venture_anl_id) != v_venture_anl_id 
+			and wf_dual_term(v_id_jmat) = 1 
+		then
 			select sysname into v_sysname from guideventure where ventureid = old_name.ventureId;
 		    -- исправить в базе старого предприятия если накладная меняет предприятие
 			if 
@@ -4386,7 +4404,7 @@ if exists (select 1 from systriggers where trigname = 'wf_update_nomenk' and tna
 	drop trigger xPredmetyByNomenk.wf_update_nomenk;
 end if;
 
-create TRIGGER "wf_update_nomenk" before update on
+create TRIGGER wf_update_nomenk before update on
 xPredmetyByNomenk
 referencing old as old_name new as new_name
 for each row
@@ -4433,7 +4451,7 @@ if exists (select 1 from systriggers where trigname = 'wf_delete_nomenk' and tna
 	drop trigger xPredmetyByNomenk.wf_delete_nomenk;
 end if;
     
-create TRIGGER "wf_delete_nomenk" before delete on
+create TRIGGER wf_delete_nomenk before delete on
 xPredmetyByNomenk
 referencing old as old_name
 for each row
@@ -4547,7 +4565,7 @@ if exists (select 1 from systriggers where trigname = 'wf_insert_klass' and tnam
 	drop trigger sguideklass.wf_insert_klass;
 end if;
 
-create TRIGGER "wf_insert_klass" before insert on
+create TRIGGER wf_insert_klass before insert on
 sguideklass
 referencing new as new_name
 for each row
@@ -4582,7 +4600,7 @@ if exists (select 1 from systriggers where trigname = 'wf_update_klass' and tnam
 	drop trigger sguideklass.wf_update_klass;
 end if;
 
-create TRIGGER "wf_update_klass" before update on
+create TRIGGER wf_update_klass before update on
 sguideklass
 referencing old as old_name new as new_name
 for each row
@@ -4619,7 +4637,7 @@ if exists (select 1 from systriggers where trigname = 'wf_delete_klass' and tnam
 	drop trigger sGuideKlass.wf_delete_klass;
 end if;
 
-create TRIGGER "wf_delete_klass" before delete on
+create TRIGGER wf_delete_klass before delete on
 sGuideKlass
 referencing old as old_name
 for each row
@@ -4641,7 +4659,7 @@ if exists (select 1 from systriggers where trigname = 'wf_insert_seria' and tnam
 	drop trigger sguideseries.wf_insert_seria;
 end if;
 
-create TRIGGER "wf_insert_seria" before insert on
+create TRIGGER wf_insert_seria before insert on
 sguideseries
 referencing new as new_name
 for each row
@@ -4677,7 +4695,7 @@ if exists (select 1 from systriggers where trigname = 'wf_update_seria' and tnam
 	drop trigger sguideseries.wf_update_seria;
 end if;
 
-create TRIGGER "wf_update_seria" before update on
+create TRIGGER wf_update_seria before update on
 sguideseries
 referencing old as old_name new as new_name
 for each row
@@ -4721,7 +4739,7 @@ if exists (select 1 from systriggers where trigname = 'wf_delete_seria' and tnam
 	drop trigger sGuideSeries.wf_delete_seria;
 end if;
 
-create TRIGGER "wf_delete_seria" before delete on
+create TRIGGER wf_delete_seria before delete on
 sGuideSeries
 referencing old as old_name
 for each row
@@ -4742,7 +4760,7 @@ if exists (select 1 from systriggers where trigname = 'wf_insert_gnomenk' and tn
 	drop trigger sGuideNomenk.wf_insert_gnomenk;
 end if;
 
-create TRIGGER "wf_insert_gnomenk" before insert on
+create TRIGGER wf_insert_gnomenk before insert on
 sGuideNomenk
 referencing new as new_name
 for each row
@@ -4828,7 +4846,7 @@ if exists (select 1 from systriggers where trigname = 'wf_price_history' and tna
 	drop trigger sGuideNomenk.wf_price_history;
 end if;
 
-create TRIGGER "wf_price_history" before update order 2 on
+create TRIGGER wf_price_history before update order 2 on
 sGuideNomenk
 referencing old as old_name new as new_name
 for each row
@@ -4860,7 +4878,7 @@ if exists (select 1 from systriggers where trigname = 'wf_update_gnomenk' and tn
 	drop trigger sGuideNomenk.wf_update_gnomenk;
 end if;
 
-create TRIGGER "wf_update_gnomenk" before update order 1 on
+create TRIGGER wf_update_gnomenk before update order 1 on
 sGuideNomenk
 referencing old as old_name new as new_name
 for each row
@@ -4935,7 +4953,7 @@ if exists (select 1 from systriggers where trigname = 'wf_delete_gnomenk' and tn
 	drop trigger sGuideNomenk.wf_delete_gnomenk;
 end if;
 
-create TRIGGER "wf_delete_gnomenk" before delete on
+create TRIGGER wf_delete_gnomenk before delete on
 sGuideNomenk
 referencing old as old_name
 for each row
@@ -4954,7 +4972,7 @@ if exists (select 1 from systriggers where trigname = 'wf_insert_gproduct' and t
 	drop trigger sguideproducts.wf_insert_gproduct;
 end if;
 
-create TRIGGER "wf_insert_gproduct" before insert on
+create TRIGGER wf_insert_gproduct before insert on
 sguideproducts
 referencing new as new_name
 for each row
@@ -5014,7 +5032,7 @@ if exists (select 1 from systriggers where trigname = 'wf_update_gproducts' and 
 	drop trigger sGuideProducts.wf_update_gproducts;
 end if;
 
-create TRIGGER "wf_update_gproducts" before update on
+create TRIGGER wf_update_gproducts before update on
 sGuideProducts
 referencing old as old_name new as new_name
 for each row
@@ -5121,7 +5139,7 @@ if exists (select 1 from systriggers where trigname = 'wf_delete_gproducts' and 
 	drop trigger sGuideProducts.wf_delete_gproducts;
 end if;
 
-create TRIGGER "wf_delete_gproducts" before delete on
+create TRIGGER wf_delete_gproducts before delete on
 sGuideProducts
 referencing old as old_name
 for each row
@@ -5142,7 +5160,7 @@ if exists (select 1 from systriggers where trigname = 'wf_insert_product' and tn
 	drop trigger sProducts.wf_insert_product;
 end if;
 
-create TRIGGER "wf_insert_product" before insert order 1 on
+create TRIGGER wf_insert_product before insert order 1 on
 sProducts
 referencing new as new_name
 for each row
@@ -5214,7 +5232,7 @@ if exists (select 1 from systriggers where trigname = 'wf_update_product' and tn
 	drop trigger sProducts.wf_update_product;
 end if;
 
-create TRIGGER "wf_update_product" before update on
+create TRIGGER wf_update_product before update on
 sProducts
 referencing old as old_name new as new_name
 for each row
@@ -5255,7 +5273,7 @@ if exists (select 1 from systriggers where trigname = 'wf_delete_product' and tn
 	drop trigger sProducts.wf_delete_product;
 end if;
 
-create TRIGGER "wf_delete_product" after delete on
+create TRIGGER wf_delete_product after delete on
 sProducts
 referencing old as old_name
 for each row
@@ -5280,7 +5298,7 @@ if exists (select 1 from systriggers where trigname = 'wf_insert_gvariant' and t
 	drop trigger sGuideVariant.wf_insert_gvariant;
 end if;
 
-create TRIGGER "wf_insert_gvariant" after insert on
+create TRIGGER wf_insert_gvariant after insert on
 sGuideVariant
 referencing new as new_name
 for each row
@@ -5298,7 +5316,7 @@ if exists (select 1 from systriggers where trigname = 'wf_update_gvariant' and t
 end if;
 
 
-create TRIGGER "wf_update_gvariant" before update on
+create TRIGGER wf_update_gvariant before update on
 sGuideVariant
 referencing old as old_name new as new_name
 for each row
@@ -5339,7 +5357,7 @@ if exists (select 1 from systriggers where trigname = 'wf_delete_gvariant' and t
 	drop trigger sGuideVariant.wf_delete_gvariant;
 end if;
 
-create TRIGGER "wf_delete_gvariant" after delete on
+create TRIGGER wf_delete_gvariant after delete on
 sGuideVariant
 referencing old as old_name
 for each row
@@ -5356,7 +5374,7 @@ if exists (select 1 from systriggers where trigname = 'wf_insert_vpower' and tna
 	drop trigger sVariantPower.wf_insert_vpower;
 end if;
 
-create TRIGGER "wf_insert_vpower" after insert on
+create TRIGGER wf_insert_vpower after insert on
 sVariantPower
 referencing new as new_name
 for each row
@@ -5372,7 +5390,7 @@ if exists (select 1 from systriggers where trigname = 'wf_delete_vpower' and tna
 	drop trigger sVariantPower.wf_delete_vpower;
 end if;
 
-create TRIGGER "wf_delete_vpower" after delete on
+create TRIGGER wf_delete_vpower after delete on
 sVariantPower
 referencing old as old_name
 for each row
@@ -5393,7 +5411,7 @@ if exists (select 1 from systriggers where trigname = 'wf_insert_orders' and tna
 	drop trigger Orders.wf_insert_orders;
 end if;
 
-create TRIGGER "wf_insert_orders" before insert on
+create TRIGGER wf_insert_orders before insert on
 Orders
 referencing new as new_name
 for each row
@@ -6033,7 +6051,7 @@ if exists (select 1 from sysprocedure where proc_name = 'wf_try_variant') then
 	drop function wf_try_variant;
 end if;
 
-CREATE FUNCTION "wf_try_variant"(p_id_variant integer, p_numOrder varchar(50), p_productid integer, p_prext integer, p_incompleteNomnom varchar(20) default null) returns integer
+CREATE FUNCTION wf_try_variant(p_id_variant integer, p_numOrder varchar(50), p_productid integer, p_prext integer, p_incompleteNomnom varchar(20) default null) returns integer
 begin
 	
 	declare variant_nom char(50);
@@ -6911,7 +6929,7 @@ if exists (select 1 from systriggers where trigname = 'wf_insert_orders' and tna
 	drop trigger BayOrders.wf_insert_orders;
 end if;
 
-create TRIGGER "wf_insert_orders" before insert on
+create TRIGGER wf_insert_orders before insert on
 BayOrders
 referencing new as new_name
 for each row
@@ -7158,7 +7176,7 @@ if exists (select 1 from systriggers where trigname = 'wf_update_nomenk' and tna
 	drop trigger sDmcRez.wf_update_nomenk;
 end if;
 
-create TRIGGER "wf_update_nomenk" before update on
+create TRIGGER wf_update_nomenk before update on
 sDmcRez
 referencing old as old_name new as new_name
 for each row
@@ -7212,7 +7230,7 @@ if exists (select 1 from systriggers where trigname = 'wf_delete_nomenk' and tna
 	drop trigger sDmcRez.wf_delete_nomenk;
 end if;
     
-create TRIGGER "wf_delete_nomenk" before delete on
+create TRIGGER wf_delete_nomenk before delete on
 sDmcRez
 referencing old as old_name
 for each row
