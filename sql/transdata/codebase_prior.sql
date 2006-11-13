@@ -19,16 +19,20 @@ begin
 	declare v_summa float;
 	declare v_summav float;
 	declare v_quant float;
+	declare v_sysname varchar(32);
 
 	if update(quant) --and isnull(new_name.quant, 0.0) != isnull(old_name.quant, 0.0) 
 	then
 		set v_id_mat = old_name.id_mat;
 		select perList into v_perList from sGuideNomenk where nomnom = old_name.nomNom;
 		if v_id_mat is not null then
-			select id_jmat into v_id_jmat from sdocs where numdoc = old_name.numdoc and numext = old_name.numext;
+			select id_jmat, v.sysname into v_id_jmat, v_sysname
+			from sdocs d
+			left join venture v on v.ventureid = d.ventureid
+			where d.numdoc = old_name.numdoc and d.numext = old_name.numext;
 			set v_quant = new_name.quant/v_perList;
 
-			call change_mat_qty_stime(v_id_mat, v_quant);
+			call change_mat_qty_dual(v_systime, v_id_mat, v_quant);
 		end if;
 	end if;
 /*
@@ -7187,9 +7191,10 @@ begin
 	declare v_cenaEd float;
 	declare v_quantity float;
 	declare v_perList float;
+	declare v_currency_rate float;
 	
 	set v_id_scet = old_name.id_scet;
-
+/*
 	select v.sysname
 		, n.perList 
 	into remoteServerNew
@@ -7222,7 +7227,37 @@ begin
 			);
 		end if;
 	end if;
+*/
 	  
+	select v.sysname
+		, n.perList 
+	into remoteServerNew
+		, v_perList 
+	from BayOrders o
+	join GuideVenture v on o.ventureId = v.ventureId and v.standalone = 0
+	join sGuideNomenk n on n.nomNom = old_name.nomNom
+	where numOrder = old_name.numDoc;
+
+
+	if remoteServerNew is not null then
+		if update(quantity) or update(intQuant) then
+			set v_currency_rate = system_currency_rate();
+			set v_quantity = round(new_name.quantity/v_perList, 2);
+			call update_remote(remoteServerNew, 'scet', 'summa_sale'
+				, convert(varchar(20), v_currency_rate * v_quantity * new_name.intQuant)
+				, 'id = ' + convert(varchar(20), v_id_scet)
+			);
+			call update_remote(remoteServerNew, 'scet', 'summa_salev'
+				, convert(varchar(20), v_quantity*new_name.intQuant)
+				, 'id = ' + convert(varchar(20), v_id_scet)
+			);
+        end if;
+		if update(quantity) then
+			call update_remote(remoteServerNew, 'scet', 'kol1', convert(varchar(20), v_quantity), 'id = ' + convert(varchar(20), v_id_scet));
+--			call update_remote(remoteServerNew, 'scet', 'kol3', convert(varchar(20), v_quantity), 'id = ' + convert(varchar(20), v_id_scet));
+		end if;
+	end if;
+
 end;
 	
 	
@@ -7236,17 +7271,21 @@ referencing old as old_name
 for each row
 begin
 	declare remoteServerNew varchar(32);
+	declare v_id_jscet integer;
 	
 	select 
 		sysname
+		, id_jscet
 	into 
 		remoteServerNew
+		, v_id_jscet
 	from BayOrders o
 	join GuideVenture v on o.ventureId = v.ventureId and v.standalone = 0
 	where numOrder = old_name.numDoc;
 
 	if remoteServerNew is not null then
 		call delete_remote(remoteServerNew, 'scet', 'id = ' + convert(varchar(20), old_name.id_scet));
+		call call_remote(remoteServerNew, 'renu_scet', v_id_jscet);
 	end if;
 end;
 
