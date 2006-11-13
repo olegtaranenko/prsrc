@@ -28,11 +28,11 @@ begin
 		if v_id_mat is not null then
 			select id_jmat, v.sysname into v_id_jmat, v_sysname
 			from sdocs d
-			left join venture v on v.ventureid = d.ventureid
+			left join guideventure v on v.ventureid = d.ventureid
 			where d.numdoc = old_name.numdoc and d.numext = old_name.numext;
 			set v_quant = new_name.quant/v_perList;
 
-			call change_mat_qty_dual(v_systime, v_id_mat, v_quant);
+			call change_mat_qty_dual(v_sysname, v_id_mat, v_quant);
 		end if;
 	end if;
 /*
@@ -269,34 +269,29 @@ if exists (select 1 from systriggers where trigname = 'wf_set_numdoc' and tname 
 	drop trigger sdocs.wf_set_numdoc;
 end if;
 
-/*
-create 
-	trigger wf_set_numdoc before insert order 1 on 
-sdocs
-referencing new as new_name
-for each row
-when (new_name.numdoc = 0 or new_name.numdoc is null)
-begin
-	set new_name.numdoc = wf_next_numdoc();
-end;
-*/
 
 if exists (select 1 from systriggers where trigname = 'wf_insert_income' and tname = 'sdocs') then 
 	drop trigger sdocs.wf_insert_income;
 end if;
 
-/*
-create 
-	trigger wf_insert_income before insert order 2 on 
-sdocs
-referencing new as new_name
-for each row
-when (new_name.numext = 255)
+
+if exists (select 1 from sysprocedure where proc_name = 'change_mat_qty_dual') then
+	drop procedure change_mat_qty_dual;
+end if;
+
+create
+	procedure change_mat_qty_dual (
+		  p_servername varchar(20)
+		, p_id_mat integer
+		, p_quant float
+	) 
 begin
-	
+	call call_remote ('stime', 'change_mat_qty', convert(varchar(20), p_id_mat) + ',' + convert(varchar(20), p_quant));
+	if isnull(p_servername, 'stime') != 'stime' then
+		call call_remote (p_servername, 'change_mat_qty', convert(varchar(20), p_id_mat) + ',' + convert(varchar(20), p_quant));
+	end if;
 end;
 
-*/
 
 if exists (select 1 from sysprocedure where proc_name = 'wf_dual_insert_jmat') then
 	drop procedure wf_dual_insert_jmat;
@@ -3049,8 +3044,8 @@ begin
 
 	// исправить порядковые 
 	// номера позиций для нового и старого счета
-	call call_remote(old_server, 'renu_scet', v_id_jscet);
-	call call_remote(old_server, 'renu_scet', old_id_jscet);
+	call call_remote(old_server, 'slave_renu_scet', v_id_jscet);
+	call call_remote(old_server, 'slave_renu_scet', old_id_jscet);
 
 //	return convert(integer, v_nu_jscet);
 	return v_id_jscet;
@@ -4130,7 +4125,7 @@ begin
 		--message 'v_quant        = ', v_quant       to client;
 		--message 'v_id_inv       = ', v_id_inv      to client;
 
-		call call_remote(p_servername, 'move_uslug', 
+		call call_remote(p_servername, 'slave_move_uslug', 
 			         convert(varchar(20), v_id_jscet    )
 			+ ', ' + convert(varchar(20), p_id_jscet_new)
 			+ ', ' + convert(varchar(20), isnull(v_quant, 0)       )
@@ -7194,40 +7189,6 @@ begin
 	declare v_currency_rate float;
 	
 	set v_id_scet = old_name.id_scet;
-/*
-	select v.sysname
-		, n.perList 
-	into remoteServerNew
-		, v_perList 
-	from BayOrders o
-	join GuideVenture v on o.ventureId = v.ventureId and v.standalone = 0
-	join sGuideNomenk n on n.nomNom = old_name.nomNom
-	where numOrder = old_name.numDoc;
-
-
-	if remoteServerNew is not null then
-		set v_cenaEd = new_name.intQuant;
-		set v_quantity = round(new_name.quantity/v_perList, 2);
-		if update(quantity) or update(intQuant) then
-			call update_remote(remoteServerNew
-				, 'scet'
-				, 'summa_sale'
-				, convert(varchar(20), v_quantity * v_cenaEd)
-				, 'id = ' + convert(varchar(20), v_id_scet)
-			);
-        end if;
-		
-		if update(quantity) then
-			call update_remote(
-				remoteServerNew
-				, 'scet'
-				, 'kol1'
-				, convert(varchar(20), v_quantity)
-				, 'id = ' + convert(varchar(20), v_id_scet)
-			);
-		end if;
-	end if;
-*/
 	  
 	select v.sysname
 		, n.perList 
@@ -7254,7 +7215,6 @@ begin
         end if;
 		if update(quantity) then
 			call update_remote(remoteServerNew, 'scet', 'kol1', convert(varchar(20), v_quantity), 'id = ' + convert(varchar(20), v_id_scet));
---			call update_remote(remoteServerNew, 'scet', 'kol3', convert(varchar(20), v_quantity), 'id = ' + convert(varchar(20), v_id_scet));
 		end if;
 	end if;
 
@@ -7285,7 +7245,7 @@ begin
 
 	if remoteServerNew is not null then
 		call delete_remote(remoteServerNew, 'scet', 'id = ' + convert(varchar(20), old_name.id_scet));
-		call call_remote(remoteServerNew, 'renu_scet', v_id_jscet);
+		call call_remote(remoteServerNew, 'slave_renu_scet', v_id_jscet);
 	end if;
 end;
 
@@ -7766,7 +7726,7 @@ begin
 	end if;
 	if p_remote = 1 and p_server is not null then
 		execute immediate 'call slave_set_standalone_'+ p_server +'( slave_set_standalone, ''' + p_status + ''')';
-//		call call_remote(p_server, 'set_standalone', ''''+ p_status + '''');
+//		call call_remote(p_server, 'slave_set_standalone', ''''+ p_status + '''');
 	end if; 
 	exception when others then
 		set slave_set_standalone = 0;

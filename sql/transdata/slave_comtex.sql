@@ -1,3 +1,38 @@
+if exists (select '*' from sysprocedure where proc_name like 'change_mat_qty') then
+	drop procedure change_mat_qty;
+end if;
+
+create 
+	-- процедура вызывается для коррекции суммы по позиции в приходной накладной
+	-- при изменении количества в интерфейсе stime
+	-- 
+procedure change_mat_qty (
+	  in p_id_mat integer
+	, in p_new_quant float
+--	, in p_cena float default 0.0
+)
+begin
+	declare v_kol1 float;
+	select kol1 into v_kol1 from mat where id= p_id_mat;
+	if abs(round(v_kol1, 3)) > 0.001 then
+		update mat set 
+			 summa       = summa       / kol1 * p_new_quant
+			,summa_sale  = summa_sale  / kol1 * p_new_quant
+			,summav      = summav      / kol1 * p_new_quant
+			,summa_salev = summa_salev / kol1 * p_new_quant
+			,kol1        = p_new_quant
+			,kol2        = p_new_quant
+			,kol3        = p_new_quant
+		where id = p_id_mat;
+	else
+		update mat set 
+			kol1        = p_new_quant
+			,kol2        = p_new_quant
+			,kol3        = p_new_quant
+		where id = p_id_mat;
+	end if;
+end;
+
 
 if exists (select '*' from sysprocedure where proc_name like 'order_import') then
 	drop procedure order_import;

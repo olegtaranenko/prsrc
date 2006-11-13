@@ -13,10 +13,10 @@ end if;
 
 call build_host_procedure (
 	  'currency_rate'
-	, '	out o_date char(20)'
-	+ '	,out o_rate real'
-	+ '	,in p_date char(20) default null'
-	+ ' ,in p_id_cur integer default null'
+	,   ' out o_date char(20)'
+	  + ',out o_rate real'
+	  + ',in p_date char(20) default null'
+	  + ',in p_id_cur integer default null'
 );
 
 
@@ -44,10 +44,10 @@ call build_host_procedure (
 
 call build_host_procedure (
 	'move_uslug'
-	,'in p_id_jscet integer'
-	+ ', in p_id_jscet_new integer'
-	+ ', in p_quant real'
-	+ ', in p_id_inv integer'
+	,   'in p_id_jscet integer'
+	  + ', in p_id_jscet_new integer'
+	  + ', in p_quant real'
+	  + ', in p_id_inv integer'
 );
 
 
@@ -55,10 +55,10 @@ call build_host_procedure (
 call build_host_procedure (
 	 'nextnu'
 	, '  in table_name char(100)'
-	+ ', out p_nu char(32)'
-	+ ', in p_nu_old char(32) default null'
-	+ ', in p_dat_field char(32) default null'
-	+ ', in p_dat char(32) default null'
+	  + ', out p_nu char(32)'
+	  + ', in p_nu_old char(32) default null'
+	  + ', in p_dat_field char(32) default null'
+	  + ', in p_dat char(32) default null'
 );
 
 
@@ -75,18 +75,17 @@ call build_remote_host (
 );
 
 -- при изменени количества в приходной накладной Prior(stime)
-call build_rp_procedure (
-	  'stime'
-	, 'change_mat_qty'
-	, 'in p_id_mat integer'
-	+ ', in p_new_quant float'
+call build_remote_host (
+	 'change_mat_qty'
+	,   'in p_id_mat integer'
+	  + ', in p_new_quant float'
 );
 
 call build_rp_procedure (
 	  'stime'
 	, 'wf_calc_cost'
-	, 'out out_ret float'
-	+ ', p_id_inv integer'
+	,   'out out_ret float'
+	  + ', p_id_inv integer'
 );
 
 

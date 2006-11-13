@@ -339,7 +339,7 @@ create procedure call_remote(
 begin
 	declare v_sql varchar(254);
 
-	set v_sql = 'call slave_' + p_proc_name + '_'+ p_server + '(' + p_params + ')';
+	set v_sql = 'call ' + p_proc_name + '_'+ p_server + '(' + p_params + ')';
 //	message v_sql to client;
 	execute immediate v_sql;
 end;
