@@ -778,13 +778,13 @@ begin
 		end if;
 
 		if 		isnull(old_name.ventureId, v_venture_anl_id) != v_venture_anl_id 
-			and wf_dual_term(v_id_jmat) = 1 
 		then
 			select sysname into v_sysname from guideventure where ventureid = old_name.ventureId;
 		    -- исправить в базе старого предприятия если накладная меняет предприятие
-			if 
+		    if 
 					isnull(new_name.ventureId, -old_name.ventureId) != old_name.ventureId 
 				and old_name.ventureId != v_venture_anl_id
+				and wf_dual_term(v_sysname, old_name.id_jmat) = 1
 			then
 				-- если предпирятие другое - удадляем накладную
 				call wf_jmat_drop(v_sysname, old_name.id_jmat);
