@@ -2321,7 +2321,9 @@ begin
 				set char_id_jmat = select_remote(r_src_server, 'jmat', 'id', 'id = ' + convert(varchar(20), r_id_jmat));
 				if char_id_jmat is not null then
 					-- удалить деталировку
-					call delete_remote(r_src_server, 'mat', 'id_jmat = '+ char_id_jmat);
+					-- добавление 26.11.06: вместе с самой накладной 
+					-- деталировка удал€етс€ по foreign constraint
+					call delete_remote(r_src_server, 'jmat', 'id = '+ char_id_jmat);
 				end if;
 			else 
 				set r_id_jmat = get_nextid('jmat');
@@ -2367,7 +2369,7 @@ begin
 				set char_id_jmat = select_remote(r_dst_server, 'jmat', 'id', 'id = ' + convert(varchar(20), r_id_jmat));
 				if char_id_jmat is not null then
 					-- удалить деталировку
-					call delete_remote(r_dst_server, 'mat', 'id_jmat = '+ char_id_jmat);
+					call delete_remote(r_dst_server, 'jmat', 'id = '+ char_id_jmat);
 				end if;
 			else 
 				set r_id_jmat = get_nextid('jmat');
@@ -2549,14 +2551,18 @@ begin
 	declare v_src_abbrev varchar(20);
 	declare v_dst_abbrev varchar(20);
 
+	select rusAbbrev into v_src_abbrev from GuideVenture where ventureId = p_src_venture_id;
+
+	select rusAbbrev into v_dst_abbrev from GuideVenture where ventureId = p_dst_venture_id;
+
 
 	select id_sklad into o_src_id_sklad from guideventure where ventureId = p_src_venture_id;
 	set o_src_id_guide = get_id_guide_by_key('outcome', 1); -- валютные - чтобы не путались с "нормальными" по автоформированию
-	set o_src_osn = '–асход по взаимозачету с ' + v_dst_abbrev;
+	set o_src_osn = '–асход по взаимозачету на ' + v_dst_abbrev;
 
 	select id_sklad into o_dst_id_sklad from guideventure where ventureId = p_dst_venture_id;
 	set o_dst_id_guide = get_id_guide_by_key('income', 1);
-	set o_dst_osn = 'ѕриход по взаимозачету с ' + v_dst_abbrev;
+	set o_dst_osn = 'ѕриход по взаимозачету от ' + v_src_abbrev;
 
 	set v_analytic_id = 3; -- todo
 	if p_src_venture_id = v_analytic_id then
