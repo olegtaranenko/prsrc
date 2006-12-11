@@ -88,6 +88,14 @@ call build_rp_procedure (
 	  + ', p_id_inv integer'
 );
 
+call build_rp_procedure (
+	  'stime'
+	, 'wf_cost_date'
+	,   'out out_ret float'
+	  + ', p_id_inv integer'
+	  + ', p_date char(20)'
+);
+
 
 
 

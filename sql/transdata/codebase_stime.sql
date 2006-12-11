@@ -22,6 +22,24 @@ begin
 end;
 
 
+if exists (select '*' from sysprocedure where proc_name like 'wf_cost_date') then  
+	drop procedure wf_cost_date;
+end if;
+
+
+create procedure wf_cost_date (
+	  out out_ret float
+	, p_id_inv integer
+	, p_date date
+) 
+begin
+
+	set out_ret = calc_summa('mat', -1, p_date, p_id_inv, -2, 'summa', 1, 7);
+
+end;
+
+
+
 
 if exists (select 1 from systriggers where trigname = 'wf_analytic_income' and tname = 'jmat') then 
 	drop trigger jmat.wf_analytic_income;
