@@ -2496,6 +2496,8 @@ begin
 	declare v_perList float;
 	declare v_procent float;
 	declare chk_forward_income_qty float;
+	declare v_comtex_cost float;
+	declare v_id_inv integer;
 
 	select d.id, m.nomnom, isnull(m.quant, 0), procent
 	into wf_put_ivo_nomnom, v_nomnom, chk_forward_income_qty, v_procent
@@ -2524,7 +2526,24 @@ begin
 		update sDmcVenture set quant = quant + p_qty * v_perList
 		where sdv_id = wf_put_ivo_nomnom and nomnom = p_nomnom;
 	end if;
+/*
+	--  ¬з€ть не текущую себестоимость во взаимозачете, а цену на дату взаимозачета.
+	-- Ќе проходит сейчас, потому что нужно в этом случае выправл€ть ситуацию в 2004 и 2005 годах
+	-- а это делать не очень целесообразно
+	select id_inv, perList into v_id_inv, v_perList from sguidenomenk where nomnom = p_nomnom;
+	call wf_cost_date_stime(v_comtex_cost, v_id_inv, p_target_date);
 
+	set v_comtex_cost = v_comtex_cost /30;
+
+	if v_nomnom is null then
+		insert into sDmcVenture(sdv_id, nomnom, quant, costed)
+		select wf_put_ivo_nomnom, p_nomnom, p_qty * v_perList, v_comtex_cost * (1 + p_procent / 100);
+	else 
+
+		update sDmcVenture set quant = quant + p_qty * v_perList, costed = v_comtex_cost * (1 + p_procent / 100)
+		where sdv_id = wf_put_ivo_nomnom and nomnom = p_nomnom;
+	end if;
+*/	
 end;
 
 
