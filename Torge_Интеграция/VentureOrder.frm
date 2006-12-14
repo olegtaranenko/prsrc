@@ -2,12 +2,12 @@ VERSION 5.00
 Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form VentureOrder 
    Caption         =   "Накладные между предприятиями"
-   ClientHeight    =   5910
-   ClientLeft      =   165
-   ClientTop       =   810
+   ClientHeight    =   5904
+   ClientLeft      =   168
+   ClientTop       =   816
    ClientWidth     =   11880
    LinkTopic       =   "Form1"
-   ScaleHeight     =   5910
+   ScaleHeight     =   5904
    ScaleWidth      =   11880
    StartUpPosition =   3  'Windows Default
    Begin VB.CommandButton cmRecalc 
@@ -20,7 +20,7 @@ Begin VB.Form VentureOrder
       Width           =   1095
    End
    Begin VB.ListBox lbBlock 
-      Height          =   450
+      Height          =   432
       ItemData        =   "VentureOrder.frx":0000
       Left            =   4800
       List            =   "VentureOrder.frx":000A
@@ -80,7 +80,7 @@ Begin VB.Form VentureOrder
       Width           =   975
    End
    Begin VB.ListBox lbVenture 
-      Height          =   255
+      Height          =   240
       ItemData        =   "VentureOrder.frx":0014
       Left            =   3000
       List            =   "VentureOrder.frx":0016
@@ -180,8 +180,8 @@ Begin VB.Form VentureOrder
       TabIndex        =   0
       Top             =   720
       Width           =   5775
-      _ExtentX        =   10186
-      _ExtentY        =   8070
+      _ExtentX        =   10181
+      _ExtentY        =   8065
       _Version        =   393216
       MergeCells      =   2
       AllowUserResizing=   1
@@ -193,8 +193,8 @@ Begin VB.Form VentureOrder
       Top             =   720
       Visible         =   0   'False
       Width           =   5835
-      _ExtentX        =   10292
-      _ExtentY        =   8070
+      _ExtentX        =   10287
+      _ExtentY        =   8065
       _Version        =   393216
       AllowUserResizing=   1
    End
@@ -326,7 +326,7 @@ Sub lbHide2()
 End Sub
 
 Function loadDocNomenk(ByVal sdvId As String) As Boolean
-Dim msgOst As String, docProcent As Single, summa_fact As Single
+Dim msgOst As String, docProcent As Single, summa_fact As Single, fullNomName As String
 
     loadDocNomenk = True ' не надо отката - пока
     msgOst = ""
@@ -344,7 +344,7 @@ Dim msgOst As String, docProcent As Single, summa_fact As Single
         docProcent = CSng(Grid.TextMatrix(mousRow, dcProcent))
     End If
     sql = _
-        " select m.id, m.nomnom, round(isnull(m.quant, 0) / n.perlist, 2) as quant, m.id_mat" _
+        " select cod, m.id, m.nomnom, round(isnull(m.quant, 0) / n.perlist, 2) as quant, m.id_mat" _
         & "     , isnull(m.costed, 0.00) as costed , n.nomname, n.ed_izmer2" _
         & "     , round(n.cena1, 2) as cost_fact, n.size" _
         & " from sdmcventure m" _
@@ -357,15 +357,20 @@ Dim msgOst As String, docProcent As Single, summa_fact As Single
     If Not tbNomenk.BOF Then
         While Not tbNomenk.EOF
             quantity2 = quantity2 + 1
-            
             Grid2.TextMatrix(quantity2, dnId) = tbNomenk!id
             If Not IsNull(tbNomenk!id_mat) Then
                 Grid2.TextMatrix(quantity2, dnIdMat) = tbNomenk!id_mat
             End If
-            Grid2.TextMatrix(quantity2, dnNomName) = tbNomenk!nomName
-            If Not IsNull(tbNomenk!Size) And Len(tbNomenk!Size) > 0 Then
-                Grid2.TextMatrix(quantity2, dnNomName) = Grid2.TextMatrix(quantity2, dnNomName) & " " & tbNomenk!Size
+            Grid2.TextMatrix(quantity2, dnNomName) = tbNomenk!NomName
+            If Not IsNull(tbNomenk!cod) Then
+                fullNomName = tbNomenk!cod & " "
             End If
+            fullNomName = fullNomName & tbNomenk!NomName
+            If Not IsNull(tbNomenk!Size) Then
+                fullNomName = fullNomName & " " & tbNomenk!Size
+            End If
+          
+            Grid2.TextMatrix(quantity2, dnNomName) = fullNomName
             Grid2.TextMatrix(quantity2, dnEdIzm) = tbNomenk!ed_Izmer2
             Grid2.TextMatrix(quantity2, dnNomNom) = tbNomenk!nomnom
             Grid2.TextMatrix(quantity2, dnQuant) = tbNomenk!quant
@@ -626,7 +631,7 @@ Private Sub ckEndDate_Click()
     End If
     
     If tbEndDate.Text = "" Then
-        tbEndDate.Text = Format(Now, "dd.mm.yyy")
+        tbEndDate.Text = Format(Now, "dd.mm.yy")
     End If
     
     If ckEndDate.value = 1 And ckStartDate.value = 1 Then

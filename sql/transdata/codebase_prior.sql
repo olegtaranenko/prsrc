@@ -743,7 +743,8 @@ begin
 
 
 --	if update (ventureId) then
-		if		isnull(new_name.ventureId, v_venture_anl_id) != v_venture_anl_id
+		if	
+				isnull(new_name.ventureId, v_venture_anl_id) != v_venture_anl_id
 			and isnull(old_name.ventureId, v_venture_anl_id) != isnull(new_name.ventureId, v_venture_anl_id)
 		then
 			set f_distribute = 1;
@@ -777,7 +778,8 @@ begin
 			end if;
 		end if;
 
-		if 		isnull(old_name.ventureId, v_venture_anl_id) != v_venture_anl_id 
+		if
+			isnull(old_name.ventureId, v_venture_anl_id) != v_venture_anl_id 
 		then
 			select sysname into v_sysname from guideventure where ventureid = old_name.ventureId;
 		    -- исправить в базе старого предприятия если накладная меняет предприятие

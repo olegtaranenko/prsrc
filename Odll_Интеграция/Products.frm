@@ -1471,12 +1471,14 @@ zakazNomenkToNNQQ = False
 ReDim NN(0): ReDim QQ(0): ReDim QQ2(0): QQ2(0) = 0: ReDim QQ3(0)
 
 'ном-ра входящих изделий
-sql = "SELECT xPredmetyByIzdelia.prId, xPredmetyByIzdelia.prExt, " & _
-"xPredmetyByIzdelia.quant, xEtapByIzdelia.eQuant, xEtapByIzdelia.prevQuant, xEtapByIzdelia.prevQuant " & _
-"FROM xPredmetyByIzdelia LEFT JOIN xEtapByIzdelia ON " & _
-"(xPredmetyByIzdelia.prExt = xEtapByIzdelia.prExt) AND " & _
-"(xPredmetyByIzdelia.prId = xEtapByIzdelia.prId) AND " & _
-"(xPredmetyByIzdelia.numOrder = xEtapByIzdelia.numOrder)" & _
+sql = "SELECT xPredmetyByIzdelia.prId, " & _
+"xPredmetyByIzdelia.prExt, " & _
+"xPredmetyByIzdelia.quant, " & _
+"xEtapByIzdelia.eQuant, " & _
+"xEtapByIzdelia.prevQuant, " & _
+"xEtapByIzdelia.prevQuant " & _
+"FROM xPredmetyByIzdelia " & _
+"LEFT JOIN xEtapByIzdelia ON (xPredmetyByIzdelia.prExt = xEtapByIzdelia.prExt) AND (xPredmetyByIzdelia.prId = xEtapByIzdelia.prId) AND (xPredmetyByIzdelia.numOrder = xEtapByIzdelia.numOrder)" & _
 "WHERE (((xPredmetyByIzdelia.numOrder)=" & gNzak & "));"
 
 Set tbProduct = myOpenRecordSet("##319", sql, dbOpenForwardOnly)
@@ -1497,9 +1499,8 @@ tbProduct.Close
 
 'отдельная ном-ра
 sql = "SELECT xPredmetyByNomenk.nomNom, xPredmetyByNomenk.quant as quantity, " & _
-"xEtapByNomenk.eQuant, xEtapByNomenk.prevQuant FROM xPredmetyByNomenk LEFT " & _
-"JOIN xEtapByNomenk ON (xPredmetyByNomenk.nomNom = xEtapByNomenk.nomNom) AND  " & _
-"(xPredmetyByNomenk.numOrder = xEtapByNomenk.numOrder) " & _
+"xEtapByNomenk.eQuant, xEtapByNomenk.prevQuant FROM xPredmetyByNomenk " & _
+"LEFT JOIN xEtapByNomenk ON (xPredmetyByNomenk.nomNom = xEtapByNomenk.nomNom) AND (xPredmetyByNomenk.numOrder = xEtapByNomenk.numOrder) " & _
 "WHERE (((xPredmetyByNomenk.numOrder)=" & gNzak & "));"
 Set tbNomenk = myOpenRecordSet("##320", sql, dbOpenDynaset)
 If tbNomenk Is Nothing Then Exit Function
@@ -1525,11 +1526,11 @@ productNomenkToNNQQ = False
 
 'вариантная ном-ра изделия
 sql = "SELECT sProducts.nomNom, sProducts.quantity, sProducts.xGroup " & _
-"FROM sProducts INNER JOIN xVariantNomenc ON (sProducts.nomNom = " & _
-"xVariantNomenc.nomNom) AND (sProducts.ProductId = xVariantNomenc.prId) " & _
+"FROM sProducts " & _
+"INNER JOIN xVariantNomenc ON (sProducts.nomNom = xVariantNomenc.nomNom) AND (sProducts.ProductId = xVariantNomenc.prId) " & _
 "WHERE (((xVariantNomenc.numOrder)=" & gNzak & ") AND (" & _
 "(xVariantNomenc.prId)=" & gProductId & ") AND ((xVariantNomenc.prExt)=" & prExt & "));"
-Debug.Print sql
+'Debug.Print sql
 Set tbNomenk = myOpenRecordSet("##192", sql, dbOpenDynaset)
 If tbNomenk Is Nothing Then Exit Function
 ReDim gr(0): I = 0
