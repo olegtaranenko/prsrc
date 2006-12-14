@@ -273,7 +273,8 @@ Dim sum As Single
 Dim addedId As Integer
 
 Dim ventureIds() As Integer
-Dim ventureRests() As Single
+Dim ventureRests() As Variant
+Dim fromArr() As Variant
 
 Dim defaultVentureIndex As Integer
 
@@ -361,11 +362,11 @@ Dim msgOst As String, docProcent As Single, summa_fact As Single, fullNomName As
             If Not IsNull(tbNomenk!id_mat) Then
                 Grid2.TextMatrix(quantity2, dnIdMat) = tbNomenk!id_mat
             End If
-            Grid2.TextMatrix(quantity2, dnNomName) = tbNomenk!NomName
+            Grid2.TextMatrix(quantity2, dnNomName) = tbNomenk!nomName
             If Not IsNull(tbNomenk!cod) Then
                 fullNomName = tbNomenk!cod & " "
             End If
-            fullNomName = fullNomName & tbNomenk!NomName
+            fullNomName = fullNomName & tbNomenk!nomName
             If Not IsNull(tbNomenk!Size) Then
                 fullNomName = fullNomName & " " & tbNomenk!Size
             End If
@@ -405,7 +406,7 @@ End Function
 Sub loadVentureOrders(Optional reg As String)
 
 Dim prevRow As Long, rowIndex As Long
-Dim dstRow As Long, i As Integer, j As Integer, itogTxt As String
+Dim dstRow As Long, I As Integer, j As Integer, k As Integer, itogTxt As String
 
 
     prevRow = -1
@@ -441,6 +442,7 @@ Dim dstRow As Long, i As Integer, j As Integer, itogTxt As String
         & "   , sum(round(isnull(m.quant, 0) * isnull(m.costed, 0) / isnull(n.perlist, 1), 2)) as summa" _
         & "   , count(*) as cnt " _
         & "   , s.ventureId as sourId" _
+        & "   , d.ventureId as destId" _
         & " from sdocsventure v" _
 
         
@@ -464,7 +466,7 @@ Dim dstRow As Long, i As Integer, j As Integer, itogTxt As String
     sql = sql & " group by " _
         & "    v.id, v.xDate, v.nDate, v.termFrom, v.termTo" _
         & "   , isnull(v.id_jmat, cum.id_jmat), dest, sour, v.procent, v.note" _
-        & "   , v.Invalid, sourId " _
+        & "   , v.Invalid, sourId, destId " _
         & " order by v.nDate, dest, sour"
 
  
@@ -532,8 +534,9 @@ Dim dstRow As Long, i As Integer, j As Integer, itogTxt As String
             Grid.TextMatrix(rowIndex, dcSumma) = Round(tbDocs!summa, 2)
             Grid.TextMatrix(rowIndex, dcCount) = tbDocs!cnt
             
-            i = vlIndex(tbDocs!sourId)
-            ventureRests(i) = ventureRests(i) + tbDocs!summa
+            I = vlIndex(tbDocs!sourId)
+            j = vlIndex(tbDocs!destId)
+            ventureRests(I)(j) = ventureRests(I)(j) + tbDocs!summa
         
             tbDocs.MoveNext
         Wend
@@ -556,26 +559,31 @@ Dim dstRow As Long, i As Integer, j As Integer, itogTxt As String
         cmAdd2.Enabled = True
         If reg = "" Then
 
-            For i = 1 To UBound(ventureIds)
-                Grid.AddItem ""
-                dstRow = Grid.Rows - 1
-                Grid.MergeRow(dstRow) = True
-                Grid.row = dstRow
-                
-                For j = 1 To Grid.Cols - 1
-                    Grid.col = j
-                    If j >= 1 And j < dcSumma Then
-                        itogTxt = "Всего по '" & lbVenture.List(i - 1) & "'"
-                    Else
-                        itogTxt = Format(ventureRests(i), "#0.00")
-                    End If
+            For I = 1 To UBound(ventureIds)
+                For j = 1 To UBound(ventureIds)
+                    If ventureRests(I)(j) > 0 Then
                     
-                    Grid.Text = itogTxt
-                    Grid.CellAlignment = flexAlignRightCenter
-                    Grid.CellFontBold = True
+                        Grid.AddItem ""
+                        dstRow = Grid.Rows - 1
+                        Grid.MergeRow(dstRow) = True
+                        Grid.row = dstRow
+                        
+                        For k = 1 To Grid.Cols - 1
+                            Grid.col = k
+                            If k < dcSumma Then
+                                itogTxt = lbVenture.List(I - 1) & " => " & lbVenture.List(j - 1)
+                            Else
+                                itogTxt = Format(ventureRests(I)(j), "#0.00")
+                            End If
+                            
+                            Grid.Text = itogTxt
+                            Grid.CellAlignment = flexAlignRightCenter
+                            Grid.CellFontBold = True
+                        Next k
+                        Grid.TextMatrix(dstRow, dcSumma) = Format(ventureRests(I), "#0.00")
+                    End If
                 Next j
-                Grid.TextMatrix(dstRow, dcSumma) = Format(ventureRests(i), "#0.00")
-            Next i
+            Next I
         End If
     
     Else
@@ -591,23 +599,25 @@ Dim dstRow As Long, i As Integer, j As Integer, itogTxt As String
 End Sub
 
 Private Sub resetRests()
-Dim i As Integer
+Dim I As Integer, j As Integer
 
-    For i = 1 To UBound(ventureIds)
-        ventureRests(i) = 0
-    Next i
+    For I = 1 To UBound(ventureIds)
+        For j = 1 To UBound(ventureIds)
+            ventureRests(I)(j) = CSng(0)
+        Next j
+    Next I
     
 End Sub
 
 Private Function vlIndex(ventureId)
-Dim i As Integer
+Dim I As Integer
 
-    For i = 1 To UBound(ventureIds)
-        If ventureId = ventureIds(i) Then
-            vlIndex = i
+    For I = 1 To UBound(ventureIds)
+        If ventureId = ventureIds(I) Then
+            vlIndex = I
             Exit Function
         End If
-    Next i
+    Next I
     vlIndex = defaultVentureIndex
     
 End Function
@@ -771,7 +781,8 @@ Private Sub cmRecalc_Click()
 End Sub
 
 Private Sub Form_Load()
-Dim sz As Integer, docProcent As Single
+Dim sz As Integer, docProcent As Single, I As Integer
+
 
     buttonWidth = cmAdd.Width
     oldHeight = Me.Height
@@ -800,15 +811,22 @@ Dim sz As Integer, docProcent As Single
         ReDim Preserve ventureIds(sz + 1)
         ventureIds(sz + 1) = Table!ventureId
 
-        ReDim Preserve ventureRests(sz + 1)
-        ventureRests(sz + 1) = 0
-        
         If Not IsNull(Table!id_analytic_default) Then
             defaultVentureIndex = sz + 1
         End If
         
         Table.MoveNext
     Wend
+    
+    ReDim Preserve ventureRests(sz + 1)
+    
+    For I = 1 To UBound(ventureIds)
+        fromArr = Array()
+        ReDim Preserve fromArr(sz + 1)
+        ventureRests(I) = fromArr
+        fromArr(I) = I
+    Next I
+        
     Table.Close
     lbVenture.Height = lbVenture.ListCount * 205 + 50
 
@@ -1254,7 +1272,7 @@ End Sub
 
 Private Sub mnNomHistory_Click()
 Dim selectedRows As Integer
-Dim i As Integer
+Dim I As Integer
 Dim curRow As Integer, startRow As Integer, stopRow As Integer
     
     selectedRows = Abs(Grid2.row - Grid2.RowSel) + 1
@@ -1268,11 +1286,11 @@ Dim curRow As Integer, startRow As Integer, stopRow As Integer
         stopRow = Grid2.RowSel
     End If
     
-    i = 0
+    I = 0
     curRow = Grid2.row
     For curRow = startRow To stopRow
-        DMCnomNom(i + 1) = Grid2.TextMatrix(curRow, dnNomNom)
-        i = i + 1
+        DMCnomNom(I + 1) = Grid2.TextMatrix(curRow, dnNomNom)
+        I = I + 1
     Next curRow
     
     Me.MousePointer = flexHourglass
@@ -1289,7 +1307,7 @@ End Sub
 
 Private Sub mnAddToHistory_Click()
 
-Dim i As Integer, str As String, newLen As Integer
+Dim I As Integer, str As String, newLen As Integer
 Dim j As Integer, l As Long
 Dim length As Integer
 Dim aStep As Integer
@@ -1301,8 +1319,8 @@ Dim aStep As Integer
     Else
         aStep = 1
     End If
-    For i = Grid2.row To Grid2.RowSel Step aStep
-        str = Grid2.TextMatrix(i, dnNomNom)
+    For I = Grid2.row To Grid2.RowSel Step aStep
+        str = Grid2.TextMatrix(I, dnNomNom)
         For j = 1 To length ' может этот эл-т был уже добавлен
             If DMCnomNom(j) = str Then GoTo NXT
         Next j
@@ -1310,7 +1328,7 @@ Dim aStep As Integer
         ReDim Preserve DMCnomNom(newLen)
         DMCnomNom(newLen) = str ' чтобы корректно работал перерасчет Карты после правки в документе
 NXT:
-    Next i
+    Next I
     
     Me.MousePointer = flexHourglass
     VentureHistory.Show
@@ -1321,7 +1339,7 @@ End Sub
 
 
 Private Sub mnRecalc_Click()
-Dim i As Integer, preserve_yn As Boolean
+Dim I As Integer, preserve_yn As Boolean
 Dim curRow As Long, curCol As Long, curTopRow As Long
 
     If MsgBox("Нажмите Да если вы хотите пересчитать накладную с новыми значениеми", vbDefaultButton2 Or vbYesNo, "") <> vbOK Then Exit Sub
@@ -1329,13 +1347,13 @@ Dim curRow As Long, curCol As Long, curTopRow As Long
     Grid2.col = dnNomName
     preserve_yn = False
     
-    For i = 1 To Grid2.Rows
-        Grid2.row = i
+    For I = 1 To Grid2.Rows
+        Grid2.row = I
         If Grid2.ForeColor = vbRed Then
             preserve_yn = True
             Exit For
         End If
-    Next i
+    Next I
     
     If preserve_yn Then
         If MsgBox("Нажмите Да если вы хотите сохранить значения введенные вручную", vbDefaultButton2 Or vbYesNo, "") <> vbOK Then
