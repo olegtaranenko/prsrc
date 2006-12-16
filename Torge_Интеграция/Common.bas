@@ -182,6 +182,18 @@ Dim il As Long
     noClick = False
 End Sub
 
+Sub foreColorGridRow(Grid As MSFlexGrid, row As Long, color As Long, ccol as Long)
+Dim il As Long
+    noClick = True
+    Grid.row = row
+    For il = 0 To Grid.Cols - 1
+        Grid.col = il
+        If il > 0 Then Grid.CellForeColor = color
+    Next il
+    Grid.col = ccol
+    noClick = False
+End Sub
+
 Sub colorGridCell(Grid As MSFlexGrid, ByVal row As Long, ByVal col As Long, ByVal color As Long)
 Dim il As Long
     noClick = True

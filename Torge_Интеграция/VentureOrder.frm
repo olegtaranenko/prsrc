@@ -256,6 +256,13 @@ Begin VB.Form VentureOrder
          Caption         =   "Добавить к карточке движения"
       End
    End
+   Begin VB.Menu mpGrid3 
+      Caption         =   "mpGrid3"
+      Visible         =   0   'False
+      Begin VB.Menu mnFilter 
+         Caption         =   "Наложить фильтр"
+      End
+   End
 End
 Attribute VB_Name = "VentureOrder"
 Attribute VB_GlobalNameSpace = False
@@ -275,6 +282,7 @@ Dim addedId As Integer
 Dim ventureIds() As Integer
 Dim ventureRests() As Variant
 Dim fromArr() As Variant
+Dim venturePairFilter() As Variant
 
 Dim defaultVentureIndex As Integer
 
@@ -406,7 +414,8 @@ End Function
 Sub loadVentureOrders(Optional reg As String)
 
 Dim prevRow As Long, rowIndex As Long
-Dim dstRow As Long, I As Integer, j As Integer, k As Integer, itogTxt As String
+Dim dstRow As Long, i As Integer, j As Integer, k As Integer, itogTxt As String, rowIsFiltered As Integer, rowisAdded As Integer
+Dim filterIsApplied As Integer
 
 
     prevRow = -1
@@ -477,67 +486,90 @@ Dim dstRow As Long, I As Integer, j As Integer, k As Integer, itogTxt As String
     
     resetRests
     
+    If reg <> "update" Then
+        rowisAdded = 1
+    Else
+        rowIndex = mousRow
+    End If
+    
+    filterIsApplied = 0
+    
+    For i = 1 To UBound(ventureIds)
+        For j = 1 To UBound(ventureIds)
+            If venturePairFilter(i)(j) = 1 Then
+                filterIsApplied = 1
+            End If
+            
+        Next j
+    Next i
+    
     If Not tbDocs.BOF Then
         While Not tbDocs.EOF
-            If reg <> "update" Then
-                Grid.AddItem ""
-                quantity = quantity + 1
-                rowIndex = quantity
-            Else
-                rowIndex = mousRow
-            End If
-            
-            LoadDate Grid, rowIndex, dcDate, tbDocs!xDate, "dd.mm.yy"
-            If Not IsNull(tbDocs!nDate) Then
-                LoadDate Grid, rowIndex, dcNDate, tbDocs!nDate, "dd.mm.yy"
-            End If
-            If Not IsNull(tbDocs!termFrom) Then
-                LoadDate Grid, rowIndex, dcTermFrom, tbDocs!termFrom, "dd.mm.yy"
-            Else
-                Grid.TextMatrix(rowIndex, dcTermFrom) = "от начала"
-            End If
-            
-            If Not IsNull(tbDocs!termTo) Then
-                LoadDate Grid, rowIndex, dcTermTo, tbDocs!termTo, "dd.mm.yy"
-            Else
-                Grid.TextMatrix(rowIndex, dcTermTo) = "наст.вр"
-            End If
-            
-            If Not IsNull(tbDocs!id_Jmat) Then
-                Grid.TextMatrix(rowIndex, dcIdJmat) = tbDocs!id_Jmat
-                Grid.TextMatrix(rowIndex, dcComtec) = "Да"
-            End If
-            Grid.TextMatrix(rowIndex, dcNumDoc) = tbDocs!id
-            If Not IsNull(tbDocs!Sour) Then
-                Grid.TextMatrix(rowIndex, dcSour) = tbDocs!Sour
-            End If
-            If Not IsNull(tbDocs!Dest) Then
-                Grid.TextMatrix(rowIndex, dcDest) = tbDocs!Dest
-            End If
-            
-            If Not IsNull(tbDocs!procent) Then
-                Grid.TextMatrix(rowIndex, dcProcent) = tbDocs!procent
-            End If
-            
-            
-            If Not IsNull(tbDocs!note) Then
-                Grid.TextMatrix(rowIndex, dcNote) = tbDocs!note
-            End If
-            
-            If Not IsNull(tbDocs!Invalid) Then
-                Grid.TextMatrix(rowIndex, dcInvalid) = tbDocs!Invalid
-                If tbDocs!Invalid = "1" Then
-                    cmRecalc.Enabled = True
-                End If
-            End If
-            
-            Grid.TextMatrix(rowIndex, dcSumma) = Round(tbDocs!summa, 2)
-            Grid.TextMatrix(rowIndex, dcCount) = tbDocs!cnt
-            
-            I = vlIndex(tbDocs!sourId)
+            ' Сюда добавить проверку на то, что строка не отфильтровывается
+            i = vlIndex(tbDocs!sourId)
             j = vlIndex(tbDocs!destId)
-            ventureRests(I)(j) = ventureRests(I)(j) + tbDocs!summa
-        
+            If filterIsApplied = 1 And venturePairFilter(i)(j) = 0 Then
+                rowIsFiltered = 1
+            Else
+                rowIsFiltered = 0
+            End If
+            
+            
+            If rowIsFiltered = 0 Then
+                If rowisAdded = 1 Then
+                    Grid.AddItem ""
+                    quantity = quantity + 1
+                    rowIndex = quantity
+                End If
+                LoadDate Grid, rowIndex, dcDate, tbDocs!xDate, "dd.mm.yy"
+                If Not IsNull(tbDocs!nDate) Then
+                    LoadDate Grid, rowIndex, dcNDate, tbDocs!nDate, "dd.mm.yy"
+                End If
+                If Not IsNull(tbDocs!termFrom) Then
+                    LoadDate Grid, rowIndex, dcTermFrom, tbDocs!termFrom, "dd.mm.yy"
+                Else
+                    Grid.TextMatrix(rowIndex, dcTermFrom) = "от начала"
+                End If
+                
+                If Not IsNull(tbDocs!termTo) Then
+                    LoadDate Grid, rowIndex, dcTermTo, tbDocs!termTo, "dd.mm.yy"
+                Else
+                    Grid.TextMatrix(rowIndex, dcTermTo) = "наст.вр"
+                End If
+                
+                If Not IsNull(tbDocs!id_Jmat) Then
+                    Grid.TextMatrix(rowIndex, dcIdJmat) = tbDocs!id_Jmat
+                    Grid.TextMatrix(rowIndex, dcComtec) = "Да"
+                End If
+                Grid.TextMatrix(rowIndex, dcNumDoc) = tbDocs!id
+                If Not IsNull(tbDocs!Sour) Then
+                    Grid.TextMatrix(rowIndex, dcSour) = tbDocs!Sour
+                End If
+                If Not IsNull(tbDocs!Dest) Then
+                    Grid.TextMatrix(rowIndex, dcDest) = tbDocs!Dest
+                End If
+                
+                If Not IsNull(tbDocs!procent) Then
+                    Grid.TextMatrix(rowIndex, dcProcent) = tbDocs!procent
+                End If
+                
+                
+                If Not IsNull(tbDocs!note) Then
+                    Grid.TextMatrix(rowIndex, dcNote) = tbDocs!note
+                End If
+                
+                If Not IsNull(tbDocs!Invalid) Then
+                    Grid.TextMatrix(rowIndex, dcInvalid) = tbDocs!Invalid
+                    If tbDocs!Invalid = "1" Then
+                        cmRecalc.Enabled = True
+                    End If
+                End If
+                
+                Grid.TextMatrix(rowIndex, dcSumma) = Round(tbDocs!summa, 2)
+                Grid.TextMatrix(rowIndex, dcCount) = tbDocs!cnt
+                
+            End If
+            ventureRests(i)(j) = ventureRests(i)(j) + tbDocs!summa
             tbDocs.MoveNext
         Wend
         
@@ -558,11 +590,11 @@ Dim dstRow As Long, I As Integer, j As Integer, k As Integer, itogTxt As String
         Grid2.Visible = True
         cmAdd2.Enabled = True
         If reg = "" Then
-
-            For I = 1 To UBound(ventureIds)
+            
+            For i = 1 To UBound(ventureIds)
                 For j = 1 To UBound(ventureIds)
-                    If ventureRests(I)(j) > 0 Then
-                    
+                    If i <> j Then
+'                        venturePairFilter(i)(j) = 1
                         Grid.AddItem ""
                         dstRow = Grid.Rows - 1
                         Grid.MergeRow(dstRow) = True
@@ -571,19 +603,23 @@ Dim dstRow As Long, I As Integer, j As Integer, k As Integer, itogTxt As String
                         For k = 1 To Grid.Cols - 1
                             Grid.col = k
                             If k < dcSumma Then
-                                itogTxt = lbVenture.List(I - 1) & " => " & lbVenture.List(j - 1)
+                                itogTxt = lbVenture.List(i - 1) & " => " & lbVenture.List(j - 1)
                             Else
-                                itogTxt = Format(ventureRests(I)(j), "#0.00")
+                                itogTxt = Format(ventureRests(i)(j), "#0.00")
                             End If
                             
                             Grid.Text = itogTxt
                             Grid.CellAlignment = flexAlignRightCenter
                             Grid.CellFontBold = True
+                            If venturePairFilter(i)(j) = 1 Then
+                                Grid.CellForeColor = vbRed
+                            End If
                         Next k
-                        Grid.TextMatrix(dstRow, dcSumma) = Format(ventureRests(I), "#0.00")
+'                        Grid.TextMatrix(dstRow, dcSumma) = Format(ventureRests(i)(j), "#0.00")
+
                     End If
                 Next j
-            Next I
+            Next i
         End If
     
     Else
@@ -599,25 +635,26 @@ Dim dstRow As Long, I As Integer, j As Integer, k As Integer, itogTxt As String
 End Sub
 
 Private Sub resetRests()
-Dim I As Integer, j As Integer
+Dim i As Integer, j As Integer
 
-    For I = 1 To UBound(ventureIds)
+    For i = 1 To UBound(ventureIds)
         For j = 1 To UBound(ventureIds)
-            ventureRests(I)(j) = CSng(0)
+            ventureRests(i)(j) = CSng(0)
+'            venturePairFilter(i)(j) = 0
         Next j
-    Next I
+    Next i
     
 End Sub
 
 Private Function vlIndex(ventureId)
-Dim I As Integer
+Dim i As Integer
 
-    For I = 1 To UBound(ventureIds)
-        If ventureId = ventureIds(I) Then
-            vlIndex = I
+    For i = 1 To UBound(ventureIds)
+        If ventureId = ventureIds(i) Then
+            vlIndex = i
             Exit Function
         End If
-    Next I
+    Next i
     vlIndex = defaultVentureIndex
     
 End Function
@@ -781,7 +818,7 @@ Private Sub cmRecalc_Click()
 End Sub
 
 Private Sub Form_Load()
-Dim sz As Integer, docProcent As Single, I As Integer
+Dim sz As Integer, docProcent As Single, i As Integer
 
 
     buttonWidth = cmAdd.Width
@@ -803,6 +840,7 @@ Dim sz As Integer, docProcent As Single, I As Integer
     If Table Is Nothing Then End
     ReDim ventureIds(0)
     ReDim ventureRests(0)
+    ReDim venturePairFilter(0)
     
     While Not Table.EOF
         lbVenture.AddItem Table!ventureName
@@ -820,12 +858,18 @@ Dim sz As Integer, docProcent As Single, I As Integer
     
     ReDim Preserve ventureRests(sz + 1)
     
-    For I = 1 To UBound(ventureIds)
+    ReDim Preserve venturePairFilter(sz + 1)
+    
+    For i = 1 To UBound(ventureIds)
         fromArr = Array()
         ReDim Preserve fromArr(sz + 1)
-        ventureRests(I) = fromArr
-        fromArr(I) = I
-    Next I
+        ventureRests(i) = fromArr
+        
+        fromArr = Array()
+        ReDim Preserve fromArr(sz + 1)
+        venturePairFilter(i) = fromArr
+        
+    Next i
         
     Table.Close
     lbVenture.Height = lbVenture.ListCount * 205 + 50
@@ -1071,13 +1115,46 @@ Private Sub Grid_LeaveCell()
 End Sub
 
 
+Sub searchPair(ByVal row As Long, ByRef indexFrom As Integer, ByRef indexTo As Integer)
+Dim i As Integer, j As Integer, curIndex As Long
+
+    indexFrom = -1: indexTo = -1
+    curIndex = quantity + 1
+    For i = 1 To UBound(ventureIds)
+        For j = 1 To UBound(ventureIds)
+            If i <> j Then
+                If curIndex = row Then
+                    indexFrom = i: indexTo = j
+                    Exit Sub
+                End If
+                curIndex = curIndex + 1
+            End If
+        Next j
+    Next i
+End Sub
+
 Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Dim indexFrom As Integer, indexTo As Integer
+
     If Button = vbRightButton Then
         If Grid.MouseRow > 0 Then
             Grid.row = Grid.MouseRow
             Grid.col = Grid.MouseCol
+            mousRow = Grid.MouseRow
+            mousCol = Grid.MouseCol
+            
             If IsNumeric(Grid.TextMatrix(mousRow, dcNumDoc)) Then
-                Me.PopupMenu mpGrid
+                Me.PopupMenu mpGrid  'Пересчитать
+            Else
+                 'Наложить или снять фильтр по паре
+                Call searchPair(Grid.MouseRow, indexFrom, indexTo)
+                If venturePairFilter(indexFrom)(indexTo) = 0 Then
+                    mnFilter.Caption = "Наложить"
+                Else
+                    mnFilter.Caption = "Снять"
+                End If
+                mnFilter.Caption = mnFilter.Caption & " фильтр"
+                Me.PopupMenu mpGrid3
             End If
         End If
     End If
@@ -1270,9 +1347,25 @@ Private Sub lbVenture_LostFocus()
     lbHide
 End Sub
 
+Private Sub mnFilter_Click()
+Dim fromIndex As Integer, toIndex As Integer
+
+    ' Перерисовать
+    Call searchPair(mousRow, fromIndex, toIndex)
+    If venturePairFilter(fromIndex)(toIndex) = 0 Then
+        venturePairFilter(fromIndex)(toIndex) = 1
+        Call foreColorGridRow(Grid, mousRow, vbRed, mousCol)
+    Else
+        venturePairFilter(fromIndex)(toIndex) = 0
+        Call foreColorGridRow(Grid, mousRow, Grid.ForeColor, mousCol)
+    End If
+    
+    
+End Sub
+
 Private Sub mnNomHistory_Click()
 Dim selectedRows As Integer
-Dim I As Integer
+Dim i As Integer
 Dim curRow As Integer, startRow As Integer, stopRow As Integer
     
     selectedRows = Abs(Grid2.row - Grid2.RowSel) + 1
@@ -1286,11 +1379,11 @@ Dim curRow As Integer, startRow As Integer, stopRow As Integer
         stopRow = Grid2.RowSel
     End If
     
-    I = 0
+    i = 0
     curRow = Grid2.row
     For curRow = startRow To stopRow
-        DMCnomNom(I + 1) = Grid2.TextMatrix(curRow, dnNomNom)
-        I = I + 1
+        DMCnomNom(i + 1) = Grid2.TextMatrix(curRow, dnNomNom)
+        i = i + 1
     Next curRow
     
     Me.MousePointer = flexHourglass
@@ -1307,7 +1400,7 @@ End Sub
 
 Private Sub mnAddToHistory_Click()
 
-Dim I As Integer, str As String, newLen As Integer
+Dim i As Integer, str As String, newLen As Integer
 Dim j As Integer, l As Long
 Dim length As Integer
 Dim aStep As Integer
@@ -1319,8 +1412,8 @@ Dim aStep As Integer
     Else
         aStep = 1
     End If
-    For I = Grid2.row To Grid2.RowSel Step aStep
-        str = Grid2.TextMatrix(I, dnNomNom)
+    For i = Grid2.row To Grid2.RowSel Step aStep
+        str = Grid2.TextMatrix(i, dnNomNom)
         For j = 1 To length ' может этот эл-т был уже добавлен
             If DMCnomNom(j) = str Then GoTo NXT
         Next j
@@ -1328,7 +1421,7 @@ Dim aStep As Integer
         ReDim Preserve DMCnomNom(newLen)
         DMCnomNom(newLen) = str ' чтобы корректно работал перерасчет Карты после правки в документе
 NXT:
-    Next I
+    Next i
     
     Me.MousePointer = flexHourglass
     VentureHistory.Show
@@ -1339,7 +1432,7 @@ End Sub
 
 
 Private Sub mnRecalc_Click()
-Dim I As Integer, preserve_yn As Boolean
+Dim i As Integer, preserve_yn As Boolean
 Dim curRow As Long, curCol As Long, curTopRow As Long
 
     If MsgBox("Нажмите Да если вы хотите пересчитать накладную с новыми значениеми", vbDefaultButton2 Or vbYesNo, "") <> vbOK Then Exit Sub
@@ -1347,13 +1440,13 @@ Dim curRow As Long, curCol As Long, curTopRow As Long
     Grid2.col = dnNomName
     preserve_yn = False
     
-    For I = 1 To Grid2.Rows
-        Grid2.row = I
+    For i = 1 To Grid2.Rows
+        Grid2.row = i
         If Grid2.ForeColor = vbRed Then
             preserve_yn = True
             Exit For
         End If
-    Next I
+    Next i
     
     If preserve_yn Then
         If MsgBox("Нажмите Да если вы хотите сохранить значения введенные вручную", vbDefaultButton2 Or vbYesNo, "") <> vbOK Then
