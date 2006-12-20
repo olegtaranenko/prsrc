@@ -593,6 +593,95 @@ begin
 end;
 
 
+-- 
+if exists (select 1 from sysprocedure where proc_name = 'wf_dual_distribute') then
+	drop procedure wf_dual_distribute;
+end if;
+
+create
+	procedure wf_dual_distribute (
+		  p_numdoc         integer
+		, p_numext         integer
+		, p_sourid         integer
+		, p_destid         integer
+		, out o_id_jmat    integer
+		, out o_venture_id integer
+)
+begin
+--	declare v_id_jmat integer;
+--	declare v_venture_id integer;
+	declare v_id_mat integer;
+	declare v_jmat_nu varchar(20);
+	declare v_currency_rate float;
+	declare v_datev date;
+	declare v_id_currency integer;
+	declare v_id_source integer;
+	declare v_id_dest integer;
+	declare v_osn varchar(100);
+	declare v_id_guide_jmat integer;
+	declare v_currency_iso varchar(10);
+	declare v_id_guide_anl integer;
+	declare v_id_guide_pmm integer;
+	declare v_sysname varchar(50);
+	declare v_osn_type varchar(10);
+
+
+
+	select ventureId into o_venture_id from orders where numorder = new_name.numdoc;
+
+	if o_venture_id is null then
+		select ventureId into o_venture_id from bayorders where numorder = p_numdoc;
+		set v_osn_type = ' продаже ';
+	else 
+		set v_osn_type = ' заказу ';
+	end if;
+
+	if o_venture_id is not null then
+		select sysname into v_sysname from guideVenture where ventureId = o_venture_id;
+	else
+		set v_osn_type = ' внутр. ';
+	end if;
+
+	call wf_jmat_id_guide (
+		  v_id_guide_pmm, v_id_guide_anl, v_currency_iso, v_id_currency, v_osn
+		, o_venture_id, p_numext, p_sourId, p_destId
+		, null
+	);
+
+	set o_id_jmat = get_nextid('jmat');
+	
+
+	if isnull(v_currency_iso, 'RUR') = 'RUR' then
+		set v_id_currency = system_currency();
+	end if;
+
+	call slave_currency_rate_stime(v_datev, v_currency_rate, null, v_id_currency);
+
+	set v_jmat_nu = p_numdoc;
+	select id_voc_names into v_id_source from sguidesource where sourceid = p_sourid;
+	select id_voc_names into v_id_dest from sguidesource where sourceid = p_destid;
+	set v_osn = v_osn + v_osn_type + convert(varchar(20), p_numdoc);
+	if p_numext < 254 then
+		set v_osn = v_osn + '/' + convert(varchar(20), p_numext);
+	end if;
+    
+	call wf_dual_insert_jmat (
+		 v_sysname
+		,v_id_guide_pmm, v_id_guide_anl
+		,o_id_jmat
+		,now() --v_jmat_date
+		,v_jmat_nu
+		,v_osn
+		,v_id_currency
+		,v_datev
+		,v_currency_rate
+		,v_id_source
+		,v_id_dest
+	);
+
+end;
+
+
 -- триггер переименован wf_sdocs_bi
 if exists (select 1 from systriggers where trigname = 'wf_sdocs_outcome_bi' and tname = 'sdocs') then 
 	drop trigger sdocs.wf_sdocs_outcome_bi;
@@ -610,24 +699,24 @@ for each row
 --when (new_name.numext <= 254)
 begin
 	declare v_id_jmat integer;
-	declare v_id_mat integer;
-	declare v_jmat_nu varchar(20);
-	declare v_currency_rate float;
-	declare v_datev date;
-	declare v_id_currency integer;
-	declare v_id_source integer;
-	declare v_id_dest integer;
-	declare v_osn varchar(100);
-	declare v_id_guide_jmat integer;
-	declare v_currency_iso varchar(10);
-	declare v_id_guide_anl integer;
-	declare v_id_guide_pmm integer;
 	declare v_venture_id integer;
-	declare v_sysname varchar(50);
-	declare v_osn_type varchar(10);
+--	declare v_id_mat integer;
+--	declare v_jmat_nu varchar(20);
+--	declare v_currency_rate float;
+--	declare v_datev date;
+--	declare v_id_currency integer;
+--	declare v_id_source integer;
+--	declare v_id_dest integer;
+--	declare v_osn varchar(100);
+--	declare v_id_guide_jmat integer;
+--	declare v_currency_iso varchar(10);
+--	declare v_id_guide_anl integer;
+--	declare v_id_guide_pmm integer;
+--	declare v_sysname varchar(50);
+--	declare v_osn_type varchar(10);
 
 
-
+/*
 	select ventureId into v_venture_id from orders where numorder = new_name.numdoc;
 
 	if v_venture_id is null then
@@ -666,7 +755,7 @@ begin
 		set v_osn = v_osn + '/' + convert(varchar(20), new_name.numext);
 	end if;
     
-	call wf_dual_insert_jmat (
+	call wf_dual_distribute (
 		 v_sysname
 		,v_id_guide_pmm, v_id_guide_anl
 		,v_id_jmat
@@ -678,6 +767,15 @@ begin
 		,v_currency_rate
 		,v_id_source
 		,v_id_dest
+	);
+*/
+	call wf_dual_distribute (
+		new_name.numdoc
+		, new_name.numext
+		, new_name.sourid
+		, new_name.destid
+		, v_id_jmat
+		, v_venture_id 
 	);
 	set new_name.id_jmat = v_id_jmat;
 	set new_name.ventureId = v_venture_id;
@@ -743,8 +841,7 @@ begin
 
 
 --	if update (ventureId) then
-		if	
-				isnull(new_name.ventureId, v_venture_anl_id) != v_venture_anl_id
+		if		isnull(new_name.ventureId, v_venture_anl_id) != v_venture_anl_id
 			and isnull(old_name.ventureId, v_venture_anl_id) != isnull(new_name.ventureId, v_venture_anl_id)
 		then
 			set f_distribute = 1;
@@ -778,8 +875,7 @@ begin
 			end if;
 		end if;
 
-		if
-			isnull(old_name.ventureId, v_venture_anl_id) != v_venture_anl_id 
+		if 		isnull(old_name.ventureId, v_venture_anl_id) != v_venture_anl_id 
 		then
 			select sysname into v_sysname from guideventure where ventureid = old_name.ventureId;
 		    -- исправить в базе старого предпри€ти€ если накладна€ мен€ет предпри€тие
@@ -1452,13 +1548,14 @@ end if;
 create 
 -- дл€ накладной устанавливает признак, 
 -- на какое предпри€тие был осуществлен приход
-	function wf_make_venture_income(
-	p_numdoc integer
+	function wf_make_venture_income (
+	  p_numdoc varchar(20)
 	, p_venture_id integer
+	, p_numext integer default null
 ) returns integer
 begin
-	declare v_numdoc varchar(20);
-	declare v_numext varchar(20);
+	declare v_numdoc integer;
+	declare v_numext integer;
 	declare v_id_analytic_default integer;
 	declare old_id_analytic integer;
 	declare new_id_analytic integer;
@@ -1466,10 +1563,24 @@ begin
 	declare v_id_jmat integer;
 	declare v_activity_start date;
 	declare v_xdate date;
+	declare v_slash integer;
+
+	set v_slash = charindex('/', p_numdoc);
+	if v_slash > 0 then
+		set v_numdoc = convert (integer, substring (p_numdoc, 1, v_slash - 1));
+		set v_numext = convert( integer, substring(p_numdoc, v_slash + 1));
+	else 
+		set v_numdoc = convert(integer, p_numdoc);
+		if p_numext is null then
+			set v_numext = 255;
+		else
+			set v_numext = p_numext;
+		end if;
+	end if;
 
 	set wf_make_venture_income = 1;
-	set v_numext = 255;
-	set v_numdoc = p_numdoc;
+--	set v_numext = 255;
+--	set v_numdoc = p_numdoc;
 
 	select d.id_jmat, ov.id_analytic
 		, v.id_analytic, s.id_analytic_default, v.activity_start, d.xdate
@@ -1487,7 +1598,7 @@ begin
 		return;
 	end if;
 
-	update sdocs set ventureId = p_venture_id where numdoc = p_numdoc and numext = 255;
+	update sdocs set ventureId = p_venture_id where numdoc = v_numdoc and numext = v_numext;
 
 	if v_id_jmat is not null then
 		call update_remote('stime', 'jmat', 'id_code', isnull(new_id_analytic, 0), 'id = ' + convert(varchar(20), v_id_jmat));
@@ -2517,21 +2628,6 @@ begin
 		set wf_put_ivo_nomnom = @@identity;
 	end if;
 
-	select cena1, perList into v_costed, v_perList from sguidenomenk where nomnom = p_nomnom;
-
-
-	if v_nomnom is null then
-		insert into sDmcVenture(sdv_id, nomnom, quant, costed)
-		select wf_put_ivo_nomnom, p_nomnom, p_qty * v_perList, v_costed * (1 + p_procent / 100);
-	else 
-
-		update sDmcVenture set quant = quant + p_qty * v_perList
-		where sdv_id = wf_put_ivo_nomnom and nomnom = p_nomnom;
-	end if;
-/*
-	--  ¬з€ть не текущую себестоимость во взаимозачете, а цену на дату взаимозачета.
-	-- Ќе проходит сейчас, потому что нужно в этом случае выправл€ть ситуацию в 2004 и 2005 годах
-	-- а это делать не очень целесообразно
 	select id_inv, perList into v_id_inv, v_perList from sguidenomenk where nomnom = p_nomnom;
 	call wf_cost_date_stime(v_comtex_cost, v_id_inv, p_target_date);
 
@@ -2545,7 +2641,7 @@ begin
 		update sDmcVenture set quant = quant + p_qty * v_perList, costed = v_comtex_cost * (1 + p_procent / 100)
 		where sdv_id = wf_put_ivo_nomnom and nomnom = p_nomnom;
 	end if;
-*/	
+
 end;
 
 
