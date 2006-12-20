@@ -1359,7 +1359,7 @@ Dim fromIndex As Integer, toIndex As Integer
         venturePairFilter(fromIndex)(toIndex) = 0
         Call foreColorGridRow(Grid, mousRow, Grid.ForeColor, mousCol)
     End If
-    
+    loadVentureOrders
     
 End Sub
 
