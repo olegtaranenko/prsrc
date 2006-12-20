@@ -3,18 +3,18 @@ Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form sDocs 
    BackColor       =   &H8000000A&
    Caption         =   "Расходные накладные"
-   ClientHeight    =   5895
+   ClientHeight    =   5892
    ClientLeft      =   60
-   ClientTop       =   345
+   ClientTop       =   348
    ClientWidth     =   11880
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
-   ScaleHeight     =   5895
+   ScaleHeight     =   5892
    ScaleWidth      =   11880
    StartUpPosition =   1  'CenterOwner
    Begin VB.ListBox lbVenture 
       Appearance      =   0  'Flat
-      Height          =   615
+      Height          =   600
       Left            =   5500
       TabIndex        =   31
       Top             =   1000
@@ -60,7 +60,7 @@ Begin VB.Form sDocs
       Width           =   915
    End
    Begin VB.ListBox lbGroup 
-      Height          =   450
+      Height          =   432
       ItemData        =   "sDocs.frx":0000
       Left            =   3660
       List            =   "sDocs.frx":000A
@@ -70,7 +70,7 @@ Begin VB.Form sDocs
       Width           =   1395
    End
    Begin VB.ListBox lbStatia 
-      Height          =   255
+      Height          =   240
       Left            =   3660
       TabIndex        =   14
       Top             =   1080
@@ -87,7 +87,7 @@ Begin VB.Form sDocs
       Visible         =   0   'False
       Width           =   2055
       Begin VB.ListBox lbZakaz 
-         Height          =   4155
+         Height          =   4080
          Left            =   180
          TabIndex        =   26
          Top             =   360
@@ -176,7 +176,7 @@ Begin VB.Form sDocs
       Width           =   975
    End
    Begin VB.ListBox lbInside 
-      Height          =   255
+      Height          =   240
       Left            =   3660
       TabIndex        =   13
       Top             =   1500
@@ -255,8 +255,8 @@ Begin VB.Form sDocs
       TabIndex        =   0
       Top             =   300
       Width           =   5775
-      _ExtentX        =   10186
-      _ExtentY        =   8916
+      _ExtentX        =   10181
+      _ExtentY        =   8911
       _Version        =   393216
       AllowBigSelection=   0   'False
       AllowUserResizing=   1
@@ -268,8 +268,8 @@ Begin VB.Form sDocs
       Top             =   300
       Visible         =   0   'False
       Width           =   5775
-      _ExtentX        =   10186
-      _ExtentY        =   8916
+      _ExtentX        =   10181
+      _ExtentY        =   8911
       _Version        =   393216
       AllowBigSelection=   0   'False
       AllowUserResizing=   1
@@ -357,7 +357,8 @@ Private Sub lbVenture_DblClick()
 Dim newNote As String, ncount As Integer
 
 If lbVenture.Visible = False Then Exit Sub
-sql = "select wf_make_venture_income(" & Grid.TextMatrix(mousRow, dcNumDoc) & ", " & lbVenture.ItemData(lbVenture.ListIndex) & ")"
+sql = "select wf_make_venture_income('" & Grid.TextMatrix(mousRow, dcNumDoc) & "', " & lbVenture.ItemData(lbVenture.ListIndex) & ")"
+Debug.Print sql
 
 'i = orderUpdate("##72", lbVenture.ItemData(lbVenture.ListIndex), "Orders", "ventureId")
 byErrSqlGetValues "##126.1", sql, ncount
@@ -367,7 +368,7 @@ If ncount > 0 Then
     If IsNull(newNote) Then newNote = ""
     Grid.TextMatrix(mousRow, dcNote) = newNote
 Else
-    MsgBox "Изменение не произошло. Вероятно, была попытка измененить приход, который был сделан до начала работы предприятия", , "Передупреждение"
+    MsgBox "Изменение не произошло. Вероятно, была попытка измененить накладную, которая создана до начала работы предприятия", , "Передупреждение"
 End If
 
 lbHide
@@ -1334,7 +1335,7 @@ If ckCeh.value = 1 Then
 End If
 If mousCol = dcNote And numExt = 0 Then GoTo AA
 If (mousCol > dcNumDoc And (numExt = 254 Or numExt = 0) And _
-(quantity2 = 0 Or bilo)) Or mousCol = dcNote Then
+(quantity2 = 0 Or bilo)) Or mousCol = dcNote Or mousCol = dcVenture Then
     Grid.CellBackColor = &H88FF88
 Else
 AA: Grid.CellBackColor = vbYellow
