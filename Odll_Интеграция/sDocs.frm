@@ -364,9 +364,9 @@ Debug.Print sql
 byErrSqlGetValues "##126.1", sql, ncount
 If ncount > 0 Then
     Grid.Text = lbVenture.Text
-    newNote = getValueFromTable("sDocs", "Note", "numDoc = " & Grid.TextMatrix(mousRow, dcNumDoc))
-    If IsNull(newNote) Then newNote = ""
-    Grid.TextMatrix(mousRow, dcNote) = newNote
+'    newNote = getValueFromTable("sDocs", "Note", "numDoc = " & Grid.TextMatrix(mousRow, dcNumDoc))
+'    If IsNull(newNote) Then newNote = ""
+'    Grid.TextMatrix(mousRow, dcNote) = newNote
 Else
     MsgBox "Изменение не произошло. Вероятно, была попытка измененить накладную, которая создана до начала работы предприятия", , "Передупреждение"
 End If

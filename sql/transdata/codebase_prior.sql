@@ -398,7 +398,14 @@ create
 		, in p_id_jmat integer
 	) returns integer
 begin
-	set wf_dual_term = select_remote(p_sysname, 'jmat', 'count(*)', 'id = ' + convert(varchar(20), p_id_jmat));
+	
+	select count(*) 
+	into wf_dual_term 
+	from sdocs n
+	join system s on 1=1
+	where 
+			n.id_jmat = p_id_jmat
+		and n.xdate >= s.total_accounting_date; 
 end;
 
 
@@ -593,6 +600,74 @@ begin
 end;
 
 
+
+if exists (select 1 from sysprocedure where proc_name = 'wf_jmat_shift_id') then
+	drop procedure wf_jmat_shift_id;
+end if;
+
+create
+	-- изменяет id для накладной так, что они становятся глобальными. включая id_mat
+	-- изменению подлежат записи в stime и (если есть) в одной из офиц. бухгалтерий.
+	function wf_jmat_shift_id (
+		  in p_id_jmat integer
+		, in p_ventureid integer default null
+		, p_numdoc integer default null
+		, p_numext integer default null
+) returns integer
+begin
+	declare old_id_Jmat integer;
+	declare v_id_mat integer;
+	declare v_sysname varchar(20);
+	declare v_sysname_anl varchar(20);
+
+	set v_sysname_anl = 'stime'; --todo
+
+
+	set wf_jmat_shift_id = null;
+
+	if p_id_jmat is null then
+		select id_jmat, v.sysname
+		into old_id_jmat, v_sysname 
+		from sdocs n
+		left join guideventure v on v.ventureid = n.ventureid
+		where numdoc = p_numdoc and numext = p_numext;
+	else 
+		set old_id_jmat = p_id_jmat;
+		if p_ventureid is not null then
+			select sysname into v_sysname from guideventure where ventureid = p_ventureid;
+		end if;
+	end if;	
+
+	if old_id_jmat is null then
+		raiserror 17000 'Error in procedure wf_jmat_shift_id. Text: old_id_jmat is null!';
+		return;
+	end if;
+
+	message 'old_Id_jmat = ', old_id_jmat to client;
+
+    for all_mat as m dynamic scroll cursor for
+        select id_mat as r_id_mat from sdmc i
+        join sdocs n on i.numdoc = n.numdoc and i.numext = n.numext
+        where n.id_jmat = old_id_jmat
+    do
+        set v_id_mat = get_nextid('mat');
+        call update_remote(v_sysname_anl, 'mat', 'id', v_id_mat, 'id = ' + convert(varchar(20), r_id_mat));
+        if v_sysname != v_sysname_anl then
+	        call update_remote(v_sysname, 'mat', 'id', v_id_mat, 'id = ' + convert(varchar(20), r_id_mat));
+	    end if;
+        update sdmc set id_mat = v_id_mat where id_mat = r_id_mat;
+    end for;
+
+    set wf_jmat_shift_id = get_nextid('jmat');
+    message p_id_jmat to client;
+    
+    call update_remote(v_sysname_anl, 'jmat', 'id',  wf_jmat_shift_id, 'id = '+ convert(varchar(20), old_id_jmat));
+	if v_sysname != v_sysname_anl then
+		call update_remote(v_sysname, 'jmat', 'id',  wf_jmat_shift_id, 'id = '+ convert(varchar(20), old_id_jmat));
+    end if;
+    update sdocs set id_jmat = wf_jmat_shift_id where id_jmat = old_id_jmat;
+end;
+
 -- 
 if exists (select 1 from sysprocedure where proc_name = 'wf_dual_distribute') then
 	drop procedure wf_dual_distribute;
@@ -782,6 +857,10 @@ begin
 
 end;
 
+
+
+
+
 if exists (select 1 from systriggers where trigname = 'wf_sdocs_outcome_bu' and tname = 'sdocs') then 
 	drop trigger sdocs.wf_sdocs_outcome_bu;
 end if;
@@ -824,11 +903,43 @@ begin
 	declare v_old_numext integer;
 	declare old_id_guide_anl integer;
 	declare f_distribute integer;
+	declare v_total_accounting timestamp;
+	declare chk_my_bug varchar(20);
 
 
-	set v_venture_anl_id = 3; -- todo! system.venture_anl_id
+	select venture_anl_id, total_accounting_date into v_venture_anl_id, v_total_accounting from system;
 
-	if update(ventureId) or update(sourId) or update (destId) then
+	set v_id_jmat = old_name.id_jmat;
+	if update(ventureid) and new_name.ventureid is not null and new_name.ventureid != v_venture_anl_id and old_name.id_jmat is not null then
+		select sysname into v_sysname from guideventure where ventureid = new_name.ventureid;
+		set chk_my_bug = select_remote(v_sysname, 'jmat', 'id', 'id = ' + convert(varchar(20), old_name.id_jmat));
+		if chk_my_bug is null then
+			-- Сделать дополнительную проверку на глобальность id по позициям
+			lopp:
+			for all_mat as m dynamic scroll cursor for
+			    select id_mat as r_id_mat from sdmc i
+			    join sdocs n on i.numdoc = n.numdoc and i.numext = n.numext
+			    where n.id_jmat = old_name.id_jmat
+			do
+				set chk_my_bug = select_remote(v_sysname, 'mat', 'id', 'id = ' + convert(varchar(20), r_id_mat));
+				if chk_my_bug is not null then
+					leave lopp;
+				end if;
+			end for;
+		end if;
+		if chk_my_bug is not null then
+			-- Наткнулись на ситуация с неправильным (неглобальным) id для накладных.
+			-- Тербуется перенести id в свободную область, включая id позиций номенклатурры.
+			set v_id_jmat = wf_jmat_shift_id (
+				  old_name.id_jmat 
+				, old_name.ventureid
+			);
+		end if;
+	end if;
+
+	-- для тех накладных, которые относятся к переоду до интеграции 
+	-- только для тех накладных которые уже имеет корресп. запись в Комтехе stime и в одной из официальных баз.
+	if (update(ventureId) or update(sourId) or update (destId)) and v_id_jmat is not null and old_name.xdate >= v_total_accounting then
 		-- при смене "от кого" и "кому" может произойти изменение типа накладной
 		-- Поэтому нужно каждый раз проверять тип
 		set v_old_numext = old_name.numext;
@@ -848,9 +959,10 @@ begin
 		else 
 			set f_distribute = 0;
 		end if;
+		message 'f_distribute = ',f_distribute to client;
 
-		if old_name.id_jmat is not null then
-			set old_id_guide_anl = select_remote('stime', 'jmat', 'id_guide', 'id = ' + convert(varchar(20), old_name.id_jmat));
+		if v_id_jmat is not null then
+			set old_id_guide_anl = select_remote('stime', 'jmat', 'id_guide', 'id = ' + convert(varchar(20), v_id_jmat));
 			message 'old_id_guide_anl = ',old_id_guide_anl to client;
 			message 'v_id_guide_anl = ',v_id_guide_anl to client;
 			if old_id_guide_anl != v_id_guide_anl then
@@ -864,7 +976,7 @@ begin
 	    
 				call change_id_guide_remote (
 					  'stime'
-					, old_name.id_jmat
+					, v_id_jmat
 					, v_id_guide_anl
 					, v_id_currency
 					, v_tp1
@@ -882,14 +994,14 @@ begin
 		    if 
 					isnull(new_name.ventureId, -old_name.ventureId) != old_name.ventureId 
 				and old_name.ventureId != v_venture_anl_id
-				and wf_dual_term(v_sysname, old_name.id_jmat) = 1
+				and wf_dual_term(v_sysname, v_id_jmat) = 1
 			then
 				-- если предпирятие другое - удадляем накладную
-				call wf_jmat_drop(v_sysname, old_name.id_jmat);
+				call wf_jmat_drop(v_sysname, v_id_jmat);
 			else
 				--set f_distribute = 0; -- предприятие осталось тем же, добавлять не нужно
 				-- если тоже самое, то тогда проверяем, а может быть нужно поменять тип накладной
-				set old_id_guide_pmm = select_remote(v_sysname, 'jmat', 'id_guide', 'id = ' + convert(varchar(20), old_name.id_jmat));
+				set old_id_guide_pmm = select_remote(v_sysname, 'jmat', 'id_guide', 'id = ' + convert(varchar(20), v_id_jmat));
 				if isnull(old_id_guide_pmm, -v_id_guide_pmm) != v_id_guide_pmm then
 
 					call qualify_guide(
@@ -902,7 +1014,7 @@ begin
 
 					call change_id_guide_remote (
 						  v_sysname
-						, old_name.id_jmat
+						, v_id_jmat
 						, v_id_guide_pmm
 						, v_id_currency
 						, v_tp1
@@ -918,7 +1030,7 @@ begin
 			select sysname into v_sysname from guideventure where ventureid = new_name.ventureId;
 			call wf_jmat_distribute(
 					  v_sysname
-					, old_name.id_jmat
+					, v_id_jmat
 					, v_id_guide_pmm
 	    		);
 
@@ -932,26 +1044,26 @@ begin
 	if update(sourId) then
 		select id_voc_names into v_id_source from sguidesource where sourceid = new_name.sourid;
 		if v_Id_source is not null then
-			call update_host('jmat', 'id_s', convert(varchar(20), v_id_source), 'id = ' + convert(varchar(20), old_name.id_jmat));
+			call update_host('jmat', 'id_s', convert(varchar(20), v_id_source), 'id = ' + convert(varchar(20), v_id_jmat));
 		end if;
 	end if;
 		
 	if update(destId) then
 		select id_voc_names into v_id_dest from sguidesource where sourceid = new_name.destid;
 		if v_id_dest is not null then
-			call update_host('jmat', 'id_d', convert(varchar(20), v_id_dest), 'id = ' + convert(varchar(20), old_name.id_jmat));
+			call update_host('jmat', 'id_d', convert(varchar(20), v_id_dest), 'id = ' + convert(varchar(20), v_id_jmat));
 		end if;
 	end if;
 
 	if update(xDate) then
-		call update_host('jmat', 'dat', '''''' + convert(varchar(20), new_name.xDate) + '''''', 'id = ' + convert(varchar(20), old_name.id_jmat));
+		call update_host('jmat', 'dat', '''''' + convert(varchar(20), new_name.xDate) + '''''', 'id = ' + convert(varchar(20), v_id_jmat));
 	end if;
 
 	--if update(note) then
 		-- set v_osn = '[Prior: '+ new_name.note +']';
 		-- пришлось отключить из-за ошибки при установки 
 		-- признака предприятия в приходной накладной
-		-- call update_remote ('stime', 'jmat', 'osn', '''' +v_osn + '''', 'id = ' + convert(varchar(20), old_name.id_jmat));
+		-- call update_remote ('stime', 'jmat', 'osn', '''' +v_osn + '''', 'id = ' + convert(varchar(20), v_id_jmat));
 	--end if;
 end;
 
@@ -1564,6 +1676,7 @@ begin
 	declare v_activity_start date;
 	declare v_xdate date;
 	declare v_slash integer;
+	declare v_ventureid integer;
 
 	set v_slash = charindex('/', p_numdoc);
 	if v_slash > 0 then
@@ -1584,7 +1697,9 @@ begin
 
 	select d.id_jmat, ov.id_analytic
 		, v.id_analytic, s.id_analytic_default, v.activity_start, d.xdate
+		, ov.ventureid
 	into v_id_jmat, old_id_analytic, new_id_analytic, v_id_analytic_default, v_activity_start, v_xdate
+		, v_ventureid
 	from sdocs d
 --	left join sdocsIncome i on i.numdoc = d.numdoc and i.numext = d.numext
 	left join guideventure v on v.ventureId = p_venture_id
@@ -1598,7 +1713,9 @@ begin
 		return;
 	end if;
 
-	update sdocs set ventureId = p_venture_id where numdoc = v_numdoc and numext = v_numext;
+	if p_venture_id != v_ventureid then
+		update sdocs set ventureId = p_venture_id where numdoc = v_numdoc and numext = v_numext;
+	end if;
 
 	if v_id_jmat is not null then
 		call update_remote('stime', 'jmat', 'id_code', isnull(new_id_analytic, 0), 'id = ' + convert(varchar(20), v_id_jmat));
