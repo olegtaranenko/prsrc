@@ -702,7 +702,7 @@ begin
 
 
 
-	select ventureId into o_venture_id from orders where numorder = p_numdoc;
+	select ventureId into o_venture_id from orders where numorder = new_name.numdoc;
 
 	if o_venture_id is null then
 		select ventureId into o_venture_id from bayorders where numorder = p_numdoc;
@@ -1684,14 +1684,11 @@ begin
 		set v_numext = convert( integer, substring(p_numdoc, v_slash + 1));
 	else 
 		set v_numdoc = convert(integer, p_numdoc);
-		set v_numext = p_numext;
-/*
 		if p_numext is null then
 			set v_numext = 255;
 		else
 			set v_numext = p_numext;
 		end if;
-*/
 	end if;
 
 	set wf_make_venture_income = 1;
@@ -1708,7 +1705,7 @@ begin
 	left join guideventure v on v.ventureId = p_venture_id
 	left join guideventure ov on d.ventureId = ov.ventureId
 	join system s on 1=1
-	where d.numdoc = v_numdoc and d.numext = isnull(v_numext, numext);
+	where d.numdoc = v_numdoc and d.numext = v_numext;
 
 	if v_activity_start > v_xdate then
 		-- нельзя осуществить приход на предприятие до начала его работы
@@ -1717,7 +1714,7 @@ begin
 	end if;
 
 	if p_venture_id != v_ventureid then
-		update sdocs set ventureId = p_venture_id where numdoc = v_numdoc and numext = isnull(v_numext, numext);
+		update sdocs set ventureId = p_venture_id where numdoc = v_numdoc and numext = v_numext;
 	end if;
 
 	if v_id_jmat is not null then
@@ -2748,21 +2745,6 @@ begin
 		set wf_put_ivo_nomnom = @@identity;
 	end if;
 
-	select cena1, perList into v_costed, v_perList from sguidenomenk where nomnom = p_nomnom;
-
-
-	if v_nomnom is null then
-		insert into sDmcVenture(sdv_id, nomnom, quant, costed)
-		select wf_put_ivo_nomnom, p_nomnom, p_qty * v_perList, v_costed * (1 + p_procent / 100);
-	else 
-
-		update sDmcVenture set quant = quant + p_qty * v_perList
-		where sdv_id = wf_put_ivo_nomnom and nomnom = p_nomnom;
-	end if;
-/*
-	--  Взять не текущую себестоимость во взаимозачете, а цену на дату взаимозачета.
-	-- Не проходит сейчас, потому что нужно в этом случае выправлять ситуацию в 2004 и 2005 годах
-	-- а это делать не очень целесообразно
 	select id_inv, perList into v_id_inv, v_perList from sguidenomenk where nomnom = p_nomnom;
 	call wf_cost_date_stime(v_comtex_cost, v_id_inv, p_target_date);
 
@@ -2776,7 +2758,7 @@ begin
 		update sDmcVenture set quant = quant + p_qty * v_perList, costed = v_comtex_cost * (1 + p_procent / 100)
 		where sdv_id = wf_put_ivo_nomnom and nomnom = p_nomnom;
 	end if;
-*/	
+
 end;
 
 
@@ -2878,7 +2860,6 @@ begin
 						endif
 					endif as 
 				r_activeOper
-/*
 				,	if (n.sourid <= -1001 and n.destid <= -1001) then 
 						null 
 					else 
@@ -2890,11 +2871,10 @@ begin
 									isnull(o.ventureid, bo.ventureid)
 									, if substring(isnull(o.invoice, bo.invoice), 1, 2) = '55' then 2 else 1 endif
 								), v.ventureid
-							)
+							) 
 						endif
-					endif as r_ventureid 
-*/
-				, n.ventureid as r_ventureid 
+					endif 
+				as r_ventureid 
 				, 0 as r_destVentureId
 				, convert(varchar(20), n.numdoc) + '/' + convert(varchar(20),n.numext) as r_numdoc
 			from sdocs n

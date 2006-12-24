@@ -424,19 +424,7 @@ Dim doShowRow As Boolean
 
 
     sql = sql _
-        & " , if (n.sourid <= -1001 and n.destid <= -1001) then " _
-        & "     null " _
-        & " else " _
-        & "     if n.destid <= -1001 then " _
-        & "         isnull(n.ventureid, v.ventureid) " _
-        & "     else " _
-        & "      isnull(" _
-        & "         isnull(" _
-        & "             isnull(o.ventureid, bo.ventureid)" _
-        & "             , if substring(isnull(o.invoice, bo.invoice), 1, 2) = '55' then 2 else 1 endif)" _
-        & "         , v.ventureid) " _
-        & "     endif" _
-        & " endif ventureid" _
+        & " , n.ventureid" _
         & " , 0 as destVentureId" _
         & " , s.sourceName as srcName, d.sourceName as dstName" _
         & " , isnull(o.numorder, bo.numorder) as numorder, isnull(f.name, bf.name) as firmName"
