@@ -939,7 +939,7 @@ begin
 
 	-- дл€ тех накладных, которые относ€тс€ к переоду до интеграции 
 	-- только дл€ тех накладных которые уже имеет корресп. запись в  омтехе stime и в одной из официальных баз.
-	if (update(ventureId) or update(sourId) or update (destId)) and v_id_jmat is not null and old_name.xdate >= v_total_accounting then
+	if (update(ventureId) or update(sourId) or update (destId)) and v_id_jmat is not null  then
 		-- при смене "от кого" и "кому" может произойти изменение типа накладной
 		-- ѕоэтому нужно каждый раз провер€ть тип
 		set v_old_numext = old_name.numext;
@@ -988,6 +988,7 @@ begin
 		end if;
 
 		if 		isnull(old_name.ventureId, v_venture_anl_id) != v_venture_anl_id 
+			and old_name.xdate >= v_total_accounting
 		then
 			select sysname into v_sysname from guideventure where ventureid = old_name.ventureId;
 		    -- исправить в базе старого предпри€ти€ если накладна€ мен€ет предпри€тие
@@ -1026,7 +1027,10 @@ begin
 			end if;
 		end if;
 
-		if f_distribute = 1 and v_id_guide_pmm is not null then
+		if		f_distribute = 1 
+			and v_id_guide_pmm is not null 
+			and old_name.xdate >= v_total_accounting
+		then
 			select sysname into v_sysname from guideventure where ventureid = new_name.ventureId;
 			call wf_jmat_distribute(
 					  v_sysname
