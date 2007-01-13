@@ -6,7 +6,7 @@ set patch=%1
 mkdir %patch%
 cd %patch%
 xcopy \\tsclient\C\dev\mainline\SP\%patch%\*.* . /Y
-echo | time | date > \\tsclient\C\dev\mainline\SP\%patch%\pushed
+echo | time | date > \\tsclient\C\dev\mainline\SP\%patch%\uploaded
 
 
 goto done
