@@ -81,6 +81,17 @@ call build_remote_host (
 	  + ', in p_new_quant float'
 );
 
+-- получить остаток по номенклатуре из базы комтеха
+call build_remote_host (
+	  'wf_calc_ost_inv'
+	,   'out out_ret float'
+	  + ', p_id_inv integer'
+	  + ', p_id_sklad integer default -2'
+);
+
+
+
+-- получить текущую себестоимость ненклатуры из базы комтеха
 call build_rp_procedure (
 	  'stime'
 	, 'wf_calc_cost'
@@ -88,6 +99,7 @@ call build_rp_procedure (
 	  + ', p_id_inv integer'
 );
 
+-- получить себестоимость ненклатуры на заданную дату из базы комтеха
 call build_rp_procedure (
 	  'stime'
 	, 'wf_cost_date'

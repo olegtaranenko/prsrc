@@ -1,3 +1,5 @@
+
+
 if exists (select '*' from sysprocedure where proc_name like 'wf_calc_cost') then  
 	drop procedure wf_calc_cost;
 end if;

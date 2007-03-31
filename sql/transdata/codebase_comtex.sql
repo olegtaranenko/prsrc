@@ -1,3 +1,27 @@
+if exists (select '*' from sysprocedure where proc_name like 'wf_calc_ost_inv') then  
+	drop procedure wf_calc_ost_inv;
+end if;
+
+
+create procedure wf_calc_ost_inv (
+	  out out_ret float
+	, p_id_inv integer
+	, p_id_sklad integer default -2
+) 
+begin
+
+    	for f_ost as ost dynamic scroll cursor for
+            call calc_ost_inv(now(), p_id_Inv, -1, p_id_sklad,  '1' , '2' , '1' , 0 , '0' , '0' , 1 , 1 , '0' , '0' , '0' , 0 )
+    	do
+    		if p_id_sklad = -2 then
+    			set out_ret = adec_ost21;
+    		else
+	    		set out_ret = adec_ost11;
+    		end if;
+    	end for;
+end;
+
+
 if exists (select '*' from sysprocedure where proc_name like 'wf_order_closed_set') then  
 	drop procedure wf_order_closed_set;
 end if;
