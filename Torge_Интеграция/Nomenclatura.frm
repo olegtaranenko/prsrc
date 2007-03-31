@@ -587,10 +587,13 @@ Dim nkMark As Integer
 
 Private Sub setMnPriceHistoryStatus()
 Dim cnt As String
+    If nkPrevCost <> -1 Then
+        cnt = Grid.TextMatrix(mousRow, nkPrevCost)
+    End If
+    
 '    sql = "select count(*) from sPriceHistory where nomnom = '" & Grid.TextMatrix(mousRow, nkNomer) & "'"
-    cnt = Grid.TextMatrix(mousRow, nkPrevCost)
 '    byErrSqlGetValues "##05.05", sql, cnt
-    If cnt <> "--" Then
+    If nkPrevCost <> -1 And cnt <> "--" Then
         mnPriceHistory.Visible = True
         mnSep4.Visible = True
         If mousCol = nkPrevCost Then
