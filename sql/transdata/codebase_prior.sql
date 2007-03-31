@@ -55,7 +55,11 @@ if exists (select 1 from systriggers where trigname = 'wf_delete_sdmc' and tname
 	drop trigger sdmc.wf_delete_sdmc;
 end if;
 
-create TRIGGER wf_delete_sdmc before delete on
+if exists (select 1 from systriggers where trigname = 'wf_sdmc_bd' and tname = 'sdmc') then 
+	drop trigger sdmc.wf_sdmc_bd;
+end if;
+
+create TRIGGER wf_sdmc_bd before delete on
 sdmc
 referencing old as old_name
 for each row
@@ -66,15 +70,15 @@ begin
 
 
   	begin
-  		message '@stime_sdmc = ', @stime_sdmc to log;
+--  		message '@stime_sdmc = ', @stime_sdmc to log;
 		select @stime_sdmc into no_echo; 
 	exception 
 		when other then
-			message 'Exception! no_echo = ' + convert(varchar(20), no_echo) to log;
+--			message 'Exception! no_echo = ' + convert(varchar(20), no_echo) to log;
 			set no_echo = 0;
 	end;
 
-	--message 'trigger sdmc.wf_delete_sdmc::no_echo = ' + convert(varchar(20), no_echo) to log;
+	--message 'trigger sdmc.wf_sdmc_bd::no_echo = ' + convert(varchar(20), no_echo) to log;
 	if no_echo = 1 then
 		return;
 	end if;
@@ -92,7 +96,7 @@ begin
 
 	select sysname into remoteServer 
 	from  guideventure v 
-	join orders o on o.ventureId = v.ventureId and v.standalone = 0 and o.numorder = old_name.numDoc;
+	join sdocs o on o.ventureId = v.ventureId and v.standalone = 0 and o.numdoc = old_name.numDoc;
 
 	--message 'remoteServer = ', remoteServer to client;
 
@@ -564,12 +568,9 @@ begin
 		join GuideCurrency ru on ru.currency_iso = 'RUR'
 		where s.sourceId = p_new_sourId;
 		set o_osn = 'Приход по накл. ';
-	elseif p_new_numext = 254 then
-		if isnull(p_old_numext, 0) = 254 then
-			set o_id_guide_anl = 1220;
-		else
-			set o_id_guide_anl = 1210;
-		end if;
+	elseif (p_new_destId <= -1001 and p_new_sourId <= -1001) then
+		set o_osn = 'Внутреннее перемещение ';
+		set o_id_guide_anl = 1220;
 	else
 		set o_id_guide_anl = 1210;
 		set o_osn = 'Расход по ';
@@ -1290,6 +1291,120 @@ begin
 end;
 
 
+
+if exists (select 1 from sysprocedure where proc_name = 'v_compensate_order') then
+	drop procedure v_compensate_order;
+end if;
+
+create
+-- Процедура инвентаризации по предприятию на дату
+-- если первый параметр null - по всем придприятиям
+-- если второй параметр null - на текущую дату
+	procedure v_compensate_order (
+		 p_venture_id integer default null
+		, p_inventory_date date default null
+		, p_total_start integer default 1
+	) 
+begin
+	
+	declare v_id_inventar integer;
+	declare v_id_jmat integer;
+	declare v_id_mat integer;
+	declare v_fields varchar(200);
+	declare v_values varchar(2000);
+	declare v_nu varchar(20);
+	declare v_mat_nu integer;
+	declare v_quant float;
+	declare v_currency_rate real;
+	declare v_datev date;
+	declare v_id_currency integer;
+	declare v_osn varchar(100);
+
+	if p_inventory_date is null then
+		set p_inventory_date = convert(date, now());
+	end if;
+
+	select id_voc_names into v_id_inventar from sguidesource where sourceName = 'Инвентаризация';
+	set v_osn = 'Компенсация остатков до нулевого уровня (из-за некорректного учета раньше)';
+		set v_id_jmat = get_nextid('jmat');
+
+        -- глобальный для загловков накладных
+		set v_id_mat = get_nextid('mat');
+--		set v_currency_rate = system_currency_rate();
+		set v_id_currency = system_currency();
+		call slave_currency_rate_stime(v_datev, v_currency_rate);
+
+   	for venture_cur as s dynamic scroll cursor for
+		select 
+			ventureid as r_ventureid
+			, sysname as r_server
+			, id_sklad as r_id_sklad
+		from guideventure v
+		where isnull(v.invCode, '' ) != '' and isnull(p_venture_id, v.ventureid) = v.ventureid
+	do
+		
+			set v_nu = select_remote(r_server, 'jmat', 'max(nu)', 'id_guide = 1023');
+			set v_nu = convert(varchar(20), convert(integer, isnull(v_nu, 0)) + 1);
+
+
+			call wf_insert_jmat (
+				r_server
+				,'1023' --инветаризация
+				,v_id_jmat
+				,p_inventory_date
+				,v_nu
+				,v_osn
+				,v_id_currency
+				,v_datev
+				,v_currency_rate
+				,v_id_inventar
+				,r_id_sklad
+			);
+
+        	-- Добавляем предметы к накладной
+        	set v_mat_nu = 1;
+			for nom_cur as n dynamic scroll cursor for
+				select 
+					  n.nomnom    as r_nomnom
+					, n.id_inv    as r_nomenklature_id
+					, n.cost      as r_cost
+					, 1           as r_perlist
+					, n.id_Inv    as r_id_inv
+				from sguidenomenk n 
+	            order by n.nomname
+			do
+
+        		call wf_calc_ost_inv_remote(r_server, v_quant, r_id_inv);
+
+				if abs(v_quant) >= 0.01 then
+
+--					select cost, perList into v_cost, v_perList from sguidenomenk where nomnom = r_nomnom;
+
+					call wf_insert_mat (
+						r_server
+						,v_id_mat
+						,v_Id_jmat
+						,r_nomenklature_id
+						,v_mat_nu
+						,-v_quant
+						,r_cost
+						,v_currency_rate
+						,v_id_inventar
+						,r_id_sklad
+						,r_perList
+					);
+
+					set v_id_mat = v_id_mat + 1;
+					set v_mat_nu = v_mat_nu + 1;
+				end if;
+
+			end for;
+			set v_id_jmat = v_id_jmat + 1;
+	end for;
+end;
+
+
+
 if exists (select 1 from sysprocedure where proc_name = 'venture_inv_order') then
 	drop procedure venture_inv_order;
 end if;
@@ -1305,6 +1420,7 @@ create
 	procedure v_inventory_order (
 		 p_venture_id integer default null
 		, p_inventory_date date default null
+		, p_total_start integer default 1
 	) 
 begin
 	declare v_id_inventar integer;
@@ -1333,7 +1449,7 @@ begin
 	from dummy
 		join (
 			select
-				 quant/k.perlist as r_qty
+				 quant as r_qty
 				, m.nomnom as r_nomnom
 				, if (n.sourid <= -1001 and n.destid <= -1001) then 
 						0 
@@ -1344,34 +1460,19 @@ begin
 							-1
    						endif
     			  endif 
-    			as r_kredit
-    			, if (n.sourid <= -1001 and n.destid <= -1001) then 
-						null 
-    				else 
-    					if n.destid <= -1001 then 
-    						isnull(n.ventureid, v.ventureid) 
-    					else 
-    						isnull(
-    							isnull(
-    								isnull(o.ventureid, bo.ventureid)
-    								, if substring(isnull(o.invoice, bo.invoice), 1, 2) = '55' then 2 else 1 endif
-    							), v.ventureid
-    						) 
-    					endif
-    				endif 
-				as r_ventureid 
-        		from sdocs n
-    			join sdmc m on n.numdoc = m.numdoc 
-    					and n.numext = m.numext 
-    			join sguidenomenk k on k.nomnom = m.nomnom
-    			join sguidesource s on s.sourceId = n.sourId
-    			join sguidesource d on d.sourceId = n.destId
-    			join system sys on 1 = 1
-    			join guideventure v on v.id_analytic = sys.id_analytic_default
-    			left join orders o on o.numorder = n.numdoc
-    			left join bayorders bo on bo.numorder = n.numdoc
-				where
-    				convert(date, n.xDate) <= isnull(p_inventory_date, convert(date, n.xDate))
+	    			as r_kredit
+    			, n.ventureid as r_ventureid
+        	from sdocs n
+    		join sdmc m on n.numdoc = m.numdoc and n.numext = m.numext 
+--    		join sguidenomenk k on k.nomnom = m.nomnom
+    		join sguidesource s on s.sourceId = n.sourId
+    		join sguidesource d on d.sourceId = n.destId
+    		join system sys on 1 = 1
+    		join guideventure v on v.id_analytic = sys.id_analytic_default
+    		left join orders o on o.numorder = n.numdoc
+    		left join bayorders bo on bo.numorder = n.numdoc
+			where
+    			convert(date, n.xDate) <= isnull(p_inventory_date, convert(date, n.xDate))
     	) x on 1=1
 	group by r_nomnom, r_ventureid;
 
@@ -1379,19 +1480,19 @@ begin
 	
 		
 	insert into #saldo (nomnom, id, debit, kredit)
-    select m.nomnom, srcVentureId, 0, sum(m.quant / k.perlist) as kredit
+    select m.nomnom, srcVentureId, 0, sum(m.quant) as kredit
 			from sdmcventure m
 			join sdocsventure n on m.sdv_id = n.id and n.cumulative_id is not null
-			join sguidenomenk k on k.nomnom = m.nomnom
+--			join sguidenomenk k on k.nomnom = m.nomnom
 			where n.nDate <= isnull(p_inventory_date, n.nDate)
 			group by 
 				m.nomnom, srcVentureId;
 
 	insert into #saldo (nomnom, id, debit, kredit)
-    select m.nomnom, dstVentureId, sum(m.quant / k.perlist) as kredit, 0
+    select m.nomnom, dstVentureId, sum(m.quant) as kredit, 0
 			from sdmcventure m
 			join sdocsventure n on m.sdv_id = n.id and n.cumulative_id is not null
-			join sguidenomenk k on k.nomnom = m.nomnom
+--			join sguidenomenk k on k.nomnom = m.nomnom
 			where n.nDate <= isnull(p_inventory_date, n.nDate)
 			group by 
 				m.nomnom, dstVentureId;
@@ -1590,37 +1691,45 @@ begin
 end;
 
 
-
-if exists (select 1 from sysprocedure where proc_name = 'inventory_qty') then
-	drop function inventory_qty;
+if exists (select 1 from sysprocedure where proc_name = 'inventory_tables_prep') then
+	drop function inventory_tables_prep;
 end if;
 
 create
-	-- возвращает остаток по позиции если задана номенклатура p_nomnom
+	procedure inventory_tables_prep ()
+begin
+	create table #saldo(nomnom varchar(20), id integer, debit float, kredit float);
+	create table #itogo(nomnom varchar(20), id integer, debit float, kredit float);
+    create table #nomnom(nomnom varchar(20) primary key);
+end;	
+
+if exists (select 1 from sysprocedure where proc_name = 'inventory_tables_clean') then
+	drop function inventory_tables_clean;
+end if;
+
+create
+	procedure inventory_tables_clean ()
+begin
+    drop table #nomnom;
+	drop table #itogo;
+	drop table #saldo;
+end;	
+
+
+
+if exists (select 1 from sysprocedure where proc_name = 'inventory_qty_rs') then
+	drop function inventory_qty_rs;
+end if;
+
+create
+	-- возвращает result set остаток по позиции если задана номенклатура p_nomnom
 	-- Если номенклатура не задана, возвращаем 0, сохране
-	function inventory_qty (
+	function inventory_qty_rs (
 		  p_nomnom varchar(20)
-		, p_inventory_date date default null
-		, p_sklad integer default null
-		, p_perlist float default 1.0
+		, p_inventory_date date 
 	) returns float
 begin
 
-    if p_nomnom is null then
-    	raiserror 17000 'Invalid parameter value';
-    end if;
-
-    if p_inventory_date is null then
-    	set p_inventory_date = convert(date, now());
-    end if;
-
-    if p_perlist is null then
-    	set p_perlist = 1;
-    end if;
-
-	create table #saldo(nomnom varchar(20), id integer, debit float, kredit float);
-
-	create table #itogo(nomnom varchar(20), id integer, debit float, kredit float);
 
 	insert into #saldo (nomnom, id, debit)
     select nomnom, destid, sum(quant) from sdocs n
@@ -1642,6 +1751,64 @@ begin
 	from #saldo 
     group by nomnom, id;
 
+
+end;
+
+
+if exists (select 1 from sysprocedure where proc_name = 'inventory_qty') then
+	drop function inventory_qty;
+end if;
+
+create
+	-- возвращает остаток по позиции если задана номенклатура p_nomnom
+	-- Если номенклатура не задана, возвращаем 0, сохране
+	function inventory_qty (
+		  p_nomnom varchar(20)
+		, p_inventory_date date default null
+		, p_sklad integer default null
+	) returns float
+begin
+
+    if p_nomnom is null then
+    	raiserror 17000 'Invalid parameter value';
+    end if;
+
+    if p_inventory_date is null then
+    	set p_inventory_date = convert(date, now());
+    end if;
+
+    if p_perlist is null then
+    	set p_perlist = 1;
+    end if;
+
+	call inventory_tables_prep();
+
+	if p_nomnom is not null then
+		insert into #nomnom (nomnom) select p_nomnom;
+	else
+		insert into #nomnom (nomnom) select nomnom from sguidenomenk;
+	end if;
+
+	insert into #saldo (nomnom, id, debit)
+    select nomnom, destid, sum(quant) from sdocs n
+	join sdmc m on n.numdoc = m.numdoc and n.numext = m.numext
+	join #nomnom nm on nm.nomnom = m.nomnom
+    where n.xDate < isnull(p_inventory_date, '30000101')
+	group by m.nomnom, destid;
+    
+	insert into #saldo (nomnom, id, kredit)
+    select nomnom, sourid, sum(quant) from sdocs n
+	join sdmc m on n.numdoc = m.numdoc and n.numext = m.numext
+	join #nomnom nm on nm.nomnom = m.nomnom
+    where n.xDate < isnull(p_inventory_date, '30000101')
+	group by m.nomnom, sourid;
+    
+
+	insert into #itogo (nomnom, id, debit, kredit)
+    select nomnom, id, sum(isnull(debit,0)), sum(isnull(kredit,0))
+	from #saldo 
+    group by nomnom, id;
+
 	message 'p_nomnom = ', p_nomnom to client;
 	select (sum(isnull(debit, 0)) - sum(isnull(kredit, 0))) / p_perlist
 	into inventory_qty
@@ -1649,8 +1816,7 @@ begin
 		where id between isnull(p_sklad, -1002) and isnull(p_sklad, -1001)
 	;
 
-	drop table #saldo;
-	drop table #itogo;
+	call inventory_tables_clean();
 
 end;
 
@@ -1909,8 +2075,19 @@ create function firstDayMonth (
 	p_dt date
 ) returns date
 begin
+	declare v_total_day date;
+
 	set firstDayMonth = 
 		convert(date, ymd(year(p_dt), month(p_dt), 1));
+
+	-- после перехода на полный учет сводные накладный перед переходом - не учитывать. 
+	-- Их влияние заменено на компенсирующие и инвентаризационные накладные по предприятию.
+	-- Период действия сводной накладной теперь - от дня следующего за днем перехода на тот.учет до конца месяца,
+	-- иначе инвентаризационные накладные (которые датированы позже) "сожрут" взаимозачетую.
+	select total_accounting_date into v_total_day from system;
+	if p_dt >= v_total_day and firstDayMonth <= v_total_day then
+		set firstDayMonth = v_total_day + 1;
+	end if;
 end;
 
 
@@ -1924,8 +2101,14 @@ create function lastDayMonth (
 	p_dt date
 ) returns date
 begin
+	declare v_total_day date;
 	set lastDayMonth = 
-			convert(date, ymd(year(p_dt), 1 + month(p_dt), 1) - 1)
+			convert(date, ymd(year(p_dt), 1 + month(p_dt), 1) - 1);
+	select total_accounting_date into v_total_day from system;
+	if p_dt >= v_total_day and lastDayMonth <= v_total_day then
+		set lastDayMonth = 
+			convert(date, ymd(year(p_dt+1), 1 + month(p_dt+1), 1) - 1)
+	end if;
 end;
 
 
@@ -2419,7 +2602,7 @@ begin
 			end if;
 		end if;
 	end for;
-	call fill_venture_order(
+	call ivo_generate(
 		p_procentOver
 		, v_term_min
 		, v_term_max
@@ -2446,20 +2629,29 @@ begin
 			, termFrom as r_term_start
 			, termTo as r_term_end
 			, nDate as r_nDate
+			, s.sysname as src_sysname
+			, d.sysname as dst_sysname
 		from sDocsVenture n
 		join guideVenture s on s.ventureId = n.srcVentureId
 		join guideVenture d on d.ventureId = n.dstVentureId
 		where id = p_ivo_id
 	do
 		if r_id_jmat is not null then
-			call block_remote('stime', @@servername, 'jmat');
-			call block_remote('stime', @@servername, 'mat');
+			call block_remote(src_sysname, @@servername, 'jmat');
+			call block_remote(src_sysname, @@servername, 'mat');
 
-			call delete_remote('stime', 'jmat', 'id = '+ convert(varchar(20), r_id_jmat));
+			call delete_remote(src_sysname, 'jmat', 'id = '+ convert(varchar(20), r_id_jmat));
 
-			call unblock_remote('stime', @@servername, 'mat');
-			call unblock_remote('stime', @@servername, 'jmat');
+			call unblock_remote(src_sysname, @@servername, 'mat');
+			call unblock_remote(src_sysname, @@servername, 'jmat');
 
+			call block_remote(dst_sysname, @@servername, 'jmat');
+			call block_remote(dst_sysname, @@servername, 'mat');
+
+			call delete_remote(dst_sysname, 'jmat', 'id = '+ convert(varchar(20), r_id_jmat));
+
+			call unblock_remote(dst_sysname, @@servername, 'mat');
+			call unblock_remote(dst_sysname, @@servername, 'jmat');
 			update sdocsVenture set id_jmat = null where id = p_ivo_id;
 		end if;
 	end for;
@@ -2882,30 +3074,12 @@ begin
 						endif
 					endif as 
 				r_activeOper
-/*
-				,	if (n.sourid <= -1001 and n.destid <= -1001) then 
-						null 
-					else 
-						if n.destid <= -1001 then 
-							isnull(n.ventureid, v.ventureid) 
-						else 
-							isnull(
-								isnull(
-									isnull(o.ventureid, bo.ventureid)
-									, if substring(isnull(o.invoice, bo.invoice), 1, 2) = '55' then 2 else 1 endif
-								), v.ventureid
-							)
-						endif
-					endif as r_ventureid 
-*/
 				, n.ventureid as r_ventureid 
 				, 0 as r_destVentureId
 				, convert(varchar(20), n.numdoc) + '/' + convert(varchar(20),n.numext) as r_numdoc
 			from sdocs n
---				left join sdocsincome i on i.numdoc = n.numdoc and i.numext = n.numext
 				join sdmc m on n.numdoc = m.numdoc 
 						and n.numext = m.numext 
---						and isnull(i.nomnom, m.nomnom) = m.nomnom
 				join sguidenomenk k on k.nomnom = m.nomnom
 			    join sguidesource s on s.sourceId = n.sourId
 				join sguidesource d on d.sourceId = n.destId
@@ -3006,13 +3180,6 @@ begin
 			to client;
 */
 		end for;
-/*
-select d1.ndate , m1.nomnom
-from sdmcventure m1
-join sdocsventure d1 on m1.sdv_id = d1.id 
-join sdmcventure m2 on m2.nomnom = m1.nomnom
-join sdocsventure d2 on d2.ndate = d1.ndate and m2.sdv_id = d2.id and d1.srcventureId = d2.dstventureId
-*/
 end;
 
 
@@ -3118,6 +3285,11 @@ begin
 	drop table #vntRest;
 end;
 		
+/***************************************************************
+**	КОНЕЦ КОДА ПРОЦЕДУР/ТРИГГЕРОВ, КОТОРЫЕ ПРЕДНАЗНАЧЕНЫ 
+**	ДЛЯЯ ФОРМИРОВАНИЯ ВЗАИМОЗАЧЕТОВ
+****************************************************************/
+
 	
 
 if exists (select '*' from sysprocedure where proc_name like 'wf_make_invnm') then  
@@ -3999,6 +4171,10 @@ begin
 	declare v_tp3 integer;
 	declare v_tp4 integer;
 	declare v_id_guide integer;
+
+	if p_id_jmat is null then
+		raiserror 17002 'wf_insert_mat():: Ошибка в параметрах p_id_jmat == null';
+	end if;
 
 	if p_id_mat is null then
 		set p_id_mat = get_nextid('mat');
