@@ -818,7 +818,8 @@ Private Sub cmRecalc_Click()
 End Sub
 
 Private Sub Form_Load()
-Dim sz As Integer, docProcent As Single, i As Integer
+Dim sz As Integer, docProcent As Single, i As Integer, totalDay As Date
+
 
 
     buttonWidth = cmAdd.Width
@@ -831,7 +832,10 @@ Dim sz As Integer, docProcent As Single, i As Integer
     
     tbProcent.Text = docProcent
     
-
+    sql = "select total_accounting_date from system"
+    byErrSqlGetValues "##333.1", sql, totalDay
+    tbStartDate.Text = Format(totalDay, "dd.mm.yy")
+    
     sql = "SELECT ventureId, ventureName, rusAbbrev, s.id_analytic_default " _
         & " From GuideVenture v" _
         & " left join system s on v.id_analytic = s.id_analytic_default " _
@@ -1285,7 +1289,7 @@ Private Sub lbBlock_DblClick()
     
         Me.MousePointer = flexDefault
     Else
-        If MsgBox("Нажмите OK, если вы действительно хотите удалить зачеты из базы Комтех.", vbOK Or vbDefaultButton2) <> vbOK Then
+        If MsgBox("Нажмите OK, если вы действительно хотите удалить в/зачет " & Grid.TextMatrix(mousRow, dcNumDoc) & " из базы Комтех.", vbOK Or vbDefaultButton2) <> vbOK Then
             lbHide
             Exit Sub
         End If
