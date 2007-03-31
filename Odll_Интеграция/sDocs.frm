@@ -493,16 +493,16 @@ If tbDocs Is Nothing Then GoTo ER1
 
 tbDocs.AddNew
 tbDocs!numDoc = numDoc
-tbDocs!numExt = numExt
-tbDocs!xDate = Now
-tbDocs!sourId = -1002
-tbDocs!destId = -7 'инвентаризация
 If Regim = "fromCeh" Then
     numExt = 0 ' виртуальные накладные(зарезервир-е предметы)
     tbDocs!Note = Ceh(cehId)
 Else
     numExt = 254
 End If
+tbDocs!numExt = numExt
+tbDocs!xDate = Now
+tbDocs!sourId = -1002
+tbDocs!destId = -7 'инвентаризация
 tbDocs.update
 tbDocs.Close
 
