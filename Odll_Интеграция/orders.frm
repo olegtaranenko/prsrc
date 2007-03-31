@@ -2280,7 +2280,7 @@ Sub do_Del()
     'услуги удал-с€ автоматом (каскадно)
     
 #If Not COMTEC = 1 Then '------------------------------------------------
-    sql = "DELETE From sDMCrez WHERE (((numDoc)=" & gNzak & "));"
+    sql = "DELETE From sDMCrez WHERE numDoc =" & gNzak & ";"
     myExecute "##305", sql, 0
 #End If '------------------------------------------------------------------
 '$comtec$ ¬озможно нижеследующий запрос надо расширить, если в системе  омтех
@@ -2288,9 +2288,9 @@ Sub do_Del()
 '    sql = "DELETE OrdersMO.*, Orders.*, OrdersInCeh.* " & _
     "FROM (Orders LEFT JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder) " & _
     "LEFT JOIN OrdersMO ON Orders.numOrder = OrdersMO.numOrder " & _
-    "WHERE (((Orders.numOrder)=" & gNzak & "));"
+    "WHERE Orders.numOrder = " & gNzak & ";"
 'в базу ввел каскадное удаление
-    sql = "DELETE FROM Orders WHERE (((numOrder)=" & gNzak & "));"
+    sql = "DELETE FROM Orders WHERE numOrder=" & gNzak & ";"
 '    myBase.Execute sql
     If myExecute("##136", sql) = 0 Then
         delZakazFromGrid
@@ -2422,12 +2422,12 @@ If Not bilo Then
         orderClose = True
     Else
         MsgBox "Ќевозможно закрыть заказ поскольку у него установлена " & _
-        "поблема", , "«аказ с проблемами!"
+        "проблема", , "«аказ с проблемами!"
     End If
     Exit Function
 End If
   If Grid.TextMatrix(mousRow, mousCol) = "прин€т" Then
-    MsgBox "Ќевозможно закрыть заказ поскольку он имеет поблемы с оплатой" _
+    MsgBox "Ќевозможно закрыть заказ поскольку он имеет проблемы с оплатой" _
     , , "«аказ с проблемами!"
   Else
     MsgBox "Ќевозможно закрыть заказ поскольку он имеет противоречи€ (<Ctrl> " & _
