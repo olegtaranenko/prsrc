@@ -3,14 +3,14 @@ Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Report 
    BackColor       =   &H8000000A&
    Caption         =   "Отчет"
-   ClientHeight    =   8190
+   ClientHeight    =   8184
    ClientLeft      =   60
-   ClientTop       =   345
-   ClientWidth     =   11805
+   ClientTop       =   348
+   ClientWidth     =   11808
    LinkTopic       =   "Form1"
    MinButton       =   0   'False
-   ScaleHeight     =   8190
-   ScaleWidth      =   11805
+   ScaleHeight     =   8184
+   ScaleWidth      =   11808
    StartUpPosition =   1  'CenterOwner
    Begin VB.CommandButton cmPrint 
       Caption         =   "Печать"
@@ -42,8 +42,8 @@ Begin VB.Form Report
       TabIndex        =   0
       Top             =   240
       Width           =   11655
-      _ExtentX        =   20558
-      _ExtentY        =   13150
+      _ExtentX        =   20553
+      _ExtentY        =   13145
       _Version        =   393216
       AllowUserResizing=   1
    End
@@ -335,7 +335,7 @@ If Not tbOrders Is Nothing Then
     While Not tbOrders.EOF
       v = tbOrders!quant: If IsNull(v) Then v = 0
       s = Round((tbOrders!quantity - v) / per, 2)
-      If s > 0 Then
+      If s > 0 And tbOrders!StatusId <> 6 Then
         quantity = quantity + 1
         Grid.TextMatrix(quantity, rtNomZak) = tbOrders!numOrder
         Grid.TextMatrix(quantity, rtCeh) = "Продажа"
@@ -589,7 +589,7 @@ If param1 = "n" Or param1 = "w" Then
   Set tbNomenk = myOpenRecordSet("##383", sql, dbOpenDynaset)
   If tbNomenk Is Nothing Then Exit Sub
   While Not tbNomenk.EOF '!!!
-    Grid.AddItem Chr(9) & tbNomenk!nomNom & Chr(9) & tbNomenk!cod & " " & _
+    Grid.AddItem Chr(9) & tbNomenk!nomnom & Chr(9) & tbNomenk!cod & " " & _
     tbNomenk!nomName & " " & tbNomenk!Size & _
     Chr(9) & "<--Номенклатура" & Chr(9) & tbNomenk!quant & Chr(9) & _
     tbNomenk!ed_izmer & Chr(9) & _
@@ -628,7 +628,7 @@ If param1 = "b" Then
   Round(tbNomenk!quant * tbNomenk!intQuant / tbNomenk!perList, 2)
 '  Grid.row = 2: Grid.col = 2: Grid.CellFontBold = True
   While Not tbNomenk.EOF '!!!
-    Grid.AddItem Chr(9) & tbNomenk!nomNom & Chr(9) & tbNomenk!cod & " " & _
+    Grid.AddItem Chr(9) & tbNomenk!nomnom & Chr(9) & tbNomenk!cod & " " & _
     tbNomenk!nomName & " " & tbNomenk!Size & _
     Chr(9) & "<--Номенклатура" & Chr(9) & _
     Round(tbNomenk!quant / tbNomenk!perList, 2) & Chr(9) & _
@@ -653,7 +653,7 @@ If param1 = "m" Then
   Set tbNomenk = myOpenRecordSet("##435", sql, dbOpenDynaset)
   If tbNomenk Is Nothing Then Exit Sub
   While Not tbNomenk.EOF '!!!
-    Grid.AddItem Chr(9) & tbNomenk!nomNom & Chr(9) & tbNomenk!cod & " " & _
+    Grid.AddItem Chr(9) & tbNomenk!nomnom & Chr(9) & tbNomenk!cod & " " & _
     tbNomenk!nomName & " " & tbNomenk!Size & _
     Chr(9) & Chr(9) & Round(tbNomenk!quant / tbNomenk!perList, 2) & Chr(9) & _
     tbNomenk!ed_Izmer2 & Chr(9) & tbNomenk!cost & Chr(9) & _
@@ -676,7 +676,7 @@ Dim j As Integer, leng As Integer
 leng = UBound(NN)
 
     For j = 1 To leng
-        If NN(j) = tbNomenk!nomNom Then
+        If NN(j) = tbNomenk!nomnom Then
             QQ(j) = QQ(j) + pQuant * tbNomenk!quantity
             If eQuant > 0 Then _
                 QQ2(j) = QQ2(j) + eQuant * tbNomenk!quantity
@@ -686,7 +686,7 @@ leng = UBound(NN)
         End If
     Next j
     leng = leng + 1
-    ReDim Preserve NN(leng): NN(leng) = tbNomenk!nomNom
+    ReDim Preserve NN(leng): NN(leng) = tbNomenk!nomnom
     ReDim Preserve Cena(leng): Cena(leng) = tbNomenk!cost
     ReDim Preserve QQ(leng): QQ(leng) = pQuant * tbNomenk!quantity
     ReDim Preserve QQ2(leng): QQ2(leng) = eQuant * tbNomenk!quantity
@@ -726,7 +726,7 @@ sql = "SELECT sGuideNomenk.nomNom, sGuideNomenk.cost, sGuideNomenk.perList, " & 
 Set tbNomenk = myOpenRecordSet("##385", sql, dbOpenDynaset)
 If tbNomenk Is Nothing Then Exit Function
 While Not tbNomenk.EOF
-  Dim str As String: str = tbNomenk!nomNom
+  Dim str As String: str = tbNomenk!nomnom
   nomenkToNNQQ 0, 0, tbNomenk!cost / tbNomenk!perList '!!!
   tbNomenk.MoveNext
 Wend
