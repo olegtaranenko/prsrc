@@ -538,7 +538,7 @@ Dim oldRegim As String
 Public FO As Single ' ФО
 Dim dOst As Single
 Dim oldCellColor As Long
-
+Dim tbmobile_readonly As Boolean
 
 'Dim tbDateisVisible As Boolean ' видны ли поля для ввода дат.
 'Dim replNomNom As String ' перемещаемая номенклатура
@@ -1310,8 +1310,8 @@ If Not tbKlass.BOF Then
  
  ReDim k(0): ReDim pK(0): ReDim NN(0): iErr = 0
  While Not tbKlass.EOF
-    If tbKlass!klassId = 0 Then GoTo NXT1
-    key = "k" & tbKlass!klassId
+    If tbKlass!klassid = 0 Then GoTo NXT1
+    key = "k" & tbKlass!klassid
     pKey = "k" & tbKlass!parentKlassId
     On Error GoTo ERR1 ' назначить второй проход
     Set Node = tv.Nodes.Add(pKey, tvwChild, key, tbKlass!klassName)
@@ -1374,6 +1374,41 @@ ERR1:
 ERR2: bilo = True: Resume NXT
 End Sub
 
+
+Private Sub showNomenkPath(nomnom As String)
+Dim klassName As String, ret As String, klassid As Integer, parentKlassId As Integer
+
+    bilo = True
+    sql = "select KlassId, nomnom from sguidenomenk where nomnom = '" & nomnom & "'"
+
+    byErrSqlGetValues "##102.2", sql, klassid
+    
+    While bilo
+        sql = "select klassName, parentKlassId from sguideklass where klassid = " & klassid
+        If byErrSqlGetValues("##102.2", sql, klassName, parentKlassId) Then
+            If klassid = 0 Then
+                bilo = False
+            Else
+                If Len(ret) > 0 Then ret = " / " & ret
+                ret = klassName & ret
+            End If
+            klassid = parentKlassId
+        End If
+'        Set tbKlass = myOpenRecordSet("##102.x", sql, dbOpenForwardOnly)
+'        If tbKlass Is Nothing Then End
+'        If Not tbKlass.BOF Then
+'            If Len(ret) > 0 Then ret = " / " & ret
+'            ret = tbKlass!klassName & ret
+'            klassid = tbKlass!parentKlassId
+'            If klassid = 0 Then bilo = False
+'        End If
+'        tbKlass.Close
+    Wend
+    textBoxInGridCell tbMobile, Grid, ret
+'    tbMobile.Width = 1000
+
+End Sub
+
 Private Sub Form_Resize()
 Dim h As Integer, w As Integer
 
@@ -1424,6 +1459,7 @@ If mousRow = 0 Then
 End If
 
 End Sub
+
 
 Private Sub Grid_DblClick()
 Dim str As String, i As Integer
@@ -1588,8 +1624,15 @@ Private Sub Grid_GotFocus()
 End Sub
 
 Private Sub Grid_KeyDown(KeyCode As Integer, Shift As Integer)
+
+
 If KeyCode = vbKeyReturn Then
-    Grid_DblClick
+    If Shift = vbAltMask Then
+        showNomenkPath (Grid.TextMatrix(mousRow, nkNomer))
+        tbmobile_readonly = True
+    Else
+        Grid_DblClick
+    End If
 ElseIf KeyCode = vbKeyEscape Then
     lbHide
 End If
@@ -1611,6 +1654,7 @@ End Sub
 Private Sub Grid_KeyUp(KeyCode As Integer, Shift As Integer)
 
 If KeyCode = vbKeyEscape Then Grid_EnterCell
+
 
 End Sub
 
@@ -1993,7 +2037,7 @@ Private Sub mnCost_Click()
 Dim msgOk As VbMsgBoxResult
 Dim tvKlass As String
 Dim tvNode As Node
-Dim klassId As String
+Dim klassid As String
 Dim newKey As String, xDate As String, groupText As String
 Dim queryTimeout As Variant
 
@@ -2004,9 +2048,9 @@ Dim queryTimeout As Variant
     End If
     
     Set tvNode = tv.Nodes(tv.SelectedItem.Index)
-    klassId = Mid(tvNode.key, 2)
+    klassid = Mid(tvNode.key, 2)
     
-    sql = "select wf_cost_bulk_change( " & klassId & ")"
+    sql = "select wf_cost_bulk_change( " & klassid & ")"
     queryTimeout = myBase.queryTimeout
     myBase.queryTimeout = 6000
     
@@ -2015,7 +2059,7 @@ Dim queryTimeout As Variant
     If newKey <> "" Then
         sql = "select xDate from sPriceBulkChange where id = " & newKey
         byErrSqlGetValues "##nomenklatura.3", sql, xDate
-        If klassId <> "0" Then
+        If klassid <> "0" Then
             groupText = " по группе " + tvNode.Text
         Else
             groupText = " по всей номенклатуре группе "
@@ -2411,11 +2455,17 @@ End Sub
 
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
 Dim str As String, i As Integer, old As String, row As Long, col As Integer, newPrevCost As String
-Dim s As Single, result As String 'field() As Variant,
+Dim s As Single, result As String 'field() As Variant
 
+
+If tbmobile_readonly And KeyCode = vbKeyReturn Then
+    tbmobile_readonly = False
+    KeyCode = vbKeyEscape
+End If
 
 If KeyCode = vbKeyReturn Then
  
+
  str = Trim(tbMobile.Text)
  old = Trim(Grid.TextMatrix(mousRow, nkNomer))
  
@@ -2461,7 +2511,7 @@ If KeyCode = vbKeyReturn Then
     End If
     On Error GoTo ERR1
     tbNomenk!nomnom = str
-    tbNomenk!klassId = gKlassId
+    tbNomenk!klassid = gKlassId
     tbNomenk.Update
     tbNomenk.Close
     Grid.TextMatrix(mousRow, nkNomer) = str
