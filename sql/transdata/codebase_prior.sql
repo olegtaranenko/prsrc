@@ -96,7 +96,7 @@ begin
 
 	select sysname into remoteServer 
 	from  guideventure v 
-	join sdocs o on o.ventureId = v.ventureId and v.standalone = 0 and o.numdoc = old_name.numDoc;
+	join sdocs o on o.ventureId = v.ventureId and v.standalone = 0 and o.numdoc = old_name.numDoc and o.numext = old_name.numext;
 
 	--message 'remoteServer = ', remoteServer to client;
 
