@@ -3794,6 +3794,8 @@ begin
 			and o.ventureId = old_ventureId
 			and o.id_jscet is not null and o.id_jscet > 0
 			and o.firmId <> old_firmId
+			-- только для этого года
+            and substring(o.numorder,0,1) = substring(p_numorder, 0, 1)
 		;
 
 	if wf_check_jscet_merge < 0 then
@@ -3814,6 +3816,9 @@ begin
 			and isnull(o.shipped, 0) = 0
 			and o.ventureId = old_ventureId
 			and o.id_jscet is not null and o.id_jscet > 0
+			and o.firmId <> old_firmId
+			-- только для этого года
+            and substring(o.numorder,0,1) = substring(p_numorder, 0, 1)
 	do
 
 		set wf_check_jscet_merge = r_id_jscet;
