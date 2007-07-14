@@ -3415,7 +3415,9 @@ begin
 	from orders o
     where o.invoice = old_invoice
 	and o.numorder != old_numorder
-	and isnull(o.shipped, 0) = 0;
+	and isnull(o.shipped, 0) = 0
+	and substring(o.numorder,0,1) = substring(p_numorder, 0, 1)
+	;
 
 end;
 
@@ -3816,7 +3818,7 @@ begin
 			and isnull(o.shipped, 0) = 0
 			and o.ventureId = old_ventureId
 			and o.id_jscet is not null and o.id_jscet > 0
-			and o.firmId <> old_firmId
+			and o.firmId = old_firmId
 			-- только для этого года
             and substring(o.numorder,0,1) = substring(p_numorder, 0, 1)
 	do
