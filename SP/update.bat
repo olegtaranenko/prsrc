@@ -3,6 +3,9 @@
 
 setlocal
 
+::set REP_LOCATION=\\Dima\d\devNext\sql\transdata
+set REP_LOCATION=F:\sql\transdata
+
 if (%1) == () goto usage
 set patch=%1
 shift
@@ -20,8 +23,7 @@ if (%ddl_executed%) == (1) goto code
 set ddl_executed=1
 echo Executing DDL...
 if not exist %patch%\ddl.lst set missed_file=ddl.lst&goto missed_warn
-for /F "tokens=*" %%i in (%patch%\ddl.lst) do call ../sql/transdata/isql.bat %patch%\%%i
-::for /F "tokens=*" %%i in (%patch%\sql.list) do echo call ../sql/transdata/isql.bat %patch%\%%i
+for /F "tokens=*" %%i in (%patch%\ddl.lst) do call ../sql/transdata/isql.bat %patch%\%%i 
 
 :code
 if /i (%next_step%) == (code) goto start_code
@@ -31,7 +33,7 @@ goto dml
 if (%code_executed%) == (1) goto dml
 echo Executing CODE...
 set code_executed=1
-if exist %patch%\logging_common.sql	call ../sql/transdata/isql.bat %patch%\logging_common.sql	prior
+if exist %patch%\logging_common.sql	call ../sql/transdata/isql.bat %patch%\logging_common.sql	prior	
 if exist %patch%\logging_common.sql	call ../sql/transdata/isql.bat %patch%\logging_common.sql	stime
 if exist %patch%\logging_common.sql	call ../sql/transdata/isql.bat %patch%\logging_common.sql	pm
 if exist %patch%\logging_common.sql	call ../sql/transdata/isql.bat %patch%\logging_common.sql	mm
@@ -75,6 +77,7 @@ if exist %patch%\codebase_stime.sql	call ../sql/transdata/isql.bat %patch%\codeb
 
 if exist %patch%\runonce_after_prior.sql	call ../sql/transdata/isql.bat %patch%\runonce_after_prior.sql	prior
 if exist %patch%\runonce_after_mm.sql	call ../sql/transdata/isql.bat %patch%\runonce_after_mm.sql	mm
+xcopy  %patch%\*.sql %REP_LOCATION% /Y
 
 if exist %patch%\runonce_after.bat	call %patch%\runonce_after.bat
 
@@ -88,8 +91,8 @@ if (%dml_executed%) == (1) goto list_file
 set dml_executed=1
 echo Executing DML...
 if not exist %patch%\dml.lst set missed_file=dml.lst&goto missed_warn
-for /F "tokens=*" %%i in (%patch%\dml.lst) do call ../sql/transdata/isql.bat %patch%\%%i
-::for /F "tokens=*" %%i in (%patch%\sql.list) do echo call ../sql/transdata/isql.bat %patch%\%%i
+for /F "tokens=*" %%i in (%patch%\dml.lst) do call ../sql/transdata/isql.bat %patch%\%%i 
+::for /F "tokens=*" %%i in (%patch%\sql.list) do echo call ../sql/transdata/isql.bat %patch%\%%i & xcopy  %patch%\%%i \\Dima\d\devNext\sql\transdata
 
 :list_file
 ::if not exist (%patch%\%next_step%.lst) goto next_done
@@ -98,7 +101,7 @@ if /i (%next_step%) == (code) goto next_done
 if /i (%next_step%) == (dml) goto next_done
 if /i (%next_step%) == (all) goto next_done
 echo Executing %next_step%.lst...
-for /F "tokens=*" %%i in (%patch%\%next_step%.lst) do call ../sql/transdata/isql.bat %patch%\%%i
+for /F "tokens=*" %%i in (%patch%\%next_step%.lst) do call ../sql/transdata/isql.bat %patch%\%%i 
 goto next_done
 
 :next_done
