@@ -600,7 +600,7 @@ AA:
 val(I) = paramVal
 End Sub
 
-Function getParam(paramKey As String) As String
+Public Function getParam(paramKey As String) As String
 Dim I As Integer
 
 For I = 1 To UBound(key)
@@ -613,7 +613,7 @@ getParam = ""
 End Function
 '$odbc15!$
 Sub baseOpen(Optional baseIndex As Integer = -1)
-Dim str As String
+Dim str As String, dburl As String
 
 On Error GoTo ERRb
 RETR:
@@ -628,16 +628,16 @@ End If
 
 'On Error GoTo ERRb
 If otlad = "otlaD" Then
-   Set myBase = wrkDefault.OpenDatabase("Connection1", _
-      dbDriverNoPrompt, False, _
-      "ODBC;UID=dba;PWD=sql;DSN=prior")
-      mainTitle = "    otlad"
+    dburl = "dev_prior"
+    mainTitle = "    otlad"
 Else
-   Set myBase = wrkDefault.OpenDatabase("Connection1", _
-      dbDriverNoPrompt, False, _
-      "ODBC;UID=dba;PWD=sql;DSN=prior")
-      mainTitle = "    New"
+    dburl = "prior"
+    mainTitle = "    New"
 End If
+
+Set myBase = wrkDefault.OpenDatabase("Connection1", _
+   dbDriverNoPrompt, False, _
+   "ODBC;UID=dba;PWD=sql;DSN=" & dburl)
 If myBase Is Nothing Then End
 Exit Sub
 

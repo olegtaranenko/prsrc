@@ -250,6 +250,9 @@ Public ost() As Single, befOst() As Single
 ' список выбранных позиций в таблице предметов к заказу
 ' (по CtrlLeftClick) в sProducts.Grid5
 Public selectedItems() As Long
+Public Const otladColor = &H80C0FF
+
+
 
 
 Function serverIsAccessible(ventureName As String) As Boolean
