@@ -824,7 +824,10 @@ Dim str As String ', i As Integer
 oldHeight = Me.Height
 oldWidth = Me.Width
 isLoad = True
-If otlad = "otlaD" Then mnFilters.Visible = True
+If otlad = "otlaD" Then
+    mnFilters.Visible = True
+    Me.BackColor = otladColor
+End If
 
 Me.Caption = "Склад. Приходные накладные.     " & mainTitle
 
@@ -1618,8 +1621,8 @@ If tbNomenk Is Nothing Then Exit Sub
 ReDim NN(0): i = 0
 While Not tbNomenk.EOF
     i = i + 1
-    ReDim Preserve NN(i): NN(i) = Format(tbNomenk!klassId, "0000")
-    findId = tbNomenk!klassId
+    ReDim Preserve NN(i): NN(i) = Format(tbNomenk!klassid, "0000")
+    findId = tbNomenk!klassid
 
 AA: 'tbGuide.Seek "=", findId
 '    If tbGuide.NoMatch Then msgOfEnd ("##409")

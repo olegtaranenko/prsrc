@@ -5,20 +5,20 @@ Begin VB.Form Orders
    Appearance      =   0  'Flat
    BackColor       =   &H8000000A&
    Caption         =   "Продажа"
-   ClientHeight    =   6135
+   ClientHeight    =   6132
    ClientLeft      =   60
-   ClientTop       =   630
+   ClientTop       =   636
    ClientWidth     =   11880
    Icon            =   "Orders.frx":0000
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    LockControls    =   -1  'True
-   ScaleHeight     =   6135
+   ScaleHeight     =   6132
    ScaleWidth      =   11880
    StartUpPosition =   2  'CenterScreen
    Begin VB.ListBox lbVenture 
       Appearance      =   0  'Flat
-      Height          =   615
+      Height          =   600
       Left            =   5500
       TabIndex        =   26
       Top             =   1000
@@ -86,7 +86,7 @@ Begin VB.Form Orders
          Caption         =   "Включен фильтр !"
          BeginProperty Font 
             Name            =   "MS Sans Serif"
-            Size            =   8.25
+            Size            =   7.8
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -128,7 +128,7 @@ Begin VB.Form Orders
       End
    End
    Begin VB.ListBox lbProblem 
-      Height          =   255
+      Height          =   240
       Left            =   2580
       TabIndex        =   15
       Top             =   1200
@@ -136,7 +136,7 @@ Begin VB.Form Orders
       Width           =   975
    End
    Begin VB.ListBox lbAnnul 
-      Height          =   840
+      Height          =   816
       ItemData        =   "Orders.frx":030E
       Left            =   240
       List            =   "Orders.frx":031E
@@ -163,7 +163,7 @@ Begin VB.Form Orders
    Begin VB.TextBox tbInform 
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   9.75
+         Size            =   9.6
          Charset         =   204
          Weight          =   400
          Underline       =   0   'False
@@ -178,7 +178,7 @@ Begin VB.Form Orders
       Width           =   9015
    End
    Begin VB.ListBox lbClose 
-      Height          =   1035
+      Height          =   1008
       ItemData        =   "Orders.frx":0348
       Left            =   240
       List            =   "Orders.frx":035B
@@ -188,7 +188,7 @@ Begin VB.Form Orders
       Width           =   1095
    End
    Begin VB.ListBox lbDel 
-      Height          =   450
+      Height          =   432
       ItemData        =   "Orders.frx":038B
       Left            =   240
       List            =   "Orders.frx":0395
@@ -206,7 +206,7 @@ Begin VB.Form Orders
       Width           =   1515
    End
    Begin VB.ListBox lbM 
-      Height          =   255
+      Height          =   240
       Left            =   1560
       TabIndex        =   9
       Top             =   1020
@@ -229,8 +229,8 @@ Begin VB.Form Orders
       TabIndex        =   2
       Top             =   840
       Width           =   11835
-      _ExtentX        =   20876
-      _ExtentY        =   7858
+      _ExtentX        =   20870
+      _ExtentY        =   7853
       _Version        =   393216
       BackColor       =   16777215
       ForeColorFixed  =   0
@@ -241,7 +241,7 @@ Begin VB.Form Orders
       FormatString    =   $"Orders.frx":03AF
       BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
          Name            =   "MS Sans Serif"
-         Size            =   9.75
+         Size            =   9.6
          Charset         =   204
          Weight          =   400
          Underline       =   0   'False
@@ -267,15 +267,15 @@ Begin VB.Form Orders
    End
    Begin MSComctlLib.Toolbar Toolbar1 
       Align           =   1  'Align Top
-      Height          =   420
+      Height          =   396
       Left            =   0
       TabIndex        =   14
       Top             =   0
       Width           =   11880
       _ExtentX        =   20955
-      _ExtentY        =   741
+      _ExtentY        =   699
       ButtonWidth     =   635
-      ButtonHeight    =   582
+      ButtonHeight    =   572
       Appearance      =   1
       _Version        =   393216
    End
@@ -729,6 +729,8 @@ oldWidth = Me.Width
 
 
 If otlad = "otlaD" Then
+    Frame1.BackColor = otladColor
+    Me.BackColor = otladColor
     mnReports.Visible = True
 '    tbEnable.Visible = True
     tbEnable.Text = "arh"
@@ -876,6 +878,7 @@ orSqlWhere(orInvoice) = "(isNumeric(BayOrders.Invoice) =1) OR NOT EXISTS(" & _
     
  End If
 End Sub
+
 Private Sub Form_Resize()
 Dim h As Integer, w As Integer
 lbHide "noFocus"

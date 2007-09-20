@@ -164,6 +164,8 @@ Public Const gfLogin = 17
 Public Const gfPass = 18
 Public Const gfId = 19
 
+Public Const otladColor = &H80C0FF
+
 Function getValueFromTable(tabl As String, field As String, where As String) As Variant
 Dim table As Recordset
 

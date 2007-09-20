@@ -3,15 +3,15 @@ Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Journal 
    BackColor       =   &H8000000A&
    Caption         =   "∆урнал хоз€йственных операций"
-   ClientHeight    =   6225
+   ClientHeight    =   6216
    ClientLeft      =   60
-   ClientTop       =   630
-   ClientWidth     =   11790
+   ClientTop       =   636
+   ClientWidth     =   11796
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    LockControls    =   -1  'True
-   ScaleHeight     =   6225
-   ScaleWidth      =   11790
+   ScaleHeight     =   6216
+   ScaleWidth      =   11796
    StartUpPosition =   2  'CenterScreen
    Begin VB.CommandButton cmExcel 
       Caption         =   "ѕечать в Excel"
@@ -24,7 +24,7 @@ Begin VB.Form Journal
    Begin VB.TextBox tbInform 
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   9.75
+         Size            =   9.6
          Charset         =   204
          Weight          =   400
          Underline       =   0   'False
@@ -92,7 +92,7 @@ Begin VB.Form Journal
       Top             =   5640
    End
    Begin VB.ListBox lbGuids 
-      Height          =   450
+      Height          =   432
       ItemData        =   "Journal.frx":0000
       Left            =   2280
       List            =   "Journal.frx":000A
@@ -119,7 +119,7 @@ Begin VB.Form Journal
       Width           =   1095
    End
    Begin VB.ListBox lbDebKreditor 
-      Height          =   255
+      Height          =   240
       Left            =   2280
       TabIndex        =   4
       Top             =   1800
@@ -147,8 +147,8 @@ Begin VB.Form Journal
       TabIndex        =   0
       Top             =   600
       Width           =   11415
-      _ExtentX        =   20135
-      _ExtentY        =   8811
+      _ExtentX        =   20130
+      _ExtentY        =   8805
       _Version        =   393216
       AllowUserResizing=   1
    End
@@ -164,7 +164,7 @@ Begin VB.Form Journal
    End
    Begin VB.Label laSum 
       BackColor       =   &H8000000E&
-      BorderStyle     =   1  '‘иксировано один
+      BorderStyle     =   1  'Fixed Single
       Height          =   285
       Left            =   4800
       TabIndex        =   20
@@ -571,7 +571,10 @@ Me.Caption = Me.Caption & "      " & mainTitle
 tbStartDate.Text = "01." & Format(CurDate, "mm/yy")
 'tbStartDate.Text = Format(DateAdd("d", 0, begDate), "dd/mm/yy")
 tbEndDate.Text = Format(CurDate, "dd/mm/yy")
-If otlad = "otlaD" Then ckStartDate.value = 1
+If otlad = "otlaD" Then
+    ckStartDate.value = 1
+    Me.BackColor = otladColor
+End If
 
 sql = "SELECT Kurs FROM System;"
 If byErrSqlGetValues("##321", sql, s) Then

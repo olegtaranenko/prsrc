@@ -3,10 +3,10 @@ Begin VB.Form AUTO
    BackColor       =   &H8000000A&
    BorderStyle     =   1  'Fixed Single
    Caption         =   " Синхронизация часов"
-   ClientHeight    =   1845
-   ClientLeft      =   45
-   ClientTop       =   330
-   ClientWidth     =   4710
+   ClientHeight    =   1836
+   ClientLeft      =   48
+   ClientTop       =   336
+   ClientWidth     =   4704
    ControlBox      =   0   'False
    Icon            =   "AUTO.frx":0000
    KeyPreview      =   -1  'True
@@ -14,8 +14,8 @@ Begin VB.Form AUTO
    LockControls    =   -1  'True
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   1845
-   ScaleWidth      =   4710
+   ScaleHeight     =   1836
+   ScaleWidth      =   4704
    StartUpPosition =   1  'CenterOwner
    Begin VB.ComboBox cbM 
       Height          =   315
@@ -294,9 +294,12 @@ Private Sub Form_Load()
 '    otlad = Command()
 'Else
 If Len(Command()) > 4 Then
-    otlad = Left$(Command(), 4)
+    otlad = Left$(Command(), 5)
 End If
 
+If otlad = "otlaD" Then
+    Me.BackColor = otladColor
+End If
 
 'If InStr(Command(), "       wkdh") <> 0 Then
 If Right$(Command(), 4) = "wkdh" Then

@@ -1,16 +1,16 @@
 VERSION 5.00
-Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "msflxgrd.ocx"
+Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
 Begin VB.Form cfg 
    BackColor       =   &H8000000A&
    Caption         =   "Form1"
-   ClientHeight    =   4530
+   ClientHeight    =   4524
    ClientLeft      =   60
-   ClientTop       =   345
+   ClientTop       =   348
    ClientWidth     =   8700
    LinkTopic       =   "Form1"
    LockControls    =   -1  'True
-   ScaleHeight     =   4530
+   ScaleHeight     =   4524
    ScaleWidth      =   8700
    StartUpPosition =   1  'CenterOwner
    Begin VB.CommandButton cmExit 
@@ -99,8 +99,8 @@ Begin VB.Form cfg
       TabIndex        =   0
       Top             =   1860
       Width           =   8475
-      _ExtentX        =   14949
-      _ExtentY        =   3519
+      _ExtentX        =   14944
+      _ExtentY        =   3514
       _Version        =   393216
       AllowUserResizing=   1
    End
@@ -121,7 +121,7 @@ Begin VB.Form cfg
    End
    Begin VB.Label laProducts 
       BackColor       =   &H80000009&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Caption         =   "Label2"
       Height          =   255
       Left            =   2280
@@ -131,7 +131,7 @@ Begin VB.Form cfg
    End
    Begin VB.Label laNomenks 
       BackColor       =   &H80000009&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Caption         =   "Label2"
       Height          =   255
       Left            =   2280
@@ -141,7 +141,7 @@ Begin VB.Form cfg
    End
    Begin VB.Label laSvodka 
       BackColor       =   &H80000009&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Caption         =   "Label2"
       Height          =   255
       Left            =   2280
@@ -151,7 +151,7 @@ Begin VB.Form cfg
    End
    Begin VB.Label laLogins 
       BackColor       =   &H80000009&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Caption         =   "Label2"
       Height          =   255
       Left            =   2280
@@ -193,7 +193,7 @@ Begin VB.Form cfg
    End
    Begin VB.Label laGlobal 
       BackColor       =   &H80000009&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Caption         =   "Label2"
       Height          =   255
       Left            =   2280
@@ -533,7 +533,7 @@ getParam = ""
 End Function
 
 Sub baseOpen(Optional baseIndex As Integer = -1)
-Dim str As String
+Dim str As String, dburl As String
 
 On Error GoTo ERRb
 RETR:
@@ -548,16 +548,16 @@ Set wrkDefault = DBEngine.CreateWorkspace("wrkDefault", "dba", "sql", dbUseODBC)
 
 'On Error GoTo ERRb
 If otlad = "otlaD" Then
-   Set myBase = wrkDefault.OpenDatabase("Connection1", _
-      dbDriverNoPrompt, False, _
-      "ODBC;UID=dba;PWD=sql;DSN=priorNext")
-      mainTitle = "    otlad"
+    dburl = "dev_prior"
+    mainTitle = "    otlad"
 Else
-   Set myBase = wrkDefault.OpenDatabase("Connection1", _
-      dbDriverNoPrompt, False, _
-      "ODBC;UID=dba;PWD=sql;DSN=prior")
-      mainTitle = "    New"
+    dburl = "prior"
+    mainTitle = "    New"
 End If
+
+Set myBase = wrkDefault.OpenDatabase("Connection1", _
+   dbDriverNoPrompt, False, _
+   "ODBC;UID=dba;PWD=sql;DSN=" & dburl)
 
 If myBase Is Nothing Then End
 Exit Sub

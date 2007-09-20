@@ -72,6 +72,7 @@ Public begDate As Date ' Дата вступительных остатков
 Public NN() As String, QQ() As Single ' откатываемая номенклатура и кол-во
 Public QQ3() As Single, QQ2() As Single ' вспомагательое откатываемое кол-во
 Public bulkChangEnabled As Boolean
+Public Const otladColor = &H80C0FF
 
 
 Sub CheckIntegration()
@@ -182,7 +183,7 @@ Dim il As Long
     noClick = False
 End Sub
 
-Sub foreColorGridRow(Grid As MSFlexGrid, row As Long, color As Long, ccol as Long)
+Sub foreColorGridRow(Grid As MSFlexGrid, row As Long, color As Long, ccol As Long)
 Dim il As Long
     noClick = True
     Grid.row = row
@@ -1093,14 +1094,14 @@ Public Function vo_deleteNomnom(nomnom As String, numDoc As String) As Boolean
 End Function
 
 Function getValueFromTable(tabl As String, field As String, where As String) As Variant
-Dim table As Recordset
+Dim Table As Recordset
 
 getValueFromTable = Null
 sql = "SELECT " & field & " as fff  From " & tabl & _
       " WHERE " & where & ";"
-Set table = myOpenRecordSet("##59.1", sql, dbOpenForwardOnly)
-If table Is Nothing Then Exit Function
-If Not table.BOF Then getValueFromTable = table!fff
-table.Close
+Set Table = myOpenRecordSet("##59.1", sql, dbOpenForwardOnly)
+If Table Is Nothing Then Exit Function
+If Not Table.BOF Then getValueFromTable = Table!fff
+Table.Close
 End Function
 
