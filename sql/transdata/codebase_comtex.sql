@@ -1,3 +1,25 @@
+/**
+ get_server_name() => @server_name 
+ процедура должна вызываться один раз из bootstrap_blocking.
+*/                 
+
+if exists (select '*' from sysprocedure where proc_name like 'get_server_name') then  
+	drop function get_server_name;
+end if;
+
+create function get_server_name ()
+returns varchar(20) 
+begin
+	set get_server_name = @@servername;
+	if (substring (get_server_name, 1, 3) = 'dev') then
+		select namer into get_server_name from guides where id = 0;
+	end if;
+
+end;
+
+
+
+
 if exists (select '*' from sysprocedure where proc_name like 'wf_calc_ost_inv') then  
 	drop procedure wf_calc_ost_inv;
 end if;
@@ -148,8 +170,8 @@ begin
 			from sys.sysservers s 
 		do
 			
-			message 'call slave_cre_block_var_' + r_server + '(''' + make_block_name(@@servername, r_table) + ''')' to log;
-			execute immediate 'call slave_cre_block_var_' + r_server + '(''' + make_block_name(@@servername, r_table) + ''')';
+			message 'call slave_cre_block_var_' + r_server + '(''' + make_block_name(get_server_name(), r_table) + ''')' to log;
+			execute immediate 'call slave_cre_block_var_' + r_server + '(''' + make_block_name(get_server_name(), r_table) + ''')';
 			--call cre_block_var(make_block_name(r_server, r_table));
 		end for;
 	end for;
@@ -283,7 +305,7 @@ begin
 	select nu into v_note from jdog where id = new_name.id_jdog;
 
 	call admin.slave_put_xoz_prior(
-		  @@servername 
+		  get_server_name() 
 		, new_name.id
 		, v_debit_sc, v_debit_sub, v_credit_sc, v_credit_sub
 		, convert(varchar(20), new_name.dat, 115)
@@ -330,7 +352,7 @@ begin
 		set v_kredDebitor = convert(integer, isnull(varchar_id_deb, '')) - 1;
 		set v_values = '''' + convert(varchar(20), v_kredDebitor) + ''''
 			+ ', ''' + v_deb_name + ''''
-			+ ', '''  + @@servername + ''''
+			+ ', '''  + get_server_name() + ''''
 		;
 		call admin.slave_insert_prior('yDebKreditor', 'id, name, note', v_values);
 	end if;
@@ -367,7 +389,7 @@ begin
 	declare v_zakaz varchar(150);
 
 	if update(dat) then
-		call admin.slave_select_prior(varchar_id, 'guideventure', 'ventureid', 'sysname=''' + @@servername + '''');
+		call admin.slave_select_prior(varchar_id, 'guideventure', 'ventureid', 'sysname=''' + get_server_name() + '''');
 		set v_ventureid = convert(integer, varchar_id);
 	
 		call admin.slave_update_prior('ybook', 'xDate', '''' + convert(varchar(20), new_name.dat, 115) + ''''
@@ -389,7 +411,7 @@ begin
 			where c.id = new_name.id_accc;
 
 
-			call admin.slave_select_prior(varchar_id, 'guideventure', 'ventureid', 'sysname=''' + @@servername + '''');
+			call admin.slave_select_prior(varchar_id, 'guideventure', 'ventureid', 'sysname=''' + get_server_name() + '''');
 			set v_ventureid = convert(integer, varchar_id);
 	    
 			call admin.slave_update_prior('ybook', 'note', '''' + v_note + ''''
@@ -399,7 +421,7 @@ begin
     		
 			call admin.slave_bind_zakaz_prior (
 				v_zakaz
-				, @@servername
+				, get_server_name()
 				, v_note
 				, old_name.sum
 				, v_credit_sc
@@ -412,7 +434,7 @@ begin
 	if update(id_deb) then
 		set v_kredDebitor = admin.wf_kreditor_debitor(new_name.id_deb);
 
-		call admin.slave_select_prior(varchar_id, 'guideventure', 'ventureid', 'sysname=''' + @@servername + '''');
+		call admin.slave_select_prior(varchar_id, 'guideventure', 'ventureid', 'sysname=''' + get_server_name() + '''');
 		set v_ventureid = convert(integer, varchar_id);
 		call admin.slave_update_prior('ybook', 'KredDebitor', convert(varchar(20), v_kredDebitor)
 			, 'id_xoz=' + convert(varchar(20), old_name.id )
@@ -443,7 +465,7 @@ begin
 			, 'Debit'
 			, ''''''+v_debit_sc+''''''
 			, 'v.sysname = '''''
-					+ @@servername 
+					+ get_server_name() 
 					+''''' and v.ventureid = y.ventureid and y.id_xoz = '
 					+ convert(varchar(20), old_name.id)
 			, 'GuideVenture v'
@@ -455,7 +477,7 @@ begin
 			, 'subDebit'
 			, '''''' + v_debit_sub + ''''''
 			, 'v.sysname = '''''
-					+ @@servername 
+					+ get_server_name() 
 					+''''' and v.ventureid = y.ventureid and y.id_xoz = '
 					+ convert(varchar(20), old_name.id)
 			, 'GuideVenture v'
@@ -484,7 +506,7 @@ begin
 			, 'Kredit'
 			, ''''''+v_credit_sc+''''''
 			, 'v.sysname = '''''
-					+ @@servername 
+					+ get_server_name() 
 					+''''' and v.ventureid = y.ventureid and y.id_xoz = '
 					+ convert(varchar(20), old_name.id)
 			, 'GuideVenture v'
@@ -496,7 +518,7 @@ begin
 			, 'subKredit'
 			, ''''''+v_credit_sub+''''''
 			, 'v.sysname = '''''
-					+ @@servername 
+					+ get_server_name() 
 					+''''' and v.ventureid = y.ventureid and y.id_xoz = '
 					+ convert(varchar(20), old_name.id)
 			, 'GuideVenture v'
@@ -519,7 +541,7 @@ begin
 			, 'UEsumm'
 			, v_currency
 			, 'v.sysname = '''''
-					+ @@servername 
+					+ get_server_name() 
 					+''''' and v.ventureid = y.ventureid and y.id_xoz = '
 					+ convert(varchar(20), old_name.id)
 			, 'GuideVenture v'
@@ -554,7 +576,7 @@ begin
 				, 'purposeId'
 				, v_purposeid
 				, 'v.sysname = '''''
-						+ @@servername 
+						+ get_server_name() 
 						+''''' and v.ventureid = y.ventureid and y.id_xoz = '
 						+ convert(varchar(20), old_name.id)
 				, 'GuideVenture v'
@@ -579,7 +601,7 @@ begin
 			, 'descript'
 			, ''''''+new_name.rem+''''''
 			, 'v.sysname = '''''
-					+ @@servername 
+					+ get_server_name() 
 					+''''' and v.ventureid = y.ventureid and y.id_xoz = '
 					+ convert(varchar(20), old_name.id)
 			, 'GuideVenture v'
@@ -601,7 +623,7 @@ begin
 	call admin.slave_delete_prior(
 		 'ybook y'
 		, 'v.sysname = '''
-				+ @@servername 
+				+ get_server_name() 
 				+ ''' and v.ventureid = y.ventureid and y.id_xoz = '
 				+ convert(varchar(20), old_name.id)
 		, 'GuideVenture v'
@@ -721,7 +743,7 @@ begin
 			'prior'
 			,'guideVenture'
 			,'intInvoice'
-			, 'sysname = ''''' + @@servername + ''''''
+			, 'sysname = ''''' + get_server_name() + ''''''
 		);
 		-- номер, который записан следующим в таблице guideVenture
 		set v_nu_prior = convert(integer, v_nu_prior_ch);
@@ -757,7 +779,7 @@ begin
 		end if;
 
 		if v_nu_update >= v_nu_prior or v_downgrade = 1 then
-			call slave_update_prior('guideVenture', 'intInvoice', v_nu_update + v_last_inc, 'sysname = ''' + @@servername + '''');
+			call slave_update_prior('guideVenture', 'intInvoice', v_nu_update + v_last_inc, 'sysname = ''' + get_server_name() + '''');
 		end if;
 
 
@@ -860,7 +882,7 @@ begin
 	select nu into v_note from jdog where id = new_name_id_jdog;
 
 	call admin.slave_put_xoz_prior(
-		  @@servername 
+		  get_server_name() 
 		, new_name_id
 		, v_debit_sc, v_debit_sub, v_credit_sc, v_credit_sub
 		, convert(varchar(20), new_name_dat, 115)

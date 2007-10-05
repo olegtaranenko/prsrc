@@ -99,7 +99,7 @@ begin
     from guideventure 
     where sysname = p_server;
 
-    message 'in slave_bind_zakaz_', @@servername to client;
+    message 'in slave_bind_zakaz_', get_server_name() to client;
 
 	if v_invCode is not null and char_length(p_invoice) > 0 then
 		set v_order_count = 0;

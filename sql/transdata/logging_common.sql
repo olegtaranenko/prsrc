@@ -28,7 +28,7 @@ end if;
 create 
 	procedure log_error(msg varchar(1000), monitor varchar(20) default 'log')
 begin
-	call show_monitor ('ERROR [' + current database + '@' + @@servername + ']: ' + msg, monitor);
+	call show_monitor ('ERROR [' + current database + '@' + get_server_name() + ']: ' + msg, monitor);
 	if convert(integer, sqlcode) != 0 then
 		call show_monitor('	SQLCODE =' + convert(varchar(20), SQLCODE) + ', SQLSTATE = ' + convert(varchar(20),SQLSTATE)
 			,monitor);
@@ -44,7 +44,7 @@ end if;
 create 
 	procedure log_critical(msg varchar(1000), monitor varchar(20) default 'all')
 begin
-	call show_monitor ('CRITICAL [' + current database + '@' + @@servername + ']: ' + msg, monitor);
+	call show_monitor ('CRITICAL [' + current database + '@' + get_server_name() + ']: ' + msg, monitor);
 	if convert(integer, sqlcode) != 0 then
 		call show_monitor(
 			'	SQLCODE =' + convert(varchar(20), SQLCODE) 
@@ -60,7 +60,7 @@ end if;
 create 
 	procedure log_warning(msg varchar(1000), monitor varchar(20) default 'log')
 begin
-	call show_monitor ('WARNING [' + current database + '@' + @@servername + ']: ' + msg, monitor);
+	call show_monitor ('WARNING [' + current database + '@' + get_server_name() + ']: ' + msg, monitor);
 end;
 
 if exists (select '*' from sysprocedure where proc_name like 'log_debug') then  
@@ -71,7 +71,7 @@ create
 	procedure log_debug(msg varchar(1000), monitor varchar(20) default 'log')
 begin
 	if (@debug = 1) then
-		call show_monitor ('DEBUG [' + current database + '@' + @@servername + ']: ' + msg, monitor);
+		call show_monitor ('DEBUG [' + current database + '@' + get_server_name() + ']: ' + msg, monitor);
 	end if;
 	exception when others then
 		return;

@@ -339,7 +339,12 @@ create procedure call_remote(
 begin
 	declare v_sql varchar(254);
 
-	set v_sql = 'call ' + p_proc_name + '_'+ p_server + '(' + p_params + ')';
+	set v_sql = 'call ' + p_proc_name + '_'+ p_server;
+	if p_params is not null then
+		set v_sql = v_sql + '(' + p_params + ')';
+	else 
+		set v_sql = v_sql + '( )';
+	end if;
 //	message v_sql to client;
 	execute immediate v_sql;
 end;
@@ -375,7 +380,7 @@ begin
 			execute immediate 'set blocks_inited = @blocks_inited';
 			--leave rep;
 		exception when others then
-			message 'Server ', @@servername, ' :: Launch bootstrap_blocking()' to log;
+			message 'Server ', get_server_name(), ' :: Launch bootstrap_blocking()' to log;
 			if first_time = 0 then
 				set first_time = 1;
 				call bootstrap_blocking();

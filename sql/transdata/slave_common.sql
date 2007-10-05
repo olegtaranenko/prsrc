@@ -268,14 +268,14 @@ begin
 	--	raiserror 17010 'Переменная %1! уже была определена. \n Запомните условия возникновения этой ошибки и сообщите администратору', var_name;
 	--end if;
 
-	--message 'block_table(', @@servername, ') =>', emitter_server_name, block_table_name to client;
-	message 'Server ', @@servername, ' ::block_table(', emitter_server_name, ', ', block_table_name, ')' to log;
+	--message 'block_table(', get_server_name(), ') =>', emitter_server_name, block_table_name to client;
+	message 'Server ', get_server_name(), ' ::block_table(', emitter_server_name, ', ', block_table_name, ')' to log;
 
 	--execute immediate 'create variable ' + var_name +' integer';
 	execute immediate 'set ' + var_name + ' = 1';
 	execute immediate 'select ' + var_name + ' into ack';
 	--execute immediate 'select ' + var_name + ' into ack';
-	--message 'block_table(', @@servername, ') =>', var_name to log;
+	--message 'block_table(', get_server_name(), ') =>', var_name to log;
 	message '... var_name = ', var_name to log;
 	message '... ack = ', ack;
 --	waitfor delay convert(time, '00:00:00.500');
@@ -303,11 +303,11 @@ begin
 	--	raiserror 17010 'Ошибка при разблокировке таблицы.\n Переменная %1! НЕ была определена. \n Запомните условия возникновения этой ошибки и сообщите администратору', var_name;
 	--end if;
 
-	message 'unblock_table(', @@servername, ') =>', emitter_server_name, unblock_table_name to log;
+	message 'unblock_table(', get_server_name(), ') =>', emitter_server_name, unblock_table_name to log;
 	execute immediate 'set ' + var_name + ' = 0';
 	execute immediate 'select ' + var_name + ' into ack';
 	--select 'a' into ack;
-	--message 'unblock_table(', @@servername, ') => ack ', ack to log;
+	--message 'unblock_table(', get_server_name(), ') => ack ', ack to log;
 
 end;
 

@@ -861,8 +861,8 @@ begin
 --    begin
 --		call call_host('block_table', 'sync, ''prior'', ''jmat''');
 --		call call_host('block_table', 'sync, ''prior'', ''mat''');
-		call block_remote('stime', @@servername, 'jmat');
-		call block_remote('stime', @@servername, 'mat');
+		call block_remote('stime', get_server_name(), 'jmat');
+		call block_remote('stime', get_server_name(), 'mat');
 
         -- глобальный для загловков накладных
 		set v_id_jmat = get_nextid('jmat');
@@ -935,8 +935,8 @@ begin
 		end for;
 
 
-		call unblock_remote('stime', @@servername, 'jmat');
-		call unblock_remote('stime', @@servername, 'mat');
+		call unblock_remote('stime', get_server_name(), 'jmat');
+		call unblock_remote('stime', get_server_name(), 'mat');
 --		call call_host('unblock_table', 'sync, ''prior'', ''jmat''');
 --		call call_host('unblock_table', 'sync, ''prior'', ''mat''');
 --	exception 

@@ -87,9 +87,9 @@ begin
 
 
 	if (old_name.id_mat is not null) then
-		call block_remote('stime', @@servername, 'mat');
+		call block_remote('stime', get_server_name(), 'mat');
 		call delete_remote('stime', 'mat', 'id = ' + convert(varchar(20), old_name.id_mat));
-		call unblock_remote('stime', @@servername, 'mat');
+		call unblock_remote('stime', get_server_name(), 'mat');
 	end if;
 
 	--message 'old_name.id_mat = ', old_name.id_mat to client;
@@ -101,9 +101,9 @@ begin
 	--message 'remoteServer = ', remoteServer to client;
 
 	if remoteServer is not null and remoteServer != 'stime' then
-		call block_remote(remoteServer, @@servername, 'mat');
+		call block_remote(remoteServer, get_server_name(), 'mat');
 		call delete_remote(remoteServer, 'mat', 'id = ' + convert(varchar(20), old_name.id_mat));
-		call unblock_remote(remoteServer, @@servername, 'mat');
+		call unblock_remote(remoteServer, get_server_name(), 'mat');
 	end if;
 
 end;
@@ -247,11 +247,11 @@ begin
 
 
 	if (old_name.id_jmat is not null) then
-		call block_remote('stime', @@servername, 'jmat');
-		call block_remote('stime', @@servername, 'mat');
+		call block_remote('stime', get_server_name(), 'jmat');
+		call block_remote('stime', get_server_name(), 'mat');
 		call delete_remote('stime', 'jmat', 'id = ' + convert(varchar(20), old_name.id_jmat));
-		call unblock_remote('stime', @@servername, 'jmat');
-		call unblock_remote('stime', @@servername, 'mat');
+		call unblock_remote('stime', get_server_name(), 'jmat');
+		call unblock_remote('stime', get_server_name(), 'mat');
 	end if;
 
 	select sysname into remoteServer 
@@ -260,11 +260,11 @@ begin
 
 --	message 'remoteServer = ', remoteServer to client;
 	if remoteServer is not null and remoteServer != 'stime' then
-		call block_remote(remoteServer, @@servername, 'jmat');
-		call block_remote(remoteServer, @@servername, 'mat');
+		call block_remote(remoteServer, get_server_name(), 'jmat');
+		call block_remote(remoteServer, get_server_name(), 'mat');
 		call delete_remote(remoteServer, 'jmat', 'id = ' + convert(varchar(20), old_name.id_jmat));
-		call unblock_remote(remoteServer, @@servername, 'jmat');
-		call unblock_remote(remoteServer, @@servername, 'mat');
+		call unblock_remote(remoteServer, get_server_name(), 'jmat');
+		call unblock_remote(remoteServer, get_server_name(), 'mat');
 	end if;
 end;
 
@@ -1141,8 +1141,8 @@ begin
 --    begin
 		call call_host('block_table', 'sync, ''prior'', ''jmat''');
 		call call_host('block_table', 'sync, ''prior'', ''mat''');
---		call block_remote('stime', @@servername, 'jmat');
---		call block_remote('stime', @@servername, 'mat');
+--		call block_remote('stime', get_server_name(), 'jmat');
+--		call block_remote('stime', get_server_name(), 'mat');
 
 		
 
@@ -1275,8 +1275,8 @@ begin
 			set v_id_jmat = v_id_jmat + 1;
 		end for;
 
-		call unblock_remote('stime', @@servername, 'jmat');
-		call unblock_remote('stime', @@servername, 'mat');
+		call unblock_remote('stime', get_server_name(), 'jmat');
+		call unblock_remote('stime', get_server_name(), 'mat');
 --		call call_host('unblock_table', 'sync, ''prior'', ''jmat''');
 --		call call_host('unblock_table', 'sync, ''prior'', ''mat''');
 --	exception 
@@ -2025,6 +2025,8 @@ end if;
 create procedure bootstrap_blocking (
 ) 
 begin
+
+	
 	call cre_block_var('blocks_inited');
 	call cre_block_var('bulk_delete');
 	call cre_block_var('supress_cum_update');
@@ -2055,11 +2057,12 @@ begin
 			from sys.sysservers s 
 			join guideventure v on s.srvname = v.sysname and v.standalone = 0
 		do
-			message 'call slave_cre_block_var_' + r_server + '(''' + make_block_name(@@servername, r_table) + ''')' to log;
-			execute immediate 'call slave_cre_block_var_' + r_server + '(''' + make_block_name(@@servername, r_table) + ''')';
+			message 'call slave_cre_block_var_' + r_server + '(''' + make_block_name(get_server_name(), r_table) + ''')' to log;
+			execute immediate 'call slave_cre_block_var_' + r_server + '(''' + make_block_name(get_server_name(), r_table) + ''')';
 
 		end for;
 	end for;
+
 
 
 end;
@@ -2637,21 +2640,21 @@ begin
 		where id = p_ivo_id
 	do
 		if r_id_jmat is not null then
-			call block_remote(src_sysname, @@servername, 'jmat');
-			call block_remote(src_sysname, @@servername, 'mat');
+			call block_remote(src_sysname, get_server_name(), 'jmat');
+			call block_remote(src_sysname, get_server_name(), 'mat');
 
 			call delete_remote(src_sysname, 'jmat', 'id = '+ convert(varchar(20), r_id_jmat));
 
-			call unblock_remote(src_sysname, @@servername, 'mat');
-			call unblock_remote(src_sysname, @@servername, 'jmat');
+			call unblock_remote(src_sysname, get_server_name(), 'mat');
+			call unblock_remote(src_sysname, get_server_name(), 'jmat');
 
-			call block_remote(dst_sysname, @@servername, 'jmat');
-			call block_remote(dst_sysname, @@servername, 'mat');
+			call block_remote(dst_sysname, get_server_name(), 'jmat');
+			call block_remote(dst_sysname, get_server_name(), 'mat');
 
 			call delete_remote(dst_sysname, 'jmat', 'id = '+ convert(varchar(20), r_id_jmat));
 
-			call unblock_remote(dst_sysname, @@servername, 'mat');
-			call unblock_remote(dst_sysname, @@servername, 'jmat');
+			call unblock_remote(dst_sysname, get_server_name(), 'mat');
+			call unblock_remote(dst_sysname, get_server_name(), 'jmat');
 			update sdocsVenture set id_jmat = null where id = p_ivo_id;
 		end if;
 	end for;
@@ -2764,7 +2767,7 @@ begin
 			end if;
 			message 'r_id_jmat =', r_id_jmat to client;
 
-			call block_remote(r_src_server, @@servername, 'jmat');
+			call block_remote(r_src_server, get_server_name(), 'jmat');
 			call wf_insert_jmat (
 				 r_src_server
 				,v_src_id_guide
@@ -2780,7 +2783,7 @@ begin
 				,0 -- id_jscet
 				,0 -- r_id_analytic
 			);
-			call unblock_remote(r_src_server, @@servername, 'jmat');
+			call unblock_remote(r_src_server, get_server_name(), 'jmat');
 
 
 		end if;
@@ -2810,7 +2813,7 @@ begin
 			end if;
 
 			message 'r_id_jmat =', r_id_jmat to client;
-			call block_remote(r_dst_server, @@servername, 'jmat');
+			call block_remote(r_dst_server, get_server_name(), 'jmat');
 			call wf_insert_jmat (
 				 r_dst_server
 				,v_dst_id_guide
@@ -2826,7 +2829,7 @@ begin
 				,0 -- id_jscet
 				,0 -- r_id_analytic
 			);
-			call unblock_remote(r_dst_server, @@servername, 'jmat');
+			call unblock_remote(r_dst_server, get_server_name(), 'jmat');
 		end if;
 
 		
@@ -2850,7 +2853,7 @@ begin
 			--message r_nomnom to client;
 
 			if v_src_id_sklad is not null then
-				call block_remote(r_src_server, @@servername, 'mat');
+				call block_remote(r_src_server, get_server_name(), 'mat');
 				set v_id_mat = wf_insert_mat (
 					r_src_server
 					,v_id_mat
@@ -2864,11 +2867,11 @@ begin
 					,v_id_dest
 					,r_perList
 				);
-				call unblock_remote(r_src_server, @@servername, 'mat');
+				call unblock_remote(r_src_server, get_server_name(), 'mat');
 			end if;
 	    
 			if v_dst_id_sklad is not null then
-				call block_remote(r_dst_server, @@servername, 'mat');
+				call block_remote(r_dst_server, get_server_name(), 'mat');
 				set v_id_mat = wf_insert_mat (
 					r_dst_server
 					,v_id_mat
@@ -2882,7 +2885,7 @@ begin
 					,v_dst_id_sklad
 					,r_perList
 				);
-				call unblock_remote(r_dst_server, @@servername, 'mat');
+				call unblock_remote(r_dst_server, get_server_name(), 'mat');
 			end if;
 	    
 	        update sdmcventure m set m.id_mat = v_id_mat 
@@ -4376,6 +4379,32 @@ begin
   call update_host('inc_table', 'next_id', convert(varchar(20), maxId + 1), 'table_nm = ''''' + table_name + '''''');
   return maxId;
 end;
+
+
+
+
+
+/**
+ get_server_name() => @server_name 
+ процедура должна вызываться один раз из bootstrap_blocking.
+*/                 
+
+if exists (select '*' from sysprocedure where proc_name like 'get_server_name') then  
+	drop function get_server_name;
+end if;
+
+create function get_server_name ()
+returns varchar(20) 
+begin
+	set get_server_name = @@servername;
+	if (substring (get_server_name, 1, 3) = 'dev') then
+		set get_server_name = 'prior';
+	end if;
+	 
+end;
+
+
+
 
 /************************************************************/
 /*                  PRIOR SPECIFIC PROCS                    */
@@ -5956,10 +5985,10 @@ begin
 		select sysname into remoteServerOld from GuideVenture where ventureId = old_name.ventureId;
 		if remoteServerOld is not null then
 			select id_voc_names into v_id_dest from guideFirms where firmId = new_name.firmId;
-			call block_remote(remoteServerOld, @@servername, 'jscet');
+			call block_remote(remoteServerOld, get_server_name(), 'jscet');
 			call update_remote(remoteServerOld, 'jscet', 'id_d', convert(varchar(20), v_id_dest ), 'id = ' + convert(varchar(20), old_name.id_jscet));
 			call update_remote(remoteServerOld, 'jscet', 'id_d_cargo', convert(varchar(20), v_id_dest ), 'id = ' + convert(varchar(20), old_name.id_jscet));
-			call unblock_remote(remoteServerOld, @@servername, 'jscet');
+			call unblock_remote(remoteServerOld, get_server_name(), 'jscet');
 		end if;
 	end if;
 	if update (ordered) then
@@ -6154,10 +6183,12 @@ begin
 	-- по умолчанию в том же дне
 	set v_new_base = 0;
 
+	-- locking to prevent the concurrent modification
+	update system set lastDocNum = lastDocNum;
 	select lastDocNum into sys_numdoc from system;
 	set sys_numdoc_c = convert(varchar(10), sys_numdoc);
 
-	set now_date = convert(char(6), now(), 12); -- 050716
+	set now_date = convert(char(6), now(), 12); -- 050716 yymmdd
 	set now_year = substring(now_date, 1, 2);
 	set now_year_i = convert(integer, now_year); --5 или 10 если 2010-й год
 	set now_year_ln = char_length(convert(char(2), now_year_i)); --1 или 2
@@ -6225,10 +6256,13 @@ begin
 	-- по умолчанию в том же дне
 	set v_new_base = 0;
 
+	-- locking to prevent the concurrent modification
+	update system set lastPrivatNum = lastPrivatNum;
+
 	select lastPrivatNum into sys_numorder from system;
 	set sys_numorder_c = convert(varchar(10), sys_numorder);
 
-	set now_date = convert(char(6), now(), 12); -- 050716
+	set now_date = convert(char(6), now(), 12); -- 050716 yymmdd
 	set now_year = substring(now_date, 1, 2);
 	set now_year_i = convert(integer, now_year); --5 или 10 если 2010-й год
 	set now_year_ln = char_length(convert(char(2), now_year_i)); --1 или 2
@@ -6897,7 +6931,7 @@ begin
 
 
 --	call call_host('block_table', 'sync, ''prior'', ''mat''');
-	call block_remote('stime', @@servername, 'mat');
+	call block_remote('stime', get_server_name(), 'mat');
 	
 	call wf_insert_mat (
 		'stime'
@@ -6931,7 +6965,7 @@ begin
 	end if;
 
 
-	call block_remote('stime', @@servername, 'mat');
+	call block_remote('stime', get_server_name(), 'mat');
 --	call call_host('unblock_table', 'sync, ''prior'', ''mat''');
 	--	set wf_otgruz_nom = v_id_mat;
 end;
@@ -7449,10 +7483,10 @@ begin
 		select sysname into remoteServerOld from GuideVenture where ventureId = old_name.ventureId;
 		if remoteServerOld is not null then
 			select id_voc_names into v_id_dest from BayGuideFirms where firmId = new_name.firmId;
-			call block_remote(remoteServerOld, @@servername, 'jscet');
+			call block_remote(remoteServerOld, get_server_name(), 'jscet');
 			call update_remote(remoteServerOld, 'jscet', 'id_d', convert(varchar(20), v_id_dest ), 'id = ' + convert(varchar(20), old_name.id_jscet));
 			call update_remote(remoteServerOld, 'jscet', 'id_d_cargo', convert(varchar(20), v_id_dest ), 'id = ' + convert(varchar(20), old_name.id_jscet));
-			call unblock_remote(remoteServerOld, @@servername, 'jscet');
+			call unblock_remote(remoteServerOld, get_server_name(), 'jscet');
 		end if;
 	end if;
 	if 	update (statusId)
@@ -8430,11 +8464,11 @@ begin
 
 
 	if (old_name.id_jmat is not null) then
-		call block_remote('stime', @@servername, 'jmat');
-		call block_remote('stime', @@servername, 'mat');
+		call block_remote('stime', get_server_name(), 'jmat');
+		call block_remote('stime', get_server_name(), 'mat');
 		call delete_remote('stime', 'jmat', 'id = ' + convert(varchar(20), old_name.id_jmat));
-		call unblock_remote('stime', @@servername, 'jmat');
-		call unblock_remote('stime', @@servername, 'mat');
+		call unblock_remote('stime', get_server_name(), 'jmat');
+		call unblock_remote('stime', get_server_name(), 'mat');
 	end if;
 
 end;

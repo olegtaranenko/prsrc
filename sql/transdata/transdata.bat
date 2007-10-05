@@ -61,6 +61,10 @@ call isql comtex_db_change stime
 call isql comtex_db_change pm
 call isql comtex_db_change mm
 
+call isql stime_db_change stime
+call isql pm_db_change pm
+call isql mm_db_change mm
+
 rem call isql dml_after_prior.sql prior
 
 :: »справлени€ по валютным накладным (пропали цены)

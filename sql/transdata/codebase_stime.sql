@@ -155,7 +155,7 @@ begin
 	end if;
 
 	message 'Server STIME, Trigger jmat.wf_income, no-echo =', no_echo to log;
-	call admin.block_remote('prior', @@servername, 'sdocs');
+	call admin.block_remote('prior', get_server_name(), 'sdocs');
 
 begin
 	if update(id_code) then
@@ -251,10 +251,10 @@ begin
 	end if;
 
 exception when others then
-	call admin.unblock_remote('prior', @@servername, 'sdocs');
+	call admin.unblock_remote('prior', get_server_name(), 'sdocs');
 end;
 
-	call admin.unblock_remote('prior', @@servername, 'sdocs');
+	call admin.unblock_remote('prior', get_server_name(), 'sdocs');
 
 end;
 */
@@ -410,7 +410,7 @@ begin
 	end if;
 
 
-	call admin.block_remote('prior', @@servername, 'sdmc');
+	call admin.block_remote('prior', get_server_name(), 'sdmc');
 
 
 	if update(kol1) then
@@ -438,7 +438,7 @@ begin
 
 	end if;
 
-	call admin.unblock_remote('prior', @@servername, 'sdmc');
+	call admin.unblock_remote('prior', get_server_name(), 'sdmc');
 
 end;
 */
@@ -474,9 +474,9 @@ begin
 		return;
 	end if;
 
-	call admin.block_remote('prior', @@servername, 'sdmc');
+	call admin.block_remote('prior', get_server_name(), 'sdmc');
 	call admin.slave_delete_prior('sdmc','id_mat = '+convert(varchar(20),old_name.id) );
-	call admin.unblock_remote('prior', @@servername, 'sdmc');
+	call admin.unblock_remote('prior', get_server_name(), 'sdmc');
 
 end;
 */
@@ -507,13 +507,13 @@ begin
 		return;
 	end if;
 
-	call admin.block_remote('prior', @@servername, 'sdocs');
-	call admin.block_remote('prior', @@servername, 'sdmc');
+	call admin.block_remote('prior', get_server_name(), 'sdocs');
+	call admin.block_remote('prior', get_server_name(), 'sdmc');
 
     call admin.slave_delete_prior('sdocs','id_jmat = '+convert(varchar(20),old_name.id) );
 
-	call admin.unblock_remote('prior', @@servername, 'sdmc');
-	call admin.unblock_remote('prior', @@servername, 'sdocs');
+	call admin.unblock_remote('prior', get_server_name(), 'sdmc');
+	call admin.unblock_remote('prior', get_server_name(), 'sdocs');
 end;
 */
 

@@ -49,7 +49,7 @@ begin
 	set v_currency_rate = 30;
 	set v_mat_nu = 1;
 	
-	call block_remote('stime', @@servername, 'mat');
+	call block_remote('stime', get_server_name(), 'mat');
 
 	for cur as n dynamic scroll cursor for
 		select 
@@ -87,7 +87,7 @@ begin
 		update sDmc set id_mat = v_id_mat where numDoc = r_numdoc and numext = r_numext and nomnom = r_nomnom;
 		set v_mat_nu = v_mat_nu + 1;
 	end for;
-	call unblock_remote('stime', @@servername, 'mat');
+	call unblock_remote('stime', get_server_name(), 'mat');
 
 end;
 */
