@@ -5,15 +5,15 @@ Begin VB.Form sProducts
    BackColor       =   &H8000000A&
    BorderStyle     =   1  'Fixed Single
    Caption         =   "Формирование накладной"
-   ClientHeight    =   6390
-   ClientLeft      =   45
-   ClientTop       =   1725
+   ClientHeight    =   6384
+   ClientLeft      =   48
+   ClientTop       =   1728
    ClientWidth     =   11880
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    LockControls    =   -1  'True
    MinButton       =   0   'False
-   ScaleHeight     =   6390
+   ScaleHeight     =   6384
    ScaleWidth      =   11880
    StartUpPosition =   1  'CenterOwner
    Begin VB.ComboBox cbInside 
@@ -81,8 +81,8 @@ Begin VB.Form sProducts
          Top             =   300
          Visible         =   0   'False
          Width           =   7215
-         _ExtentX        =   12726
-         _ExtentY        =   2566
+         _ExtentX        =   12721
+         _ExtentY        =   2561
          _Version        =   393216
          AllowBigSelection=   0   'False
          AllowUserResizing=   1
@@ -93,7 +93,7 @@ Begin VB.Form sProducts
          Caption         =   "laGrid4"
          BeginProperty Font 
             Name            =   "MS Sans Serif"
-            Size            =   8.25
+            Size            =   7.8
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -142,8 +142,8 @@ Begin VB.Form sProducts
       Top             =   3000
       Visible         =   0   'False
       Width           =   4695
-      _ExtentX        =   8281
-      _ExtentY        =   5001
+      _ExtentX        =   8276
+      _ExtentY        =   4995
       _Version        =   393216
       AllowBigSelection=   0   'False
       AllowUserResizing=   1
@@ -155,8 +155,8 @@ Begin VB.Form sProducts
       Top             =   300
       Visible         =   0   'False
       Width           =   4695
-      _ExtentX        =   8281
-      _ExtentY        =   4366
+      _ExtentX        =   8276
+      _ExtentY        =   4360
       _Version        =   393216
       AllowBigSelection=   0   'False
       AllowUserResizing=   1
@@ -217,7 +217,7 @@ Begin VB.Form sProducts
       TabIndex        =   22
       Top             =   840
       Width           =   2175
-      _ExtentX        =   3836
+      _ExtentX        =   3831
       _ExtentY        =   8784
       _Version        =   393217
       HideSelection   =   0   'False
@@ -233,8 +233,8 @@ Begin VB.Form sProducts
       TabIndex        =   24
       Top             =   2940
       Width           =   4635
-      _ExtentX        =   8176
-      _ExtentY        =   5106
+      _ExtentX        =   8170
+      _ExtentY        =   5101
       _Version        =   393216
       AllowBigSelection=   0   'False
       HighLight       =   0
@@ -246,8 +246,8 @@ Begin VB.Form sProducts
       TabIndex        =   20
       Top             =   300
       Width           =   4635
-      _ExtentX        =   8176
-      _ExtentY        =   4260
+      _ExtentX        =   8170
+      _ExtentY        =   4255
       _Version        =   393216
       AllowBigSelection=   0   'False
       MergeCells      =   2
@@ -2132,6 +2132,12 @@ If KeyCode = vbKeyReturn Then
  
 If opNomenk.value Then
   If Not isNumericTbox(tbQuant, 0.01) Then Exit Sub
+  s = Round(tbQuant.Text, 2)
+  If s <> tbQuant.Text Then
+    MsgBox "Число знаков после запятой - не больше двух!", , "Повторите ввод"
+    tbQuant.SetFocus
+    Exit Sub
+  End If
   If Regim = "" Then 'предметы к заказу т.е 0<numExt<254
     nomenkToPredmeti
   Else
@@ -2139,7 +2145,7 @@ If opNomenk.value Then
     If sDocs.isIntMove() Then
         I = Round(s, 0)
         If s <> I Then
-            MsgBox "Количество должно быть целым!", , "Предупреждение"
+            MsgBox "Количество должно быть целым!", , "Повторите ввод"
             tbQuant.Text = "1": Exit Sub
         End If
   

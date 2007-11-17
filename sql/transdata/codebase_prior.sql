@@ -4915,7 +4915,7 @@ begin
         end if;
 		if update(quant) then
 			call update_remote(remoteServerNew, 'scet', 'kol1', convert(varchar(20), new_name.quant), 'id = ' + convert(varchar(20), v_id_scet));
-			call update_remote(remoteServerNew, 'scet', 'kol3', convert(varchar(20), new_name.quant), 'id = ' + convert(varchar(20), v_id_scet));
+--			call update_remote(remoteServerNew, 'scet', 'kol3', convert(varchar(20), new_name.quant), 'id = ' + convert(varchar(20), v_id_scet));
 		end if;
 	end if;
 	  
