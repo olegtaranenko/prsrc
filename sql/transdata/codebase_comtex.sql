@@ -334,15 +334,15 @@ begin
 	declare v_kredDebitor integer;
 	declare varchar_id_deb varchar(20);
 	declare v_values varchar(1024);
-	declare v_deb_name varchar(128);
+	declare v_deb_name varchar(203);
 
 	
 	select nm into v_deb_name from voc_names where id = p_id_deb;
-	call admin.slave_select_prior(varchar_id_deb, 'GuideFirms', 'firmid', 'Name='''+ v_deb_name +'''');
+	call admin.slave_select_prior(varchar_id_deb, 'GuideFirms', 'min(firmid)', 'Name='''+ v_deb_name +'''');
 	set v_kredDebitor = convert(integer, varchar_id_deb);
 
 	if v_kredDebitor is null then
-		call admin.slave_select_prior(varchar_id_deb, 'yDebKreditor', 'id', 'Name='''+ v_deb_name +'''');
+		call admin.slave_select_prior(varchar_id_deb, 'yDebKreditor', 'min(id)', 'Name='''+ v_deb_name +'''');
 		set v_kredDebitor = convert(integer, varchar_id_deb);
 	end if;
 
