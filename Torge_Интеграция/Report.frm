@@ -267,7 +267,7 @@ If tbOrders Is Nothing Then Exit Sub
 quantity = 0: sum = 0
 If Not tbOrders.BOF Then
  While Not tbOrders.EOF
-    v = tbOrders!Sum_quant: If IsNull(v) Then v = 0
+    v = tbOrders!sum_quant: If IsNull(v) Then v = 0
     s = Round((tbOrders!quantity - v) / per, 2)
     If s > 0 Then
         quantity = quantity + 1
@@ -536,17 +536,17 @@ strWhere = "20" & Mid$(param2, 7, 2) & "-" & Mid$(param2, 4, 2) & "-" & _
 Left$(param2, 2) & Mid$(param2, 9)
 
 If param1 = "p" Or param1 = "w" Then 'есть  гот.изделия
-'  sql = "SELECT xPredmetyByIzdeliaOut.prId, xPredmetyByIzdeliaOut.prExt, " & _
-  "xPredmetyByIzdeliaOut.quant, sGuideProducts.prName, sGuideProducts.prDescript " & _
-  "FROM xPredmetyByIzdeliaOut INNER JOIN sGuideProducts ON xPredmetyByIzdeliaOut.prId = sGuideProducts.prId " & _
+'  sql = "SELECT r.prId, r.prExt, " & _
+  "r.quant, sGuideProducts.prName, sGuideProducts.prDescript " & _
+  "FROM xPredmetyByIzdeliaOut INNER JOIN sGuideProducts ON r.prId = sGuideProducts.prId " & _
 
-  sql = "SELECT xPredmetyByIzdeliaOut.prId, xPredmetyByIzdeliaOut.prExt, " & _
-  "xPredmetyByIzdeliaOut.quant, sGuideProducts.prName, " & _
-  "sGuideProducts.prDescript, xPredmetyByIzdelia.cenaEd " & _
-  "FROM sGuideProducts INNER JOIN (xPredmetyByIzdelia INNER JOIN xPredmetyByIzdeliaOut ON (xPredmetyByIzdelia.prExt = xPredmetyByIzdeliaOut.prExt) AND (xPredmetyByIzdelia.prId = xPredmetyByIzdeliaOut.prId) AND (xPredmetyByIzdelia.numOrder = xPredmetyByIzdeliaOut.numOrder)) ON sGuideProducts.prId = xPredmetyByIzdelia.prId " & _
-  "WHERE (((xPredmetyByIzdeliaOut.numOrder)=" & gNzak & ") AND " & _
-  "((xPredmetyByIzdeliaOut.outDate) ='" & strWhere & "'));"
-'  "((xPredmetyByIzdeliaOut.outDate) Like  '" & strWhere & "*'));"
+  sql = "SELECT r.prId, r.prExt, " & _
+  "r.quant, sGuideProducts.prName, " & _
+  "sGuideProducts.prDescript, p.cenaEd " & _
+  "FROM sGuideProducts INNER JOIN (xPredmetyByIzdelia p INNER JOIN xPredmetyByIzdeliaOut r ON (p.prExt = r.prExt) AND (p.prId = r.prId) AND (p.numOrder = r.numOrder)) ON sGuideProducts.prId = p.prId " & _
+  "WHERE (((r.numOrder)=" & gNzak & ") AND " & _
+  "((r.outDate) ='" & strWhere & "'));"
+'  "((r.outDate) Like  '" & strWhere & "*'));"
   'MsgBox sql
   Set tbProduct = myOpenRecordSet("##382", sql, dbOpenForwardOnly)
   If tbProduct Is Nothing Then Exit Sub
@@ -703,8 +703,8 @@ otgruzNomenk = 0
 ReDim NN(0): ReDim QQ(0): ReDim QQ2(0): QQ2(0) = 0: ReDim QQ3(0)
 
 'ном-ра входящих в заказы изделий
-sql = "SELECT xPredmetyByIzdeliaOut.* " & _
-"FROM xPredmetyByIzdeliaOut INNER JOIN Orders ON xPredmetyByIzdeliaOut.numOrder = Orders.numOrder " & _
+sql = "SELECT r.* " & _
+"FROM xPredmetyByIzdeliaOut r INNER JOIN Orders ON r.numOrder = Orders.numOrder " & _
 "WHERE (((Orders.StatusId)<6));"
 
 Set tbProduct = myOpenRecordSet("##384", sql, dbOpenForwardOnly)
@@ -916,14 +916,14 @@ Dim prevName As String, cSum As Single, prevNom As Long
 'strWhere = Pribil.bDateWhere
 'If strWhere <> "" Then strWhere = "HAVING ((" & strWhere & ")) "
 If statistic = "" Then
-    strWhere = " ORDER BY xUslugOut.numOrder, xUslugOut.outDate;"
+    strWhere = " ORDER BY u.numOrder, u.outDate;"
 Else
-    strWhere = " ORDER BY GuideFirms.Name, xUslugOut.numOrder;"
+    strWhere = " ORDER BY GuideFirms.Name, u.numOrder;"
 End If
 
-sql = "SELECT xUslugOut.numOrder, xUslugOut.outDate, " & _
-"xUslugOut.quant, 1 AS cenaEd, GuideFirms.Name, Orders.Product " & _
-"FROM GuideFirms INNER JOIN (Orders INNER JOIN xUslugOut ON Orders.numOrder = xUslugOut.numOrder) ON GuideFirms.FirmId = Orders.FirmId " & _
+sql = "SELECT u.numOrder, u.outDate, " & _
+"u.quant, 1 AS cenaEd, GuideFirms.Name, Orders.Product " & _
+"FROM GuideFirms INNER JOIN (Orders INNER JOIN xUslugOut u ON Orders.numOrder = u.numOrder) ON GuideFirms.FirmId = Orders.FirmId " & _
 Pribil.uDateWhere & strWhere
 '" ORDER BY xUslugOut.numOrder, xUslugOut.outDate;"
 
@@ -983,16 +983,16 @@ Dim m As Single, r As Single, typ As String, prevTyp As String, prevName As Stri
 
 
 If statistic = "" Then
-'    strWhere = " ORDER BY xPredmetyByIzdeliaOut.numOrder, xPredmetyByIzdeliaOut.outDate;"
+'    strWhere = " ORDER BY r.numOrder, r.outDate;"
     strWhere = " ORDER BY 1, 2;"
 Else
-'    strWhere = " ORDER BY GuideFirms.Name, xPredmetyByIzdeliaOut.numOrder;"
+'    strWhere = " ORDER BY GuideFirms.Name, r.numOrder;"
     strWhere = " ORDER BY 8, 1;"
 End If
-sql = "SELECT xPredmetyByIzdeliaOut.numOrder, xPredmetyByIzdeliaOut.outDate, " & _
-"xPredmetyByIzdeliaOut.prId, xPredmetyByIzdeliaOut.prExt, -1 AS costI, " & _
-"xPredmetyByIzdeliaOut.quant, xPredmetyByIzdelia.cenaEd, GuideFirms.Name, Orders.Product " & _
-"FROM (GuideFirms INNER JOIN Orders ON (GuideFirms.FirmId = Orders.FirmId) AND (GuideFirms.FirmId = Orders.FirmId)) INNER JOIN (xPredmetyByIzdelia INNER JOIN xPredmetyByIzdeliaOut ON (xPredmetyByIzdelia.prExt = xPredmetyByIzdeliaOut.prExt) AND (xPredmetyByIzdelia.prId = xPredmetyByIzdeliaOut.prId) AND (xPredmetyByIzdelia.numOrder = xPredmetyByIzdeliaOut.numOrder)) ON Orders.numOrder = xPredmetyByIzdelia.numOrder " & _
+sql = "SELECT r.numOrder, r.outDate, " & _
+"r.prId, r.prExt, -1 AS costI, " & _
+"r.quant, p.cenaEd, GuideFirms.Name, Orders.Product " & _
+"FROM (GuideFirms INNER JOIN Orders ON (GuideFirms.FirmId = Orders.FirmId) AND (GuideFirms.FirmId = Orders.FirmId)) INNER JOIN (xPredmetyByIzdelia p INNER JOIN xPredmetyByIzdeliaOut r ON (p.prExt = r.prExt) AND (p.prId = r.prId) AND (p.numOrder = r.numOrder)) ON Orders.numOrder = p.numOrder " & _
 Pribil.pDateWhere & _
 " UNION ALL SELECT xPredmetyByNomenkOut.numOrder, xPredmetyByNomenkOut.outDate, " & _
 "-1 AS prId, -1 AS prExt, sGuideNomenk.cost/sGuideNomenk.perList as costI, " & _

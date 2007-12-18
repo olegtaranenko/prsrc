@@ -3,16 +3,184 @@ Begin VB.Form Pribil
    BackColor       =   &H8000000A&
    BorderStyle     =   1  'Fixed Single
    Caption         =   "Реализация"
-   ClientHeight    =   4170
-   ClientLeft      =   45
-   ClientTop       =   330
-   ClientWidth     =   8340
+   ClientHeight    =   4128
+   ClientLeft      =   552
+   ClientTop       =   9336
+   ClientWidth     =   12456
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   4170
-   ScaleWidth      =   8340
-   StartUpPosition =   2  'CenterScreen
+   ScaleHeight     =   4128
+   ScaleWidth      =   12456
+   StartUpPosition =   1  'CenterOwner
+   Begin VB.Frame Frame7 
+      Caption         =   "ПМ"
+      Height          =   2415
+      Left            =   7800
+      TabIndex        =   36
+      Top             =   1560
+      Width           =   1335
+      Begin VB.CommandButton cmDetailPM 
+         Caption         =   "Детализация"
+         Enabled         =   0   'False
+         Height          =   315
+         Left            =   60
+         TabIndex        =   38
+         Top             =   1620
+         Width           =   1215
+      End
+      Begin VB.CommandButton cmStatPM 
+         Caption         =   "Статистика"
+         Enabled         =   0   'False
+         Height          =   315
+         Left            =   60
+         TabIndex        =   37
+         Top             =   1980
+         Width           =   1215
+      End
+      Begin VB.Label laMaterialsPM 
+         Alignment       =   1  'Right Justify
+         BackColor       =   &H8000000E&
+         BorderStyle     =   1  'Fixed Single
+         Height          =   372
+         Left            =   50
+         TabIndex        =   51
+         Top             =   720
+         Width           =   1200
+      End
+      Begin VB.Label laRealizPM 
+         Alignment       =   1  'Right Justify
+         BackColor       =   &H8000000E&
+         BorderStyle     =   1  'Fixed Single
+         Height          =   372
+         Left            =   50
+         TabIndex        =   40
+         Top             =   300
+         Width           =   1200
+      End
+      Begin VB.Label laClearPM 
+         Alignment       =   1  'Right Justify
+         BackColor       =   &H8000000E&
+         BorderStyle     =   1  'Fixed Single
+         Height          =   315
+         Left            =   50
+         TabIndex        =   39
+         Top             =   1140
+         Width           =   1200
+      End
+   End
+   Begin VB.Frame Frame9 
+      Caption         =   "ММ"
+      Height          =   2415
+      Left            =   9240
+      TabIndex        =   46
+      Top             =   1560
+      Width           =   1335
+      Begin VB.CommandButton cmStatMM 
+         Caption         =   "Статистика"
+         Enabled         =   0   'False
+         Height          =   315
+         Left            =   60
+         TabIndex        =   34
+         Top             =   1980
+         Width           =   1215
+      End
+      Begin VB.CommandButton cmDetailMM 
+         Caption         =   "Детализация"
+         Enabled         =   0   'False
+         Height          =   315
+         Left            =   60
+         TabIndex        =   47
+         Top             =   1620
+         Width           =   1215
+      End
+      Begin VB.Label laClearMM 
+         Alignment       =   1  'Right Justify
+         BackColor       =   &H8000000E&
+         BorderStyle     =   1  'Fixed Single
+         Height          =   315
+         Left            =   50
+         TabIndex        =   50
+         Top             =   1140
+         Width           =   1200
+      End
+      Begin VB.Label laMaterialsMM 
+         Alignment       =   1  'Right Justify
+         BackColor       =   &H8000000E&
+         BorderStyle     =   1  'Fixed Single
+         Height          =   315
+         Left            =   50
+         TabIndex        =   49
+         Top             =   720
+         Width           =   1200
+      End
+      Begin VB.Label laRealizMM 
+         Alignment       =   1  'Right Justify
+         BackColor       =   &H8000000E&
+         BorderStyle     =   1  'Fixed Single
+         Height          =   315
+         Left            =   50
+         TabIndex        =   48
+         Top             =   300
+         Width           =   1200
+      End
+   End
+   Begin VB.Frame Frame8 
+      Caption         =   "Аналит"
+      Height          =   2415
+      Left            =   10680
+      TabIndex        =   41
+      Top             =   1560
+      Width           =   1335
+      Begin VB.CommandButton cmDetailAN 
+         Caption         =   "Детализация"
+         Enabled         =   0   'False
+         Height          =   315
+         Left            =   60
+         TabIndex        =   42
+         Top             =   1620
+         Width           =   1215
+      End
+      Begin VB.CommandButton cmStatAN 
+         Caption         =   "Статистика"
+         Enabled         =   0   'False
+         Height          =   315
+         Left            =   60
+         TabIndex        =   35
+         Top             =   1980
+         Width           =   1215
+      End
+      Begin VB.Label laRealizAn 
+         Alignment       =   1  'Right Justify
+         BackColor       =   &H8000000E&
+         BorderStyle     =   1  'Fixed Single
+         Height          =   315
+         Left            =   50
+         TabIndex        =   45
+         Top             =   300
+         Width           =   1200
+      End
+      Begin VB.Label laClearAn 
+         Alignment       =   1  'Right Justify
+         BackColor       =   &H8000000E&
+         BorderStyle     =   1  'Fixed Single
+         Height          =   315
+         Left            =   50
+         TabIndex        =   44
+         Top             =   1140
+         Width           =   1200
+      End
+      Begin VB.Label laMaterialsAn 
+         Alignment       =   1  'Right Justify
+         BackColor       =   &H8000000E&
+         BorderStyle     =   1  'Fixed Single
+         Height          =   315
+         Left            =   50
+         TabIndex        =   43
+         Top             =   720
+         Width           =   1200
+      End
+   End
    Begin VB.CommandButton cmStat1 
       Caption         =   "Статистика"
       Enabled         =   0   'False
@@ -57,62 +225,98 @@ Begin VB.Form Pribil
          Width           =   1215
       End
       Begin VB.Label laRealiz1 
-         Alignment       =   1  'Правая привязка
+         Alignment       =   1  'Right Justify
          BackColor       =   &H8000000E&
-         BorderStyle     =   1  'Фиксировано один
+         BorderStyle     =   1  'Fixed Single
          Height          =   315
-         Left            =   180
+         Left            =   50
          TabIndex        =   30
          Top             =   1140
-         Width           =   915
+         Width           =   1200
       End
       Begin VB.Label laUslug 
-         Alignment       =   1  'Правая привязка
+         Alignment       =   1  'Right Justify
          BackColor       =   &H8000000E&
-         BorderStyle     =   1  'Фиксировано один
+         BorderStyle     =   1  'Fixed Single
          Height          =   315
-         Left            =   180
+         Left            =   50
          TabIndex        =   29
          Top             =   300
-         Width           =   915
+         Width           =   1200
       End
    End
    Begin VB.Frame Frame5 
       Caption         =   "Итого"
+      BeginProperty Font 
+         Name            =   "MS Sans Serif"
+         Size            =   7.8
+         Charset         =   204
+         Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
       Height          =   2415
       Left            =   6420
       TabIndex        =   23
       Top             =   1560
       Width           =   1275
       Begin VB.Label laRealiz 
-         Alignment       =   1  'Правая привязка
+         Alignment       =   1  'Right Justify
          BackColor       =   &H8000000E&
-         BorderStyle     =   1  'Фиксировано один
+         BorderStyle     =   1  'Fixed Single
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   7.8
+            Charset         =   204
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
          Height          =   315
-         Left            =   180
+         Left            =   50
          TabIndex        =   26
          Top             =   300
-         Width           =   915
+         Width           =   1200
       End
       Begin VB.Label laClear 
-         Alignment       =   1  'Правая привязка
+         Alignment       =   1  'Right Justify
          BackColor       =   &H8000000E&
-         BorderStyle     =   1  'Фиксировано один
+         BorderStyle     =   1  'Fixed Single
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   7.8
+            Charset         =   204
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
          Height          =   315
-         Left            =   180
+         Left            =   50
          TabIndex        =   25
          Top             =   1140
-         Width           =   915
+         Width           =   1200
       End
       Begin VB.Label laMaterials 
-         Alignment       =   1  'Правая привязка
+         Alignment       =   1  'Right Justify
          BackColor       =   &H8000000E&
-         BorderStyle     =   1  'Фиксировано один
+         BorderStyle     =   1  'Fixed Single
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   7.8
+            Charset         =   204
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
          Height          =   315
-         Left            =   180
+         Left            =   50
          TabIndex        =   24
          Top             =   720
-         Width           =   915
+         Width           =   1200
       End
    End
    Begin VB.Frame Frame4 
@@ -132,34 +336,34 @@ Begin VB.Form Pribil
          Width           =   1215
       End
       Begin VB.Label laMaterials2 
-         Alignment       =   1  'Правая привязка
+         Alignment       =   1  'Right Justify
          BackColor       =   &H8000000E&
-         BorderStyle     =   1  'Фиксировано один
+         BorderStyle     =   1  'Fixed Single
          Height          =   315
-         Left            =   180
+         Left            =   50
          TabIndex        =   22
          Top             =   720
-         Width           =   915
+         Width           =   1200
       End
       Begin VB.Label laClear2 
-         Alignment       =   1  'Правая привязка
+         Alignment       =   1  'Right Justify
          BackColor       =   &H8000000E&
-         BorderStyle     =   1  'Фиксировано один
+         BorderStyle     =   1  'Fixed Single
          Height          =   315
-         Left            =   180
+         Left            =   50
          TabIndex        =   21
          Top             =   1140
-         Width           =   915
+         Width           =   1200
       End
       Begin VB.Label laRealiz2 
-         Alignment       =   1  'Правая привязка
+         Alignment       =   1  'Right Justify
          BackColor       =   &H8000000E&
-         BorderStyle     =   1  'Фиксировано один
+         BorderStyle     =   1  'Fixed Single
          Height          =   315
-         Left            =   180
+         Left            =   50
          TabIndex        =   20
          Top             =   300
-         Width           =   915
+         Width           =   1200
       End
    End
    Begin VB.Frame Frame3 
@@ -179,9 +383,9 @@ Begin VB.Form Pribil
          Width           =   1215
       End
       Begin VB.Label laOther 
-         Alignment       =   1  'Правая привязка
+         Alignment       =   1  'Right Justify
          BackColor       =   &H8000000E&
-         BorderStyle     =   1  'Фиксировано один
+         BorderStyle     =   1  'Fixed Single
          Height          =   315
          Left            =   180
          TabIndex        =   17
@@ -206,41 +410,41 @@ Begin VB.Form Pribil
          Width           =   1215
       End
       Begin VB.Label laProduct 
-         Alignment       =   1  'Правая привязка
+         Alignment       =   1  'Right Justify
          BackColor       =   &H8000000E&
-         BorderStyle     =   1  'Фиксировано один
+         BorderStyle     =   1  'Fixed Single
          Height          =   315
-         Left            =   180
+         Left            =   50
          TabIndex        =   14
          Top             =   300
-         Width           =   915
+         Width           =   1200
       End
       Begin VB.Label laMaterials1 
-         Alignment       =   1  'Правая привязка
+         Alignment       =   1  'Right Justify
          BackColor       =   &H8000000E&
-         BorderStyle     =   1  'Фиксировано один
+         BorderStyle     =   1  'Fixed Single
          Height          =   315
-         Left            =   180
+         Left            =   50
          TabIndex        =   13
          Top             =   720
-         Width           =   915
+         Width           =   1200
       End
       Begin VB.Label laClear1 
-         Alignment       =   1  'Правая привязка
+         Alignment       =   1  'Right Justify
          BackColor       =   &H8000000E&
-         BorderStyle     =   1  'Фиксировано один
+         BorderStyle     =   1  'Fixed Single
          Height          =   315
-         Left            =   180
+         Left            =   50
          TabIndex        =   12
          Top             =   1140
-         Width           =   915
+         Width           =   1200
       End
    End
    Begin VB.Frame Frame1 
-      Height          =   555
+      Height          =   552
       Left            =   -60
       TabIndex        =   3
-      Top             =   -120
+      Top             =   0
       Width           =   8715
       Begin VB.TextBox tbStartDate 
          Height          =   285
@@ -294,27 +498,27 @@ Begin VB.Form Pribil
    End
    Begin VB.Label Label4 
       Caption         =   "Реализац. - материалы:"
-      Height          =   255
+      Height          =   252
       Left            =   120
       TabIndex        =   2
       Top             =   2760
-      Width           =   1815
+      Width           =   1932
    End
    Begin VB.Label laHMaterials 
       Caption         =   "Материалы под заказы:"
-      Height          =   255
+      Height          =   252
       Left            =   120
       TabIndex        =   1
       Top             =   2340
-      Width           =   1875
+      Width           =   1992
    End
    Begin VB.Label laHRealiz 
       Caption         =   "Реализация:"
-      Height          =   195
+      Height          =   192
       Left            =   960
       TabIndex        =   0
       Top             =   1920
-      Width           =   975
+      Width           =   972
    End
 End
 Attribute VB_Name = "Pribil"
@@ -368,159 +572,251 @@ Me.MousePointer = flexDefault
 
 End Sub
 
-Private Sub cmManag_Click() 'кнопка применить из отч.Реализация
+ 
+Private Sub cleanArray(ByRef arr() As Single)
+Dim i As Integer
+
+For i = 0 To Bound(arr) - 1
+    arr(i) = 0
+Next i
+
+End Sub
+
+Private Sub cmManag_Click() 'кнопка "применить" из отчета "Реализация"
 Dim oborot As Single, dohod As Single, s2 As Single, s As Single
+Dim ventureMat() As Single, ventureRealiz() As Single
+Dim mat As Single, realiz As Single
+
 
 
 Me.MousePointer = flexHourglass
 
-strWhere = getWhereByDateBoxes(Me, "xPredmetyByIzdeliaOut.outDate", begDateHron) ' между
+ReDim ventureMat(2)
+ReDim ventureRealiz(2)
+
+
+strWhere = getWhereByDateBoxes(Me, "r.outDate", begDateHron) ' между
 If strWhere = "error" Then GoTo EN1
 If strWhere <> "" Then strWhere = " WHERE ((" & strWhere & "))"
 pDateWhere = strWhere
 
 'хронология по изделиям
-'sql = "SELECT numOrder, prId, prExt, quant FROM xPredmetyByIzdeliaOut" & _
-strWhere & ";"
-sql = "SELECT xPredmetyByIzdeliaOut.*, xPredmetyByIzdelia.cenaEd " & _
-"FROM xPredmetyByIzdelia INNER JOIN xPredmetyByIzdeliaOut ON " & _
-"(xPredmetyByIzdelia.prExt = xPredmetyByIzdeliaOut.prExt) AND " & _
-"(xPredmetyByIzdelia.prId = xPredmetyByIzdeliaOut.prId) AND " & _
-"(xPredmetyByIzdelia.numOrder = xPredmetyByIzdeliaOut.numOrder)" & strWhere & ";"
+sql = "SELECT r.*, p.cenaEd" _
+    & ", isnull(o.ventureid, 1) as ventureid" _
+    & " FROM xPredmetyByIzdeliaOut r " _
+    & " JOIN xPredmetyByIzdelia p ON (p.prExt = r.prExt) AND (p.prId = r.prId) AND (p.numOrder = r.numOrder)" _
+    & " join orders o on r.numorder = o.numorder and p.numorder = o.numorder" _
+    & strWhere
 
-'MsgBox sql
+
+Debug.Print sql
+
 Set tbProduct = myOpenRecordSet("##306", sql, dbOpenForwardOnly)
 If tbProduct Is Nothing Then GoTo EN1
+oborot = 0: dohod = 0:
 
-
-oborot = 0: dohod = 0
 If Not tbProduct.BOF Then
  While Not tbProduct.EOF
     gNzak = tbProduct!numOrder
     gProductId = tbProduct!prId
     prExt = tbProduct!prExt
-    oborot = oborot + getProductNomenkSum * tbProduct!quant
-    dohod = dohod + tbProduct!cenaEd * tbProduct!quant
-'    s = getProductNomenkSum * tbProduct!quant
-'    tmpDate = tbProduct!outDate
-'If gNzak = 3120105 Then
-'    gNzak = gNzak
-'End If
+    mat = getProductNomenkSum * tbProduct!quant
+    realiz = tbProduct!cenaEd * tbProduct!quant
+    
+    oborot = oborot + mat
+    dohod = dohod + realiz
+    ventureMat(tbProduct!ventureId - 1) = ventureMat(tbProduct!ventureId - 1) + mat
+    ventureRealiz(tbProduct!ventureId - 1) = ventureRealiz(tbProduct!ventureId - 1) + realiz
+    
     tbProduct.MoveNext
  Wend
 End If
 tbProduct.Close
 
-tmpStr = strWhere ' если далее нужна будет детализация
+'tmpStr = strWhere ' если далее нужна будет детализация
 'хронология по отд.номеклатурам
-strWhere = getWhereByDateBoxes(Me, "xPredmetyByNomenkOut.outDate", begDateHron) ' между
-If strWhere <> "" Then strWhere = " WHERE ((" & strWhere & "))"
+strWhere = getWhereByDateBoxes(Me, "outDate", begDateHron) ' между
+If strWhere <> "" Then strWhere = " WHERE " & strWhere
 nDateWhere = strWhere
 
-sql = "SELECT xPredmetyByNomenkOut.quant, sGuideNomenk.cost, sGuideNomenk.perList, " & _
-"xPredmetyByNomenk.cenaEd FROM (sGuideNomenk INNER JOIN xPredmetyByNomenk " & _
-"ON sGuideNomenk.nomNom = xPredmetyByNomenk.nomNom) INNER JOIN " & _
-"xPredmetyByNomenkOut ON (xPredmetyByNomenk.nomNom = " & _
-"xPredmetyByNomenkOut.nomNom) AND (xPredmetyByNomenk.numOrder =" & _
-"xPredmetyByNomenkOut.numOrder)" & strWhere & ";"
-'" xPredmetyByNomenkOut.numOrder, " &
+sql = "SELECT r.quant, n.cost, n.perList, p.cenaEd " _
+    & " , isnull(o.ventureid, 1) as ventureid" _
+    & " FROM xPredmetyByNomenkOut r " _
+    & " JOIN xPredmetyByNomenk p ON p.nomNom = r.nomNom AND p.numOrder = r.numOrder" _
+    & " join orders o on r.numorder = o.numorder" _
+    & " JOIN sGuideNomenk n ON n.nomNom = r.nomNom " _
+    & strWhere
 
-'MsgBox sql
+Debug.Print sql
+
 Set tbNomenk = myOpenRecordSet("##307", sql, dbOpenForwardOnly)
 If tbNomenk Is Nothing Then GoTo EN1
 If Not tbNomenk.BOF Then
   While Not tbNomenk.EOF
-    oborot = oborot + tbNomenk!cost * tbNomenk!quant / tbNomenk!perList '!!!
-'    gNzak = tbNomenk!numOrder:  s = tbNomenk!cost * tbNomenk!quant
-    dohod = dohod + tbNomenk!cenaEd * tbNomenk!quant
+    mat = tbNomenk!cost * tbNomenk!quant / tbNomenk!perList
+    realiz = tbNomenk!cenaEd * tbNomenk!quant
+    
+    oborot = oborot + mat
+    dohod = dohod + realiz
+    ventureMat(tbNomenk!ventureId - 1) = ventureMat(tbNomenk!ventureId - 1) + mat
+    ventureRealiz(tbNomenk!ventureId - 1) = ventureRealiz(tbNomenk!ventureId - 1) + realiz
     tbNomenk.MoveNext
   Wend
 End If
 tbNomenk.Close
     
-dohod = Round(dohod, 2)
-laProduct.Caption = Format(dohod, "0.00")
+laProduct.Caption = Format(Round(dohod, 2), "## ##0.00")
+laMaterials1.Caption = Format(Round(oborot, 2), "## ##0.00")
+laClear1.Caption = Format(Round(dohod - oborot, 2), "## ##0.00")
 
-oborot = Round(oborot, 2)
-laMaterials1.Caption = Format(oborot, "0.00")
-laClear1.Caption = Format(dohod - oborot, "0.00")
 
-'услуги
-strWhere = getWhereByDateBoxes(Me, "xUslugOut.outDate", begDateHron) ' между
-If strWhere <> "" Then strWhere = " WHERE ((" & strWhere & "))"
+' ------------------ услуги -------------------
+strWhere = getWhereByDateBoxes(Me, "u.outDate", begDateHron) ' между
+If strWhere <> "" Then strWhere = " WHERE " & strWhere
+
 uDateWhere = strWhere
-sql = "SELECT Sum(quant) AS Sum_quant from xUslugOut " & strWhere & ";"
-'MsgBox sql
-If byErrSqlGetValues("##380", sql, s2) Then
-    s2 = Round(s2, 2)
-    laUslug.Caption = Format(s2, "0.00")
-    laRealiz1.Caption = laUslug.Caption
-    dohod = Round(dohod + s2, 2)
+sql = "SELECT Sum(u.quant) AS Sum_quant " _
+    & ", isnull(o.ventureid, 1) as ventureid" _
+    & " from xUslugOut u" _
+    & " join orders o on u.numorder = o.numorder" _
+    & strWhere _
+    & " group by isnull(o.ventureid, 1)"
+    
+    
+Debug.Print sql
+
+s2 = 0
+Set tbNomenk = myOpenRecordSet("##380", sql, dbOpenForwardOnly)
+If tbNomenk Is Nothing Then GoTo EN1
+If Not tbNomenk.BOF Then
+  While Not tbNomenk.EOF
+    realiz = tbNomenk!sum_quant
+    s2 = s2 + realiz
+    ventureRealiz(tbNomenk!ventureId - 1) = ventureRealiz(tbNomenk!ventureId - 1) + realiz
+    dohod = dohod + realiz
+    tbNomenk.MoveNext
+  Wend
 End If
-'laRealiz1.Caption = Format(dohod, "0.00")
-'oborot = Round(oborot, 2)
-'laMaterials1.Caption = Format(oborot, "0.00")
-'laClear1.Caption = Format(dohod - oborot, "0.00")
+tbNomenk.Close
+
+laUslug.Caption = Format(Round(s2, 2), "## ##0.00")
+laRealiz1.Caption = laUslug.Caption
 
 
-'Отгружено по  заказам продаж
+
+' ------------------ Отгружено по  заказам продаж -------------------
 strWhere = getWhereByDateBoxes(Me, "sDocs.xDate", begDateHron) ' между
 bDateWhere = strWhere
-'sql = "SELECT Sum(BayOrders.shipped) AS Sum_shipped " & _
-"FROM sDocs INNER JOIN BayOrders ON sDocs.numDoc = BayOrders.numOrder " & _
-"WHERE (((sDocs.numExt)=1)"
-'до и после 18.06.04 были и numExt=2 но почему работает для заказа с 2мя накладными
-'If strWhere = "" Then
-'    sql = sql & ");"
-'Else
-'    sql = sql & " AND (" & strWhere & "));"
-'End If
-If strWhere <> "" Then strWhere = " WHERE ((" & strWhere & "))"
-sql = "SELECT Sum([sDMC].[quant]*[sDMCrez].[intQuant]/[sGuideNomenk].[perList]) AS bSum " & _
-"FROM sGuideNomenk INNER JOIN ((BayOrders INNER JOIN sDocs ON BayOrders.numOrder = sDocs.numDoc) INNER JOIN (sDMC INNER JOIN sDMCrez ON sDMC.nomNom = sDMCrez.nomNom) ON (sDocs.numExt = sDMC.numExt) AND (sDocs.numDoc = sDMC.numDoc) AND (BayOrders.numOrder = sDMCrez.numDoc)) ON sGuideNomenk.nomNom = sDMC.nomNom " & _
-strWhere & ";"
 
-'MsgBox sql
-s = s2 = 0
-If byErrSqlGetValues("##431", sql, s) Then
-    s = Round(s, 2)
-    laRealiz2.Caption = Format(s, "0.00")
-    dohod = Round(dohod + s, 2)
+If strWhere <> "" Then strWhere = " WHERE " & strWhere
+
+sql = "SELECT Sum(sDMC.quant*sDMCrez.intQuant/n.perList) AS bSum " _
+    & " , isnull(BayOrders .ventureid, 1) as ventureid " _
+    & " FROM sGuideNomenk n " _
+    & " INNER JOIN ((BayOrders " _
+    & " INNER JOIN sDocs ON BayOrders.numOrder = sDocs.numDoc) " _
+    & " INNER JOIN (sDMC INNER JOIN sDMCrez ON sDMC.nomNom = sDMCrez.nomNom) ON (sDocs.numExt = sDMC.numExt) AND (sDocs.numDoc = sDMC.numDoc) AND (BayOrders.numOrder = sDMCrez.numDoc)) ON n.nomNom = sDMC.nomNom " _
+    & strWhere _
+    & " group by isnull(BayOrders.ventureid, 1)"
+
+
+Debug.Print sql
+
+s = 0
+Set tbNomenk = myOpenRecordSet("##431", sql, dbOpenForwardOnly)
+If tbNomenk Is Nothing Then GoTo EN1
+If Not tbNomenk.BOF Then
+  While Not tbNomenk.EOF
+    realiz = tbNomenk!bSum
+    s = s + realiz
+    ventureRealiz(tbNomenk!ventureId - 1) = ventureRealiz(tbNomenk!ventureId - 1) + realiz
+    dohod = dohod + realiz
+    tbNomenk.MoveNext
+  Wend
 End If
+tbNomenk.Close
+
+laRealiz2.Caption = Format(s, "## ##0.00")
+
+'s = s2 = 0
+'If byErrSqlGetValues("##431", sql, s) Then
+'    s = Round(s, 2)
+'    laRealiz2.Caption = Format(s, "## ##0.00")
+'    dohod = Round(dohod + s, 2)
+'End If
 
 'Материалы заказов продаж (дата списания считается датой отгрузки)
 'If strWhere <> "" Then strWhere = " WHERE ((" & strWhere & "))"
 
 
-sql = "SELECT Sum([sGuideNomenk].[cost]*[sDMC].[quant]/[sGuideNomenk]." & _
-"[perList]) AS cena FROM sGuideNomenk INNER JOIN ((sDocs INNER JOIN " & _
-"BayOrders ON sDocs.numDoc = BayOrders.numOrder) INNER JOIN sDMC ON " & _
-"(sDocs.numExt = sDMC.numExt) AND (sDocs.numDoc = sDMC.numDoc)) ON " & _
-"sGuideNomenk.nomNom = sDMC.nomNom" & strWhere & ";"
-'MsgBox sql
-If byErrSqlGetValues("##430", sql, s2) Then
-    s2 = Round(s2, 2)
-    laMaterials2.Caption = Format(s2, "0.00")
-    oborot = Round(oborot + s2, 2)
+sql = "SELECT Sum(n.cost*sDMC.quant/n.perList) AS cena " _
+    & " , isnull(BayOrders .ventureid, 1) as ventureid " _
+    & " FROM sGuideNomenk n INNER JOIN ((sDocs INNER JOIN " & _
+    "BayOrders ON sDocs.numDoc = BayOrders.numOrder) INNER JOIN sDMC ON " & _
+    "(sDocs.numExt = sDMC.numExt) AND (sDocs.numDoc = sDMC.numDoc)) ON " & _
+    "n.nomNom = sDMC.nomNom" & strWhere _
+    & " group by isnull(BayOrders.ventureid, 1)"
+
+s2 = 0
+Set tbNomenk = myOpenRecordSet("##431", sql, dbOpenForwardOnly)
+If tbNomenk Is Nothing Then GoTo EN1
+If Not tbNomenk.BOF Then
+  While Not tbNomenk.EOF
+    mat = tbNomenk!Cena
+    s2 = s2 + mat
+    ventureMat(tbNomenk!ventureId - 1) = ventureMat(tbNomenk!ventureId - 1) + mat
+    oborot = oborot + mat
+    tbNomenk.MoveNext
+  Wend
 End If
-laClear2.Caption = Format(s - s2, "0.00")
+tbNomenk.Close
 
-laRealiz.Caption = Format(dohod, "0.00")
-laMaterials.Caption = Format(oborot, "0.00")
-laClear.Caption = Format(dohod - oborot, "0.00")
+'MsgBox sql
+'If byErrSqlGetValues("##430", sql, s2) Then
+'    s2 = Round(s2, 2)
+'    laMaterials2.Caption = Format(s2, "## ##0.00")
+'    oborot = Round(oborot + s2, 2)
+'End If
 
-'материалы не под заказ
+laMaterials2.Caption = Format(Round(s2, 2), "## ##0.00")
+laClear2.Caption = Format(Round(s, 2) - Round(s2, 2), "## ##0.00")
+
+laRealiz.Caption = Format(Round(dohod, 2), "## ##0.00")
+laMaterials.Caption = Format(Round(oborot, 2), "## ##0.00")
+laClear.Caption = Format(Round(dohod - oborot, 2), "## ##0.00")
+
+laMaterialsPM.Caption = Format(Round(ventureMat(0), 2), "## ##0.00")
+laMaterialsMM.Caption = Format(Round(ventureMat(1), 2), "## ##0.00")
+laMaterialsAn.Caption = Format(Round(ventureMat(2), 2), "## ##0.00")
+
+laRealizPM.Caption = Format(Round(ventureRealiz(0), 2), "## ##0.00")
+laRealizMM.Caption = Format(Round(ventureRealiz(1), 2), "## ##0.00")
+laRealizAn.Caption = Format(Round(ventureRealiz(2), 2), "## ##0.00")
+
+laClearPM.Caption = Format(Round(ventureRealiz(0), 2) - Round(ventureMat(0), 2), "## ##0.00")
+laClearMM.Caption = Format(Round(ventureRealiz(1), 2) - Round(ventureMat(1), 2), "## ##0.00")
+laClearAn.Caption = Format(Round(ventureRealiz(2), 2) - Round(ventureMat(2), 2), "## ##0.00")
+
+
+'
+' ------------------ материалы не под заказ -------------------
+'
 strWhere = getWhereByDateBoxes(Me, "sDocs.xDate", begDateHron) ' между
-If strWhere <> "" Then strWhere = "(" & strWhere & ") AND "
-mDateWhere = strWhere & "((sDocs.numExt)=254) AND ((sDocs.destId)>-1000 And (sDocs.destId)<0)"
-'!!!
-sql = "SELECT Sum([sDMC].[quant]*[sGuideNomenk].[cost]/[sGuideNomenk].[perList]) AS sum " & _
-"FROM sGuideSource INNER JOIN (sGuideNomenk INNER JOIN (sDocs INNER JOIN sDMC ON (sDocs.numExt = sDMC.numExt) AND (sDocs.numDoc = sDMC.numDoc)) ON sGuideNomenk.nomNom = sDMC.nomNom) ON sGuideSource.sourceId = sDocs.destId " & _
-"WHERE (" & mDateWhere & ");"
-'MsgBox sql
+If strWhere <> "" Then strWhere = strWhere & " AND "
+mDateWhere = strWhere & "(sDocs.numExt = 254) AND (sDocs.destId >-1000) And (sDocs.destId < 0)"
+
+
+sql = "SELECT Sum(sDMC.quant*n.cost/n.perList) AS sum " & _
+"FROM sGuideSource INNER JOIN (sGuideNomenk n INNER JOIN (sDocs INNER JOIN sDMC ON (sDocs.numExt = sDMC.numExt) AND (sDocs.numDoc = sDMC.numDoc)) ON n.nomNom = sDMC.nomNom) ON sGuideSource.sourceId = sDocs.destId " & _
+"WHERE " & mDateWhere
+
+Debug.Print sql
+
 If byErrSqlGetValues("##404", sql, s) Then
-    laOther.Caption = Format(s, "0.00")
+    laOther.Caption = Format(s, "## ##0.00")
 End If
+
+
 
 EN1:
 Me.MousePointer = flexDefault
@@ -532,6 +828,14 @@ cmDetail3.Enabled = True
 cmStat1.Enabled = True
 cmStat2.Enabled = True
 cmStat3.Enabled = True
+
+cmDetailPM.Enabled = True
+cmDetailMM.Enabled = True
+cmDetailAN.Enabled = True
+cmStatPM.Enabled = True
+cmStatMM.Enabled = True
+cmStatAN.Enabled = True
+
 
 End Sub
 
@@ -665,7 +969,7 @@ tbEndDate.Text = Format(CurDate, "dd/mm/yy")
 begDateHron = "01.09.03" '
 tbStartDate.Text = "01." & Format(CurDate, "mm/yy")
 'tbStartDate.Text = "01.09.03"
-'tbStartDate.Text = "01.06.04"
+tbStartDate.Text = "01.10.07"
 End Sub
 'для отчета Прибыль
 Function getProductNomenkSum() As Variant
@@ -680,9 +984,9 @@ getProductNomenkSum = Null
 "WHERE (((xVariantNomenc.numOrder)=" & numDoc & ") AND (" & _
 "(xVariantNomenc.prId)=" & gProductId & ") AND ((xVariantNomenc.prExt)=" & prExt & "));"
 '!!!
-sql = "SELECT sProducts.xgroup, [sGuideNomenk].[cost]*[sProducts].[quantity]" & _
-"/[sGuideNomenk].[perList] AS sum " & _
-"FROM (sGuideNomenk INNER JOIN sProducts ON sGuideNomenk.nomNom = " & _
+sql = "SELECT sProducts.xgroup, n.cost*sProducts.quantity" & _
+"/n.perList AS sum " & _
+"FROM (sGuideNomenk n INNER JOIN sProducts ON n.nomNom = " & _
 "sProducts.nomNom) INNER JOIN xVariantNomenc ON (sProducts.nomNom = " & _
 "xVariantNomenc.nomNom) AND (sProducts.ProductId = xVariantNomenc.prId) " & _
 "WHERE (((xVariantNomenc.numOrder)=" & gNzak & ") AND (" & _
@@ -703,10 +1007,10 @@ tbNomenk.Close
 'НЕвариантная ном-ра изделия
 'sql = "SELECT sProducts.nomNom, sProducts.quantity, sProducts.xgroup " & _
 "From sProducts WHERE (((sProducts.ProductId)=" & gProductId & "));"
-'[cost]-цена фактическая !!!
-sql = "SELECT sProducts.xgroup, [sGuideNomenk].[cost]*[sProducts].[quantity]" & _
-"/[sGuideNomenk].[perList] AS sum " & _
-"FROM sGuideNomenk INNER JOIN sProducts ON sGuideNomenk.nomNom = sProducts.nomNom " & _
+'cost-цена фактическая !!!
+sql = "SELECT sProducts.xgroup, n.cost*sProducts.quantity" & _
+"/n.perList AS sum " & _
+"FROM sGuideNomenk n INNER JOIN sProducts ON n.nomNom = sProducts.nomNom " & _
 "WHERE (((sProducts.ProductId)=" & gProductId & "));"
 
 'MsgBox sql
