@@ -215,6 +215,10 @@ ElseIf Regim = "mat" Then 'отчет Реализация - материалы не под заказы
     laHeader.Caption = "Детализация суммы " & _
     param1 & " по датам списания материалов не под заказы."
     relizDetailMat
+ElseIf Regim = "venture" Then 'детализация и статистика по предприятиям
+    laHeader.Caption = "Детализация сумм " & param2 & "(Материалы) и " & _
+    param1 & "(Реализация) по """ & Pribil.ventureId & """"
+    ventureReport Pribil.statistic, Pribil.ventureId
 End If
 laSumControl
 If InStr(Regim, "tatistic") Then
@@ -224,6 +228,57 @@ End If
 fitFormToGrid
 Me.MousePointer = flexDefault
 End Sub
+
+Sub ventureReport(statistic As Boolean, ventureId As Integer)
+Dim sum As Single
+
+    Grid.FormatString = "|Заказ|<Дата|<Фирма|<Комментарий|>Затраты|>Реализация"
+    Grid.ColWidth(0) = 250
+    Grid.ColWidth(rrNumOrder) = 885
+    Grid.ColWidth(rrDate) = 765
+    Grid.ColWidth(rrFirm) = 3855
+    Grid.ColWidth(rrProduct) = 0
+    Grid.ColWidth(rrMater) = 1005
+    Grid.ColWidth(rrReliz) = 1005
+    
+    sql = "SELECT * from vPredmetyOutSummary where ventureid = " & ventureId
+    If Pribil.nDateWhere <> "" Then
+        sql = sql & " and " & Pribil.nDateWhere
+    End If
+    sql = sql & " order by outdate"
+    Set tbOrders = myOpenRecordSet("##vnt_det", sql, dbOpenForwardOnly) ', dbOpenDynaset)
+    If tbOrders Is Nothing Then Exit Sub
+    quantity = 0: sum = 0
+    If Not tbOrders.BOF Then
+        While Not tbOrders.EOF
+            quantity = quantity + 1
+            Grid.TextMatrix(quantity, rrNumOrder) = tbOrders!numOrder
+            Grid.TextMatrix(quantity, rrDate) = Format(tbOrders!outDate, "dd/mm/yy hh:nn:ss")
+            Grid.TextMatrix(quantity, rrFirm) = tbOrders!firmName
+            'Grid.TextMatrix(quantity, rrProduct) = tbOrders!Text
+            If tbOrders!Type = 1 Then
+                Grid.TextMatrix(quantity, 0) = "p"
+                'Grid.TextMatrix(quantity, rrMater) =
+                'Grid.TextMatrix(quantity, rrReliz) =
+            ElseIf tbOrders!Type = 2 Then
+                Grid.TextMatrix(quantity, 0) = "n"
+            ElseIf tbOrders!Type = 3 Then
+                Grid.TextMatrix(quantity, 0) = "w"
+            ElseIf tbOrders!Type = 4 Then
+                Grid.TextMatrix(quantity, 0) = "u"
+            ElseIf tbOrders!Type = 8 Then
+                Grid.TextMatrix(quantity, 0) = "b"
+            End If
+            
+            Grid.TextMatrix(quantity, rrMater) = Format(tbOrders!prime_cost, "## ##0.00")
+            Grid.TextMatrix(quantity, rrReliz) = Format(tbOrders!shipped, "## ##0.00")
+            Grid.AddItem ""
+            tbOrders.MoveNext
+        Wend
+    End If
+
+End Sub
+
 
 Sub whoRezerved()
 Dim v, s As Single, ed2 As String, per As Single, sum As Single
@@ -618,8 +673,7 @@ If param1 = "b" Then
   "sGuideNomenk.perList, sDMC.quant, sDMCrez.intQuant,  sDMCrez.numDoc " & _
   "FROM sGuideNomenk INNER JOIN ((BayOrders INNER JOIN sDocs ON BayOrders.numOrder = sDocs.numDoc) INNER JOIN (sDMC INNER JOIN sDMCrez ON sDMC.nomNom = sDMCrez.nomNom) ON (sDocs.numExt = sDMC.numExt) AND (sDocs.numDoc = sDMC.numDoc) AND (BayOrders.numOrder = sDMCrez.numDoc)) ON sGuideNomenk.nomNom = sDMC.nomNom " & _
   "WHERE (((sDMCrez.numDoc)=" & gNzak & ") AND " & _
-  "((sDocs.xDate) = '" & strWhere & "'));"
-'  "((sDocs.xDate) Like  '" & strWhere & "*'));"
+  "((dateformat(sDocs.xDate, 'yyyy-mm-dd hh:nn:ss')) = '" & strWhere & "'));"
   
   Set tbNomenk = myOpenRecordSet("##432", sql, dbOpenDynaset)
   If tbNomenk Is Nothing Then Exit Sub
@@ -638,6 +692,7 @@ If param1 = "b" Then
     tbNomenk.MoveNext
   Wend
   tbNomenk.Close
+  Debug.Print sql
 End If
 
 If param1 = "m" Then
@@ -829,34 +884,27 @@ Sub relizDetailBay(Optional statistic As String = "")
 Dim bSum As Single, cSum As Single, prevName As String, prevNom As Long
 
 strWhere = Pribil.bDateWhere
-If strWhere <> "" Then strWhere = "HAVING ((" & strWhere & ")) "
+If strWhere <> "" Then strWhere = "where " & strWhere & " "
+
+sql = "SELECT o.numOrder, d.xDate, f.Name " _
+& ", Sum(n.cost * i.quant / n.perList) AS cSum " _
+& ", Sum(r.intQuant * i.quant / n.perList) AS bSum  " _
+& "FROM BayOrders o  " _
+& "JOIN sDocs d ON d.numDoc = o.numOrder  " _
+& "join sDMC i on d.numExt = i.numExt AND d.numDoc = i.numDoc " _
+& "join sDMCrez r on i.nomNom = r.nomNom and o.numOrder = r.numDoc " _
+& "JOIN sGuideNomenk n ON n.nomNom = i.nomNom and r.nomNom = i.nomNom  " _
+& "JOIN BayGuideFirms f on f.FirmId = o.FirmId " _
+& strWhere _
+& "GROUP BY o.numOrder, d.xDate, f.Name "
+
 If statistic = "" Then
-    strWhere = strWhere & " ORDER BY BayOrders.numOrder, sDocs.xDate;"
+    sql = sql & " ORDER BY o.numOrder, d.xDate;"
 Else
-    strWhere = strWhere & " ORDER BY BayGuideFirms.Name, BayOrders.numOrder;"
+    sql = sql & " ORDER BY f.Name, o.numOrder;"
 End If
 
-'sql = "SELECT BayOrders.numOrder, sDocs.xDate , " & _
-"Sum([sGuideNomenk].[cost]*[sDMC].[quant]/[sGuideNomenk].[perList]) AS cSum, " & _
-"BayOrders.shipped , BayGuideFirms.Name " & _
-"FROM sGuideNomenk INNER JOIN (BayGuideFirms INNER JOIN ((sDocs INNER JOIN BayOrders ON sDocs.numDoc = BayOrders.numOrder) INNER JOIN sDMC ON (sDocs.numExt = sDMC.numExt) AND (sDocs.numDoc = sDMC.numDoc)) ON BayGuideFirms.FirmId = BayOrders.FirmId) ON sGuideNomenk.nomNom = sDMC.nomNom " & _
-"GROUP BY BayOrders.numOrder, sDocs.xDate,BayOrders.shipped, BayGuideFirms.Name " & _
-strWhere
-
-'sql = "SELECT BayOrders.numOrder, sDocs.xDate, " & _
-"Sum([sGuideNomenk].[cost]*[sDMC].[quant]/[sGuideNomenk].[perList]) AS cSum, " & _
-"Sum([sDMCrez].[intQuant]*[sDMC].[quant]/[sGuideNomenk].[perList]) AS bSum, " & _
-"BayGuideFirms.Name FROM sGuideNomenk INNER JOIN (BayGuideFirms INNER JOIN ((sDocs INNER JOIN BayOrders ON sDocs.numDoc = BayOrders.numOrder) INNER JOIN (sDMC INNER JOIN sDMCrez ON sDMC.nomNom = sDMCrez.nomNom) ON (sDocs.numExt = sDMC.numExt) AND (sDocs.numDoc = sDMC.numDoc)) ON BayGuideFirms.FirmId = BayOrders.FirmId) ON sGuideNomenk.nomNom = sDMC.nomNom " & _
-"GROUP BY BayOrders.numOrder, sDocs.xDate, BayGuideFirms.Name " & strWhere
-
-sql = "SELECT BayOrders.numOrder, sDocs.xDate, BayGuideFirms.Name, " & _
-"Sum([sGuideNomenk].[cost]*[sDMC].[quant]/[sGuideNomenk].[perList]) AS cSum, " & _
-"Sum([sDMCrez].[intQuant]*[sDMC].[quant]/[sGuideNomenk].[perList]) AS bSum " & _
-"FROM sGuideNomenk INNER JOIN (BayGuideFirms INNER JOIN ((sDocs INNER JOIN BayOrders ON sDocs.numDoc = BayOrders.numOrder) INNER JOIN (sDMC INNER JOIN sDMCrez ON sDMC.nomNom = sDMCrez.nomNom) ON (sDocs.numExt = sDMC.numExt) AND (sDocs.numDoc = sDMC.numDoc) AND (BayOrders.numOrder = sDMCrez.numDoc)) ON BayGuideFirms.FirmId = BayOrders.FirmId) ON sGuideNomenk.nomNom = sDMC.nomNom " & _
-"GROUP BY BayOrders.numOrder, sDocs.xDate, BayGuideFirms.Name " & strWhere
-
-'strWhere & " ORDER BY BayOrders.numOrder, sDocs.xDate;"
-'MsgBox sql
+'Debug.Print sql
 Set tbProduct = myOpenRecordSet("##433", sql, dbOpenForwardOnly)
 If tbProduct Is Nothing Then Exit Sub
 If statistic = "" Then
@@ -991,18 +1039,18 @@ Else
 End If
 sql = "SELECT r.numOrder, r.outDate, " & _
 "r.prId, r.prExt, -1 AS costI, " & _
-"r.quant, p.cenaEd, GuideFirms.Name, Orders.Product " & _
-"FROM (GuideFirms INNER JOIN Orders ON (GuideFirms.FirmId = Orders.FirmId) AND (GuideFirms.FirmId = Orders.FirmId)) INNER JOIN (xPredmetyByIzdelia p INNER JOIN xPredmetyByIzdeliaOut r ON (p.prExt = r.prExt) AND (p.prId = r.prId) AND (p.numOrder = r.numOrder)) ON Orders.numOrder = p.numOrder " & _
+"r.quant, p.cenaEd, f.Name, o.Product " & _
+"FROM (GuideFirms f INNER JOIN Orders o ON f.FirmId = o.FirmId) INNER JOIN (xPredmetyByIzdelia p INNER JOIN xPredmetyByIzdeliaOut r ON (p.prExt = r.prExt) AND (p.prId = r.prId) AND (p.numOrder = r.numOrder)) ON o.numOrder = p.numOrder " & _
 Pribil.pDateWhere & _
-" UNION ALL SELECT xPredmetyByNomenkOut.numOrder, xPredmetyByNomenkOut.outDate, " & _
-"-1 AS prId, -1 AS prExt, sGuideNomenk.cost/sGuideNomenk.perList as costI, " & _
-"xPredmetyByNomenkOut.quant, xPredmetyByNomenk.cenaEd, GuideFirms.Name, Orders.Product " & _
-"FROM sGuideNomenk INNER JOIN ((GuideFirms INNER JOIN Orders ON (GuideFirms.FirmId = Orders.FirmId) AND (GuideFirms.FirmId = Orders.FirmId)) " & _
-"INNER JOIN (xPredmetyByNomenk INNER JOIN xPredmetyByNomenkOut ON " & _
-"(xPredmetyByNomenk.nomNom = xPredmetyByNomenkOut.nomNom) AND (xPredmetyByNomenk.numOrder = xPredmetyByNomenkOut.numOrder)) ON Orders.numOrder = xPredmetyByNomenk.numOrder) ON sGuideNomenk.nomNom = xPredmetyByNomenk.nomNom " & _
-Pribil.nDateWhere & strWhere
+" UNION ALL SELECT pno.numOrder, pno.outDate, " & _
+"-1 AS prId, -1 AS prExt, n.cost/n.perList as costI, " & _
+"pno.quant, pn.cenaEd, f.Name, o.Product " & _
+"FROM sGuideNomenk n INNER JOIN ((GuideFirms f INNER JOIN Orders o ON f.FirmId = o.FirmId) " & _
+"INNER JOIN (xPredmetyByNomenk pn INNER JOIN xPredmetyByNomenkOut pno ON " & _
+"(pn.nomNom = pno.nomNom) AND (pn.numOrder = pno.numOrder)) ON o.numOrder = pn.numOrder) ON n.nomNom = pn.nomNom " & _
+" where " & Pribil.nDateWhere & strWhere
 
-'Debug.Print "sql2=" & sql
+'Debug.Print sql
 Set tbProduct = myOpenRecordSet("##381", sql, dbOpenForwardOnly)
 If tbProduct Is Nothing Then Exit Sub
 Grid.FormatString = "|Заказ|<Дата|<Фирма|<Изделия|>Материалы|>Реализация"
@@ -1157,12 +1205,11 @@ Report2.Show vbModal
 End Sub
 
 Private Sub Grid_EnterCell()
-If quantity = 0 Or Not (Regim = "" Or Regim = "bay" Or Regim = "mat") Then Exit Sub
+If quantity = 0 Or Not (Regim = "" Or Regim = "bay" Or Regim = "mat" Or Regim = "venture") Then Exit Sub
 mousRow = Grid.row
 mousCol = Grid.col
 If (mousCol = rrReliz Or (mousCol = rrMater And Regim <> "mat")) _
 Then
-'And  Grid.TextMatrix(mousRow, mousCol) <> "0" Then
    Grid.CellBackColor = &H88FF88
 Else
    Grid.CellBackColor = vbYellow

@@ -529,6 +529,8 @@ Attribute VB_Exposed = False
 Option Explicit
 Public pDateWhere As String, nDateWhere As String, uDateWhere As String
 Public bDateWhere As String, mDateWhere As String
+Public statistic As String, ventureId As String
+
 Dim begDateHron As Date ' Начало ведения хронологии
 
 Private Sub cmDetail_Click()
@@ -572,14 +574,31 @@ Me.MousePointer = flexDefault
 
 End Sub
 
- 
-Private Sub cleanArray(ByRef arr() As Single)
-Dim i As Integer
+Private Sub cmDetailAN_Click()
+Me.MousePointer = flexHourglass
+statistic = False
+ventureId = 3
+Report.Regim = "venture"
+Report.Show vbModal
+Me.MousePointer = flexDefault
+End Sub
 
-For i = 0 To Bound(arr) - 1
-    arr(i) = 0
-Next i
+Private Sub cmDetailMM_Click()
+Me.MousePointer = flexHourglass
+statistic = False
+ventureId = 2
+Report.Regim = "venture"
+Report.Show vbModal
+Me.MousePointer = flexDefault
+End Sub
 
+Private Sub cmDetailPM_Click()
+Me.MousePointer = flexHourglass
+statistic = False
+ventureId = 1
+Report.Regim = "venture"
+Report.Show vbModal
+Me.MousePointer = flexDefault
 End Sub
 
 Private Sub cmManag_Click() 'кнопка "применить" из отчета "Реализация"
@@ -595,9 +614,9 @@ ReDim ventureMat(2)
 ReDim ventureRealiz(2)
 
 
-strWhere = getWhereByDateBoxes(Me, "r.outDate", begDateHron) ' между
+strWhere = getWhereByDateBoxes(Me, "outDate", begDateHron) ' между
 If strWhere = "error" Then GoTo EN1
-If strWhere <> "" Then strWhere = " WHERE ((" & strWhere & "))"
+If strWhere <> "" Then strWhere = " WHERE " & strWhere
 pDateWhere = strWhere
 
 'хронология по изделиям
@@ -609,7 +628,7 @@ sql = "SELECT r.*, p.cenaEd" _
     & strWhere
 
 
-Debug.Print sql
+' Debug.Print sql
 
 Set tbProduct = myOpenRecordSet("##306", sql, dbOpenForwardOnly)
 If tbProduct Is Nothing Then GoTo EN1
@@ -633,11 +652,10 @@ If Not tbProduct.BOF Then
 End If
 tbProduct.Close
 
-'tmpStr = strWhere ' если далее нужна будет детализация
 'хронология по отд.номеклатурам
 strWhere = getWhereByDateBoxes(Me, "outDate", begDateHron) ' между
-If strWhere <> "" Then strWhere = " WHERE " & strWhere
 nDateWhere = strWhere
+If strWhere <> "" Then strWhere = " WHERE " & strWhere
 
 sql = "SELECT r.quant, n.cost, n.perList, p.cenaEd " _
     & " , isnull(o.ventureid, 1) as ventureid" _
@@ -647,7 +665,7 @@ sql = "SELECT r.quant, n.cost, n.perList, p.cenaEd " _
     & " JOIN sGuideNomenk n ON n.nomNom = r.nomNom " _
     & strWhere
 
-Debug.Print sql
+'Debug.Print sql
 
 Set tbNomenk = myOpenRecordSet("##307", sql, dbOpenForwardOnly)
 If tbNomenk Is Nothing Then GoTo EN1
@@ -705,7 +723,7 @@ laRealiz1.Caption = laUslug.Caption
 
 
 ' ------------------ Отгружено по  заказам продаж -------------------
-strWhere = getWhereByDateBoxes(Me, "sDocs.xDate", begDateHron) ' между
+strWhere = getWhereByDateBoxes(Me, "xDate", begDateHron) ' между
 bDateWhere = strWhere
 
 If strWhere <> "" Then strWhere = " WHERE " & strWhere
@@ -737,17 +755,6 @@ End If
 tbNomenk.Close
 
 laRealiz2.Caption = Format(s, "## ##0.00")
-
-'s = s2 = 0
-'If byErrSqlGetValues("##431", sql, s) Then
-'    s = Round(s, 2)
-'    laRealiz2.Caption = Format(s, "## ##0.00")
-'    dohod = Round(dohod + s, 2)
-'End If
-
-'Материалы заказов продаж (дата списания считается датой отгрузки)
-'If strWhere <> "" Then strWhere = " WHERE ((" & strWhere & "))"
-
 
 sql = "SELECT Sum(n.cost*sDMC.quant/n.perList) AS cena " _
     & " , isnull(BayOrders .ventureid, 1) as ventureid " _
@@ -964,12 +971,39 @@ Me.MousePointer = flexDefault
 
 End Sub
 
+Private Sub cmStatAN_Click()
+Me.MousePointer = flexHourglass
+statistic = True
+ventureId = 3
+Report.Regim = "venture"
+Report.Show vbModal
+Me.MousePointer = flexDefault
+End Sub
+
+Private Sub cmStatMM_Click()
+Me.MousePointer = flexHourglass
+statistic = True
+ventureId = 2
+Report.Regim = "venture"
+Report.Show vbModal
+Me.MousePointer = flexDefault
+End Sub
+
+Private Sub cmStatPM_Click()
+Me.MousePointer = flexHourglass
+statistic = True
+ventureId = 1
+Report.Regim = "venture"
+Report.Show vbModal
+Me.MousePointer = flexDefault
+End Sub
+
 Private Sub Form_Load()
 tbEndDate.Text = Format(CurDate, "dd/mm/yy")
 begDateHron = "01.09.03" '
 tbStartDate.Text = "01." & Format(CurDate, "mm/yy")
 'tbStartDate.Text = "01.09.03"
-tbStartDate.Text = "01.10.07"
+'tbStartDate.Text = "01.10.07"
 End Sub
 'для отчета Прибыль
 Function getProductNomenkSum() As Variant
