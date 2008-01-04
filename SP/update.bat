@@ -4,7 +4,7 @@
 setlocal
 
 ::set REP_LOCATION=\\Dima\d\devNext\sql\transdata
-set REP_LOCATION=F:\sql\transdata
+::set REP_LOCATION=F:\sql\transdata
 
 if (%1) == () goto usage
 set patch=%1
@@ -77,7 +77,7 @@ if exist %patch%\codebase_stime.sql	call ../sql/transdata/isql.bat %patch%\codeb
 
 if exist %patch%\runonce_after_prior.sql	call ../sql/transdata/isql.bat %patch%\runonce_after_prior.sql	prior
 if exist %patch%\runonce_after_mm.sql	call ../sql/transdata/isql.bat %patch%\runonce_after_mm.sql	mm
-xcopy  %patch%\*.sql %REP_LOCATION% /Y
+::xcopy  %patch%\*.sql %REP_LOCATION% /Y
 
 if exist %patch%\runonce_after.bat	call %patch%\runonce_after.bat
 
