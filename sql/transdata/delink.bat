@@ -1,5 +1,7 @@
-@echo off
+::@echo off
 
+if "%1" == "" goto usage
+if "%PM_DEV_ROOT%" == "" goto usage
 
 :loop
 set cur_file=%1
@@ -19,5 +21,9 @@ goto loop
 echo Panic! DO NOT DELETE ORIGINAL FILE!
 exit
 
+:usage
+echo Usage %~nx0 [file1 file2 ...]
+echo Run from service pack folder
+echo NOTE: Do not forget set variable PM_DEV_ROOT=%PM_DEV_ROOT%
 :done
 
