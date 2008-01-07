@@ -426,6 +426,9 @@ Begin VB.Form Documents
       Begin VB.Menu mnManag 
          Caption         =   "Менеджеры"
       End
+      Begin VB.Menu mnShiz 
+         Caption         =   "Шифры Затрат"
+      End
    End
    Begin VB.Menu mnContext5 
       Caption         =   "Добавить удалить номенк-ру"
@@ -1519,6 +1522,10 @@ Products.Show vbModal
 End Sub
 
 
+
+Private Sub mnShiz_Click()
+GuideShiz.Show vbModal
+End Sub
 
 Private Sub mnSource_Click()
 GuideSource.Show vbModal

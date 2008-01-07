@@ -387,6 +387,7 @@ begin
 	declare v_ventureid integer;
 	declare v_note varchar(10);
 	declare v_zakaz varchar(150);
+	declare s_id_shiz varchar(20);
 
 	if update(dat) then
 		call admin.slave_select_prior(varchar_id, 'guideventure', 'ventureid', 'sysname=''' + get_server_name() + '''');
@@ -608,6 +609,23 @@ begin
 		);
 
 	end if;
+
+	if update(id_sh_zatrat) then
+		if isnull(new_name.id_sh_zatrat, 0) = 0 then 
+			set s_id_shiz = 'null';
+		else 
+			set s_id_shiz = convert(varchar(20), new_name.id_sh_zatrat);
+		end if;
+
+		call admin.update_remote(
+			'prior'
+			, 'ybook y'
+			, 'id_shiz'
+			, s_id_shiz
+			, 'id_xoz = ' + convert(varchar(20), old_name.id)
+		);
+	end if;
+
 end;
 
 

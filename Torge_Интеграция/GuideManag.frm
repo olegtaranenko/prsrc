@@ -1,15 +1,15 @@
 VERSION 5.00
-Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "msflxgrd.ocx"
+Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form GuideManag 
    BackColor       =   &H8000000A&
    Caption         =   "Справочник менеджеров"
-   ClientHeight    =   5145
+   ClientHeight    =   5148
    ClientLeft      =   60
    ClientTop       =   1740
-   ClientWidth     =   6750
+   ClientWidth     =   6756
    LinkTopic       =   "Form1"
-   ScaleHeight     =   5145
-   ScaleWidth      =   6750
+   ScaleHeight     =   5148
+   ScaleWidth      =   6756
    Begin VB.CommandButton cmRepl 
       Caption         =   "--->"
       Enabled         =   0   'False
@@ -58,14 +58,14 @@ Begin VB.Form GuideManag
       TabIndex        =   0
       Top             =   300
       Width           =   6495
-      _ExtentX        =   11456
-      _ExtentY        =   7435
+      _ExtentX        =   11451
+      _ExtentY        =   7430
       _Version        =   393216
       AllowUserResizing=   1
    End
    Begin VB.Label laDestM 
       BackColor       =   &H8000000E&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Height          =   255
       Left            =   3600
       TabIndex        =   7
@@ -74,7 +74,7 @@ Begin VB.Form GuideManag
    End
    Begin VB.Label laSourM 
       BackColor       =   &H8000000E&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Height          =   255
       Left            =   2820
       TabIndex        =   5
@@ -375,12 +375,6 @@ If KeyCode = vbKeyReturn Then
       If i > 255 Then msgOfEnd "##451", "переполнение GuideManag"
       
 AA:   gManagId = i
-'      tbGuide.AddNew
-'      tbGuide!ManagId = gManagId
-'      tbGuide!Manag = str
-'      On Error GoTo ERR1
-'      tbGuide.Update
-'      tbGuide.Close
 
       sql = "INSERT INTO GuideManag (ManagId, Manag) VALUES (" & _
       gManagId & ", '" & str & "')"
@@ -391,12 +385,6 @@ AA:   gManagId = i
       quantity = quantity + 1
     Else
        If ValueToGuideManagField("##443", str, "Manag") <> 0 Then GoTo EN1
-'       If i = 3022 Then
-'            'existMsg
-'            Exit Sub
-'       ElseIf i <> 0 Then
-'            GoTo EN1
-'       End If
     End If
   ElseIf mousCol = gmForSort Then
        If ValueToGuideManagField("##443", str, "ForSort") <> 0 Then GoTo EN1

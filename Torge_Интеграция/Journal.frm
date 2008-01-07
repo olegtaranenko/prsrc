@@ -268,6 +268,7 @@ Const jnNote = 12
 Const jnPurpose = 13
 Const jnDetail = 14
 Const jnVenture = 15
+Const jnShiz = 16
 
 
 Private Sub mnDohod_Click()
@@ -582,7 +583,7 @@ If byErrSqlGetValues("##321", sql, s) Then
 End If
 
 Grid.FormatString = "|<Дата|М|Рубли|Валюта|Дб|Сс|Кр|Сс|<Заказчик(временная)" & _
-"|<Кредитор\Дебитор|<Договор|<Примечание|<Назначение|<Уточнение|<Предприятие"
+"|<Кредитор\Дебитор|<Договор|<Примечание|<Назначение|<Уточнение|<Предприятие|<Шифр затрат"
 Grid.ColWidth(0) = 0
 Grid.ColWidth(jnDate) = 780
 Grid.ColWidth(jnDebKreditor) = 2580
@@ -590,6 +591,7 @@ Grid.ColWidth(jnOrdersNum) = 1200
 Grid.ColWidth(jnFirm) = 1395
 Grid.ColWidth(jnDetail) = 1500
 Grid.ColWidth(jnVenture) = 1300
+Grid.ColWidth(jnVenture) = 1600
 'jnNote
 
 
@@ -614,6 +616,7 @@ End If
  
 sql = "SELECT yBook.xDate , yBook.UEsumm , yBook.Debit , yBook.subDebit , yBook.Kredit , yBook.subKredit , yBook.KredDebitor " & _
 ", isnull(yBook.ordersNum, '') as ordersNum , isnull(yBook.Note, '') Note , isnull(yGuidePurpose.pDescript, '') pDescript, isnull(yBook.descript, '') descript, yBook.M , yBook.firm , isnull(v.ventureName, '') as ventureName" & _
+", s.nm as shiz_text " & _
 " from ybook " & _
 " left join yGuidePurpose " & _
 "   ON (yGuidePurpose.pId = yBook.purposeId)  " & _
@@ -622,17 +625,10 @@ sql = "SELECT yBook.xDate , yBook.UEsumm , yBook.Debit , yBook.subDebit , yBook.
 "   AND (yGuidePurpose.subDebit = yBook.subDebit)  " & _
 "   AND (yGuidePurpose.Debit = yBook.Debit)  " & _
 " left join GuideVenture v on v.ventureId = yBook.ventureId" & _
+" left join Shiz s on s.id = yBook.id_shiz" & _
 " " & strWhere & _
 " ORDER BY yBook.xDate; "
 
-
-'sql = "SELECT yBook.xDate, yBook.UEsumm, yBook.Debit, yBook.subDebit, " & _
-"yBook.Kredit, yBook.subKredit, yBook.KredDebitor, yBook.ordersNum, " & _
-"yBook.Note, " & _
-"yGuidePurpose.pDescript, yBook.descript, yBook.M, yBook.firm " & _
-"FROM yGuidePurpose INNER JOIN yBook ON (yGuidePurpose.pId = yBook.purposeId) AND (yGuidePurpose.subKredit = yBook.subKredit) AND (yGuidePurpose.Kredit = yBook.Kredit) AND (yGuidePurpose.subDebit = yBook.subDebit) AND (yGuidePurpose.Debit = yBook.Debit) " & _
-strWhere & "  ORDER BY yBook.xDate;"
-Debug.Print sql
 
 Set tbDocs = myOpenRecordSet("##323", sql, dbOpenForwardOnly)
 If tbDocs Is Nothing Then GoTo EN1
@@ -668,6 +664,8 @@ AA:     If byErrSqlGetValues("W##428", sql, str) Then _
     Grid.TextMatrix(quantity, jnDetail) = tbDocs!descript
     Grid.TextMatrix(quantity, jnVenture) = tbDocs!ventureName
     Grid.TextMatrix(quantity, jnM) = tbDocs!m
+    If Not IsNull(tbDocs!shiz_text) Then _
+        Grid.TextMatrix(quantity, jnShiz) = tbDocs!shiz_text
     Grid.AddItem ""
     tbDocs.MoveNext
  Wend

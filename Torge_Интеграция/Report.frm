@@ -126,6 +126,12 @@ Const rtFirma = 7
 Const rtProduct = 8
 Const rtZakazano = 9
 Const rtOplacheno = 10
+
+Const rzZatratName = 1
+Const rzMainCosts = 2
+Const rzAddCosts = 3
+'otlaDwkdh
+
 'если col <> "" - проверяется, какая колонка
 Sub laSumControl(Optional col As String = "")
 If col <> "" And Grid.col <> rrFirm Then GoTo AA
@@ -218,7 +224,10 @@ ElseIf Regim = "mat" Then 'отчет Реализация - материалы не под заказы
 ElseIf Regim = "venture" Then 'детализация и статистика по предприятиям
     laHeader.Caption = "Детализация сумм " & param2 & "(Материалы) и " & _
     param1 & "(Реализация) по """ & Pribil.ventureId & """"
-    ventureReport Pribil.statistic, Pribil.ventureId
+    ventureReport Pribil.ventureId
+ElseIf Regim = "ventureZatrat" Then 'детализация и статистика по предприятиям
+    laHeader.Caption = "Детализация сумм по основным и вспомогательным затратам  по """ & Pribil.ventureId & """"
+    ventureZatrat Pribil.ventureId
 End If
 laSumControl
 If InStr(Regim, "tatistic") Then
@@ -229,7 +238,53 @@ fitFormToGrid
 Me.MousePointer = flexDefault
 End Sub
 
-Sub ventureReport(statistic As Boolean, ventureId As Integer)
+Sub ventureZatrat(ventureId As Integer)
+Dim sum As Single
+
+    Grid.FormatString = "|Наименование|>Осн.Затраты|>Вспом.Затраты"
+    Grid.ColWidth(0) = 0
+    Grid.ColWidth(rzZatratName) = 3600
+    Grid.ColWidth(rzMainCosts) = 1500
+    Grid.ColWidth(rzAddCosts) = 1500
+    
+    sql = "select sum(uesumm) as sm, ventureid, is_main_costs, s.nm as nm" _
+    & " from ybook b" _
+    & " join shiz s on s.id = b.id_shiz" _
+    & " where " _
+    & "     ventureid = " & ventureId
+ 
+    If Pribil.costsDateWhere <> "" Then
+        sql = sql & " and " & Pribil.costsDateWhere
+    End If
+    sql = sql & " group by ventureid, is_main_costs, nm" _
+    & " order by nm"
+
+    Debug.Print sql
+    
+    Set tbOrders = myOpenRecordSet("##vnt_det", sql, dbOpenForwardOnly)
+    If tbOrders Is Nothing Then Exit Sub
+    quantity = 0: sum = 0
+    If Not tbOrders.BOF Then
+        While Not tbOrders.EOF
+            quantity = quantity + 1
+            Grid.TextMatrix(quantity, rzZatratName) = tbOrders!nm
+            If tbOrders!is_main_costs = 1 Then
+                Grid.TextMatrix(quantity, rzMainCosts) = Format(tbOrders!sm, "## ##0.00")
+            Else
+                Grid.TextMatrix(quantity, rzAddCosts) = Format(tbOrders!sm, "## ##0.00")
+            End If
+            Grid.AddItem ""
+            tbOrders.MoveNext
+        Wend
+    End If
+    Grid.row = quantity + 1
+    Grid.col = rzMainCosts: Grid.CellFontBold = True
+    Grid.col = rzAddCosts: Grid.CellFontBold = True
+    Grid.TextMatrix(quantity + 1, rzMainCosts) = Format(param2, "## ##0.00")
+    Grid.TextMatrix(quantity + 1, rzAddCosts) = Format(param1, "## ##0.00")
+End Sub
+
+Sub ventureReport(ventureId As Integer)
 Dim sum As Single
 
     Grid.FormatString = "|Заказ|<Дата|<Фирма|<Комментарий|>Затраты|>Реализация"
@@ -246,7 +301,7 @@ Dim sum As Single
         sql = sql & " and " & Pribil.nDateWhere
     End If
     sql = sql & " order by outdate"
-    Set tbOrders = myOpenRecordSet("##vnt_det", sql, dbOpenForwardOnly) ', dbOpenDynaset)
+    Set tbOrders = myOpenRecordSet("##vnt_det", sql, dbOpenForwardOnly)
     If tbOrders Is Nothing Then Exit Sub
     quantity = 0: sum = 0
     If Not tbOrders.BOF Then
@@ -258,8 +313,6 @@ Dim sum As Single
             'Grid.TextMatrix(quantity, rrProduct) = tbOrders!Text
             If tbOrders!Type = 1 Then
                 Grid.TextMatrix(quantity, 0) = "p"
-                'Grid.TextMatrix(quantity, rrMater) =
-                'Grid.TextMatrix(quantity, rrReliz) =
             ElseIf tbOrders!Type = 2 Then
                 Grid.TextMatrix(quantity, 0) = "n"
             ElseIf tbOrders!Type = 3 Then
@@ -1186,7 +1239,10 @@ End If
     
 Dim Report2 As New Report
 
-If Regim = "mat" Then
+If Regim = "ventureZatrat" Then
+    Report2.Regim = "ventureZatrat"
+ElseIf Regim = "mat" Then
+
     Report2.Regim = "subDetailMat"
     str = Grid.TextMatrix(mousRow, rrReliz)
     If MsgBox("Вы хотите посмотреть записи, которые образуют сумму " & str _
@@ -1205,10 +1261,10 @@ Report2.Show vbModal
 End Sub
 
 Private Sub Grid_EnterCell()
-If quantity = 0 Or Not (Regim = "" Or Regim = "bay" Or Regim = "mat" Or Regim = "venture") Then Exit Sub
+If quantity = 0 Or Not (Regim = "" Or Regim = "bay" Or Regim = "mat" Or Regim = "venture" Or Regim = "ventureZatrat") Then Exit Sub
 mousRow = Grid.row
 mousCol = Grid.col
-If (mousCol = rrReliz Or (mousCol = rrMater And Regim <> "mat")) _
+If (mousCol = rrReliz Or (mousCol = rrMater And Regim <> "mat") Or (Regim = "ventureZatrat" And Grid.col >= rzMainCosts)) _
 Then
    Grid.CellBackColor = &H88FF88
 Else
