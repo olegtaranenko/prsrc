@@ -130,7 +130,16 @@ Const rtOplacheno = 10
 Const rzZatratName = 1
 Const rzMainCosts = 2
 Const rzAddCosts = 3
-'otlaDwkdh
+
+Const zdDate = 1
+Const zdSumm = 2
+Const zdProvodka = 3
+Const zdAgent = 4
+Const zdNazn = 5
+Const zdUtochn = 6
+
+'otlaDwkdh - отладочная база, дебаг режим
+
 
 'если col <> "" - проверяется, какая колонка
 Sub laSumControl(Optional col As String = "")
@@ -225,9 +234,12 @@ ElseIf Regim = "venture" Then 'детализация и статистика по предприятиям
     laHeader.Caption = "Детализация сумм " & param2 & "(Материалы) и " & _
     param1 & "(Реализация) по """ & Pribil.ventureId & """"
     ventureReport Pribil.ventureId
-ElseIf Regim = "ventureZatrat" Then 'детализация и статистика по предприятиям
+ElseIf Regim = "ventureZatrat" Then 'статистика по предприятиям
     laHeader.Caption = "Детализация сумм по основным и вспомогательным затратам  по """ & Pribil.ventureId & """"
     ventureZatrat Pribil.ventureId
+ElseIf Regim = "ventureZatratDetail" Then 'детализация по предприятиям
+    laHeader.Caption = "Детализация сумм по статье затрат """ & Grid.TextMatrix(Grid.row, rzZatratName) & """ для """ & Pribil.ventureId & """"
+    ventureZatratDetail Pribil.ventureId, Grid.TextMatrix(Grid.row, 0)
 End If
 laSumControl
 If InStr(Regim, "tatistic") Then
@@ -238,6 +250,60 @@ fitFormToGrid
 Me.MousePointer = flexDefault
 End Sub
 
+Sub ventureZatratDetail(ventureId As Integer, id_shiz As String)
+Dim sum As Single
+
+    Grid.FormatString = "|Дата|>Сумма|Проводка|Через|Назначение|Уточнение"
+    Grid.ColWidth(0) = 0
+    Grid.ColWidth(zdDate) = 850
+    Grid.ColWidth(zdSumm) = 1000
+    Grid.ColWidth(zdProvodka) = 1200
+    Grid.ColWidth(zdAgent) = 2300
+    Grid.ColWidth(zdNazn) = 3000
+    Grid.ColWidth(zdUtochn) = 3000
+    'Grid.ColWidth() =
+    
+    sql = "select xdate, uesumm, b.debit + '-' + b.subdebit + ' => ' + b.kredit + '-' + b.subkredit as provodka" _
+    & " , k.name, p.pdescript as nazn, b.descript as utochn" _
+    & " from ybook b" _
+    & " join ydebkreditor k on k.id = b.kreddebitor" _
+    & " join yguidepurpose p on p.debit = b.debit and p.subdebit = b.subdebit and p.kredit = b.kredit and p.subkredit = b.subkredit and p.pid = b.purposeid" _
+    & " where id_shiz is not null " _
+    & " and ventureid = " & ventureId & " and id_shiz = " & param1
+ 
+    If Pribil.costsDateWhere <> "" Then
+        sql = sql & " and " & Pribil.costsDateWhere
+    End If
+    sql = sql & " order by xdate, provodka, uesumm desc"
+
+    'Debug.Print sql
+    
+    Set tbOrders = myOpenRecordSet("##vnt_det", sql, dbOpenForwardOnly)
+    If tbOrders Is Nothing Then Exit Sub
+    quantity = 0: sum = 0
+    If Not tbOrders.BOF Then
+        While Not tbOrders.EOF
+            quantity = quantity + 1
+            Grid.TextMatrix(quantity, zdDate) = tbOrders!xDate
+            Grid.TextMatrix(quantity, zdSumm) = Format(tbOrders!uesumm, "## ##0.00")
+            Grid.TextMatrix(quantity, zdProvodka) = tbOrders!provodka
+            If Not IsNull(tbOrders!Name) Then Grid.TextMatrix(quantity, zdAgent) = tbOrders!Name
+            If Not IsNull(tbOrders!nazn) Then Grid.TextMatrix(quantity, zdNazn) = tbOrders!nazn
+            If Not IsNull(tbOrders!utochn) Then Grid.TextMatrix(quantity, zdUtochn) = tbOrders!utochn
+            
+            Grid.AddItem ""
+            tbOrders.MoveNext
+        Wend
+    End If
+    Grid.row = quantity + 1
+    Grid.col = rzMainCosts: Grid.CellFontBold = True
+    Grid.col = rzAddCosts: Grid.CellFontBold = True
+    Grid.TextMatrix(quantity + 1, rzMainCosts) = Format(param2, "## ##0.00")
+    Grid.TextMatrix(quantity + 1, rzAddCosts) = Format(param1, "## ##0.00")
+
+End Sub
+
+
 Sub ventureZatrat(ventureId As Integer)
 Dim sum As Single
 
@@ -247,7 +313,7 @@ Dim sum As Single
     Grid.ColWidth(rzMainCosts) = 1500
     Grid.ColWidth(rzAddCosts) = 1500
     
-    sql = "select sum(uesumm) as sm, ventureid, is_main_costs, s.nm as nm" _
+    sql = "select sum(uesumm) as sm, ventureid, is_main_costs, s.nm as nm, b.id_shiz" _
     & " from ybook b" _
     & " join shiz s on s.id = b.id_shiz" _
     & " where " _
@@ -256,10 +322,10 @@ Dim sum As Single
     If Pribil.costsDateWhere <> "" Then
         sql = sql & " and " & Pribil.costsDateWhere
     End If
-    sql = sql & " group by ventureid, is_main_costs, nm" _
+    sql = sql & " group by ventureid, is_main_costs, nm, b.id_shiz" _
     & " order by nm"
 
-    Debug.Print sql
+    'Debug.Print sql
     
     Set tbOrders = myOpenRecordSet("##vnt_det", sql, dbOpenForwardOnly)
     If tbOrders Is Nothing Then Exit Sub
@@ -268,6 +334,8 @@ Dim sum As Single
         While Not tbOrders.EOF
             quantity = quantity + 1
             Grid.TextMatrix(quantity, rzZatratName) = tbOrders!nm
+            Grid.TextMatrix(quantity, 0) = tbOrders!id_shiz
+            
             If tbOrders!is_main_costs = 1 Then
                 Grid.TextMatrix(quantity, rzMainCosts) = Format(tbOrders!sm, "## ##0.00")
             Else
@@ -1240,7 +1308,7 @@ End If
 Dim Report2 As New Report
 
 If Regim = "ventureZatrat" Then
-    Report2.Regim = "ventureZatrat"
+    Report2.Regim = "ventureZatratDetail"
 ElseIf Regim = "mat" Then
 
     Report2.Regim = "subDetailMat"
