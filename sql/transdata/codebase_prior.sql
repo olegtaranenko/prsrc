@@ -5226,6 +5226,92 @@ end;
 
 
 
+-------------------------
+--- Шифры затрат::shiz
+-------------------------
+if exists (select 1 from systriggers where trigname = 'wf_insert_shiz' and tname = 'shiz') then 
+	drop trigger shiz.wf_insert_shiz;
+end if;
+
+create TRIGGER wf_insert_shiz before insert on
+shiz
+referencing new as new_name
+for each row
+begin
+	declare v_id integer;
+	declare v_fields varchar(500);
+	declare v_values varchar(2000);
+
+	set v_id = get_nextid('shiz');
+	set v_fields = 'id, nm';
+	set v_values = convert(varchar(20), v_id) + ', ' + '''''' + new_name.nm + '''''';
+
+	call insert_host('shiz', v_fields, v_values);
+	set new_name.id = v_id;
+
+end;
+
+
+if exists (select 1 from systriggers where trigname = 'wf_update_shiz' and tname = 'shiz') then 
+	drop trigger shiz.wf_update_shiz;
+end if;
+
+create TRIGGER wf_update_shiz before update order 1 on
+shiz
+referencing old as old_name new as new_name
+for each row
+begin
+	if update(nm) then
+		call update_host('shiz', 'nm', '''''' + new_name.nm + '''''', 'id = ' + convert(varchar(20), old_name.id));
+	end if;
+
+end;
+
+
+if exists (select 1 from systriggers where trigname = 'wf_delete_shiz' and tname = 'shiz') then 
+	drop trigger shiz.wf_delete_shiz;
+end if;
+
+create TRIGGER wf_delete_shiz before delete on
+shiz
+referencing old as old_name
+for each row
+begin
+	if old_name.id is not null then
+		call delete_host('shiz', 'id = ' + convert(varchar(20), old_name.id));
+	end if;
+end;
+
+
+
+if exists (select '*' from sysprocedure where proc_name like 'wf_add_shiz') then  
+	drop function wf_add_shiz;
+end if;
+
+
+create 
+	function wf_add_shiz (
+		p_nm varchar(20)
+) returns integer
+begin
+	declare v_id_exists integer;
+
+	if isnull(p_nm, '') = '' then 
+		set wf_add_shiz = -1;
+        return;
+    end if;
+
+	select id into v_Id_exists from shiz where nm = p_nm;
+	if v_id_exists is null then
+		insert into shiz (nm, is_main_costs) values (p_nm, null);
+		select id into wf_add_shiz from shiz where nm = p_nm;
+	else 
+		set wf_add_shiz = -1;
+	end if;
+
+end;
+
+
 -------------------------------------------------------------------------
 --------------             sGuideNomenk      ----------------------------
 -------------------------------------------------------------------------

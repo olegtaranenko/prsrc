@@ -11,10 +11,10 @@ Begin VB.Form GuideShiz
    ScaleWidth      =   5964
    StartUpPosition =   1  'CenterOwner
    Begin VB.ListBox lbActive 
-      Height          =   432
+      Height          =   624
       ItemData        =   "GuideShiz.frx":0000
       Left            =   2760
-      List            =   "GuideShiz.frx":000A
+      List            =   "GuideShiz.frx":000F
       TabIndex        =   5
       Top             =   360
       Visible         =   0   'False
@@ -116,7 +116,11 @@ While Not tbGuide.EOF
     quantity = quantity + 1
     Grid.TextMatrix(quantity, shShizId) = tbGuide!id
     Grid.TextMatrix(quantity, shText) = tbGuide!nm
-    If tbGuide!is_main_costs = 1 Then
+    If IsNull(tbGuide!is_main_costs) Then
+        Grid.TextMatrix(quantity, shMainCosts) = ""
+    ElseIf tbGuide!is_main_costs = 0 Then
+        Grid.TextMatrix(quantity, shMainCosts) = "Нет"
+    Else
         Grid.TextMatrix(quantity, shMainCosts) = "Да"
     End If
     Grid.AddItem ""
@@ -188,16 +192,14 @@ Dim success As Integer
     sql = "update shiz set is_main_costs = "
     If lbActive.Text = "Да" Then
         sql = sql & "1"
-    Else
+    ElseIf lbActive.Text = "Нет" Then
         sql = sql & "0"
+    Else
+        sql = sql & "null"
     End If
     sql = sql & " where id = " & Grid.TextMatrix(mousRow, shShizId)
     myExecute "##shiz_update", sql
-    If lbActive.Text = "Да" Then
-        Grid.Text = lbActive.Text
-    Else
-        Grid.Text = ""
-    End If
+    Grid.Text = lbActive.Text
         
         
     
@@ -215,14 +217,31 @@ Dim new_id As Integer
     If KeyCode = vbKeyReturn Then
         If Grid.TextMatrix(mousRow, shShizId) = "" Then
             'add new shiz
-            sql = "select add_shiz ('" & tbMobile.Text & "') as new_id"
+            sql = "select wf_add_shiz ('" & tbMobile.Text & "') as new_id"
             byErrSqlGetValues "##insert shiz", sql, new_id
-            Grid.TextMatrix(mousRow, shShizId) = new_id
+            If new_id > 0 Then
+                'quantity = quantity + 1
+                Grid.TextMatrix(quantity + 1, shShizId) = new_id
+                Grid.TextMatrix(quantity + 1, shText) = tbMobile.Text
+            ElseIf new_id = -1 Then
+                MsgBox "Некорректное название шифра затрат. Такое название уже есть или оно пустое.", vbOKOnly, "Ошибка ввода"
+                Grid.RemoveItem (quantity + 1)
+            End If
+        Else
+            sql = "select id from shiz where nm = '" & tbMobile.Text & "' and id != " & Grid.TextMatrix(mousRow, shShizId)
+            byErrSqlGetValues "W#insert shiz", sql, new_id
+            If new_id <> 0 Then
+                MsgBox "Некорректное название шифра затрат. Такое название уже есть или оно пустое.", vbOKOnly, "Ошибка ввода"
+            Else
+                sql = "update shiz set nm = '" & tbMobile.Text _
+                    & "' where id = " & Grid.TextMatrix(mousRow, shShizId)
+                myExecute "##update shiz", sql
+                Grid.Text = tbMobile.Text
+            End If
         End If
-        
-        Grid.Text = tbMobile.Text
         lbHide
     ElseIf KeyCode = vbKeyEscape Then
+        Grid.RemoveItem (quantity + 1)
         lbHide
     End If
 End Sub

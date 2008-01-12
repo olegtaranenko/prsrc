@@ -276,7 +276,7 @@ Dim sum As Single
     End If
     sql = sql & " order by xdate, provodka, uesumm desc"
 
-    'Debug.Print sql
+    Debug.Print sql
     
     Set tbOrders = myOpenRecordSet("##vnt_det", sql, dbOpenForwardOnly)
     If tbOrders Is Nothing Then Exit Sub
@@ -561,8 +561,7 @@ Grid.ColWidth(4) = 1200
 sumD = 0: sumK = 0
 Grid.TextMatrix(1, 1) = "Склад - максимальный запас"
 sql = "SELECT " _
-    & " Sum((if mark='Used' then Zakup else nowOstatki endif) " _
-    & " * cost/perList) AS sum " _
+    & " Sum((if mark='Used' then Zakup else nowOstatki endif) * cost/perList) AS sum " _
     & "FROM sGuideNomenk "
 'Debug.Print sql
 
@@ -570,7 +569,7 @@ byErrSqlGetValues "##387", sql, s
 Grid.TextMatrix(1, 3) = Round(-s, 2)
 sumK = sumK - s
 
-sql = "SELECT Sum([cost]*[nowOstatki]/[perList]) AS sum FROM sGuideNomenk;"
+sql = "SELECT Sum(cost * nowOstatki / perList) AS sum FROM sGuideNomenk;"
 byErrSqlGetValues "##388", sql, s
 Grid.AddItem Chr(9) & "Склад -фактический запас" & Chr(9) & Round(s, 2)
 sumD = sumD + s
@@ -578,10 +577,11 @@ sumD = sumD + s
 
 ' сумма списанной и еще неотгруженной ном-ры по незакрытим заказам !!!
 ' здесь не м.б. заказов Продаж т.к. у них отгрузка - это списание
-sql = "SELECT Sum([sDMC].[quant]*[sGuideNomenk].[cost]/[sGuideNomenk].[perList]) AS sum " & _
-"FROM Orders INNER JOIN (sGuideNomenk INNER JOIN sDMC ON " & _
+sql = "SELECT Sum(sDMC.quant*sGuideNomenk.cost / sGuideNomenk.perList) AS sum " & _
+"FROM Orders INNER JOIN (sGuideNomenk " _
+& "INNER JOIN sDMC ON " & _
 "sGuideNomenk.nomNom = sDMC.nomNom) ON Orders.numOrder = sDMC.numDoc " & _
-"WHERE (((StatusId)<6));"
+"WHERE StatusId  < 6"
 byErrSqlGetValues "##386", sql, s
 s = s - otgruzNomenk()
 Grid.AddItem Chr(9) & "Незавершенное производство" & Chr(9) & Round(s, 2)
@@ -618,7 +618,7 @@ sql = "SELECT Sum(if paid > shipped then shipped - paid endif ) AS k" _
         & "    , Sum(if paid < shipped then paid - shipped endif) AS d " _
         & "    from Orders WHERE StatusId < 6 "
 'не вылавливает строки где paid или shipped Null
-Debug.Print sql
+'Debug.Print sql
 
 byErrSqlGetValues "##392", sql, k, d
 s = 0: s2 = 0
@@ -632,12 +632,12 @@ d = d + s2
 
 s = 0
 sql = "SELECT Sum(shipped) AS Sum_shipped from Orders " & _
-"WHERE (((paid) Is Null) AND ((StatusId)<6));"
+"WHERE paid Is Null AND StatusId < 6"
 byErrSqlGetValues "##393", sql, s
 d = d + s
 s = 0
 sql = "SELECT Sum(shipped) AS Sum_shipped from bayOrders " & _
-"WHERE (((paid) Is Null) AND ((StatusId)<6));"
+"WHERE paid Is Null AND StatusId < 6"
 byErrSqlGetValues "##393", sql, s
 d = d + s
 Grid.AddItem Chr(9) & "Дебиторы" & Chr(9) & d
@@ -649,7 +649,7 @@ byErrSqlGetValues "##394", sql, s
 k = k + s
 s = 0
 sql = "SELECT Sum(paid) AS Sum_paid from bayOrders " & _
-"WHERE (((shipped) Is Null) AND ((StatusId)<6));"
+"WHERE shipped Is Null AND StatusId < 6"
 byErrSqlGetValues "##394", sql, s
 k = k + s
 Grid.AddItem Chr(9) & "Кредиторы" & Chr(9) & Chr(9) & k
@@ -671,18 +671,18 @@ Dim d As Single, k As Single
 
 schetOstat = 0
 sql = "SELECT Sum(begDebit) AS Sum_begDebit, Sum(begKredit) AS Sum_begKredit " & _
-"From yGuideSchets GROUP BY number HAVING (((number)=" & schet & "));"
+"From yGuideSchets GROUP BY number HAVING number = '" & schet & "'"
 
 If Not byErrSqlGetValues("W##389", sql, d, k) Then GoTo EN1 '$$4 в самом начале счета м.и не быть
 schetOstat = d - k
 
 d = 0: k = 0
 sql = "SELECT Sum(UEsumm) AS Sum_UEsumm from yBook " & _
-"WHERE (((Debit)=" & schet & "));"
+"WHERE Debit =" & schet & ""
 If Not byErrSqlGetValues("##390", sql, d) Then GoTo EN1
 
 sql = "SELECT Sum(UEsumm) AS Sum_UEsumm from yBook " & _
-"WHERE (((Kredit)=" & schet & "));"
+"WHERE Kredit =" & schet & ""
 If Not byErrSqlGetValues("##391", sql, k) Then GoTo EN1
 schetOstat = schetOstat + d - k
 
