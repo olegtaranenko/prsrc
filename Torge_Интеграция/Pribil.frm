@@ -1089,22 +1089,22 @@ tbNomenk.Close
 laTotalMainCosts.Caption = Format(Round(mainCostsTotal, 2), "## ##0.00")
 laTotalResultMain.Caption = Format(Round(dohod - oborot - mainCostsTotal, 2), "## ##0.00")
 laTotalAddCosts.Caption = Format(Round(addCostsTotal, 2), "## ##0.00")
-laTotalResultTotal.Caption = Format(Round(dohod - oborot - mainCostsTotal - addCostsTotal, 2), "## ##0.00")
+laTotalResultTotal.Caption = Format(Round(dohod - mainCostsTotal - addCostsTotal, 2), "## ##0.00")
 
 laPmMainCosts.Caption = Format(Round(mainCosts(0), 2), "## ##0.00")
 laPmResultMain.Caption = Format(Round(ventureRealiz(0) - ventureMat(0) - mainCosts(0), 2), "## ##0.00")
 laPmAddCosts.Caption = Format(Round(addCosts(0), 2), "## ##0.00")
-laPmResultTotal.Caption = Format(Round(ventureRealiz(0) - ventureMat(0) - mainCosts(0) - addCosts(0), 2), "## ##0.00")
+laPmResultTotal.Caption = Format(Round(ventureRealiz(0) - mainCosts(0) - addCosts(0), 2), "## ##0.00")
 
 laMmMainCosts.Caption = Format(Round(mainCosts(1), 2), "## ##0.00")
 laMmResultMain.Caption = Format(Round(ventureRealiz(1) - ventureMat(1) - mainCosts(1), 2), "## ##0.00")
 laMmAddCosts.Caption = Format(Round(addCosts(1), 2), "## ##0.00")
-laMmResultTotal.Caption = Format(Round(ventureRealiz(1) - ventureMat(1) - mainCosts(1) - addCosts(1), 2), "## ##0.00")
+laMmResultTotal.Caption = Format(Round(ventureRealiz(1) - mainCosts(1) - addCosts(1), 2), "## ##0.00")
 
 laAnMainCosts.Caption = Format(Round(mainCosts(2), 2), "## ##0.00")
 laAnResultMain.Caption = Format(Round(ventureRealiz(2) - ventureMat(2) - mainCosts(2), 2), "## ##0.00")
 laAnAddCosts.Caption = Format(Round(addCosts(2), 2), "## ##0.00")
-laAnResultTotal.Caption = Format(Round(ventureRealiz(2) - ventureMat(2) - mainCosts(2) - addCosts(2), 2), "## ##0.00")
+laAnResultTotal.Caption = Format(Round(ventureRealiz(2) - mainCosts(2) - addCosts(2), 2), "## ##0.00")
 
 EN1:
 Me.MousePointer = flexDefault
