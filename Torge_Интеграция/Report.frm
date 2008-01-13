@@ -266,17 +266,18 @@ Dim sum As Single
     sql = "select xdate, uesumm, b.debit + '-' + b.subdebit + ' => ' + b.kredit + '-' + b.subkredit as provodka" _
     & " , k.name, p.pdescript as nazn, b.descript as utochn" _
     & " from ybook b" _
+    & " join shiz s on s.id = b.id_shiz" _
     & " join ydebkreditor k on k.id = b.kreddebitor" _
     & " join yguidepurpose p on p.debit = b.debit and p.subdebit = b.subdebit and p.kredit = b.kredit and p.subkredit = b.subkredit and p.pid = b.purposeid" _
-    & " where id_shiz is not null " _
-    & " and ventureid = " & ventureId & " and id_shiz = " & param1
+    & " where" _
+    & " ventureid = " & ventureId & " and id_shiz = " & param1
  
     If Pribil.costsDateWhere <> "" Then
         sql = sql & " and " & Pribil.costsDateWhere
     End If
     sql = sql & " order by xdate, provodka, uesumm desc"
 
-    Debug.Print sql
+    'Debug.Print sql
     
     Set tbOrders = myOpenRecordSet("##vnt_det", sql, dbOpenForwardOnly)
     If tbOrders Is Nothing Then Exit Sub
@@ -317,7 +318,8 @@ Dim sum As Single
     & " from ybook b" _
     & " join shiz s on s.id = b.id_shiz" _
     & " where " _
-    & "     ventureid = " & ventureId
+    & "     ventureid = " & ventureId _
+    & " and s.is_main_costs is not null "
  
     If Pribil.costsDateWhere <> "" Then
         sql = sql & " and " & Pribil.costsDateWhere

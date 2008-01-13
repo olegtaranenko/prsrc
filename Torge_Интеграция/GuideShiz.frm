@@ -230,7 +230,7 @@ Dim new_id As Integer
         Else
             sql = "select id from shiz where nm = '" & tbMobile.Text & "' and id != " & Grid.TextMatrix(mousRow, shShizId)
             byErrSqlGetValues "W#insert shiz", sql, new_id
-            If new_id <> 0 Then
+            If new_id <> 0 Or tbMobile.Text = "" Then
                 MsgBox "Некорректное название шифра затрат. Такое название уже есть или оно пустое.", vbOKOnly, "Ошибка ввода"
             Else
                 sql = "update shiz set nm = '" & tbMobile.Text _

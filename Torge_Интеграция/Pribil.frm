@@ -1058,20 +1058,17 @@ ReDim addCosts(2)
 ' ------------------ основные и вспомогательные затраты -------------------
 '
 strWhere = getWhereByDateBoxes(Me, "xDate", begDateHron)
-If strWhere <> "" Then
-    strWhere = strWhere & " AND "
-End If
-    
-costsDateWhere = strWhere & "id_shiz is not null"
+costsDateWhere = strWhere
 
 
 sql = "select sum(uesumm) as total, ventureid, is_main_costs" _
 & " from ybook b" _
 & " join shiz s on s.id = b.id_shiz" _
 & " where " & costsDateWhere _
+& " and s.is_main_costs is not null" _
 & " group by ventureid, is_main_costs"
 
-Debug.Print sql
+'Debug.Print sql
 
 Set tbNomenk = myOpenRecordSet("##431", sql, dbOpenForwardOnly)
 If tbNomenk Is Nothing Then GoTo EN1
@@ -1136,7 +1133,7 @@ While (Timer - mig < 1#): DoEvents: Wend  ' Дата в сек. д.б. уникальной
 
 tmpStr = Format(Now(), "dd/mm/yy hh:nn:ss")
 tbDocs!xDate = CDate(tmpStr)
-tbDocs!UEsumm = sum
+tbDocs!uesumm = sum
 tbDocs!m = AUTO.cbM.Text
 tbDocs!debit = debit
 tbDocs!subDebit = subDebit
@@ -1221,7 +1218,7 @@ tbEndDate.Text = Format(CurDate, "dd/mm/yy")
 begDateHron = "01.09.03" '
 tbStartDate.Text = "01." & Format(CurDate, "mm/yy")
 'tbStartDate.Text = "01.09.03"
-'tbStartDate.Text = "01.12.07"
+tbStartDate.Text = "01.12.07"
 End Sub
 'для отчета Прибыль
 Function getProductNomenkSum() As Variant
