@@ -3,33 +3,43 @@ Begin VB.Form Pribil
    BackColor       =   &H8000000A&
    BorderStyle     =   1  'Fixed Single
    Caption         =   "Реализация"
-   ClientHeight    =   6636
+   ClientHeight    =   7284
    ClientLeft      =   552
    ClientTop       =   9336
-   ClientWidth     =   11568
+   ClientWidth     =   11424
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   6636
-   ScaleWidth      =   11568
+   ScaleHeight     =   7284
+   ScaleWidth      =   11424
    StartUpPosition =   1  'CenterOwner
+   Begin VB.CheckBox ckSaleNomenk 
+      BackColor       =   &H8000000A&
+      Caption         =   "Учет Номенклат. =>"
+      Height          =   192
+      Left            =   3960
+      TabIndex        =   68
+      Top             =   5880
+      Width           =   1932
+   End
    Begin VB.CheckBox ckStatistic 
       Alignment       =   1  'Right Justify
       BackColor       =   &H8000000A&
-      Caption         =   "Стат/Затраты"
+      Caption         =   "<= Стат-ка/Затраты"
       CausesValidation=   0   'False
       Height          =   192
-      Left            =   120
+      Left            =   360
       TabIndex        =   46
-      Top             =   1680
-      Width           =   1572
+      Top             =   5880
+      Width           =   1932
    End
    Begin VB.Frame Frame7 
       BackColor       =   &H8000000A&
+      BorderStyle     =   0  'None
       Height          =   612
-      Left            =   240
+      Left            =   480
       TabIndex        =   31
-      Top             =   4440
+      Top             =   1080
       Width           =   10692
       Begin VB.CommandButton cmDetailPM 
          Caption         =   "Петровские Мастерские"
@@ -113,10 +123,11 @@ Begin VB.Form Pribil
    End
    Begin VB.Frame Frame9 
       BackColor       =   &H8000000A&
+      BorderStyle     =   0  'None
       Height          =   492
-      Left            =   240
+      Left            =   480
       TabIndex        =   40
-      Top             =   5040
+      Top             =   1680
       Width           =   10692
       Begin VB.CommandButton cmDetailMM 
          Caption         =   "Маркмастер"
@@ -200,10 +211,11 @@ Begin VB.Form Pribil
    End
    Begin VB.Frame Frame8 
       BackColor       =   &H8000000A&
+      BorderStyle     =   0  'None
       Height          =   492
-      Left            =   240
+      Left            =   480
       TabIndex        =   35
-      Top             =   5520
+      Top             =   2160
       Width           =   10692
       Begin VB.CommandButton cmDetailAN 
          Caption         =   "Аналитика"
@@ -291,9 +303,9 @@ Begin VB.Form Pribil
       BorderStyle     =   0  'None
       ForeColor       =   &H80000008&
       Height          =   492
-      Left            =   120
+      Left            =   480
       TabIndex        =   27
-      Top             =   2040
+      Top             =   3240
       Width           =   5412
       Begin VB.CommandButton cmDetail3 
          Caption         =   "Услуги"
@@ -302,14 +314,14 @@ Begin VB.Form Pribil
          Left            =   120
          TabIndex        =   28
          Top             =   120
-         Width           =   1332
+         Width           =   1212
       End
       Begin VB.Label laRealiz1 
          Alignment       =   1  'Right Justify
          BackStyle       =   0  'Transparent
          BorderStyle     =   1  'Fixed Single
          Height          =   312
-         Left            =   4200
+         Left            =   4080
          TabIndex        =   30
          Top             =   120
          Width           =   1200
@@ -319,7 +331,7 @@ Begin VB.Form Pribil
          BackStyle       =   0  'Transparent
          BorderStyle     =   1  'Fixed Single
          Height          =   312
-         Left            =   1560
+         Left            =   1440
          TabIndex        =   29
          Top             =   120
          Width           =   1200
@@ -327,7 +339,7 @@ Begin VB.Form Pribil
    End
    Begin VB.Frame Frame5 
       BackColor       =   &H8000000A&
-      Caption         =   "Итого"
+      BorderStyle     =   0  'None
       BeginProperty Font 
          Name            =   "MS Sans Serif"
          Size            =   7.8
@@ -338,10 +350,28 @@ Begin VB.Form Pribil
          Strikethrough   =   0   'False
       EndProperty
       Height          =   492
-      Left            =   240
+      Left            =   480
       TabIndex        =   23
-      Top             =   3840
-      Width           =   10632
+      Top             =   2640
+      Width           =   10692
+      Begin VB.CommandButton cmItogo 
+         Caption         =   "Всего"
+         Enabled         =   0   'False
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   7.8
+            Charset         =   204
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   315
+         Left            =   120
+         TabIndex        =   67
+         Top             =   120
+         Width           =   1215
+      End
       Begin VB.Label laTotalResultTotal 
          Alignment       =   1  'Right Justify
          BackStyle       =   0  'Transparent
@@ -478,16 +508,17 @@ Begin VB.Form Pribil
    End
    Begin VB.Frame Frame4 
       BackColor       =   &H8000000A&
+      BorderStyle     =   0  'None
       Height          =   492
-      Left            =   240
+      Left            =   480
       TabIndex        =   18
-      Top             =   3240
+      Top             =   4440
       Width           =   5412
-      Begin VB.CommandButton cmDetail2 
+      Begin VB.CommandButton cmSales 
          Caption         =   " Продажа"
          Enabled         =   0   'False
          Height          =   315
-         Left            =   60
+         Left            =   120
          TabIndex        =   19
          Top             =   120
          Width           =   1215
@@ -525,44 +556,46 @@ Begin VB.Form Pribil
    End
    Begin VB.Frame Frame3 
       BackColor       =   &H8000000A&
+      BorderStyle     =   0  'None
       Caption         =   "Материалы не под заказы:"
-      Height          =   795
-      Left            =   240
+      Height          =   552
+      Left            =   480
       TabIndex        =   15
-      Top             =   720
-      Width           =   2715
+      Top             =   5040
+      Width           =   5352
       Begin VB.CommandButton cmDetail 
-         Caption         =   "Детализация"
+         Caption         =   "Списания"
          Enabled         =   0   'False
          Height          =   315
-         Left            =   1320
+         Left            =   120
          TabIndex        =   16
-         Top             =   360
-         Width           =   1215
+         Top             =   120
+         Width           =   1212
       End
       Begin VB.Label laOther 
          Alignment       =   1  'Right Justify
          BackStyle       =   0  'Transparent
          BorderStyle     =   1  'Fixed Single
-         Height          =   315
-         Left            =   180
+         Height          =   312
+         Left            =   2760
          TabIndex        =   17
-         Top             =   360
-         Width           =   915
+         Top             =   120
+         Width           =   1152
       End
    End
    Begin VB.Frame Frame2 
       BackColor       =   &H8000000A&
+      BorderStyle     =   0  'None
       Height          =   492
-      Left            =   240
+      Left            =   480
       TabIndex        =   10
-      Top             =   2640
+      Top             =   3840
       Width           =   5412
       Begin VB.CommandButton cmDetail1 
          Caption         =   "Товары"
          Enabled         =   0   'False
          Height          =   315
-         Left            =   60
+         Left            =   120
          TabIndex        =   11
          Top             =   120
          Width           =   1215
@@ -601,7 +634,7 @@ Begin VB.Form Pribil
    Begin VB.Frame Frame1 
       BackColor       =   &H8000000A&
       Height          =   552
-      Left            =   -60
+      Left            =   60
       TabIndex        =   3
       Top             =   0
       Width           =   8715
@@ -657,6 +690,126 @@ Begin VB.Form Pribil
          Width           =   435
       End
    End
+   Begin VB.Line Line15 
+      X1              =   6120
+      X2              =   6000
+      Y1              =   6000
+      Y2              =   6000
+   End
+   Begin VB.Line Line20 
+      X1              =   120
+      X2              =   240
+      Y1              =   2880
+      Y2              =   2880
+   End
+   Begin VB.Line Line19 
+      X1              =   120
+      X2              =   120
+      Y1              =   6000
+      Y2              =   2880
+   End
+   Begin VB.Line Line18 
+      X1              =   120
+      X2              =   240
+      Y1              =   6000
+      Y2              =   6000
+   End
+   Begin VB.Line Line17 
+      X1              =   240
+      X2              =   240
+      Y1              =   5760
+      Y2              =   6120
+   End
+   Begin VB.Line Line16 
+      X1              =   6000
+      X2              =   6000
+      Y1              =   5760
+      Y2              =   6120
+   End
+   Begin VB.Line Line14 
+      X1              =   6120
+      X2              =   6120
+      Y1              =   4800
+      Y2              =   6000
+   End
+   Begin VB.Line Line13 
+      X1              =   6120
+      X2              =   6000
+      Y1              =   4800
+      Y2              =   4800
+   End
+   Begin VB.Line Line12 
+      X1              =   5880
+      X2              =   6000
+      Y1              =   5640
+      Y2              =   5640
+   End
+   Begin VB.Line Line11 
+      X1              =   240
+      X2              =   600
+      Y1              =   4920
+      Y2              =   4920
+   End
+   Begin VB.Line Line10 
+      X1              =   6000
+      X2              =   5760
+      Y1              =   3840
+      Y2              =   3840
+   End
+   Begin VB.Line Line9 
+      X1              =   3840
+      X2              =   3840
+      Y1              =   5760
+      Y2              =   6120
+   End
+   Begin VB.Line Line8 
+      X1              =   3840
+      X2              =   6000
+      Y1              =   5760
+      Y2              =   5760
+   End
+   Begin VB.Line Line7 
+      X1              =   3840
+      X2              =   6000
+      Y1              =   6120
+      Y2              =   6120
+   End
+   Begin VB.Line Line3 
+      X1              =   6000
+      X2              =   6000
+      Y1              =   3840
+      Y2              =   5640
+   End
+   Begin VB.Line Line6 
+      X1              =   240
+      X2              =   480
+      Y1              =   960
+      Y2              =   960
+   End
+   Begin VB.Line Line5 
+      X1              =   2400
+      X2              =   2400
+      Y1              =   5760
+      Y2              =   6120
+   End
+   Begin VB.Line Line4 
+      X1              =   240
+      X2              =   2400
+      Y1              =   6120
+      Y2              =   6120
+   End
+   Begin VB.Line Line2 
+      X1              =   240
+      X2              =   2400
+      Y1              =   5760
+      Y2              =   5760
+   End
+   Begin VB.Line Line1 
+      X1              =   240
+      X2              =   240
+      Y1              =   960
+      Y2              =   4920
+   End
    Begin VB.Label Label9 
       BackStyle       =   0  'Transparent
       Caption         =   "Окончат. результат"
@@ -670,55 +823,55 @@ Begin VB.Form Pribil
          Strikethrough   =   0   'False
       EndProperty
       Height          =   372
-      Left            =   9720
+      Left            =   9840
       TabIndex        =   54
-      Top             =   3360
-      Width           =   1032
+      Top             =   720
+      Width           =   1152
    End
    Begin VB.Label Label3 
       BackColor       =   &H8000000A&
       BackStyle       =   0  'Transparent
       Caption         =   "Основные затраты:"
       Height          =   432
-      Left            =   5760
+      Left            =   5880
       TabIndex        =   49
-      Top             =   3360
-      Width           =   1092
+      Top             =   720
+      Width           =   1212
    End
    Begin VB.Label Label2 
       BackStyle       =   0  'Transparent
       Caption         =   "Вспомогат. затраты"
       Height          =   372
-      Left            =   8400
+      Left            =   8520
       TabIndex        =   48
-      Top             =   3360
-      Width           =   1032
+      Top             =   720
+      Width           =   1152
    End
    Begin VB.Label Label1 
       BackStyle       =   0  'Transparent
-      Caption         =   "Результат"
-      Height          =   252
-      Left            =   7080
+      Caption         =   "Прибыль.- Основные"
+      Height          =   372
+      Left            =   7200
       TabIndex        =   47
-      Top             =   3480
-      Width           =   972
+      Top             =   720
+      Width           =   1212
    End
    Begin VB.Label Label4 
       BackStyle       =   0  'Transparent
-      Caption         =   "Результат"
+      Caption         =   "Прибыль"
       Height          =   252
-      Left            =   4320
+      Left            =   4560
       TabIndex        =   2
-      Top             =   1680
+      Top             =   840
       Width           =   972
    End
    Begin VB.Label laHMaterials 
       BackStyle       =   0  'Transparent
       Caption         =   "Материалы"
       Height          =   252
-      Left            =   3120
+      Left            =   3240
       TabIndex        =   1
-      Top             =   1680
+      Top             =   840
       Width           =   1032
    End
    Begin VB.Label laHRealiz 
@@ -726,9 +879,9 @@ Begin VB.Form Pribil
       BackStyle       =   0  'Transparent
       Caption         =   "Реализация:"
       Height          =   192
-      Left            =   1800
+      Left            =   1920
       TabIndex        =   0
-      Top             =   1680
+      Top             =   840
       Width           =   1092
    End
 End
@@ -769,19 +922,6 @@ Me.MousePointer = flexDefault
 
 End Sub
 
-Private Sub cmDetail2_Click()
-Me.MousePointer = flexHourglass
-Report.param1 = laRealiz2.Caption
-Report.param2 = laMaterials2.Caption
-If ckStatistic.value = 1 Then
-    Report.Regim = "bayStatistic"
-Else
-    Report.Regim = "bay"
-End If
-Report.Show vbModal
-Me.MousePointer = flexDefault
-
-End Sub
 
 Private Sub cmDetail3_Click()
 Me.MousePointer = flexHourglass
@@ -1111,7 +1251,10 @@ Me.MousePointer = flexDefault
 cmSave.Enabled = True
 cmDetail.Enabled = True
 cmDetail1.Enabled = True
-cmDetail2.Enabled = True
+cmSales.Enabled = True
+cmItogo.Enabled = True
+'cmSaleNomenk.Enabled = True
+
 cmDetail3.Enabled = True
 
 cmDetailPM.Enabled = True
@@ -1160,6 +1303,20 @@ Private Sub cmMaterials_Click()
 End Sub
 
 Private Sub cmRealiz_Click()
+
+End Sub
+
+Private Sub cmSales_Click()
+Me.MousePointer = flexHourglass
+Report.param1 = laRealiz2.Caption
+Report.param2 = laMaterials2.Caption
+If ckStatistic.value = 1 Then
+    Report.Regim = "bayStatistic"
+Else
+    Report.Regim = "bay"
+End If
+Report.Show vbModal
+Me.MousePointer = flexDefault
 
 End Sub
 
@@ -1218,7 +1375,7 @@ tbEndDate.Text = Format(CurDate, "dd/mm/yy")
 begDateHron = "01.09.03" '
 tbStartDate.Text = "01." & Format(CurDate, "mm/yy")
 'tbStartDate.Text = "01.09.03"
-tbStartDate.Text = "01.12.07"
+'tbStartDate.Text = "01.12.07"
 End Sub
 'для отчета Прибыль
 Function getProductNomenkSum() As Variant

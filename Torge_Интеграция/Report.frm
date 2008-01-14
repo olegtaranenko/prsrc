@@ -235,10 +235,10 @@ ElseIf Regim = "venture" Then 'детализация и статистика по предприятиям
     param1 & "(Реализация) по """ & Pribil.ventureId & """"
     ventureReport Pribil.ventureId
 ElseIf Regim = "ventureZatrat" Then 'статистика по предприятиям
-    laHeader.Caption = "Детализация сумм по основным и вспомогательным затратам  по """ & Pribil.ventureId & """"
+    laHeader.Caption = "Детализация сумм по шифрам затрат. Предпрятие """ & Pribil.ventureId & """"
     ventureZatrat Pribil.ventureId
 ElseIf Regim = "ventureZatratDetail" Then 'детализация по предприятиям
-    laHeader.Caption = "Детализация сумм по статье затрат """ & Grid.TextMatrix(Grid.row, rzZatratName) & """ для """ & Pribil.ventureId & """"
+    laHeader.Caption = "Детализация сумм по статье затрат """ & Grid.TextMatrix(mousRow, rzZatratName) & """"
     ventureZatratDetail Pribil.ventureId, Grid.TextMatrix(Grid.row, 0)
 End If
 laSumControl
@@ -1309,8 +1309,16 @@ End If
     
 Dim Report2 As New Report
 
+Report2.param1 = Grid.TextMatrix(mousRow, 0) '
+Report2.param2 = Grid.TextMatrix(mousRow, rrDate)
+
 If Regim = "ventureZatrat" Then
     Report2.Regim = "ventureZatratDetail"
+    If Grid.TextMatrix(mousRow, 2) <> "" Then
+        Report2.param2 = Grid.TextMatrix(mousRow, 2)
+    Else
+        Report2.param2 = Grid.TextMatrix(mousRow, 3)
+    End If
 ElseIf Regim = "mat" Then
 
     Report2.Regim = "subDetailMat"
@@ -1323,10 +1331,8 @@ Else
     If MsgBox("Вы хотите посмотреть записи, которые образуют суммы " & str _
     , vbDefaultButton2 Or vbYesNo, "Продолжить?") = vbNo Then Exit Sub
 End If
-
-Report2.param1 = Grid.TextMatrix(mousRow, 0) '
-Report2.param2 = Grid.TextMatrix(mousRow, rrDate)
 Report2.param3 = str
+
 Report2.Show vbModal
 End Sub
 
@@ -1347,6 +1353,7 @@ Private Sub Grid_LeaveCell()
 Grid.CellBackColor = Grid.BackColor
 
 End Sub
+
 
 Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then

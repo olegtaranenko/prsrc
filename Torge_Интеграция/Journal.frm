@@ -234,6 +234,9 @@ Begin VB.Form Journal
       Begin VB.Menu mnKreditors 
          Caption         =   "Дебиторы \ Кредиторы"
       End
+      Begin VB.Menu mnShiz 
+         Caption         =   "Шифры затрат"
+      End
    End
    Begin VB.Menu mnNasroy 
       Caption         =   "Настройка"
@@ -295,6 +298,10 @@ End Sub
 
 Private Sub mnPurpose_Click()
 jGuidePurpose.Show vbModal
+End Sub
+
+Private Sub mnShiz_Click()
+GuideShiz.Show vbModal
 End Sub
 
 Private Sub mnSOborot_Click()
@@ -641,7 +648,7 @@ If Not tbDocs.BOF Then
     Grid.TextMatrix(quantity, 0) = i
     Grid.TextMatrix(quantity, jnDate) = Format(tbDocs!xDate, "dd/mm/yy hh:nn:ss")
 '    Grid.TextMatrix(quantity, jnRub) =
-    Grid.TextMatrix(quantity, jnVal) = Round(tbDocs!UEsumm, 2)
+    Grid.TextMatrix(quantity, jnVal) = Round(tbDocs!uesumm, 2)
     Grid.TextMatrix(quantity, jnDebit) = schType(tbDocs!debit, 255)
     Grid.TextMatrix(quantity, jnSubDebit) = schType(tbDocs!subDebit)
     Grid.TextMatrix(quantity, jnKredit) = schType(tbDocs!kredit, 255)

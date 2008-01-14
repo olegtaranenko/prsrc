@@ -18,7 +18,7 @@ Begin VB.Form GuideShiz
       TabIndex        =   5
       Top             =   360
       Visible         =   0   'False
-      Width           =   555
+      Width           =   1900
    End
    Begin VB.TextBox tbMobile 
       Height          =   315
@@ -102,10 +102,10 @@ Private Sub Form_Load()
 oldHeight = Me.Height
 oldWidth = Me.Width
 
-Grid.FormatString = "|<Шифр|Основные?"
+Grid.FormatString = "|<Шифр|Тип затрат"
 Grid.ColWidth(shShizId) = 0
 Grid.ColWidth(shText) = 2585
-Grid.ColWidth(shMainCosts) = 1005
+Grid.ColWidth(shMainCosts) = 1900
 sql = "SELECT id, nm, is_main_costs From Shiz " & _
 "Where id > 0 ORDER BY nm"
 Set tbGuide = myOpenRecordSet("##441", sql, dbOpenForwardOnly)
@@ -117,11 +117,11 @@ While Not tbGuide.EOF
     Grid.TextMatrix(quantity, shShizId) = tbGuide!id
     Grid.TextMatrix(quantity, shText) = tbGuide!nm
     If IsNull(tbGuide!is_main_costs) Then
-        Grid.TextMatrix(quantity, shMainCosts) = ""
+        Grid.TextMatrix(quantity, shMainCosts) = "Не затраты"
     ElseIf tbGuide!is_main_costs = 0 Then
-        Grid.TextMatrix(quantity, shMainCosts) = "Нет"
+        Grid.TextMatrix(quantity, shMainCosts) = "Вспомогательные"
     Else
-        Grid.TextMatrix(quantity, shMainCosts) = "Да"
+        Grid.TextMatrix(quantity, shMainCosts) = "Основные"
     End If
     Grid.AddItem ""
 
@@ -190,9 +190,9 @@ Private Sub lbActive_DblClick()
 Dim success As Integer
     If lbActive.Visible = False Then Exit Sub
     sql = "update shiz set is_main_costs = "
-    If lbActive.Text = "Да" Then
+    If lbActive.Text = "Основные" Then
         sql = sql & "1"
-    ElseIf lbActive.Text = "Нет" Then
+    ElseIf lbActive.Text = "Вспомогательные" Then
         sql = sql & "0"
     Else
         sql = sql & "null"
@@ -200,7 +200,7 @@ Dim success As Integer
     sql = sql & " where id = " & Grid.TextMatrix(mousRow, shShizId)
     myExecute "##shiz_update", sql
     Grid.Text = lbActive.Text
-        
+    wrkDefault.CommitTrans
         
     
     lbHide
@@ -223,9 +223,11 @@ Dim new_id As Integer
                 'quantity = quantity + 1
                 Grid.TextMatrix(quantity + 1, shShizId) = new_id
                 Grid.TextMatrix(quantity + 1, shText) = tbMobile.Text
+                wrkDefault.CommitTrans
             ElseIf new_id = -1 Then
                 MsgBox "Некорректное название шифра затрат. Такое название уже есть или оно пустое.", vbOKOnly, "Ошибка ввода"
                 Grid.RemoveItem (quantity + 1)
+                wrkDefault.Rollback
             End If
         Else
             sql = "select id from shiz where nm = '" & tbMobile.Text & "' and id != " & Grid.TextMatrix(mousRow, shShizId)
@@ -237,6 +239,7 @@ Dim new_id As Integer
                     & "' where id = " & Grid.TextMatrix(mousRow, shShizId)
                 myExecute "##update shiz", sql
                 Grid.Text = tbMobile.Text
+                wrkDefault.CommitTrans
             End If
         End If
         lbHide
