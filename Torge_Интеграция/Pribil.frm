@@ -928,7 +928,11 @@ Report.param2 = laMaterials1.Caption
 If ckStatistic.value = 1 Then
     Report.Regim = "relizStatistic"
 Else
-    Report.Regim = ""
+    If ckSaleNomenk.value = 1 Then
+        Report.Regim = "relizNomenk"
+    Else
+        Report.Regim = ""
+    End If
 End If
 
 Report.Show vbModal

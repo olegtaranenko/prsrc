@@ -218,6 +218,9 @@ ElseIf Regim = "relizStatistic" Then 'отчет Реализация - заказы производства
     laHeader.Caption = "Детализация сумм " & param2 & "(Материалы) и " & _
     param1 & "(Реализация) по фирмам."
     relizDetail "statistic"
+ElseIf Regim = "relizNomenk" Then
+    laHeader.Caption = "Статистика по проданной номенклатуры " & param2
+    byNomenk "reliz"
 ElseIf Regim = "uslug" Then 'отчет Реализация - заказы производства
     laHeader.Caption = "Детализация суммы " & param1 & "(Услуги)" & _
     " по датам отгрузок заказов производства."
@@ -232,7 +235,7 @@ ElseIf Regim = "bay" Then 'отчет Реализация - заказы продаж
     relizDetailBay
 ElseIf Regim = "bayNomenk" Then
     laHeader.Caption = "Статистика по проданной номенклатуры " & param2
-    saleBayNomenk
+    byNomenk "saled"
 ElseIf Regim = "bayStatistic" Then 'отчет Реализация - заказы продаж
     laHeader.Caption = "Детализация сумм " & param2 & "(Материалы) и " & _
     param1 & "(Реализация) по фирмам."
@@ -261,7 +264,7 @@ fitFormToGrid
 Me.MousePointer = flexDefault
 End Sub
 
-Sub saleBayNomenk()
+Sub byNomenk(saled As String)
 Dim restrictDate As Variant
 Dim historyStart As Variant
 Dim curentklassid As Integer
@@ -278,7 +281,7 @@ Dim curentklassid As Integer
     Grid.ColWidth(sbnSumma) = 1000
     'Grid.ColWidth() =
 
-    sql = "call wf_nomenk_saled (convert(date, '" & Pribil.StartDate & "'), convert(date, '" & Pribil.EndDate & "))"
+    sql = "call wf_nomenk_" & saled & "(convert(date, '" & Pribil.StartDate & "'), convert(date, '" & Pribil.EndDate & "))"
 '    Debug.Print sql
     
     Set tbOrders = myOpenRecordSet("##vnt_det", sql, dbOpenForwardOnly)
@@ -290,29 +293,23 @@ Dim curentklassid As Integer
             quantity = quantity + 1
             If curentklassid <> tbOrders!klassid Then
                 Grid.AddItem ""
-                Grid.AddItem Chr(9) & Chr(9) & tbOrders!klassName
+                Grid.AddItem Chr(9) & tbOrders!outtype & Chr(9) & tbOrders!klassName
                 quantity = quantity + 2
                 Grid.row = Grid.Rows - 1
                 'quantity = quantity + 1
+                Grid.col = sbnNomnom
+                Grid.CellFontBold = True
                 Grid.col = sbnNomnam
                 Grid.CellFontBold = True
                 curentklassid = tbOrders!klassid
             End If
             
-'            Grid.TextMatrix(quantity, sbnNomnom) = tbOrders!nomnom
-'            Grid.TextMatrix(quantity, sbnNomnam) = tbOrders!Name
-'            Grid.TextMatrix(quantity, sbnEdizm) = tbOrders!ed_izmer2
-'            Grid.TextMatrix(quantity, sbnPrice) = tbOrders!cost
-'            Grid.TextMatrix(quantity, sbnSaled) = tbOrders!shipped
-'            Grid.TextMatrix(quantity, sbnSumma) = tbOrders!sm
-'            If Not IsNull(tbOrders!Name) Then Grid.TextMatrix(quantity, zdAgent) = tbOrders!Name
-            
             Grid.AddItem Chr(9) & tbOrders!nomnom _
                 & Chr(9) & tbOrders!Name _
             & Chr(9) & tbOrders!ed_izmer2 _
-            & Chr(9) & tbOrders!cost _
+            & Chr(9) & Format(tbOrders!cost, "## ###.00") _
             & Chr(9) & tbOrders!shipped _
-            & Chr(9) & tbOrders!sm
+            & Chr(9) & Format(tbOrders!sm, "## ###.00")
             
             tbOrders.MoveNext
         Wend

@@ -2104,8 +2104,9 @@ Grid.CellForeColor = vbBlack
 Grid.CellBackColor = vbWhite
   If MsgBox("После нажатия <Да> данный элемент будет удален из Справочника", _
   vbDefaultButton2 Or vbYesNo, "Удалить '" & gNomNom & "'. Вы уверены?") = vbYes Then
-    sql = "delete from  From sGuideNomenk WHERE nomNom ='" & gNomNom & "'"
-'    MsgBox sql
+    sql = "delete from  sGuideNomenk WHERE nomNom ='" & gNomNom & "'"
+Debug.Print sql
+
     myExecute "##delete nomnom", sql
     quantity = quantity - 1
     If quantity = 0 Then
