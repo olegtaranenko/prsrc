@@ -1314,7 +1314,7 @@ If Not tbKlass.BOF Then
     key = "k" & tbKlass!klassid
     pKey = "k" & tbKlass!parentKlassId
     On Error GoTo ERR1 ' назначить второй проход
-    Set Node = tv.Nodes.Add(pKey, tvwChild, key, tbKlass!klassName)
+    Set Node = tv.Nodes.Add(pKey, tvwChild, key, tbKlass!klassName & "-" & tbKlass!klassid)
     On Error GoTo 0
     Node.Sorted = True
 NXT1:
@@ -2102,19 +2102,11 @@ End Sub
 Private Sub mnDel2_Click()
 Grid.CellForeColor = vbBlack
 Grid.CellBackColor = vbWhite
-'mousRight = 0
   If MsgBox("После нажатия <Да> данный элемент будет удален из Справочника", _
-  vbDefaultButton2 Or vbYesNo, "Удалить '" & gNomNom & "'. Вы уверены?") _
-  = vbYes Then
-    sql = "SELECT sGuideNomenk.nomNom  From sGuideNomenk " & _
-    "WHERE (((sGuideNomenk.nomNom)='" & gNomNom & "'));"
+  vbDefaultButton2 Or vbYesNo, "Удалить '" & gNomNom & "'. Вы уверены?") = vbYes Then
+    sql = "delete from  From sGuideNomenk WHERE nomNom ='" & gNomNom & "'"
 '    MsgBox sql
-    Set tbNomenk = myOpenRecordSet("##439", sql, dbOpenDynaset)
-    If tbNomenk Is Nothing Then Exit Sub
-    On Error GoTo ERR1
-    If Not tbNomenk.BOF Then tbNomenk.Delete
-    On Error GoTo 0
-    
+    myExecute "##delete nomnom", sql
     quantity = quantity - 1
     If quantity = 0 Then
         clearGridRow Grid, mousRow
@@ -2122,21 +2114,15 @@ Grid.CellBackColor = vbWhite
         Grid.RemoveItem mousRow
     End If
   End If
-' tbNomenk.Close
-'  Grid.SetFocus
 GoTo EN1
 
 ERR1:
 If errorCodAndMsg("##164", -198) Then
-'If Err = 3200 Then
     MsgBox "Номенклатура задействована либо в каком-то документе либо " & _
     "в каком-то изделии из Cправочника изделий, поэтому сначала " & _
     "необходимо удалить ее оттуда.", , "Позиция '" & gNomNom & _
     "' задействована!"
-'Else
-'    MsgBox Error, , "Ошибка 164-" & Err & ":  " '##164
 End If
-tbNomenk.Close
 EN1:
 Grid_EnterCell
 On Error Resume Next
@@ -2486,7 +2472,7 @@ If KeyCode = vbKeyReturn Then
         On Error Resume Next 'некоторые ячейки м.б.пустыми
         tbNomenk!nomName = Grid.TextMatrix(mousRow, nkName)
         tbNomenk!ed_izmer = Grid.TextMatrix(mousRow, nkEdIzm)
-        tbNomenk!ed_Izmer2 = Grid.TextMatrix(mousRow, nkEdIzm2)
+        tbNomenk!ed_izmer2 = Grid.TextMatrix(mousRow, nkEdIzm2)
         tbNomenk!perList = Grid.TextMatrix(mousRow, nkPerList)
         tbNomenk!Pack = Grid.TextMatrix(mousRow, nkPack)
         tbNomenk!cost = Grid.TextMatrix(mousRow, nkCena)
@@ -2760,7 +2746,7 @@ If Not tbNomenk.BOF Then
     gain = gainC
     If ((chPerList.Visible And chPerList.value = 1) Or Regim <> "asOstat") And Regim <> "" Then
         gain = gain / tbNomenk!perList 'оборотные всегда выдаем в целых
-        Grid.TextMatrix(quantity + 1, nkEdIzm) = tbNomenk!ed_Izmer2
+        Grid.TextMatrix(quantity + 1, nkEdIzm) = tbNomenk!ed_izmer2
     Else
         Grid.TextMatrix(quantity + 1, nkEdIzm) = tbNomenk!ed_izmer
     End If
@@ -2872,7 +2858,7 @@ If Not tbNomenk.BOF Then
             Grid.TextMatrix(quantity, nkCena2W) = Format(tbNomenk!CENA_W, "0.00")
 
 '            Grid.TextMatrix(quantity, nkSize) = tbNomenk!Size
-            Grid.TextMatrix(quantity, nkEdIzm2) = tbNomenk!ed_Izmer2
+            Grid.TextMatrix(quantity, nkEdIzm2) = tbNomenk!ed_izmer2
             If IsNumeric(tbNomenk!Pack) Then _
                 Grid.TextMatrix(quantity, nkPack) = tbNomenk!Pack
 

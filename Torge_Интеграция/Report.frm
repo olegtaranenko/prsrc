@@ -138,6 +138,14 @@ Const zdAgent = 4
 Const zdNazn = 5
 Const zdUtochn = 6
 
+    Const sbnNomnom = 1
+    Const sbnNomnam = 2
+    Const sbnEdizm = 3
+    Const sbnPrice = 4
+    Const sbnSaled = 5
+    Const sbnSumma = 6
+
+
 'otlaDwkdh - отладочная база, дебаг режим
 
 
@@ -222,6 +230,9 @@ ElseIf Regim = "bay" Then 'отчет Реализация - заказы продаж
     laHeader.Caption = "Детализация сумм " & param2 & "(Материалы) и " & _
     param1 & "(Реализация) по датам списания под заказы продаж."
     relizDetailBay
+ElseIf Regim = "bayNomenk" Then
+    laHeader.Caption = "Статистика по проданной номенклатуры " & param2
+    saleBayNomenk
 ElseIf Regim = "bayStatistic" Then 'отчет Реализация - заказы продаж
     laHeader.Caption = "Детализация сумм " & param2 & "(Материалы) и " & _
     param1 & "(Реализация) по фирмам."
@@ -248,6 +259,74 @@ If InStr(Regim, "tatistic") Then
 End If
 fitFormToGrid
 Me.MousePointer = flexDefault
+End Sub
+
+Sub saleBayNomenk()
+Dim restrictDate As Variant
+Dim historyStart As Variant
+Dim curentklassid As Integer
+
+    
+'select trim(n.cod + ' ' + nomname + ' ' + n.size) as name, s.shipped, s.sm, s.nomnom, o.ord, k.klassname, k.klassid, n.cost, n.ed_izmer2
+    Grid.FormatString = "|<Номер ном.|<Название|Ед изм.|>Цена за ед.|>Продано|>Сумма"
+    Grid.ColWidth(0) = 0
+    Grid.ColWidth(sbnNomnom) = 1000
+    Grid.ColWidth(sbnNomnam) = 4000
+    Grid.ColWidth(sbnEdizm) = 600
+    Grid.ColWidth(sbnPrice) = 700
+    Grid.ColWidth(sbnSaled) = 1000
+    Grid.ColWidth(sbnSumma) = 1000
+    'Grid.ColWidth() =
+
+    sql = "call wf_nomenk_saled (convert(date, '" & Pribil.StartDate & "'), convert(date, '" & Pribil.EndDate & "))"
+'    Debug.Print sql
+    
+    Set tbOrders = myOpenRecordSet("##vnt_det", sql, dbOpenForwardOnly)
+    If tbOrders Is Nothing Then Exit Sub
+    quantity = 0 ': sum = 0
+    curentklassid = 0
+    If Not tbOrders.BOF Then
+        While Not tbOrders.EOF
+            quantity = quantity + 1
+            If curentklassid <> tbOrders!klassid Then
+                Grid.AddItem ""
+                Grid.AddItem Chr(9) & Chr(9) & tbOrders!klassName
+                quantity = quantity + 2
+                Grid.row = Grid.Rows - 1
+                'quantity = quantity + 1
+                Grid.col = sbnNomnam
+                Grid.CellFontBold = True
+                curentklassid = tbOrders!klassid
+            End If
+            
+'            Grid.TextMatrix(quantity, sbnNomnom) = tbOrders!nomnom
+'            Grid.TextMatrix(quantity, sbnNomnam) = tbOrders!Name
+'            Grid.TextMatrix(quantity, sbnEdizm) = tbOrders!ed_izmer2
+'            Grid.TextMatrix(quantity, sbnPrice) = tbOrders!cost
+'            Grid.TextMatrix(quantity, sbnSaled) = tbOrders!shipped
+'            Grid.TextMatrix(quantity, sbnSumma) = tbOrders!sm
+'            If Not IsNull(tbOrders!Name) Then Grid.TextMatrix(quantity, zdAgent) = tbOrders!Name
+            
+            Grid.AddItem Chr(9) & tbOrders!nomnom _
+                & Chr(9) & tbOrders!Name _
+            & Chr(9) & tbOrders!ed_izmer2 _
+            & Chr(9) & tbOrders!cost _
+            & Chr(9) & tbOrders!shipped _
+            & Chr(9) & tbOrders!sm
+            
+            tbOrders.MoveNext
+        Wend
+    End If
+    tbOrders.Close
+
+'    Grid.row = quantity + 1
+'    Grid.col = rzMainCosts: Grid.CellFontBold = True
+'    Grid.col = rzAddCosts: Grid.CellFontBold = True
+'    Grid.TextMatrix(quantity + 1, rzMainCosts) = Format(param2, "## ##0.00")
+'    Grid.TextMatrix(quantity + 1, rzAddCosts) = Format(param1, "## ##0.00")
+
+    
+
 End Sub
 
 Sub ventureZatratDetail(ventureId As Integer, id_shiz As String)
@@ -296,6 +375,7 @@ Dim sum As Single
             tbOrders.MoveNext
         Wend
     End If
+    tbOrders.Close
     Grid.row = quantity + 1
     Grid.col = rzMainCosts: Grid.CellFontBold = True
     Grid.col = rzAddCosts: Grid.CellFontBold = True
@@ -347,6 +427,7 @@ Dim sum As Single
             tbOrders.MoveNext
         Wend
     End If
+    tbOrders.Close
     Grid.row = quantity + 1
     Grid.col = rzMainCosts: Grid.CellFontBold = True
     Grid.col = rzAddCosts: Grid.CellFontBold = True
@@ -399,6 +480,7 @@ Dim sum As Single
             tbOrders.MoveNext
         Wend
     End If
+    tbOrders.Close
 
 End Sub
 
@@ -809,7 +891,7 @@ If param1 = "b" Then
     tbNomenk!nomName & " " & tbNomenk!Size & _
     Chr(9) & "<--Номенклатура" & Chr(9) & _
     Round(tbNomenk!quant / tbNomenk!perList, 2) & Chr(9) & _
-    tbNomenk!ed_Izmer2 & Chr(9) & tbNomenk!cost & Chr(9) & _
+    tbNomenk!ed_izmer2 & Chr(9) & tbNomenk!cost & Chr(9) & _
     Round(tbNomenk!quant * tbNomenk!cost / tbNomenk!perList, 2) & Chr(9) & _
     Round(tbNomenk!quant * tbNomenk!intQuant / tbNomenk!perList, 2)
     tbNomenk.MoveNext
@@ -834,7 +916,7 @@ If param1 = "m" Then
     Grid.AddItem Chr(9) & tbNomenk!nomnom & Chr(9) & tbNomenk!cod & " " & _
     tbNomenk!nomName & " " & tbNomenk!Size & _
     Chr(9) & Chr(9) & Round(tbNomenk!quant / tbNomenk!perList, 2) & Chr(9) & _
-    tbNomenk!ed_Izmer2 & Chr(9) & tbNomenk!cost & Chr(9) & _
+    tbNomenk!ed_izmer2 & Chr(9) & tbNomenk!cost & Chr(9) & _
     Round(tbNomenk!quant * tbNomenk!cost / tbNomenk!perList, 2)
 '    Grid.col = 2: Grid.CellFontBold = True
 '    Grid.AddItem ""

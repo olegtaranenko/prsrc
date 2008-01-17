@@ -893,9 +893,23 @@ Attribute VB_Exposed = False
 Option Explicit
 Public pDateWhere As String, nDateWhere As String, uDateWhere As String
 Public bDateWhere As String, mDateWhere As String, costsDateWhere As String
+Public StartDate As String, EndDate As String
 Public statistic As String, ventureId As String
 
 Dim begDateHron As Date ' Начало ведения хронологии
+
+Private Sub ckSaleNomenk_Click()
+    If ckStatistic.value = 1 Then
+        ckStatistic.value = 0
+    End If
+
+End Sub
+
+Private Sub ckStatistic_Click()
+    If ckSaleNomenk.value = 1 Then
+        ckSaleNomenk.value = 0
+    End If
+End Sub
 
 Private Sub cmDetail_Click()
 Me.MousePointer = flexHourglass
@@ -988,6 +1002,19 @@ Me.MousePointer = flexHourglass
 
 ReDim ventureMat(2)
 ReDim ventureRealiz(2)
+
+
+If isDateTbox(tbStartDate) Then
+    StartDate = Format(tmpDate, "yyyy-mm-dd")
+Else
+    StartDate = "null"
+End If
+
+If isDateTbox(tbEndDate) Then
+    EndDate = Format(tmpDate, "yyyy-mm-dd") & " 11:59:59 PM'"
+Else
+    EndDate = "null"
+End If
 
 strWhere = getWhereByDateBoxes(Me, "outDate", begDateHron) ' между
 If strWhere = "error" Then GoTo EN1
@@ -1113,7 +1140,7 @@ sql = "SELECT Sum(sDMC.quant*sDMCrez.intQuant/n.perList) AS bSum " _
     & " group by isnull(BayOrders.ventureid, 1)"
 
 
-'Debug.Print sql
+Debug.Print sql
 
 s = 0
 Set tbNomenk = myOpenRecordSet("##431", sql, dbOpenForwardOnly)
@@ -1313,7 +1340,11 @@ Report.param2 = laMaterials2.Caption
 If ckStatistic.value = 1 Then
     Report.Regim = "bayStatistic"
 Else
-    Report.Regim = "bay"
+    If ckSaleNomenk.value = 1 Then
+        Report.Regim = "bayNomenk"
+    Else
+        Report.Regim = "bay"
+    End If
 End If
 Report.Show vbModal
 Me.MousePointer = flexDefault
