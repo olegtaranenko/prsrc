@@ -1,5 +1,424 @@
 
 
+if exists (select 1 from sysprocedure where proc_name = 'wf_breadcrump') then
+	drop procedure wf_breadcrump;
+end if;
+
+
+if exists (select 1 from sysprocedure where proc_name = 'wf_breadcrump_klass') then
+	drop procedure wf_breadcrump_klass;
+end if;
+
+create function wf_breadcrump_klass(
+	  p_id integer
+	, p_table_name varchar(64) default null
+	, p_pk_column_name varchar(64) default null
+	, p_text_column_name varchar(64) default null
+) returns varchar(256)
+begin
+	declare v_parentid integer;
+	declare v_parent_name varchar(64);
+
+	if isnull(p_id, 0) = 0 then	
+		set wf_breadcrump_klass = null;
+		return;
+	end if;
+
+	select klassname, parentklassid into wf_breadcrump_klass, v_parentid from sguideklass where klassid = p_id;
+	if isnull(v_parentid, 0) != 0 then
+			set wf_breadcrump_klass =  wf_breadcrump_klass(v_parentid, p_table_name, p_pk_column_name, p_text_column_name) + ' / ' + wf_breadcrump_klass;
+	end if;
+
+end;
+
+
+----------------------------------------------------------------------
+-- ƒетализаци€ по проданной номенклатуере с сортировкой по дереву
+----------------------------------------------------------------------
+
+
+if exists (select 1 from sysprocedure where proc_name = 'wf_sort_klasses') then
+	drop procedure wf_sort_klasses;
+end if;
+
+
+CREATE procedure wf_sort_klasses(
+)
+begin
+	declare v_lvl integer;
+	declare v_prev_count integer;
+	declare v_cur_pos integer;
+	declare v_exit    integer;
+	declare v_prev_id integer;
+--create variable @v_lvl        integer;
+--create variable @v_prev_count integer;
+--create variable @v_cur_pos    integer;
+--create variable @v_exit       integer;
+--create variable @v_prev_id    integer;
+
+
+
+	set v_lvl = 1;
+	set v_prev_count = 0;
+	set v_cur_pos = 1;
+
+create table #klass_childs (parent integer, child_count integer, lvl integer);
+--create table #klass_ordered (id integer, ord integer);
+
+	insert into #klass_childs 
+	select parentklassid, count(*), v_lvl from sguideklass 
+	where parentklassid != 0
+	group by parentklassid;
+
+		
+	branch: loop
+		insert into #klass_childs
+			select c.parentklassid, sum(child_count), v_lvl + 1
+			from sguideklass c
+			join #klass_childs p on c.klassid = p.parent
+            where lvl = v_lvl and parentklassid != 0
+			group by c.parentklassid;
+
+		if @@rowcount = 0 then
+			set v_lvl = v_lvl + 1;
+			leave branch;
+		end if;
+		set v_lvl = v_lvl + 1;
+	end loop;
+
+
+	insert into #klass_childs
+		select parent, sum(child_count), v_lvl + 1
+		from #klass_childs p 
+		group by parent;
+	-- на уровне v_lvl + 1 хран€тс€ полное количество детей включа€ всех потомков.
+
+
+
+	-- нумеруем первый р€д после корн€.
+	for schich0 as s0 dynamic scroll cursor for
+		select klassid as r_klassid, klassname as r_klassname, isnull(p.child_count, 0) as r_child_count
+        from sguideklass k
+        left join #klass_childs p on p.parent = k.klassid and p.lvl = v_lvl + 1
+        where parentklassid = 0 and klassid != 0 order by klassname
+	do
+    
+        insert into #klass_ordered (id, ord) select r_klassid, v_cur_pos;
+        --message '[', r_klassid, '] ', r_klassname, ': ', v_cur_pos to client;
+        set v_prev_count = r_child_count;
+        set v_cur_pos = v_cur_pos + 1 + v_prev_count;
+
+    end for;
+
+
+	-- нумеруем оставшиес€ р€ды (или уровни).
+	branch2: loop
+        set v_exit = 0;
+
+        set v_prev_count = 0;
+        set v_prev_id = 0;
+		for schich1 as s1 dynamic scroll cursor for
+            select klassid as r_klassid, klassname as r_klassname, parentklassid as r_parentid, ord as r_ord, isnull(p.child_count, 0) as r_childs
+            from sguideklass k
+            join #klass_ordered o on o.id = k.parentklassid
+            left join #klass_childs p on k.klassid = p.parent and p.lvl = v_lvl + 1
+            where not exists (select 1 from #klass_ordered o1 where o1.id = k.klassid)
+            order by parentklassid, klassname
+		do
+			if r_parentid != v_prev_id then
+		        set v_cur_pos = r_ord + 1;
+--                message v_cur_pos , ': ', r_childs, ': ', r_ord to client;
+		    else 
+		    	set v_cur_pos = v_cur_pos + 1 + v_prev_count;
+		    end if;
+    
+            insert into #klass_ordered (id, ord) select r_klassid, v_cur_pos;
+            set v_exit = 1;
+            message '[', r_klassid, '] ', r_klassname, '-', r_parentid, ': ', v_cur_pos, ': ', r_ord to client;
+            set v_prev_id = r_parentid;
+            set v_prev_count = r_childs;
+
+    
+        end for;
+        if v_exit = 0 then 
+        	leave branch2;
+        end if;
+	end loop;
+
+	
+--	select * from #klass_childs where lvl = v_lvl + 1;
+--	select * from #klass_ordered order by ord; 
+
+--	drop table #klass_ordered;
+	drop table #klass_childs;
+
+end;
+
+
+
+if exists (select 1 from sysprocedure where proc_name = 'wf_nomenk_saled') then
+	drop procedure wf_nomenk_saled;
+end if;
+
+CREATE procedure wf_nomenk_saled(
+	  p_start date default null
+	, p_end date default null
+)
+begin
+	create table #nomenk_saled (nomnom varchar(20), shipped double, sm double);
+	create table #klass_ordered (id integer, ord integer);
+
+	call wf_sort_klasses;
+
+
+insert into #nomenk_saled
+select i.nomnom, sum(round(i.quant / n.perList, 2)) AS shipped, round(sum(r.intQuant * i.quant/ n.perlist), 2) as sm
+from BayOrders o 
+join sDocs d on d.numDoc = o.numOrder 
+join sDMC i on d.numExt = i.numExt and d.numDoc = i.numDoc
+join sDMCrez r on i.nomNom = r.nomNom and o.numOrder = r.numDoc
+join sGuideNomenk n ON n.nomNom = i.nomNom and r.nomNom = i.nomNom 
+join bayguidefirms f on f.firmid = o.firmid
+WHERE xDate between isnull(p_start, '20010101') and isnull(p_end, '21001231')
+group by i.nomnom;
+
+
+select '' as outtype, trim(n.cod + ' ' + nomname + ' ' + n.size) as name, s.shipped, s.sm, s.nomnom, o.ord, k.klassid, wf_breadcrump_klass(k.klassid) as klassname, n.cost, n.ed_izmer2
+from #nomenk_saled s
+join sguidenomenk n on n.nomnom = s.nomnom
+join #klass_ordered o on o.id = n.klassid
+join sguideklass k on k.klassid = n.klassid
+order by o.ord, 1
+;
+
+	drop table #nomenk_saled;
+	drop table #klass_ordered;
+
+end;
+
+--=============================================================================
+
+
+
+
+if exists (select 1 from sysprocedure where proc_name = 'wf_sort_series') then
+	drop procedure wf_sort_series;
+end if;
+
+
+CREATE procedure wf_sort_series(
+)
+begin
+	declare v_lvl integer;
+	declare v_prev_count integer;
+	declare v_cur_pos integer;
+	declare v_exit    integer;
+	declare v_prev_id integer;
+--create variable @v_lvl        integer;
+--create variable @v_prev_count integer;
+--create variable @v_cur_pos    integer;
+--create variable @v_exit       integer;
+--create variable @v_prev_id    integer;
+
+
+
+	set v_lvl = 1;
+	set v_prev_count = 0;
+	set v_cur_pos = 1;
+
+create table #seria_childs (parent integer, child_count integer, lvl integer);
+--create table #seria_ordered (id integer, ord integer);
+
+	insert into #seria_childs 
+	select parentseriaid, count(*), v_lvl from sguideseries 
+	where parentseriaid != 0
+	group by parentseriaid;
+
+		
+	branch: loop
+		insert into #seria_childs
+			select c.parentseriaid, sum(child_count), v_lvl + 1
+			from sguideseries c
+			join #seria_childs p on c.seriaid = p.parent
+            where lvl = v_lvl and parentseriaid != 0
+			group by c.parentseriaid;
+
+		if @@rowcount = 0 then
+			set v_lvl = v_lvl + 1;
+			leave branch;
+		end if;
+		set v_lvl = v_lvl + 1;
+	end loop;
+
+
+	insert into #seria_childs
+		select parent, sum(child_count), v_lvl + 1
+		from #seria_childs p 
+		group by parent;
+	-- на уровне v_lvl + 1 хран€тс€ полное количество детей включа€ всех потомков.
+
+
+
+	-- нумеруем первый р€д после корн€.
+	for schich0 as s0 dynamic scroll cursor for
+		select seriaid as r_seriaid, serianame as r_serianame, isnull(p.child_count, 0) as r_child_count
+        from sguideseries k
+        left join #seria_childs p on p.parent = k.seriaid and p.lvl = v_lvl + 1
+        where parentseriaid = 0 and seriaid != 0 order by serianame
+	do
+    
+        insert into #seria_ordered (id, ord) select r_seriaid, v_cur_pos;
+        --message '[', r_seriaid, '] ', r_serianame, ': ', v_cur_pos to client;
+        set v_prev_count = r_child_count;
+        set v_cur_pos = v_cur_pos + 1 + v_prev_count;
+
+    end for;
+
+
+	-- нумеруем оставшиес€ р€ды (или уровни).
+	branch2: loop
+        set v_exit = 0;
+
+        set v_prev_count = 0;
+        set v_prev_id = 0;
+		for schich1 as s1 dynamic scroll cursor for
+            select seriaid as r_seriaid, serianame as r_serianame, parentseriaid as r_parentid, ord as r_ord, isnull(p.child_count, 0) as r_childs
+            from sguideseries k
+            join #seria_ordered o on o.id = k.parentseriaid
+            left join #seria_childs p on k.seriaid = p.parent and p.lvl = v_lvl + 1
+            where not exists (select 1 from #seria_ordered o1 where o1.id = k.seriaid)
+            order by parentseriaid, serianame
+		do
+			if r_parentid != v_prev_id then
+		        set v_cur_pos = r_ord + 1;
+--                message v_cur_pos , ': ', r_childs, ': ', r_ord to client;
+		    else 
+		    	set v_cur_pos = v_cur_pos + 1 + v_prev_count;
+		    end if;
+    
+            insert into #seria_ordered (id, ord) select r_seriaid, v_cur_pos;
+            set v_exit = 1;
+            message '[', r_seriaid, '] ', r_serianame, '-', r_parentid, ': ', v_cur_pos, ': ', r_ord to client;
+            set v_prev_id = r_parentid;
+            set v_prev_count = r_childs;
+
+    
+        end for;
+        if v_exit = 0 then 
+        	leave branch2;
+        end if;
+	end loop;
+
+	
+--	select * from #seria_childs where lvl = v_lvl + 1;
+--	select * from #seria_ordered order by ord; 
+
+--	drop table #seria_ordered;
+	drop table #seria_childs;
+
+end;
+
+
+
+
+
+if exists (select 1 from sysprocedure where proc_name = 'wf_nomenk_reliz') then
+	drop procedure wf_nomenk_reliz;
+end if;
+
+CREATE procedure wf_nomenk_reliz(
+	  p_start date default null
+	, p_end date default null
+)
+begin
+	create table #nomenk_reliz (nomnom varchar(20), shipped double, sm double);
+	create table #izdelia_reliz (prid integer, shipped double, sm double);
+	create table #klass_ordered (id integer, ord integer);
+	create table #seria_ordered (id integer, ord integer);
+
+	call wf_sort_series;
+	call wf_sort_klasses;
+
+
+insert into #izdelia_reliz
+select 
+	po.prId, sum(po.quant) as shipped, sum(p.cenaEd * po.quant) as sum
+from xpredmetybyizdeliaout po
+join xpredmetybyizdelia p on p.numorder = po.numorder and p.prid = po.prid and p.prext = po.prext
+WHERE outDate between isnull(p_start, '20010101') and isnull(p_end, '21001231')
+group by po.prid
+;
+
+
+insert into #nomenk_reliz
+select po.nomnom, sum(round(po.quant, 2)) as shipped, sum(round(p.cenaEd, 2) * round(po.quant, 2)) as sum
+from xpredmetybynomenkout po
+join xpredmetybynomenk p on p.numorder = po.numorder and p.nomnom = po.nomnom
+join sguidenomenk n on n.nomnom = po.nomnom and n.nomnom = p.nomnom
+WHERE outDate between isnull(p_start, '20010101') and isnull(p_end, '21001231')
+group by po.nomnom
+;
+
+
+
+select '»здели€' as outtype, o.ord, trim(g.prDescript + ' ' + g.prsize) as name
+	, shipped, sm, convert(varchar(20), r.prid) as id, g.prname as nomnom, g.prSeriaId as klassid
+	, wf_breadcrump_seria(g.prseriaid) as klassname, 'шт.' as ed_izmer2
+	, 0 as cost
+from #izdelia_reliz r
+join sguideproducts g on g.prid = r.prid
+join #seria_ordered o on o.id = g.prSeriaId
+	union
+select 'Ќоменклатура' as outtype, o.ord, trim(n.cod + ' ' + nomname + ' ' + n.size) as name
+	, s.shipped, s.sm, s.nomnom as id, s.nomnom, k.klassid
+	, wf_breadcrump_klass(k.klassid) as klassname, n.ed_izmer2
+	, n.cost
+from #nomenk_reliz s
+join sguidenomenk n on n.nomnom = s.nomnom
+join #klass_ordered o on o.id = n.klassid
+join sguideklass k on k.klassid = n.klassid
+order by 1, 2, 3
+;
+
+
+	drop table #nomenk_reliz;
+	drop table #izdelia_reliz;
+	drop table #klass_ordered;
+	drop table #seria_ordered;
+
+end;
+
+
+
+
+if exists (select 1 from sysprocedure where proc_name = 'wf_breadcrump_seria') then
+	drop procedure wf_breadcrump_seria;
+end if;
+
+create function wf_breadcrump_seria(
+	  p_id integer
+	, p_table_name varchar(64) default null
+	, p_pk_column_name varchar(64) default null
+	, p_text_column_name varchar(64) default null
+) returns varchar(256)
+begin
+	declare v_parentid integer;
+	declare v_parent_name varchar(64);
+
+	if isnull(p_id, 0) = 0 then	
+		set wf_breadcrump_seria = null;
+		return;
+	end if;
+
+	select serianame, parentseriaid into wf_breadcrump_seria, v_parentid from sguideseries where seriaid = p_id;
+	if isnull(v_parentid, 0) != 0 then
+			set wf_breadcrump_seria =  wf_breadcrump_seria(v_parentid, p_table_name, p_pk_column_name, p_text_column_name) + ' / ' + wf_breadcrump_seria;
+	end if;
+
+end;
+
+
+
 ----------------------------------------------------------------------
 --------------             sdmc      ------------------------
 ----------------------------------------------------------------------

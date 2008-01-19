@@ -712,8 +712,8 @@ sqlRowDetail(rowid) = "select (if mark = 'Used' then zakup else nowOstatki endif
 
 rowFormatting(rowid) = "|<Номер ном.|<Название|Ед изм.|>Стоим. ед.|>Сумма"
 byErrSqlGetValues "##387", sql, s
-Grid.TextMatrix(1, 3) = Format(Round(-s, 2), "## ##0.00")
-sumK = sumK - s
+Grid.TextMatrix(1, 3) = Format(Round(s, 2), "## ##0.00")
+sumK = sumK + s
 rowid = rowid + 1
 
 
