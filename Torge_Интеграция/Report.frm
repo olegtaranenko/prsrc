@@ -108,6 +108,9 @@ Public mousRow As Long
 Public mousCol As Long
 Dim quantity As Long
 Dim Cena()  As Single
+Dim parentReport As Report
+
+
 
 Const rrNumOrder = 1
 Const rrDate = 2
@@ -138,12 +141,25 @@ Const zdAgent = 4
 Const zdNazn = 5
 Const zdUtochn = 6
 
-    Const sbnNomnom = 1
-    Const sbnNomnam = 2
-    Const sbnEdizm = 3
-    Const sbnPrice = 4
-    Const sbnSaled = 5
-    Const sbnSumma = 6
+Const sbnNomnom = 1
+Const sbnNomnam = 2
+Const sbnEdizm = 3
+Const sbnPrice = 4
+Const sbnSaled = 5
+Const sbnSumma = 6
+
+Const riMaxSklad = 1
+Const riFactSklad = 2
+Const riIncomplete = 3
+Const riGoodsInWay = 4
+Const riGoodsDebts = 5
+Const riKonto = 6
+Const riCash = 7
+Const riCommonDebts = 8
+Const riDebitor = 9
+Const riKreditor = 10
+Const riTotals = 11
+
 
 
 'otlaDwkdh - отладочная база, дебаг режим
@@ -208,6 +224,9 @@ ElseIf Regim = "subDetailMat" Then
 ElseIf Regim = "aReport" Then
     laHeader.Caption = "Отчет 'А' на " & Format(Now(), "dd.mm.yy")
     aReport
+ElseIf Regim = "aReportDetail" Then
+    laHeader.Caption = "Детализация строки """ & param3 & """ из Отчета 'А' "
+    aReportDetail
 ElseIf Regim = "whoRezerved" Then
     whoRezerved
 ElseIf Regim = "" Then 'отчет Реализация - заказы производства
@@ -307,9 +326,9 @@ Dim curentklassid As Integer
             Grid.AddItem Chr(9) & tbOrders!nomnom _
                 & Chr(9) & tbOrders!Name _
             & Chr(9) & tbOrders!ed_izmer2 _
-            & Chr(9) & Format(tbOrders!cost, "## ###.00") _
+            & Chr(9) & Format(tbOrders!cost, "## ##0.00") _
             & Chr(9) & tbOrders!shipped _
-            & Chr(9) & Format(tbOrders!sm, "## ###.00")
+            & Chr(9) & Format(tbOrders!sm, "## ##0.00")
             
             tbOrders.MoveNext
         Wend
@@ -485,7 +504,7 @@ End Sub
 Sub whoRezerved()
 Dim v, s As Single, ed2 As String, per As Single, sum As Single
 ', obr As String
-sql = "SELECT  ed_Izmer2, perList From sGuideNomenk WHERE (((nomNom)='" & gNomNom & "'));"
+sql = "SELECT  ed_Izmer2, perList From sGuideNomenk WHERE nomNom = '" & gNomNom & "'"
 'MsgBox sql
 If Not byErrSqlGetValues("##349", sql, ed2, per) Then Exit Sub
 
@@ -626,74 +645,149 @@ Me.MousePointer = flexDefault
 End Sub
 
 
+Sub aReportDetail()
+Dim p_rowid As Integer, i As Integer
+Dim colHeaderText As String
+    p_rowid = CInt(param1)
+    sql = sqlRowDetail(p_rowid)
+    Grid.FormatString = rowFormatting(p_rowid) ' "|<Номер ном.|<Название|Ед изм.|>Стоим. ед.|>Сумма"
+    For i = 1 To Grid.Cols - 1
+        colHeaderText = Grid.TextMatrix(0, i)
+        If InStr(1, colHeaderText, "Номер ном.") Then Grid.ColWidth(i) = 800
+        If InStr(1, colHeaderText, "Название", vbTextCompare) Then Grid.ColWidth(i) = 2500
+        If InStr(1, colHeaderText, "Ед изм", vbTextCompare) Then Grid.ColWidth(i) = 400
+        If InStr(1, colHeaderText, "Стоим. ед.", vbTextCompare) Then Grid.ColWidth(i) = 700
+        If InStr(1, colHeaderText, "Сумма", vbTextCompare) Then Grid.ColWidth(i) = 700
+    Next i
+    
+    Debug.Print sql
+    Set tbOrders = myOpenRecordSet("##vnt_det", sql, dbOpenForwardOnly)
+    If tbOrders Is Nothing Then Exit Sub
+    If Not tbOrders.BOF Then
+        While Not tbOrders.EOF
+            quantity = quantity + 1
+            Grid.AddItem Chr(9) & tbOrders!nomnom _
+                & Chr(9) & tbOrders!Name _
+            & Chr(9) & tbOrders!ed_izmer2 _
+            & Chr(9) & Format(tbOrders!cost, "## ##0.00") _
+            & Chr(9) & Format(tbOrders!sum, "## ##0.00")
+            
+            tbOrders.MoveNext
+        Wend
+    End If
+    tbOrders.Close
+
+End Sub
 
 
 Sub aReport()
 Dim s As Single, k As Single, d As Single, sumD As Single, sumK As Single
 Dim s2 As Single
+Dim rowid As Integer
 
-Grid.FormatString = "||ПЛЮС|МИНУС|"
+ReDim Preserve sqlRowDetail(11)
+ReDim Preserve aRowText(11)
+ReDim rowFormatting(11)
+
+Grid.FormatString = "||>ПЛЮС|>МИНУС|"
 Grid.ColWidth(0) = 0
 Grid.ColWidth(1) = 4000
 Grid.ColWidth(2) = 1060
 Grid.ColWidth(3) = 1060
 Grid.ColWidth(4) = 1200
 'сделать исправления в переводом цен на Целые кол-ва ном-р !!!
+
+
+'--------------------
 sumD = 0: sumK = 0
-Grid.TextMatrix(1, 1) = "Склад - максимальный запас"
-sql = "SELECT " _
-    & " Sum((if mark='Used' then Zakup else nowOstatki endif) * cost/perList) AS sum " _
-    & "FROM sGuideNomenk "
-'Debug.Print sql
+rowid = 1
+aRowText(rowid) = "Склад: максимальный запас"
+Grid.TextMatrix(1, 1) = aRowText(rowid)
+sql = "SELECT Sum((if mark='Used' then Zakup else nowOstatki endif) * cost/perList) AS sum FROM sGuideNomenk"
+    
+sqlRowDetail(rowid) = "select (if mark = 'Used' then zakup else nowOstatki endif) * cost/ perlist as sum, nomnom as text " _
+    & ", trim(cod + ' ' + nomname + ' ' + size) as name, nomnom, ed_izmer, ed_izmer2, cost" _
+    & " from sguidenomenk" _
+    & " order by name "
 
+rowFormatting(rowid) = "|<Номер ном.|<Название|Ед изм.|>Стоим. ед.|>Сумма"
 byErrSqlGetValues "##387", sql, s
-Grid.TextMatrix(1, 3) = Round(-s, 2)
+Grid.TextMatrix(1, 3) = Format(Round(-s, 2), "## ##0.00")
 sumK = sumK - s
+rowid = rowid + 1
 
+
+'--------------------
 sql = "SELECT Sum(cost * nowOstatki / perList) AS sum FROM sGuideNomenk;"
+'sqlRowDetail(rowid) = "select cost * nowOstatki / perlist as sum, nomnom as text from sguidenomenk"
 byErrSqlGetValues "##388", sql, s
-Grid.AddItem Chr(9) & "Склад -фактический запас" & Chr(9) & Round(s, 2)
+aRowText(rowid) = "Склад: фактический запас"
+rowFormatting(rowid) = rowFormatting(rowid - 1)
+Grid.AddItem rowid & Chr(9) & aRowText(rowid) & Chr(9) & Format(Round(s, 2), "## ##0.00")
 sumD = sumD + s
+rowid = rowid + 1
 
 
+'--------------------
 ' сумма списанной и еще неотгруженной ном-ры по незакрытим заказам !!!
 ' здесь не м.б. заказов Продаж т.к. у них отгрузка - это списание
 sql = "SELECT Sum(sDMC.quant*sGuideNomenk.cost / sGuideNomenk.perList) AS sum " & _
-"FROM Orders INNER JOIN (sGuideNomenk " _
-& "INNER JOIN sDMC ON " & _
-"sGuideNomenk.nomNom = sDMC.nomNom) ON Orders.numOrder = sDMC.numDoc " & _
-"WHERE StatusId  < 6"
+    "FROM Orders INNER JOIN (sGuideNomenk " _
+    & "INNER JOIN sDMC ON " & _
+    "sGuideNomenk.nomNom = sDMC.nomNom) ON Orders.numOrder = sDMC.numDoc " & _
+    "WHERE StatusId  < 6"
 byErrSqlGetValues "##386", sql, s
 s = s - otgruzNomenk()
-Grid.AddItem Chr(9) & "Незавершенное производство" & Chr(9) & Round(s, 2)
+aRowText(rowid) = "Незавершенное производство"
+Grid.AddItem rowid & Chr(9) & aRowText(rowid) & Chr(9) & Format(Round(s, 2), "## ##0.00")
+rowid = rowid + 1
 sumD = sumD + s
 
+'--------------------
 s = Round(schetOstat("60"), 2)
 If s < 0 Then k = -s: s = 0 Else k = 0
-Grid.AddItem Chr(9) & "Товары в пути" & Chr(9) & s
-Grid.AddItem Chr(9) & "Долги по товарам" & Chr(9) & Chr(9) & k
+aRowText(rowid) = "Товары в пути"
+Grid.AddItem rowid & Chr(9) & aRowText(rowid) & Chr(9) & Format(s, "## ##0.00")
+rowid = rowid + 1
+aRowText(rowid) = "Долги по товарам"
+Grid.AddItem rowid & Chr(9) & aRowText(rowid) & Chr(9) & Chr(9) & Format(k, "## ##0.00")
+rowid = rowid + 1
 sumD = sumD + s
 sumK = sumK + k
 
-s = Round(schetOstat("51"), 2)
+'--------------------
+s = schetOstat("51", "03")
+s = s + schetOstat("51", "04")
+s = Round(s + schetOstat("51", "05"), 2)
 If s < 0 Then k = -s: s = 0 Else k = 0
-Grid.AddItem Chr(9) & "Р/счет" & Chr(9) & s & Chr(9) & k
+aRowText(rowid) = "Р/счет"
+Grid.AddItem rowid & Chr(9) & aRowText(rowid) & Chr(9) & Format(s, "## ##0.00") & Chr(9) & Format(k, "## ##0.00")
+rowid = rowid + 1
 sumD = sumD + s
 sumK = sumK + k
 
-s = Round(schetOstat("50"), 2)
+'--------------------
+s = schetOstat("50", "01")
+s = s + schetOstat("50", "02")
+s = Round(s + schetOstat("50", "05"), 2)
 If s < 0 Then k = -s: s = 0 Else k = 0
-Grid.AddItem Chr(9) & "Касса" & Chr(9) & s & Chr(9) & k
+aRowText(rowid) = "Касса"
+Grid.AddItem rowid & Chr(9) & aRowText(rowid) & Chr(9) & s & Chr(9) & Format(k, "## ##0.00")
+rowid = rowid + 1
 sumD = sumD + s
 sumK = sumK + k
 
+'--------------------
 s = Round(schetOstat("57"), 2)
 If s < 0 Then k = -s: s = 0 Else k = 0
-Grid.AddItem Chr(9) & "Долги" & Chr(9) & s & Chr(9) & k
+aRowText(rowid) = "Долги"
+Grid.AddItem rowid & Chr(9) & aRowText(rowid) & Chr(9) & Format(s, "## ##0.00") & Chr(9) & Format(k, "## ##0.00")
+rowid = rowid + 1
 sumD = sumD + s
 sumK = sumK + k
 
 
+'--------------------
 d = 0: k = 0
 sql = "SELECT Sum(if paid > shipped then shipped - paid endif ) AS k" _
         & "    , Sum(if paid < shipped then paid - shipped endif) AS d " _
@@ -721,11 +815,14 @@ sql = "SELECT Sum(shipped) AS Sum_shipped from bayOrders " & _
 "WHERE paid Is Null AND StatusId < 6"
 byErrSqlGetValues "##393", sql, s
 d = d + s
-Grid.AddItem Chr(9) & "Дебиторы" & Chr(9) & d
+aRowText(rowid) = "Дебиторы"
+Grid.AddItem rowid & Chr(9) & aRowText(rowid) & Chr(9) & Format(d, "## ##0.00")
+rowid = rowid + 1
 
+'--------------------
 s = 0
 sql = "SELECT Sum(paid) AS Sum_paid from Orders " & _
-"WHERE (((shipped) Is Null) AND ((StatusId)<6));"
+"WHERE shipped Is Null AND StatusId < 6"
 byErrSqlGetValues "##394", sql, s
 k = k + s
 s = 0
@@ -733,12 +830,17 @@ sql = "SELECT Sum(paid) AS Sum_paid from bayOrders " & _
 "WHERE shipped Is Null AND StatusId < 6"
 byErrSqlGetValues "##394", sql, s
 k = k + s
-Grid.AddItem Chr(9) & "Кредиторы" & Chr(9) & Chr(9) & k
+aRowText(rowid) = "Кредиторы"
+Grid.AddItem rowid & Chr(9) & aRowText(rowid) & Chr(9) & Chr(9) & Format(k, "## ##0.00")
+rowid = rowid + 1
 sumD = Round(sumD + d, 2)
 sumK = Round(sumK + k, 2)
 
-Grid.AddItem Chr(9) & "                                       ИТОГО:" & _
-Chr(9) & sumD & Chr(9) & sumK & Chr(9) & Round(sumD - sumK, 2)
+'--------------------
+aRowText(rowid) = "                                       ИТОГО:"
+Grid.AddItem rowid & Chr(9) & aRowText(rowid) & _
+Chr(9) & Format(sumD, "## ##0.00") & Chr(9) & Format(sumK, "## ##0.00") & Chr(9) & Format(Round(sumD - sumK, 2), "## ##0.00")
+rowid = rowid + 1
 Grid.row = Grid.Rows - 1
 Grid.col = 1: Grid.CellFontBold = True
 Grid.col = 2: Grid.CellFontBold = True
@@ -747,12 +849,17 @@ Grid.col = 4: Grid.CellFontBold = True
 
 End Sub
 
-Function schetOstat(schet As String)
+Function schetOstat(schet As String, Optional subSchet As String)
 Dim d As Single, k As Single
 
 schetOstat = 0
-sql = "SELECT Sum(begDebit) AS Sum_begDebit, Sum(begKredit) AS Sum_begKredit " & _
-"From yGuideSchets GROUP BY number HAVING number = '" & schet & "'"
+If subSchet <> "" Then
+    sql = "SELECT begDebit, begKredit From yGuideSchets" _
+        & " where number = '" & schet & "' and subnumber = '" & subSchet & "'"
+Else
+    sql = "SELECT Sum(begDebit) AS Sum_begDebit, Sum(begKredit) AS Sum_begKredit " _
+        & "From yGuideSchets GROUP BY number HAVING number = '" & schet & "'"
+End If
 
 If Not byErrSqlGetValues("W##389", sql, d, k) Then GoTo EN1 '$$4 в самом начале счета м.и не быть
 schetOstat = d - k
@@ -760,10 +867,17 @@ schetOstat = d - k
 d = 0: k = 0
 sql = "SELECT Sum(UEsumm) AS Sum_UEsumm from yBook " & _
 "WHERE Debit =" & schet & ""
+If subSchet <> "" Then
+    sql = sql & " and subdebit = '" & subSchet & "'"
+End If
+
 If Not byErrSqlGetValues("##390", sql, d) Then GoTo EN1
 
 sql = "SELECT Sum(UEsumm) AS Sum_UEsumm from yBook " & _
 "WHERE Kredit =" & schet & ""
+If subSchet <> "" Then
+    sql = sql & " and subkredit = '" & subSchet & "'"
+End If
 If Not byErrSqlGetValues("##391", sql, k) Then GoTo EN1
 schetOstat = schetOstat + d - k
 
@@ -1374,52 +1488,66 @@ mousRow = Grid.MouseRow
 End Sub
 
 Private Sub Grid_DblClick()
-Dim str As String
-
-If Grid.CellBackColor <> &H88FF88 Then Exit Sub
-'If Grid.CellBackColor <> &H88FF88 Or Regim <> "" Then Exit Sub
-
-gNzak = Grid.TextMatrix(mousRow, rrNumOrder)
-If Grid.TextMatrix(mousRow, 0) = "u" Then
-    MsgBox "Заказ №" & gNzak & " не содержит предметов, поэтому далее он не " & _
-    "детализируется!", , "Предупреждение"
-    Exit Sub
-End If
+    Dim str As String
+    Dim Report2 As New Report
     
-Dim Report2 As New Report
 
-Report2.param1 = Grid.TextMatrix(mousRow, 0) '
-Report2.param2 = Grid.TextMatrix(mousRow, rrDate)
-
-If Regim = "ventureZatrat" Then
-    Report2.Regim = "ventureZatratDetail"
-    If Grid.TextMatrix(mousRow, 2) <> "" Then
-        Report2.param2 = Grid.TextMatrix(mousRow, 2)
-    Else
-        Report2.param2 = Grid.TextMatrix(mousRow, 3)
+    If Grid.CellBackColor <> &H88FF88 Then Exit Sub
+    
+    gNzak = Grid.TextMatrix(mousRow, rrNumOrder)
+    If Grid.TextMatrix(mousRow, 0) = "u" Then
+        MsgBox "Заказ №" & gNzak & " не содержит предметов, поэтому далее он не " & _
+        "детализируется!", , "Предупреждение"
+        Exit Sub
     End If
-ElseIf Regim = "mat" Then
-
-    Report2.Regim = "subDetailMat"
-    str = Grid.TextMatrix(mousRow, rrReliz)
-    If MsgBox("Вы хотите посмотреть записи, которые образуют сумму " & str _
-    , vbDefaultButton2 Or vbYesNo, "Продолжить?") = vbNo Then Exit Sub
-Else
-    Report2.Regim = "subDetail"
-    str = Grid.TextMatrix(mousRow, rrMater) & " и " & Grid.TextMatrix(mousRow, rrReliz)
-    If MsgBox("Вы хотите посмотреть записи, которые образуют суммы " & str _
-    , vbDefaultButton2 Or vbYesNo, "Продолжить?") = vbNo Then Exit Sub
-End If
-Report2.param3 = str
-
-Report2.Show vbModal
+        
+    Report2.param1 = Grid.TextMatrix(mousRow, 0) '
+    Report2.param2 = Grid.TextMatrix(mousRow, rrDate)
+    
+    If Regim = "ventureZatrat" Then
+        Report2.Regim = "ventureZatratDetail"
+        If Grid.TextMatrix(mousRow, 2) <> "" Then
+            Report2.param2 = Grid.TextMatrix(mousRow, 2)
+        Else
+            Report2.param2 = Grid.TextMatrix(mousRow, 3)
+        End If
+    ElseIf Regim = "mat" Then
+    
+        Report2.Regim = "subDetailMat"
+        str = Grid.TextMatrix(mousRow, rrReliz)
+    '    If MsgBox("Вы хотите посмотреть записи, которые образуют сумму " & str _
+        , vbDefaultButton2 Or vbYesNo, "Продолжить?") = vbNo Then Exit Sub
+    ElseIf Regim = "aReport" Then
+        Report2.Regim = "aReportDetail"
+        str = aRowText(mousRow)
+        Report2.param1 = CStr(mousRow)
+        Report2.param2 = CStr(mousRow)
+        
+    Else
+        Report2.Regim = "subDetail"
+        str = Grid.TextMatrix(mousRow, rrMater) & " и " & Grid.TextMatrix(mousRow, rrReliz)
+    '    If MsgBox("Вы хотите посмотреть записи, которые образуют суммы " & str _
+        , vbDefaultButton2 Or vbYesNo, "Продолжить?") = vbNo Then Exit Sub
+    End If
+    Report2.param3 = str
+    
+    Report2.Show vbModal
 End Sub
 
+
 Private Sub Grid_EnterCell()
-If quantity = 0 Or Not (Regim = "" Or Regim = "bay" Or Regim = "mat" Or Regim = "venture" Or Regim = "ventureZatrat") Then Exit Sub
+If Not (Regim = "" _
+    Or Regim = "bay" Or Regim = "mat" _
+    Or Regim = "venture" Or Regim = "ventureZatrat" _
+    Or Regim = "aReport" _
+) Then Exit Sub
 mousRow = Grid.row
+If mousRow = 0 Then Exit Sub
 mousCol = Grid.col
-If (mousCol = rrReliz Or (mousCol = rrMater And Regim <> "mat") Or (Regim = "ventureZatrat" And Grid.col >= rzMainCosts)) _
+If (mousCol = rrReliz Or (mousCol = rrMater And Regim <> "mat") _
+    Or (Regim = "ventureZatrat" And Grid.col >= rzMainCosts) _
+    Or (Regim = "aReport" And sqlRowDetail(mousRow) <> "") _
+    ) _
 Then
    Grid.CellBackColor = &H88FF88
 Else

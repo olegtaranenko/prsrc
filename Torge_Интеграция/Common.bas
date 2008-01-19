@@ -73,6 +73,9 @@ Public NN() As String, QQ() As Single ' откатываемая номенклатура и кол-во
 Public QQ3() As Single, QQ2() As Single ' вспомагательое откатываемое кол-во
 Public bulkChangEnabled As Boolean
 Public Const otladColor = &H80C0FF
+Public sqlRowDetail() As String
+Public aRowText() As String
+Public rowFormatting() As String
 
 
 Sub CheckIntegration()
