@@ -14,6 +14,7 @@ Begin VB.Form Nomenklatura
    MinButton       =   0   'False
    ScaleHeight     =   6396
    ScaleWidth      =   11880
+   StartUpPosition =   1  'CenterOwner
    Visible         =   0   'False
    Begin VB.CommandButton cmExit 
       Caption         =   "Выход"
@@ -561,6 +562,8 @@ Dim nkCheckOst As Integer
 Dim nkDostup As Integer
 Dim nkPrihod As Integer
 Dim nkRashod As Integer
+Dim nkRashodBay As Integer
+Dim nkSaledProcent As Integer
 Dim nkEndOstat As Integer
 Dim nkCena As Integer
 Dim nkPrevCost As Integer
@@ -943,13 +946,15 @@ ElseIf Regim = "asOborot" Or Regim = "sourOborot" Then
     initCol nkCena, "Цена факт.", 660
     initCol nkBegOstat, "Нач.остатки", 675
     initCol nkPrihod, "Приход", 800
-    initCol nkRashod, "Расход", 800
+    initCol nkRashod, "Расход", 650
+    initCol nkRashodBay, "Продано", 650
 '    initCol nkEndOstat, "Кон.Остатки", 700  'парам-ры уст-ся в ckEndDate_Click
     initCol nkEndOstat, "", 700  'парам-ры уст-ся в ckEndDate_Click
     initCol nkDostup, "Д.остатки", 0 '
     initCol nkZapas, "Мин.запас", 0  '
     initCol nkZakup, "Макс.запас", 0 '
     initCol nkDeficit, "К.заявке", 0 '
+    initCol nkSaledProcent, "% Продаж", 500
     initCol nkMark, "Маркер", 0      '
     If Regim = "asOborot" Then initCol nkWeb, "Web", 450
     ckEndDate_Click ' меняет размер кол.nkName
@@ -2664,16 +2669,24 @@ gKlassId = Mid$(tv.SelectedItem.key, 2)
 ValueToTableField "##101", "'" & NewString & "'", "sGuideKlass", "klassName", "byKlassId"
 End Sub
 
+
+Function getBaySaledQty(p_nomnom As String, p_startDate As String, p_endDate As String) As Single
+    sql = "select wf_sale_nomenk_qty ('" & p_nomnom & "', convert(datetime, " & p_startDate & "), convert(datetime, " & p_endDate & "))"
+    byErrSqlGetValues "##getBaySaledQty", sql, getBaySaledQty
+End Function
+
+
 Sub loadKlassNomenk(Optional filtr As String = "")
 Dim il As Long, strWhere As String, befWhere  As String
 Dim insWhere As String, strN As String, i As Integer, s As Single
 Dim beg As Single, prih As Single, rash As Single, oldNow As Single
 
 ckUnUsed.value = 0
-
 If Regim = "asOborot" Or Regim = "sourOborot" Or Regim = "fltOborot" Then
-     befWhere = getWhereByDateBoxes(Me, "sDocs.xDate", begDate, "befo")
-     If befWhere = "error" Then Exit Sub
+    ' Set dates for parameters to stored procs (i.e.
+    setStartEndDates tbStartDate, tbEndDate
+    befWhere = getWhereByDateBoxes(Me, "sDocs.xDate", begDate, "befo")
+    If befWhere = "error" Then Exit Sub
 End If
 If Regim = "asOborot" Or Regim = "sourOborot" Or Regim = "fltOborot" Or _
 Regim = "asOstat" Or Regim = "obrez" Then
@@ -2696,19 +2709,19 @@ End If
 controlVisible True
 Grid.Visible = False
 If filtr = "obrez" Then
-    strWhere = "WHERE (((sGuideNomenk.perList)>1.0))"
+    strWhere = "WHERE sGuideNomenk.perList > 1.0 "
 ElseIf filtr <> "" Then
     If Left$(filtr, 1) = "F" Then
-        strWhere = "WHERE (((sGuideNomenk.nomNom) Like '*" & Mid$(filtr, 2) & "*'))"
+        strWhere = "WHERE sGuideNomenk.nomNom Like '*" & Mid$(filtr, 2) & "*'"
     ElseIf Left$(filtr, 1) = "G" Then
-        strWhere = "WHERE (((sGuideNomenk.nomName) Like '*" & Mid$(filtr, 2) & "*'))"
+        strWhere = "WHERE sGuideNomenk.nomName Like '*" & Mid$(filtr, 2) & "*'"
     End If
 ElseIf Regim = "checkCurOstat" Or Regim = "fltOborot" Then
     strWhere = ""
 ElseIf tv.SelectedItem.key = "all" Then
     If frmMode <> "" Then GoTo EN1
     strWhere = ""
-    sql = "SELECT sGuideNomenk.* From sGuideNomenk ;"
+    sql = "SELECT sGuideNomenk.* From sGuideNomenk"
     quantity = 0
 ElseIf Regim = "sourOborot" Then
     strWhere = "WHERE (((sGuideNomenk.sourId)=" & gKlassId & "))"
@@ -2716,16 +2729,16 @@ ElseIf gKlassType = "p" Then
     strWhere = "join sPriceBulkChange pbc on pbc.id = " & gKlassId _
     & " join sPriceHistory sph on sph.bulk_id = pbc.id and sGuideNomenk.nomnom = sph.nomnom "
 Else
-    strWhere = "WHERE (((sGuideNomenk.klassId)=" & gKlassId & "))"
+    strWhere = "WHERE sGuideNomenk.klassId = " & gKlassId
 End If
-sql = "SELECT ph.prev_cost, sGuideNomenk.*, sGuideFormuls.Formula, " & _
-"sGuideSource.sourceName, sGuideFormuls_1.Formula AS formulaW, ph.nomnom as priceChanged " & _
-"FROM sGuideFormuls AS sGuideFormuls_1 INNER JOIN sGuideNomenk ON sGuideFormuls_1.nomer = sGuideNomenk.formulaNomW " _
-& " INNER JOIN sGuideSource ON sGuideNomenk.sourId = sGuideSource.sourceId " _
-& " INNER JOIN sGuideFormuls ON sGuideNomenk.formulaNom = sGuideFormuls.nomer " _
-& " left join (select h.cost as prev_cost, h.nomnom from spricehistory h join (select max(change_date) as change_date, nomnom from spricehistory m group by nomnom) mx on mx.nomnom = h.nomnom and mx.change_date = h.change_date ) ph on ph.nomnom = sguidenomenk.nomnom  " _
-& strWhere & " ORDER BY sGuideNomenk.nomNom ;"
-'Debug.Print sql;
+sql = "SELECT ph.prev_cost, sGuideNomenk.*, sGuideFormuls.Formula, " _
+& vbCr & "sGuideSource.sourceName, sGuideFormuls_1.Formula AS formulaW, ph.nomnom as priceChanged " _
+& vbCr & "FROM sGuideFormuls AS sGuideFormuls_1 INNER JOIN sGuideNomenk ON sGuideFormuls_1.nomer = sGuideNomenk.formulaNomW " _
+& vbCr & " INNER JOIN sGuideSource ON sGuideNomenk.sourId = sGuideSource.sourceId " _
+& vbCr & " INNER JOIN sGuideFormuls ON sGuideNomenk.formulaNom = sGuideFormuls.nomer " _
+& vbCr & " left join (select h.cost as prev_cost, h.nomnom from spricehistory h join (select max(change_date) as change_date, nomnom from spricehistory m group by nomnom) mx on mx.nomnom = h.nomnom and mx.change_date = h.change_date ) ph on ph.nomnom = sguidenomenk.nomnom  " _
+& vbCr & strWhere & " ORDER BY sGuideNomenk.nomNom ;"
+Debug.Print sql;
 'MsgBox sql
 Set tbNomenk = myOpenRecordSet("##165", sql, dbOpenForwardOnly) ' dbOpenDynaset)
 If tbNomenk Is Nothing Then GoTo EN1
@@ -2811,6 +2824,18 @@ If Not tbNomenk.BOF Then
         Grid.TextMatrix(quantity, nkBegOstat) = Round(beg * gain, 2) ' ост на начало
         Grid.TextMatrix(quantity, nkPrihod) = Round(prih * gain, 2)
         Grid.TextMatrix(quantity, nkRashod) = Round(rash * gain, 2)
+        
+        Dim saled As Double, saledProcent As Double
+        
+        saled = getBaySaledQty(tbNomenk!nomnom, startDate, endDate)
+        Grid.TextMatrix(quantity, nkRashodBay) = Round(saled, 2)
+        If rash > 0 And saled > 0 Then
+            Grid.TextMatrix(quantity, nkSaledProcent) = Format((saled / rash / gain) * 100, "##0")
+        Else
+            If saled > 0 Then
+                Grid.TextMatrix(quantity, nkSaledProcent) = "100"
+            End If
+        End If
         Grid.TextMatrix(quantity, nkEndOstat) = Round((beg + prih - rash) * gain, 2) ' остаток на конец
         If Regim = "asOborot" Then GoTo BB
     ElseIf Regim = "asOstat" Then

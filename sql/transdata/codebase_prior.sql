@@ -192,6 +192,31 @@ order by o.ord, 1
 
 end;
 
+
+if exists (select 1 from sysprocedure where proc_name = 'wf_sale_nomenk_qty') then
+	drop procedure wf_sale_nomenk_qty;
+end if;
+
+create 
+	function wf_sale_nomenk_qty(
+	  p_nomnom varchar(20)
+	, p_start datetime default null
+	, p_end datetime default null
+) returns double
+begin
+
+select sum(d.quant)
+into wf_sale_nomenk_qty
+from vPredmetyOutDetail d
+WHERE 
+		d.type = 8 
+	and d.prnomnom = p_nomnom
+	and outDate between isnull(p_start, '20010101') and isnull(p_end, '21001231')
+;
+
+end;
+
+
 --=============================================================================
 
 

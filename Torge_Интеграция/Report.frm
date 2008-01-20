@@ -300,7 +300,7 @@ Dim curentklassid As Integer
     Grid.ColWidth(sbnSumma) = 1000
     'Grid.ColWidth() =
 
-    sql = "call wf_nomenk_" & saled & "(convert(datetime, '" & Pribil.startDate & "'), convert(datetime, '" & Pribil.endDate & "))"
+    sql = "call wf_nomenk_" & saled & "(convert(datetime, " & startDate & "), convert(datetime, " & endDate & "))"
     'Debug.Print sql
     
     Set tbOrders = myOpenRecordSet("##vnt_det", sql, dbOpenForwardOnly)

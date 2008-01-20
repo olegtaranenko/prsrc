@@ -578,3 +578,4 @@ where
     exists (select 1 from bayorders o where o.numorder = r.numdoc)
 and not exists (select 1 from baynomenkout po where po.numorder = r.numdoc and r.nomnom = po.nomnom)
 ;
+

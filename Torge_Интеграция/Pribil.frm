@@ -920,7 +920,6 @@ Attribute VB_Exposed = False
 Option Explicit
 Public pDateWhere As String, nDateWhere As String, uDateWhere As String
 Public bDateWhere As String, mDateWhere As String, costsDateWhere As String
-Public startDate As String, endDate As String
 Public statistic As String, ventureId As String
 
 Dim begDateHron As Date ' Начало ведения хронологии
@@ -934,7 +933,7 @@ End Sub
 Private Sub cbPeriod_Click()
 Dim curIndex As Integer, isMonth As Boolean, isPrev As Integer
 Dim currentYear As Integer, currentMonth As Integer, theYear As Integer, theMonth As Integer
-Dim endYear As Integer, endMonth As Integer, test As String
+Dim endYear As Integer, endMonth As Integer
 curIndex = cbPeriod.ItemData(cbPeriod.ListIndex)
     If curIndex <> 0 Then
         currentYear = CInt(Format(Now, "yyyy"))
@@ -967,8 +966,7 @@ curIndex = cbPeriod.ItemData(cbPeriod.ListIndex)
             endMonth = 1
             endYear = theYear + 1
         End If
-        test = Format(theYear, "####") & "-" & Format(theMonth, "00") & "-" & "01"
-        startDate = CDate(test)
+        startDate = CDate(Format(theYear, "####") & "-" & Format(theMonth, "00") & "-" & "01")
         endDate = DateAdd("s", -1, CDate(Format(endYear, "####") & "-" & Format(endMonth, "00") & "-" & "01"))
         tbStartDate.Text = Format(startDate, "dd.mm.yy")
         tbEndDate.Text = Format(endDate, "dd.mm.yy")
@@ -1085,18 +1083,7 @@ Me.MousePointer = flexHourglass
 ReDim ventureMat(2)
 ReDim ventureRealiz(2)
 
-
-If isDateTbox(tbStartDate) Then
-    startDate = Format(tmpDate, "yyyy-mm-dd")
-Else
-    startDate = "null"
-End If
-
-If isDateTbox(tbEndDate) Then
-    endDate = Format(tmpDate, "yyyy-mm-dd") & " 11:59:59 PM'"
-Else
-    endDate = "null"
-End If
+setStartEndDates tbStartDate, tbEndDate
 
 strWhere = getWhereByDateBoxes(Me, "outDate", begDateHron) ' между
 If strWhere = "error" Then GoTo EN1

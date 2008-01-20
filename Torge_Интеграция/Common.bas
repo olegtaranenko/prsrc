@@ -76,6 +76,24 @@ Public Const otladColor = &H80C0FF
 Public sqlRowDetail() As String
 Public aRowText() As String
 Public rowFormatting() As String
+Public startDate As String, endDate As String
+
+Sub setStartEndDates(tbStartDate As TextBox, tbEndDate As TextBox)
+'    setStartEndDates tbStartDate, tbEndDate
+    If isDateTbox(tbStartDate) Then
+        startDate = "'" & Format(tmpDate, "yyyy-mm-dd") & "'"
+    Else
+        startDate = "null"
+    End If
+    
+    If isDateTbox(tbEndDate) Then
+        endDate = "'" & Format(tmpDate, "yyyy-mm-dd") & " 11:59:59 PM'"
+    Else
+        endDate = "null"
+    End If
+
+
+End Sub
 
 
 Sub CheckIntegration()
