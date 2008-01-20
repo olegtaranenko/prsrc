@@ -134,7 +134,7 @@ create table #klass_childs (parent integer, child_count integer, lvl integer);
     
             insert into #klass_ordered (id, ord) select r_klassid, v_cur_pos;
             set v_exit = 1;
-            message '[', r_klassid, '] ', r_klassname, '-', r_parentid, ': ', v_cur_pos, ': ', r_ord to client;
+--            message '[', r_klassid, '] ', r_klassname, '-', r_parentid, ': ', v_cur_pos, ': ', r_ord to client;
             set v_prev_id = r_parentid;
             set v_prev_count = r_childs;
 
@@ -161,29 +161,25 @@ if exists (select 1 from sysprocedure where proc_name = 'wf_nomenk_saled') then
 end if;
 
 CREATE procedure wf_nomenk_saled(
-	  p_start date default null
-	, p_end date default null
+	  p_start datetime default null
+	, p_end datetime default null
 )
 begin
-	create table #nomenk_saled (nomnom varchar(20), shipped double, sm double);
+	create table #nomenk_saled (nomnom varchar(20), quant double, cenaTotal double);
 	create table #klass_ordered (id integer, ord integer);
 
 	call wf_sort_klasses;
 
 
 insert into #nomenk_saled
-select i.nomnom, sum(round(i.quant / n.perList, 2)) AS shipped, round(sum(r.intQuant * i.quant/ n.perlist), 2) as sm
-from BayOrders o 
-join sDocs d on d.numDoc = o.numOrder 
-join sDMC i on d.numExt = i.numExt and d.numDoc = i.numDoc
-join sDMCrez r on i.nomNom = r.nomNom and o.numOrder = r.numDoc
-join sGuideNomenk n ON n.nomNom = i.nomNom and r.nomNom = i.nomNom 
-join bayguidefirms f on f.firmid = o.firmid
-WHERE xDate between isnull(p_start, '20010101') and isnull(p_end, '21001231')
-group by i.nomnom;
+select d.prnomnom, sum(round(d.quant, 2)) as quant, sum(round(d.cenaEd, 2) * round(d.quant, 2))
+from vPredmetyOutDetail d
+WHERE d.type = 8 and outDate between isnull(p_start, '20010101') and isnull(p_end, '21001231')
+group by d.prnomnom
+;
 
-
-select '' as outtype, trim(n.cod + ' ' + nomname + ' ' + n.size) as name, s.shipped, s.sm, s.nomnom, o.ord, k.klassid, wf_breadcrump_klass(k.klassid) as klassname, n.cost, n.ed_izmer2
+select '' as outtype, trim(n.cod + ' ' + nomname + ' ' + n.size) as name, s.quant, s.cenaTotal, s.nomnom, o.ord
+, k.klassid, wf_breadcrump_klass(k.klassid) as klassname, n.cost, n.ed_izmer2
 from #nomenk_saled s
 join sguidenomenk n on n.nomnom = s.nomnom
 join #klass_ordered o on o.id = n.klassid
@@ -327,12 +323,12 @@ if exists (select 1 from sysprocedure where proc_name = 'wf_nomenk_reliz') then
 end if;
 
 CREATE procedure wf_nomenk_reliz(
-	  p_start date default null
-	, p_end date default null
+	  p_start datetime default null
+	, p_end datetime default null
 )
 begin
-	create table #nomenk_reliz (nomnom varchar(20), shipped double, sm double);
-	create table #izdelia_reliz (prid integer, shipped double, sm double);
+	create table #nomenk_reliz (nomnom varchar(20), quant double, sm double);
+	create table #izdelia_reliz (prid integer, quant double, sm double, costTotal double);
 	create table #klass_ordered (id integer, ord integer);
 	create table #seria_ordered (id integer, ord integer);
 
@@ -342,35 +338,36 @@ begin
 
 insert into #izdelia_reliz
 select 
-	po.prId, sum(po.quant) as shipped, sum(p.cenaEd * po.quant) as sum
+	po.prId, sum(po.quant) as quant, sum(p.cenaEd * po.quant) as cenaTotal, sum(io.costEd * po.quant) as costTotal
 from xpredmetybyizdeliaout po
 join xpredmetybyizdelia p on p.numorder = po.numorder and p.prid = po.prid and p.prext = po.prext
-WHERE outDate between isnull(p_start, '20010101') and isnull(p_end, '21001231')
+join vIzdeliaOutPrimeCost io on po.outdate = io.outdate and io.numorder = po.numorder and io.prid = po.prid and io.prext = po.prext
+WHERE po.outDate between isnull(p_start, '20010101') and isnull(p_end, '21001231')
 group by po.prid
 ;
 
 
 insert into #nomenk_reliz
-select po.nomnom, sum(round(po.quant, 2)) as shipped, sum(round(p.cenaEd, 2) * round(po.quant, 2)) as sum
+select po.nomnom, sum(po.quant / n.perlist) as quant, sum(p.cenaEd * po.quant) as sum
 from xpredmetybynomenkout po
 join xpredmetybynomenk p on p.numorder = po.numorder and p.nomnom = po.nomnom
 join sguidenomenk n on n.nomnom = po.nomnom and n.nomnom = p.nomnom
-WHERE outDate between isnull(p_start, '20010101') and isnull(p_end, '21001231')
+WHERE po.outDate between isnull(p_start, '20010101') and isnull(p_end, '21001231')
 group by po.nomnom
 ;
 
 
 
 select 'Изделия' as outtype, o.ord, trim(g.prDescript + ' ' + g.prsize) as name
-	, shipped, sm, convert(varchar(20), r.prid) as id, g.prname as nomnom, g.prSeriaId as klassid
+	, quant, sm as cenaTotal, convert(varchar(20), r.prid) as id, g.prname as nomnom, g.prSeriaId as klassid
 	, wf_breadcrump_seria(g.prseriaid) as klassname, 'шт.' as ed_izmer2
-	, 0 as cost
+	, r.costTotal / quant as cost -- costEd
 from #izdelia_reliz r
 join sguideproducts g on g.prid = r.prid
 join #seria_ordered o on o.id = g.prSeriaId
 	union
 select 'Номенклатура' as outtype, o.ord, trim(n.cod + ' ' + nomname + ' ' + n.size) as name
-	, s.shipped, s.sm, s.nomnom as id, s.nomnom, k.klassid
+	, s.quant, s.sm as cenaTotal, s.nomnom as id, s.nomnom, k.klassid
 	, wf_breadcrump_klass(k.klassid) as klassname, n.ed_izmer2
 	, n.cost
 from #nomenk_reliz s

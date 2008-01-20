@@ -15,7 +15,7 @@ Begin VB.Form Pribil
    StartUpPosition =   1  'CenterOwner
    Begin VB.CheckBox ckSaleNomenk 
       BackColor       =   &H8000000A&
-      Caption         =   "Учет Номенклат. =>"
+      Caption         =   "По номенклатуре"
       Height          =   192
       Left            =   3960
       TabIndex        =   68
@@ -25,13 +25,13 @@ Begin VB.Form Pribil
    Begin VB.CheckBox ckStatistic 
       Alignment       =   1  'Right Justify
       BackColor       =   &H8000000A&
-      Caption         =   "<= Стат-ка/Затраты"
+      Caption         =   "Статистика/Затраты"
       CausesValidation=   0   'False
       Height          =   192
       Left            =   360
       TabIndex        =   46
       Top             =   5880
-      Width           =   1932
+      Width           =   2172
    End
    Begin VB.Frame Frame7 
       BackColor       =   &H8000000A&
@@ -633,11 +633,21 @@ Begin VB.Form Pribil
    End
    Begin VB.Frame Frame1 
       BackColor       =   &H8000000A&
-      Height          =   552
+      Height          =   612
       Left            =   60
       TabIndex        =   3
       Top             =   0
       Width           =   8715
+      Begin VB.ComboBox cbPeriod 
+         Height          =   288
+         ItemData        =   "Pribil.frx":0000
+         Left            =   3360
+         List            =   "Pribil.frx":0013
+         Style           =   2  'Dropdown List
+         TabIndex        =   70
+         Top             =   180
+         Width           =   2412
+      End
       Begin VB.TextBox tbStartDate 
          Height          =   285
          Left            =   960
@@ -657,7 +667,7 @@ Begin VB.Form Pribil
       Begin VB.CommandButton cmManag 
          Caption         =   "Применить"
          Height          =   315
-         Left            =   2880
+         Left            =   6000
          TabIndex        =   5
          Top             =   180
          Width           =   1095
@@ -666,10 +676,20 @@ Begin VB.Form Pribil
          Caption         =   "Записать в журнал Х.О. "
          Enabled         =   0   'False
          Height          =   315
-         Left            =   6300
+         Left            =   8160
          TabIndex        =   4
-         Top             =   180
+         Top             =   240
+         Visible         =   0   'False
          Width           =   1995
+      End
+      Begin VB.Label Label5 
+         BackStyle       =   0  'Transparent
+         Caption         =   "или "
+         Height          =   192
+         Left            =   2880
+         TabIndex        =   69
+         Top             =   240
+         Width           =   312
       End
       Begin VB.Label laPeriod 
          BackStyle       =   0  'Transparent
@@ -787,20 +807,20 @@ Begin VB.Form Pribil
       Y2              =   960
    End
    Begin VB.Line Line5 
-      X1              =   2400
-      X2              =   2400
+      X1              =   2640
+      X2              =   2640
       Y1              =   5760
       Y2              =   6120
    End
    Begin VB.Line Line4 
       X1              =   240
-      X2              =   2400
+      X2              =   2640
       Y1              =   6120
       Y2              =   6120
    End
    Begin VB.Line Line2 
       X1              =   240
-      X2              =   2400
+      X2              =   2640
       Y1              =   5760
       Y2              =   5760
    End
@@ -811,8 +831,9 @@ Begin VB.Form Pribil
       Y2              =   4920
    End
    Begin VB.Label Label9 
+      Alignment       =   2  'Center
       BackStyle       =   0  'Transparent
-      Caption         =   "Окончат. результат"
+      Caption         =   "Результат"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
          Size            =   7.8
@@ -822,25 +843,27 @@ Begin VB.Form Pribil
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   372
+      Height          =   252
       Left            =   9840
       TabIndex        =   54
-      Top             =   720
+      Top             =   840
       Width           =   1152
    End
    Begin VB.Label Label3 
+      Alignment       =   2  'Center
       BackColor       =   &H8000000A&
       BackStyle       =   0  'Transparent
-      Caption         =   "Основные затраты:"
-      Height          =   432
+      Caption         =   "Затраты"
+      Height          =   312
       Left            =   5880
       TabIndex        =   49
-      Top             =   720
+      Top             =   840
       Width           =   1212
    End
    Begin VB.Label Label2 
+      Alignment       =   2  'Center
       BackStyle       =   0  'Transparent
-      Caption         =   "Вспомогат. затраты"
+      Caption         =   "Прочие затраты"
       Height          =   372
       Left            =   8520
       TabIndex        =   48
@@ -848,33 +871,37 @@ Begin VB.Form Pribil
       Width           =   1152
    End
    Begin VB.Label Label1 
+      Alignment       =   2  'Center
       BackStyle       =   0  'Transparent
-      Caption         =   "Прибыль.- Основные"
-      Height          =   372
+      Caption         =   "Прибыль"
+      Height          =   252
       Left            =   7200
       TabIndex        =   47
-      Top             =   720
+      Top             =   840
       Width           =   1212
    End
    Begin VB.Label Label4 
+      Alignment       =   2  'Center
       BackStyle       =   0  'Transparent
-      Caption         =   "Прибыль"
+      Caption         =   "Доход"
       Height          =   252
       Left            =   4560
       TabIndex        =   2
       Top             =   840
-      Width           =   972
+      Width           =   1212
    End
    Begin VB.Label laHMaterials 
+      Alignment       =   2  'Center
       BackStyle       =   0  'Transparent
       Caption         =   "Материалы"
       Height          =   252
       Left            =   3240
       TabIndex        =   1
       Top             =   840
-      Width           =   1032
+      Width           =   1152
    End
    Begin VB.Label laHRealiz 
+      Alignment       =   2  'Center
       BackColor       =   &H8000000A&
       BackStyle       =   0  'Transparent
       Caption         =   "Реализация:"
@@ -882,7 +909,7 @@ Begin VB.Form Pribil
       Left            =   1920
       TabIndex        =   0
       Top             =   840
-      Width           =   1092
+      Width           =   1212
    End
 End
 Attribute VB_Name = "Pribil"
@@ -893,10 +920,58 @@ Attribute VB_Exposed = False
 Option Explicit
 Public pDateWhere As String, nDateWhere As String, uDateWhere As String
 Public bDateWhere As String, mDateWhere As String, costsDateWhere As String
-Public StartDate As String, EndDate As String
+Public startDate As String, endDate As String
 Public statistic As String, ventureId As String
 
 Dim begDateHron As Date ' Начало ведения хронологии
+
+
+Private Sub cbPeriod_Change()
+Dim curIndex As Integer
+
+End Sub
+
+Private Sub cbPeriod_Click()
+Dim curIndex As Integer, isMonth As Boolean, isPrev As Integer
+Dim currentYear As Integer, currentMonth As Integer, theYear As Integer, theMonth As Integer
+Dim endYear As Integer, endMonth As Integer, test As String
+curIndex = cbPeriod.ItemData(cbPeriod.ListIndex)
+    If curIndex <> 0 Then
+        currentYear = CInt(Format(Now, "yyyy"))
+        currentMonth = CInt(Format(Now, "mm"))
+        
+        If InStr(1, cbPeriod.Text, "месяц") <> 0 Then
+            isMonth = True
+        Else
+            isMonth = False
+        End If
+        If InStr(1, cbPeriod.Text, "редыдущ") <> 0 Then
+            isPrev = 1
+        Else
+            isPrev = 0
+        End If
+        
+        If isMonth Then
+            theYear = currentYear
+            theMonth = currentMonth - isPrev
+            If theMonth < 1 Then _
+                theMonth = 12: theYear = theYear - 1
+            
+            endYear = theYear
+            endMonth = theMonth + 1
+            If endMonth > 12 Then _
+                endMonth = 1: endYear = endYear + 1
+        Else
+            theYear = currentYear - isPrev
+            theMonth = 1
+            endMonth = 1
+            endYear = theYear + 1
+        End If
+        test = Format(theYear, "yyyy") & "-" & Format(theMonth, "00") & "-" & "01"
+        startDate = CDate(test)
+        endDate = DateAdd("s", -1, startDate)
+    End If
+End Sub
 
 Private Sub ckSaleNomenk_Click()
     If ckStatistic.value = 1 Then
@@ -1009,15 +1084,15 @@ ReDim ventureRealiz(2)
 
 
 If isDateTbox(tbStartDate) Then
-    StartDate = Format(tmpDate, "yyyy-mm-dd")
+    startDate = Format(tmpDate, "yyyy-mm-dd")
 Else
-    StartDate = "null"
+    startDate = "null"
 End If
 
 If isDateTbox(tbEndDate) Then
-    EndDate = Format(tmpDate, "yyyy-mm-dd") & " 11:59:59 PM'"
+    endDate = Format(tmpDate, "yyyy-mm-dd") & " 11:59:59 PM'"
 Else
-    EndDate = "null"
+    endDate = "null"
 End If
 
 strWhere = getWhereByDateBoxes(Me, "outDate", begDateHron) ' между
@@ -1114,7 +1189,7 @@ Set tbNomenk = myOpenRecordSet("##380", sql, dbOpenForwardOnly)
 If tbNomenk Is Nothing Then GoTo EN1
 If Not tbNomenk.BOF Then
   While Not tbNomenk.EOF
-    realiz = tbNomenk!sum_quant
+    realiz = tbNomenk!Sum_quant
     s2 = s2 + realiz
     ventureRealiz(tbNomenk!ventureId - 1) = ventureRealiz(tbNomenk!ventureId - 1) + realiz
     dohod = dohod + realiz
@@ -1128,32 +1203,30 @@ laRealiz1.Caption = laUslug.Caption
 
 
 
-' ------------------ Отгружено по  заказам продаж -------------------
-strWhere = getWhereByDateBoxes(Me, "xDate", begDateHron) ' между
+' ------------------ Отгружено по заказам продаж -------------------
+strWhere = getWhereByDateBoxes(Me, "outDate", begDateHron) ' между
 bDateWhere = strWhere
 
-If strWhere <> "" Then strWhere = " WHERE " & strWhere
-
-sql = "SELECT Sum(sDMC.quant*sDMCrez.intQuant/n.perList) AS bSum " _
-    & " , isnull(BayOrders .ventureid, 1) as ventureid " _
-    & " FROM sGuideNomenk n " _
-    & " INNER JOIN ((BayOrders " _
-    & " INNER JOIN sDocs ON BayOrders.numOrder = sDocs.numDoc) " _
-    & " INNER JOIN (sDMC INNER JOIN sDMCrez ON sDMC.nomNom = sDMCrez.nomNom) ON (sDocs.numExt = sDMC.numExt) AND (sDocs.numDoc = sDMC.numDoc) AND (BayOrders.numOrder = sDMCrez.numDoc)) ON n.nomNom = sDMC.nomNom " _
-    & strWhere _
-    & " group by isnull(BayOrders.ventureid, 1)"
-
+sql = "select sum(cenaed * quant) as bSum, sum(costEd * quant) as cSum, isnull(ventureid, 1) as venture_id" _
+    & " from vPredmetyOutDetail " _
+    & " where type = 8 and " & strWhere _
+    & " group by venture_id "
 
 Debug.Print sql
 
 s = 0
+s2 = 0
 Set tbNomenk = myOpenRecordSet("##431", sql, dbOpenForwardOnly)
 If tbNomenk Is Nothing Then GoTo EN1
 If Not tbNomenk.BOF Then
   While Not tbNomenk.EOF
     realiz = tbNomenk!bSum
+    mat = tbNomenk!cSum
     s = s + realiz
-    ventureRealiz(tbNomenk!ventureId - 1) = ventureRealiz(tbNomenk!ventureId - 1) + realiz
+    s2 = s2 + mat
+    oborot = oborot + mat
+    ventureRealiz(tbNomenk!venture_Id - 1) = ventureRealiz(tbNomenk!venture_Id - 1) + realiz
+    ventureMat(tbNomenk!venture_Id - 1) = ventureMat(tbNomenk!venture_Id - 1) + mat
     dohod = dohod + realiz
     tbNomenk.MoveNext
   Wend
@@ -1161,29 +1234,6 @@ End If
 tbNomenk.Close
 
 laRealiz2.Caption = Format(s, "## ##0.00")
-
-sql = "SELECT Sum(n.cost*sDMC.quant/n.perList) AS cena " _
-    & " , isnull(BayOrders .ventureid, 1) as ventureid " _
-    & " FROM sGuideNomenk n INNER JOIN ((sDocs INNER JOIN " & _
-    "BayOrders ON sDocs.numDoc = BayOrders.numOrder) INNER JOIN sDMC ON " & _
-    "(sDocs.numExt = sDMC.numExt) AND (sDocs.numDoc = sDMC.numDoc)) ON " & _
-    "n.nomNom = sDMC.nomNom" & strWhere _
-    & " group by isnull(BayOrders.ventureid, 1)"
-
-s2 = 0
-Set tbNomenk = myOpenRecordSet("##431", sql, dbOpenForwardOnly)
-If tbNomenk Is Nothing Then GoTo EN1
-If Not tbNomenk.BOF Then
-  While Not tbNomenk.EOF
-    mat = tbNomenk!Cena
-    s2 = s2 + mat
-    ventureMat(tbNomenk!ventureId - 1) = ventureMat(tbNomenk!ventureId - 1) + mat
-    oborot = oborot + mat
-    tbNomenk.MoveNext
-  Wend
-End If
-tbNomenk.Close
-
 laMaterials2.Caption = Format(Round(s2, 2), "## ##0.00")
 laClear2.Caption = Format(Round(s, 2) - Round(s2, 2), "## ##0.00")
 
@@ -1469,3 +1519,9 @@ tbNomenk.Close
 getProductNomenkSum = sum
 End Function
 
+Private Sub select_Change(Index As Integer)
+Dim curIndex As Integer
+curIndex = select(1).ItemData(cbPeriod.Index - 1)
+    If cbPeriod.ItemData(cbPeriod.Index - 1) = 0 Then
+    End If
+End Sub
