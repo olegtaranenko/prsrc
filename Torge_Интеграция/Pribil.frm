@@ -1509,9 +1509,3 @@ tbNomenk.Close
 getProductNomenkSum = sum
 End Function
 
-Private Sub select_Change(Index As Integer)
-Dim curIndex As Integer
-curIndex = select(1).ItemData(cbPeriod.Index - 1)
-    If cbPeriod.ItemData(cbPeriod.Index - 1) = 0 Then
-    End If
-End Sub

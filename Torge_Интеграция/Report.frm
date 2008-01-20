@@ -325,7 +325,7 @@ Dim curentklassid As Integer
             
             Grid.AddItem Chr(9) & tbOrders!nomnom _
                 & Chr(9) & tbOrders!Name _
-            & Chr(9) & tbOrders!ed_izmer2 _
+            & Chr(9) & tbOrders!ed_Izmer2 _
             & Chr(9) & Format(tbOrders!quant, "## ##0.00") _
             & Chr(9) & Format(tbOrders!cost, "## ##0.00") _
             & Chr(9) & Format(tbOrders!cenaTotal / tbOrders!quant, "## ##0.00") _
@@ -493,8 +493,8 @@ Dim sum As Single
                 Grid.TextMatrix(quantity, 0) = "b"
             End If
             
-            Grid.TextMatrix(quantity, rrMater) = Format(tbOrders!cenaEd, "## ##0.00")
-            Grid.TextMatrix(quantity, rrReliz) = Format(tbOrders!quant, "## ##0.00")
+            Grid.TextMatrix(quantity, rrMater) = Format(tbOrders!costTotal, "## ##0.00")
+            Grid.TextMatrix(quantity, rrReliz) = Format(tbOrders!cenaTotal, "## ##0.00")
             Grid.AddItem ""
             tbOrders.MoveNext
         Wend
@@ -671,7 +671,7 @@ Dim colHeaderText As String
             quantity = quantity + 1
             Grid.AddItem Chr(9) & tbOrders!nomnom _
                 & Chr(9) & tbOrders!Name _
-            & Chr(9) & tbOrders!ed_izmer2 _
+            & Chr(9) & tbOrders!ed_Izmer2 _
             & Chr(9) & Format(tbOrders!cost, "## ##0.00") _
             & Chr(9) & Format(tbOrders!sum, "## ##0.00")
             
@@ -1013,7 +1013,7 @@ sql = "select po.outDate, o.numOrder, po.nomnom, r.intQuant AS cenaed, po.quant,
         & Chr(9) & tbNomenk!Name _
         & Chr(9) & "<--Номенклатура" _
         & Chr(9) & Format(tbNomenk!quant, "## ##0.00") _
-        & Chr(9) & tbNomenk!ed_izmer2 _
+        & Chr(9) & tbNomenk!ed_Izmer2 _
         & Chr(9) & Format(tbNomenk!costed, "## ##0.00") _
         & Chr(9) & Format(tbNomenk!quant * tbNomenk!costed, "## ##0.00") _
         & Chr(9) & Format(tbNomenk!quant * tbNomenk!cenaEd, "## ##0.00")
@@ -1040,7 +1040,7 @@ If param1 = "m" Then
         & Chr(9) & tbNomenk!cod & " " & tbNomenk!nomName & " " & tbNomenk!Size _
         & Chr(9) _
         & Chr(9) & Format(tbNomenk!quant / tbNomenk!perList, "## ##0.00") _
-        & Chr(9) & tbNomenk!ed_izmer2 _
+        & Chr(9) & tbNomenk!ed_Izmer2 _
         & Chr(9) & Format(tbNomenk!cost, "## ##0.00") _
         & Chr(9) & Format(tbNomenk!quant * tbNomenk!cost / tbNomenk!perList, "## ##0.00")
     
