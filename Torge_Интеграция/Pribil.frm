@@ -967,9 +967,12 @@ curIndex = cbPeriod.ItemData(cbPeriod.ListIndex)
             endMonth = 1
             endYear = theYear + 1
         End If
-        test = Format(theYear, "yyyy") & "-" & Format(theMonth, "00") & "-" & "01"
+        test = Format(theYear, "####") & "-" & Format(theMonth, "00") & "-" & "01"
         startDate = CDate(test)
-        endDate = DateAdd("s", -1, startDate)
+        endDate = DateAdd("s", -1, CDate(Format(endYear, "####") & "-" & Format(endMonth, "00") & "-" & "01"))
+        tbStartDate.Text = Format(startDate, "dd.mm.yy")
+        tbEndDate.Text = Format(endDate, "dd.mm.yy")
+        
     End If
 End Sub
 

@@ -300,7 +300,7 @@ Dim curentklassid As Integer
     Grid.ColWidth(sbnSumma) = 1000
     'Grid.ColWidth() =
 
-    sql = "call wf_nomenk_" & saled & "(convert(datetime, '" & Pribil.StartDate & "'), convert(datetime, '" & Pribil.EndDate & "))"
+    sql = "call wf_nomenk_" & saled & "(convert(datetime, '" & Pribil.startDate & "'), convert(datetime, '" & Pribil.endDate & "))"
     'Debug.Print sql
     
     Set tbOrders = myOpenRecordSet("##vnt_det", sql, dbOpenForwardOnly)
@@ -733,7 +733,6 @@ rowid = rowid + 1
 
 '--------------------
 ' сумма списанной и еще неотгруженной ном-ры по незакрытим заказам !!!
-' здесь не м.б. заказов Продаж т.к. у них отгрузка - это списание
 sql = "SELECT Sum(sDMC.quant*sGuideNomenk.cost / sGuideNomenk.perList) AS sum " & _
     "FROM Orders INNER JOIN (sGuideNomenk " _
     & "INNER JOIN sDMC ON " & _
@@ -741,6 +740,12 @@ sql = "SELECT Sum(sDMC.quant*sGuideNomenk.cost / sGuideNomenk.perList) AS sum " 
     "WHERE StatusId  < 6"
 byErrSqlGetValues "##386", sql, s
 s = s - otgruzNomenk()
+
+'незавершенка по продажам
+sql = "select sum(quant * cenaEd) from vIncopleteBayNomenk"
+byErrSqlGetValues "##386", sql, d
+s = s + d
+
 aRowText(rowid) = "Незавершенное производство"
 Grid.AddItem rowid & Chr(9) & aRowText(rowid) & Chr(9) & Format(Round(s, 2), "## ##0.00")
 rowid = rowid + 1
@@ -1009,8 +1014,8 @@ sql = "select po.outDate, o.numOrder, po.nomnom, r.intQuant AS cenaed, po.quant,
         & Chr(9) & "<--Номенклатура" _
         & Chr(9) & Format(tbNomenk!quant, "## ##0.00") _
         & Chr(9) & tbNomenk!ed_izmer2 _
-        & Chr(9) & Format(tbNomenk!costEd, "## ##0.00") _
-        & Chr(9) & Format(tbNomenk!quant * tbNomenk!costEd, "## ##0.00") _
+        & Chr(9) & Format(tbNomenk!costed, "## ##0.00") _
+        & Chr(9) & Format(tbNomenk!quant * tbNomenk!costed, "## ##0.00") _
         & Chr(9) & Format(tbNomenk!quant * tbNomenk!cenaEd, "## ##0.00")
     tbNomenk.MoveNext
   Wend

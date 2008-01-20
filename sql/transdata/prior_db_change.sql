@@ -450,3 +450,131 @@ end if;
 
 */
 
+if exists (select 1 from sysviews where viewname = 'vIzdeliaFixNomnom' and vcreator = 'dba') then
+	drop view vIzdeliaFixNomnom;
+end if;
+
+
+create view vIzdeliaFixNomnom
+as 
+select * from 
+sproducts p 
+where not exists (select 1 from sguidevariant gv where p.productid = gv.productid and p.xgroup = gv.xgroup and not (gv.xgroup = '' or (gv.xgroup != '' and gv.c = 1)))
+;
+
+
+if exists (select 1 from sysviews where viewname = 'vIzdeliaOutDetail' and vcreator = 'dba') then
+	drop view vIzdeliaOutDetail;
+end if;
+
+create view vIzdeliaOutDetail (outdate, prId, prExt, numorder, nomnom, quantity)
+as 
+select outdate, io.prId, io.prExt, numorder, nomnom, round(fn.quantity, 5) as quantity
+from xpredmetybyizdeliaout io 
+join vIzdeliaFixNomnom fn on io.prid = fn.productid
+	union all
+select outdate, io.prId, io.prExt, io.numorder, v.nomnom, round(p.quantity, 5) as quantity
+from xpredmetybyizdeliaout io 
+join xvariantnomenc v on v.numorder = io.numorder and v.prid = io.prid and v.prext = io.prext
+join sproducts p on p.productid = io.prid and v.nomnom = p.nomnom
+;
+
+
+if exists (select 1 from sysviews where viewname = 'vIzdeliaOutPrimeCost' and vcreator = 'dba') then
+	drop view vIzdeliaOutPrimeCost;
+end if;
+
+create view vIzdeliaOutPrimeCost (outdate, prId, prExt, numorder, costEd)
+as 
+select outdate, prid, prext, numorder, sum(round(n.cost * quantity / n.perlist, 2))
+from vIzdeliaOutDetail io 
+join sGuideNomenk n on io.nomnom = n.nomnom
+group by outdate, prid, prext, numorder
+;
+
+
+
+if exists (select 1 from sysviews where viewname = 'vPredmetyOutDetail' and vcreator = 'dba') then
+	drop view vPredmetyOutDetail;
+end if;
+
+create view vPredmetyOutDetail (outdate, numorder, type, prId, prExt, prNomnom, cenaEd, quant, costEd, firmName, ventureId)
+as 
+select 
+	po.outdate, po.numorder, 1, po.prId, po.prExt, null, p.cenaEd, po.quant
+	, io.costEd
+	, f.name
+	, o.ventureid
+from xpredmetybyizdeliaout po
+join xpredmetybyizdelia p on p.numorder = po.numorder and p.prid = po.prid and p.prext = po.prext
+join vIzdeliaOutPrimeCost io on po.outdate = io.outdate and io.numorder = po.numorder and io.prid = po.prid and io.prext = po.prext
+join orders o on o.numorder = po.numorder and o.numorder = p.numorder
+join guidefirms f on f.firmid = o.firmid
+	union all 
+select po.outdate, po.numorder, 2, null, null, po.nomnom, p.cenaEd, po.quant, round(round(n.cost, 2) / n.perlist, 2) as costEd
+	, f.name
+	, o.ventureid
+from xpredmetybynomenkout po
+join xpredmetybynomenk p on p.numorder = po.numorder and p.nomnom = po.nomnom
+join sguidenomenk n on n.nomnom = po.nomnom and n.nomnom = p.nomnom
+join orders o on o.numorder = po.numorder and o.numorder = p.numorder
+join guidefirms f on f.firmid = o.firmid
+	union all 
+select u.outdate, u.numorder, 4, null, null, null, 1.0, u.quant, null
+	, f.name
+	, o.ventureid
+from xuslugout u
+join orders o on o.numorder = u.numorder 
+join guidefirms f on f.firmid = o.firmid
+	union all 
+select po.outDate, o.numOrder, 8, null, null, po.nomnom, r.intQuant AS cenaed, po.quant, n.cost as costEd
+	, f.name
+	, o.ventureid
+from bayorders o
+--join sDocs d on d.numDoc = o.numOrder 
+join sDMCrez r on r.numDoc = o.numorder
+join baynomenkout po on po.numorder = o.numorder and po.nomnom = r.nomnom
+join sguidenomenk n on n.nomnom = po.nomnom
+join bayguidefirms f on f.firmid = o.firmid
+;
+
+
+/* Ёто на самом деле долна быть не отгрузка, а передача в производство */
+/*
+select d.xDate, o.numOrder, 8, null, null, i.nomnom, r.intQuant AS cenaed, round(i.quant / n.perList, 2) AS quant, round(n.cost / n.perList, 2) as costEd
+	, f.name
+	, o.ventureid
+from BayOrders o 
+join sDocs d on d.numDoc = o.numOrder 
+join sDMC i on d.numExt = i.numExt and d.numDoc = i.numDoc
+join sDMCrez r on i.nomNom = r.nomNom and o.numOrder = r.numDoc
+join sGuideNomenk n ON n.nomNom = i.nomNom and r.nomNom = i.nomNom 
+join bayguidefirms f on f.firmid = o.firmid
+*/
+
+
+
+if exists (select 1 from sysviews where viewname = 'vPredmetyOutSummary' and vcreator = 'dba') then
+	drop view vPredmetyOutSummary;
+end if;
+
+create view vPredmetyOutSummary (outdate, numorder, type, cenaTotal, costTotal, firmname, ventureid)
+as 
+select outdate, numorder, sum(distinct(type)), sum(isnull(round(quant * cenaEd , 2), 0)), sum(isnull(round(quant * costEd, 2), 0)), firmname, ventureid
+from vPredmetyOutDetail po
+group by outdate, numorder, firmname, ventureid;
+
+
+
+------------ Ќезавершенка дл€ продаж ------------
+create 
+    view vIncopleteBayNomenk (numdoc, nomnom, quant, cenaEd, id_scet)
+as
+select r.numdoc, r.nomnom, r.quantity / n.perlist as quant, r.intQuant, r.id_scet
+from sdmcrez r
+join sdocs d on d.numdoc = r.numdoc
+join sguidenomenk n on n.nomnom = r.nomnom
+where 
+    exists (select 1 from bayorders o where o.numorder = r.numdoc)
+and not exists (select 1 from baynomenkout po where po.numorder = r.numdoc and r.nomnom = po.nomnom)
+;
