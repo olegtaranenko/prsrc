@@ -194,7 +194,7 @@ end;
 
 
 if exists (select 1 from sysprocedure where proc_name = 'wf_sale_nomenk_qty') then
-	drop procedure wf_sale_nomenk_qty;
+	drop function  wf_sale_nomenk_qty;
 end if;
 
 create 
@@ -205,18 +205,19 @@ create
 ) returns double
 begin
 
-select sum(d.quant)
-into wf_sale_nomenk_qty
-from vPredmetyOutDetail d
+select sum(i.quant / n.perList) AS quant
+    into wf_sale_nomenk_qty
+    from BayOrders o 
+    join sDocs d on d.numDoc = o.numOrder 
+    join sDMC i on d.numExt = i.numExt and d.numDoc = i.numDoc
+    join sDMCrez r on i.nomNom = r.nomNom and o.numOrder = r.numDoc
+    join sGuideNomenk n ON n.nomNom = i.nomNom and r.nomNom = i.nomNom 
 WHERE 
-		d.type = 8 
-	and d.prnomnom = p_nomnom
-	and outDate between isnull(p_start, '20010101') and isnull(p_end, '21001231')
-;
+	    i.nomnom = p_nomnom
+    and xDate between isnull(p_start, '20010101') and isnull(p_end, '21001231')
+    ;
 
 end;
-
-
 --=============================================================================
 
 

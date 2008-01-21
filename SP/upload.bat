@@ -5,9 +5,9 @@ set patch=%1
 
 mkdir %patch%
 cd %patch%
-xcopy \\tsclient\C\dev\mainline\SP\%patch%\*.* . /Y /S /D
+xcopy \\tsclient\C\dev\mainline\SP\%patch%\*.rar . /Y /S /D
 echo | time | date > \\tsclient\C\dev\mainline\SP\%patch%\uploaded
-
+rar x %patch%
 
 goto done
 
