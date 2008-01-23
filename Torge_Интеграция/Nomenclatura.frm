@@ -1319,7 +1319,7 @@ If Not tbKlass.BOF Then
     key = "k" & tbKlass!klassid
     pKey = "k" & tbKlass!parentKlassId
     On Error GoTo ERR1 ' назначить второй проход
-    Set Node = tv.Nodes.Add(pKey, tvwChild, key, tbKlass!klassName & "-" & tbKlass!klassid)
+    Set Node = tv.Nodes.Add(pKey, tvwChild, key, tbKlass!klassName)
     On Error GoTo 0
     Node.Sorted = True
 NXT1:
@@ -2478,7 +2478,7 @@ If KeyCode = vbKeyReturn Then
         On Error Resume Next 'некоторые €чейки м.б.пустыми
         tbNomenk!nomName = Grid.TextMatrix(mousRow, nkName)
         tbNomenk!ed_izmer = Grid.TextMatrix(mousRow, nkEdIzm)
-        tbNomenk!ed_izmer2 = Grid.TextMatrix(mousRow, nkEdIzm2)
+        tbNomenk!ed_Izmer2 = Grid.TextMatrix(mousRow, nkEdIzm2)
         tbNomenk!perList = Grid.TextMatrix(mousRow, nkPerList)
         tbNomenk!Pack = Grid.TextMatrix(mousRow, nkPack)
         tbNomenk!cost = Grid.TextMatrix(mousRow, nkCena)
@@ -2738,7 +2738,7 @@ sql = "SELECT ph.prev_cost, sGuideNomenk.*, sGuideFormuls.Formula, " _
 & vbCr & " INNER JOIN sGuideFormuls ON sGuideNomenk.formulaNom = sGuideFormuls.nomer " _
 & vbCr & " left join (select h.cost as prev_cost, h.nomnom from spricehistory h join (select max(change_date) as change_date, nomnom from spricehistory m group by nomnom) mx on mx.nomnom = h.nomnom and mx.change_date = h.change_date ) ph on ph.nomnom = sguidenomenk.nomnom  " _
 & vbCr & strWhere & " ORDER BY sGuideNomenk.nomNom ;"
-Debug.Print sql;
+'Debug.Print sql;
 'MsgBox sql
 Set tbNomenk = myOpenRecordSet("##165", sql, dbOpenForwardOnly) ' dbOpenDynaset)
 If tbNomenk Is Nothing Then GoTo EN1
@@ -2760,7 +2760,7 @@ If Not tbNomenk.BOF Then
     gain = gainC
     If ((chPerList.Visible And chPerList.value = 1) Or Regim <> "asOstat") And Regim <> "" Then
         gain = gain / tbNomenk!perList 'оборотные всегда выдаем в целых
-        Grid.TextMatrix(quantity + 1, nkEdIzm) = tbNomenk!ed_izmer2
+        Grid.TextMatrix(quantity + 1, nkEdIzm) = tbNomenk!ed_Izmer2
     Else
         Grid.TextMatrix(quantity + 1, nkEdIzm) = tbNomenk!ed_izmer
     End If
@@ -2884,7 +2884,7 @@ If Not tbNomenk.BOF Then
             Grid.TextMatrix(quantity, nkCena2W) = Format(tbNomenk!CENA_W, "0.00")
 
 '            Grid.TextMatrix(quantity, nkSize) = tbNomenk!Size
-            Grid.TextMatrix(quantity, nkEdIzm2) = tbNomenk!ed_izmer2
+            Grid.TextMatrix(quantity, nkEdIzm2) = tbNomenk!ed_Izmer2
             If IsNumeric(tbNomenk!Pack) Then _
                 Grid.TextMatrix(quantity, nkPack) = tbNomenk!Pack
 

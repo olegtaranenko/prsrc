@@ -63,7 +63,6 @@ begin
 	set v_cur_pos = 1;
 
 create table #klass_childs (parent integer, child_count integer, lvl integer);
---create table #klass_ordered (id integer, ord integer);
 
 	insert into #klass_childs 
 	select parentklassid, count(*), v_lvl from sguideklass 
@@ -146,10 +145,6 @@ create table #klass_childs (parent integer, child_count integer, lvl integer);
 	end loop;
 
 	
---	select * from #klass_childs where lvl = v_lvl + 1;
---	select * from #klass_ordered order by ord; 
-
---	drop table #klass_ordered;
 	drop table #klass_childs;
 
 end;
@@ -191,6 +186,41 @@ order by o.ord, 1
 	drop table #klass_ordered;
 
 end;
+
+
+
+
+if exists (select 1 from sysprocedure where proc_name = 'wf_nomenk_areport') then
+	drop procedure wf_nomenk_areport;
+end if;
+
+CREATE procedure wf_nomenk_areport(
+)
+begin
+	create table #klass_ordered (id integer, ord integer);
+
+	call wf_sort_klasses;
+
+
+	select (if mark = 'Used' then zakup else round(nowOstatki/perlist, 2) endif) as qty_max, round(nowOstatki / perlist, 2) as qty_fact
+	, zakup, nowostatki, perlist, round(cost, 2) as cost, mark
+	, nomnom as text 
+	, trim(cod + ' ' + nomname + ' ' + size) as name, nomnom, ed_izmer, ed_izmer2 
+	, wf_breadcrump_klass(k.klassid) as klassname, k.klassid
+	from sguidenomenk n
+	join #klass_ordered o on n.klassid = o.id
+	join sguideklass k on k.klassid = n.klassid
+	order by o.ord, text;
+
+	drop table #klass_ordered;
+
+end;
+
+
+
+
+
+
 
 
 if exists (select 1 from sysprocedure where proc_name = 'wf_sale_nomenk_qty') then

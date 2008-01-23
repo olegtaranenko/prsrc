@@ -1412,16 +1412,19 @@ GuideManag.Show vbModal
 End Sub
 
 Private Sub mnNomenc_Click()
-Nomenklatura.Regim = ""
-Nomenklatura.Show
-Nomenklatura.setRegim
+Dim n1 As Nomenklatura
+    Set n1 = New Nomenklatura
+    n1.Regim = ""
+    n1.Show
+    n1.setRegim
 End Sub
 
 Private Sub mnOborot_Click()
-Nomenklatura.Regim = "asOborot"
-Nomenklatura.Show
-Nomenklatura.setRegim
-'Nomenklatura.tbStartDate.SetFocus
+Dim n1 As Nomenklatura
+    Set n1 = New Nomenklatura
+    n1.Regim = "asOborot"
+    n1.Show
+    n1.setRegim
 End Sub
 'проверка на отрицат.остатки
 Private Sub mnOstat_Click()
@@ -1490,10 +1493,11 @@ Me.MousePointer = flexDefault
 End Sub
 
 Private Sub mnOstVed_Click()
-Nomenklatura.Regim = "asOstat"
-Nomenklatura.Show
-Nomenklatura.setRegim
-'Nomenklatura.tbEndDate.SetFocus
+Dim n1 As Nomenklatura
+    Set n1 = New Nomenklatura
+    n1.Regim = "asOstat"
+    n1.Show
+    n1.setRegim
 End Sub
 
 
@@ -1865,9 +1869,11 @@ Me.MousePointer = flexDefault
 End Sub
 
 Private Sub sourOborot_Click()
-Nomenklatura.Regim = "sourOborot"
-Nomenklatura.Show
-Nomenklatura.setRegim
+Dim n1 As Nomenklatura
+    Set n1 = New Nomenklatura
+    n1.Regim = "sourOborot"
+    n1.Show
+    n1.setRegim
 
 End Sub
 
@@ -2019,7 +2025,9 @@ Dim i As Integer
 End Sub
 
 Private Sub ventureOborot_Click()
-    Nomenklatura.Regim = "ventureOborot"
-    Nomenklatura.Show
-    Nomenklatura.setRegim
+Dim n1 As Nomenklatura
+    Set n1 = New Nomenklatura
+    n1.Regim = "ventureOborot"
+    n1.Show
+    n1.setRegim
 End Sub

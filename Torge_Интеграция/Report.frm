@@ -650,17 +650,27 @@ End Sub
 
 Sub aReportDetail()
 Dim p_rowid As Integer, i As Integer
-Dim colHeaderText As String
+Dim colHeaderText As String, curentklassid  As Integer
     p_rowid = CInt(param1)
     sql = sqlRowDetail(p_rowid)
-    Grid.FormatString = rowFormatting(p_rowid) ' "|<Номер ном.|<Название|Ед изм.|>Стоим. ед.|>Сумма"
-    For i = 1 To Grid.Cols - 1
+    Grid.FormatString = rowFormatting(p_rowid) ' "|<Номер ном.|<Название|Ед.изм.|>Цена|>К-во Факт|>К-во Макс|>Сумма.Факт|>Сумма макс."
+    For i = 0 To Grid.Cols - 1
         colHeaderText = Grid.TextMatrix(0, i)
-        If InStr(1, colHeaderText, "Номер ном.") Then Grid.ColWidth(i) = 800
-        If InStr(1, colHeaderText, "Название", vbTextCompare) Then Grid.ColWidth(i) = 2500
-        If InStr(1, colHeaderText, "Ед изм", vbTextCompare) Then Grid.ColWidth(i) = 400
-        If InStr(1, colHeaderText, "Стоим. ед.", vbTextCompare) Then Grid.ColWidth(i) = 700
-        If InStr(1, colHeaderText, "Сумма", vbTextCompare) Then Grid.ColWidth(i) = 700
+        If colHeaderText = "" Then
+            Grid.ColWidth(i) = 0
+        ElseIf InStr(1, colHeaderText, "Номер ном.") Then
+            Grid.ColWidth(i) = 1200
+        ElseIf InStr(1, colHeaderText, "Название", vbTextCompare) Then
+            Grid.ColWidth(i) = 3500
+        ElseIf InStr(1, colHeaderText, "изм", vbTextCompare) Then
+            Grid.ColWidth(i) = 500
+        ElseIf InStr(1, colHeaderText, "Цена", vbTextCompare) Then
+            Grid.ColWidth(i) = 600
+        ElseIf InStr(1, colHeaderText, "К-во", vbTextCompare) Then
+            Grid.ColWidth(i) = 700
+        ElseIf InStr(1, colHeaderText, "Сумма", vbTextCompare) Then
+            Grid.ColWidth(i) = 900
+        End If
     Next i
     
     Debug.Print sql
@@ -669,11 +679,27 @@ Dim colHeaderText As String
     If Not tbOrders.BOF Then
         While Not tbOrders.EOF
             quantity = quantity + 1
+            If curentklassid <> tbOrders!klassid Then
+                Grid.AddItem ""
+                Grid.AddItem Chr(9) & Chr(9) & tbOrders!klassName
+                quantity = quantity + 2
+                Grid.row = Grid.Rows - 1
+                'quantity = quantity + 1
+                Grid.col = sbnNomnom
+                Grid.CellFontBold = True
+                Grid.col = sbnNomnam
+                Grid.CellFontBold = True
+                curentklassid = tbOrders!klassid
+            End If
+            
             Grid.AddItem Chr(9) & tbOrders!nomnom _
                 & Chr(9) & tbOrders!Name _
             & Chr(9) & tbOrders!ed_Izmer2 _
             & Chr(9) & Format(tbOrders!cost, "## ##0.00") _
-            & Chr(9) & Format(tbOrders!sum, "## ##0.00")
+            & Chr(9) & Format(tbOrders!qty_fact, "## ##0.00") _
+            & Chr(9) & Format(tbOrders!qty_max, "## ##0.00") _
+            & Chr(9) & Format(tbOrders!qty_fact * tbOrders!cost, "## ##0.00") _
+            & Chr(9) & Format(tbOrders!qty_max * tbOrders!cost, "## ##0.00")
             
             tbOrders.MoveNext
         Wend
@@ -692,42 +718,34 @@ ReDim Preserve sqlRowDetail(11)
 ReDim Preserve aRowText(11)
 ReDim rowFormatting(11)
 
-Grid.FormatString = "||>ПЛЮС|>МИНУС|"
+Grid.FormatString = "||>ПЛЮС|>МИНУС|>РАЗНИЦА"
 Grid.ColWidth(0) = 0
 Grid.ColWidth(1) = 4000
-Grid.ColWidth(2) = 1060
-Grid.ColWidth(3) = 1060
-Grid.ColWidth(4) = 1200
+Grid.ColWidth(2) = 1360
+Grid.ColWidth(3) = 1360
+Grid.ColWidth(4) = 1360
 'сделать исправления в переводом цен на Целые кол-ва ном-р !!!
 
 
 '--------------------
 sumD = 0: sumK = 0
 rowid = 1
-aRowText(rowid) = "Склад: максимальный запас"
+aRowText(rowid) = "Cклад: фактический(+)/максимальный(-)"
 Grid.TextMatrix(1, 1) = aRowText(rowid)
-sql = "SELECT Sum((if mark='Used' then Zakup else nowOstatki endif) * cost/perList) AS sum FROM sGuideNomenk"
+sql = "SELECT Sum((if mark = 'Used' then zakup else nowOstatki/perlist endif) * cost) as max_sklad" _
+    & " , Sum(cost * nowOstatki / perList) as fact_sklad" _
+    & " FROM sGuideNomenk"
     
-sqlRowDetail(rowid) = "select (if mark = 'Used' then zakup else nowOstatki endif) * cost/ perlist as sum, nomnom as text " _
-    & ", trim(cod + ' ' + nomname + ' ' + size) as name, nomnom, ed_izmer, ed_izmer2, cost" _
-    & " from sguidenomenk" _
-    & " order by name "
+sqlRowDetail(rowid) = "call wf_nomenk_areport"
 
-rowFormatting(rowid) = "|<Номер ном.|<Название|Ед изм.|>Стоим. ед.|>Сумма"
-byErrSqlGetValues "##387", sql, s
-Grid.TextMatrix(1, 3) = Format(Round(s, 2), "## ##0.00")
-sumK = sumK + s
-rowid = rowid + 1
-
-
-'--------------------
-sql = "SELECT Sum(cost * nowOstatki / perList) AS sum FROM sGuideNomenk;"
-'sqlRowDetail(rowid) = "select cost * nowOstatki / perlist as sum, nomnom as text from sguidenomenk"
-byErrSqlGetValues "##388", sql, s
-aRowText(rowid) = "Склад: фактический запас"
-rowFormatting(rowid) = rowFormatting(rowid - 1)
-Grid.AddItem rowid & Chr(9) & aRowText(rowid) & Chr(9) & Format(Round(s, 2), "## ##0.00")
-sumD = sumD + s
+'Debug.Print sql
+rowFormatting(rowid) = "|<Номер ном.|<Название|Ед изм.|>Цена|>К-во Факт|>К-во Макс|>Сумма.Факт|>Сумма макс."
+byErrSqlGetValues "##387", sql, k, d
+Grid.TextMatrix(1, 2) = Format(Round(d, 2), "## ##0.00")
+Grid.TextMatrix(1, 3) = Format(Round(k, 2), "## ##0.00")
+Grid.TextMatrix(1, 4) = Format(Round(k - d, 4), "## ##0.00")
+sumK = sumK + k
+sumD = sumD + d
 rowid = rowid + 1
 
 
@@ -1539,10 +1557,10 @@ If Not (Regim = "" _
 mousRow = Grid.row
 If mousRow = 0 Then Exit Sub
 mousCol = Grid.col
-'    Or (Regim = "aReport" And sqlRowDetail(mousRow) <> "") _
 
 If (mousCol = rrReliz Or (mousCol = rrMater And Regim <> "mat") _
     Or (Regim = "ventureZatrat" And Grid.col >= rzMainCosts) _
+    Or (Regim = "aReport" And sqlRowDetail(mousRow) <> "") _
     ) _
 Then
    Grid.CellBackColor = &H88FF88
