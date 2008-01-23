@@ -4,7 +4,7 @@ Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Products 
    BackColor       =   &H8000000A&
    Caption         =   "Справочник готовых изделий"
-   ClientHeight    =   6390
+   ClientHeight    =   6396
    ClientLeft      =   60
    ClientTop       =   1740
    ClientWidth     =   11880
@@ -13,7 +13,7 @@ Begin VB.Form Products
    LinkTopic       =   "Form1"
    LockControls    =   -1  'True
    MinButton       =   0   'False
-   ScaleHeight     =   6390
+   ScaleHeight     =   6396
    ScaleWidth      =   11880
    WhatsThisHelp   =   -1  'True
    Begin VB.CommandButton cmExit 
@@ -221,7 +221,7 @@ Begin VB.Form Products
       End
    End
    Begin VB.ListBox lbPrWeb 
-      Height          =   450
+      Height          =   432
       ItemData        =   "Products.frx":0000
       Left            =   3900
       List            =   "Products.frx":000A
@@ -231,7 +231,7 @@ Begin VB.Form Products
       Width           =   435
    End
    Begin VB.ListBox lbWeb 
-      Height          =   450
+      Height          =   432
       ItemData        =   "Products.frx":0015
       Left            =   7560
       List            =   "Products.frx":001F
@@ -329,8 +329,8 @@ Begin VB.Form Products
       TabIndex        =   1
       Top             =   240
       Width           =   3675
-      _ExtentX        =   6482
-      _ExtentY        =   9763
+      _ExtentX        =   6477
+      _ExtentY        =   9758
       _Version        =   393216
       AllowBigSelection=   0   'False
       AllowUserResizing=   1
@@ -341,8 +341,8 @@ Begin VB.Form Products
       TabIndex        =   0
       Top             =   240
       Width           =   2415
-      _ExtentX        =   4260
-      _ExtentY        =   9763
+      _ExtentX        =   4255
+      _ExtentY        =   9758
       _Version        =   393217
       HideSelection   =   0   'False
       Indentation     =   706
@@ -358,8 +358,8 @@ Begin VB.Form Products
       Top             =   240
       Visible         =   0   'False
       Width           =   4335
-      _ExtentX        =   7646
-      _ExtentY        =   9763
+      _ExtentX        =   7641
+      _ExtentY        =   9758
       _Version        =   393216
       AllowBigSelection=   0   'False
       AllowUserResizing=   1
@@ -1314,10 +1314,10 @@ If Button = 2 And frmMode = "" Then
         Exit Sub
     End If
 
-    Grid2.col = Grid2.MouseCol
-    Grid2.row = Grid2.MouseRow
-    On Error Resume Next
-    Grid2.SetFocus
+    'Grid2.col = Grid2.MouseCol
+    'Grid2.row = Grid2.MouseRow
+    'On Error Resume Next
+    'Grid2.SetFocus
 '    Grid.CellForeColor = vbWhite
     Grid2.CellBackColor = vbButtonFace
     If quantity2 = 0 Then
@@ -1809,20 +1809,33 @@ End If
 End Sub
 
 Private Sub mnDel5_Click() 'см. mnEdit5_Click
+Dim startRow As Integer, stopRow As Integer, curRow As Integer
 
-sql = "DELETE From sProducts WHERE (((sProducts.ProductId)=" & gProductId & ") " & _
-"AND ((sProducts.nomNom)='" & Grid2.TextMatrix(Grid2.row, gpNomNom) & "'));"
-'MsgBox sql
-'Debug.Print sql
-myBase.Execute sql
-quantity2 = quantity2 - 1
-If quantity2 = 0 Then
-    clearGridRow Grid2, Grid2.row
-Else
-    Grid2.RemoveItem Grid2.row
-End If
-On Error Resume Next
-Grid2.SetFocus
+    If Grid2.row >= Grid2.RowSel Then
+        startRow = Grid2.RowSel
+        stopRow = Grid2.row
+    Else
+        startRow = Grid2.row
+        stopRow = Grid2.RowSel
+    End If
+    
+
+    For curRow = startRow To stopRow
+        sql = "DELETE From sProducts WHERE (((sProducts.ProductId)=" & gProductId & ") " & _
+        "AND ((sProducts.nomNom)='" & Grid2.TextMatrix(startRow, gpNomNom) & "'));"
+        'Debug.Print Grid2.TextMatrix(startRow, gpNomNom)
+        myBase.Execute sql
+        quantity2 = quantity2 - 1
+        If quantity2 = 0 Then
+            clearGridRow Grid2, Grid2.row
+        Else
+            Grid2.RemoveItem startRow
+        End If
+    Next curRow
+    
+    On Error Resume Next
+    Grid2.SetFocus
+    Grid2.col = 0
 
 
 End Sub
