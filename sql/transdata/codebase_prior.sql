@@ -1,4 +1,325 @@
+/*
+	27.12.2007. ОТчет "Реализация" по предприятиям
+*/
 
+/*
+	Следующие набор вьюх - для вывода одним списком номенклатуры отгруженных изделий.
+	Как всегда проблемы с вариантными изделиями в которых нужно учитывать фиксированную и переменную составляющую
+
+*/
+
+if exists (select 1 from sysviews where viewname = 'vIzdeliaFixNomnom' and vcreator = 'dba') then
+	drop view vIzdeliaFixNomnom;
+end if;
+
+
+create view vIzdeliaFixNomnom
+as 
+select * from 
+sproducts p 
+where not exists (select 1 from sguidevariant gv where p.productid = gv.productid and p.xgroup = gv.xgroup and not (gv.xgroup = '' or (gv.xgroup != '' and gv.c = 1)))
+;
+
+
+if exists (select 1 from sysviews where viewname = 'vIzdeliaOutDetail' and vcreator = 'dba') then
+	drop view vIzdeliaOutDetail;
+end if;
+
+create view vIzdeliaOutDetail (outdate, prId, prExt, numorder, nomnom, quantity)
+as 
+select outdate, io.prId, io.prExt, numorder, nomnom, round(fn.quantity, 5) as quantity
+from xpredmetybyizdeliaout io 
+join vIzdeliaFixNomnom fn on io.prid = fn.productid
+	union all
+select outdate, io.prId, io.prExt, io.numorder, v.nomnom, round(p.quantity, 5) as quantity
+from xpredmetybyizdeliaout io 
+join xvariantnomenc v on v.numorder = io.numorder and v.prid = io.prid and v.prext = io.prext
+join sproducts p on p.productid = io.prid and v.nomnom = p.nomnom
+;
+
+
+if exists (select 1 from sysviews where viewname = 'vIzdeliaOutPrimeCost' and vcreator = 'dba') then
+	drop view vIzdeliaOutPrimeCost;
+end if;
+
+create view vIzdeliaOutPrimeCost (outdate, prId, prExt, numorder, costEd)
+as 
+select outdate, prid, prext, numorder, sum(round(n.cost * quantity / n.perlist, 2))
+from vIzdeliaOutDetail io 
+join sGuideNomenk n on io.nomnom = n.nomnom
+group by outdate, prid, prext, numorder
+;
+
+
+
+if exists (select 1 from sysviews where viewname = 'vPredmetyOutDetail' and vcreator = 'dba') then
+	drop view vPredmetyOutDetail;
+end if;
+
+create view vPredmetyOutDetail (outdate, numorder, type, prId, prExt, prNomnom, cenaEd, quant, costEd, firmName, ventureId, statusid)
+as 
+select 
+	po.outdate, po.numorder, 1, po.prId, po.prExt, null, p.cenaEd, po.quant, io.costEd
+	, f.name, o.ventureid, o.statusid
+from xpredmetybyizdeliaout po
+join xpredmetybyizdelia p on p.numorder = po.numorder and p.prid = po.prid and p.prext = po.prext
+join vIzdeliaOutPrimeCost io on po.outdate = io.outdate and io.numorder = po.numorder and io.prid = po.prid and io.prext = po.prext
+join orders o on o.numorder = po.numorder and o.numorder = p.numorder
+join guidefirms f on f.firmid = o.firmid
+	union all 
+select po.outdate, po.numorder, 2, null, null, po.nomnom, p.cenaEd, po.quant, round(round(n.cost, 2) / n.perlist, 2) as costEd
+	, f.name, o.ventureid, o.statusid
+from xpredmetybynomenkout po
+join xpredmetybynomenk p on p.numorder = po.numorder and p.nomnom = po.nomnom
+join sguidenomenk n on n.nomnom = po.nomnom and n.nomnom = p.nomnom
+join orders o on o.numorder = po.numorder and o.numorder = p.numorder
+join guidefirms f on f.firmid = o.firmid
+	union all 
+select u.outdate, u.numorder, 4, null, null, null, 1.0, u.quant, null
+	, f.name, o.ventureid, o.statusid
+from xuslugout u
+join orders o on o.numorder = u.numorder 
+join guidefirms f on f.firmid = o.firmid
+	union all 
+select po.outDate, o.numOrder, 8, null, null, po.nomnom, r.intQuant AS cenaed, po.quant, n.cost as costEd
+	, f.name, o.ventureid, o.statusid
+from bayorders o
+--join sDocs d on d.numDoc = o.numOrder 
+join sDMCrez r on r.numDoc = o.numorder
+join baynomenkout po on po.numorder = o.numorder and po.nomnom = r.nomnom
+join sguidenomenk n on n.nomnom = po.nomnom
+join bayguidefirms f on f.firmid = o.firmid
+;
+
+
+/* Это на самом деле долна быть не отгрузка, а передача в производство */
+/*
+select d.xDate, o.numOrder, 8, null, null, i.nomnom, r.intQuant AS cenaed, round(i.quant / n.perList, 2) AS quant, round(n.cost / n.perList, 2) as costEd
+	, f.name
+	, o.ventureid
+from BayOrders o 
+join sDocs d on d.numDoc = o.numOrder 
+join sDMC i on d.numExt = i.numExt and d.numDoc = i.numDoc
+join sDMCrez r on i.nomNom = r.nomNom and o.numOrder = r.numDoc
+join sGuideNomenk n ON n.nomNom = i.nomNom and r.nomNom = i.nomNom 
+join bayguidefirms f on f.firmid = o.firmid
+*/
+
+
+
+if exists (select 1 from sysviews where viewname = 'vPredmetyOutSummary' and vcreator = 'dba') then
+	drop view vPredmetyOutSummary;
+end if;
+
+create view vPredmetyOutSummary (outdate, numorder, type, cenaTotal, costTotal, firmname, ventureid)
+as 
+select outdate, numorder, sum(distinct(type)), sum(isnull(round(quant * cenaEd , 2), 0)), sum(isnull(round(quant * costEd, 2), 0)), firmname, ventureid
+from vPredmetyOutDetail po
+group by outdate, numorder, firmname, ventureid;
+
+
+
+
+
+------------ Незавершенка для продаж ------------
+if exists (select 1 from sysviews where viewname = 'vBaynomenkoutTotal' and vcreator = 'dba') then
+	drop view vBaynomenkoutTotal;
+end if;
+
+create view vBaynomenkoutTotal (numorder, nomnom, quant)
+as 
+select numorder, nomnom, sum(quant)
+from baynomenkout
+group by numorder, nomnom
+;
+
+
+if exists (select 1 from sysviews where viewname = 'vBayOrderOutTotal' and vcreator = 'dba') then
+	drop view vBayOrderOutTotal;
+end if;
+
+create view vBayOrderOutTotal (numorder, cenaTotal, statusid)
+as 
+	select o.numorder, sum(r.intQuant * po.quant) as cenaTotal, o.statusid
+	from bayorders o
+	join sDMCrez r on r.numDoc = o.numorder
+	join baynomenkout po on po.numorder = o.numorder and po.nomnom = r.nomnom
+	group by o.numorder, o.statusid
+;
+
+
+if exists (select 1 from sysviews where viewname = 'vIncopleteBayNomenk' and vcreator = 'dba') then
+	drop view vIncopleteBayNomenk;
+end if;
+
+create 
+    view vIncopleteBayNomenk (numdoc, nomnom, quant, id_scet, costEd, ordered, shipped, rest)
+as
+select r.numdoc, r.nomnom, r.quantity, r.id_scet, n.cost as costed
+, round(n.cost * r.quantity / n.perlist, 5) as ordered, round(n.cost * po.quant, 5) as shipped, round(n.cost * (r.quantity / n.perlist - isnull(po.quant, 0)), 5) as rest 
+from sdmcrez r
+join sdocs d on d.numdoc = r.numdoc
+join sguidenomenk n on n.nomnom = r.nomnom
+left join vbaynomenkoutTotal po on po.numorder = r.numdoc and r.nomnom = po.nomnom
+where 
+    exists (select 1 from bayorders o where o.numorder = r.numdoc)
+    and r.quantity / n.perlist - isnull(po.quant, 0) > 0
+;
+
+
+
+-- Отчет А: строки дебитор/кредитор
+
+if exists (select 1 from sysviews where viewname = 'vDebitorKreditor' and vcreator = 'dba') then
+	drop view vDebitorKreditor;
+end if;
+
+create 
+    view vDebitorKreditor (numorder, name, k, d, type)
+as
+
+SELECT numorder, f.name, (isnull(if isnull(paid, 0) > isnull(shipped, 0) then isnull(paid, 0) - isnull(shipped, 0) endif , 0)) AS k
+, (isnull(if isnull(paid, 0) < isnull(shipped, 0) then isnull(shipped, 0) - isnull(paid, 0) endif , 0)) AS d, 't'
+--, ordered, paid, shipped, statusid
+from orders o
+join guidefirms f on o.firmid = f.firmid
+where (k != 0 or d != 0)
+and statusid < 6
+        union all
+SELECT o.numorder, f.name, (isnull(if isnull(paid, 0) > isnull(cenaTotal, 0) then isnull(paid, 0) - isnull(cenaTotal, 0) endif , 0)) AS k
+, (isnull(if isnull(paid, 0) < isnull(cenaTotal, 0) then isnull(cenaTotal, 0) - isnull(paid, 0) endif , 0)) AS d, 'b'
+--, ordered, paid, cenaTotal
+from bayorders o
+join bayguidefirms f on o.firmid = f.firmid
+left join vBayOrderOutTotal ot on ot.numorder = o.numorder
+where (k != 0 or d != 0)
+and o.statusid < 6
+;
+
+
+--------------------------------- единая вью по всем заказам включая продажи ---------------------
+
+if exists (select 1 from sysviews where viewname = 'all_orders' and vcreator = 'dba') then
+	drop view all_orders;
+end if;
+
+create view all_orders (numorder, tp, xdate, statusid) as 
+select numorder, 'orders', indate, statusid from orders
+	union 
+select numorder, 'bayorders', indate, statusid from bayorders
+;
+
+
+
+-- 
+-- список номенклатуры, входящей в предметы заказа
+-- Изделия (включая вариантные) разбираются на составные номенклатуры.
+--
+if exists (select 1 from sysviews where viewname = 'vIzdeliaNomnom' and vcreator = 'dba') then
+	drop view vIzdeliaNomnom;
+end if;
+
+
+if exists (select 1 from sysviews where viewname = 'vPredmetyNomnom' and vcreator = 'dba') then
+	drop view vPredmetyNomnom;
+end if;
+
+create view vPredmetyNomnom (numorder, nomnom, quantity, prid, prext)
+as 
+select numorder, nomnom, round(fn.quantity * io.quant, 5) as quantity, io.prid, io.prext
+from xpredmetybyizdelia io 
+join vIzdeliaFixNomnom fn on io.prid = fn.productid
+	union all
+select io.numorder, v.nomnom, round(p.quantity * io.quant, 5) as quantity, io.prid, io.prext
+from xpredmetybyizdelia io 
+join xvariantnomenc v on v.numorder = io.numorder and v.prid = io.prid and v.prext = io.prext
+join sproducts p on p.productid = io.prid and v.nomnom = p.nomnom
+	union all
+select po.numorder, po.nomnom, po.quant, null, null
+from xpredmetybynomenk po
+;
+
+
+-- 
+-- Отгруженная номенклатура предметов закакза
+-- Изделия (включая вариантные) разбираются на составные номенклатуры.
+--
+
+if exists (select 1 from sysviews where viewname = 'vIzdeliaNomnomOut' and vcreator = 'dba') then
+	drop view vIzdeliaNomnomOut;
+end if;
+
+
+if exists (select 1 from sysviews where viewname = 'vPredmetyNomnomOut' and vcreator = 'dba') then
+	drop view vPredmetyNomnomOut;
+end if;
+
+create view vPredmetyNomnomOut (outdate, numorder, nomnom, quantity, prid, prext)
+as 
+select outdate, numorder, nomnom, round(fn.quantity * io.quant, 5) as quantity, io.prid, io.prext
+from xpredmetybyizdeliaout io 
+join vIzdeliaFixNomnom fn on io.prid = fn.productid
+	union all
+select outdate, io.numorder, v.nomnom, round(p.quantity * io.quant, 5) as quantity, io.prid, io.prext
+from xpredmetybyizdeliaout io 
+join xvariantnomenc v on v.numorder = io.numorder and v.prid = io.prid and v.prext = io.prext
+join sproducts p on p.productid = io.prid and v.nomnom = p.nomnom
+    union all
+select outdate, io.numorder, io.nomnom, io.quant, null, null
+from xpredmetybynomenkout io
+;
+
+
+-- делается группировка по каждой номенклатуры заказа.
+-- имеем общее к-во по отгруженной номенклатуре всего заказа,
+-- даже если ном-ра через изделия входила несколько раз.
+-- количество для нештучной ном-ры - в производственных единицах (дм)
+
+if exists (select 1 from sysviews where viewname = 'vNomnomOutTotal' and vcreator = 'dba') then
+	drop view vNomnomOutTotal;
+end if;
+
+create view vNomnomOutTotal (numorder, nomnom, quantity, prid, prext)
+as 
+select numorder, nomnom, sum(quantity) as quantity, prid, prext
+from
+	vPredmetyNomnomOut
+group by
+	numorder, nomnom, prid, prext
+;
+
+
+
+if exists (select 1 from sysviews where viewname = 'vIncompleteCommon' and vcreator = 'dba') then
+	drop view vIncompleteCommon;
+end if;
+
+create view vIncompleteCommon (numorder, nomnom, sum_ordered, sum_shipped, sum_rest, type, name)
+as 
+select v.numorder, v.nomnom
+	, (v.quantity  / n.perlist * n.cost), (isnull(po.quantity, 0) * n.cost/perlist)
+	, round((v.quantity - isnull(po.quantity, 0)) / n.perlist * n.cost, 2) as rest
+	, '' as type, f.name
+	--v.numorder, sum((v.quantity - isnull(po.quantity, 0)) / n.perlist * n.cost) as total
+from vPredmetyNomnom v
+join sguidenomenk n on v.nomnom = n.nomnom
+join orders o on v.numorder = o.numorder
+join guidefirms f on f.firmid = o.firmid
+left join vNomnomOutTotal po on po.numorder = v.numorder and po.nomnom = v.nomnom 
+        and isnull(po.prid, 0) = isnull(v.prid, 0) and isnull(po.prext, 0) = isnull(v.prext, 0)
+where 
+	exists (select 1 from all_orders a where a.numorder = v.numorder and a.statusid < 6)
+	and rest > 0
+    	union all
+select po.numdoc, po.nomnom, po.ordered, isnull(po.shipped, 0), po.rest, 'b', f.name
+from vIncopleteBayNomenk po
+join bayorders o on po.numdoc = o.numorder
+join bayguidefirms f on f.firmid = o.firmid
+;
+
+
+--------------------------------------------------------------------------
+-- =
 
 if exists (select 1 from sysprocedure where proc_name = 'wf_breadcrump') then
 	drop procedure wf_breadcrump;

@@ -477,7 +477,7 @@ Dim sum As Single
     If Not tbOrders.BOF Then
         While Not tbOrders.EOF
             quantity = quantity + 1
-            Grid.TextMatrix(quantity, rrNumOrder) = tbOrders!numOrder
+            Grid.TextMatrix(quantity, rrNumOrder) = tbOrders!numorder
             Grid.TextMatrix(quantity, rrDate) = Format(tbOrders!outDate, "dd/mm/yy hh:nn:ss")
             Grid.TextMatrix(quantity, rrFirm) = tbOrders!firmName
             'Grid.TextMatrix(quantity, rrProduct) = tbOrders!Text
@@ -550,7 +550,7 @@ If Not tbOrders.BOF Then
     s = Round((tbOrders!quantity - v) / per, 2)
     If s > 0 Then
         quantity = quantity + 1
-        Grid.TextMatrix(quantity, rtNomZak) = tbOrders!numOrder
+        Grid.TextMatrix(quantity, rtNomZak) = tbOrders!numorder
         Grid.TextMatrix(quantity, rtCeh) = tbOrders!Ceh
     '    Grid.TextMatrix(quantity, rtData) = tbOrders!inDate
         LoadDate Grid, quantity, rtData, tbOrders!inDate, "dd.mm.yy"
@@ -616,7 +616,7 @@ If Not tbOrders Is Nothing Then
       s = Round((tbOrders!quantity - v) / per, 2)
       If s > 0 And tbOrders!StatusId <> 6 Then
         quantity = quantity + 1
-        Grid.TextMatrix(quantity, rtNomZak) = tbOrders!numOrder
+        Grid.TextMatrix(quantity, rtNomZak) = tbOrders!numorder
         Grid.TextMatrix(quantity, rtCeh) = "Продажа"
         LoadDate Grid, quantity, rtData, tbOrders!inDate, "dd.mm.yy"
         Grid.TextMatrix(quantity, rtMen) = Manag(tbOrders!ManagId)
@@ -650,7 +650,7 @@ End Sub
 
 Sub aReportDetail()
 Dim p_rowid As Integer, i As Integer
-Dim colHeaderText As String, curentklassid  As Integer
+Dim colHeaderText As String, curentklassid  As Integer, rowStr As String
     p_rowid = CInt(param1)
     sql = sqlRowDetail(p_rowid)
     Grid.FormatString = rowFormatting(p_rowid) ' "|<Номер ном.|<Название|Ед.изм.|>Цена|>К-во Факт|>К-во Макс|>Сумма.Факт|>Сумма макс."
@@ -679,6 +679,7 @@ Dim colHeaderText As String, curentklassid  As Integer
     If Not tbOrders.BOF Then
         While Not tbOrders.EOF
             quantity = quantity + 1
+If p_rowid = 1 Then
             If curentklassid <> tbOrders!klassid Then
                 Grid.AddItem ""
                 Grid.AddItem Chr(9) & Chr(9) & tbOrders!klassName
@@ -691,8 +692,7 @@ Dim colHeaderText As String, curentklassid  As Integer
                 Grid.CellFontBold = True
                 curentklassid = tbOrders!klassid
             End If
-            
-            Grid.AddItem Chr(9) & tbOrders!nomnom _
+            rowStr = Chr(9) & tbOrders!nomnom _
                 & Chr(9) & tbOrders!Name _
             & Chr(9) & tbOrders!ed_Izmer2 _
             & Chr(9) & Format(tbOrders!cost, "## ##0.00") _
@@ -700,7 +700,24 @@ Dim colHeaderText As String, curentklassid  As Integer
             & Chr(9) & Format(tbOrders!qty_max, "## ##0.00") _
             & Chr(9) & Format(tbOrders!qty_fact * tbOrders!cost, "## ##0.00") _
             & Chr(9) & Format(tbOrders!qty_max * tbOrders!cost, "## ##0.00")
+ElseIf p_rowid = 2 Then
+            rowStr = tbOrders!Type _
+                & Chr(9) & tbOrders!numorder _
+                & Chr(9) & Format(tbOrders!Name, "## ##0.00") _
+                & Chr(9) & Format(tbOrders!ordered, "## ##0.00") _
+                & Chr(9) & Format(tbOrders!shipped, "## ##0.00") _
+                & Chr(9) & Format(tbOrders!rest, "## ##0.00") _
+
+ElseIf p_rowid = 8 Or p_rowid = 9 Then
+            rowStr = tbOrders!Type _
+                & Chr(9) & tbOrders!numorder _
+                & Chr(9) & Format(tbOrders!Name, "## ##0.00") _
+                & Chr(9) & Format(tbOrders!d, "## ##0.00") _
+                & Chr(9) & Format(tbOrders!k, "## ##0.00") _
+
+End If
             
+            Grid.AddItem rowStr
             tbOrders.MoveNext
         Wend
     End If
@@ -714,8 +731,8 @@ Dim s As Single, k As Single, d As Single, sumD As Single, sumK As Single
 Dim s2 As Single
 Dim rowid As Integer
 
-ReDim Preserve sqlRowDetail(11)
-ReDim Preserve aRowText(11)
+ReDim sqlRowDetail(11)
+ReDim aRowText(11)
 ReDim rowFormatting(11)
 
 Grid.FormatString = "||>ПЛЮС|>МИНУС|>РАЗНИЦА"
@@ -741,6 +758,8 @@ sqlRowDetail(rowid) = "call wf_nomenk_areport"
 'Debug.Print sql
 rowFormatting(rowid) = "|<Номер ном.|<Название|Ед изм.|>Цена|>К-во Факт|>К-во Макс|>Сумма.Факт|>Сумма макс."
 byErrSqlGetValues "##387", sql, k, d
+Grid.TextMatrix(1, 0) = ""
+Grid.TextMatrix(1, 1) = aRowText(rowid)
 Grid.TextMatrix(1, 2) = Format(Round(d, 2), "## ##0.00")
 Grid.TextMatrix(1, 3) = Format(Round(k, 2), "## ##0.00")
 Grid.TextMatrix(1, 4) = Format(Round(k - d, 4), "## ##0.00")
@@ -751,23 +770,22 @@ rowid = rowid + 1
 
 '--------------------
 ' сумма списанной и еще неотгруженной ном-ры по незакрытим заказам !!!
-sql = "SELECT Sum(sDMC.quant*sGuideNomenk.cost / sGuideNomenk.perList) AS sum " & _
-    "FROM Orders INNER JOIN (sGuideNomenk " _
-    & "INNER JOIN sDMC ON " & _
-    "sGuideNomenk.nomNom = sDMC.nomNom) ON Orders.numOrder = sDMC.numDoc " & _
-    "WHERE StatusId  < 6"
+    
+sql = "select sum(sum_rest) as rest from vIncompleteCommon"
+   
 byErrSqlGetValues "##386", sql, s
-s = s - otgruzNomenk()
-
-'незавершенка по продажам
-sql = "select sum(quant * cenaEd) from vIncopleteBayNomenk"
-byErrSqlGetValues "##386", sql, d
-s = s + d
 
 aRowText(rowid) = "Незавершенное производство"
-Grid.AddItem rowid & Chr(9) & aRowText(rowid) & Chr(9) & Format(Round(s, 2), "## ##0.00")
+rowFormatting(rowid) = "-|<№ заказа|<Название фирмы|>Сумма заказа|>Сумма отгр.|>Сумма незав."
+sqlRowDetail(rowid) = " select name, type, numorder, sum(sum_ordered) as ordered, sum(sum_shipped) as shipped, sum(sum_rest) as rest" _
+    & " from vIncompleteCommon" _
+    & " group by name, type, numorder" _
+    & " order by numorder"
+
+Grid.AddItem "0" & Chr(9) & aRowText(rowid) & Chr(9) & Format(Round(s, 2), "## ##0.00")
 rowid = rowid + 1
 sumD = sumD + s
+
 
 '--------------------
 s = Round(schetOstat("60"), 2)
@@ -815,52 +833,22 @@ sumK = sumK + k
 
 '--------------------
 d = 0: k = 0
-sql = "SELECT Sum(if paid > shipped then shipped - paid endif ) AS k" _
-        & "    , Sum(if paid < shipped then paid - shipped endif) AS d " _
-        & "    from Orders WHERE StatusId < 6 "
-'не вылавливает строки где paid или shipped Null
-'Debug.Print sql
-
+sql = "select sum(k) as k, sum(d) as d from vDebitorKreditor"
 byErrSqlGetValues "##392", sql, k, d
-s = 0: s2 = 0
-sql = "SELECT Sum(if paid > shipped then shipped - paid endif ) AS k" _
-        & "    , Sum(if paid < shipped then paid - shipped endif) AS d " _
-        & "    from BayOrders WHERE StatusId < 6 "
-'не вылавливает строки где paid или shipped Null
-byErrSqlGetValues "##392", sql, s, s2
-k = k + s
-d = d + s2
 
-s = 0
-sql = "SELECT Sum(shipped) AS Sum_shipped from Orders " & _
-"WHERE paid Is Null AND StatusId < 6"
-byErrSqlGetValues "##393", sql, s
-d = d + s
-s = 0
-sql = "SELECT Sum(shipped) AS Sum_shipped from bayOrders " & _
-"WHERE paid Is Null AND StatusId < 6"
-byErrSqlGetValues "##393", sql, s
-d = d + s
 aRowText(rowid) = "Дебиторы"
+sqlRowDetail(rowid) = "select type, numorder, name, k, d from vDebitorKreditor where k = 0 order by numorder"
+rowFormatting(rowid) = "-|<№ заказа|<Название фирмы|>Сумма дебета|>Сумма кредита"
 Grid.AddItem rowid & Chr(9) & aRowText(rowid) & Chr(9) & Format(d, "## ##0.00")
 rowid = rowid + 1
 
-'--------------------
-s = 0
-sql = "SELECT Sum(paid) AS Sum_paid from Orders " & _
-"WHERE shipped Is Null AND StatusId < 6"
-byErrSqlGetValues "##394", sql, s
-k = k + s
-s = 0
-sql = "SELECT Sum(paid) AS Sum_paid from bayOrders " & _
-"WHERE shipped Is Null AND StatusId < 6"
-byErrSqlGetValues "##394", sql, s
-k = k + s
 aRowText(rowid) = "Кредиторы"
+sqlRowDetail(rowid) = "select type, numorder, name, k, d from vDebitorKreditor where d = 0 order by numorder"
+rowFormatting(rowid) = rowFormatting(rowid - 1)
 Grid.AddItem rowid & Chr(9) & aRowText(rowid) & Chr(9) & Chr(9) & Format(k, "## ##0.00")
 rowid = rowid + 1
-sumD = Round(sumD + d, 2)
-sumK = Round(sumK + k, 2)
+sumD = sumD + d
+sumK = sumK + k
 
 '--------------------
 aRowText(rowid) = "                                       ИТОГО:"
@@ -1110,7 +1098,7 @@ Set tbProduct = myOpenRecordSet("##384", sql, dbOpenForwardOnly)
 If tbProduct Is Nothing Then Exit Function
 
 While Not tbProduct.EOF
-    gNzak = tbProduct!numOrder
+    gNzak = tbProduct!numorder
     gProductId = tbProduct!prId
     prExt = tbProduct!prExt
     productNomenkToNNQQ 0, tbProduct!quant '2
@@ -1266,9 +1254,9 @@ Grid.ColWidth(rrMater) = 1005
 
 quantity = 0
 While Not tbProduct.EOF
-  gNzak = tbProduct!numOrder
+  gNzak = tbProduct!numorder
   Grid.AddItem _
-    Chr(9) & tbProduct!numOrder _
+    Chr(9) & tbProduct!numorder _
     & Chr(9) _
     & Chr(9) & tbProduct!Name _
     & Chr(9) _
@@ -1325,7 +1313,7 @@ Grid.ColWidth(rrMater) = 0 '1005
 'prevDate = 0: prevNom = 0: quantity = 0: prevReliz = 0: prevMater = 0
 quantity = 0: prevName = "$$$$#####@@@@"
 While Not tbProduct.EOF
-  gNzak = tbProduct!numOrder
+  gNzak = tbProduct!numorder
   If statistic = "" Or tbProduct!Name <> prevName Then
   'If 1 = 1 Then
     quantity = quantity + 1
@@ -1402,7 +1390,7 @@ Grid.ColWidth(rrMater) = 1005
 prevDate = 0: prevNom = 0: quantity = 0: prevReliz = 0: prevMater = 0
 While Not tbProduct.EOF
     
-  gNzak = tbProduct!numOrder
+  gNzak = tbProduct!numorder
   If tbProduct!costI = -1 Then ' готовое изделие
         gProductId = tbProduct!prId
         prExt = tbProduct!prExt
@@ -1558,9 +1546,22 @@ mousRow = Grid.row
 If mousRow = 0 Then Exit Sub
 mousCol = Grid.col
 
+If IsNull(sqlRowDetail) Then
+    mousRow = mousRow
+End If
+
+Dim isReportDetail As Boolean
+
+isReportDetail = False
+If Regim = "aReport" And UBound(sqlRowDetail) > 0 Then
+    If sqlRowDetail(mousRow) <> "" Then
+        isReportDetail = True
+    End If
+End If
+
 If (mousCol = rrReliz Or (mousCol = rrMater And Regim <> "mat") _
     Or (Regim = "ventureZatrat" And Grid.col >= rzMainCosts) _
-    Or (Regim = "aReport" And sqlRowDetail(mousRow) <> "") _
+    Or isReportDetail _
     ) _
 Then
    Grid.CellBackColor = &H88FF88

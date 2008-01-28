@@ -1314,20 +1314,33 @@ If Button = 2 And frmMode = "" Then
         Exit Sub
     End If
 
-    'Grid2.col = Grid2.MouseCol
-    'Grid2.row = Grid2.MouseRow
-    'On Error Resume Next
-    'Grid2.SetFocus
-'    Grid.CellForeColor = vbWhite
     Grid2.CellBackColor = vbButtonFace
+
+Dim startRow As Integer, stopRow As Integer, curRow As Integer
+
+    If Grid2.row >= Grid2.RowSel Then
+        startRow = Grid2.RowSel
+        stopRow = Grid2.row
+    Else
+        startRow = Grid2.row
+        stopRow = Grid2.RowSel
+    End If
+    
+    If startRow <> stopRow Then
+        mnEdit5.Visible = False
+        mnAdd5.Visible = False
+    Else
+        mnEdit5.Visible = True
+        mnAdd5.Visible = True
+    End If
+    
+    
     If quantity2 = 0 Then
         mnDel5.Visible = False
     Else
         mnDel5.Visible = True
     End If
      Me.PopupMenu mnContext5
-'    Timer2.Interval = 10
-'    Timer2.Enabled = True
 End If
 
 End Sub
@@ -1819,7 +1832,9 @@ Dim startRow As Integer, stopRow As Integer, curRow As Integer
         stopRow = Grid2.RowSel
     End If
     
-
+    If stopRow <> startRow Then
+        If MsgBox("Вы уверены, что хотите удалить " & stopRow - startRow + 1 & " компонент(a)(ов)?", vbYesNo, "Требуется подтверждение") = vbNo Then Exit Sub
+    End If
     For curRow = startRow To stopRow
         sql = "DELETE From sProducts WHERE (((sProducts.ProductId)=" & gProductId & ") " & _
         "AND ((sProducts.nomNom)='" & Grid2.TextMatrix(startRow, gpNomNom) & "'));"
@@ -1827,7 +1842,7 @@ Dim startRow As Integer, stopRow As Integer, curRow As Integer
         myBase.Execute sql
         quantity2 = quantity2 - 1
         If quantity2 = 0 Then
-            clearGridRow Grid2, Grid2.row
+            clearGridRow Grid2, 1
         Else
             Grid2.RemoveItem startRow
         End If

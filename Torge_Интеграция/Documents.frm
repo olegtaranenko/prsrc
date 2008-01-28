@@ -838,7 +838,6 @@ If dostup = "a" Then
     mnFiltrOborot.Visible = True
     mnSep1.Visible = True
     mnKarta.Visible = True
-    mnAreport.Visible = True
 Else
     mnPathSet.Visible = False
 End If
@@ -1347,10 +1346,6 @@ Private Sub lbVenture_KeyDown(KeyCode As Integer, Shift As Integer)
     End If
 End Sub
 
-Private Sub mnAreport_Click()
-Report.Regim = "aReport"
-Report.Show vbModal
-End Sub
 
 Private Sub mnBaseChoise_Click()
 cfg.loadCfg ' обновляем информацию на всякий случай

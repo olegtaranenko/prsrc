@@ -219,6 +219,9 @@ Begin VB.Form Journal
       Begin VB.Menu mnDohod 
          Caption         =   "Реализация"
       End
+      Begin VB.Menu mnAreport 
+         Caption         =   "Отчет А"
+      End
    End
    Begin VB.Menu mnMyGuide 
       Caption         =   "Справочники"
@@ -274,16 +277,21 @@ Const jnVenture = 15
 Const jnShiz = 16
 
 
+Private Sub mnAreport_Click()
+    Report.Regim = "aReport"
+    Report.Show vbModal
+End Sub
+
 Private Sub mnDohod_Click()
-Pribil.Show
+    Pribil.Show
 End Sub
 
 Private Sub mnGuide_Click()
-jGuideSchets.Show vbModal
+    jGuideSchets.Show vbModal
 End Sub
 
 Private Sub mnKreditors_Click()
-GuideDebKreditor.Show vbModal
+    GuideDebKreditor.Show vbModal
 
 End Sub
 
