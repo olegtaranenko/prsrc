@@ -1,3 +1,305 @@
+-- helper for Report A
+
+
+if exists (select 1 from sysprocedure where proc_name = 'wf_init_schet_cleanup') then
+	drop procedure wf_init_schet_cleanup;
+end if;
+
+
+
+if exists (select 1 from sysprocedure where proc_name = 'wf_init_schet_prepare') then
+	drop procedure wf_init_schet_prepare;
+end if;
+
+
+if exists (select 1 from sysprocedure where proc_name = 'wf_a_report_goods') then
+	drop procedure wf_a_report_goods;
+end if;
+
+
+CREATE procedure wf_a_report_goods(
+	  p_date_start date default null
+	, p_date_end date default null -- все, что есть в базе (не now!)
+)
+begin
+
+	declare v_ostatki integer;
+
+	if p_date_start is null then
+		set v_ostatki = 1;
+	end if;
+	create table #init_schet(schet char(2), subschet char(2)); 
+
+	insert into #init_schet select '60', null;
+
+	call wf_schet_entries(p_date_start, 1, v_ostatki, p_date_end);
+
+	drop table #init_schet;
+
+end;
+
+
+
+
+if exists (select 1 from sysprocedure where proc_name = 'wf_a_report_debts') then
+	drop procedure wf_a_report_debts;
+end if;
+
+
+CREATE procedure wf_a_report_debts(
+	  p_date_start date default null
+	, p_date_end date default null -- все, что есть в базе (не now!)
+)
+begin
+
+	declare v_ostatki integer;
+
+	if p_date_start is null then
+		set v_ostatki = 1;
+	end if;
+	create table #init_schet(schet char(2), subschet char(2)); 
+
+	insert into #init_schet select '57', null;
+
+	call wf_schet_entries(p_date_start, 1, v_ostatki, p_date_end);
+
+	drop table #init_schet;
+
+end;
+
+
+if exists (select 1 from sysprocedure where proc_name = 'wf_a_report_konto') then
+	drop procedure wf_a_report_konto;
+end if;
+
+
+CREATE procedure wf_a_report_konto(
+	  p_date_start date default null
+	, p_date_end date default null -- все, что есть в базе (не now!)
+)
+begin
+
+	declare v_ostatki integer;
+
+	if p_date_start is null then
+		set v_ostatki = 1;
+	end if;
+	create table #init_schet(schet char(2), subschet char(2)); 
+
+	insert into #init_schet select '51', '03';
+	insert into #init_schet select '51', '04';
+	insert into #init_schet select '51', '05';
+
+	call wf_schet_entries(p_date_start, 1, v_ostatki, p_date_end);
+
+	drop table #init_schet;
+
+end;
+
+
+
+if exists (select 1 from sysprocedure where proc_name = 'wf_a_report_kassa') then
+	drop procedure wf_a_report_kassa;
+end if;
+
+
+CREATE procedure wf_a_report_kassa(
+	  p_date_start date default null
+	, p_date_end date default null -- все, что есть в базе (не now!)
+)
+begin
+
+	declare v_ostatki integer;
+
+	if p_date_start is null then
+		set v_ostatki = 1;
+	end if;
+
+	create table #init_schet(schet char(2), subschet char(2)); 
+
+	insert into #init_schet select '50', '01';
+	insert into #init_schet select '50', '02';
+	insert into #init_schet select '50', '05';
+
+	call wf_schet_entries(p_date_start, 1, v_ostatki, p_date_end);
+
+	drop table #init_schet;
+
+end;
+
+
+if exists (select 1 from sysprocedure where proc_name = 'wf_normalize_init') then
+	drop procedure wf_normalize_init;
+end if;
+
+
+CREATE procedure wf_normalize_init(
+)
+begin
+	-- если в таблице #init_schet поступило выражение schet = x and subschet = null
+	-- то тогда считаем что нужно вычисл€ть по всем субсчетам
+	for schet as s0 dynamic scroll cursor for
+		select schet as r_schet 
+		from #init_schet 
+		where subschet is null
+	do
+		delete from #init_schet where schet = r_schet and subschet is not null;
+
+		insert into #init_schet (schet, subschet)
+		select number, subnumber 
+		from yguideschets 
+		where number = r_schet and subnumber is not null;
+	end for;
+
+	delete from #init_schet where subschet is null;
+	
+end;
+
+
+if exists (select 1 from sysprocedure where proc_name = 'wf_schet_entries') then
+	drop procedure wf_schet_entries;
+end if;
+
+
+CREATE procedure wf_schet_entries(
+	  p_date_start date
+	, p_svertka integer            -- свертывать баланс или нет
+	, p_only_outcome integer       -- если 1 то выдавать резалт сет только конечный результат в виде пары дебит-кредит.
+	, p_date_end date default null -- все, что есть в базе (не now!)
+)
+begin
+	declare v_debit float;
+	declare v_kredit float;
+	declare v_debit_init float;
+	declare v_kredit_init float;
+
+	declare v_date_start date;
+	declare v_debit_end float;
+
+	--drop table #balance_entries;
+	create table #balance_entries(
+		xdate datetime
+		, debit float
+		, kredit float
+		, purpose varchar(50)
+		, cherez varchar(203)
+		, note varchar(50)
+		, provodka varchar(20)
+	);
+
+	
+	if p_date_start is null then
+		select min(xdate) into p_date_start from ybook;
+	end if;
+
+	call wf_normalize_init;
+
+	select sum(begDebit)
+	into v_debit_init
+	from yGuideSchets s
+	join #init_schet i on i.schet = s.number and i.subschet = s.subnumber;
+
+	select sum(begKredit)
+	into v_kredit_init
+	from yGuideSchets s
+	join #init_schet i on i.schet = s.number and i.subschet = s.subnumber;
+
+	select sum(uesumm)
+	into v_debit
+	from ybook b
+	join #init_schet i on b.debit = i. schet and b.subdebit = i.subschet
+	where xdate < p_date_start
+	;
+	
+	select sum(uesumm)
+	into v_kredit
+	from ybook b
+	join #init_schet i on b.kredit = i. schet and b.subkredit = i.subschet
+	where xdate < p_date_start
+	;
+	
+	set v_debit_init = isnull(v_debit_init, 0);
+	set v_kredit_init = isnull(v_kredit_init, 0);
+	set v_debit = isnull(v_debit, 0);
+	set v_kredit = isnull(v_kredit, 0);
+
+	if p_svertka = 1 then
+		if v_debit + v_debit_init > v_kredit + v_kredit_init then
+			set v_debit = v_debit - v_kredit + v_debit_init - v_kredit_init;
+			set v_kredit = 0;
+		elseif v_debit + v_debit_init < v_kredit + v_kredit_init then
+			set v_kredit = v_kredit - v_debit  + v_kredit_init - v_debit_init;
+			set v_debit = 0;
+		else 
+			set v_kredit = 0;
+			set v_debit = 0;
+		end if;
+	end if;
+	
+	
+	insert into #balance_entries (xdate, debit, kredit, provodka)
+	select p_date_start, v_debit, v_kredit, '¬ход€щий остаток';
+
+	insert into #balance_entries (xdate, debit, kredit, purpose, cherez, note, provodka)
+		select b.xdate, b.uesumm, 0
+			, p.pDescript, dk.name, b.note
+			, b.debit + '-' + b.subdebit + ' => ' + b.kredit + '-' + b.subkredit
+		from ybook b
+		join #init_schet i on b.debit = i. schet and b.subdebit = i.subschet
+		left join ydebKreditor dk on b.kredDebitor = dk.id
+		left join yGuidePurpose p on b.purposeId = p.pid and b.debit = p.debit and b.subdebit = p.subdebit and b.kredit = p.kredit and b.subkredit = p.subkredit
+		where xdate >= p_date_start and xdate <= isnull(p_date_end, '21000101');
+	
+
+	insert into #balance_entries (xdate, debit, kredit, purpose, cherez, note, provodka)
+		select xdate, 0, uesumm
+			, p.pDescript, dk.name, b.note
+			, b.debit + '-' + b.subdebit + ' => ' + b.kredit + '-' + b.subkredit
+		from ybook b
+		join #init_schet i on b.kredit = i. schet and b.subkredit = i.subschet
+		left join ydebKreditor dk on b.kredDebitor = dk.id
+		left join yGuidePurpose p on b.purposeId = p.pid and b.debit = p.debit and b.subdebit = p.subdebit and b.kredit = p.kredit and b.subkredit = p.subkredit
+		where xdate >= p_date_start and xdate <= isnull(p_date_end, '21000101');
+
+
+	select sum(debit), sum(kredit)
+	into v_debit, v_kredit
+	from #balance_entries
+	;
+	
+	
+	if p_svertka = 1 then
+		if v_debit > v_kredit then
+			set v_debit = v_debit - v_kredit;
+			set v_kredit = 0;
+		elseif v_debit < v_kredit then
+			set v_kredit = v_kredit - v_debit;
+			set v_debit = 0;
+		else 
+			set v_kredit = 0;
+			set v_debit = 0;
+		end if;
+	end if;
+	
+	insert into #balance_entries (xdate, debit, kredit, provodka)
+		select '21000101', v_debit, v_kredit, '»сход€щий остаток'
+	;
+
+	if isnull(p_only_outcome, 0) != 1 then
+		select * from #balance_entries
+			order by xdate, debit desc, kredit desc;
+	else
+		select debit, kredit from #balance_entries where xdate = '21000101';
+	end if;
+
+	drop table #balance_entries;
+	
+end;
+
+
+
+
+
 /*
 	27.12.2007. ќ“чет "–еализаци€" по предпри€ти€м
 */

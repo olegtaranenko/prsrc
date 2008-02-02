@@ -81,7 +81,7 @@ Public startDate As String, endDate As String
 Sub setStartEndDates(tbStartDate As TextBox, tbEndDate As TextBox)
 '    setStartEndDates tbStartDate, tbEndDate
     If isDateTbox(tbStartDate) Then
-        startDate = "'" & Format(tmpDate, "yyyy-mm-dd") & "'"
+        startDate = "'" & Format(tmpDate, "yyyymmdd") & "'"
     Else
         startDate = "null"
     End If

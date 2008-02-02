@@ -669,11 +669,19 @@ Dim colHeaderText As String, curentklassid  As Integer, rowStr As String
         ElseIf InStr(1, colHeaderText, "К-во", vbTextCompare) Then
             Grid.ColWidth(i) = 700
         ElseIf InStr(1, colHeaderText, "Сумма", vbTextCompare) Then
+            Grid.ColWidth(i) = 1000
+        ElseIf InStr(1, colHeaderText, "Проводка", vbTextCompare) Then
+            Grid.ColWidth(i) = 1300
+        ElseIf InStr(1, colHeaderText, "Дата", vbTextCompare) Then
             Grid.ColWidth(i) = 900
+        ElseIf InStr(1, colHeaderText, "Кредит", vbTextCompare) Then
+            Grid.ColWidth(i) = 1000
+        ElseIf InStr(1, colHeaderText, "Дебит", vbTextCompare) Then
+            Grid.ColWidth(i) = 1000
         End If
     Next i
     
-    Debug.Print sql
+    'Debug.Print sql
     Set tbOrders = myOpenRecordSet("##vnt_det", sql, dbOpenForwardOnly)
     If tbOrders Is Nothing Then Exit Sub
     If Not tbOrders.BOF Then
@@ -715,6 +723,34 @@ ElseIf p_rowid = 8 Or p_rowid = 9 Then
                 & Chr(9) & Format(tbOrders!d, "## ##0.00") _
                 & Chr(9) & Format(tbOrders!k, "## ##0.00") _
 
+Else
+            ' отчеты по счетам (проводки)
+                Dim v_purpose As String, v_cherez As String, v_note As String
+                If IsNull(tbOrders!purpose) Then
+                    v_purpose = ""
+                Else
+                    v_purpose = tbOrders!purpose
+                End If
+                
+                If IsNull(tbOrders!cherez) Then
+                    v_cherez = ""
+                Else
+                    v_cherez = tbOrders!cherez
+                End If
+                If IsNull(tbOrders!note) Then
+                    v_note = ""
+                Else
+                    v_note = tbOrders!note
+                End If
+                rowStr = _
+                     Chr(9) & tbOrders!provodka _
+                    & Chr(9) & tbOrders!xDate _
+                    & Chr(9) & Format(tbOrders!debit, "## ##0.00") _
+                    & Chr(9) & Format(tbOrders!kredit, "## ##0.00") _
+                    & Chr(9) & v_cherez _
+                    & Chr(9) & v_purpose _
+                    & Chr(9) & v_note _
+
 End If
             
             Grid.AddItem rowStr
@@ -743,6 +779,8 @@ Grid.ColWidth(3) = 1360
 Grid.ColWidth(4) = 1360
 'сделать исправления в переводом цен на Целые кол-ва ном-р !!!
 
+' выставить дату для отчетов по счетам.
+setStartEndDates Journal.tbStartDate, Journal.tbEndDate
 
 '--------------------
 sumD = 0: sumK = 0
@@ -791,9 +829,15 @@ sumD = sumD + s
 s = Round(schetOstat("60"), 2)
 If s < 0 Then k = -s: s = 0 Else k = 0
 aRowText(rowid) = "Товары в пути"
+rowFormatting(rowid) = "|Проводка|Дата|>Кредит|>Дебит|Кому/От кого|Назначение|Замечание"
+sqlRowDetail(rowid) = "call wf_a_report_goods(" & startDate & ")"
+
 Grid.AddItem rowid & Chr(9) & aRowText(rowid) & Chr(9) & Format(s, "## ##0.00")
 rowid = rowid + 1
 aRowText(rowid) = "Долги по товарам"
+rowFormatting(rowid) = rowFormatting(rowid - 1)
+sqlRowDetail(rowid) = "call wf_a_report_goods(" & startDate & ")"
+
 Grid.AddItem rowid & Chr(9) & aRowText(rowid) & Chr(9) & Chr(9) & Format(k, "## ##0.00")
 rowid = rowid + 1
 sumD = sumD + s
@@ -805,6 +849,8 @@ s = s + schetOstat("51", "04")
 s = Round(s + schetOstat("51", "05"), 2)
 If s < 0 Then k = -s: s = 0 Else k = 0
 aRowText(rowid) = "Р/счет"
+rowFormatting(rowid) = rowFormatting(rowid - 1)
+sqlRowDetail(rowid) = "call wf_a_report_konto(" & startDate & ")"
 Grid.AddItem rowid & Chr(9) & aRowText(rowid) & Chr(9) & Format(s, "## ##0.00") & Chr(9) & Format(k, "## ##0.00")
 rowid = rowid + 1
 sumD = sumD + s
@@ -816,6 +862,8 @@ s = s + schetOstat("50", "02")
 s = Round(s + schetOstat("50", "05"), 2)
 If s < 0 Then k = -s: s = 0 Else k = 0
 aRowText(rowid) = "Касса"
+rowFormatting(rowid) = rowFormatting(rowid - 1)
+sqlRowDetail(rowid) = "call wf_a_report_kassa(" & startDate & ")"
 Grid.AddItem rowid & Chr(9) & aRowText(rowid) & Chr(9) & s & Chr(9) & Format(k, "## ##0.00")
 rowid = rowid + 1
 sumD = sumD + s
@@ -825,6 +873,8 @@ sumK = sumK + k
 s = Round(schetOstat("57"), 2)
 If s < 0 Then k = -s: s = 0 Else k = 0
 aRowText(rowid) = "Долги"
+rowFormatting(rowid) = rowFormatting(rowid - 1)
+sqlRowDetail(rowid) = "call wf_a_report_debts(" & startDate & ")"
 Grid.AddItem rowid & Chr(9) & aRowText(rowid) & Chr(9) & Format(s, "## ##0.00") & Chr(9) & Format(k, "## ##0.00")
 rowid = rowid + 1
 sumD = sumD + s
@@ -1553,9 +1603,11 @@ End If
 Dim isReportDetail As Boolean
 
 isReportDetail = False
-If Regim = "aReport" And UBound(sqlRowDetail) > 0 Then
-    If sqlRowDetail(mousRow) <> "" Then
-        isReportDetail = True
+If Regim = "aReport" Then
+    If UBound(sqlRowDetail) > 0 Then
+        If sqlRowDetail(mousRow) <> "" Then
+            isReportDetail = True
+        End If
     End If
 End If
 
