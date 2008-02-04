@@ -934,7 +934,8 @@ Private Sub cbPeriod_Click()
 Dim curIndex As Integer, isMonth As Boolean, isPrev As Integer
 Dim currentYear As Integer, currentMonth As Integer, theYear As Integer, theMonth As Integer
 Dim endYear As Integer, endMonth As Integer
-curIndex = cbPeriod.ItemData(cbPeriod.ListIndex)
+    
+    curIndex = cbPeriod.ItemData(cbPeriod.ListIndex)
     If curIndex <> 0 Then
         currentYear = CInt(Format(Now, "yyyy"))
         currentMonth = CInt(Format(Now, "mm"))
@@ -988,85 +989,77 @@ Private Sub ckStatistic_Click()
 End Sub
 
 Private Sub cmDetail_Click()
-Me.MousePointer = flexHourglass
-Report.param1 = laOther.Caption
-Report.Regim = "mat"
-Report.Sortable = True
-
-Report.Show vbModal
-Me.MousePointer = flexDefault
+    Report.param1 = laOther.Caption
+    Report.Regim = "mat"
+    Report.Sortable = True
+    Set Report.Caller = Me
+    Report.Show vbModal
 
 End Sub
 
 Private Sub cmDetail1_Click()
-Me.MousePointer = flexHourglass
-'Report.param1 = laRealiz1.Caption
-Report.param1 = laProduct.Caption
-Report.param2 = laMaterials1.Caption
-If ckStatistic.value = 1 Then
-    Report.Regim = "relizStatistic"
-Else
-    If ckSaleNomenk.value = 1 Then
-        Report.Regim = "relizNomenk"
+    'Report.param1 = laRealiz1.Caption
+    Set Report.Caller = Me
+    Report.param1 = laProduct.Caption
+    Report.param2 = laMaterials1.Caption
+    If ckStatistic.value = 1 Then
+        Report.Regim = "relizStatistic"
     Else
-        Report.Regim = ""
+        If ckSaleNomenk.value = 1 Then
+            Report.Regim = "relizNomenk"
+        Else
+            Report.Regim = ""
+        End If
     End If
-End If
-
-Report.Sortable = True
-Report.Show vbModal
-Me.MousePointer = flexDefault
+    
+    Report.Sortable = True
+    Set Report.Caller = Me
+    Report.Show vbModal
 
 End Sub
 
 
 Private Sub cmDetail3_Click()
-Me.MousePointer = flexHourglass
-'Report.param1 = laRealiz1.Caption
-Report.param1 = laUslug.Caption
-'Report.param2 = laMaterials1.Caption
-If ckStatistic.value = 1 Then
-    Report.Regim = "uslugStatistic"
-Else
-    Report.Regim = "uslug"
-End If
-Report.Sortable = True
-Report.Show vbModal
-Me.MousePointer = flexDefault
+    Report.param1 = laUslug.Caption
+    If ckStatistic.value = 1 Then
+        Report.Regim = "uslugStatistic"
+    Else
+        Report.Regim = "uslug"
+    End If
+    Report.Sortable = True
+    Set Report.Caller = Me
+    Report.Show vbModal
 
 End Sub
 
 Private Sub cmDetailAN_Click()
-    Me.MousePointer = flexHourglass
     Report.param2 = laAnMainCosts.Caption
     Report.param1 = laAnAddCosts.Caption
     setVentureRegim
     ventureId = 3
     Report.Sortable = True
+    Set Report.Caller = Me
     Report.Show vbModal
-    Me.MousePointer = flexDefault
 End Sub
 
 Private Sub cmDetailMM_Click()
-    Me.MousePointer = flexHourglass
     Report.param2 = laMmMainCosts.Caption
     Report.param1 = laMmAddCosts.Caption
     setVentureRegim
     ventureId = 2
     Report.Sortable = True
+    Set Report.Caller = Me
     Report.Show vbModal
-    Me.MousePointer = flexDefault
 End Sub
 
 Private Sub cmDetailPM_Click()
-    Me.MousePointer = flexHourglass
     Report.param2 = laPmMainCosts.Caption
     Report.param1 = laPmAddCosts.Caption
     setVentureRegim
     ventureId = 1
     Report.Sortable = True
+    Set Report.Caller = Me
     Report.Show vbModal
-    Me.MousePointer = flexDefault
 End Sub
 
 Private Sub setVentureRegim()
@@ -1385,22 +1378,21 @@ Private Sub cmRealiz_Click()
 End Sub
 
 Private Sub cmSales_Click()
-Me.MousePointer = flexHourglass
-Report.param1 = laRealiz2.Caption
-Report.param2 = laMaterials2.Caption
-If ckStatistic.value = 1 Then
-    Report.Regim = "bayStatistic"
-    Report.Sortable = True
-Else
-    If ckSaleNomenk.value = 1 Then
-        Report.Regim = "bayNomenk"
-    Else
-        Report.Regim = "bay"
+    Report.param1 = laRealiz2.Caption
+    Report.param2 = laMaterials2.Caption
+    If ckStatistic.value = 1 Then
+        Report.Regim = "bayStatistic"
         Report.Sortable = True
+    Else
+        If ckSaleNomenk.value = 1 Then
+            Report.Regim = "bayNomenk"
+        Else
+            Report.Regim = "bay"
+            Report.Sortable = True
+        End If
     End If
-End If
-Report.Show vbModal
-Me.MousePointer = flexDefault
+    Set Report.Caller = Me
+    Report.Show vbModal
 
 End Sub
 

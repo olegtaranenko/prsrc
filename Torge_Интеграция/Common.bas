@@ -76,6 +76,7 @@ Public Const otladColor = &H80C0FF
 Public sqlRowDetail() As String
 Public aRowText() As String
 Public rowFormatting() As String
+Public aRowSortable() As Boolean
 Public startDate As String, endDate As String
 
 Sub setStartEndDates(tbStartDate As TextBox, tbEndDate As TextBox)

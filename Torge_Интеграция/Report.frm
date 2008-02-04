@@ -101,6 +101,7 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
 Public Regim As String, param1 As String, param2 As String, param3 As String
+Public Caller As Form
 
 
 Dim oldHeight As Integer, oldWidth As Integer ' нач размер формы
@@ -109,7 +110,6 @@ Public mousRow As Long
 Public mousCol As Long
 Dim quantity As Long
 Dim Cena()  As Single
-Dim parentReport As Report
 
 
 
@@ -227,7 +227,7 @@ Dim prevDate As Date, prevNom As Long
 
 oldHeight = Me.Height
 oldWidth = Me.Width
-Me.MousePointer = flexHourglass
+Me.Caller.MousePointer = flexHourglass
 If Regim = "subDetail" Then
     laHeader.Caption = "Детализация сумм " & param3 & "  по отгрузке от " & _
     Left$(param2, 8) & " по заказу №" & gNzak
@@ -296,7 +296,7 @@ If InStr(Regim, "tatistic") Then
     SortCol Grid, rrReliz, "numeric"
 End If
 fitFormToGrid
-Me.MousePointer = flexDefault
+Me.Caller.MousePointer = flexDefault
 End Sub
 
 Sub byNomenk(saled As String)
@@ -668,8 +668,10 @@ Sub aReportDetail()
 Dim p_rowid As Integer, i As Integer
 Dim colHeaderText As String, curentklassid  As Integer, rowStr As String
     p_rowid = CInt(param1)
+    
+    Me.Sortable = aRowSortable(p_rowid)
     sql = sqlRowDetail(p_rowid)
-    Grid.FormatString = rowFormatting(p_rowid) ' "|<Номер ном.|<Название|Ед.изм.|>Цена|>К-во Факт|>К-во Макс|>Сумма.Факт|>Сумма макс."
+    Grid.FormatString = rowFormatting(p_rowid)
     For i = 0 To Grid.Cols - 1
         colHeaderText = Grid.TextMatrix(0, i)
         If colHeaderText = "" Then
@@ -786,6 +788,7 @@ Dim rowid As Integer
 ReDim sqlRowDetail(11)
 ReDim aRowText(11)
 ReDim rowFormatting(11)
+ReDim aRowSortable(11)
 
 Grid.FormatString = "||>ПЛЮС|>МИНУС|>РАЗНИЦА"
 Grid.ColWidth(0) = 0
@@ -808,6 +811,7 @@ sql = "SELECT Sum((if mark = 'Used' then zakup else nowOstatki/perlist endif) * 
     & " FROM sGuideNomenk"
     
 sqlRowDetail(rowid) = "call wf_nomenk_areport"
+aRowSortable(rowid) = True
 
 'Debug.Print sql
 rowFormatting(rowid) = "|<Номер ном.|<Название|Ед изм.|>Цена|>К-во Факт|>К-во Макс|>Сумма.Факт|>Сумма макс."
@@ -829,6 +833,7 @@ sql = "select sum(sum_rest) as rest from vIncompleteCommon"
    
 byErrSqlGetValues "##386", sql, s
 
+aRowSortable(rowid) = True
 aRowText(rowid) = "Незавершенное производство"
 rowFormatting(rowid) = "-|<№ заказа|<Название фирмы|>Сумма заказа|>Сумма отгр.|>Сумма незав."
 sqlRowDetail(rowid) = " select name, type, numorder, sum(sum_ordered) as ordered, sum(sum_shipped) as shipped, sum(sum_rest) as rest" _
@@ -844,6 +849,8 @@ sumD = sumD + s
 '--------------------
 s = Round(schetOstat("60"), 2)
 If s < 0 Then k = -s: s = 0 Else k = 0
+
+aRowSortable(rowid) = False
 aRowText(rowid) = "Товары в пути"
 rowFormatting(rowid) = "|Проводка|Дата|>Кредит|>Дебит|Кому/От кого|Назначение|Замечание"
 sqlRowDetail(rowid) = "call wf_a_report_goods(" & startDate & ")"
@@ -864,6 +871,7 @@ s = schetOstat("51", "03")
 s = s + schetOstat("51", "04")
 s = Round(s + schetOstat("51", "05"), 2)
 If s < 0 Then k = -s: s = 0 Else k = 0
+aRowSortable(rowid) = False
 aRowText(rowid) = "Р/счет"
 rowFormatting(rowid) = rowFormatting(rowid - 1)
 sqlRowDetail(rowid) = "call wf_a_report_konto(" & startDate & ")"
@@ -877,6 +885,7 @@ s = schetOstat("50", "01")
 s = s + schetOstat("50", "02")
 s = Round(s + schetOstat("50", "05"), 2)
 If s < 0 Then k = -s: s = 0 Else k = 0
+aRowSortable(rowid) = False
 aRowText(rowid) = "Касса"
 rowFormatting(rowid) = rowFormatting(rowid - 1)
 sqlRowDetail(rowid) = "call wf_a_report_kassa(" & startDate & ")"
@@ -888,6 +897,7 @@ sumK = sumK + k
 '--------------------
 s = Round(schetOstat("57"), 2)
 If s < 0 Then k = -s: s = 0 Else k = 0
+aRowSortable(rowid) = False
 aRowText(rowid) = "Долги"
 rowFormatting(rowid) = rowFormatting(rowid - 1)
 sqlRowDetail(rowid) = "call wf_a_report_debts(" & startDate & ")"
@@ -902,12 +912,14 @@ d = 0: k = 0
 sql = "select sum(k) as k, sum(d) as d from vDebitorKreditor"
 byErrSqlGetValues "##392", sql, k, d
 
+aRowSortable(rowid) = True
 aRowText(rowid) = "Дебиторы"
 sqlRowDetail(rowid) = "select type, numorder, name, k, d from vDebitorKreditor where k = 0 order by numorder"
 rowFormatting(rowid) = "-|<№ заказа|<Название фирмы|>Сумма дебета|>Сумма кредита"
 Grid.AddItem rowid & Chr(9) & aRowText(rowid) & Chr(9) & Format(d, "## ##0.00")
 rowid = rowid + 1
 
+aRowSortable(rowid) = True
 aRowText(rowid) = "Кредиторы"
 sqlRowDetail(rowid) = "select type, numorder, name, k, d from vDebitorKreditor where d = 0 order by numorder"
 rowFormatting(rowid) = rowFormatting(rowid - 1)
@@ -917,6 +929,7 @@ sumD = sumD + d
 sumK = sumK + k
 
 '--------------------
+aRowSortable(rowid) = False
 aRowText(rowid) = "                                       ИТОГО:"
 Grid.AddItem rowid & Chr(9) & aRowText(rowid) & _
 Chr(9) & Format(sumD, "## ##0.00") & Chr(9) & Format(sumK, "## ##0.00") & Chr(9) & Format(Round(sumD - sumK, 2), "## ##0.00")
@@ -1681,6 +1694,7 @@ End Sub
 Private Sub Grid_DblClick()
     Dim str As String
     Dim Report2 As New Report
+    Report2.Caller = Me
     
 
     If Grid.CellBackColor <> &H88FF88 Then Exit Sub

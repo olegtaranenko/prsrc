@@ -279,6 +279,7 @@ Const jnShiz = 16
 
 Private Sub mnAreport_Click()
     Report.Regim = "aReport"
+    Set Report.Caller = Me
     Report.Show vbModal
 End Sub
 
