@@ -259,37 +259,37 @@ Set objExel = Nothing
 End Sub
 
 
-Function myIsDate(ByVal dt As String) As Variant
+Function myIsDate(ByVal Dt As String) As Variant
 Dim dotPos As Integer
 Dim v_dd As Integer
 Dim v_mm As Integer
 Dim v_yyyy As Integer
     
     On Error GoTo catch
-    dotPos = InStr(dt, ".")
+    dotPos = InStr(Dt, ".")
     If IsNull(dotPos) Or dotPos = 0 Then
-        v_dd = CInt(dt)
-        dt = ""
+        v_dd = CInt(Dt)
+        Dt = ""
     Else
-        v_dd = CInt(Left(dt, dotPos))
-        dt = Mid(dt, dotPos + 1)
+        v_dd = CInt(Left(Dt, dotPos))
+        Dt = Mid(Dt, dotPos + 1)
     End If
     
-    If Len(dt) > 0 Then
-        dotPos = InStr(dt, ".")
+    If Len(Dt) > 0 Then
+        dotPos = InStr(Dt, ".")
         If IsNull(dotPos) Or dotPos = 0 Then
-            v_mm = CInt(dt)
-            dt = ""
+            v_mm = CInt(Dt)
+            Dt = ""
         Else
-            v_mm = CInt(Left(dt, dotPos))
-            dt = Mid(dt, dotPos + 1)
+            v_mm = CInt(Left(Dt, dotPos))
+            Dt = Mid(Dt, dotPos + 1)
         End If
     Else
         v_mm = Format(Now(), "mm")
     End If
     
-    If Len(dt) <= 2 And Len(dt) > 0 Then
-        v_yyyy = CInt("20" & Format(CInt(dt), "0#"))
+    If Len(Dt) <= 2 And Len(Dt) > 0 Then
+        v_yyyy = CInt("20" & Format(CInt(Dt), "0#"))
     Else
         v_yyyy = Format(Now(), "yyyy")
     End If
@@ -303,24 +303,24 @@ End Function
 
 Function isDateEmpty(tBox As TextBox, Optional warn As Boolean = True) As Boolean
 Dim str As String
-Dim dt As String
+Dim Dt As String
 Dim ret As Variant
     
-    dt = tBox.Text
-    If IsEmpty(dt) Or Len(CStr(dt)) = 0 Then
+    Dt = tBox.Text
+    If IsEmpty(Dt) Or Len(CStr(Dt)) = 0 Then
         isDateEmpty = False
         Exit Function
     End If
     
-    dt = tBox.Text
+    Dt = tBox.Text
     
-    ret = myIsDate(dt)
+    ret = myIsDate(Dt)
     If IsDate(ret) Then
         isDateEmpty = True
         tBox.Text = ret
     Else
         If warn Then
-            MsgBox "Неверная дата: " & CStr(dt)
+            MsgBox "Неверная дата: " & CStr(Dt)
         End If
         isDateEmpty = False
         tBox.SetFocus
@@ -994,8 +994,14 @@ Dim v, i As Integer
     sumInGridCol = 0
     For i = Grid.row To Grid.RowSel
         v = Grid.TextMatrix(i, col)
-        If Not IsNumeric(v) Then v = 0
-        sumInGridCol = sumInGridCol + v
+        If Not IsNumeric(v) Then
+            v = 0
+        Else
+            If v < 10000000 Then
+                sumInGridCol = sumInGridCol + v
+            End If
+        End If
+        
     Next i
 End Function
 

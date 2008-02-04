@@ -991,6 +991,8 @@ Private Sub cmDetail_Click()
 Me.MousePointer = flexHourglass
 Report.param1 = laOther.Caption
 Report.Regim = "mat"
+Report.Sortable = True
+
 Report.Show vbModal
 Me.MousePointer = flexDefault
 
@@ -1011,6 +1013,7 @@ Else
     End If
 End If
 
+Report.Sortable = True
 Report.Show vbModal
 Me.MousePointer = flexDefault
 
@@ -1027,6 +1030,7 @@ If ckStatistic.value = 1 Then
 Else
     Report.Regim = "uslug"
 End If
+Report.Sortable = True
 Report.Show vbModal
 Me.MousePointer = flexDefault
 
@@ -1038,6 +1042,7 @@ Private Sub cmDetailAN_Click()
     Report.param1 = laAnAddCosts.Caption
     setVentureRegim
     ventureId = 3
+    Report.Sortable = True
     Report.Show vbModal
     Me.MousePointer = flexDefault
 End Sub
@@ -1048,6 +1053,7 @@ Private Sub cmDetailMM_Click()
     Report.param1 = laMmAddCosts.Caption
     setVentureRegim
     ventureId = 2
+    Report.Sortable = True
     Report.Show vbModal
     Me.MousePointer = flexDefault
 End Sub
@@ -1058,6 +1064,7 @@ Private Sub cmDetailPM_Click()
     Report.param1 = laPmAddCosts.Caption
     setVentureRegim
     ventureId = 1
+    Report.Sortable = True
     Report.Show vbModal
     Me.MousePointer = flexDefault
 End Sub
@@ -1107,7 +1114,7 @@ oborot = 0: dohod = 0:
 
 If Not tbProduct.BOF Then
  While Not tbProduct.EOF
-    gNzak = tbProduct!numOrder
+    gNzak = tbProduct!numorder
     gProductId = tbProduct!prId
     prExt = tbProduct!prExt
     mat = getProductNomenkSum * tbProduct!quant
@@ -1383,11 +1390,13 @@ Report.param1 = laRealiz2.Caption
 Report.param2 = laMaterials2.Caption
 If ckStatistic.value = 1 Then
     Report.Regim = "bayStatistic"
+    Report.Sortable = True
 Else
     If ckSaleNomenk.value = 1 Then
         Report.Regim = "bayNomenk"
     Else
         Report.Regim = "bay"
+        Report.Sortable = True
     End If
 End If
 Report.Show vbModal

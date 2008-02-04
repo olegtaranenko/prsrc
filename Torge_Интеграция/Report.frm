@@ -101,7 +101,8 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
 Public Regim As String, param1 As String, param2 As String, param3 As String
-'Public Regim As String
+
+
 Dim oldHeight As Integer, oldWidth As Integer ' нач размер формы
 Public nCols As Integer ' общее кол-во колонок
 Public mousRow As Long
@@ -118,6 +119,7 @@ Const rrFirm = 3
 Const rrProduct = 4
 Const rrMater = 5
 Const rrReliz = 6
+
 'константы для whoReserved
 Const rtNomZak = 1
 Const rtReserv = 2
@@ -159,6 +161,18 @@ Const riCommonDebts = 8
 Const riDebitor = 9
 Const riKreditor = 10
 Const riTotals = 11
+
+Public setSortable As Boolean 'Позволяет установить признак снаружи
+Public Sortable As Boolean 'Приватная переменная - может или нет отчет сортироваться.
+Dim colType As String 'определяет тип текущей сортировки.
+
+Const CT_NUMBER = "numeric"
+Const CT_DATE = "date"
+Const CT_STRING = ""
+Const CT_EMPTY = "empty"
+Const CT_CUSTOM = "custom"
+Const CT_SCHET = "schet"
+
 
 
 
@@ -268,9 +282,11 @@ ElseIf Regim = "venture" Then 'детализация и статистика по предприятиям
     param1 & "(Реализация) по """ & Pribil.ventureId & """"
     ventureReport Pribil.ventureId
 ElseIf Regim = "ventureZatrat" Then 'статистика по предприятиям
+    Sortable = False
     laHeader.Caption = "Детализация сумм по шифрам затрат. Предпрятие """ & Pribil.ventureId & """"
     ventureZatrat Pribil.ventureId
 ElseIf Regim = "ventureZatratDetail" Then 'детализация по предприятиям
+    Sortable = True
     laHeader.Caption = "Детализация сумм по статье затрат """ & Grid.TextMatrix(mousRow, rzZatratName) & """"
     ventureZatratDetail Pribil.ventureId, Grid.TextMatrix(Grid.row, 0)
 End If
@@ -1521,21 +1537,145 @@ laRecCount.Top = laRecCount.Top + h
 
 End Sub
 
-Private Sub Grid_Click()
-If Regim <> "" Then Exit Sub
-mousCol = Grid.MouseCol
-mousRow = Grid.MouseRow
-'If mousRow = 0 And (Regim = "KK" Or Regim = "RA") Then
-'Grid.CellBackColor = Grid.BackColor
-    If mousCol = 0 Then Exit Sub
-'    If mousCol > 3 Then
-'        SortCol Grid, mousCol, "numeric"
-'    Else
-'        SortCol Grid, mousCol
-'    End If
-'    Grid.row = 1    ' только чтобы снять выделение
-'End If
+Private Function determineColType(colIndex As Long) As String
+Dim rowIndex As Long, cellText As String
+Dim asNumber As Integer, asString As Integer, asEmpty As Integer, asDate As Integer, asUnknown As Integer, asSchet As Integer
 
+
+    For rowIndex = 2 To Grid.Rows
+        cellText = Grid.TextMatrix(rowIndex - 1, colIndex)
+        If IsNumeric(cellText) Then
+            asNumber = asNumber + 1
+        ElseIf IsDate(cellText) Then
+            asDate = asDate + 1
+        ElseIf cellText = "" Then
+            asEmpty = asEmpty + 1
+        ElseIf IsDate(cellText) Then
+            asDate = asDate + 1
+        ElseIf InStr(cellText, "=>") > 1 Then
+            asSchet = asSchet + 1
+        ElseIf Len(cellText) > 1 Then
+            asString = asString + 1
+        End If
+    Next rowIndex
+    
+    Dim totalRows As Integer
+    totalRows = Grid.Rows - asEmpty - 1
+    If totalRows = 0 Then
+        determineColType = CT_EMPTY
+    ElseIf asNumber / totalRows > 0.9 Then
+        determineColType = CT_NUMBER
+    ElseIf asDate / totalRows > 0.9 Then
+        determineColType = CT_DATE
+    ElseIf asSchet / totalRows > 0.9 Then
+        determineColType = CT_SCHET
+    Else
+        determineColType = CT_STRING
+    End If
+    
+End Function
+
+Private Sub Form_Unload(Cancel As Integer)
+    Sortable = False
+End Sub
+
+Private Sub Grid_Click()
+
+    mousCol = Grid.MouseCol
+    mousRow = Grid.MouseRow
+
+'Grid.CellBackColor = Grid.BackColor
+    If Sortable And mousRow = 0 Then
+        Grid.MousePointer = flexHourglass
+        colType = determineColType(mousCol)
+        'MsgBox "Type of the determened column's type is: '" & colType & "'"
+        'SortCol Grid, mousCol, colType
+        
+        Static ascSort As Integer, dscSort As Integer
+        If colType = CT_STRING Then
+            ascSort = 5
+            dscSort = 6
+        Else
+            ascSort = 9
+            dscSort = 9
+        End If
+        Grid.col = mousCol
+        Grid.ColSel = mousCol
+        trigger = Not trigger
+
+        If trigger Then
+            Grid.Sort = dscSort
+        Else
+            Grid.Sort = ascSort
+        End If
+        Grid.MousePointer = flexDefault
+
+        If colType <> CT_NUMBER Then
+            'Grid.row = 1    ' только чтобы снять выделение
+        End If
+    End If
+
+End Sub
+
+Private Sub Grid_Compare(ByVal Row1 As Long, ByVal Row2 As Long, Cmp As Integer)
+    Static sortAsc As Boolean
+    Dim cell_1, cell_2 As String
+    Dim date1, date2 As Date
+    Dim num1, num2 As Single
+    
+    
+    cell_1 = Grid.TextMatrix(Row1, mousCol)
+    cell_2 = Grid.TextMatrix(Row2, mousCol)
+    If colType = CT_DATE Then
+        
+        If Not IsDate(cell_1) And Not IsDate(cell_2) Then
+            Cmp = 0
+            Exit Sub
+        ElseIf Not IsDate(cell_1) Then
+            Cmp = 1
+            Exit Sub
+        ElseIf Not IsDate(cell_2) Then
+            Cmp = -1
+            Exit Sub
+        End If
+        
+        date1 = CDate(cell_1)
+        date2 = CDate(cell_2)
+        If date1 > date2 Then
+            Cmp = 1
+        ElseIf date1 < date2 Then
+            Cmp = -1
+        Else
+            Cmp = 0
+        End If
+    ElseIf colType = CT_NUMBER Then
+        If Not IsNumeric(cell_1) And Not IsNumeric(cell_2) Then
+            Cmp = 0
+            Exit Sub
+        ElseIf Not IsNumeric(cell_1) Then
+            Cmp = 1
+            Exit Sub
+        ElseIf Not IsNumeric(cell_2) Then
+            Cmp = -1
+            Exit Sub
+        End If
+        
+        num1 = Round(CSng(cell_1), 5)
+        num2 = Round(CSng(cell_2), 5)
+        If num1 > 1000 Then
+            num2 = num2
+        End If
+        If num1 > num2 Then
+            Cmp = 1
+        ElseIf num1 < num2 Then
+            Cmp = -1
+        Else
+            Cmp = 0
+        End If
+    End If
+    
+CC:
+    If trigger Then Cmp = -Cmp
 End Sub
 
 Private Sub Grid_DblClick()
