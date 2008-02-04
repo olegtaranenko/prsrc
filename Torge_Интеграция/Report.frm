@@ -1694,7 +1694,7 @@ End Sub
 Private Sub Grid_DblClick()
     Dim str As String
     Dim Report2 As New Report
-    Report2.Caller = Me
+    Set Report2.Caller = Me
     
 
     If Grid.CellBackColor <> &H88FF88 Then Exit Sub

@@ -532,6 +532,7 @@ Const gpCol2 = 14
 Const gpCol3 = 15
 Const gpCol4 = 16
 Const gpPage = 17 ' страница в прайсе
+Const gpUsed = 18
 
 ''для прайса
 'Const prHideName = 0
@@ -851,9 +852,11 @@ If baseNamePath = "" Then ' стартуем с этой формы и создаем prodGuide.exe
 End If
     
     Grid.FormatString = "см.Входящие|id|<Номер|<Код|web|<Описание|<Размер|Время обработки" & _
-    "|SumCenaFreight|SumCenaSale|№ формулы|Формула|Цена 3|кол1|кол2|кол3|кол4|Стр."
+    "|SumCenaFreight|SumCenaSale|№ формулы|Формула|Цена 3|кол1|кол2|кол3|кол4|Стр." _
+    & "|"
     Grid.ColWidth(gpNomenk) = 0 '300
     Grid.ColWidth(gpId) = 0
+    Grid.ColWidth(gpUsed) = 0
     Grid.ColWidth(gpSortNom) = 700
     Grid.ColWidth(gpName) = 1065
     Grid.ColWidth(gpDescript) = 3720
@@ -1237,6 +1240,12 @@ If mousRow2 = 0 Or Grid2.CellBackColor <> &H88FF88 Then Exit Sub
 If mousCol2 = gpWeb Then
     listBoxInGridCell lbWeb, Grid2, "select"
 Else
+    tmpStr = productUsedIn(gProductId)
+    If tmpStr <> "" Then
+        MsgBox "Это изделие используется в заказах: " & tmpStr, , _
+        "Редактирование невозможно!"
+        Exit Sub
+    End If
     textBoxInGridCell tbMobile2, Grid2
 End If
 End Sub
@@ -1282,6 +1291,23 @@ Private Sub Grid2_LeaveCell()
 Grid2.CellBackColor = Grid2.BackColor
 
 End Sub
+Private Function productUsedIn(ByVal productId As Integer) As String
+
+    sql = "SELECT o.numorder FROM Orders o" _
+    & " JOIN xPredmetyByIzdelia i ON O.numOrder = i.numOrder and i.prId = " & productId _
+    & " GROUP BY o.numOrder"
+    
+    Set tbProduct = myOpenRecordSet("##320", sql, dbOpenForwardOnly)
+    If tbProduct Is Nothing Then Exit Function
+    If Not tbProduct.BOF Then
+      While Not tbProduct.EOF
+        productUsedIn = productUsedIn & "  " & tbProduct!numorder
+        tbProduct.MoveNext
+      Wend
+    End If
+    tbProduct.Close
+
+End Function
 
 Private Sub Grid2_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
 If Grid2.MouseRow = 0 And Shift = 2 Then _
@@ -1290,24 +1316,7 @@ If Regim = "select" Then Exit Sub
 
 If Button = 2 And frmMode = "" Then
 
-'    sql = "SELECT Orders.numOrder FROM Orders INNER JOIN xPredmetyByIzdelia " & _
-    "ON Orders.numOrder = xPredmetyByIzdelia.numOrder WHERE (((" & _
-    "xPredmetyByIzdelia.prId)=" & gProductId & ") AND ((Orders.StatusId)<>6));"
-    sql = "SELECT Orders.numOrder FROM Orders INNER JOIN xPredmetyByIzdelia " & _
-    "ON Orders.numOrder = xPredmetyByIzdelia.numOrder " & _
-    "Where (((xPredmetyByIzdelia.prId) = " & gProductId & ")) " & _
-    "GROUP BY Orders.numOrder;"
-'    MsgBox sql
-    tmpStr = ""
-    Set tbProduct = myOpenRecordSet("##320", sql, dbOpenForwardOnly)
-    If tbProduct Is Nothing Then Exit Sub
-    If Not tbProduct.BOF Then
-      While Not tbProduct.EOF
-        tmpStr = tmpStr & "  " & tbProduct!numOrder
-        tbProduct.MoveNext
-      Wend
-    End If
-    tbProduct.Close
+    tmpStr = productUsedIn(gProductId)
     If tmpStr <> "" Then
         MsgBox "Это изделие используется в заказах: " & tmpStr, , _
         "Редактирование невозможно!"
@@ -2126,13 +2135,12 @@ Next il
 clearGridRow Grid2, 1
 quantity2 = 0
 
-sql = "SELECT sProducts.*, sGuideNomenk.nomName, sGuideNomenk.ed_Izmer, " & _
-"sGuideNomenk.Size, sGuideNomenk.cod, sGuideNomenk.perList, " & _
-"sGuideNomenk.CENA1, sGuideNomenk.VES, sGuideNomenk.STAVKA, " & _
-"sGuideNomenk.web, sGuideNomenk.CENA_W, sGuideFormuls.Formula " & _
-"FROM sGuideFormuls INNER JOIN (sGuideNomenk INNER JOIN sProducts ON " & _
-"sGuideNomenk.nomNom = sProducts.nomNom) ON sGuideFormuls.nomer = sGuideNomenk.formulaNom " & _
-"WHERE (((sProducts.ProductId)=" & gProductId & "));"
+sql = "SELECT p.*, n.nomName, n.ed_Izmer, n.Size, n.cod, n.perList, n.CENA1, n.VES, n.STAVKA" _
+    & ", n.web, n.CENA_W, f.Formula " _
+    & " FROM sProducts p " _
+    & " JOIN sGuideNomenk n on n.nomNom = p.nomNom " _
+    & " JOIN sGuideFormuls f ON f.nomer = n.formulaNom " _
+    & " WHERE p.ProductId = " & gProductId
 
 Set tbNomenk = myOpenRecordSet("##108", sql, dbOpenForwardOnly)
 If tbNomenk Is Nothing Then Exit Sub
@@ -2298,24 +2306,30 @@ quantity = 0
 
 If filtr = "" Then
     laProduct.Caption = "Список готовых изделий по серии '" & tv.SelectedItem.Text & "'"
-    strWhere = "WHERE (((sGuideProducts.prSeriaId)=" & gSeriaId & "))"
+    strWhere = "WHERE p.prSeriaId = " & gSeriaId
 Else
     If mousCol = gpDescript Then
         str = "Описание"
-        strWhere = "WHERE (((sGuideProducts.prDescript) Like '*" & filtr & "*'))"
+        strWhere = "WHERE p.prDescript Like '%" & filtr & "%'"
     Else
         str = "Номер"
-        strWhere = "WHERE (((sGuideProducts.prName) Like '*" & filtr & "*'))"
+        strWhere = "WHERE p.prName Like '%" & filtr & "%'"
     End If
     laProduct.Caption = "Список готовых изделий по фильтру '" & filtr & _
     "' в колонке '" & str & "'"
 End If
-'sql = "SELECT sGuideProducts.*  From sGuideProducts " & _
-strWhere & " ORDER BY sGuideProducts.prName;"
-sql = "SELECT sGuideProducts.*, sGuideFormuls.Formula FROM sGuideFormuls " & _
-"INNER JOIN sGuideProducts ON sGuideFormuls.nomer = sGuideProducts.formulaNom " & _
-strWhere & " ORDER BY sGuideProducts.SortNom;" 'prName;"
-'MsgBox sql
+
+sql = "SELECT p.prId, p.prName, p.prSize, p.SortNom, p.VremObr, p.FormulaNom, p.prDescript, p.cena4, p.page. p.web, f.Formula " _
+    & ", max(i.prid) as used" _
+    & " FROM sGuideProducts p " _
+    & " LEFT JOIN sGuideFormuls f ON f.nomer = p.formulaNom " _
+    & " left join xPredmetyByIzdelia i on i.prId = p.prId " _
+    & strWhere _
+    & " GROUP BY p.prId, p.prName, p.prSize, p.SortNom, p.VremObr, p.FormulaNom, p.prDescript, p.page. p.web, f.Formula " _
+    & " ORDER BY p.SortNom"
+
+Debug.Print
+
 Set tbProduct = myOpenRecordSet("##103", sql, dbOpenForwardOnly)
 If tbProduct Is Nothing Then GoTo EN1
 If Not tbProduct.BOF Then

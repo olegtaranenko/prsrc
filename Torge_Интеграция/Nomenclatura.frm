@@ -1548,6 +1548,7 @@ AA:
         vbYesNo Or vbDefaultButton2, "Посмотреть, кто резервировал? '" & _
         gNomNom & "' ?") = vbYes Then
             Report.Regim = "whoRezerved"
+            Set Report.Caller = Me
             Report.Show vbModal
         End If
     Else
@@ -2415,7 +2416,7 @@ toProduct = False
 Set tbProduct = myOpenRecordSet("##117", "sProducts", dbOpenTable) '
 If tbProduct Is Nothing Then Exit Function
 tbProduct.AddNew
-tbProduct!ProductId = gProductId
+tbProduct!productId = gProductId
 tbProduct!nomnom = gNomNom
 On Error GoTo ERR1
 tbProduct.Update
