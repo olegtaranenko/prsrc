@@ -740,7 +740,7 @@ ElseIf p_rowid = 2 Then
                 & Chr(9) & tbOrders!firmName _
                 & Chr(9) & tbOrders!ceh _
                 & Chr(9) & tbOrders!Manag _
-                & Chr(9) & Format(tbOrders!date2, "dd-mm-yyyy hh:nn") _
+                & Chr(9) & Format(tbOrders!date2, "dd.mm.yy hh:nn") _
                 & Chr(9) & Format(tbOrders!sm_processed, "## ##0.00") _
 
 

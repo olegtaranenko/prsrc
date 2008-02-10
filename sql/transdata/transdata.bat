@@ -50,6 +50,7 @@ call isql servertables_prior.sql prior
 call isql dml_before_prior.sql prior
 ::call isql dbcc_prior.sql prior
 
+call isql prior_views.sql prior
 call isql codebase_prior.sql prior
 
 call isql codebase_comtex.sql stime
