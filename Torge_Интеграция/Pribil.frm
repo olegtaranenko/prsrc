@@ -1198,7 +1198,7 @@ strWhere = getWhereByDateBoxes(Me, "outDate", begDateHron) ' между
 bDateWhere = strWhere
 
 sql = "select sum(cenaed * quant) as bSum, sum(costEd * quant) as cSum, isnull(ventureid, 1) as venture_id" _
-    & " from vPredmetyOutDetail " _
+    & " from itemWallShip " _
     & " where type = 8 and " & strWhere _
     & " group by venture_id "
 

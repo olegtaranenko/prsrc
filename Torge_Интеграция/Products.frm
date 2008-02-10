@@ -1264,7 +1264,7 @@ Else
     tbMobile2.MaxLength = 10
 End If
 
-If mousCol2 >= gpQuant Then
+If mousCol2 >= gpQuant And Grid.TextMatrix(mousRow, gpUsed) = "" Then
     Grid2.CellBackColor = &H88FF88
 Else
     Grid2.CellBackColor = vbYellow
@@ -1349,7 +1349,11 @@ Dim startRow As Integer, stopRow As Integer, curRow As Integer
     Else
         mnDel5.Visible = True
     End If
-     Me.PopupMenu mnContext5
+    If Grid.TextMatrix(mousRow, gpUsed) = "" Then
+        Me.PopupMenu mnContext5
+    Else
+        'MsgBox ""
+    End If
 End If
 
 End Sub
@@ -2319,16 +2323,17 @@ Else
     "' в колонке '" & str & "'"
 End If
 
-sql = "SELECT p.prId, p.prName, p.prSize, p.SortNom, p.VremObr, p.FormulaNom, p.prDescript, p.cena4, p.page. p.web, f.Formula " _
+sql = "SELECT p.prId, p.prName, p.prSize, p.SortNom, p.VremObr, p.FormulaNom, p.prDescript, p.cena4, p.page, p.web, f.Formula " _
     & ", max(i.prid) as used" _
     & " FROM sGuideProducts p " _
     & " LEFT JOIN sGuideFormuls f ON f.nomer = p.formulaNom " _
     & " left join xPredmetyByIzdelia i on i.prId = p.prId " _
     & strWhere _
-    & " GROUP BY p.prId, p.prName, p.prSize, p.SortNom, p.VremObr, p.FormulaNom, p.prDescript, p.page. p.web, f.Formula " _
+    & " GROUP BY p.prId, p.prName, p.prSize, p.SortNom, p.VremObr, p.FormulaNom, p.prDescript, p.cena4, p.page, p.web, f.Formula " _
     & " ORDER BY p.SortNom"
 
-Debug.Print
+Debug.Print sql
+
 
 Set tbProduct = myOpenRecordSet("##103", sql, dbOpenForwardOnly)
 If tbProduct Is Nothing Then GoTo EN1
@@ -2359,6 +2364,10 @@ If Not tbProduct.BOF Then
     Grid.TextMatrix(quantity, gpCol4) = Format(Round(tbProduct!Cena4 * gain4, 1), "0.00")
     Grid.TextMatrix(quantity, gpPage) = tbProduct!Page
     Grid.TextMatrix(quantity, gpPrWeb) = tbProduct!web
+    If Not IsNull(tbProduct!used) Then
+        Grid.TextMatrix(quantity, gpUsed) = tbProduct!used
+    End If
+    
 
     Grid.AddItem ""
     tbProduct.MoveNext

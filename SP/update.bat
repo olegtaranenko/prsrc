@@ -70,6 +70,7 @@ if exist %patch%\server_comtex.sql	call ../sql/transdata/isql.bat %patch%\server
 if exist %patch%\servertables_prior.sql	call ../sql/transdata/isql.bat %patch%\servertables_prior.sql	prior
 
 if exist %patch%\codebase_prior.sql	call ../sql/transdata/isql.bat %patch%\codebase_prior.sql	prior
+if exist %patch%\prior_views.sql	call ../sql/transdata/isql.bat %patch%\prior_views.sql	prior
 if exist %patch%\codebase_comtex.sql	call ../sql/transdata/isql.bat %patch%\codebase_comtex.sql	stime
 if exist %patch%\codebase_comtex.sql	call ../sql/transdata/isql.bat %patch%\codebase_comtex.sql	pm
 if exist %patch%\codebase_comtex.sql	call ../sql/transdata/isql.bat %patch%\codebase_comtex.sql	mm

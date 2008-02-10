@@ -482,7 +482,7 @@ Dim sum As Single
     Grid.ColWidth(rrMater) = 1005
     Grid.ColWidth(rrReliz) = 1005
     
-    sql = "SELECT * from vPredmetyOutSummary where ventureid = " & ventureId
+    sql = "SELECT * from orderWallShip where ventureid = " & ventureId
     If Pribil.nDateWhere <> "" Then
         sql = sql & " and " & Pribil.nDateWhere
     End If
@@ -567,7 +567,7 @@ If Not tbOrders.BOF Then
     If s > 0 Then
         quantity = quantity + 1
         Grid.TextMatrix(quantity, rtNomZak) = tbOrders!numorder
-        Grid.TextMatrix(quantity, rtCeh) = tbOrders!Ceh
+        Grid.TextMatrix(quantity, rtCeh) = tbOrders!ceh
     '    Grid.TextMatrix(quantity, rtData) = tbOrders!inDate
         LoadDate Grid, quantity, rtData, tbOrders!inDate, "dd.mm.yy"
         Grid.TextMatrix(quantity, rtMen) = tbOrders!Manag
@@ -692,10 +692,18 @@ Dim colHeaderText As String, curentklassid  As Integer, rowStr As String
             Grid.ColWidth(i) = 1300
         ElseIf InStr(1, colHeaderText, "Дата", vbTextCompare) Then
             Grid.ColWidth(i) = 900
+        ElseIf InStr(1, colHeaderText, "Время", vbTextCompare) Then
+            Grid.ColWidth(i) = 1200
         ElseIf InStr(1, colHeaderText, "Кредит", vbTextCompare) Then
             Grid.ColWidth(i) = 1000
         ElseIf InStr(1, colHeaderText, "Дебит", vbTextCompare) Then
             Grid.ColWidth(i) = 1000
+        ElseIf InStr(1, colHeaderText, "Мен.", vbTextCompare) Then
+            Grid.ColWidth(i) = 230
+        ElseIf InStr(1, colHeaderText, "Цех", vbTextCompare) Then
+            Grid.ColWidth(i) = 430
+        ElseIf InStr(1, colHeaderText, "-", vbTextCompare) Then
+            Grid.ColWidth(i) = 0
         End If
     Next i
     
@@ -727,12 +735,14 @@ If p_rowid = 1 Then
             & Chr(9) & Format(tbOrders!qty_fact * tbOrders!cost, "## ##0.00") _
             & Chr(9) & Format(tbOrders!qty_max * tbOrders!cost, "## ##0.00")
 ElseIf p_rowid = 2 Then
-            rowStr = tbOrders!Type _
+            rowStr = tbOrders!scope _
                 & Chr(9) & tbOrders!numorder _
-                & Chr(9) & Format(tbOrders!Name, "## ##0.00") _
-                & Chr(9) & Format(tbOrders!ordered, "## ##0.00") _
-                & Chr(9) & Format(tbOrders!shipped, "## ##0.00") _
-                & Chr(9) & Format(tbOrders!rest, "## ##0.00") _
+                & Chr(9) & tbOrders!firmName _
+                & Chr(9) & tbOrders!ceh _
+                & Chr(9) & tbOrders!Manag _
+                & Chr(9) & Format(tbOrders!date2, "dd-mm-yyyy hh:nn") _
+                & Chr(9) & Format(tbOrders!sm_processed, "## ##0.00") _
+
 
 ElseIf p_rowid = 8 Or p_rowid = 9 Then
             rowStr = tbOrders!Type _
@@ -829,16 +839,16 @@ rowid = rowid + 1
 '--------------------
 ' сумма списанной и еще неотгруженной ном-ры по незакрытим заказам !!!
     
-sql = "select sum(sum_rest) as rest from vIncompleteCommon"
+sql = "select sum(sm_processed) as rest from orderBranProc"
    
 byErrSqlGetValues "##386", sql, s
 
 aRowSortable(rowid) = True
 aRowText(rowid) = "Незавершенное производство"
-rowFormatting(rowid) = "-|<№ заказа|<Название фирмы|>Сумма заказа|>Сумма отгр.|>Сумма незав."
-sqlRowDetail(rowid) = " select name, type, numorder, sum(sum_ordered) as ordered, sum(sum_shipped) as shipped, sum(sum_rest) as rest" _
-    & " from vIncompleteCommon" _
-    & " group by name, type, numorder" _
+rowFormatting(rowid) = "-|<№ заказа|<Название фирмы|<Цех|Мен.|Время посл.оп.|>Сумма незав."
+sqlRowDetail(rowid) = " select r.scope, r.numorder, r.firmname, sm_processed" _
+    & ", ceh, manag, date2" _
+    & " from orderBranProc r" _
     & " order by numorder"
 
 Grid.AddItem "0" & Chr(9) & aRowText(rowid) & Chr(9) & Format(Round(s, 2), "## ##0.00")
@@ -1298,7 +1308,7 @@ strWhere = Pribil.bDateWhere
 
 If statistic = "" Then
     sql = "select d.numorder, d.outdate as xdate, f.name as name, d.costTotal, d.cenaTotal" _
-        & " from vPredmetyOutSummary d" _
+        & " from orderWallShip d" _
         & " join bayorders o on o.numorder = d.numorder" _
         & " join bayguidefirms f on o.firmid = f.firmid" _
         & " WHERE d.type = 8 and " _
@@ -1306,7 +1316,7 @@ If statistic = "" Then
         & " ORDER BY o.numOrder, outDate"
 Else
     sql = "select count(*) as numOrder, f.name as name, sum(d.costTotal) as costTotal, sum(d.cenaTotal) as cenaTotal" _
-        & " from vPredmetyOutSummary d" _
+        & " from orderWallShip d" _
         & " join bayorders o on o.numorder = d.numorder" _
         & " join bayguidefirms f on o.firmid = f.firmid" _
         & " WHERE d.type = 8 and " _
