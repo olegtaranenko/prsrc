@@ -582,12 +582,12 @@ if exists (select 1 from sysviews where viewname = 'isumProdShip' and vcreator =
 end if;
 
 
-create view isumProdShip (numorder, nomnom, quant, date1)
+create view isumProdShip (numorder, nomnom, quant, date1, date2)
 as 
-select numorder, nomnom, sum(quant) as quant, date1
+select numorder, nomnom, sum(quant) as quant, min(date1), max(date1)
 from itemProdShip
 group by 	
-	numorder, nomnom, date1
+	numorder, nomnom
 ;
 
 
@@ -603,7 +603,7 @@ create view itemSellShip (numorder, nomnom, quant, date1)
 as 
 select io.numorder, io.nomnom, io.quant, outdate
 -- îòãðóçêà ïî ÏÐÎÄÆÀÆÀÌ
-from xpredmetybynomenkout io
+from baynomenkout io
 ;
 
 if exists (select 1 from sysviews where viewname = 'isumSellShip' and vcreator = 'dba') then
@@ -611,12 +611,12 @@ if exists (select 1 from sysviews where viewname = 'isumSellShip' and vcreator =
 end if;
 
 
-create view isumSellShip (numorder, nomnom, quant, date1)
+create view isumSellShip (numorder, nomnom, quant, date1, date2)
 as 
-select numorder, nomnom, sum(quant) as quant, date1
+select numorder, nomnom, sum(quant) as quant, min(date1), max(date1)
 from itemSellShip
 group by 	
-	numorder, nomnom, date1
+	numorder, nomnom
 ;
 
 
