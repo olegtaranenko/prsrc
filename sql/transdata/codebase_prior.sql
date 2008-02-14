@@ -510,6 +510,7 @@ begin
 	, nomnom as text 
 	, trim(cod + ' ' + nomname + ' ' + size) as name, nomnom, ed_izmer, ed_izmer2 
 	, wf_breadcrump_klass(k.klassid) as klassname, k.klassid
+	, o.ord as klassOrdered
 	from sguidenomenk n
 	join #klass_ordered o on n.klassid = o.id
 	join sguideklass k on k.klassid = n.klassid
