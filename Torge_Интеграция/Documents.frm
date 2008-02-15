@@ -355,9 +355,8 @@ Begin VB.Form Documents
          Caption         =   "Номенклатура для закупки"
          Visible         =   0   'False
       End
-      Begin VB.Menu mnAreport 
-         Caption         =   "Отчет А"
-         Visible         =   0   'False
+      Begin VB.Menu mnReservedAll 
+         Caption         =   "Зарезервированная ном-ра"
       End
       Begin VB.Menu mnSep1 
          Caption         =   "-"
@@ -444,7 +443,7 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
-Public isLoad As Boolean
+Public isload As Boolean
 Dim objExel As Excel.Application, exRow As Long
 
 
@@ -823,7 +822,7 @@ Private Sub Form_Load()
 Dim str As String ', i As Integer
 oldHeight = Me.Height
 oldWidth = Me.Width
-isLoad = True
+isload = True
 If otlad = "otlaD" Then
     mnFilters.Visible = True
     Me.BackColor = otladColor
@@ -929,13 +928,13 @@ End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
 'tbSystem.Close
-isLoad = False
-If GuideSource.isLoad Then Unload GuideSource
-If KartaDMC.isLoad Then Unload KartaDMC
+isload = False
+If GuideSource.isload Then Unload GuideSource
+If KartaDMC.isload Then Unload KartaDMC
 If Nomenklatura.isRegimLoad Then Unload Nomenklatura
-If Products.isLoad Then Unload Products
-If cfg.isLoad Then Unload cfg '$$2
-If VentureOrder.isLoad Then Unload VentureOrder
+If Products.isload Then Unload Products
+If cfg.isload Then Unload cfg '$$2
+If VentureOrder.isload Then Unload VentureOrder
 
 'myBase.Close
 End Sub
@@ -1508,13 +1507,21 @@ End Sub
 
 Private Sub mnPriceToExcel_Click()
 
-Products.PriceToExcel
-
+    Products.PriceToExcel
 End Sub
 
 Private Sub mnProducts_Click()
 Products.Regim = "" ' Просто Справочник
 Products.Show vbModal
+End Sub
+
+Private Sub mnReservedAll_Click()
+    'Report.param1 = laOther.Caption
+    Report.Regim = "reservedAll"
+    Report.Sortable = True
+    Set Report.Caller = Me
+    Report.Show vbModal
+
 End Sub
 
 Private Sub mnSource_Click()
@@ -1991,7 +1998,7 @@ If KeyCode = vbKeyReturn Then
         End If
     Next i
   Else 'если это не вызов из карты то ее выгружаем  чтобы там не оставалась
-    If KartaDMC.isLoad Then Unload KartaDMC '      необновленная информация
+    If KartaDMC.isload Then Unload KartaDMC '      необновленная информация
   End If ' хотя можно проверить и если ном-ры нет в карте то и не надо выгружать
  
  Grid2.row = tmp

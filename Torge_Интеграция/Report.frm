@@ -19,6 +19,7 @@ Begin VB.Form Report
       Left            =   2040
       TabIndex        =   9
       Top             =   7860
+      Visible         =   0   'False
       Width           =   1572
    End
    Begin VB.CommandButton cmPrint 
@@ -120,7 +121,7 @@ Public mousRow As Long
 Public mousCol As Long
 Dim quantity As Long
 Dim Cena()  As Single
-
+Dim isLoad As Boolean
 
 
 Const rrNumOrder = 1
@@ -227,10 +228,10 @@ End If
 End Sub
 
 Sub fitFormToGrid()
-Dim I As Long, delta As Long
+Dim i As Long, delta As Long
 
-    I = 350 + (Grid.CellHeight + 17) * Grid.Rows
-    delta = I - Grid.Height
+    i = 350 + (Grid.CellHeight + 17) * Grid.Rows
+    delta = i - Grid.Height
     
     If Me.Height + delta > (Screen.Height - 900) Then _
         delta = (Screen.Height - 900) - Me.Height
@@ -238,9 +239,9 @@ Dim I As Long, delta As Long
     
     'Grid.Height = i
     delta = 0
-    For I = 0 To Grid.Cols - 1
-        delta = delta + Grid.ColWidth(I)
-    Next I
+    For i = 0 To Grid.Cols - 1
+        delta = delta + Grid.ColWidth(i)
+    Next i
     Me.Width = delta + 700
 
 End Sub
@@ -249,6 +250,8 @@ End Sub
 Private Sub ckSubtitle_Click()
 Dim p_rowid As Integer
 
+    If Not isLoad Then Exit Sub
+    
     If ckSubtitle.value = 1 Then
         ' перегрузить таблицу
         clearGrid Grid
@@ -261,15 +264,15 @@ Dim p_rowid As Integer
     
 End Sub
 Public Sub removeSubtitles(aGrid As MSFlexGrid)
-Dim I As Integer, maxrows As Integer
+Dim i As Integer, maxrows As Integer
  
-    I = aGrid.Rows - 1
+    i = aGrid.Rows - 1
     Do
-        If aGrid.TextMatrix(I, emptyColIndex) = "" Then
-            aGrid.RemoveItem (I)
+        If aGrid.TextMatrix(i, emptyColIndex) = "" Then
+            aGrid.RemoveItem (i)
         End If
-        I = I - 1
-    Loop While (I > 0)
+        i = i - 1
+    Loop While (i > 0)
     
 End Sub
 
@@ -305,13 +308,14 @@ ElseIf Regim = "aReport" Then
     aReport
 ElseIf Regim = "aReportDetail" Then
     laHeader.Caption = "Детализация строки """ & param3 & """ из Отчета 'А' "
-    Subtitle = True ' По этому событию вызовется подпрограмма aReportDetail
     emptyColIndex = 1
     groupIdColIndex = 0
     subtitleColIndex = 2
     numSortSecondColIndex = 0 ' по номеру группы
     numSortThirdColIndex = 2 ' по названию номенклатуры
-
+    Subtitle = arowSubtitle(param1)
+    aReportDetail (param1)
+    
 ElseIf Regim = "whoRezerved" Then
     whoRezerved
 ElseIf Regim = "" Then 'отчет Реализация - заказы производства
@@ -375,6 +379,7 @@ If InStr(Regim, "tatistic") Then
 End If
 fitFormToGrid
 Me.Caller.MousePointer = flexDefault
+isLoad = True
 End Sub
 
 Sub byNomenk(saled As String)
@@ -743,48 +748,48 @@ End Sub
 
 
 Sub aReportDetail(p_rowid As Integer)
-Dim I As Integer
+Dim i As Integer
 Dim colHeaderText As String, curentklassid  As Integer, rowStr As String
     Grid.TextMatrix(1, 0) = 0
     Me.Sortable = aRowSortable(p_rowid)
     sql = sqlRowDetail(p_rowid)
     Grid.FormatString = rowFormatting(p_rowid)
-    For I = 0 To Grid.Cols - 1
-        colHeaderText = Grid.TextMatrix(0, I)
+    For i = 0 To Grid.Cols - 1
+        colHeaderText = Grid.TextMatrix(0, i)
         If colHeaderText = "" Then
-            Grid.ColWidth(I) = 0
+            Grid.ColWidth(i) = 0
         ElseIf InStr(1, colHeaderText, "Номер ном.") Then
-            Grid.ColWidth(I) = 1200
+            Grid.ColWidth(i) = 1200
         ElseIf InStr(1, colHeaderText, "Название", vbTextCompare) Then
-            Grid.ColWidth(I) = 3500
+            Grid.ColWidth(i) = 3500
         ElseIf InStr(1, colHeaderText, "изм", vbTextCompare) Then
-            Grid.ColWidth(I) = 500
+            Grid.ColWidth(i) = 500
         ElseIf InStr(1, colHeaderText, "Цена", vbTextCompare) Then
-            Grid.ColWidth(I) = 600
+            Grid.ColWidth(i) = 600
         ElseIf InStr(1, colHeaderText, "К-во", vbTextCompare) Then
-            Grid.ColWidth(I) = 700
+            Grid.ColWidth(i) = 700
         ElseIf InStr(1, colHeaderText, "Сумма", vbTextCompare) Then
-            Grid.ColWidth(I) = 1000
+            Grid.ColWidth(i) = 1000
         ElseIf InStr(1, colHeaderText, "Проводка", vbTextCompare) Then
-            Grid.ColWidth(I) = 1300
+            Grid.ColWidth(i) = 1300
         ElseIf InStr(1, colHeaderText, "Дата", vbTextCompare) Then
-            Grid.ColWidth(I) = 900
+            Grid.ColWidth(i) = 900
         ElseIf InStr(1, colHeaderText, "Время", vbTextCompare) Then
-            Grid.ColWidth(I) = 1200
+            Grid.ColWidth(i) = 1200
         ElseIf InStr(1, colHeaderText, "Кредит", vbTextCompare) Then
-            Grid.ColWidth(I) = 1000
+            Grid.ColWidth(i) = 1000
         ElseIf InStr(1, colHeaderText, "Дебит", vbTextCompare) Then
-            Grid.ColWidth(I) = 1000
+            Grid.ColWidth(i) = 1000
         ElseIf InStr(1, colHeaderText, "Мен.", vbTextCompare) Then
-            Grid.ColWidth(I) = 230
+            Grid.ColWidth(i) = 230
         ElseIf InStr(1, colHeaderText, "Цех", vbTextCompare) Then
-            Grid.ColWidth(I) = 430
+            Grid.ColWidth(i) = 430
         ElseIf InStr(1, colHeaderText, "-", vbTextCompare) Then
-            Grid.ColWidth(I) = 0
+            Grid.ColWidth(i) = 0
         ElseIf InStr(1, colHeaderText, "#", vbTextCompare) Then
-            Grid.ColWidth(I) = 300
+            Grid.ColWidth(i) = 300
         End If
-    Next I
+    Next i
     
     Debug.Print sql
     Set tbOrders = myOpenRecordSet("##vnt_det", sql, dbOpenForwardOnly)
@@ -880,6 +885,7 @@ ReDim sqlRowDetail(11)
 ReDim aRowText(11)
 ReDim rowFormatting(11)
 ReDim aRowSortable(11)
+ReDim arowSubtitle(11)
 
 Grid.FormatString = "||>ПЛЮС|>МИНУС|>РАЗНИЦА"
 Grid.ColWidth(0) = 0
@@ -903,6 +909,7 @@ sql = "SELECT Sum((if mark = 'Used' then zakup else nowOstatki/perlist endif) * 
     
 sqlRowDetail(rowid) = "call wf_nomenk_areport"
 aRowSortable(rowid) = True
+arowSubtitle(rowid) = True
 
 'Debug.Print sql
 rowFormatting(rowid) = "#|<Номер ном.|<Название|Ед изм.|>Цена|>К-во Факт|>К-во Макс|>Сумма.Факт|>Сумма макс."
@@ -1069,7 +1076,7 @@ EN1:
 End Function
 
 Sub subDetail()
-Dim str As String, I As Integer, delta As Integer, ed_izm As String
+Dim str As String, i As Integer, delta As Integer, ed_izm As String
 Dim str2 As String, str3 As String
 
 Grid.FormatString = "|<Номер|<Описание|>кол-во в одном |>кол-во общее|" & _
@@ -1114,18 +1121,18 @@ If param1 = "p" Or param1 = "w" Then 'есть  гот.изделия
     gProductId = tbProduct!prId
     prExt = tbProduct!prExt
     If Not productNomenkToNNQQ(1, tbProduct!quant) Then GoTo NXT
-    For I = 1 To UBound(NN)
-      sql = "SELECT nomName, ed_izmer, Size, cod From sGuideNomenk WHERE nomNom='" & NN(I) & "'"
+    For i = 1 To UBound(NN)
+      sql = "SELECT nomName, ed_izmer, Size, cod From sGuideNomenk WHERE nomNom='" & NN(i) & "'"
       byErrSqlGetValues "##333", sql, str, ed_izm, str2, str3
       Grid.AddItem _
-        Chr(9) & Format(NN(I), "## ##0.00") _
+        Chr(9) & Format(NN(i), "## ##0.00") _
       & Chr(9) & str3 & " " & str & " " & str2 _
-      & Chr(9) & Format(QQ(I), "## ##0.00") _
-      & Chr(9) & Format(QQ2(I), "## ##0.00") _
+      & Chr(9) & Format(QQ(i), "## ##0.00") _
+      & Chr(9) & Format(QQ2(i), "## ##0.00") _
       & Chr(9) & ed_izm _
-      & Chr(9) & Format(Cena(I), "## ##0.00") _
-      & Chr(9) & Format(QQ3(I), "## ##0.00")
-    Next I
+      & Chr(9) & Format(Cena(i), "## ##0.00") _
+      & Chr(9) & Format(QQ3(i), "## ##0.00")
+    Next i
     Grid.AddItem ""
 NXT:
     tbProduct.MoveNext
@@ -1254,7 +1261,7 @@ leng = UBound(NN)
 End Sub
 'сумма( по себест-ти) уже отгруженной номенклатуры(незакрытые заказы)
 Function otgruzNomenk() As Single
-Dim I As Integer
+Dim i As Integer
 otgruzNomenk = 0
 
 ReDim NN(0): ReDim QQ(0): ReDim QQ2(0): QQ2(0) = 0: ReDim QQ3(0)
@@ -1290,16 +1297,16 @@ Wend
 tbNomenk.Close
 
 otgruzNomenk = 0
-For I = 1 To UBound(NN)
-    otgruzNomenk = otgruzNomenk + QQ3(I)
-Next I
+For i = 1 To UBound(NN)
+    otgruzNomenk = otgruzNomenk + QQ3(i)
+Next i
 
 End Function
 
 'в QQ3 накапливается суммарная себест-ть ном-ры в пересчете на цел.ед.изм!!!
 'перед исп-ем надо ReDim NN(0): ReDim QQ(0): ReDim QQ2(0) : ReDim QQ3(0):QQ2(0)=0 - не б.этапа
 Function productNomenkToNNQQ(pQuant As Single, eQuant As Single) As Boolean
-Dim I As Integer, gr() As String
+Dim i As Integer, gr() As String
 
 productNomenkToNNQQ = False
 'ReDim NN(0): ReDim QQ(0)
@@ -1313,11 +1320,11 @@ sql = "SELECT sProducts.nomNom, sProducts.quantity, sProducts.xgroup, " & _
 'MsgBox sql
 Set tbNomenk = myOpenRecordSet("##192", sql, dbOpenDynaset)
 If tbNomenk Is Nothing Then Exit Function
-ReDim gr(0): I = 0
+ReDim gr(0): i = 0
 While Not tbNomenk.EOF
     nomenkToNNQQ pQuant, eQuant, eQuant * tbNomenk!cost / tbNomenk!perList '!!!
-    I = I + 1
-    ReDim Preserve gr(I): gr(I) = tbNomenk!xgroup
+    i = i + 1
+    ReDim Preserve gr(i): gr(i) = tbNomenk!xgroup
     tbNomenk.MoveNext
 Wend
 tbNomenk.Close
@@ -1333,9 +1340,9 @@ sql = "SELECT sProducts.nomNom, sProducts.quantity, sProducts.xgroup, " & _
 Set tbNomenk = myOpenRecordSet("##177", sql, dbOpenDynaset)
 If tbNomenk Is Nothing Then Exit Function
 While Not tbNomenk.EOF
-    For I = 1 To UBound(gr) ' если группа состоит из одной ном-ры, то она
-        If gr(I) = tbNomenk!xgroup Then GoTo NXT ' НЕвариантна, т.к. не
-    Next I                                      ' не попала в xVariantNomenc
+    For i = 1 To UBound(gr) ' если группа состоит из одной ном-ры, то она
+        If gr(i) = tbNomenk!xgroup Then GoTo NXT ' НЕвариантна, т.к. не
+    Next i                                      ' не попала в xVariantNomenc
     nomenkToNNQQ pQuant, eQuant, eQuant * tbNomenk!cost / tbNomenk!perList '!!!
 NXT: tbNomenk.MoveNext
 Wend
@@ -1687,6 +1694,7 @@ End Function
 Private Sub Form_Unload(Cancel As Integer)
     Sortable = False
     Subtitle = False
+    isLoad = False
 End Sub
 
 Private Sub Grid_Click()
@@ -1731,29 +1739,29 @@ Private Sub Grid_Click()
 
 End Sub
 
-Private Sub Grid_Compare(ByVal row1 As Long, ByVal row2 As Long, Cmp As Integer)
+Private Sub Grid_Compare(ByVal Row1 As Long, ByVal Row2 As Long, Cmp As Integer)
     Static sortAsc As Boolean
     Dim cell_1, cell_2 As String, ord1 As Integer, ord2 As Integer, empty1 As String, empty2 As String
     Dim date1, date2 As Date
     Dim num1, num2 As Single
     
     
-    cell_1 = Grid.TextMatrix(row1, mousCol)
-    cell_2 = Grid.TextMatrix(row2, mousCol)
+    cell_1 = Grid.TextMatrix(Row1, mousCol)
+    cell_2 = Grid.TextMatrix(Row2, mousCol)
     If ckSubtitle.value = 1 Then
-        empty1 = Grid.TextMatrix(row1, emptyColIndex)
-        empty2 = Grid.TextMatrix(row2, emptyColIndex)
-        ord1 = CInt(Grid.TextMatrix(row1, groupIdColIndex))
-        ord2 = CInt(Grid.TextMatrix(row2, groupIdColIndex))
+        empty1 = Grid.TextMatrix(Row1, emptyColIndex)
+        empty2 = Grid.TextMatrix(Row2, emptyColIndex)
+        ord1 = CInt(Grid.TextMatrix(Row1, groupIdColIndex))
+        ord2 = CInt(Grid.TextMatrix(Row2, groupIdColIndex))
         
         If ord1 <> ord2 Then
             Cmp = Sgn(ord1 - ord2)
         Else
             If empty1 = "" And empty2 = "" Then
                 ' чтобы подзаголовки не прыгали
-                If (Grid.TextMatrix(row1, subtitleColIndex) = "") Then
+                If (Grid.TextMatrix(Row1, subtitleColIndex) = "") Then
                     Cmp = -1
-                ElseIf Grid.TextMatrix(row1, subtitleColIndex) <> "" Then
+                ElseIf Grid.TextMatrix(Row1, subtitleColIndex) <> "" Then
                     Cmp = 1
                 Else
                     Cmp = 0
@@ -1778,8 +1786,8 @@ Private Sub Grid_Compare(ByVal row1 As Long, ByVal row2 As Long, Cmp As Integer)
                     num2 = Round(CSng(cell_2), 5)
                     Cmp = Sgn(num1 - num2)
                 ElseIf colType = CT_STRING Then
-                    empty1 = Grid.TextMatrix(row1, mousCol)
-                    empty2 = Grid.TextMatrix(row2, mousCol)
+                    empty1 = Grid.TextMatrix(Row1, mousCol)
+                    empty2 = Grid.TextMatrix(Row2, mousCol)
                     If empty1 > empty2 Then
                         Cmp = 1
                     ElseIf empty1 < empty2 Then
@@ -1834,23 +1842,30 @@ Private Sub Grid_Compare(ByVal row1 As Long, ByVal row2 As Long, Cmp As Integer)
             ElseIf num1 < num2 Then
                 Cmp = -1
             Else
-                Cmp = secondarySorting(row1, row2)
+                Cmp = secondarySorting(Row1, Row2)
             End If
         End If
     If trigger Then Cmp = -Cmp
     End If
 End Sub
 
-Private Function secondarySorting(ByVal row1 As Long, ByVal row2 As Long)
+Private Function secondarySorting(ByVal Row1 As Long, ByVal Row2 As Long)
+Dim str1 As String, str2 As String
 Dim num1 As Single, num2 As Single
-    num1 = Round(CSng(Grid.TextMatrix(row1, numSortSecondColIndex)), 2)
-    num2 = Round(CSng(Grid.TextMatrix(row2, numSortSecondColIndex)), 2)
+    str1 = Grid.TextMatrix(Row1, numSortSecondColIndex)
+    str2 = Grid.TextMatrix(Row2, numSortSecondColIndex)
+    If Not IsNumeric(str1) Or Not IsNumeric(str2) Then
+        secondarySorting = 0
+        Exit Function
+    End If
+    
+    num1 = Round(CSng(Grid.TextMatrix(Row1, numSortSecondColIndex)), 2)
+    num2 = Round(CSng(Grid.TextMatrix(Row2, numSortSecondColIndex)), 2)
     If num1 <> num2 Then
         secondarySorting = Sgn(num1 - num2) 'всегда по возрастанию
     Else
-        Dim str1 As String, str2 As String
-        str1 = Grid.TextMatrix(row1, numSortThirdColIndex)
-        str2 = Grid.TextMatrix(row2, numSortThirdColIndex)
+        str1 = Grid.TextMatrix(Row1, numSortThirdColIndex)
+        str2 = Grid.TextMatrix(Row2, numSortThirdColIndex)
         If (str1 < str2) Then
             secondarySorting = -1 'всегда по возрастанию
         ElseIf str1 > str2 Then
