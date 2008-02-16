@@ -443,7 +443,7 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
-Public isload As Boolean
+Public isLoad As Boolean
 Dim objExel As Excel.Application, exRow As Long
 
 
@@ -822,7 +822,7 @@ Private Sub Form_Load()
 Dim str As String ', i As Integer
 oldHeight = Me.Height
 oldWidth = Me.Width
-isload = True
+isLoad = True
 If otlad = "otlaD" Then
     mnFilters.Visible = True
     Me.BackColor = otladColor
@@ -928,13 +928,13 @@ End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
 'tbSystem.Close
-isload = False
-If GuideSource.isload Then Unload GuideSource
-If KartaDMC.isload Then Unload KartaDMC
+isLoad = False
+If GuideSource.isLoad Then Unload GuideSource
+If KartaDMC.isLoad Then Unload KartaDMC
 If Nomenklatura.isRegimLoad Then Unload Nomenklatura
-If Products.isload Then Unload Products
-If cfg.isload Then Unload cfg '$$2
-If VentureOrder.isload Then Unload VentureOrder
+If Products.isLoad Then Unload Products
+If cfg.isLoad Then Unload cfg '$$2
+If VentureOrder.isLoad Then Unload VentureOrder
 
 'myBase.Close
 End Sub
@@ -1517,6 +1517,13 @@ End Sub
 
 Private Sub mnReservedAll_Click()
     'Report.param1 = laOther.Caption
+    Report.emptyColIndex = 1
+    Report.groupIdColIndex = 0
+    Report.subtitleColIndex = 2
+    Report.numSortSecondColIndex = 0 ' по номеру группы
+    Report.numSortThirdColIndex = 2 ' по названию номенклатуры
+    Report.Subtitle = True
+    
     Report.Regim = "reservedAll"
     Report.Sortable = True
     Set Report.Caller = Me
@@ -1998,7 +2005,7 @@ If KeyCode = vbKeyReturn Then
         End If
     Next i
   Else 'если это не вызов из карты то ее выгружаем  чтобы там не оставалась
-    If KartaDMC.isload Then Unload KartaDMC '      необновленная информация
+    If KartaDMC.isLoad Then Unload KartaDMC '      необновленная информация
   End If ' хотя можно проверить и если ном-ры нет в карте то и не надо выгружать
  
  Grid2.row = tmp

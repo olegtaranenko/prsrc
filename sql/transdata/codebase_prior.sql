@@ -491,7 +491,47 @@ order by o.ord, 1
 end;
 
 
+--=======================
 
+if exists (select 1 from sysprocedure where proc_name = 'wf_nomenk_resered_all') then
+	drop procedure wf_nomenk_resered_all;
+end if;
+
+CREATE procedure wf_nomenk_resered_all(
+)
+begin
+	create table #klass_ordered (id integer, ord integer);
+	create table #nomenk (nomnom varchar(20), quant double, sm double);
+
+	call wf_sort_klasses;
+
+	insert into #nomenk(nomnom, quant)
+	select r.nomnom, sum(r.quant)
+	from isumBranRsrv  r
+	group by r.nomnom
+	;
+
+
+
+	select o.ord, trim(n.cod + ' ' + nomname + ' ' + n.size) as name
+		, r.quant / n.perlist as quant, n.cost / n.perlist * r.quant as sm, r.nomnom, k.klassid
+		, wf_breadcrump_klass(k.klassid) as klassname, n.ed_izmer2
+	from #nomenk r
+	join sguidenomenk n on n.nomnom = r.nomnom
+	join #klass_ordered o on o.id = n.klassid
+	join sguideklass k on k.klassid = n.klassid
+	order by 1, 2, 3
+	;
+
+	drop table #klass_ordered;
+	drop table #nomenk;
+
+end;
+
+
+
+
+--=======================
 
 if exists (select 1 from sysprocedure where proc_name = 'wf_nomenk_areport') then
 	drop procedure wf_nomenk_areport;

@@ -255,8 +255,12 @@ Dim p_rowid As Integer
     If ckSubtitle.value = 1 Then
         ' перегрузить таблицу
         clearGrid Grid
+    If Regim = "aReportDetail" Then
         p_rowid = CInt(param1)
         aReportDetail (p_rowid)
+    ElseIf Regim = "reservedAll" Then
+        reservedAll
+    End If
     Else
         'удалить подзаголовки
         removeSubtitles Grid
@@ -318,6 +322,8 @@ ElseIf Regim = "aReportDetail" Then
     
 ElseIf Regim = "whoRezerved" Then
     whoRezerved
+ElseIf Regim = "reservedAll" Then
+    reservedAll
 ElseIf Regim = "" Then 'отчет Реализация - заказы производства
     laHeader.Caption = "Детализация сумм " & param2 & "(Материалы) и " & _
     param1 & "(Реализация) по датам отгрузок заказов производства."
@@ -602,6 +608,51 @@ Dim sum As Single
 
 End Sub
 
+' Показать всю зарезервированную номенклатуру единым списком с подзаголовками
+' по типу общего склада из отчета А
+Sub reservedAll()
+Dim curentklassid As Integer, rowStr As String
+
+    laHeader.Caption = "Список зарезервированной номенклатуры"
+    Grid.FormatString = "#|<Номер ном.|<Название|Ед изм.|>>К-во зарез.|>Сумма зарез."
+    gridAutoWidth Grid
+    
+    sql = "call wf_nomenk_resered_all"
+    
+    Set tbOrders = myOpenRecordSet("##reserved_all", sql, dbOpenForwardOnly)
+    If tbOrders Is Nothing Then Exit Sub
+    If Not tbOrders.BOF Then
+        While Not tbOrders.EOF
+            quantity = quantity + 1
+            If curentklassid <> tbOrders!klassid Then
+                Grid.AddItem tbOrders!ord
+                Grid.AddItem tbOrders!ord & Chr(9) & Chr(9) & tbOrders!klassName
+                quantity = quantity + 2
+                Grid.row = Grid.Rows - 1
+                'quantity = quantity + 1
+                Grid.col = sbnNomnom
+                Grid.CellFontBold = True
+                Grid.col = sbnNomnam
+                Grid.CellFontBold = True
+                curentklassid = tbOrders!klassid
+            End If
+            rowStr = tbOrders!ord _
+                & Chr(9) & tbOrders!nomnom _
+                & Chr(9) & tbOrders!Name _
+                & Chr(9) & tbOrders!ed_Izmer2 _
+                & Chr(9) & Format(tbOrders!quant, "## ##0.00") _
+                & Chr(9) & Format(tbOrders!sm, "## ##0.00") _
+                & Chr(9) & Format(tbOrders!sm, "## ##0.00")
+
+            Grid.AddItem rowStr
+            tbOrders.MoveNext
+        Wend
+    End If
+    tbOrders.Close
+    If quantity > 1 Then
+        Grid.RemoveItem (1)
+    End If
+End Sub
 
 Sub whoRezerved()
 Dim v, s As Single, ed2 As String, per As Single, sum As Single
@@ -746,52 +797,60 @@ Me.MousePointer = flexDefault
 
 End Sub
 
+Sub gridAutoWidth(pGrid As MSFlexGrid)
+Dim i As Integer
+Dim colHeaderText As String
+
+    For i = 0 To pGrid.Cols - 1
+        colHeaderText = pGrid.TextMatrix(0, i)
+        If colHeaderText = "" Then
+            pGrid.ColWidth(i) = 0
+        ElseIf InStr(1, colHeaderText, "Номер ном.") Then
+            pGrid.ColWidth(i) = 1200
+        ElseIf InStr(1, colHeaderText, "Название", vbTextCompare) Then
+            pGrid.ColWidth(i) = 3500
+        ElseIf InStr(1, colHeaderText, "изм", vbTextCompare) Then
+            pGrid.ColWidth(i) = 500
+        ElseIf InStr(1, colHeaderText, "Цена", vbTextCompare) Then
+            pGrid.ColWidth(i) = 600
+        ElseIf InStr(1, colHeaderText, "К-во", vbTextCompare) Then
+            pGrid.ColWidth(i) = 700
+        ElseIf InStr(1, colHeaderText, "Сумма", vbTextCompare) Then
+            pGrid.ColWidth(i) = 1000
+        ElseIf InStr(1, colHeaderText, "Проводка", vbTextCompare) Then
+            pGrid.ColWidth(i) = 1300
+        ElseIf InStr(1, colHeaderText, "Дата", vbTextCompare) Then
+            pGrid.ColWidth(i) = 900
+        ElseIf InStr(1, colHeaderText, "Время", vbTextCompare) Then
+            pGrid.ColWidth(i) = 1200
+        ElseIf InStr(1, colHeaderText, "Кредит", vbTextCompare) Then
+            pGrid.ColWidth(i) = 1000
+        ElseIf InStr(1, colHeaderText, "Дебит", vbTextCompare) Then
+            pGrid.ColWidth(i) = 1000
+        ElseIf InStr(1, colHeaderText, "Мен.", vbTextCompare) Then
+            pGrid.ColWidth(i) = 230
+        ElseIf InStr(1, colHeaderText, "Цех", vbTextCompare) Then
+            pGrid.ColWidth(i) = 430
+        ElseIf InStr(1, colHeaderText, "-", vbTextCompare) Then
+            pGrid.ColWidth(i) = 0
+        ElseIf InStr(1, colHeaderText, "#", vbTextCompare) Then
+            pGrid.ColWidth(i) = 300
+        End If
+    Next i
+    
+
+End Sub
 
 Sub aReportDetail(p_rowid As Integer)
-Dim i As Integer
-Dim colHeaderText As String, curentklassid  As Integer, rowStr As String
+Dim curentklassid  As Integer, rowStr As String
     Grid.TextMatrix(1, 0) = 0
     Me.Sortable = aRowSortable(p_rowid)
     sql = sqlRowDetail(p_rowid)
     Grid.FormatString = rowFormatting(p_rowid)
-    For i = 0 To Grid.Cols - 1
-        colHeaderText = Grid.TextMatrix(0, i)
-        If colHeaderText = "" Then
-            Grid.ColWidth(i) = 0
-        ElseIf InStr(1, colHeaderText, "Номер ном.") Then
-            Grid.ColWidth(i) = 1200
-        ElseIf InStr(1, colHeaderText, "Название", vbTextCompare) Then
-            Grid.ColWidth(i) = 3500
-        ElseIf InStr(1, colHeaderText, "изм", vbTextCompare) Then
-            Grid.ColWidth(i) = 500
-        ElseIf InStr(1, colHeaderText, "Цена", vbTextCompare) Then
-            Grid.ColWidth(i) = 600
-        ElseIf InStr(1, colHeaderText, "К-во", vbTextCompare) Then
-            Grid.ColWidth(i) = 700
-        ElseIf InStr(1, colHeaderText, "Сумма", vbTextCompare) Then
-            Grid.ColWidth(i) = 1000
-        ElseIf InStr(1, colHeaderText, "Проводка", vbTextCompare) Then
-            Grid.ColWidth(i) = 1300
-        ElseIf InStr(1, colHeaderText, "Дата", vbTextCompare) Then
-            Grid.ColWidth(i) = 900
-        ElseIf InStr(1, colHeaderText, "Время", vbTextCompare) Then
-            Grid.ColWidth(i) = 1200
-        ElseIf InStr(1, colHeaderText, "Кредит", vbTextCompare) Then
-            Grid.ColWidth(i) = 1000
-        ElseIf InStr(1, colHeaderText, "Дебит", vbTextCompare) Then
-            Grid.ColWidth(i) = 1000
-        ElseIf InStr(1, colHeaderText, "Мен.", vbTextCompare) Then
-            Grid.ColWidth(i) = 230
-        ElseIf InStr(1, colHeaderText, "Цех", vbTextCompare) Then
-            Grid.ColWidth(i) = 430
-        ElseIf InStr(1, colHeaderText, "-", vbTextCompare) Then
-            Grid.ColWidth(i) = 0
-        ElseIf InStr(1, colHeaderText, "#", vbTextCompare) Then
-            Grid.ColWidth(i) = 300
-        End If
-    Next i
     
-    Debug.Print sql
+    gridAutoWidth Grid
+    
+    'Debug.Print sql
     Set tbOrders = myOpenRecordSet("##vnt_det", sql, dbOpenForwardOnly)
     If tbOrders Is Nothing Then Exit Sub
     If Not tbOrders.BOF Then
@@ -1912,7 +1971,12 @@ Private Sub Grid_DblClick()
         str = aRowText(mousRow)
         Report2.param1 = CStr(mousRow)
         Report2.param2 = CStr(mousRow)
-        
+    ElseIf Regim = "reservedAll" Then
+        Report2.Regim = "whoRezerved"
+        Set Report2.Caller = Me
+        gNomNom = Grid.TextMatrix(mousRow, 1)
+        Report2.param1 = CStr(mousRow)
+        Report2.param2 = CStr(mousRow)
     Else
         Report2.Regim = "subDetail"
         str = Grid.TextMatrix(mousRow, rrMater) & " и " & Grid.TextMatrix(mousRow, rrReliz)
@@ -1929,7 +1993,7 @@ Private Sub Grid_EnterCell()
 If Not (Regim = "" _
     Or Regim = "bay" Or Regim = "mat" _
     Or Regim = "venture" Or Regim = "ventureZatrat" _
-    Or Regim = "aReport" _
+    Or Regim = "aReport" Or Regim = "reservedAll" _
 ) Then Exit Sub
 mousRow = Grid.row
 If mousRow = 0 Then Exit Sub
@@ -1952,7 +2016,7 @@ End If
 
 If (mousCol = rrReliz Or (mousCol = rrMater And Regim <> "mat") _
     Or (Regim = "ventureZatrat" And Grid.col >= rzMainCosts) _
-    Or isReportDetail _
+    Or isReportDetail Or (Regim = "reservedAll" And Grid.TextMatrix(mousRow, 1) <> "") _
     ) _
 Then
    Grid.CellBackColor = &H88FF88
