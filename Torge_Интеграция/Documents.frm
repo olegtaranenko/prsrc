@@ -362,6 +362,9 @@ Begin VB.Form Documents
          Caption         =   "-"
          Visible         =   0   'False
       End
+      Begin VB.Menu mnSkladStand 
+         Caption         =   "Состояние склада"
+      End
       Begin VB.Menu mnKarta 
          Caption         =   "Карточка движения"
          Visible         =   0   'False
@@ -1529,6 +1532,29 @@ Private Sub mnReservedAll_Click()
     Set Report.Caller = Me
     Report.Show vbModal
 
+End Sub
+
+Private Sub mnSkladStand_Click()
+
+    ReDim sqlRowDetail(1)
+    ReDim aRowText(1)
+    ReDim rowFormatting(1)
+    ReDim aRowSortable(1)
+    ReDim arowSubtitle(1)
+    
+    
+    sqlRowDetail(1) = "call wf_nomenk_areport"
+    aRowText(1) = " Текущее состояние склада"
+    rowFormatting(1) = "#|<Номер ном.|<Название|Ед изм.|>Цена|>К-во Факт|>К-во Макс|>Сумма.Факт|>Сумма макс."
+    aRowSortable(1) = True
+    arowSubtitle(1) = True
+    Set Report.Caller = Me
+    Report.Regim = "aReportDetail"
+    Report.param1 = 1
+    
+    Report.Show vbModal
+    
+    
 End Sub
 
 Private Sub mnSource_Click()

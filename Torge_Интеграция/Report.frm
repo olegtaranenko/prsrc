@@ -12,6 +12,16 @@ Begin VB.Form Report
    ScaleHeight     =   8184
    ScaleWidth      =   11808
    StartUpPosition =   1  'CenterOwner
+   Begin VB.ComboBox cbAnormal 
+      Height          =   288
+      ItemData        =   "Report.frx":0000
+      Left            =   3600
+      List            =   "Report.frx":0016
+      TabIndex        =   10
+      Text            =   "-- выбрать аномалию --"
+      Top             =   7800
+      Width           =   2052
+   End
    Begin VB.CheckBox ckSubtitle 
       BackColor       =   &H8000000A&
       Caption         =   "Подзаголовки"
@@ -204,6 +214,8 @@ Public numSortSecondColIndex As Integer
 Public numSortThirdColIndex As Integer
     'столбец третьей сортировки, если сортировка числовая и без подзаголовков
     
+Dim aNormal As String
+    'для отчета состояние склада - какие аномалии показывать
 
 Dim colType As String
     'определяет тип текущей сортировки.
@@ -216,15 +228,16 @@ Dim colType As String
 
 
 'если col <> "" - проверяется, какая колонка
-Sub laSumControl(Optional col As String = "")
-If col <> "" And Grid.col <> rrFirm Then GoTo AA
-If InStr(Regim, "tatistic") Then
-   laSum.Caption = "Кол-во фирм:"
-   If col = "" Then laRecSum.Caption = Grid.Rows - 1
-Else
+Sub laControl(Optional col As String = "")
+    If col <> "" And Grid.col <> rrFirm Then GoTo AA
+    If InStr(Regim, "tatistic") Then
+       laSum.Caption = "Кол-во фирм:"
+       If col = "" Then laRecSum.Caption = Grid.Rows - 1
+    Else
 AA:
-   laSum.Caption = "Сумма:"
-End If
+       laSum.Caption = "Сумма:"
+    End If
+    
 End Sub
 
 Sub fitFormToGrid()
@@ -247,32 +260,66 @@ Dim i As Long, delta As Long
 End Sub
 
 
+
+Private Sub cbAnormal_Click()
+
+    reloadSklad Grid, True
+
+End Sub
+
 Private Sub ckSubtitle_Click()
+    reloadSklad Grid, False
+
+End Sub
+
+Private Sub reloadSklad(aGrid As MSFlexGrid, forceReload As Boolean)
 Dim p_rowid As Integer
+
 
     If Not isLoad Then Exit Sub
     
-    If ckSubtitle.value = 1 Then
-        ' перегрузить таблицу
+    MousePointer = flexHourglass
+    aGrid.Visible = False
+
+    
+    ' перегрузить таблицу
+    If forceReload Or ckSubtitle.value = 1 Then
         clearGrid Grid
-    If Regim = "aReportDetail" Then
-        p_rowid = CInt(param1)
-        aReportDetail (p_rowid)
-    ElseIf Regim = "reservedAll" Then
-        reservedAll
+        If Regim = "aReportDetail" Then
+            ' состояние склада
+            If cbAnormal.ListIndex = 0 Then
+                aNormal = "0"
+            ElseIf cbAnormal.ListIndex = 1 Then
+                aNormal = "null"
+            Else
+                aNormal = CStr(cbAnormal.ListIndex - 1)
+            End If
+        
+            sqlRowDetail(1) = "call wf_nomenk_areport(" & aNormal & ")"
+            p_rowid = CInt(param1)
+            aReportDetail (p_rowid)
+        ElseIf Regim = "reservedAll" Then
+            reservedAll
+        End If
     End If
-    Else
+
+    If ckSubtitle.value = 0 Then
         'удалить подзаголовки
-        removeSubtitles Grid
+        removeSubtitles aGrid
     End If
     
+    MousePointer = flexDefault
+    aGrid.Visible = True
+    
+
 End Sub
+
 Public Sub removeSubtitles(aGrid As MSFlexGrid)
 Dim i As Integer, maxrows As Integer
  
     i = aGrid.Rows - 1
     Do
-        If aGrid.TextMatrix(i, emptyColIndex) = "" Then
+        If aGrid.TextMatrix(i, emptyColIndex) = "" And Not (aGrid.Cols <= 2 And i = 1) Then
             aGrid.RemoveItem (i)
         End If
         i = i - 1
@@ -300,6 +347,8 @@ Dim prevDate As Date, prevNom As Long
 oldHeight = Me.Height
 oldWidth = Me.Width
 Me.Caller.MousePointer = flexHourglass
+cbAnormal.Visible = False
+
 If Regim = "subDetail" Then
     laHeader.Caption = "Детализация сумм " & param3 & "  по отгрузке от " & _
     Left$(param2, 8) & " по заказу №" & gNzak
@@ -308,10 +357,15 @@ ElseIf Regim = "subDetailMat" Then
     laHeader.Caption = "Детализация суммы" & param3 & " по накладной №" & gNzak
     subDetail
 ElseIf Regim = "aReport" Then
-    laHeader.Caption = "Отчет 'А' на " & Format(Now(), "dd.mm.yy")
+    laHeader.Caption = "Отчет А на " & Format(Now(), "dd.mm.yy")
     aReport
 ElseIf Regim = "aReportDetail" Then
-    laHeader.Caption = "Детализация строки """ & param3 & """ из Отчета 'А' "
+    If param3 <> "" Then
+        laHeader.Caption = "Детализация строки """ & param3 & """ из Отчета А "
+    Else
+        laHeader.Caption = aRowText(1) ' состояние склада
+        cbAnormal.Visible = True
+    End If
     emptyColIndex = 1
     groupIdColIndex = 0
     subtitleColIndex = 2
@@ -371,14 +425,18 @@ ElseIf Regim = "ventureZatratDetail" Then 'детализация по предприятиям
     laHeader.Caption = "Детализация сумм по статье затрат """ & Grid.TextMatrix(mousRow, rzZatratName) & """"
     ventureZatratDetail Pribil.ventureId, Grid.TextMatrix(Grid.row, 0)
 End If
-If Subtitle Then
-    ckSubtitle.Visible = True
-    ckSubtitle.value = 1
-Else
-    ckSubtitle.Visible = False
-    ckSubtitle.value = 0
-End If
-laSumControl
+
+laControl
+
+    If Subtitle Then
+        ckSubtitle.Visible = True
+        ckSubtitle.value = 1
+    Else
+        ckSubtitle.Visible = False
+        ckSubtitle.value = 0
+    End If
+    
+
 If InStr(Regim, "tatistic") Then
     trigger = False
     SortCol Grid, rrReliz, "numeric"
@@ -391,7 +449,7 @@ End Sub
 Sub byNomenk(saled As String)
 Dim restrictDate As Variant
 Dim historyStart As Variant
-Dim curentklassid As Integer
+Dim groupklassid As Integer
 
     
 'select trim(n.cod + ' ' + nomname + ' ' + n.size) as name, s.quant, s.sm, s.nomnom, o.ord, k.klassname, k.klassid, n.cost, n.ed_izmer2
@@ -411,11 +469,11 @@ Dim curentklassid As Integer
     Set tbOrders = myOpenRecordSet("##vnt_det", sql, dbOpenForwardOnly)
     If tbOrders Is Nothing Then Exit Sub
     quantity = 0 ': sum = 0
-    curentklassid = 0
+    groupklassid = 0
     If Not tbOrders.BOF Then
         While Not tbOrders.EOF
             quantity = quantity + 1
-            If curentklassid <> tbOrders!klassid Then
+            If groupklassid <> tbOrders!klassid Then
                 Grid.AddItem ""
                 Grid.AddItem Chr(9) & tbOrders!outtype & Chr(9) & tbOrders!klassName
                 quantity = quantity + 2
@@ -425,7 +483,7 @@ Dim curentklassid As Integer
                 Grid.CellFontBold = True
                 Grid.col = sbnNomnam
                 Grid.CellFontBold = True
-                curentklassid = tbOrders!klassid
+                groupklassid = tbOrders!klassid
             End If
             
             Grid.AddItem Chr(9) & tbOrders!nomnom _
@@ -611,7 +669,7 @@ End Sub
 ' Показать всю зарезервированную номенклатуру единым списком с подзаголовками
 ' по типу общего склада из отчета А
 Sub reservedAll()
-Dim curentklassid As Integer, rowStr As String
+Dim groupklassid As Integer, rowStr As String
 
     laHeader.Caption = "Список зарезервированной номенклатуры"
     Grid.FormatString = "#|<Номер ном.|<Название|Ед изм.|>>К-во зарез.|>Сумма зарез."
@@ -624,7 +682,7 @@ Dim curentklassid As Integer, rowStr As String
     If Not tbOrders.BOF Then
         While Not tbOrders.EOF
             quantity = quantity + 1
-            If curentklassid <> tbOrders!klassid Then
+            If groupklassid <> tbOrders!klassid Then
                 Grid.AddItem tbOrders!ord
                 Grid.AddItem tbOrders!ord & Chr(9) & Chr(9) & tbOrders!klassName
                 quantity = quantity + 2
@@ -634,7 +692,7 @@ Dim curentklassid As Integer, rowStr As String
                 Grid.CellFontBold = True
                 Grid.col = sbnNomnam
                 Grid.CellFontBold = True
-                curentklassid = tbOrders!klassid
+                groupklassid = tbOrders!klassid
             End If
             rowStr = tbOrders!ord _
                 & Chr(9) & tbOrders!nomnom _
@@ -814,9 +872,9 @@ Dim colHeaderText As String
         ElseIf InStr(1, colHeaderText, "Цена", vbTextCompare) Then
             pGrid.ColWidth(i) = 600
         ElseIf InStr(1, colHeaderText, "К-во", vbTextCompare) Then
-            pGrid.ColWidth(i) = 700
-        ElseIf InStr(1, colHeaderText, "Сумма", vbTextCompare) Then
             pGrid.ColWidth(i) = 1000
+        ElseIf InStr(1, colHeaderText, "Сумма", vbTextCompare) Then
+            pGrid.ColWidth(i) = 1150
         ElseIf InStr(1, colHeaderText, "Проводка", vbTextCompare) Then
             pGrid.ColWidth(i) = 1300
         ElseIf InStr(1, colHeaderText, "Дата", vbTextCompare) Then
@@ -842,9 +900,9 @@ Dim colHeaderText As String
 End Sub
 
 Sub aReportDetail(p_rowid As Integer)
-Dim curentklassid  As Integer, rowStr As String
+Dim rowStr As String
     Grid.TextMatrix(1, 0) = 0
-    Me.Sortable = aRowSortable(p_rowid)
+    Sortable = aRowSortable(p_rowid)
     sql = sqlRowDetail(p_rowid)
     Grid.FormatString = rowFormatting(p_rowid)
     
@@ -857,25 +915,54 @@ Dim curentklassid  As Integer, rowStr As String
         While Not tbOrders.EOF
             quantity = quantity + 1
 If p_rowid = 1 Then
-            If curentklassid <> tbOrders!klassid Then
+        Dim groupklassid  As Integer, headerRowIndex As Long
+        Dim groupQtyFact As Single, groupQtyMax As Single
+        Dim groupFact As Single, groupMax As Single
+            If groupklassid <> tbOrders!klassid Then
                 Grid.AddItem tbOrders!klassOrdered
                 Grid.AddItem tbOrders!klassOrdered & Chr(9) & Chr(9) & tbOrders!klassName
+
                 quantity = quantity + 2
                 Grid.row = Grid.Rows - 1
                 'quantity = quantity + 1
-                Grid.col = sbnNomnom
-                Grid.CellFontBold = True
-                Grid.col = sbnNomnam
-                Grid.CellFontBold = True
-                curentklassid = tbOrders!klassid
+                Dim i As Integer
+                For i = sbnNomnom To 8
+                    Grid.col = i
+                    Grid.CellFontBold = True
+                Next i
+                groupklassid = tbOrders!klassid
+                groupQtyFact = 0: groupQtyMax = 0
+                groupFact = 0: groupMax = 0
+                headerRowIndex = Grid.Rows - 1
+
             End If
+            Dim qty_max As String
+            If tbOrders!mark = "Used" Then
+                qty_max = Format(tbOrders!qty_max, "## ##0.00")
+                groupQtyMax = groupQtyMax + tbOrders!qty_max
+            Else
+                qty_max = "-0"
+            End If
+            
+            groupQtyFact = groupQtyFact + tbOrders!qty_fact:
+            groupFact = groupFact + tbOrders!qty_fact * tbOrders!cost
+            groupMax = groupMax + tbOrders!qty_max * tbOrders!cost
+            
+            If headerRowIndex > 1 Then
+                Grid.TextMatrix(headerRowIndex, 5) = Format(groupQtyFact, "## ##0.00")
+                Grid.TextMatrix(headerRowIndex, 6) = Format(groupQtyMax, "## ##0.00")
+                Grid.TextMatrix(headerRowIndex, 7) = Format(groupFact, "## ##0.00")
+                Grid.TextMatrix(headerRowIndex, 8) = Format(groupMax, "## ##0.00")
+            End If
+
+            
             rowStr = tbOrders!klassOrdered _
                 & Chr(9) & tbOrders!nomnom _
                 & Chr(9) & tbOrders!Name _
                 & Chr(9) & tbOrders!ed_Izmer2 _
                 & Chr(9) & Format(tbOrders!cost, "## ##0.00") _
                 & Chr(9) & Format(tbOrders!qty_fact, "## ##0.00") _
-                & Chr(9) & Format(tbOrders!qty_max, "## ##0.00") _
+                & Chr(9) & qty_max _
                 & Chr(9) & Format(tbOrders!qty_fact * tbOrders!cost, "## ##0.00") _
                 & Chr(9) & Format(tbOrders!qty_max * tbOrders!cost, "## ##0.00")
             
@@ -889,7 +976,7 @@ ElseIf p_rowid = 2 Then
                 & Chr(9) & Format(tbOrders!sm_processed, "## ##0.00") _
 
 
-ElseIf p_rowid = 8 Or p_rowid = 9 Then
+ElseIf p_rowid = 7 Then
             rowStr = tbOrders!Type _
                 & Chr(9) & tbOrders!numorder _
                 & Chr(9) & Format(tbOrders!Name, "## ##0.00") _
@@ -931,6 +1018,10 @@ End If
         Wend
     End If
     tbOrders.Close
+    
+    If p_rowid = 1 And Not Subtitle Then
+        removeSubtitles Grid
+    End If
 
 End Sub
 
@@ -945,8 +1036,8 @@ ReDim aRowText(11)
 ReDim rowFormatting(11)
 ReDim aRowSortable(11)
 ReDim arowSubtitle(11)
-
-Grid.FormatString = "||>ПЛЮС|>МИНУС|>РАЗНИЦА"
+    
+Grid.FormatString = "||>Актив       |>Пассив       |>Баланс       "
 Grid.ColWidth(0) = 0
 Grid.ColWidth(1) = 4000
 Grid.ColWidth(2) = 1360
@@ -966,7 +1057,7 @@ sql = "SELECT Sum((if mark = 'Used' then zakup else nowOstatki/perlist endif) * 
     & " , Sum(cost * nowOstatki / perList) as fact_sklad" _
     & " FROM sGuideNomenk"
     
-sqlRowDetail(rowid) = "call wf_nomenk_areport"
+sqlRowDetail(rowid) = "call wf_nomenk_areport (" & aNormal & ")"
 aRowSortable(rowid) = True
 arowSubtitle(rowid) = True
 
@@ -1008,17 +1099,11 @@ s = Round(schetOstat("60"), 2)
 If s < 0 Then k = -s: s = 0 Else k = 0
 
 aRowSortable(rowid) = False
-aRowText(rowid) = "Товары в пути"
-rowFormatting(rowid) = "|Проводка|Дата|>Кредит|>Дебит|Кому/От кого|Назначение|Замечание"
+aRowText(rowid) = "Товары в пути / Товарный кредит"
+rowFormatting(rowid) = "|Проводка|Дата|>Дебит|>Кредит|Кому/От кого|Назначение|Замечание"
 sqlRowDetail(rowid) = "call wf_a_report_goods(" & startDate & ")"
 
-Grid.AddItem rowid & Chr(9) & aRowText(rowid) & Chr(9) & Format(s, "## ##0.00")
-rowid = rowid + 1
-aRowText(rowid) = "Долги по товарам"
-rowFormatting(rowid) = rowFormatting(rowid - 1)
-sqlRowDetail(rowid) = "call wf_a_report_goods(" & startDate & ")"
-
-Grid.AddItem rowid & Chr(9) & aRowText(rowid) & Chr(9) & Chr(9) & Format(k, "## ##0.00")
+Grid.AddItem rowid & Chr(9) & aRowText(rowid) & Chr(9) & Format(s, "## ##0.00") & Chr(9) & Format(k, "## ##0.00")
 rowid = rowid + 1
 sumD = sumD + s
 sumK = sumK + k
@@ -1070,17 +1155,10 @@ sql = "select sum(k) as k, sum(d) as d from vDebitorKreditor"
 byErrSqlGetValues "##392", sql, k, d
 
 aRowSortable(rowid) = True
-aRowText(rowid) = "Дебиторы"
-sqlRowDetail(rowid) = "select type, numorder, name, k, d from vDebitorKreditor where k = 0 order by numorder"
+aRowText(rowid) = "Дебиторы / Кредиторы"
+sqlRowDetail(rowid) = "select type, numorder, name, k, d from vDebitorKreditor order by numorder"
 rowFormatting(rowid) = "-|<№ заказа|<Название фирмы|>Сумма дебета|>Сумма кредита"
-Grid.AddItem rowid & Chr(9) & aRowText(rowid) & Chr(9) & Format(d, "## ##0.00")
-rowid = rowid + 1
-
-aRowSortable(rowid) = True
-aRowText(rowid) = "Кредиторы"
-sqlRowDetail(rowid) = "select type, numorder, name, k, d from vDebitorKreditor where d = 0 order by numorder"
-rowFormatting(rowid) = rowFormatting(rowid - 1)
-Grid.AddItem rowid & Chr(9) & aRowText(rowid) & Chr(9) & Chr(9) & Format(k, "## ##0.00")
+Grid.AddItem rowid & Chr(9) & aRowText(rowid) & Chr(9) & Format(d, "## ##0.00") & Chr(9) & Format(k, "## ##0.00")
 rowid = rowid + 1
 sumD = sumD + d
 sumK = sumK + k
@@ -1702,10 +1780,14 @@ laHeader.Width = laHeader.Width + w
 cmExel.Top = cmExel.Top + h
 cmExit.Top = cmExit.Top + h
 cmPrint.Top = cmPrint.Top + h
+cbAnormal.Top = cbAnormal.Top + h
 
 cmExit.Left = cmExit.Left + w
 cmExel.Left = cmExit.Left - 50 - cmExel.Width
 cmPrint.Left = cmExel.Left - 50 - cmPrint.Width
+cbAnormal.Left = ckSubtitle.Left + ckSubtitle.Width + 50
+
+
 
 
 ckSubtitle.Top = laSum.Top
@@ -1971,6 +2053,9 @@ Private Sub Grid_DblClick()
         str = aRowText(mousRow)
         Report2.param1 = CStr(mousRow)
         Report2.param2 = CStr(mousRow)
+        If mousRow = 1 Then
+            Report2.cbAnormal.Visible = True
+        End If
     ElseIf Regim = "reservedAll" Then
         Report2.Regim = "whoRezerved"
         Set Report2.Caller = Me
@@ -2037,7 +2122,7 @@ If Grid.MouseRow = 0 And Shift = 2 Then
         MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
 Else
 'ElseIf Grid.col = rrReliz Or Grid.col = rrMater Then
-    laSumControl "col"
+    laControl "col"
     laRecSum.Caption = Round(sumInGridCol(Grid, Grid.col), 2)
 End If
 End Sub

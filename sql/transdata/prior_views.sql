@@ -177,6 +177,18 @@ where r.curquant > 0
 ;
 
 
+if exists (select 1 from sysviews where viewname = 'isumProdRequ' and vcreator = 'dba') then
+	drop view isumProdRequ;
+end if;
+
+create view isumProdRequ
+as 
+select *
+from itemProdRequ r
+;
+
+
+
 
 if exists (select 1 from sysviews where viewname = 'itemSellRequ' and vcreator = 'dba') then
 	drop view itemSellRequ;
@@ -191,6 +203,19 @@ join sguidenomenk n on r.nomnom = n.nomnom
 where r.curquant > 0
 ;
 
+
+if exists (select 1 from sysviews where viewname = 'isumSellRequ' and vcreator = 'dba') then
+	drop view isumSellRequ;
+end if;
+
+create view isumSellRequ
+as 
+select *
+from itemSellRequ r
+;
+
+
+
 if exists (select 1 from sysviews where viewname = 'itemBranRequ' and vcreator = 'dba') then
 	drop view itemBranRequ;
 end if;
@@ -204,6 +229,18 @@ from itemProdRequ r
 select r.numorder, r.nomnom, r.quant, 'p', r.statusid
 from itemSellRequ r
 ;
+
+
+if exists (select 1 from sysviews where viewname = 'isumBranRequ' and vcreator = 'dba') then
+	drop view isumBranRequ;
+end if;
+
+create view isumBranRequ
+as 
+select *
+from itemBranRequ r
+;
+
 
 
 --=====================================================

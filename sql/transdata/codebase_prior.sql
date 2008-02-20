@@ -538,24 +538,88 @@ if exists (select 1 from sysprocedure where proc_name = 'wf_nomenk_areport') the
 end if;
 
 CREATE procedure wf_nomenk_areport(
+	p_anormal_index integer default 0
 )
 begin
+	declare C_NULL_COST integer;
+	declare C_NEGATIVE_QTY integer;
+	declare C_USED_NULL integer;
+	declare C_ZU_VIEL integer;
+
+	set C_NULL_COST = 1;
+	set C_NEGATIVE_QTY = 2;
+	set C_USED_NULL = 3;
+	set C_ZU_VIEL = 4;
+
 	create table #klass_ordered (id integer, ord integer);
+	create table #nomenk (nomnom varchar(20));
 
 	call wf_sort_klasses;
 
 
-	select (if mark = 'Used' then zakup else round(nowOstatki/perlist, 2) endif) as qty_max, round(nowOstatki / perlist, 2) as qty_fact
-	, zakup, nowostatki, perlist, round(cost, 2) as cost, mark
-	, nomnom as text 
-	, trim(cod + ' ' + nomname + ' ' + size) as name, nomnom, ed_izmer, ed_izmer2 
-	, wf_breadcrump_klass(k.klassid) as klassname, k.klassid
-	, o.ord as klassOrdered
-	from sguidenomenk n
-	join #klass_ordered o on n.klassid = o.id
-	join sguideklass k on k.klassid = n.klassid
-	order by o.ord, text;
+	if isnull(p_anormal_index, C_NULL_COST) = C_NULL_COST then
+		insert into #nomenk(nomnom)
+		select 
+			  n.nomnom
+		from sguidenomenk n
+		where cost = 0;
+	elseif isnull(p_anormal_index, C_NEGATIVE_QTY) = C_NEGATIVE_QTY then
+		insert into #nomenk(nomnom)
+		select 
+			  n.nomnom
+		from sguidenomenk n
+		where not exists (select 1 from #nomenk r where r.nomnom = n.nomnom)
+			and n.nowOstatki < 0
+		;
 
+	elseif isnull(p_anormal_index, C_USED_NULL) = C_USED_NULL then
+		insert into #nomenk(nomnom)
+		select 
+			  n.nomnom
+		from sguidenomenk n
+		where not exists (select 1 from #nomenk r where r.nomnom = n.nomnom)
+			and n.mark = 'Used' and zakup = 0
+		;
+
+	elseif isnull(p_anormal_index, C_ZU_VIEL) = C_ZU_VIEL then
+		insert into #nomenk(nomnom)
+		select 
+			  n.nomnom
+		from sguidenomenk n
+		where not exists (select 1 from #nomenk r where r.nomnom = n.nomnom)
+			and n.mark = 'Used' and zakup * perlist < nowOstatki and zakup > 0
+		;
+
+	end if;
+
+	if p_anormal_index = 0 then
+		select (if n.mark = 'Used' then zakup else round(nowOstatki/perlist, 2) endif) as qty_max, round(nowOstatki / perlist, 2) as qty_fact
+			, zakup, nowostatki, perlist, round(cost, 2) as cost, mark
+			, n.nomnom as text 
+			, trim(cod + ' ' + nomname + ' ' + size) as name, n.nomnom, ed_izmer, ed_izmer2 
+			, wf_breadcrump_klass(k.klassid) as klassname, k.klassid
+			, o.ord as klassOrdered, n.mark
+		from sguidenomenk n
+		join #klass_ordered o on n.klassid = o.id
+		join sguideklass k on k.klassid = n.klassid
+		order by o.ord, text;
+	else
+
+		select (if n.mark = 'Used' then zakup else round(nowOstatki/perlist, 2) endif) as qty_max, round(nowOstatki / perlist, 2) as qty_fact
+			, zakup, nowostatki, perlist, round(cost, 2) as cost, mark
+			, n.nomnom as text 
+			, trim(cod + ' ' + nomname + ' ' + size) as name, n.nomnom, ed_izmer, ed_izmer2 
+			, wf_breadcrump_klass(k.klassid) as klassname, k.klassid
+			, o.ord as klassOrdered, n.mark
+		from sguidenomenk n
+		join #nomenk f on n.nomnom = f.nomnom
+		join #klass_ordered o on n.klassid = o.id
+		join sguideklass k on k.klassid = n.klassid
+		order by o.ord, text;
+
+	end if;
+
+	drop table #nomenk;
 	drop table #klass_ordered;
 
 end;
