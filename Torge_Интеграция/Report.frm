@@ -405,6 +405,8 @@ ElseIf Regim = "aReportDetail" Then
     aReportDetail (param1)
     
 ElseIf Regim = "whoRezerved" Then
+    clearGrid Me.Grid
+    quantity = 0
     whoRezerved whoRezervedIndex
     
 ElseIf Regim = "reservedAll" Then
