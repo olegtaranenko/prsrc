@@ -1549,6 +1549,7 @@ AA:
         gNomNom & "' ?") = vbYes Then
             Report.Regim = "whoRezerved"
             Set Report.Caller = Me
+            Report.Sortable = True
             Report.Show vbModal
         End If
     Else
