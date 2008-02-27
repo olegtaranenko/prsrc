@@ -12,11 +12,22 @@ Begin VB.Form Report
    ScaleHeight     =   8184
    ScaleWidth      =   11808
    StartUpPosition =   1  'CenterOwner
-   Begin VB.ComboBox cbAnormal 
+   Begin VB.ComboBox cbReserveTerm 
       Height          =   288
       ItemData        =   "Report.frx":0000
       Left            =   3600
       List            =   "Report.frx":0016
+      TabIndex        =   11
+      Text            =   "-- срок резерва --"
+      Top             =   7440
+      Visible         =   0   'False
+      Width           =   2052
+   End
+   Begin VB.ComboBox cbAnormal 
+      Height          =   288
+      ItemData        =   "Report.frx":0083
+      Left            =   3600
+      List            =   "Report.frx":0099
       TabIndex        =   10
       Text            =   "-- выбрать аномалию --"
       Top             =   7800
@@ -190,8 +201,14 @@ Const CT_EMPTY = "empty"
 Const CT_CUSTOM = "custom"
 Const CT_SCHET = "schet"
 
+Const TI_BIS_30 = 1
+Const TI_1_2 = 2
+Const TI_2_4 = 3
+Const TI_4_6 = 4
+Const TI_SEIT_6 = 5
+
 Public setSortable As Boolean
-    'Позволяет установить признак снаружи
+    'Позволяет установить признак сортируемости таблицы отчета снаружи
 
 Public Sortable As Boolean
     'Приватная переменная - может или нет отчет сортироваться.
@@ -219,6 +236,10 @@ Dim aNormal As String
 
 Dim colType As String
     'определяет тип текущей сортировки.
+    
+Public whoRezervedIndex As Integer
+    ' для резервированной номенклатуры определяет период резервирования
+    
 
 
 
@@ -267,6 +288,10 @@ Private Sub cbAnormal_Click()
 
 End Sub
 
+Private Sub cbReserveTerm_Click()
+    reloadSklad Grid, True
+End Sub
+
 Private Sub ckSubtitle_Click()
     reloadSklad Grid, False
 
@@ -287,7 +312,7 @@ Dim p_rowid As Integer
         clearGrid Grid
         If Regim = "aReportDetail" Then
             ' состояние склада
-            If cbAnormal.ListIndex = 0 Then
+            If cbAnormal.ListIndex = 0 Or cbAnormal.ListIndex = -1 Then
                 aNormal = "0"
             ElseIf cbAnormal.ListIndex = 1 Then
                 aNormal = "null"
@@ -299,7 +324,12 @@ Dim p_rowid As Integer
             p_rowid = CInt(param1)
             aReportDetail (p_rowid)
         ElseIf Regim = "reservedAll" Then
-            reservedAll
+            Dim v_res_term As Integer
+            v_res_term = cbReserveTerm.ListIndex
+            If cbReserveTerm.ListIndex = -1 Then
+                v_res_term = 0
+            End If
+            reservedAll v_res_term
         End If
     End If
 
@@ -319,7 +349,7 @@ Dim i As Integer, maxrows As Integer
  
     i = aGrid.Rows - 1
     Do
-        If aGrid.TextMatrix(i, emptyColIndex) = "" And Not (aGrid.Cols <= 2 And i = 1) Then
+        If aGrid.TextMatrix(i, emptyColIndex) = "" And Not (aGrid.Rows <= 2 And i = 1) Then
             aGrid.RemoveItem (i)
         End If
         i = i - 1
@@ -375,9 +405,11 @@ ElseIf Regim = "aReportDetail" Then
     aReportDetail (param1)
     
 ElseIf Regim = "whoRezerved" Then
-    whoRezerved
+    whoRezerved whoRezervedIndex
+    
 ElseIf Regim = "reservedAll" Then
-    reservedAll
+    cbReserveTerm.Visible = True
+    reservedAll 0
 ElseIf Regim = "" Then 'отчет Реализация - заказы производства
     laHeader.Caption = "Детализация сумм " & param2 & "(Материалы) и " & _
     param1 & "(Реализация) по датам отгрузок заказов производства."
@@ -668,14 +700,35 @@ End Sub
 
 ' Показать всю зарезервированную номенклатуру единым списком с подзаголовками
 ' по типу общего склада из отчета А
-Sub reservedAll()
-Dim groupklassid As Integer, rowStr As String
+Sub reservedAll(p_term_index As Integer)
 
+Dim groupklassid As Integer, rowStr As String
+Dim p_days_start As Integer, p_days_end As Integer
     laHeader.Caption = "Список зарезервированной номенклатуры"
     Grid.FormatString = "#|<Номер ном.|<Название|Ед изм.|>>К-во зарез.|>Сумма зарез."
     gridAutoWidth Grid
     
-    sql = "call wf_nomenk_resered_all"
+    If p_term_index = 0 Then
+        p_days_start = 10000
+        p_days_end = 0
+    ElseIf p_term_index = 1 Then
+        p_days_start = 30
+        p_days_end = 0
+    ElseIf p_term_index = 2 Then
+        p_days_start = 60
+        p_days_end = 30
+    ElseIf p_term_index = 3 Then
+        p_days_start = 120
+        p_days_end = 60
+    ElseIf p_term_index = 4 Then
+        p_days_start = 180
+        p_days_end = 120
+    ElseIf p_term_index = 5 Then
+        p_days_start = 10000
+        p_days_end = 120
+    End If
+    
+    sql = "call wf_nomenk_resered_all (" & p_days_start & ", " & p_days_end & ")"
     
     Set tbOrders = myOpenRecordSet("##reserved_all", sql, dbOpenForwardOnly)
     If tbOrders Is Nothing Then Exit Sub
@@ -712,144 +765,93 @@ Dim groupklassid As Integer, rowStr As String
     End If
 End Sub
 
-Sub whoRezerved()
-Dim v, s As Single, ed2 As String, per As Single, sum As Single
-', obr As String
-sql = "SELECT  ed_Izmer2, perList From sGuideNomenk WHERE nomNom = '" & gNomNom & "'"
-'MsgBox sql
-If Not byErrSqlGetValues("##349", sql, ed2, per) Then Exit Sub
+Sub whoRezerved(p_term_index As Integer)
+Dim groupklassid As Integer, rowStr As String
+Dim p_days_start As Integer, p_days_end As Integer
 
-laHeader.Caption = "Список заказов, кот. резервировали ном-ру '" & gNomNom & _
-"' [" & ed2 & "]."
-Grid.FormatString = "|<№ заказа|кол-во|^Цех |^Дата |^ М|Статус" & _
-"|<Название Фирмы|<Изделия|заказано|согласовано"
-Grid.ColWidth(0) = 0
-'Grid.ColWidth(rtNomZak) =
-Grid.ColWidth(rtReserv) = 765
-Grid.ColWidth(rtCeh) = 765
-Grid.ColWidth(rtData) = 870
-'Grid.ColWidth(rtMen) =
-Grid.ColWidth(rtStatus) = 930
-Grid.ColWidth(rtFirma) = 3270
-Grid.ColWidth(rtProduct) = 1950
-'Grid.ColWidth(rtZakazano) =
-Grid.ColWidth(rtOplacheno) = 810
-
-sql = "SELECT Orders.numOrder, GuideCeh.Ceh, Orders.inDate, " & _
-"GuideManag.Manag, Orders.Product, " & _
-"GuideStatus.Status, GuideFirms.Name, Orders.ordered, Orders.paid, " & _
-"sDMCrez.quantity, Sum(sDMC.quant) AS Sum_quant " & _
-"FROM GuideStatus INNER JOIN (GuideManag INNER JOIN (GuideFirms INNER " & _
-"JOIN (GuideCeh INNER JOIN (sDMC RIGHT JOIN (sDMCrez INNER JOIN Orders " & _
-"ON sDMCrez.numDoc = Orders.numOrder) ON (sDMC.nomNom = sDMCrez.nomNom) " & _
-"AND (sDMC.numDoc = sDMCrez.numDoc)) ON GuideCeh.CehId = Orders.CehId) " & _
-"ON GuideFirms.FirmId = Orders.FirmId) ON GuideManag.ManagId = " & _
-"Orders.ManagId) ON GuideStatus.StatusId = Orders.StatusId " & _
-"Where(((sDMCrez.nomNom) = '" & gNomNom & "')) " & _
-"GROUP BY Orders.numOrder, GuideCeh.Ceh, Orders.inDate, GuideManag.Manag, " & _
-"GuideStatus.Status, GuideFirms.Name, Orders.Product, Orders.ordered, Orders.paid, sDMCrez.quantity;"
-'MsgBox sql
-Set tbOrders = myOpenRecordSet("##139", sql, dbOpenForwardOnly) ', dbOpenDynaset)
-If tbOrders Is Nothing Then Exit Sub
-quantity = 0: sum = 0
-If Not tbOrders.BOF Then
- While Not tbOrders.EOF
-    v = tbOrders!Sum_quant: If IsNull(v) Then v = 0
-    s = Round((tbOrders!quantity - v) / per, 2)
-    If s > 0 Then
-        quantity = quantity + 1
-        Grid.TextMatrix(quantity, rtNomZak) = tbOrders!numorder
-        Grid.TextMatrix(quantity, rtCeh) = tbOrders!ceh
-    '    Grid.TextMatrix(quantity, rtData) = tbOrders!inDate
-        LoadDate Grid, quantity, rtData, tbOrders!inDate, "dd.mm.yy"
-        Grid.TextMatrix(quantity, rtMen) = tbOrders!Manag
-        Grid.TextMatrix(quantity, rtStatus) = tbOrders!Status
-        Grid.TextMatrix(quantity, rtFirma) = tbOrders!Name
-        
-        If Not IsNull(tbOrders!Product) Then _
-            Grid.TextMatrix(quantity, rtProduct) = tbOrders!Product
-        If Not IsNull(tbOrders!ordered) Then _
-            Grid.TextMatrix(quantity, rtZakazano) = tbOrders!ordered
-        If Not IsNull(tbOrders!paid) Then _
-            Grid.TextMatrix(quantity, rtOplacheno) = tbOrders!paid
-        Grid.TextMatrix(quantity, rtReserv) = s
+    Grid.Visible = False
     
-        Grid.AddItem ""
-        sum = sum + s
+    laHeader.Caption = "Список заказов, кот. резервировали ном-ру '" & gNomNom & "' [" & "]."
+    
+    Grid.FormatString = "|<№ заказа|>кол-во|^Цех |^Дата |^ М|Статус" & _
+    "|<Название Фирмы|<Изделия|>Заказано|>Согласовано"
+    Grid.ColWidth(0) = 0
+    'Grid.ColWidth(rtNomZak) =
+    Grid.ColWidth(rtReserv) = 765
+    Grid.ColWidth(rtCeh) = 765
+    Grid.ColWidth(rtData) = 1600
+    'Grid.ColWidth(rtMen) =
+    Grid.ColWidth(rtStatus) = 930
+    Grid.ColWidth(rtFirma) = 3270
+    Grid.ColWidth(rtProduct) = 1950
+    'Grid.ColWidth(rtZakazano) =
+    Grid.ColWidth(rtOplacheno) = 810
+
+    If p_term_index = 0 Then
+        p_days_start = 10000
+        p_days_end = 0
+    ElseIf p_term_index = 1 Then
+        p_days_start = 30
+        p_days_end = 0
+    ElseIf p_term_index = 2 Then
+        p_days_start = 60
+        p_days_end = 30
+    ElseIf p_term_index = 3 Then
+        p_days_start = 120
+        p_days_end = 60
+    ElseIf p_term_index = 4 Then
+        p_days_start = 180
+        p_days_end = 120
+    ElseIf p_term_index = 5 Then
+        p_days_start = 10000
+        p_days_end = 120
     End If
-    tbOrders.MoveNext
- Wend
-End If
-tbOrders.Close
+    
+    
+    sql = "call wf_order_reserved ('" & gNomNom & "', " & p_days_start & ", " & p_days_end & ")"
+    
+    Set tbOrders = myOpenRecordSet("##350", sql, dbOpenForwardOnly)
+    If tbOrders Is Nothing Then Exit Sub
+    If Not tbOrders.BOF Then
+        While Not tbOrders.EOF
 
-'выписанные в цеху накладные со склада целых
-sql = "SELECT sDMCrez.numDoc, sDMCrez.quantity, sDocs.Note, sDocs.xDate " & _
-"FROM sDocs INNER JOIN sDMCrez ON sDocs.numDoc = sDMCrez.numDoc " & _
-"Where (((sDMCrez.nomNom) = '" & gNomNom & "') And ((sDocs.numExt) = 0));"
-
-Set tbOrders = myOpenRecordSet("##342", sql, dbOpenForwardOnly) ', dbOpenDynaset)
-If Not tbOrders Is Nothing Then
-  If Not tbOrders.BOF Then
-    While Not tbOrders.EOF
-        quantity = quantity + 1
-        Grid.TextMatrix(quantity, rtNomZak) = tbOrders!numDoc
-        Grid.TextMatrix(quantity, rtCeh) = tbOrders!note
-        LoadDate Grid, quantity, rtData, tbOrders!xDate, "dd.mm.yy"
-'        Grid.TextMatrix(quantity, rtStatus) = tbOrders!status
-        Grid.TextMatrix(quantity, rtFirma) = "Выписанная в Цеху накладная"
-        Grid.TextMatrix(quantity, rtReserv) = Round(tbOrders!quantity / per, 2)
-        Grid.AddItem ""
-        tbOrders.MoveNext
-    Wend
-  End If
-End If
-tbOrders.Close
-
-'заказы на продажу
-
-'If obr <> "" Then obr = "2"
-sql = "SELECT BayOrders.numOrder, BayOrders.inDate, BayOrders.ManagId, " & _
-"BayOrders.StatusId, BayGuideProblem.Problem, BayGuideFirms.Name, " & _
-" BayOrders.ordered, BayOrders.paid, sDMCrez.quantity, sDMC.quant " & _
-"FROM BayGuideFirms INNER JOIN (BayGuideProblem INNER JOIN ((sDMCrez " & _
-"LEFT JOIN sDMC ON (sDMCrez.nomNom = sDMC.nomNom) AND (sDMCrez.numDoc = sDMC.numDoc)) INNER JOIN BayOrders ON sDMCrez.numDoc = BayOrders.numOrder) ON BayGuideProblem.ProblemId = " & _
-"BayOrders.ProblemId) ON BayGuideFirms.FirmId = BayOrders.FirmId " & _
-"WHERE (((sDMCrez.nomNom)='" & gNomNom & "'));"
-
-Set tbOrders = myOpenRecordSet("##350", sql, dbOpenForwardOnly) ', dbOpenDynaset)
-If Not tbOrders Is Nothing Then
-  If Not tbOrders.BOF Then
-    While Not tbOrders.EOF
-      v = tbOrders!quant: If IsNull(v) Then v = 0
-      s = Round((tbOrders!quantity - v) / per, 2)
-      If s > 0 And tbOrders!StatusId <> 6 Then
-        quantity = quantity + 1
-        Grid.TextMatrix(quantity, rtNomZak) = tbOrders!numorder
-        Grid.TextMatrix(quantity, rtCeh) = "Продажа"
-        LoadDate Grid, quantity, rtData, tbOrders!inDate, "dd.mm.yy"
-        Grid.TextMatrix(quantity, rtMen) = Manag(tbOrders!ManagId)
-        Grid.TextMatrix(quantity, rtStatus) = Status(tbOrders!StatusId)
-        Grid.TextMatrix(quantity, rtFirma) = tbOrders!Name
-        Grid.TextMatrix(quantity, rtReserv) = s
-        If Not IsNull(tbOrders!ordered) Then _
-            Grid.TextMatrix(quantity, rtZakazano) = tbOrders!ordered
-        If Not IsNull(tbOrders!paid) Then _
-            Grid.TextMatrix(quantity, rtOplacheno) = tbOrders!paid
-        Grid.AddItem ""
-      End If
-      tbOrders.MoveNext
-    Wend
-  End If
+            quantity = quantity + 1
+            Grid.TextMatrix(quantity, rtNomZak) = tbOrders!numorder
+            Grid.TextMatrix(quantity, rtReserv) = Format(tbOrders!quant, "# ##0.00")
+            If Not IsNull(tbOrders!ceh) Then _
+                Grid.TextMatrix(quantity, rtCeh) = tbOrders!ceh
+            
+            Grid.TextMatrix(quantity, rtData) = tbOrders!date1
+            If Not IsNull(tbOrders!Manager) Then _
+                Grid.TextMatrix(quantity, rtMen) = tbOrders!Manager
+            
+            If Not IsNull(tbOrders!Status) Then _
+                Grid.TextMatrix(quantity, rtStatus) = tbOrders!Status
+            
+            If Not IsNull(tbOrders!client) Then _
+                Grid.TextMatrix(quantity, rtFirma) = tbOrders!client
+            
+            If Not IsNull(tbOrders!note) Then _
+                Grid.TextMatrix(quantity, rtProduct) = tbOrders!note
+            
+            If Not IsNull(tbOrders!sm_zakazano) Then _
+                Grid.TextMatrix(quantity, rtZakazano) = Format(tbOrders!sm_zakazano, "# ##0.00")
+                
+            If Not IsNull(tbOrders!sm_paid) Then _
+                Grid.TextMatrix(quantity, rtOplacheno) = Format(tbOrders!sm_paid, "# ##0.00")
+                
+            Grid.AddItem ""
+            tbOrders.MoveNext
+        Wend
+    End If
   tbOrders.Close
-End If
 
 laCount.Caption = quantity
-laRecSum.Caption = Round(sum, 2)
+'laRecSum.Caption = Round(sum, 2)
 If quantity > 0 Then
     Grid.RemoveItem quantity + 1
 End If
 trigger = False
-SortCol Grid, rtReserv, "numeric"
 Grid.Visible = True
 Me.MousePointer = flexDefault
 
@@ -1781,11 +1783,14 @@ cmExel.Top = cmExel.Top + h
 cmExit.Top = cmExit.Top + h
 cmPrint.Top = cmPrint.Top + h
 cbAnormal.Top = cbAnormal.Top + h
+cbReserveTerm.Top = cbAnormal.Top
+
 
 cmExit.Left = cmExit.Left + w
 cmExel.Left = cmExit.Left - 50 - cmExel.Width
 cmPrint.Left = cmExel.Left - 50 - cmPrint.Width
 cbAnormal.Left = ckSubtitle.Left + ckSubtitle.Width + 50
+cbReserveTerm.Left = cbAnormal.Left
 
 
 
@@ -1836,6 +1841,7 @@ Private Sub Form_Unload(Cancel As Integer)
     Sortable = False
     Subtitle = False
     isLoad = False
+    cbReserveTerm.Visible = False
 End Sub
 
 Private Sub Grid_Click()
@@ -2059,9 +2065,14 @@ Private Sub Grid_DblClick()
     ElseIf Regim = "reservedAll" Then
         Report2.Regim = "whoRezerved"
         Set Report2.Caller = Me
+        Report2.Sortable = True
         gNomNom = Grid.TextMatrix(mousRow, 1)
         Report2.param1 = CStr(mousRow)
         Report2.param2 = CStr(mousRow)
+        Report2.whoRezervedIndex = cbReserveTerm.ListIndex
+        If Report2.whoRezervedIndex = -1 Then
+            Report2.whoRezervedIndex = 0
+        End If
     Else
         Report2.Regim = "subDetail"
         str = Grid.TextMatrix(mousRow, rrMater) & " и " & Grid.TextMatrix(mousRow, rrReliz)

@@ -14,6 +14,7 @@
 		Prod:		от Production. Производство - на своей номенклатуре                   p  1,2.3
 		Serv:		от Service.    Производство - услуги, давальческий материал.          u  4
 		Sell:		от Sells.      Продажи                                                b  8
+		Flaw:       от Flaw.       Брак                                                   f  -
 		Bran:		от Branch.     По всем видам деятельности
 	
 		
@@ -125,6 +126,8 @@ join sproducts p on p.productid = io.prid and v.nomnom = p.nomnom
 select po.numorder, po.nomnom, po.quant, po.cenaEd, null, null
 from xpredmetybynomenk po
 ;
+
+
 
 
 if exists (select 1 from sysviews where viewname = 'isumProdOrde' and vcreator = 'dba') then
@@ -561,6 +564,23 @@ where statusid < 6
 ;
 
 
+if exists (select 1 from sysviews where viewname = 'itemBranProc' and vcreator = 'dba') then
+	drop view itemBranProc;
+end if;
+
+
+create view itemBranProc (numorder, nomnom, quant, scope, statusid)
+as 
+select r.numorder, r.nomnom, r.quant, 'p', r.statusid
+from itemProdProc r
+		union all
+select r.numorder, r.nomnom, r.quant, 'p', r.statusid
+from itemSellProc r
+;
+
+
+
+
 if exists (select 1 from sysviews where viewname = 'isumProdProc' and vcreator = 'dba') then
 	drop view isumProdProc;
 end if;
@@ -631,10 +651,136 @@ having round(quant, 2) > 0
 --	Rsrv	сокращение от Reserved зарезервированная номенклатура
 --===================================================================
 
-
-if exists (select 1 from sysviews where viewname = 'itemBranRsrv' and vcreator = 'dba') then
-	drop view itemBranRsrv;
+if exists (select 1 from sysviews where viewname = 'itemProdRsrv' and vcreator = 'dba') then
+	drop view itemProdRsrv;
 end if;
+
+create view itemProdRsrv (numorder, nomnom, quant, quant_rele)
+as
+select 
+r.numdoc, r.nomnom, r.quantity, sum(isnull(d.quant, 0))
+from sdmcrez r
+left join sdmc d on d.numdoc = r.numdoc and d.nomnom = r.nomnom
+join orders o on o.numorder = r.numdoc
+group by r.numdoc, r.nomnom, r.quantity
+;
+
+
+if exists (select 1 from sysviews where viewname = 'isumProdRsrv' and vcreator = 'dba') then
+	drop view isumProdRsrv;
+end if;
+
+create view isumProdRsrv (numorder, nomnom, quant, status, date1, manager, client, note, ceh, sm_zakazano, sm_paid)
+as
+select 
+r.numorder, r.nomnom, r.quant - r.quant_rele as x_quant, s.status, o.indate
+, m.manag, f.name, o.product, c.ceh, o.ordered, o.paid
+from itemProdRsrv r
+join orders o on o.numorder = r.numorder
+join guidestatus s on s.statusid = o.statusid
+left join guidemanag m on m.managid = o.managid
+left join guidefirms f on f.firmid = o.firmid
+left join guideceh c on c.cehid = o.cehid
+
+where abs(round(x_quant, 2)) > 0.01
+;
+
+
+if exists (select 1 from sysviews where viewname = 'itemSellRsrv' and vcreator = 'dba') then
+	drop view itemSellRsrv;
+end if;
+
+create view itemSellRsrv (numorder, nomnom, quant, quant_rele, date1)
+as
+select 
+r.numdoc, r.nomnom, r.quantity, sum(isnull(d.quant, 0)), o.indate
+from sdmcrez r
+left join sdmc d on d.numdoc = r.numdoc and d.nomnom = r.nomnom
+join bayorders o on o.numorder = r.numdoc 
+group by r.numdoc, r.nomnom, r.quantity, o.indate
+;
+
+if exists (select 1 from sysviews where viewname = 'isumSellRsrv' and vcreator = 'dba') then
+	drop view isumSellRsrv;
+end if;
+
+create view isumSellRsrv (numorder, nomnom, quant, status, date1, manager, client, note, ceh, sm_zakazano, sm_paid)
+as
+select
+	r.numorder, r.nomnom, r.quant - r.quant_rele as x_quant, s.status, r.date1
+	, m.manag, f.name, null, 'Продажа', o.ordered, o.paid
+from itemSellRsrv r
+join bayorders o on o.numorder = r.numorder
+join guidestatus s on s.statusid = o.statusid
+left join guidemanag m on m.managid = o.managid
+left join bayguidefirms f on f.firmid = o.firmid
+where abs(round(x_quant, 2)) > 0.01
+;
+
+
+
+if exists (select 1 from sysviews where viewname = 'itemFlawRsrv' and vcreator = 'dba') then
+	drop view itemFlawRsrv;
+end if;
+
+create view itemFlawRsrv (numorder, nomnom, quant, date1, note)
+as
+select d.numdoc, r.nomnom, r.quantity, d.xdate, d.note
+from sdocs d
+join sdmcrez r on r.numdoc = d.numdoc
+where d.numext = 0
+;
+
+if exists (select 1 from sysviews where viewname = 'isumFlawRsrv' and vcreator = 'dba') then
+	drop view isumFlawRsrv;
+end if;
+
+create view isumFlawRsrv (numorder, nomnom, quant, status, date1, manager, client, note, ceh, sm_zakazano, sm_paid)
+as
+select
+r.numorder, r.nomnom, r.quant, null, r.date1, null, 'Списание', null, r.note, null, null
+from itemFlawRsrv r
+;
+
+
+
+
+if exists (select 1 from sysviews where viewname = 'isumBranRsrv' and vcreator = 'dba') then
+	drop view isumBranRsrv;
+end if;
+
+create view isumBranRsrv (numorder, nomnom, quant, status, date1, manager, client, note, ceh, sm_zakazano, sm_paid, scope)
+as
+select 
+	*, 'p'
+from 
+	isumProdRsrv
+		union all
+select 
+	*, 'b'
+from 
+	isumSellRsrv
+		union all
+select 
+	*, 'f'
+from 
+	isumFlawRsrv
+;
+
+
+if exists (select 1 from sysviews where viewname = 'orderBranRsrv' and vcreator = 'dba') then
+	drop view orderBranRsrv;
+end if;
+
+create view orderBranRsrv (numorder, nomnom, quant, date1, manager, client, note, ceh, sm_zakazano, sm_paid, scope, status)
+as
+select 
+	r.numorder, r.nomnom, (r.quant / n.perlist), r.date1, r.manager, r.client, r.note, r.ceh, r.sm_zakazano, r.sm_paid, r.scope, r.status
+from isumBranRsrv r
+join sguidenomenk n on n.nomnom = r.nomnom
+;
+/*
+
 
 if exists (select 1 from sysviews where viewname = 'isumBranRsrv' and vcreator = 'dba') then
 	drop view isumBranRsrv;
@@ -650,7 +796,6 @@ left join isumBranProc p on p.numorder = o.numorder and p.nomnom = o.nomnom
 where r_quant <> 0 and o.statusid < 6
 ;
 
-/*
 select round(n.cost / perlist *(o.quant - isnull(s.quant, isnull(p.quant, 0))), 2) as r_sum
 , round((o.quant - isnull(s.quant, isnull(p.quant, 0))), 2) as r_quant
 , o.*, s.quant as s, p.quant as p, n.perlist, n.cost, n.nomname
@@ -694,7 +839,7 @@ and o.statusid < 6
 
 
 --=====================================================
---		Тяжелое наследство (еще Дима писал)
+--		Тяжелое наследство (еще от Димы)
 --=====================================================
 
 
@@ -710,15 +855,14 @@ create VIEW wCloseNomenk (
 	Sum_quant
 )	as
 SELECT 
-	sDMCrez.numDoc, 
-	sDMCrez.nomNom, 
-	sDMCrez.quantity, 
-	Sum(isnull(sDMC.quant, 0)) AS Sum_quant
+	r.numDoc, 
+	r.nomNom, 
+	r.quantity, 
+	Sum(isnull(d.quant, 0)) AS Sum_quant
 FROM 
-	sDMCrez 
-	LEFT 
-	JOIN sDMC ON (sDMCrez.nomNom = sDMC.nomNom) AND (sDMCrez.numDoc = sDMC.numDoc)
-GROUP BY sDMCrez.numDoc, sDMCrez.nomNom, sDMCrez.quantity;
+	sDMCrez r
+	LEFT JOIN sDMC d ON r.nomNom = d.nomNom AND r.numDoc = d.numDoc
+GROUP BY r.numDoc, r.nomNom, r.quantity;
 
 
 
@@ -732,12 +876,12 @@ create VIEW wCloseNomenk2 (
 	quantity,
 	Sum_quant
 )	as
-SELECT sDMCrez.numDoc, sDMCrez.nomNom, sDMCrez.quantity, Sum(isnull(sDMC.quant, 0)) AS Sum_quant
-FROM (
-	sDMCrez 
-	LEFT JOIN sDMC ON (sDMCrez.nomNom = sDMC.nomNom) AND (sDMCrez.numDoc = sDMC.numDoc)) 
-	INNER JOIN Orders ON sDMCrez.numDoc = Orders.numOrder
-GROUP BY sDMCrez.numDoc, sDMCrez.nomNom, sDMCrez.quantity;
+SELECT r.numDoc, r.nomNom, r.quantity, Sum(isnull(d.quant, 0)) AS Sum_quant
+FROM 
+	sDMCrez r 
+	INNER JOIN Orders o ON r.numDoc = o.numOrder
+	LEFT JOIN sdmc d ON r.nomNom = d.nomNom AND r.numDoc = d.numDoc
+GROUP BY r.numDoc, r.nomNom, r.quantity;
 
 
 
@@ -752,17 +896,17 @@ create VIEW wCloseNomenk3 (
 	Sum_quant
 )	as
 SELECT 
-	sDMCrez.numDoc, 
-	sDMCrez.nomNom, 
-	sDMCrez.quantity, 
-	Sum(isnull(sDMC.quant, 0)) AS Sum_quant
-FROM (
-	sDMCrez 
-	LEFT JOIN sDMC ON (sDMCrez.nomNom = sDMC.nomNom) AND (sDMCrez.numDoc = sDMC.numDoc)) 
-	INNER JOIN Orders ON sDMCrez.numDoc = Orders.numOrder
-GROUP BY sDMCrez.numDoc, sDMCrez.nomNom, sDMCrez.quantity, sDMCrez.curQuant
-HAVING sDMCrez.curQuant > 0;
---ORDER BY sDMCrez.numDoc;
+	r.numDoc, 
+	r.nomNom, 
+	r.quantity, 
+	Sum(isnull(d.quant, 0)) AS Sum_quant
+FROM 
+	sDMCrez r 
+	INNER JOIN Orders o ON r.numDoc = o.numOrder
+	LEFT JOIN sdmc d ON r.nomNom = d.nomNom AND r.numDoc = d.numDoc
+GROUP BY r.numDoc, r.nomNom, r.quantity, r.curQuant
+HAVING r.curQuant > 0;
+--ORDER BY r.numDoc;
 
 
 if exists (select 1 from sysviews where viewname = 'mm_orders' and vcreator = 'dba') then

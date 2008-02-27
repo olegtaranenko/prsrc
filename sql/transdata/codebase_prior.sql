@@ -492,14 +492,17 @@ end;
 
 
 --=======================
-
+-- TODO
 if exists (select 1 from sysprocedure where proc_name = 'wf_nomenk_resered_all') then
 	drop procedure wf_nomenk_resered_all;
 end if;
 
 CREATE procedure wf_nomenk_resered_all(
+	 p_days_start integer default null
+	, p_days_end integer  default null
 )
 begin
+
 	create table #klass_ordered (id integer, ord integer);
 	create table #nomenk (nomnom varchar(20), quant double, sm double);
 
@@ -508,6 +511,7 @@ begin
 	insert into #nomenk(nomnom, quant)
 	select r.nomnom, sum(r.quant)
 	from isumBranRsrv  r
+	where date1 between isnull(now() - p_days_start, date1) and isnull(now() - p_days_end, date1)
 	group by r.nomnom
 	;
 
@@ -529,6 +533,35 @@ begin
 end;
 
 
+if exists (select 1 from sysprocedure where proc_name = 'wf_order_reserved') then
+	drop procedure wf_order_reserved;
+end if;
+
+CREATE procedure wf_order_reserved(
+	p_nomnom varchar(20)
+	, p_days_start integer default null
+	, p_days_end integer  default null
+)
+begin
+
+	create table #order_list (numorder integer);
+
+	insert into #order_list
+	select distinct r.numorder 
+	from 
+		isumBranRsrv r
+	where r.nomnom = p_nomnom
+		and date1 between isnull(now() - p_days_start, date1) and isnull(now() - p_days_end, date1)
+	;
+
+	select r.* 
+	from orderBranRsrv r
+	join #order_list o on o.numorder = r.numorder
+	where r.nomnom = p_nomnom
+	order by r.date1 desc;
+
+	drop table #order_list;
+end;
 
 
 --=======================
