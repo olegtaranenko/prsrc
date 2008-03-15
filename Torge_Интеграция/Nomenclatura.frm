@@ -988,7 +988,8 @@ Else
     initCol nkPack, "В упаковке", 600, flexAlignLeftCenter
     initCol nkPerList, "Коэф.производства", 735
     initCol nkEdIzm, "Ед.изм.производства", 435
-'    initCol nkBegOstat, "Нач.остатки", 675
+    initCol nkEndOstat, "Ф.остатки", 700  'парам-ры уст-ся в ckEndDate_Click
+    initCol nkDostup, "Д.остатки", 700 '
     initCol nkPrevCost, "Пред.Ф.Цена", 735
     initCol nkCena, "Цена фактическая(cenaFact)", 735
     initCol nkCENA1, "Цена поставщика(CENA1)", 795
@@ -2683,6 +2684,20 @@ Dim il As Long, strWhere As String, befWhere  As String
 Dim insWhere As String, strN As String, i As Integer, s As Single
 Dim beg As Single, prih As Single, rash As Single, oldNow As Single
 
+'
+' Regim = "" - справочник по номенклатуре
+'       asOborot - оборотная ведомость
+'       asOstat - ведомость остатков
+'       sourOborot - оборотная по поставщикам
+'       ventureOborot - оборотная по предприятиям
+'       forKartaDMC - карточка движения
+'       fltOborot - номенклатура для закупки
+'       obrez - подрежим "только обрезные" в ведомости остатков. Работает не правильно для Всей Номенклатуре(не делает фильтрацию)
+'       checkCurOstat - Сверка текущих остатков
+'
+'
+'
+
 ckUnUsed.value = 0
 If Regim = "asOborot" Or Regim = "sourOborot" Or Regim = "fltOborot" Then
     ' Set dates for parameters to stored procs (i.e.
@@ -2782,9 +2797,9 @@ If Not tbNomenk.BOF Then
 '        tbNomenk.Update
         Grid.TextMatrix(quantity + 1, nkCheckOst) = prih * gain
     ElseIf Regim = "asOborot" Or Regim = "sourOborot" Or _
-    Regim = "fltOborot" Or Regim = "asOstat" Then
+    Regim = "fltOborot" Or Regim = "asOstat" Or Regim = "" Then
         strWhere = strN
-        If Regim = "asOstat" Then
+        If Regim = "asOstat" Or Regim = "" Then
           dOst = Round(nomencDostupOstatki * gain, 2)  'доступные остатки (и FO)
         Else
           If calcZacup(quantity + 1, "load") Then GoTo NXT 'пропускаем, если не требует закупки а Regim = "fltOborot"
@@ -2841,6 +2856,7 @@ If Not tbNomenk.BOF Then
         Grid.TextMatrix(quantity, nkEndOstat) = Round((beg + prih - rash) * gain, 2) ' остаток на конец
         If Regim = "asOborot" Then GoTo BB
     ElseIf Regim = "asOstat" Then
+    
         Grid.TextMatrix(quantity, nkPerList) = tbNomenk!perList      '
  '       beg = beg * gain:
 '        rash = 0 ' это б. сумма по всем складам
@@ -2859,9 +2875,10 @@ If Not tbNomenk.BOF Then
         If Regim = "checkCurOstat" Then
             Grid.TextMatrix(quantity, nkCurOstat) = Round(gain * oldNow, 2)
         Else
-'            If Not IsNull(tbNomenk!priceChanged) Then
-'                colorGridCell Grid, quantity, nkCena, vbRed
-'            End If
+            If Regim = "" Then
+                Grid.TextMatrix(quantity, nkEndOstat) = Round(FO, 2) ' строка д.б после вызова nomencDostupOstatki
+                Grid.TextMatrix(quantity, nkDostup) = Round(dOst, 2)
+            End If
             Grid.TextMatrix(quantity, nkCena) = cenaFact
             If Not IsNull(tbNomenk!prev_cost) Then
                 Grid.TextMatrix(quantity, nkPrevCost) = tbNomenk!prev_cost
@@ -2927,9 +2944,11 @@ FO = PrihodRashod("+", -1001) - PrihodRashod("-", -1001)
 sql = "SELECT Sum(quantity) AS Sum_quantity, " & _
 "Sum(Sum_quant) AS Sum_Sum_quant From wCloseNomenk " & _
 "WHERE (((nomNom)='" & gNomNom & "'));"
+
+'Debug.Print sql
 If Not byErrSqlGetValues("##469", sql, z, s) Then myBase.Close: End
 nomencDostupOstatki = FO - (z - s) ' минус, что несписано
-If intQuant <> "" Then
+If intQuant <> "" Or Regim = "" Then
     sql = "SELECT perList from sGuideNomenk WHERE (((nomNom)='" & gNomNom & "'));"
     If Not byErrSqlGetValues("##436", sql, s) Then myBase.Close: End
     nomencDostupOstatki = nomencDostupOstatki / s

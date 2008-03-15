@@ -624,7 +624,11 @@ if exists (select 1 from sysprocedure where proc_name = 'wf_nomenk_resered_all')
 	drop procedure wf_nomenk_resered_all;
 end if;
 
-CREATE procedure wf_nomenk_resered_all(
+if exists (select 1 from sysprocedure where proc_name = 'wf_nomenk_reserved_all') then
+	drop procedure wf_nomenk_reserved_all;
+end if;
+
+CREATE procedure wf_nomenk_reserved_all(
 	 p_days_start integer default null
 	, p_days_end integer  default null
 )
@@ -645,7 +649,7 @@ begin
 
 
 	select o.ord, trim(n.cod + ' ' + nomname + ' ' + n.size) as name
-		, r.quant / const_perlist as quant, n.cost / const_perlist * r.quant as sm, r.nomnom, k.klassid
+		, r.quant / n.perlist as quant, n.cost / n.perlist * r.quant as sm, r.nomnom, k.klassid
 		, wf_breadcrump_klass(k.klassid) as klassname, n.ed_izmer2
 	from #nomenk r
 	join sguidenomenk n on n.nomnom = r.nomnom

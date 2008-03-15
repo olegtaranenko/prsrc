@@ -734,7 +734,7 @@ Dim p_days_start As Integer, p_days_end As Integer
         p_days_end = 120
     End If
     
-    sql = "call wf_nomenk_resered_all (" & p_days_start & ", " & p_days_end & ")"
+    sql = "call wf_nomenk_reserved_all (" & p_days_start & ", " & p_days_end & ")"
     
     Set tbOrders = myOpenRecordSet("##reserved_all", sql, dbOpenForwardOnly)
     If tbOrders Is Nothing Then Exit Sub
@@ -1911,11 +1911,13 @@ Private Sub Grid_DblClick()
     Dim Report2 As New Report
     Set Report2.Caller = Me
     
-    If Regim = "aReportDetail" And param1 = 1 Then
-        Report2.Regim = "incomeHistoryBrief"
-        Report2.param1 = Grid.TextMatrix(mousRow, 1)
-        Report2.Show vbModal
-        Exit Sub
+    If Regim = "aReportDetail" Then
+        If param1 = 1 Then
+            Report2.Regim = "incomeHistoryBrief"
+            Report2.param1 = Grid.TextMatrix(mousRow, 1)
+            Report2.Show vbModal
+            Exit Sub
+        End If
     End If
     
     gNzak = Grid.TextMatrix(mousRow, rrNumOrder)
@@ -2006,12 +2008,20 @@ If Regim = "aReport" Then
     End If
 End If
 
+Dim isSostoianieSklad As Boolean
+
+If Regim = "aReportDetail" Then
+    If param1 = 1 And mousCol = 4 And (Grid.TextMatrix(mousRow, 1) <> "") Then
+        isSostoianieSklad = True
+    End If
+End If
+
 If (mousCol = rrReliz And (Regim = "" Or Regim = "bay" Or Regim = "mat")) _
-    Or (mousCol = rrMater And Regim = "" Or Regim = "bay") _
+    Or (mousCol = rrMater And (Regim = "" Or Regim = "bay")) _
     Or (Regim = "ventureZatrat" And Grid.col >= rzMainCosts) _
     Or isReportDetail _
     Or (Regim = "reservedAll" And Grid.TextMatrix(mousRow, 1) <> "") _
-    Or (Regim = "aReportDetail" And param1 = 1 And mousCol = 4 And Grid.TextMatrix(mousRow, 1) <> "") _
+    Or isSostoianieSklad _
 Then
    Grid.CellBackColor = &H88FF88
 Else
