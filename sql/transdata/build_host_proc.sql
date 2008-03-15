@@ -404,4 +404,33 @@ begin
 	end for;
 end;
 
+if exists (select '*' from sysprocedure where proc_name like 'build_table_one_server') then
+	drop procedure build_table_one_server;
+end if;
+
+create procedure build_table_one_server(
+		p_table_name varchar(100)
+		, p_slave_server varchar(32)
+		, f_create integer default 1
+	)
+begin
+	declare v_table_name varchar(64);
+
+	set v_table_name = p_table_name +'_' + p_slave_server;
+
+    if f_create = 0 then
+		if exists (select 1 from systable where table_name = v_table_name ) then 
+			execute immediate 
+				'drop table ' + v_table_name;
+        end if;
+    else 
+		if not exists (select 1 from systable where table_name = v_table_name ) then 
+			execute immediate 
+				'create existing table ' + v_table_name + ' at '''+ p_slave_server +'...'+ p_table_name + '''';
+        end if;
+	end if;
+		
+end;
+
+
 

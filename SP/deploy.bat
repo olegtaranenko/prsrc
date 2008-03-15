@@ -8,6 +8,8 @@ goto done
 
 :usage
 echo %~nx0 [patchNumber]
+echo WARNING: не использовать для ddl и dml файлы с расширением sql
+echo 	или которые не есть ЛИНК на соответствующий файл в директории transdata.
 goto done
 :done
 

@@ -80,19 +80,37 @@ Public aRowSortable() As Boolean
 Public arowSubtitle() As Boolean
 Public startDate As String, endDate As String
 
-Sub setStartEndDates(tbStartDate As TextBox, tbEndDate As TextBox)
+Function dateBasic2Sybase(aDay As String)
+Dim dt_str As String
+
+dt_str = "20" & Right$(aDay, 2) & "-" & Mid$(aDay, 4, 2) & "-" & Left$(aDay, 2)
+dateBasic2Sybase = CDate(dt_str)
+
+End Function
+
+
+Function dateSybase2Basic(aDay As String)
+Dim dt_str As String
+
+dt_str = Left(aDay, 4) & "-" & Mid(aDay, 5, 2) & "-" & Right(aDay, 2)
+dateSybase2Basic = dt_str
+
+End Function
+
+Sub setStartEndDates(tbStartDate As TextBox, Optional tbEndDate As TextBox)
 '    setStartEndDates tbStartDate, tbEndDate
+    startDate = "null"
     If isDateTbox(tbStartDate) Then
         startDate = "'" & Format(tmpDate, "yyyymmdd") & "'"
-    Else
-        startDate = "null"
     End If
     
+    endDate = "null"
     If isDateTbox(tbEndDate) Then
-        endDate = "'" & Format(tmpDate, "yyyy-mm-dd") & " 11:59:59 PM'"
-    Else
-        endDate = "null"
+        If isDateTbox(tbEndDate) Then
+            endDate = "'" & Format(tmpDate, "yyyy-mm-dd") & " 11:59:59 PM'"
+        End If
     End If
+    
 
 
 End Sub
@@ -261,37 +279,37 @@ Set objExel = Nothing
 End Sub
 
 
-Function myIsDate(ByVal Dt As String) As Variant
+Function myIsDate(ByVal dt As String) As Variant
 Dim dotPos As Integer
 Dim v_dd As Integer
 Dim v_mm As Integer
 Dim v_yyyy As Integer
     
     On Error GoTo catch
-    dotPos = InStr(Dt, ".")
+    dotPos = InStr(dt, ".")
     If IsNull(dotPos) Or dotPos = 0 Then
-        v_dd = CInt(Dt)
-        Dt = ""
+        v_dd = CInt(dt)
+        dt = ""
     Else
-        v_dd = CInt(Left(Dt, dotPos))
-        Dt = Mid(Dt, dotPos + 1)
+        v_dd = CInt(Left(dt, dotPos))
+        dt = Mid(dt, dotPos + 1)
     End If
     
-    If Len(Dt) > 0 Then
-        dotPos = InStr(Dt, ".")
+    If Len(dt) > 0 Then
+        dotPos = InStr(dt, ".")
         If IsNull(dotPos) Or dotPos = 0 Then
-            v_mm = CInt(Dt)
-            Dt = ""
+            v_mm = CInt(dt)
+            dt = ""
         Else
-            v_mm = CInt(Left(Dt, dotPos))
-            Dt = Mid(Dt, dotPos + 1)
+            v_mm = CInt(Left(dt, dotPos))
+            dt = Mid(dt, dotPos + 1)
         End If
     Else
         v_mm = Format(Now(), "mm")
     End If
     
-    If Len(Dt) <= 2 And Len(Dt) > 0 Then
-        v_yyyy = CInt("20" & Format(CInt(Dt), "0#"))
+    If Len(dt) <= 2 And Len(dt) > 0 Then
+        v_yyyy = CInt("20" & Format(CInt(dt), "0#"))
     Else
         v_yyyy = Format(Now(), "yyyy")
     End If
@@ -305,24 +323,24 @@ End Function
 
 Function isDateEmpty(tBox As TextBox, Optional warn As Boolean = True) As Boolean
 Dim str As String
-Dim Dt As String
+Dim dt As String
 Dim ret As Variant
     
-    Dt = tBox.Text
-    If IsEmpty(Dt) Or Len(CStr(Dt)) = 0 Then
+    dt = tBox.Text
+    If IsEmpty(dt) Or Len(CStr(dt)) = 0 Then
         isDateEmpty = False
         Exit Function
     End If
     
-    Dt = tBox.Text
+    dt = tBox.Text
     
-    ret = myIsDate(Dt)
+    ret = myIsDate(dt)
     If IsDate(ret) Then
         isDateEmpty = True
         tBox.Text = ret
     Else
         If warn Then
-            MsgBox "Неверная дата: " & CStr(Dt)
+            MsgBox "Неверная дата: " & CStr(dt)
         End If
         isDateEmpty = False
         tBox.SetFocus

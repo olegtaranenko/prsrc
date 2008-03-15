@@ -1,3 +1,130 @@
+	
+if exists (select 1 from sysprocedure where proc_name = 'wf_income_nomnom_brief') then
+	drop procedure wf_income_nomnom_brief;
+end if;
+
+CREATE procedure wf_income_nomnom_brief(
+	  p_nomnom varchar(20)
+)
+begin
+
+	declare v_sm_in_currency float; 
+	declare v_sm_in_rubles float; 
+	declare v_currency varchar(3);
+	declare v_currency_rate float; 
+	declare v_qty float;
+	declare v_sysname varchar(32);
+	declare v_mat_nu integer;
+	declare v_ue_rate float;
+	declare v_cost float;
+	declare v_rest float;
+	declare const_id_inv integer;
+	declare const_perlist float;
+
+	select id_inv, perlist into const_id_inv, const_perlist
+	from sguidenomenk where nomnom = p_nomnom;
+
+	create table #sdmc_nomnom (
+		numdoc integer 
+		, quant float -- в дробных
+		, xdate date, ventureid integer, sourid integer
+		, id_mat integer, id_jmat integer
+		, kt_sm_in_currency float, kt_sm_in_rubles float
+		, kt_currency varchar(3), kt_currency_rate float
+		, kt_qty float -- в целых
+		, kt_mat_nu integer
+		, kt_cost float, kt_rest float
+		, kt_source varchar(50)
+	);
+
+	insert into #sdmc_nomnom (
+		numdoc, quant, xdate, ventureid, sourid, id_mat, id_jmat
+	)
+	select 
+		r.numdoc, r.quant, d.xdate, d.ventureid, d.sourid, r.id_mat, d.id_jmat
+	from sdmc r 
+	join sdocs d on d.numdoc = r.numdoc and d.numext = r.numext
+    join sguidesource s on s.sourceid = d.sourid
+	where r.numext = 255 and r.nomnom = p_nomnom
+	;
+
+
+	-- 
+   	for d_cur as dc dynamic scroll cursor for
+   		select 
+			n.numdoc as r_numdoc, n.quant as r_quant, n.xdate as r_xdate
+			, n.ventureid as r_ventureid
+			, n.sourid as r_sourid, n.id_mat as r_id_mat
+			, n.id_jmat as r_id_jmat
+   		from #sdmc_nomnom n
+   	for update
+	do
+		if r_ventureid is not null and r_id_jmat is not null then
+			select sysname into v_sysname from guideventure where ventureid = r_ventureid;
+
+			if (v_sysname is not null) then
+				set v_mat_nu = null;
+				call wf_income_nomnom_brief_stime(
+					r_id_mat, r_id_jmat, const_id_inv, convert(varchar(20), r_xdate)
+					, v_mat_nu, v_sm_in_currency, v_sm_in_rubles, v_currency, v_currency_rate, v_qty, v_cost, v_rest
+				);
+		    
+		        if v_mat_nu is not null then
+					update #sdmc_nomnom 
+					set 
+						kt_sm_in_currency = v_sm_in_currency, kt_sm_in_rubles = v_sm_in_rubles
+						, kt_currency = v_currency, kt_currency_rate = v_currency_rate, kt_qty = v_qty
+						, kt_mat_nu = v_mat_nu, kt_cost = v_cost, kt_rest = v_rest
+					where 
+						current of dc;
+				end if;
+
+			end if;
+		end if;
+	end for;
+
+
+
+	-- Загрузить комтеховские инвентаризации
+	for a_cur as ac dynamic scroll cursor for
+		select id as r_id_jmat, dat as r_dat, nu as r_numdoc
+		from jmat_stime
+		where id_guide = 1023
+	do
+		insert into #sdmc_nomnom (
+			numdoc, quant, xdate, ventureid, sourid, id_mat, id_jmat, kt_mat_nu
+		)
+		select r_numdoc, m.kol1 * const_perlist, r_dat, null, null, m.id, r_id_jmat, m.nu
+		from mat_stime m
+		where id_jmat = r_id_jmat and id_inv = const_id_inv;
+	end for;
+	
+
+
+	select abs(kurs) into v_ue_rate from system;
+
+			--"|Дата|Кол-во|Цена УЕ|№Накл|№Поз|Предпр|Откуда
+	select r.xdate, r.quant / const_perlist as quant
+		, if r.quant != 0 then r.kt_sm_in_rubles / v_ue_rate / r.quant * const_perlist else 0 endif as cost_ue
+		, r.numdoc, r.kt_mat_nu as nu
+		, isnull(v.venturename, ' ') as venturename
+		, isnull(s.sourcename, 'Komtex Inventory') as sourcename
+			--|Валюта|Курс|Сумма Руб|Сумма Вал|Комтех К-во|Цена Руб|Цена Вал|"
+		, r.kt_currency as iso, r.kt_currency_rate as rate, r.kt_sm_in_rubles as sm_rur, kt_sm_in_currency as sm_currency, kt_qty
+		, if kt_qty != 0 then kt_sm_in_rubles / kt_qty else 0 endif as cost_rur
+		, if kt_qty != 0 then kt_sm_in_currency / kt_qty else 0 endif as cost_currency
+		, r.kt_cost / v_ue_rate as kt_cost, r.kt_rest
+	from #sdmc_nomnom r
+	left join guideventure v on v.ventureid = r.ventureid
+	left join sguidesource s on s.sourceid = r.sourid
+	order by xdate desc
+	;
+
+	drop table #sdmc_nomnom;
+
+end;
+
+
 -- helper for Report A
 
 
@@ -518,7 +645,7 @@ begin
 
 
 	select o.ord, trim(n.cod + ' ' + nomname + ' ' + n.size) as name
-		, r.quant / n.perlist as quant, n.cost / n.perlist * r.quant as sm, r.nomnom, k.klassid
+		, r.quant / const_perlist as quant, n.cost / const_perlist * r.quant as sm, r.nomnom, k.klassid
 		, wf_breadcrump_klass(k.klassid) as klassname, n.ed_izmer2
 	from #nomenk r
 	join sguidenomenk n on n.nomnom = r.nomnom
@@ -657,10 +784,7 @@ begin
 	drop table #nomenk;
 	drop table #klass_ordered;
 
-end;
-
-
-
+end;    
 
 
 
@@ -915,9 +1039,193 @@ end;
 
 
 
-----------------------------------------------------------------------
---------------             sdmc      ------------------------
-----------------------------------------------------------------------
+
+-- Отчет А: строки дебитор/кредитор
+
+if exists (select 1 from sysviews where viewname = 'vDebitorKreditor' and vcreator = 'dba') then
+	drop view vDebitorKreditor;
+end if;
+
+create 
+    view vDebitorKreditor (numorder, name, k, d, type)
+as
+
+SELECT numorder, f.name, (isnull(if isnull(paid, 0) > isnull(shipped, 0) then isnull(paid, 0) - isnull(shipped, 0) endif , 0)) AS k
+, (isnull(if isnull(paid, 0) < isnull(shipped, 0) then isnull(shipped, 0) - isnull(paid, 0) endif , 0)) AS d, 't'
+--, ordered, paid, shipped, statusid
+from orders o
+join guidefirms f on o.firmid = f.firmid
+where (k != 0 or d != 0)
+and statusid < 6
+        union all
+SELECT o.numorder, f.name, (isnull(if isnull(paid, 0) > isnull(cenaTotal, 0) then isnull(paid, 0) - isnull(cenaTotal, 0) endif , 0)) AS k
+, (isnull(if isnull(paid, 0) < isnull(cenaTotal, 0) then isnull(cenaTotal, 0) - isnull(paid, 0) endif , 0)) AS d, 'b'
+--, ordered, paid, cenaTotal
+from bayorders o
+join bayguidefirms f on o.firmid = f.firmid
+left join orderSellShip ot on ot.numorder = o.numorder
+where (k != 0 or d != 0)
+and o.statusid < 6
+;
+
+
+
+
+
+-----------------------------------------------------------
+--------------             EVENTs      --------------------
+-----------------------------------------------------------
+
+
+if exists (select 1 from sysprocedure where proc_name = 'wf_arow_total') then
+	drop procedure wf_arow_total;
+end if;
+
+create procedure wf_arow_total(p_sql long varchar, p_day date, p_template_row_id integer)
+begin
+    declare r_debit float;
+    declare r_kredit float;
+	declare v_sql long varchar;
+
+	set v_sql = wf_var_bind(p_sql, 'startDate', p_day);
+	message v_sql to client;
+	begin
+		declare c_list no scroll cursor 
+		using v_sql;
+	    
+		open c_list;
+	    
+		loop_lable: loop
+			fetch c_list into r_debit, r_kredit;
+			if SQLCODE <>0 then 
+				leave loop_lable;
+			end if;
+	    
+	    
+			insert into nReportA(templateRowId, aday, debit, kredit)
+			values(p_template_row_id, p_day, r_debit, r_kredit);
+	    
+		end loop;
+		close c_list;
+	end;
+end;
+
+
+
+if exists (select 1 from sysprocedure where proc_name = 'wf_var_bind') then
+	drop procedure wf_var_bind;
+end if;
+
+create
+	function wf_var_bind (
+		  p_qry long varchar
+		, p_varname varchar(64)
+		, p_value varchar(64)
+	) returns long varchar
+begin
+	set wf_var_bind = replace(p_qry, ':' + p_varname, p_value);
+end;
+
+
+
+
+if exists (select 1 from sysprocedure where proc_name = 'wf_areprot_calculate') then
+	drop procedure wf_areprot_calculate;
+end if;
+
+create procedure wf_areprot_calculate (
+	  p_day date
+	, p_recalc integer   default 0
+	, p_override integer default 0
+)
+begin
+
+	declare v_exists integer;
+
+	select count(*) into v_exists from nReportA where aday = p_day;
+
+	if v_exists > 0 then
+		if p_recalc = 0 then 	
+			return;
+		end if;
+		if p_override = 1 then
+			delete from nReportA where aday = p_day;
+		else 
+			// fresh only restorable rows
+			delete from nReportA a
+			from nTemplateRow r
+			where 
+					a.templateRowId = r.id
+				and a.aday = p_day and r.restorable = 1;
+		end if;
+	end if;
+
+	for rw as c_rw dynamic scroll cursor for
+		select * from nTemplateRow order by norder
+	do
+		if v_exists = 0 or (p_recalc = 1 and (p_override = 1 or restorable = 1)) then
+			call wf_arow_total(totalSql, p_day, id);
+			message 'Row #', id to client;
+		end if;
+	end for;
+
+end;
+
+
+if exists (select 1 from sysprocedure where proc_name = 'wf_areport_retrieve') then
+	drop procedure wf_areport_retrieve;
+end if;
+
+create procedure wf_areport_retrieve (
+	  p_day date
+	  , p_day_start date
+)
+begin
+	declare today date;
+
+	set today = now();
+
+	if (today <> p_day) then
+		// Только показывать 
+	else
+		// Сначала пересчитать
+		call wf_areprot_calculate(today, 1, 1);
+
+	end if;
+
+
+	select 
+		  r.nOrder as row_id, r.description as row_descr
+		, isnull(a.debit, 0) as debit, isnull(a.kredit, 0) as kredit
+		, wf_var_bind(wf_var_bind(r.detailSql, 'startDate', p_day_start), 'endDate', p_day) as detailSql
+		, r.col_formatting
+		, r.restorable, r.sortable, r.subtitle, r.balans
+	from nTemplateRow r
+	left join nReportA a on a.templateRowId = r.id and a.aDay = p_day
+	order by nOrder;
+end;
+
+
+
+if exists (select 1 from sysevent where event_name = 'aReport') then
+	drop event aReport;
+end if;
+
+create event aReport
+schedule 
+    start time '23:55' 
+    every 24 hours
+handler
+begin
+		call wf_areprot_calculate(now(), 1, 1);
+end;
+
+
+
+
+-----------------------------------------------------------
+--------------           sdmc      ------------------------
+-----------------------------------------------------------
 if exists (select 1 from systriggers where trigname = 'wf_sdmc_income_bu' and tname = 'sdmc') then 
 	drop trigger sdmc.wf_sdmc_income_bu;
 end if;

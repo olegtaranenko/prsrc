@@ -13,9 +13,11 @@ call build_remote_table('scet', 1);
 -- TODO если бы нашелся драйвер ODBC, который 
 -- смог бы прочесть данные из ремоут-процедуры
 -- то надобность в этих таблицах отпала бы
-call build_remote_table('voc_names', 1);
-call build_remote_table('post', 1);
+--call build_remote_table('voc_names', 1);
+--call build_remote_table('post', 1);
 --call build_remote_table('jmat', 1);
 --call build_remote_table('mat', 1);
 
+call build_table_one_server('jmat', 'stime', 1);
+call build_table_one_server('mat', 'stime', 1);
 

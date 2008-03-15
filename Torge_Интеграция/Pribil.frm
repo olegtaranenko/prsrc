@@ -925,11 +925,6 @@ Public statistic As String, ventureId As String
 Dim begDateHron As Date ' Начало ведения хронологии
 
 
-Private Sub cbPeriod_Change()
-Dim curIndex As Integer
-
-End Sub
-
 Private Sub cbPeriod_Click()
 Dim curIndex As Integer, isMonth As Boolean, isPrev As Integer
 Dim currentYear As Integer, currentMonth As Integer, theYear As Integer, theMonth As Integer

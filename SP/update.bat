@@ -119,7 +119,6 @@ goto loop
 :usage
 echo Usage %~nx0 patch_name {options}
 echo 	Opitons: ddl, code, dml, 
-
 :done
 
 endlocal

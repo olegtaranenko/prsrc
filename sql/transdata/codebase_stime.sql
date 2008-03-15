@@ -1,3 +1,67 @@
+if exists (select '*' from sysprocedure where proc_name like 'wf_income_nomnom_brief') then  
+	drop procedure wf_income_nomnom_brief;
+end if;
+
+
+create procedure wf_income_nomnom_brief (
+	  p_id_mat               integer
+	, p_id_jmat              integer
+	, p_id_inv               integer
+	, p_date                 varchar(20)
+	, out out_nu             integer
+	, out out_sm_in_currency float
+	, out out_sm_in_rubles   float
+	, out out_currency       varchar(3)
+	, out out_currency_rate  float
+	, out out_qty            float
+	, out out_cost           float
+	, out out_rest           float
+) 
+begin
+	select nu, summa_salev, summa, kol1
+		into out_nu, out_sm_in_currency, out_sm_in_rubles, out_qty
+	from mat 
+	where id = p_id_mat
+	;
+
+
+	select j.curr, c.iso_code
+		into out_currency_rate, out_currency
+	from jmat j
+	join currency c on j.id_curr = c.id
+	where j.id = p_id_jmat
+	;
+
+	call wf_cost_date(out_cost, p_id_inv, p_date);
+
+	call wf_rest(out_rest, p_id_inv, p_date);
+end;
+
+
+
+
+if exists (select '*' from sysprocedure where proc_name like 'wf_rest') then  
+	drop procedure wf_rest;
+end if;
+
+
+create procedure wf_rest (
+	  out out_ret float
+	, p_id_inv integer
+	, p_date date
+) 
+begin
+
+
+   	for d_cur as dc dynamic scroll cursor for
+		call calc_ost_inv(p_date, p_id_inv, -1, -2,  '1' , '2' , '1' , 0 , '0' , '0' , 1 , 1 , '0' , '0' , '0' , 0 )
+	do
+		set out_ret = adec_Ost21;
+	end for;	
+
+end;
+
+
 
 
 if exists (select '*' from sysprocedure where proc_name like 'wf_calc_cost') then  

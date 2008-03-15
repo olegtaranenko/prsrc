@@ -90,6 +90,24 @@ call build_remote_host (
 );
 
 
+-- справка о поступлении номенклатуры на склад
+call build_rp_procedure (
+	'stime'
+	, 'wf_income_nomnom_brief'
+	, '  p_id_mat               integer'
+	+ ', p_id_jmat              integer'
+	+ ', p_id_inv               integer'
+	+ ', p_date                 char(20)'
+	+ ', out out_nu             integer'
+	+ ', out out_sm_in_currency float'
+	+ ', out out_sm_in_rubles   float'
+	+ ', out out_currency       char(3)'
+	+ ', out out_currency_rate  float'
+	+ ', out out_qty            float'
+	+ ', out out_cost           float'
+	+ ', out out_rest           float'
+);
+
 
 -- получить текущую себестоимость ненклатуры из базы комтеха
 call build_rp_procedure (
