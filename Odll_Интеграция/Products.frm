@@ -2313,6 +2313,9 @@ End If
 'EN1:    If mov = "" Or mov = "mov" Then tbDMC.Close
 nomenkToDMCrez = True
 End Function
+
+
+
 '$odbc15!$
 'lastExt=0 - если у изделия вообще нет вариантов поставки(или оно не вариантно)
 'если вариант поставки, заданный в NN() есть, то дает номер его расширения

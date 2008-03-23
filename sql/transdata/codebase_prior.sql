@@ -5871,15 +5871,28 @@ end;
 
 
 
-
-
--- Получить ид единицы измерения. ид является общим на все базы
 -- Если такой единицы еще нет, то она добавляется во все базы
+if exists (select '*' from sysprocedure where proc_name like 'wf_id_stuck') then  
+	drop procedure wf_id_stuck;
+end if;
+
+
+create function wf_id_stuck () returns integer
+-- Особый случай получения ид единицы измерения "шт."
+-- Чтобы не опираться на строковую кириллическую константу, которая из-за локали может быть неправильно закодирована.
+begin
+	select id_edizm into wf_id_stuck from edizm where by_default = 1;
+end;
+
 if exists (select '*' from sysprocedure where proc_name like 'wf_getEdizmId') then  
 	drop procedure wf_getEdizmId;
 end if;
 
-create FUNCTION wf_getEdizmId (edizm varchar(100), p_rem varchar(100) default 'created by stime') returns integer
+
+
+create function wf_getEdizmId (edizm varchar(100), p_rem varchar(100) default 'created by stime') returns integer
+-- Получить ид единицы измерения. ид является общим на все базы
+-- Если такой единицы еще нет, то она добавляется во все базы
 begin
 	declare edizmId integer;
 	declare v_values varchar(200);
@@ -6778,7 +6791,7 @@ begin
 	set v_id_inv = get_nextid('inv');
 
 	select id_inv into v_belong_id from sguideseries where seriaId = new_name.prSeriaId;
-  	set v_id_edizm1 = wf_getEdizmId('шт.');
+  	set v_id_edizm1 = wf_id_stuck();
 
   set v_fields = 
   	  ' id'
@@ -7424,10 +7437,10 @@ begin
 		and p_sysname != 'stime' -- только для ПМ и ММ
 	then
 		-- проверить закрыт ли заказ в бухгалтерии
-		set v_gad_level = select_remote(p_sysname, 'guides_access_data', 'access_level', 
-			'guide_id = 1005 and data_id = ' + convert(varchar(20), v_old_id_jscet) + ' and access_level = 1 '
+		set v_gad_level = select_remote(p_sysname, 'jscet', 'data_lock', 
+			'id = ' + convert(varchar(20), v_old_id_jscet)
 		);
-		if v_gad_level is null then
+		if v_gad_level = 0 then
 			set wf_order_closed_comtex = 0;
 			--raiserror 17001 'Нельзя закрыть заказ, до тех пор, пока он не закрыт в Бухгалтерии';
 		end if;
@@ -7721,13 +7734,13 @@ begin
 	//  v_belong_id - id папки, которая объединяет все варианты вариантного издлия
 	// -----------------------
 	set v_id_inv = get_nextid('inv');
+	set v_id_stuck = wf_id_stuck();
 
 		select 
 			  prName as v_nomNom
 			, prDescript as v_nomName
 			, prSize as v_size
 			, s.id_size
-			, e1.id_edizm as v_id_edizm
 			, n.cena4 as v_prc1
 			, n.id_inv as v_belong_id
 		into
@@ -7735,12 +7748,10 @@ begin
 			, v_nomName
 			, v_size
 			, v_id_size
-			, v_id_edizm
 			, v_prc1
 			, v_belong_id
 		from sguideproducts n
 		join sguideseries p on p.seriaid = n.prseriaid
-		join edizm e1 on e1.name = 'шт.'
 		left join size s on s.name = n.prsize
 		where n.prid = p_productid;
 
