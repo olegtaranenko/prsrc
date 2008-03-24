@@ -7720,6 +7720,7 @@ begin
 	declare v_table_name varchar(100);
 	declare v_fields varchar(1000);
 	declare v_values varchar(1000);
+    declare v_id_stuck integer;
 
 	declare c_order_nom dynamic scroll cursor for
 		select nomNom 
@@ -7797,7 +7798,7 @@ begin
 			+ ', ' + convert(varchar(20), v_belong_id)
 			+ ', ''''' + v_nomnom + ''''''
 			+ ', ''''' + v_nm + ''''''
-			+ ', ' + convert(varchar(20), v_id_edizm)
+			+ ', ' + convert(varchar(20), v_id_stuck)
 			+ ', ' + convert(varchar(20), v_id_size)
 			+ ', ''''' + convert(varchar(20), v_prc1) + ''''''
 			+ ', 1'
