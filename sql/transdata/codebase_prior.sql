@@ -1077,8 +1077,38 @@ and o.statusid < 6
 
 
 -----------------------------------------------------------
---------------             EVENTs      --------------------
+--------------             Report A      --------------------
 -----------------------------------------------------------
+
+if exists (select 1 from sysprocedure where proc_name = 'wf_nearest_day') then
+	drop procedure wf_nearest_day;
+end if;
+
+create procedure wf_nearest_day(p_wish_day date, p_forward integer default null)
+begin
+	declare v_result_day date;
+	declare v_sql long varchar;
+
+
+	if p_wish_day = convert(date, now()) or isnull(p_forward, 0) = 0 then
+		select p_wish_day as dt;
+		return;
+	end if;
+
+	if p_forward > 0 then
+        set v_sql = 'select min(aday) into v_result_day from nreporta where aday >= p_wish_day';
+	else
+        set v_sql = 'select max(aday) into v_result_day from nreporta where aday <= p_wish_day';
+	end if;
+	execute immediate v_sql;
+
+	if v_result_day is null then
+		select convert(date, '20000101')  as dt;
+	else
+		select v_result_day as dt;
+	end if;
+
+end;
 
 
 if exists (select 1 from sysprocedure where proc_name = 'wf_arow_total') then
@@ -1208,22 +1238,6 @@ begin
 	left join nReportA a on a.templateRowId = r.id and a.aDay = p_day
 	order by nOrder;
 end;
-
-
-
-if exists (select 1 from sysevent where event_name = 'aReport') then
-	drop event aReport;
-end if;
-
-create event aReport
-schedule 
-    start time '23:55' 
-    every 24 hours
-handler
-begin
-		call wf_areprot_calculate(now(), 1, 1);
-end;
-
 
 
 

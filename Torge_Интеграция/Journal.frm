@@ -73,10 +73,12 @@ Begin VB.Form Journal
    End
    Begin VB.CommandButton cmDel 
       Caption         =   "Удалить"
+      Enabled         =   0   'False
       Height          =   315
       Left            =   3180
       TabIndex        =   9
       Top             =   5760
+      Visible         =   0   'False
       Width           =   975
    End
    Begin VB.CommandButton cmLoad 
@@ -475,7 +477,7 @@ If Table Is Nothing Then myBase.Close: End
 lbDebKreditor.Clear
 'Table.Index = "Name"
 While Not Table.EOF
-    lbDebKreditor.AddItem Table!Name
+    lbDebKreditor.AddItem Table!name
     Table.MoveNext
 Wend
 Table.Close

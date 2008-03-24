@@ -184,10 +184,11 @@ End Sub
 
 
 Private Sub cmDayLeft_Click()
-    Dim dt As Date
+    Dim dt As Date, effectiveDt As Date
     dt = dateBasic2Sybase(tbStartDate.Text)
     dt = DateAdd("d", -1, dt)
-    showDay dt
+    effectiveDt = dt
+    showDay dt, -1
 
 End Sub
 
@@ -195,7 +196,7 @@ Private Sub cmDayRight_Click()
     Dim dt As Date
     dt = dateBasic2Sybase(tbStartDate.Text)
     dt = DateAdd("d", 1, dt)
-    showDay dt
+    showDay dt, 1
 
 End Sub
 
@@ -206,19 +207,36 @@ End Sub
 Private Sub cmExit_Click()
 Unload Me
 End Sub
-Private Sub showDay(dt As Date)
+
+
+Private Sub showDay(dt As Date, Optional toFuture As Integer = 0)
+Dim searchNotEmptyDay As Date
+Dim doRefresh As Boolean
+
     MousePointer = flexHourglass
     isLoad = False
     
-    If Format(dt, "yyyymmdd") = Format(Now(), "yyyymmdd") Then
-        isToday = True
-    Else
-        isToday = False
+    sql = "call wf_nearest_day('" & Format(dt, "yyyymmdd") & "', " & toFuture & ")"
+
+    If byErrSqlGetValues("## wf_nearest_day", sql, searchNotEmptyDay) Then
+        If Format(searchNotEmptyDay, "yyyymmdd") <> "20000101" Then
+            doRefresh = True
+            dt = searchNotEmptyDay
+        End If
     End If
-    tbStartDate.Text = Format(dt, "dd.mm.yy")
     
-    clearGrid Grid
-    aReport dt
+    If doRefresh Then
+        If Format(dt, "yyyymmdd") = Format(Now(), "yyyymmdd") Then
+            isToday = True
+        Else
+            isToday = False
+        End If
+        tbStartDate.Text = Format(dt, "dd.mm.yy")
+        
+        clearGrid Grid
+        aReport dt
+    End If
+    
     isLoad = True
     MousePointer = flexDefault
 
@@ -227,7 +245,7 @@ End Sub
 Private Sub cmManag_Click()
     Dim dt As Date
     dt = dateBasic2Sybase(tbStartDate.Text)
-    showDay dt
+    showDay dt, 0
 
 End Sub
 
@@ -235,7 +253,7 @@ Private Sub cmMonthLeft_Click()
     Dim dt As Date
     dt = dateBasic2Sybase(tbStartDate.Text)
     dt = DateAdd("m", -1, dt)
-    showDay dt
+    showDay dt, -1
 
 End Sub
 
@@ -243,7 +261,7 @@ Private Sub cmMonthRight_Click()
     Dim dt As Date
     dt = dateBasic2Sybase(tbStartDate.Text)
     dt = DateAdd("m", 1, dt)
-    showDay dt
+    showDay dt, 1
 End Sub
 
 Private Sub cmPrint_Click()

@@ -502,7 +502,7 @@ Dim groupklassid As Integer
     'Grid.ColWidth() =
 
     sql = "call wf_nomenk_" & saled & "(convert(datetime, " & startDate & "), convert(datetime, " & endDate & "))"
-    'Debug.Print sql
+    Debug.Print sql
     
     Set tbOrders = myOpenRecordSet("##vnt_det", sql, dbOpenForwardOnly)
     If tbOrders Is Nothing Then Exit Sub
@@ -1609,7 +1609,7 @@ AA:     r = tbProduct!cenaEd * tbProduct!quant
       bilo = (prevName <> tbProduct!name)
   End If
 '  bilo = True
-  If bilo Then
+  If bilo Or quantity = 0 Then
 '  If prevNom <> gNzak Or prevDate <> tbProduct!outDate Then
     quantity = quantity + 1
     If statistic = "" Then
