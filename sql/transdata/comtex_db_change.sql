@@ -17,6 +17,7 @@
 --	потребовалось изменить логику получения/фиксирования nextid. Теперь она
 --	действительно берется из inc_table.
 
+/*
 begin
 	declare nxt_id integer;
 
@@ -25,13 +26,14 @@ begin
    	for update
 	do
 		execute immediate 'select max(id) into nxt_id from ' + r_table_nm;
-		set nxt_id = isnull(nxt_id, 0) + 1;
+		set nxt_id = isnull(nxt_id, 1);
 		update inc_table set next_id = nxt_id where current of dc;
 
-		call build_id_track_trigger(r_table_nm);
+		--call build_id_track_trigger(r_table_nm);
+		call drop_id_track_trigger(r_table_nm);
 	end for;
 end;
-
+*/
 
 
 commit;

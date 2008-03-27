@@ -1,3 +1,5 @@
+
+
 if exists (select '*' from sysprocedure where proc_name like 'change_mat_qty') then
 	drop procedure change_mat_qty;
 end if;
@@ -89,18 +91,21 @@ if exists (select 1 from sysprocedure where proc_name = 'slave_nextid') then
 end if;
 
 create PROCEDURE slave_nextid
+-- Исходим из предположения, что в таблице лежит не следующий готовый id
+-- а последний использованный. (Последние изменения для Komtex 9)
+-- Наввание колонки осталось next_id, но смысл ее помеялся на last_id
 (
 	in table_name varchar(100)
 	,out mid integer
 )
 begin
-	select next_id into mid from inc_table where table_nm = table_name;
+	select next_id + 1 into mid from inc_table where table_nm = table_name;
 	if mid is null then
-		execute immediate 'select isnull(max(id), 0)+1 into mid from ' + table_name;
+		execute immediate 'select isnull(max(id), 1) into mid from ' + table_name;
 --		update inc_table set next_id = mid where current of dc;
 		execute immediate 'insert into inc_table  (table_nm, next_id) select upper(''' + table_name + '''), mid';
 
-		call build_id_track_trigger(table_name);
+		--call build_id_track_trigger(table_name);
 	end if;
 end;
 

@@ -219,6 +219,27 @@ end;
 
 
 
+if exists (select '*' from sysprocedure where proc_name like 'drop_id_track_trigger') then  
+	drop procedure drop_id_track_trigger;
+end if;
+
+create procedure drop_id_track_trigger (
+	p_table_name varchar(64)
+)
+begin
+	declare sqls varchar(2000);
+
+	set sqls = 
+		'if exists (select 1 from systriggers where trigname = ''wf_correct_id_taid'' and tname = ''' + p_table_name + ''') then '
+		+ '\n	drop trigger ' + p_table_name + '.wf_correct_id_taid;'
+		+ '\n end if;'
+	;
+	execute immediate sqls;
+end;
+
+
+
+
 --****************************************************************
 --              ∆урнал хоз€йственных операций
 --****************************************************************
