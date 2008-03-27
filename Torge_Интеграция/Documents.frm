@@ -1766,7 +1766,7 @@ For i = 1 To UBound(NN) ' перебор всех групп
 'Далее выдаются параметры по каждой номенклатуре группы
         str = tbNomenk!ed_Izmer2
 '        If str = "лист" Or str = "рулон" Then
-            tmpSng = tmpSng / tbNomenk!perList
+'            tmpSng = tmpSng / tbNomenk!perList
 '        End If
         tmpSng = Round(tmpSng - 0.4999, 0)
         Dim cena2w As String
