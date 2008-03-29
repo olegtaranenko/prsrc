@@ -99,7 +99,7 @@ create PROCEDURE slave_nextid
 	,out mid integer
 )
 begin
-	select next_id + 1 into mid from inc_table where table_nm = table_name;
+	select next_id into mid from inc_table where table_nm = table_name;
 	if mid is null then
 		execute immediate 'select isnull(max(id), 1) into mid from ' + table_name;
 --		update inc_table set next_id = mid where current of dc;
