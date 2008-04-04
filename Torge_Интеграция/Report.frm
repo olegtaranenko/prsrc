@@ -566,8 +566,8 @@ Dim sum As Single
     & " , k.name, p.pdescript as nazn, b.descript as utochn" _
     & " from ybook b" _
     & " join shiz s on s.id = b.id_shiz" _
-    & " join ydebkreditor k on k.id = b.kreddebitor" _
-    & " join yguidepurpose p on p.debit = b.debit and p.subdebit = b.subdebit and p.kredit = b.kredit and p.subkredit = b.subkredit and p.pid = b.purposeid" _
+    & " left join ydebkreditor k on k.id = b.kreddebitor" _
+    & " left join yguidepurpose p on p.debit = b.debit and p.subdebit = b.subdebit and p.kredit = b.kredit and p.subkredit = b.subkredit and p.pid = b.purposeid" _
     & " where" _
     & " ventureid = " & ventureId & " and id_shiz = " & param1
  

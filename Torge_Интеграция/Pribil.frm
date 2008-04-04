@@ -1057,6 +1057,16 @@ Private Sub cmDetailPM_Click()
     Report.Show vbModal
 End Sub
 
+Private Sub cmItogo_Click()
+    Report.param2 = laTotalMainCosts.Caption
+    Report.param1 = laTotalAddCosts.Caption
+    setVentureRegim
+    ventureId = 0
+    Report.Sortable = True
+    Set Report.Caller = Me
+    Report.Show vbModal
+End Sub
+
 Private Sub setVentureRegim()
     If ckStatistic.value = 1 Then
         Report.Regim = "ventureZatrat"
@@ -1064,6 +1074,8 @@ Private Sub setVentureRegim()
         Report.Regim = "venture"
     End If
 End Sub
+
+
 Private Sub cmManag_Click() 'кнопка "применить" из отчета "Реализация"
 Dim oborot As Single, dohod As Single, s2 As Single, s As Single
 Dim ventureMat() As Single, ventureRealiz() As Single
