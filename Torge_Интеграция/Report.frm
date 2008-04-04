@@ -174,6 +174,7 @@ Const zdProvodka = 3
 Const zdAgent = 4
 Const zdNazn = 5
 Const zdUtochn = 6
+Const zdVenture = 7
 
 Const sbnNomnom = 1
 Const sbnNomnam = 2
@@ -460,7 +461,7 @@ ElseIf Regim = "ventureZatrat" Then 'статистика по предприятиям
     ventureZatrat Pribil.ventureId
 ElseIf Regim = "ventureZatratDetail" Then 'детализация по предприятиям
     Sortable = True
-    laHeader.Caption = "Детализация сумм по статье затрат """ & Grid.TextMatrix(mousRow, rzZatratName) & """"
+    laHeader.Caption = "Детализация сумм по статье затрат """ & param3 & """"
     ventureZatratDetail Pribil.ventureId, Grid.TextMatrix(Grid.row, 0)
 End If
 
@@ -551,8 +552,14 @@ End Sub
 
 Sub ventureZatratDetail(ventureId As Integer, id_shiz As String)
 Dim sum As Single
+Dim header As String
 
-    Grid.FormatString = "|Дата|>Сумма|Проводка|Через|Назначение|Уточнение"
+    header = "|Дата|>Сумма|Проводка|Через|Назначение|Уточнение"
+    If ventureId = 0 Then
+        header = header & "|Предпр."
+    End If
+    
+    Grid.FormatString = header
     Grid.ColWidth(0) = 0
     Grid.ColWidth(zdDate) = 850
     Grid.ColWidth(zdSumm) = 1000
@@ -560,17 +567,27 @@ Dim sum As Single
     Grid.ColWidth(zdAgent) = 2300
     Grid.ColWidth(zdNazn) = 3000
     Grid.ColWidth(zdUtochn) = 3000
-    'Grid.ColWidth() =
+    If ventureId = 0 Then
+        Grid.ColWidth(zdVenture) = 800
+    End If
     
     sql = "select xdate, uesumm, b.debit + '-' + b.subdebit + ' => ' + b.kredit + '-' + b.subkredit as provodka" _
-    & " , k.name, p.pdescript as nazn, b.descript as utochn" _
-    & " from ybook b" _
+    & " , k.name, p.pdescript as nazn, b.descript as utochn"
+    If ventureId = 0 Then
+        sql = sql & ", v.venturename"
+    End If
+    sql = sql & " from ybook b" _
     & " join shiz s on s.id = b.id_shiz" _
+    & " left join guideventure v on v.ventureid = b.ventureid" _
     & " left join ydebkreditor k on k.id = b.kreddebitor" _
     & " left join yguidepurpose p on p.debit = b.debit and p.subdebit = b.subdebit and p.kredit = b.kredit and p.subkredit = b.subkredit and p.pid = b.purposeid" _
     & " where" _
-    & " ventureid = " & ventureId & " and id_shiz = " & param1
+    & " id_shiz = " & param1
  
+    If ventureId <> 0 Then
+        sql = sql & " and b.ventureid = " & ventureId
+    End If
+    
     If Pribil.costsDateWhere <> "" Then
         sql = sql & " and " & Pribil.costsDateWhere
     End If
@@ -590,7 +607,9 @@ Dim sum As Single
             If Not IsNull(tbOrders!name) Then Grid.TextMatrix(quantity, zdAgent) = tbOrders!name
             If Not IsNull(tbOrders!nazn) Then Grid.TextMatrix(quantity, zdNazn) = tbOrders!nazn
             If Not IsNull(tbOrders!utochn) Then Grid.TextMatrix(quantity, zdUtochn) = tbOrders!utochn
-            
+            If ventureId = 0 Then
+                Grid.TextMatrix(quantity, zdVenture) = tbOrders!ventureName
+            End If
             Grid.AddItem ""
             tbOrders.MoveNext
         Wend
@@ -598,9 +617,9 @@ Dim sum As Single
     tbOrders.Close
     Grid.row = quantity + 1
     Grid.col = rzMainCosts: Grid.CellFontBold = True
-    Grid.col = rzAddCosts: Grid.CellFontBold = True
+    'Grid.col = rzAddCosts: Grid.CellFontBold = True
     Grid.TextMatrix(quantity + 1, rzMainCosts) = Format(param2, "## ##0.00")
-    Grid.TextMatrix(quantity + 1, rzAddCosts) = Format(param1, "## ##0.00")
+    'Grid.TextMatrix(quantity + 1, rzAddCosts) = Format(param1, "## ##0.00")
 
 End Sub
 
@@ -614,19 +633,31 @@ Dim sum As Single
     Grid.ColWidth(rzMainCosts) = 1500
     Grid.ColWidth(rzAddCosts) = 1500
     
-    sql = "select sum(uesumm) as sm, ventureid, is_main_costs, s.nm as nm, b.id_shiz" _
-    & " from ybook b" _
+    sql = "select sum(uesumm) as sm, is_main_costs, s.nm as nm, b.id_shiz"
+    If ventureId <> 0 Then
+        sql = sql & ", b.ventureid"
+    End If
+    
+    sql = sql & " from ybook b" _
     & " join shiz s on s.id = b.id_shiz" _
     & " where " _
-    & "     ventureid = " & ventureId _
-    & " and s.is_main_costs is not null "
+    & " s.is_main_costs is not null "
  
     If Pribil.costsDateWhere <> "" Then
         sql = sql & " and " & Pribil.costsDateWhere
     End If
-    sql = sql & " group by ventureid, is_main_costs, nm, b.id_shiz" _
-    & " order by nm"
+    
+    If ventureId <> 0 Then
+        sql = sql & " and b.ventureid = " & ventureId
+    End If
+    
+    sql = sql & " group by s.is_main_costs, s.nm, b.id_shiz"
+    If ventureId <> 0 Then
+        sql = sql & ", b.ventureid"
+    End If
+    sql = sql & " order by s.nm"
 
+    
     'Debug.Print sql
     
     Set tbOrders = myOpenRecordSet("##vnt_det", sql, dbOpenForwardOnly)
@@ -1968,7 +1999,7 @@ Private Sub Grid_DblClick()
     '    If MsgBox("Вы хотите посмотреть записи, которые образуют суммы " & str _
         , vbDefaultButton2 Or vbYesNo, "Продолжить?") = vbNo Then Exit Sub
     End If
-    Report2.param3 = str
+    Report2.param3 = Grid.TextMatrix(mousRow, rzZatratName)
     
     Report2.Show vbModal
 End Sub
@@ -2018,7 +2049,7 @@ End If
 
 If (mousCol = rrReliz And (Regim = "" Or Regim = "bay" Or Regim = "mat")) _
     Or (mousCol = rrMater And (Regim = "" Or Regim = "bay")) _
-    Or (Regim = "ventureZatrat" And Grid.col >= rzMainCosts) _
+    Or (Regim = "ventureZatrat" And Grid.col >= rzMainCosts And mousRow < Grid.Rows - 1) _
     Or isReportDetail _
     Or (Regim = "reservedAll" And Grid.TextMatrix(mousRow, 1) <> "") _
     Or isSostoianieSklad _
