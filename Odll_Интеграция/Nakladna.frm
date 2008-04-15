@@ -3,15 +3,15 @@ Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Nakladna 
    BackColor       =   &H8000000A&
    Caption         =   "Предметы "
-   ClientHeight    =   5535
+   ClientHeight    =   5532
    ClientLeft      =   60
-   ClientTop       =   345
+   ClientTop       =   348
    ClientWidth     =   9840
    LinkTopic       =   "Form1"
    LockControls    =   -1  'True
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   5535
+   ScaleHeight     =   5532
    ScaleWidth      =   9840
    StartUpPosition =   2  'CenterScreen
    Begin VB.CommandButton cmClose 
@@ -48,8 +48,8 @@ Begin VB.Form Nakladna
          Top             =   240
          Visible         =   0   'False
          Width           =   5295
-         _ExtentX        =   9340
-         _ExtentY        =   1085
+         _ExtentX        =   9335
+         _ExtentY        =   1080
          _Version        =   393216
          AllowBigSelection=   0   'False
          AllowUserResizing=   1
@@ -80,8 +80,8 @@ Begin VB.Form Nakladna
       TabIndex        =   0
       Top             =   780
       Width           =   9615
-      _ExtentX        =   16960
-      _ExtentY        =   7223
+      _ExtentX        =   16955
+      _ExtentY        =   7218
       _Version        =   393216
       AllowBigSelection=   0   'False
       MergeCells      =   3
@@ -119,8 +119,8 @@ Begin VB.Form Nakladna
       Top             =   3120
       Visible         =   0   'False
       Width           =   9615
-      _ExtentX        =   16960
-      _ExtentY        =   3413
+      _ExtentX        =   16955
+      _ExtentY        =   3408
       _Version        =   393216
       AllowBigSelection=   0   'False
       AllowUserResizing=   1
@@ -147,7 +147,7 @@ Begin VB.Form Nakladna
       Caption         =   "laDest"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   8.25
+         Size            =   7.8
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -166,7 +166,7 @@ Begin VB.Form Nakladna
       Caption         =   "laSours"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   8.25
+         Size            =   7.8
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -185,7 +185,7 @@ Begin VB.Form Nakladna
       Caption         =   "laDocNum"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   8.25
+         Size            =   7.8
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -255,7 +255,7 @@ Begin VB.Form Nakladna
       Caption         =   "laFirm"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   8.25
+         Size            =   7.8
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -280,7 +280,7 @@ Begin VB.Form Nakladna
       Caption         =   "laDest"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   8.25
+         Size            =   7.8
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -307,7 +307,7 @@ Begin VB.Form Nakladna
       Caption         =   "laSours"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   8.25
+         Size            =   7.8
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -335,7 +335,7 @@ Begin VB.Form Nakladna
       Caption         =   "laDocNum"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   8.25
+         Size            =   7.8
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -609,7 +609,7 @@ End Sub
 
 Private Sub Form_Load()
 Dim str As String
-Dim notBay As Long, I As Integer, delta As Integer
+Dim notBay As Long, I As Long, delta As Long
 
 oldHeight = Me.Height
 oldWidth = Me.Width
@@ -759,7 +759,7 @@ ElseIf Regim = "" Then
   "FROM sGuideSource AS sGuideDest INNER JOIN (sGuideSource INNER JOIN " & _
   "sDocs ON sGuideSource.sourceId = sDocs.sourId) ON sGuideDest.sourceId = sDocs.destId " & _
   "WHERE (((sDocs.numDoc)=" & numDoc & ") AND ((sDocs.numExt)=" & numExt & "));"
-  Debug.Print sql
+  'Debug.Print sql
   If byErrSqlGetValues("##172", sql, str, str2) Then
       laSours(ind).Caption = str
       laDest(ind).Caption = str2
@@ -996,7 +996,7 @@ Grid2(Index).CellBackColor = Grid2(Index).BackColor
 
 End Sub
 
-Private Sub Grid2_MouseUp(Index As Integer, Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub Grid2_MouseUp(Index As Integer, Button As Integer, Shift As Integer, x As Single, y As Single)
 If Grid2(Index).MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid2(Index).ColWidth(Grid2(Index).MouseCol)
 
@@ -1010,7 +1010,7 @@ Grid2(0).SetFocus
 Grid2_EnterCell 0
 End Sub
 
-Private Sub Grid4_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub Grid4_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
 If Grid4.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid4.ColWidth(Grid4.MouseCol)
 
