@@ -1123,6 +1123,8 @@ begin
 
 	set v_sql = wf_var_bind(p_sql, 'startDate', p_day);
 	message v_sql to client;
+	set v_sql = wf_var_bind(v_sql, 'endDate', p_day);
+	message v_sql to client;
 	begin
 		declare c_list no scroll cursor 
 		using v_sql;
@@ -1198,7 +1200,12 @@ begin
 		select * from nTemplateRow order by norder
 	do
 		if v_exists = 0 or (p_recalc = 1 and (p_override = 1 or restorable = 1)) then
-			call wf_arow_total(totalSql, p_day, id);
+			if p_recalc = 1 and p_override = 0 then
+				message 'Row #', id, ' recalculate' to client;
+				call wf_arow_total(recalcSql, p_day, id);
+			else
+				call wf_arow_total(totalSql, p_day, id);
+			end if;
 			message 'Row #', id to client;
 		end if;
 	end for;
