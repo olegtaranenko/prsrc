@@ -254,6 +254,7 @@ create TRIGGER wf_xoz_insert before insert order 211 on
 xoz
 referencing new as new_name
 for each row
+when (new_name.ost != 'Y')
 begin
 	declare v_debit_sc varchar(26);
 	declare v_debit_sub varchar(10);
