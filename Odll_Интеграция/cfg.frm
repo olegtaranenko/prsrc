@@ -426,7 +426,7 @@ ElseIf Regim = "comtexAdmin" Then
         End If
         
         Grid.TextMatrix(I + 1, bsPrefix) = table!invCode
-        
+
         table.MoveNext
         Grid.AddItem ""
         I = I + 1
