@@ -3,14 +3,18 @@ Option Explicit
 'Проэкт\Свойства\Создание\Аргументы компиляции:
 ' - onErrorOtlad = 1 ' ловля редких err
 
+' Размер страницы (к-во строк) при печати накладной.
+' Задается в настройках, используется в модуле Nakladna.frm
+Public gCfgOrderPageSize As Integer
+
 Public isOrders As Boolean
 Public isCehOrders As Boolean
 Public isZagruz As Boolean
 Public isFindFirm As Boolean
 Public mainTitle As String
 Public flReportArhivOrders As Boolean
-Public base() As String         '$$2
-Public basePath() As String     '
+'Public base() As String         '$$2
+'Public basePath() As String     '
 
 
 Public myBase As Database
