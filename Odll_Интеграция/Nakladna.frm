@@ -8,12 +8,20 @@ Begin VB.Form Nakladna
    ClientTop       =   348
    ClientWidth     =   9840
    LinkTopic       =   "Form1"
-   LockControls    =   -1  'True
    MaxButton       =   0   'False
    MinButton       =   0   'False
    ScaleHeight     =   5532
    ScaleWidth      =   9840
    StartUpPosition =   2  'CenterScreen
+   Begin VB.TextBox tbPageSize 
+      Height          =   288
+      Left            =   8280
+      TabIndex        =   30
+      Text            =   "30"
+      Top             =   5160
+      Visible         =   0   'False
+      Width           =   372
+   End
    Begin VB.CommandButton cmClose 
       Caption         =   "Списать"
       Height          =   315
@@ -125,23 +133,29 @@ Begin VB.Form Nakladna
       AllowBigSelection=   0   'False
       AllowUserResizing=   1
    End
-   Begin VB.Label laControl 
-      Caption         =   "Контроль: "
-      Height          =   195
-      Left            =   6180
+   Begin VB.Label laPageSize 
+      Alignment       =   1  'Right Justify
+      BackColor       =   &H8000000A&
+      Caption         =   "Размер страницы"
+      Height          =   252
+      Left            =   6600
       TabIndex        =   29
-      Top             =   5220
-      Visible         =   0   'False
-      Width           =   795
-   End
-   Begin VB.Label laControl2 
-      BackColor       =   &H00FFFFFF&
-      Height          =   315
-      Left            =   6975
-      TabIndex        =   28
       Top             =   5160
       Visible         =   0   'False
-      Width           =   1395
+      Width           =   1572
+   End
+   Begin VB.Label laPageOf 
+      Alignment       =   1  'Right Justify
+      AutoSize        =   -1  'True
+      BackColor       =   &H8000000A&
+      Caption         =   "Страница 1 из 3"
+      ForeColor       =   &H80000008&
+      Height          =   192
+      Left            =   6888
+      TabIndex        =   28
+      Top             =   60
+      Visible         =   0   'False
+      Width           =   1284
    End
    Begin VB.Label laDest 
       Caption         =   "laDest"
@@ -212,12 +226,12 @@ Begin VB.Form Nakladna
    End
    Begin VB.Label laOt 
       Caption         =   "От:"
-      Height          =   255
+      Height          =   204
       Index           =   0
       Left            =   180
       TabIndex        =   22
-      Top             =   480
-      Width           =   255
+      Top             =   360
+      Width           =   252
    End
    Begin VB.Label laNakl 
       Caption         =   "Накладная №"
@@ -229,26 +243,26 @@ Begin VB.Form Nakladna
       Width           =   1095
    End
    Begin VB.Label laDate 
-      Height          =   195
-      Left            =   7020
+      Height          =   204
+      Left            =   8520
       TabIndex        =   18
-      Top             =   0
-      Width           =   1155
+      Top             =   60
+      Width           =   1152
    End
    Begin VB.Label laSignatura 
       BackColor       =   &H00FFFFFF&
-      Height          =   435
-      Left            =   6780
+      Height          =   200
+      Left            =   7020
       TabIndex        =   13
-      Top             =   300
-      Width           =   1395
+      Top             =   360
+      Width           =   2472
    End
    Begin VB.Label laPerson 
       Caption         =   "Исполнитель:"
-      Height          =   195
+      Height          =   200
       Left            =   5700
       TabIndex        =   12
-      Top             =   420
+      Top             =   360
       Width           =   1155
    End
    Begin VB.Label laFirm 
@@ -262,16 +276,16 @@ Begin VB.Form Nakladna
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   195
-      Left            =   3600
+      Height          =   200
+      Left            =   3720
       TabIndex        =   11
       Top             =   60
-      Width           =   3495
+      Width           =   3492
    End
    Begin VB.Label laPlatel 
       Caption         =   "Плательщик:"
-      Height          =   195
-      Left            =   2520
+      Height          =   200
+      Left            =   2640
       TabIndex        =   10
       Top             =   60
       Width           =   1035
@@ -287,20 +301,20 @@ Begin VB.Form Nakladna
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   255
+      Height          =   200
       Index           =   0
       Left            =   3600
       TabIndex        =   9
-      Top             =   480
+      Top             =   360
       Width           =   2055
    End
    Begin VB.Label laKomu 
       Caption         =   "Кому:"
-      Height          =   195
+      Height          =   200
       Index           =   0
       Left            =   3060
       TabIndex        =   8
-      Top             =   480
+      Top             =   360
       Width           =   495
    End
    Begin VB.Label laSours 
@@ -314,11 +328,11 @@ Begin VB.Form Nakladna
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   255
+      Height          =   200
       Index           =   0
       Left            =   540
       TabIndex        =   7
-      Top             =   480
+      Top             =   360
       Width           =   2295
    End
    Begin VB.Label laOt 
@@ -342,16 +356,16 @@ Begin VB.Form Nakladna
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   195
+      Height          =   200
       Index           =   0
-      Left            =   1320
+      Left            =   1440
       TabIndex        =   5
       Top             =   60
-      Width           =   1095
+      Width           =   1092
    End
    Begin VB.Label laTitle 
       Caption         =   "Накладная №"
-      Height          =   195
+      Height          =   200
       Left            =   180
       TabIndex        =   4
       Top             =   60
@@ -370,6 +384,13 @@ Public mousCol2 As Long
 Public mousRow2 As Long
 Public Regim As String
 Dim secondNaklad As String, beSUO As Boolean ' была листовая ном-ра
+
+Dim lastPageSizePx As Long ' размер последней страницы в пикселях
+Dim pageSizePx As Long ' размер страницы в пикселях
+Dim pageNum As Integer ' количество страниц
+Dim pageRows As Integer ' к-во строк на странице
+Dim lastPageRows As Integer ' к-во строк на последней странице
+
 
 Const nkNomNom = 1
 Const nkNomName = 2
@@ -577,8 +598,15 @@ Unload Me
 End Sub
 
 Private Sub cmPrint_Click()
+Dim I As Integer
+
 laDate.Caption = Format(Now(), "dd.mm.yy hh:nn")
-Me.PrintForm
+
+For I = 1 To pageNum
+    setPage (I)
+    Me.PrintForm
+Next I
+
 End Sub
 
 Private Sub cmSostav_Click()
@@ -658,8 +686,11 @@ If Regim = "" Then ' для распечатки
         laDocNum(1).Caption = secondNaklad
         cmExel.Visible = False
     End If
-    laControl.Visible = True
-    laControl2.Visible = True
+    laPageSize.Visible = True
+    laPageOf.Visible = True
+    tbPageSize.Visible = True
+    tbPageSize.Text = cfg.getParam("gCfgOrderPageSize")
+    
 ElseIf Regim = "predmeti" Then ' в цеху
     Me.Caption = "Предметы к заказу."
     cmSostav.Visible = True
@@ -704,41 +735,97 @@ AA:     laPlatel.Visible = True
 End If
 
 loadToGrid 0
-I = 350 + (Grid2(0).CellHeight + 17) * quantity2
-If secondNaklad = "" Then
-    delta = I - Grid2(0).Height
-    Me.Height = Me.Height + delta
-Else ' в одной форме сразу 2 накладных
-'laDocNum(1) и всю 2ю половину надо сдвинуть немного ниже Grid2(0)
-    Grid2(0).Height = I
-    delta = Grid2(0).Top + I - laDocNum(1).Top + 200
-    laDocNum(1).Top = laDocNum(1).Top + delta
-    laDocNum(1).Visible = True
-    Grid2(1).Top = Grid2(1).Top + delta
-    Grid2(1).Visible = True
-    laNakl.Top = laNakl.Top + delta
-    laNakl.Visible = True
-    laOt(1).Top = laOt(1).Top + delta
-    laOt(1).Visible = True
-    laSours(1).Top = laSours(1).Top + delta
-    laSours(1).Visible = True
-    laKomu(1).Top = laKomu(1).Top + delta
-    laKomu(1).Visible = True
-    laDest(1).Top = laDest(1).Top + delta
-    laDest(1).Visible = True
-    
-    sDocs.getDocExtNomFromStr secondNaklad: loadToGrid 1
-    I = 350 + (Grid2(1).CellHeight + 17) * quantity2 '2я таблица
-    delta = delta + I - Grid2(1).Height ' изменений 1й таблицы + изм-е 2ой
-    Grid2(1).Height = I
-    oldHeight = Me.Height + delta ' Me.Height=oldHeight в Resize
-    
-    cmPrint.Top = cmPrint.Top + delta
-    cmExit.Top = cmExit.Top + delta
-End If
+
+paginateResult
+setPage (1)
+
 
 MousePointer = flexDefault
 End Sub
+
+
+
+Sub paginateResult()
+Dim stdPageRows As Integer
+
+    stdPageRows = CInt(cfg.getParam("gCfgOrderPageSize"))
+    
+    If quantity2 < stdPageRows Then
+        pageNum = 1
+        lastPageRows = quantity2
+    Else
+        pageRows = stdPageRows
+        pageNum = quantity2 \ stdPageRows
+        lastPageRows = quantity2 - pageNum * pageRows
+        If lastPageRows > 0 Then
+            pageNum = pageNum + 1
+        End If
+    End If
+    
+    If pageNum = 1 Then
+        pageSizePx = getPageSize(quantity2)
+        lastPageSizePx = pageSizePx
+    Else
+        pageSizePx = getPageSize(pageRows)
+        lastPageSizePx = getPageSize(lastPageRows)
+    End If
+End Sub
+
+Function getPageSize(ByVal rows As Integer) As Long
+    getPageSize = 250 + (Grid2(0).CellHeight + 12) * rows
+End Function
+
+Sub setPage(pageNo As Integer)
+Dim I As Long, delta As Long
+    If pageNo = pageNum Then
+        I = lastPageSizePx
+    Else
+        I = pageSizePx
+    End If
+    If secondNaklad = "" Then
+        delta = I - Grid2(0).Height
+        Me.Height = Me.Height + delta
+    Else ' в одной форме сразу 2 накладных
+    'laDocNum(1) и всю 2ю половину надо сдвинуть немного ниже Grid2(0)
+        Grid2(0).Height = I
+        delta = Grid2(0).Top + I - laDocNum(1).Top + 200
+        laDocNum(1).Top = laDocNum(1).Top + delta
+        laDocNum(1).Visible = True
+        Grid2(1).Top = Grid2(1).Top + delta
+        Grid2(1).Visible = True
+        laNakl.Top = laNakl.Top + delta
+        laNakl.Visible = True
+        laOt(1).Top = laOt(1).Top + delta
+        laOt(1).Visible = True
+        laSours(1).Top = laSours(1).Top + delta
+        laSours(1).Visible = True
+        laKomu(1).Top = laKomu(1).Top + delta
+        laKomu(1).Visible = True
+        laDest(1).Top = laDest(1).Top + delta
+        laDest(1).Visible = True
+        
+        sDocs.getDocExtNomFromStr secondNaklad: loadToGrid 1
+        I = getPageSize(quantity2) '2я таблица
+        delta = delta + I - Grid2(1).Height ' изменений 1й таблицы + изм-е 2ой
+        Grid2(1).Height = I
+        oldHeight = Me.Height + delta ' Me.Height=oldHeight в Resize
+        
+        cmPrint.Top = cmPrint.Top + delta
+        cmExit.Top = cmExit.Top + delta
+    End If
+    
+    
+    Grid2(0).topRow = (pageNo - 1) * pageRows + 1
+    
+    If pageNum > 1 Then
+        laPageOf.Caption = "Страница " & pageNo & " из " & pageNum
+        laPageOf.Visible = True
+    Else
+        laPageOf.Visible = False
+    End If
+    
+End Sub
+
 'ind=1 м.б. только при Regim = ""
 Sub loadToGrid(ind As Integer)
 Dim I As Integer, s As Single, s2 As Single, str As String, str2 As String
@@ -881,34 +968,39 @@ Me.Width = sum
 Grid2(ind).col = nkQuant
 EN1:
 Grid2(ind).Visible = True
+
+
 End Sub
 
 Private Sub Form_Resize()
 Dim h As Integer, w As Integer
-If Me.WindowState = vbMinimized Then Exit Sub
-On Error Resume Next
-
-If secondNaklad <> "" Then Me.Height = oldHeight: Me.Top = 0
-
-h = Me.Height - oldHeight
-oldHeight = Me.Height
-w = Me.Width - oldWidth
-oldWidth = Me.Width
-Grid2(0).Height = Grid2(0).Height + h
-Grid2(0).Width = Grid2(0).Width + w
-Grid2(1).Width = Grid2(1).Width + w
-
-cmPrint.Top = cmPrint.Top + h
-cmExel.Top = cmExel.Top + h
-cmSostav.Top = cmSostav.Top + h
-cmClose.Top = cmClose.Top + h
-cmClose.Left = cmClose.Left + w
-laControl.Top = laControl.Top + h
-laControl2.Top = laControl2.Top + h
-laControl.Left = laControl.Left + w
-laControl2.Left = laControl2.Left + w
-cmExit.Top = cmExit.Top + h
-cmExit.Left = cmExit.Left + w
+    If Me.WindowState = vbMinimized Then Exit Sub
+    On Error Resume Next
+    
+    If secondNaklad <> "" Then Me.Height = oldHeight: Me.Top = 0
+    
+    h = Me.Height - oldHeight
+    oldHeight = Me.Height
+    w = Me.Width - oldWidth
+    oldWidth = Me.Width
+    Grid2(0).Height = Grid2(0).Height + h
+    Grid2(0).Width = Grid2(0).Width + w
+    Grid2(1).Width = Grid2(1).Width + w
+    
+    cmPrint.Top = cmPrint.Top + h
+    cmExel.Top = cmExel.Top + h
+    cmSostav.Top = cmSostav.Top + h
+    cmClose.Top = cmClose.Top + h
+    cmClose.Left = cmClose.Left + w
+    cmExit.Top = cmExit.Top + h
+    cmExit.Left = cmExit.Left + w
+    laDate.Left = laDate.Left + w
+    tbPageSize.Left = cmExit.Left - tbPageSize.Width - 150
+    tbPageSize.Top = cmExit.Top
+    laPageSize.Left = tbPageSize.Left - laPageSize.Width - 50
+    laPageSize.Top = cmExit.Top
+    laPageOf.Left = laDate.Left - 100 - laPageOf.Width
+    
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
@@ -1060,4 +1152,13 @@ ElseIf KeyCode = vbKeyEscape Then
 NN:  lbHide2
 End If
 
+End Sub
+
+Private Sub tbPageSize_KeyPress(KeyAscii As Integer)
+    If KeyAscii = vbKeyReturn Then
+        If IsNumeric(tbPageSize.Text) Then
+            cfg.setParam "gCfgOrderPageSize", tbPageSize.Text
+            cfg.saveCfg "local"
+        End If
+    End If
 End Sub

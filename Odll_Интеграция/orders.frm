@@ -462,9 +462,6 @@ Begin VB.Form Orders
       Begin VB.Menu mnPathSet 
          Caption         =   "Установка путей"
       End
-      Begin VB.Menu mnBaseChoise 
-         Caption         =   "Выбор базы"
-      End
       Begin VB.Menu mnComtexAdmin 
          Caption         =   "Интеграция с Комтех"
       End
@@ -2605,16 +2602,6 @@ End Sub
 
 Private Sub mnArhZone_Click()
 loadArhinOrders
-End Sub
-
-Private Sub mnBaseChoise_Click()
-cfg.loadCfg ' обновляем информацию на всякий случай
-cfg.Regim = "baseChoise"
-cfg.setRegim
-cfg.Show vbModal
-webSvodkaPath = cfg.SvodkaPath          '$$2
-webLoginsPath = cfg.loginsPath          '
-
 End Sub
 
 Private Sub mnBillFirma_Click()
