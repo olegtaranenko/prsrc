@@ -315,7 +315,7 @@ begin
 
 	set q = q +')';
 
-	message q to client;
+	//message q to client;
 	execute immediate q;
 
 	return selected;

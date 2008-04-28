@@ -21,3 +21,4 @@ call build_remote_table('scet', 1);
 call build_table_one_server('jmat', 'stime', 1);
 call build_table_one_server('mat', 'stime', 1);
 
+call build_remote_table('xoz', 1);

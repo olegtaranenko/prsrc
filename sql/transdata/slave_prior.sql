@@ -35,14 +35,6 @@ create
 		, inout p_desc varchar(98) 
 	)
 begin
-/*
-	declare GLOBALSETTING_CHECK_ACCOUNT integer;
-	set GLOBALSETTING_CHECK_ACCOUNT  = 1;
-	if GLOBALSETTING_CHECK_ACCOUNT = 0 then
-		set out_exists = 1;
-		return;
-	end if;
-*/
 	
 	set p_sc = cast_acc(p_sc);
 	set p_sub = cast_acc(p_sub);
@@ -54,14 +46,6 @@ begin
 		insert into yGuideSchets (number, subNumber, note, subNote) values (p_sc, p_sub, p_name, p_desc);
 	end if;
 
-/*	
-	set out_exists = 1;
-	if out_exists = 0 and GLOBALSETTING_CHECK_ACCOUNT = 1 then
-		raiserror 17001 '¬ базе Prior не существует счета %1!/%2!'
-			+ 'ѕроверьте согласованность планов счетов.'
-		, p_sc, p_sub;
-	end if;
-*/
 end;
 
 
@@ -258,7 +242,8 @@ create
 		, p_detail     varchar(99)
 		, p_purposeId  integer
 		, p_kredDebitor integer
-		, p_invoice       varchar(10)
+		, p_invoice     varchar(10)
+		, p_bind_zakaz     integer -- признак делать прив€зку в приоре к закау или нет. 1 - делать, 0 - нет.
 	)
 begin
     declare v_ventureid integer;
@@ -287,8 +272,9 @@ begin
 	set p_credit_sc   = cast_acc (p_credit_sc  );
 	set p_credit_sub  = cast_acc (p_credit_sub );
 
-	call slave_bind_zakaz (v_orderNum, p_server, p_invoice, p_sum, p_credit_sc);
-
+	if p_bind_zakaz = 1 then
+		call slave_bind_zakaz (v_orderNum, p_server, p_invoice, p_sum, p_credit_sc);
+	end if;
 
 	insert into yBook(
 		  ventureid

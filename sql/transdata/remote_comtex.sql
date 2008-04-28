@@ -41,6 +41,7 @@ call build_host_procedure (
 		+ ', p_purposeId  integer'
 		+ ', p_kredDebitor     integer'
 		+ ', p_note       char(10)'
+		+ ', p_bind_zakaz     integer'
 );
 
 

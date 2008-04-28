@@ -1,3 +1,32 @@
+
+
+-------------- удалить после вычистки -------------------
+
+if exists (select 1 from sysprocedure where proc_name = 'cast_acc') then
+	drop function cast_acc;
+end if;
+
+create 
+	function cast_acc(
+		in sc varchar(26)
+		,in base integer default 2
+	)
+	returns varchar(26)
+begin
+	if sc is null then
+		set sc = '';
+	end if;
+
+	set sc = trim(sc);
+	return string(repeat('0', base - char_length(sc)), sc);
+end;
+
+--------------> удалить после вычистки <-------------------
+
+
+
+
+
 /**
  get_server_name() => @server_name 
  процедура должна вызываться один раз из bootstrap_blocking.
@@ -194,6 +223,7 @@ if exists (select '*' from sysprocedure where proc_name like 'build_id_track_tri
 	drop procedure build_id_track_trigger;
 end if;
 
+/*
 create procedure build_id_track_trigger (
 	p_table_name varchar(64)
 )
@@ -216,13 +246,14 @@ begin
 		+ '\nend;';
 	execute immediate sqls;
 end;
-
+*/
 
 
 if exists (select '*' from sysprocedure where proc_name like 'drop_id_track_trigger') then  
 	drop procedure drop_id_track_trigger;
 end if;
 
+/*
 create procedure drop_id_track_trigger (
 	p_table_name varchar(64)
 )
@@ -237,7 +268,7 @@ begin
 	execute immediate sqls;
 end;
 
-
+*/
 
 
 --****************************************************************
@@ -256,6 +287,44 @@ referencing new as new_name
 for each row
 when (new_name.ost != 'Y')
 begin
+
+	call admin.wf_submit_xoz(
+		  new_name.id_accd
+		, new_name.id_accc
+		, new_name.id_m_xoz
+		, new_name.id_deb
+		, new_name.id_jdog
+		, new_name.id
+		, new_name.dat
+		, new_name.sum
+		, new_name.sumv
+		, new_name.id_curr
+		, new_name.rem
+		, 1                   -- искать привязку к заказу
+	)                       
+end;
+
+
+
+if exists (select '*' from sysprocedure where proc_name like 'wf_submit_xoz') then  
+	drop procedure wf_submit_xoz;
+end if;
+
+create procedure wf_submit_xoz (
+	  in p_id_accd integer
+	, in p_id_accc integer
+	, in p_id_m_xoz integer
+	, in p_id_deb integer
+	, in p_id_jdog integer
+	, in p_id      integer
+	, in p_dat     date
+	, in p_sum     float
+	, in p_sumv    float
+	, in p_id_curr integer
+	, in p_rem    varchar(99)
+	, in p_bind_zakaz integer
+) 
+begin
 	declare v_debit_sc varchar(26);
 	declare v_debit_sub varchar(10);
 	declare v_credit_sc varchar(26);
@@ -272,13 +341,8 @@ begin
 	select d.sc, d.sub_sc, d.nm, isnull(d.rem, '')
 	into v_debit_sc, v_debit_sub, v_nm, v_rem
 	from account d 
-	where d.id = new_name.id_accd;
+	where d.id = p_id_accd;
 
-
-//	message 'd.sc = '+v_debit_sc to client;
-//	message 'd.sub_sc = '+v_debit_sub to client;
-//	message 'nm = '+v_nm to client;
-//	message 'rem = '+v_rem to client;
 
 	call admin.slave_put_account_prior(
 		f_account_exists
@@ -294,12 +358,7 @@ begin
 	select c.sc, c.sub_sc, c.nm, c.rem
 	into v_credit_sc, v_credit_sub, v_nm, v_rem
 	from account c 
-	where c.id = new_name.id_accc;
-
-//	message 'c.sc = '+v_credit_sc to client;
-//	message 'c.sub_sc = '+v_credit_sub to client;
-//	message 'nm = '+v_nm to client;
-//	message 'rem = '+v_rem to client;
+	where c.id = p_id_accc;
 
 
 	call admin.slave_put_account_prior(
@@ -312,11 +371,11 @@ begin
 		--return;
 	end if;
 
-	if (new_name.id_m_xoz is not null or new_name.id_m_xoz != 0) then
+	if (p_id_m_xoz is not null or p_id_m_xoz != 0) then
 		select nm
 		into v_purpose
 		from m_xoz m
-		where m.id = new_name.id_m_xoz;
+		where m.id = p_id_m_xoz;
 
 		call admin.slave_set_purpose_prior (
 	    	  v_purpose
@@ -325,26 +384,26 @@ begin
 		);
 	end if;
 
-	set v_kredDebitor = admin.wf_kreditor_debitor(new_name.id_deb);
+	set v_kredDebitor = admin.wf_kreditor_debitor(p_id_deb);
 
-	select nu into v_note from jdog where id = new_name.id_jdog;
+	select nu into v_note from jdog where id = p_id_jdog;
 
 	call admin.slave_put_xoz_prior(
 		  admin.get_server_name() 
-		, new_name.id
+		, p_id
 		, v_debit_sc, v_debit_sub, v_credit_sc, v_credit_sub
-		, convert(varchar(20), new_name.dat, 115)
-		, new_name.sum
-		, new_name.sumv
-		, new_name.id_curr
-		, new_name.rem
+		, convert(varchar(20), p_dat, 115)
+		, p_sum
+		, p_sumv
+		, p_id_curr
+		, p_rem
 		, v_purpose_id
 		, v_kredDebitor
 		, v_note
+		, p_bind_zakaz
 	);
-		
-
 end;
+		
 
 
 
