@@ -316,29 +316,33 @@ create
 	procedure slave_set_purpose
 	(
 		  p_purpose    varchar(99)
-		, inout p_debit_sc   varchar(26)
-		, inout p_debit_sub  varchar(10)
-		, inout p_credit_sc  varchar(26)
-		, inout p_credit_sub varchar(10)
+		, p_debit_sc   varchar(26)
+		, p_debit_sub  varchar(10)
+		, p_credit_sc  varchar(26)
+		, p_credit_sub varchar(10)
 		, out v_purposeId integer
 	)
 begin
 	declare v_ventureid integer;
 --	declare v_descript varchar(100);
 	declare v_currentId integer;
+	declare v_debit_sc    varchar(26);
+	declare v_debit_sub   varchar(10);
+	declare v_credit_sc   varchar(26);
+	declare v_credit_sub  varchar(10);
 
-	set p_debit_sc    = cast_acc (p_debit_sc   );
-	set p_debit_sub   = cast_acc (p_debit_sub  );
-	set p_credit_sc   = cast_acc (p_credit_sc  );
-	set p_credit_sub  = cast_acc (p_credit_sub );
+	set v_debit_sc    = cast_acc (p_debit_sc   );
+	set v_debit_sub   = cast_acc (p_debit_sub  );
+	set v_credit_sc   = cast_acc (p_credit_sc  );
+	set v_credit_sub  = cast_acc (p_credit_sub );
 
 
 	select pId into v_purposeid from yGuidePurpose
 	where 
-			Debit = p_debit_sc
-		and subDebit = p_debit_sub
-		and Kredit = p_credit_sc
-		and subKredit = p_credit_sub
+			Debit = v_debit_sc
+		and subDebit = v_debit_sub
+		and Kredit = v_credit_sc
+		and subKredit = v_credit_sub
 		and pDescript = p_purpose;
 
 	if v_purposeid is null then
@@ -351,16 +355,16 @@ begin
 		insert into yGuidePurpose (
     		Debit, subDebit, Kredit, subKredit, pDescript
 		) values (
-			p_debit_sc, p_debit_sub, p_credit_sc, p_credit_sub
+			v_debit_sc, v_debit_sub, v_credit_sc, v_credit_sub
 			, p_purpose
 		);
 
 		select pId into v_purposeid from yGuidePurpose
 		where 
-				Debit = p_debit_sc
-			and subDebit = p_debit_sub
-			and Kredit = p_credit_sc
-			and subKredit = p_credit_sub
+				Debit = v_debit_sc
+			and subDebit = v_debit_sub
+			and Kredit = v_credit_sc
+			and subKredit = v_credit_sub
 			and pDescript = p_purpose;
 
 	end if;

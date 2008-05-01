@@ -48,10 +48,10 @@ call build_host_procedure (
 call build_host_procedure (
 		  'set_purpose', 
 		  '  p_purpose     char(99)'
-		+ ', inout p_debit_sc    char(26)'
-		+ ', inout p_debit_sub   char(10)'
-		+ ', inout p_credit_sc   char(26)'
-		+ ', inout p_credit_sub  char(10)'
+		+ ', p_debit_sc    char(26)'
+		+ ', p_debit_sub   char(10)'
+		+ ', p_credit_sc   char(26)'
+		+ ', p_credit_sub  char(10)'
 		+ ', out p_purposeId integer'
 );
 

@@ -212,66 +212,6 @@ end;
 	
 
 --****************************************************************
---                               ID CORRECTION
--- в Комтех 8.1.5 ввели явное сохранение id, которое будет 
--- использовано при последующем добавлении строк в таблицу
--- Для корректировки этого значения будем использовать триггера,
--- которые будут созданы для всех таблиц, ссылки на которые лежат в inc_table
---****************************************************************
-
-if exists (select '*' from sysprocedure where proc_name like 'build_id_track_trigger') then  
-	drop procedure build_id_track_trigger;
-end if;
-
-/*
-create procedure build_id_track_trigger (
-	p_table_name varchar(64)
-)
-begin
-	declare sqls varchar(2000);
-
-	set sqls = 
-		'if exists (select 1 from systriggers where trigname = ''wf_correct_id_taid'' and tname = ''' + p_table_name + ''') then '
-		+ '\n	drop trigger ' + p_table_name + '.wf_correct_id_taid;'
-		+ '\n end if;'
-		+ '\n'
-		+ '\n create trigger wf_correct_id_taid after insert, delete order 100'
-		+ '\n on ' + p_table_name + ' '
-		+ '\n referencing old as old_name new as new_name'
-		+ '\nbegin'
-		+ '\n	declare idd integer;'
---		+ '\n	select isnull(max(id), 0) + 1 into idd from ' + p_table_name + ';'
-		+ '\n	select next_id into idd from inc_table where table_nm = ''' + p_table_name + ''';'
-		+ '\n	update inc_table set next_id = idd + 1 where table_nm = ''' + p_table_name + ''';'
-		+ '\nend;';
-	execute immediate sqls;
-end;
-*/
-
-
-if exists (select '*' from sysprocedure where proc_name like 'drop_id_track_trigger') then  
-	drop procedure drop_id_track_trigger;
-end if;
-
-/*
-create procedure drop_id_track_trigger (
-	p_table_name varchar(64)
-)
-begin
-	declare sqls varchar(2000);
-
-	set sqls = 
-		'if exists (select 1 from systriggers where trigname = ''wf_correct_id_taid'' and tname = ''' + p_table_name + ''') then '
-		+ '\n	drop trigger ' + p_table_name + '.wf_correct_id_taid;'
-		+ '\n end if;'
-	;
-	execute immediate sqls;
-end;
-
-*/
-
-
---****************************************************************
 --              Журнал хозяйственных операций
 --****************************************************************
 
@@ -464,22 +404,21 @@ begin
 	declare v_currency_rate varchar(20);
 	declare v_currency float;
 	declare v_m_xoz varchar(100);
-	declare v_purposeid integer;
 	declare v_kredDebitor integer;
-	declare varchar_id varchar(20);
+--	declare varchar_id varchar(20);
 	declare v_values varchar(1024);
-	declare v_ventureid integer;
+	declare v_ventureid char(20);
+
 	declare v_note varchar(10);
 	declare v_zakaz varchar(150);
 	declare s_id_shiz varchar(20);
+	declare v_id_m_xoz integer;
+
+	set v_ventureid = admin.select_remote('prior', 'guideventure', 'ventureid', 'sysname = ''''' + admin.get_server_name() + '''''');
 
 	if update(dat) then
-		call admin.slave_select_prior(varchar_id, 'guideventure', 'ventureid', 'sysname=''' + admin.get_server_name() + '''');
-		set v_ventureid = convert(integer, varchar_id);
-	
-		call admin.slave_update_prior('ybook', 'xDate', '''' + convert(varchar(20), new_name.dat, 115) + ''''
-			, 'id_xoz=' + convert(varchar(20), old_name.id )
-			  + ' and ventureid = ' + convert(varchar(20), v_ventureid)
+		call admin.update_remote('prior', 'ybook', 'xDate', '''''' + convert(varchar(20), new_name.dat, 115) + ''''''
+			, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
 		);
     		
 	end if;
@@ -490,20 +429,15 @@ begin
 
 		if char_length(v_note) > 0 then
 		
+			call admin.update_remote('prior', 'ybook', 'note', '''''' + v_note + ''''''
+				, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
+			);
+    		
 			select c.sc
 			into v_credit_sc
 			from account c 
 			where c.id = new_name.id_accc;
 
-
-			call admin.slave_select_prior(varchar_id, 'guideventure', 'ventureid', 'sysname=''' + admin.get_server_name() + '''');
-			set v_ventureid = convert(integer, varchar_id);
-	    
-			call admin.slave_update_prior('ybook', 'note', '''' + v_note + ''''
-				, 'id_xoz=' + convert(varchar(20), old_name.id )
-				  + ' and ventureid = ' + convert(varchar(20), v_ventureid)
-			);
-    		
 			call admin.slave_bind_zakaz_prior (
 				v_zakaz
 				, admin.get_server_name()
@@ -519,15 +453,13 @@ begin
 	if update(id_deb) then
 		set v_kredDebitor = admin.wf_kreditor_debitor(new_name.id_deb);
 
-		call admin.slave_select_prior(varchar_id, 'guideventure', 'ventureid', 'sysname=''' + admin.get_server_name() + '''');
-		set v_ventureid = convert(integer, varchar_id);
-		call admin.slave_update_prior('ybook', 'KredDebitor', convert(varchar(20), v_kredDebitor)
-			, 'id_xoz=' + convert(varchar(20), old_name.id )
-			  + ' and ventureid = ' + convert(varchar(20), v_ventureid)
+		call admin.update_remote('prior', 'ybook', 'KredDebitor', convert(varchar(20), v_kredDebitor)
+			, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
 		);
     end if;
 
-	if update(id_accd) and new_name.id_accd != 0 then
+	if update(id_accd) then
+		    
 		select d.sc, d.sub_sc, d.nm, d.rem
 		into v_debit_sc, v_debit_sub, v_nm, v_rem
 		from account d 
@@ -540,36 +472,52 @@ begin
 			, v_debit_sub
 			, v_nm, v_rem
 		);
-		if f_account_exists = 0 then
-			--return;
-		end if;
 
 		call admin.update_remote(
 			'prior'
-			, 'ybook y'
-			, 'Debit'
-			, ''''''+v_debit_sc+''''''
-			, 'v.sysname = '''''
-					+ admin.get_server_name() 
-					+''''' and v.ventureid = y.ventureid and y.id_xoz = '
-					+ convert(varchar(20), old_name.id)
-			, 'GuideVenture v'
+			, 'ybook'
+			, 'purposeId'
+			, 'null'
+			, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
 		);
 
 		call admin.update_remote(
 			'prior'
-			, 'ybook y'
+			, 'ybook'
+			, 'Debit'
+			, '''''' + v_debit_sc + ''''''
+			, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
+		);
+
+		call admin.update_remote(
+			'prior'
+			, 'ybook'
 			, 'subDebit'
 			, '''''' + v_debit_sub + ''''''
-			, 'v.sysname = '''''
-					+ admin.get_server_name() 
-					+''''' and v.ventureid = y.ventureid and y.id_xoz = '
-					+ convert(varchar(20), old_name.id)
-			, 'GuideVenture v'
+			, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
 		);
+    
+		if isnull(new_name.id_accd, 0) != 0 then
+			select c.sc, c.sub_sc
+			into v_credit_sc, v_credit_sub
+			from account c 
+			where c.id = old_name.id_accc;
+
+			call admin.wf_purpose_sync (
+				old_name.id
+				, v_ventureid
+				, old_name.id_m_xoz
+				, v_debit_sc
+				, v_debit_sub
+				, v_credit_sc
+				, v_credit_sub
+			);
+		    
+		end if;
 	end if;
 
-	if update(id_accc) and new_name.id_accc != 0 then
+	if update(id_accc) then
+
 		select c.sc, c.sub_sc, c.nm, c.rem
 		into v_credit_sc, v_credit_sub, v_nm, v_rem
 		from account c 
@@ -581,33 +529,51 @@ begin
 			, v_credit_sub
 			, v_nm, v_rem
 		);
-		if f_account_exists = 0 then
-			--return;
-		end if;
 
 		call admin.update_remote(
 			'prior'
-			, 'ybook y'
+			, 'ybook'
+			, 'purposeId'
+			, 'null'
+			, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
+		);
+
+		call admin.update_remote(
+			'prior'
+			, 'ybook'
 			, 'Kredit'
 			, ''''''+v_credit_sc+''''''
-			, 'v.sysname = '''''
-					+ admin.get_server_name() 
-					+''''' and v.ventureid = y.ventureid and y.id_xoz = '
-					+ convert(varchar(20), old_name.id)
-			, 'GuideVenture v'
+			, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
 		);
 
 		call admin.update_remote(
 			'prior'
-			, 'ybook y'
+			, 'ybook'
 			, 'subKredit'
 			, ''''''+v_credit_sub+''''''
-			, 'v.sysname = '''''
-					+ admin.get_server_name() 
-					+''''' and v.ventureid = y.ventureid and y.id_xoz = '
-					+ convert(varchar(20), old_name.id)
-			, 'GuideVenture v'
+			, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
 		);
+
+
+		if isnull(new_name.id_accc, 0) != 0 then
+
+			select d.sc, d.sub_sc
+			into v_debit_sc, v_debit_sub
+			from account d
+			where d.id = old_name.id_accd;
+		    
+			call admin.wf_purpose_sync (
+				old_name.id
+				, v_ventureid
+				, old_name.id_m_xoz
+				, v_debit_sc
+				, v_debit_sub
+				, v_credit_sc
+				, v_credit_sub
+			);
+		    
+		end if;
+
 	end if;
 
 	if update(sum) then
@@ -622,20 +588,17 @@ begin
 
 		call admin.update_remote(
 			'prior'
-			, 'ybook y'
+			, 'ybook'
 			, 'UEsumm'
 			, v_currency
-			, 'v.sysname = '''''
-					+ admin.get_server_name() 
-					+''''' and v.ventureid = y.ventureid and y.id_xoz = '
-					+ convert(varchar(20), old_name.id)
-			, 'GuideVenture v'
+			, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
 		);
 
 	end if;
 
 
-	if update(id_m_xoz) and new_name.id_m_xoz!= 0 then
+	if update(id_m_xoz) then
+
 		select d.sc, d.sub_sc, d.nm, d.rem
 		into v_debit_sc, v_debit_sub, v_nm, v_rem
 		from account d 
@@ -646,50 +609,26 @@ begin
 		from account c 
 		where c.id = old_name.id_accc;
 
-		select nm into v_m_xoz from m_xoz where id = new_name.id_m_xoz;
-
-		if v_debit_sc is not null and v_credit_sc is not null then
-			call admin.slave_set_purpose_prior(
-				 v_m_xoz
-				, v_debit_sc, v_debit_sub, v_credit_sc, v_credit_sub
-				, v_purposeid
-			);
-			//message 'v_purposeid = ' + convert(varchar(20), v_purposeid) to client;	
-			call admin.update_remote(
-				'prior'
-				, 'ybook y'
-				, 'purposeId'
-				, v_purposeid
-				, 'v.sysname = '''''
-						+ admin.get_server_name() 
-						+''''' and v.ventureid = y.ventureid and y.id_xoz = '
-						+ convert(varchar(20), old_name.id)
-				, 'GuideVenture v'
-			);
-		end if;
+		call admin.wf_purpose_sync (
+			old_name.id
+			, v_ventureid
+			, new_name.id_m_xoz
+			, v_debit_sc
+			, v_debit_sub
+			, v_credit_sc
+			, v_credit_sub
+		);
+		    
 
 	end if;
 	if update(rem) then
-		select d.sc, d.sub_sc, d.nm, d.rem
-		into v_debit_sc, v_debit_sub, v_nm, v_rem
-		from account d 
-		where d.id = old_name.id_accd;
-	    
-		select c.sc, c.sub_sc, c.nm, c.rem
-		into v_credit_sc, v_credit_sub, v_nm, v_rem
-		from account c 
-		where c.id = old_name.id_accc;
 
 		call admin.update_remote(
 			'prior'
-			, 'ybook y'
+			, 'ybook'
 			, 'descript'
 			, ''''''+new_name.rem+''''''
-			, 'v.sysname = '''''
-					+ admin.get_server_name() 
-					+''''' and v.ventureid = y.ventureid and y.id_xoz = '
-					+ convert(varchar(20), old_name.id)
-			, 'GuideVenture v'
+			, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
 		);
 
 	end if;
@@ -703,10 +642,10 @@ begin
 
 		call admin.update_remote(
 			'prior'
-			, 'ybook y'
+			, 'ybook'
 			, 'id_shiz'
 			, s_id_shiz
-			, 'id_xoz = ' + convert(varchar(20), old_name.id)
+			, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
 		);
 	end if;
 
@@ -764,7 +703,7 @@ begin
 		return;
 	end if;
 
-	message 'TRIGGER wf_jscet_update:: no_echo = ', no_echo to client;
+--	message 'TRIGGER wf_jscet_update:: no_echo = ', no_echo to client;
 	
 	if update(id_d) then
 		-- выяснить это продажи или заказ
@@ -774,7 +713,7 @@ begin
 			,'id_jscet = ' + convert(varchar(20), old_name.id)
 		);
 
-		message 'v_is_orders = ', v_is_orders to client;
+--		message 'v_is_orders = ', v_is_orders to client;
 
 		if v_is_orders = '0' then
 			-- нет такого счета в Заказах
@@ -795,100 +734,46 @@ begin
 			);
 		end if;
 	end if;
-/*
-	if update(nu) then
-		call admin.sync_next_nu(new_name.nu, old_name.nu);
-	end if;
-*/
+
 end;
 
 
-if exists (select 1 from systriggers where trigname = 'wf_jscet_insert' and tname = 'jscet' and event='INSERT') then 
-	drop trigger jscet.wf_jscet_insert;
+if exists (select '*' from sysprocedure where proc_name like 'wf_purpose_sync') then  
+	drop procedure wf_purpose_sync;
 end if;
 
-/*
-
-create TRIGGER wf_jscet_insert before insert order 211 on
-jscet
-referencing new as new_name
-for each row
+create procedure wf_purpose_sync (
+	in p_id_xoz integer
+	, p_ventureid  varchar(20)
+	, in p_id_m_xoz   integer
+	, p_debit_sc   varchar(26)
+	, p_debit_sub  varchar(10)
+	, p_credit_sc  varchar(26)
+	, p_credit_sub varchar(10)
+)
 begin
-	call admin.sync_next_nu(new_name.nu);
-end;
-*/
+	declare v_m_xoz      varchar(99);
+	declare v_purposeid integer;
 
-if exists (select '*' from sysprocedure where proc_name like 'sync_next_nu') then  
-	drop procedure sync_next_nu;
-end if;
+	select m.nm into v_m_xoz 
+	from m_xoz m
+	where m.id = p_id_m_xoz;
 
-/*
-create procedure sync_next_nu (
-	  in p_nu_ch varchar(50)
-	, in p_nu_old_ch varchar(50) default ''
-) 
-begin
-	declare v_nu_prior_ch varchar(50);
-	declare v_nu_prior integer;
-	declare v_nu_old integer;
-	declare v_nu_old_ceil integer;
-
-	declare v_nu_update integer;
-
-	declare v_last_inc integer;
-	declare v_downgrade integer;
-
-	if isnumeric(p_nu_ch) = 1 then
-
-		set v_last_inc = 1;
-		set v_nu_prior_ch = select_remote(
-			'prior'
-			,'guideVenture'
-			,'intInvoice'
-			, 'sysname = ''''' + admin.get_server_name() + ''''''
+	if isnull(v_m_xoz, '') != '' then
+		call admin.slave_set_purpose_prior(
+			 v_m_xoz
+			, p_debit_sc, p_debit_sub, p_credit_sc, p_credit_sub
+			, v_purposeid
 		);
-		-- номер, который записан следующим в таблице guideVenture
-		set v_nu_prior = convert(integer, v_nu_prior_ch);
-		message '0) v_nu_prior = ', v_nu_prior to client;
-
-		-- новый номер, который должен быть присвоен счету
-		-- через интерфейс Комтех
-		set v_nu_update = convert(integer, p_nu_ch);
-		message '1) v_nu_update = ',v_nu_update  to client;
-
-		-- проверяем, может это была смена номера?
-		if isnumeric(p_nu_old_ch) = 1 then
-			set v_nu_old = convert(integer, p_nu_old_ch);
-			message '3) v_nu_old = ',v_nu_old  to client;
-
-            -- ищем максимальное значение, которое остается
-            -- в базе, после того как p_nu_old_ch будет удалено
-			select isnull(max(convert(integer, nu)), 0)
-			into v_nu_old_ceil
-			from jscet
-			where isnumeric(nu) = 1
-				and convert(varchar(4), dat, 112) = convert(varchar(4), now(), 112)
-				and nu != p_nu_old_ch;
-			message '4) v_nu_old_ceil = ',v_nu_old_ceil  to client;
-
-		end if;
-
-		if v_nu_old is null then
-			-- простое сравнение поможет определить 
-		else
-			set v_downgrade = 0;
-			    
-		end if;
-
-		if v_nu_update >= v_nu_prior or v_downgrade = 1 then
-			call slave_update_prior('guideVenture', 'intInvoice', v_nu_update + v_last_inc, 'sysname = ''' + admin.get_server_name() + '''');
-		end if;
-
-
+		call admin.update_remote(
+			'prior'
+			, 'ybook'
+			, 'purposeId'
+			, v_purposeid
+			, 'id_xoz=' + convert(varchar(20), p_id_xoz) + ' and ventureid = ' + p_ventureid
+		);
 	end if;
-
 end;
-*/
 
 
 
@@ -929,11 +814,6 @@ begin
 	where d.id = new_name_id_accd;
 
 
-//	message 'd.sc = '+v_debit_sc to client;
-//	message 'd.sub_sc = '+v_debit_sub to client;
-//	message 'nm = '+v_nm to client;
-//	message 'rem = '+v_rem to client;
-
 	call admin.slave_put_account_prior(
 		f_account_exists
 		, v_debit_sc
@@ -949,11 +829,6 @@ begin
 	into v_credit_sc, v_credit_sub, v_nm, v_rem
 	from account c 
 	where c.id = new_name_id_accc;
-
-//	message 'c.sc = '+v_credit_sc to client;
-//	message 'c.sub_sc = '+v_credit_sub to client;
-//	message 'nm = '+v_nm to client;
-//	message 'rem = '+v_rem to client;
 
 
 	call admin.slave_put_account_prior(
