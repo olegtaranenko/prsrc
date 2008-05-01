@@ -815,7 +815,7 @@ Dim I As Long, delta As Long
     End If
     
     
-    Grid2(0).topRow = (pageNo - 1) * pageRows + 1
+    Grid2(0).TopRow = (pageNo - 1) * pageRows + 1
     
     If pageNum > 1 Then
         laPageOf.Caption = "Страница " & pageNo & " из " & pageNum
@@ -1159,6 +1159,8 @@ Private Sub tbPageSize_KeyPress(KeyAscii As Integer)
         If IsNumeric(tbPageSize.Text) Then
             cfg.setParam "gCfgOrderPageSize", tbPageSize.Text
             cfg.saveCfg "local"
+            paginateResult
+            setPage (1)
         End If
     End If
 End Sub
