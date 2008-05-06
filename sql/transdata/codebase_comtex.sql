@@ -413,6 +413,9 @@ begin
 	declare v_zakaz varchar(150);
 	declare s_id_shiz varchar(20);
 	declare v_id_m_xoz integer;
+	declare m_xoz_updated integer;
+
+	set m_xoz_updated = 0;
 
 	set v_ventureid = admin.select_remote('prior', 'guideventure', 'ventureid', 'sysname = ''''' + admin.get_server_name() + '''''');
 
@@ -458,7 +461,7 @@ begin
 		);
     end if;
 
-	if update(id_accd) then
+	if update(id_accd) and isnull(new_name.id_accd, 0) != 0 then
 		    
 		select d.sc, d.sub_sc, d.nm, d.rem
 		into v_debit_sc, v_debit_sub, v_nm, v_rem
@@ -497,26 +500,10 @@ begin
 			, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
 		);
     
-		if isnull(new_name.id_accd, 0) != 0 then
-			select c.sc, c.sub_sc
-			into v_credit_sc, v_credit_sub
-			from account c 
-			where c.id = old_name.id_accc;
-
-			call admin.wf_purpose_sync (
-				old_name.id
-				, v_ventureid
-				, old_name.id_m_xoz
-				, v_debit_sc
-				, v_debit_sub
-				, v_credit_sc
-				, v_credit_sub
-			);
-		    
-		end if;
+		set m_xoz_updated = 1;
 	end if;
 
-	if update(id_accc) then
+	if update(id_accc) and isnull(new_name.id_accc, 0) != 0  then
 
 		select c.sc, c.sub_sc, c.nm, c.rem
 		into v_credit_sc, v_credit_sub, v_nm, v_rem
@@ -553,26 +540,7 @@ begin
 			, ''''''+v_credit_sub+''''''
 			, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
 		);
-
-
-		if isnull(new_name.id_accc, 0) != 0 then
-
-			select d.sc, d.sub_sc
-			into v_debit_sc, v_debit_sub
-			from account d
-			where d.id = old_name.id_accd;
-		    
-			call admin.wf_purpose_sync (
-				old_name.id
-				, v_ventureid
-				, old_name.id_m_xoz
-				, v_debit_sc
-				, v_debit_sub
-				, v_credit_sc
-				, v_credit_sub
-			);
-		    
-		end if;
+		set m_xoz_updated = 1;
 
 	end if;
 
@@ -597,17 +565,19 @@ begin
 	end if;
 
 
-	if update(id_m_xoz) then
+	if (update(id_m_xoz) or isnull(new_name.id_m_xoz, 0) != 0) 
+			or m_xoz_updated = 1 
+	then
 
 		select d.sc, d.sub_sc, d.nm, d.rem
 		into v_debit_sc, v_debit_sub, v_nm, v_rem
 		from account d 
-		where d.id = old_name.id_accd;
+		where d.id = new_name.id_accd;
 	    
 		select c.sc, c.sub_sc, c.nm, c.rem
 		into v_credit_sc, v_credit_sub, v_nm, v_rem
 		from account c 
-		where c.id = old_name.id_accc;
+		where c.id = new_name.id_accc;
 
 		call admin.wf_purpose_sync (
 			old_name.id
@@ -621,6 +591,8 @@ begin
 		    
 
 	end if;
+
+
 	if update(rem) then
 
 		call admin.update_remote(
