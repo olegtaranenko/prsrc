@@ -688,6 +688,9 @@ End Sub
 
 Sub ventureReport(ventureId As Integer)
 Dim sum As Single
+Dim whereVenture As String
+Dim whereToken As String
+
 
     Grid.FormatString = "|Заказ|<Дата|<Фирма|<Комментарий|>Затраты|>Реализация"
     Grid.ColWidth(0) = 250
@@ -698,9 +701,20 @@ Dim sum As Single
     Grid.ColWidth(rrMater) = 1005
     Grid.ColWidth(rrReliz) = 1005
     
-    sql = "SELECT * from orderWallShip where ventureid = " & ventureId
+    whereToken = " where"
+    If ventureId <> 0 Then
+        whereVenture = " ventureid = " & ventureId
+    End If
+    
+    
+    sql = "SELECT * from orderWallShip"
+    If whereVenture <> "" Then
+        sql = sql & whereToken & whereVenture
+        whereToken = " and "
+    End If
+    
     If Pribil.nDateWhere <> "" Then
-        sql = sql & " and " & Pribil.nDateWhere
+        sql = sql & whereToken & Pribil.nDateWhere
     End If
     sql = sql & " order by outdate"
     Set tbOrders = myOpenRecordSet("##vnt_det", sql, dbOpenForwardOnly)

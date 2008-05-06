@@ -3,43 +3,23 @@ Begin VB.Form Pribil
    BackColor       =   &H8000000A&
    BorderStyle     =   1  'Fixed Single
    Caption         =   "Реализация"
-   ClientHeight    =   7284
+   ClientHeight    =   6612
    ClientLeft      =   552
    ClientTop       =   9336
    ClientWidth     =   11424
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   7284
+   ScaleHeight     =   6612
    ScaleWidth      =   11424
    StartUpPosition =   1  'CenterOwner
-   Begin VB.CheckBox ckSaleNomenk 
-      BackColor       =   &H8000000A&
-      Caption         =   "По номенклатуре"
-      Height          =   192
-      Left            =   3960
-      TabIndex        =   68
-      Top             =   5880
-      Width           =   1932
-   End
-   Begin VB.CheckBox ckStatistic 
-      Alignment       =   1  'Right Justify
-      BackColor       =   &H8000000A&
-      Caption         =   "Статистика/Затраты"
-      CausesValidation=   0   'False
-      Height          =   192
-      Left            =   360
-      TabIndex        =   46
-      Top             =   5880
-      Width           =   2172
-   End
    Begin VB.Frame Frame7 
       BackColor       =   &H8000000A&
       BorderStyle     =   0  'None
       Height          =   612
       Left            =   480
-      TabIndex        =   31
-      Top             =   1080
+      TabIndex        =   32
+      Top             =   1680
       Width           =   10692
       Begin VB.CommandButton cmDetailPM 
          Caption         =   "Петровские Мастерские"
@@ -633,18 +613,54 @@ Begin VB.Form Pribil
    End
    Begin VB.Frame Frame1 
       BackColor       =   &H8000000A&
-      Height          =   612
+      Height          =   1332
       Left            =   60
-      TabIndex        =   3
+      TabIndex        =   7
       Top             =   0
-      Width           =   8715
+      Width           =   10992
+      Begin VB.OptionButton rbNomenk 
+         BackColor       =   &H8000000A&
+         Caption         =   "По номенклатуре"
+         Height          =   252
+         Left            =   4800
+         TabIndex        =   71
+         Top             =   960
+         Width           =   1812
+      End
+      Begin VB.OptionButton rbDetailMode 
+         BackColor       =   &H8000000A&
+         Caption         =   "По затратам"
+         Height          =   252
+         Left            =   3240
+         TabIndex        =   70
+         Top             =   960
+         Width           =   1452
+      End
+      Begin VB.OptionButton rbOrders 
+         BackColor       =   &H8000000A&
+         Caption         =   "По заказам"
+         Height          =   252
+         Left            =   240
+         TabIndex        =   3
+         Top             =   960
+         Width           =   1332
+      End
+      Begin VB.OptionButton rbStatistic 
+         BackColor       =   &H8000000A&
+         Caption         =   "По фирмам"
+         Height          =   252
+         Left            =   1680
+         TabIndex        =   4
+         Top             =   960
+         Width           =   1452
+      End
       Begin VB.ComboBox cbPeriod 
          Height          =   288
          ItemData        =   "Pribil.frx":0000
-         Left            =   3360
+         Left            =   6000
          List            =   "Pribil.frx":0013
          Style           =   2  'Dropdown List
-         TabIndex        =   70
+         TabIndex        =   68
          Top             =   180
          Width           =   2412
       End
@@ -652,7 +668,7 @@ Begin VB.Form Pribil
          Height          =   285
          Left            =   960
          MaxLength       =   8
-         TabIndex        =   7
+         TabIndex        =   1
          Top             =   180
          Width           =   795
       End
@@ -660,43 +676,33 @@ Begin VB.Form Pribil
          Height          =   285
          Left            =   1980
          MaxLength       =   8
-         TabIndex        =   6
+         TabIndex        =   2
          Top             =   180
          Width           =   795
       End
       Begin VB.CommandButton cmManag 
          Caption         =   "Применить"
          Height          =   315
-         Left            =   6000
-         TabIndex        =   5
+         Left            =   3120
+         TabIndex        =   8
          Top             =   180
          Width           =   1095
       End
-      Begin VB.CommandButton cmSave 
-         Caption         =   "Записать в журнал Х.О. "
-         Enabled         =   0   'False
-         Height          =   315
-         Left            =   8160
-         TabIndex        =   4
-         Top             =   240
-         Visible         =   0   'False
-         Width           =   1995
-      End
-      Begin VB.Label Label5 
-         BackStyle       =   0  'Transparent
-         Caption         =   "или "
-         Height          =   192
-         Left            =   2880
+      Begin VB.Label laDetailMode 
+         BackColor       =   &H8000000A&
+         Caption         =   "Режим детализации"
+         Height          =   252
+         Left            =   240
          TabIndex        =   69
-         Top             =   240
-         Width           =   312
+         Top             =   650
+         Width           =   2412
       End
       Begin VB.Label laPeriod 
          BackStyle       =   0  'Transparent
          Caption         =   "Период  с "
          Height          =   195
          Left            =   120
-         TabIndex        =   9
+         TabIndex        =   10
          Top             =   240
          Width           =   795
       End
@@ -705,130 +711,10 @@ Begin VB.Form Pribil
          Caption         =   "по"
          Height          =   195
          Left            =   1785
-         TabIndex        =   8
+         TabIndex        =   9
          Top             =   240
          Width           =   435
       End
-   End
-   Begin VB.Line Line15 
-      X1              =   6120
-      X2              =   6000
-      Y1              =   6000
-      Y2              =   6000
-   End
-   Begin VB.Line Line20 
-      X1              =   120
-      X2              =   240
-      Y1              =   2880
-      Y2              =   2880
-   End
-   Begin VB.Line Line19 
-      X1              =   120
-      X2              =   120
-      Y1              =   6000
-      Y2              =   2880
-   End
-   Begin VB.Line Line18 
-      X1              =   120
-      X2              =   240
-      Y1              =   6000
-      Y2              =   6000
-   End
-   Begin VB.Line Line17 
-      X1              =   240
-      X2              =   240
-      Y1              =   5760
-      Y2              =   6120
-   End
-   Begin VB.Line Line16 
-      X1              =   6000
-      X2              =   6000
-      Y1              =   5760
-      Y2              =   6120
-   End
-   Begin VB.Line Line14 
-      X1              =   6120
-      X2              =   6120
-      Y1              =   4800
-      Y2              =   6000
-   End
-   Begin VB.Line Line13 
-      X1              =   6120
-      X2              =   6000
-      Y1              =   4800
-      Y2              =   4800
-   End
-   Begin VB.Line Line12 
-      X1              =   5880
-      X2              =   6000
-      Y1              =   5640
-      Y2              =   5640
-   End
-   Begin VB.Line Line11 
-      X1              =   240
-      X2              =   600
-      Y1              =   4920
-      Y2              =   4920
-   End
-   Begin VB.Line Line10 
-      X1              =   6000
-      X2              =   5760
-      Y1              =   3840
-      Y2              =   3840
-   End
-   Begin VB.Line Line9 
-      X1              =   3840
-      X2              =   3840
-      Y1              =   5760
-      Y2              =   6120
-   End
-   Begin VB.Line Line8 
-      X1              =   3840
-      X2              =   6000
-      Y1              =   5760
-      Y2              =   5760
-   End
-   Begin VB.Line Line7 
-      X1              =   3840
-      X2              =   6000
-      Y1              =   6120
-      Y2              =   6120
-   End
-   Begin VB.Line Line3 
-      X1              =   6000
-      X2              =   6000
-      Y1              =   3840
-      Y2              =   5640
-   End
-   Begin VB.Line Line6 
-      X1              =   240
-      X2              =   480
-      Y1              =   960
-      Y2              =   960
-   End
-   Begin VB.Line Line5 
-      X1              =   2640
-      X2              =   2640
-      Y1              =   5760
-      Y2              =   6120
-   End
-   Begin VB.Line Line4 
-      X1              =   240
-      X2              =   2640
-      Y1              =   6120
-      Y2              =   6120
-   End
-   Begin VB.Line Line2 
-      X1              =   240
-      X2              =   2640
-      Y1              =   5760
-      Y2              =   5760
-   End
-   Begin VB.Line Line1 
-      X1              =   240
-      X2              =   240
-      Y1              =   960
-      Y2              =   4920
    End
    Begin VB.Label Label9 
       Alignment       =   2  'Center
@@ -846,7 +732,7 @@ Begin VB.Form Pribil
       Height          =   252
       Left            =   9840
       TabIndex        =   54
-      Top             =   840
+      Top             =   1440
       Width           =   1152
    End
    Begin VB.Label Label3 
@@ -857,7 +743,7 @@ Begin VB.Form Pribil
       Height          =   312
       Left            =   5880
       TabIndex        =   49
-      Top             =   840
+      Top             =   1440
       Width           =   1212
    End
    Begin VB.Label Label2 
@@ -867,7 +753,7 @@ Begin VB.Form Pribil
       Height          =   372
       Left            =   8520
       TabIndex        =   48
-      Top             =   720
+      Top             =   1320
       Width           =   1152
    End
    Begin VB.Label Label1 
@@ -877,7 +763,7 @@ Begin VB.Form Pribil
       Height          =   252
       Left            =   7200
       TabIndex        =   47
-      Top             =   840
+      Top             =   1440
       Width           =   1212
    End
    Begin VB.Label Label4 
@@ -886,8 +772,8 @@ Begin VB.Form Pribil
       Caption         =   "Доход"
       Height          =   252
       Left            =   4560
-      TabIndex        =   2
-      Top             =   840
+      TabIndex        =   6
+      Top             =   1440
       Width           =   1212
    End
    Begin VB.Label laHMaterials 
@@ -896,8 +782,8 @@ Begin VB.Form Pribil
       Caption         =   "Материалы"
       Height          =   252
       Left            =   3240
-      TabIndex        =   1
-      Top             =   840
+      TabIndex        =   5
+      Top             =   1440
       Width           =   1152
    End
    Begin VB.Label laHRealiz 
@@ -908,7 +794,7 @@ Begin VB.Form Pribil
       Height          =   192
       Left            =   1920
       TabIndex        =   0
-      Top             =   840
+      Top             =   1440
       Width           =   1212
    End
 End
@@ -921,6 +807,7 @@ Option Explicit
 Public pDateWhere As String, nDateWhere As String, uDateWhere As String
 Public bDateWhere As String, mDateWhere As String, costsDateWhere As String
 Public statistic As String, ventureId As String
+Dim flagSync As Boolean
 
 Dim begDateHron As Date ' Начало ведения хронологии
 
@@ -970,18 +857,28 @@ Dim endYear As Integer, endMonth As Integer
     End If
 End Sub
 
-Private Sub ckSaleNomenk_Click()
-    If ckStatistic.value = 1 Then
-        ckStatistic.value = 0
+
+Private Sub cmSales_Click()
+    Report.param1 = laRealiz2.Caption
+    Report.param2 = laMaterials2.Caption
+    
+    If rbOrders.value = True Then
+        Report.Regim = "bay"
+        Report.Sortable = True
+    ElseIf rbStatistic.value = True Then
+        Report.Regim = "bayStatistic"
+        Report.Sortable = True
+    ElseIf rbNomenk.value = True Then
+        Report.Regim = "bayNomenk"
+    Else
+        Exit Sub
     End If
+    
+    Set Report.Caller = Me
+    Report.Show vbModal
 
 End Sub
 
-Private Sub ckStatistic_Click()
-    If ckSaleNomenk.value = 1 Then
-        ckSaleNomenk.value = 0
-    End If
-End Sub
 
 Private Sub cmDetail_Click()
     Report.param1 = laOther.Caption
@@ -997,14 +894,15 @@ Private Sub cmDetail1_Click()
     Set Report.Caller = Me
     Report.param1 = laProduct.Caption
     Report.param2 = laMaterials1.Caption
-    If ckStatistic.value = 1 Then
+    
+    If rbOrders.value = True Then
+        Report.Regim = ""
+    ElseIf rbStatistic.value = True Then
         Report.Regim = "relizStatistic"
+    ElseIf rbNomenk.value = True Then
+        Report.Regim = "relizNomenk"
     Else
-        If ckSaleNomenk.value = 1 Then
-            Report.Regim = "relizNomenk"
-        Else
-            Report.Regim = ""
-        End If
+        Exit Sub
     End If
     
     Report.Sortable = True
@@ -1016,11 +914,14 @@ End Sub
 
 Private Sub cmDetail3_Click()
     Report.param1 = laUslug.Caption
-    If ckStatistic.value = 1 Then
+    If rbOrders.value = True Then
+        Report.Regim = "uslug"
+    ElseIf rbStatistic.value = True Then
         Report.Regim = "uslugStatistic"
     Else
-        Report.Regim = "uslug"
+        Exit Sub
     End If
+        
     Report.Sortable = True
     Set Report.Caller = Me
     Report.Show vbModal
@@ -1068,11 +969,14 @@ Private Sub cmItogo_Click()
 End Sub
 
 Private Sub setVentureRegim()
-    If ckStatistic.value = 1 Then
+    If rbOrders.value = True Then
+        Report.Regim = "venture"
+    ElseIf rbDetailMode.value = True Then
         Report.Regim = "ventureZatrat"
     Else
-        Report.Regim = "venture"
+        Exit Sub
     End If
+    
 End Sub
 
 
@@ -1209,7 +1113,7 @@ sql = "select sum(cenaed * quant) as bSum, sum(costEd * quant) as cSum, isnull(v
     & " where type = 8 and " & strWhere _
     & " group by venture_id "
 
-Debug.Print sql
+'Debug.Print sql
 
 s = 0
 s2 = 0
@@ -1263,7 +1167,7 @@ sql = "SELECT Sum(sDMC.quant*n.cost/n.perList) AS sum " & _
 "FROM sGuideSource INNER JOIN (sGuideNomenk n INNER JOIN (sDocs INNER JOIN sDMC ON (sDocs.numExt = sDMC.numExt) AND (sDocs.numDoc = sDMC.numDoc)) ON n.nomNom = sDMC.nomNom) ON sGuideSource.sourceId = sDocs.destId " & _
 "WHERE " & mDateWhere
 
-Debug.Print sql
+'Debug.Print sql
 
 If byErrSqlGetValues("##404", sql, s) Then
     laOther.Caption = Format(s, "## ##0.00")
@@ -1326,20 +1230,17 @@ laAnResultTotal.Caption = Format(Round(ventureRealiz(2) - mainCosts(2) - addCost
 
 EN1:
 Me.MousePointer = flexDefault
-cmSave.Enabled = True
-cmDetail.Enabled = True
-cmDetail1.Enabled = True
-cmSales.Enabled = True
-cmItogo.Enabled = True
-'cmSaleNomenk.Enabled = True
+flagSync = True
 
-cmDetail3.Enabled = True
-
-cmDetailPM.Enabled = True
-cmDetailMM.Enabled = True
-cmDetailAN.Enabled = True
-
-
+    If rbDetailMode.value = True Then
+        rbDetailMode_Click
+    ElseIf rbNomenk.value = True Then
+        rbNomenk_Click
+    ElseIf rbOrders.value = True Then
+        rbOrders_Click
+    ElseIf rbStatistic.value = True Then
+        rbStatistic_Click
+    End If
 
 End Sub
 
@@ -1374,82 +1275,6 @@ errorCodAndMsg "378" '##378
 
 'MsgBox Error, , "Ошибка 378-" & Err & ":  " '##378
 
-End Sub
-
-Private Sub cmMaterials_Click()
-
-End Sub
-
-Private Sub cmRealiz_Click()
-
-End Sub
-
-Private Sub cmSales_Click()
-    Report.param1 = laRealiz2.Caption
-    Report.param2 = laMaterials2.Caption
-    If ckStatistic.value = 1 Then
-        Report.Regim = "bayStatistic"
-        Report.Sortable = True
-    Else
-        If ckSaleNomenk.value = 1 Then
-            Report.Regim = "bayNomenk"
-        Else
-            Report.Regim = "bay"
-            Report.Sortable = True
-        End If
-    End If
-    Set Report.Caller = Me
-    Report.Show vbModal
-
-End Sub
-
-Private Sub cmSave_Click() '$$4
-Dim str As String, str2 As String, i As Integer
-cmSave.Enabled = False
-'If Not (IsNumeric(laRealiz.Caption) And IsNumeric(laRealiz.Caption)) Then
-
-str = "В Настройках не заданы параметры записи для поля '"
-str2 = "' в журнал Х.О., поэтому эта запись произведена НЕ будет."
-
-Set tbDocs = myOpenRecordSet("##376", "yBook", dbOpenTable) 'dbOpenForwardOnly)
-'If tbDocs Is Nothing Then Exit Sub
-
-strWhere = "SELECT 1,Debit, subDebit, Kredit, subKredit, pId as purposeId " & _
-"From yGuidePurpose WHERE (((auto)='"
-
-sql = strWhere & "r'));"
-If Not byErrSqlGetValues("W##401", sql, i, debit, subDebit, kredit, subKredit, _
-purposeId) Then GoTo EN1
-If i = 0 Then 'err WHERE
-    MsgBox str & laHRealiz.Caption & str2, , "Предупреждение"
-    GoTo EN1
-Else
-    addRowToBook laRealiz.Caption
-End If
-
-sql = strWhere & "z'));"
-If Not byErrSqlGetValues("W##402", sql, i, debit, subDebit, kredit, subKredit, _
-purposeId) Then GoTo EN1
-If i = 0 Then 'err WHERE
-    MsgBox str & laHMaterials.Caption & str2, , "Предупреждение"
-    GoTo EN1
-Else
-    addRowToBook laMaterials.Caption
-End If
-
-sql = strWhere & "m'));"
-If Not byErrSqlGetValues("W##403", sql, i, debit, subDebit, kredit, subKredit, _
-purposeId) Then GoTo EN1
-If i = 0 Then 'err WHERE
-    MsgBox str & laOther.Caption & str2, , "Предупреждение"
-Else
-    addRowToBook laOther.Caption
-End If
-EN1:
-tbDocs.Close
-Unload Me
-On Error Resume Next
-Journal.Grid.SetFocus
 End Sub
 
 
@@ -1516,4 +1341,79 @@ Wend
 tbNomenk.Close
 getProductNomenkSum = sum
 End Function
+
+Private Sub rbDetailMode_Click()
+    If Not flagSync Then
+        disableAll
+        Exit Sub
+    End If
+    cmDetailPM.Enabled = True
+    cmDetailMM.Enabled = True
+    cmDetailAN.Enabled = True
+    cmItogo.Enabled = True
+    cmDetail3.Enabled = False
+    cmDetail1.Enabled = False
+    cmSales.Enabled = False
+    cmDetail.Enabled = False
+End Sub
+
+Private Sub rbNomenk_Click()
+    If Not flagSync Then
+        disableAll
+        Exit Sub
+    End If
+    cmDetailPM.Enabled = False
+    cmDetailMM.Enabled = False
+    cmDetailAN.Enabled = False
+    cmItogo.Enabled = False
+    cmDetail3.Enabled = False
+    cmDetail1.Enabled = True
+    cmSales.Enabled = True
+    cmDetail.Enabled = False
+End Sub
+
+Private Sub rbOrders_Click()
+    If Not flagSync Then
+        disableAll
+        Exit Sub
+    End If
+    cmDetailPM.Enabled = True
+    cmDetailMM.Enabled = True
+    cmDetailAN.Enabled = True
+    cmItogo.Enabled = True
+    cmDetail3.Enabled = True
+    cmDetail1.Enabled = True
+    cmSales.Enabled = True
+    cmDetail.Enabled = True
+End Sub
+
+Private Sub rbStatistic_Click()
+    If Not flagSync Then
+        disableAll
+        Exit Sub
+    End If
+    cmDetailPM.Enabled = False
+    cmDetailMM.Enabled = False
+    cmDetailAN.Enabled = False
+    cmItogo.Enabled = False
+    cmDetail3.Enabled = True
+    cmDetail1.Enabled = True
+    cmSales.Enabled = True
+    cmDetail.Enabled = False
+End Sub
+
+Private Sub tbStartDate_Change()
+    flagSync = False
+End Sub
+
+Private Sub disableAll()
+    cmDetailPM.Enabled = False
+    cmDetailMM.Enabled = False
+    cmDetailAN.Enabled = False
+    cmItogo.Enabled = False
+    cmDetail3.Enabled = False
+    cmDetail1.Enabled = False
+    cmSales.Enabled = False
+    cmDetail.Enabled = False
+End Sub
 
