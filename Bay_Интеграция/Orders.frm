@@ -602,9 +602,6 @@ If noFocus = "" Then
 End If
 End Sub
 
-Private Sub cmToWeb_Click()
-
-End Sub
 
 Sub loadWithFiltr(Optional nomZak As String = "")
 'bilo = True
@@ -1297,9 +1294,6 @@ End Sub
 
 
 
-Private Sub lbCeh_Click()
-
-End Sub
 
 Private Sub lbClose_DblClick()
 Dim str As String
@@ -1871,9 +1865,6 @@ End If
 
 End Sub
 
-Private Sub tbMobile2_Change()
-
-End Sub
 
 Private Sub tbStartDate_Change()
 cmRefr.Caption = "Загрузить"
@@ -1905,7 +1896,7 @@ zakazNum = 0
 'LoadOrders********************************************************
 sql = rowFromOrdersSQL & getSqlWhere & " ORDER BY BayOrders.inDate;"
 'Debug.Print getSqlWhere
-'MsgBox getSqlWhere
+'Debug.Print sql
 Set tqOrders = myOpenRecordSet("##08", sql, dbOpenForwardOnly)
 'If tqOrders Is Nothing Then myBase.Close: End
 If Not tqOrders.BOF Then
@@ -1960,8 +1951,8 @@ tqOrders.Close '*********************************************
 
 laInform.Caption = " кол-во зап.: " & zakazNum
 
-rowViem zakazNum, Grid
 Grid.Visible = True
+'rowViem zakazNum, Grid
 If zakazNum > 0 Then
     Grid.col = 1
     Grid.row = zakazNum
