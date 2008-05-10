@@ -4,16 +4,16 @@ Begin VB.Form GuideFirms
    BackColor       =   &H8000000A&
    BorderStyle     =   1  'Fixed Single
    Caption         =   "Справочник сторонних организаций"
-   ClientHeight    =   8190
-   ClientLeft      =   45
-   ClientTop       =   330
-   ClientWidth     =   11895
+   ClientHeight    =   8184
+   ClientLeft      =   48
+   ClientTop       =   336
+   ClientWidth     =   11892
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    LockControls    =   -1  'True
    MinButton       =   0   'False
-   ScaleHeight     =   8190
-   ScaleWidth      =   11895
+   ScaleHeight     =   8184
+   ScaleWidth      =   11892
    Begin VB.CommandButton cmExel 
       Caption         =   "Печать в Exel"
       Height          =   315
@@ -33,7 +33,7 @@ Begin VB.Form GuideFirms
    Begin VB.TextBox tbInform 
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   9.75
+         Size            =   9.6
          Charset         =   204
          Weight          =   400
          Underline       =   0   'False
@@ -79,7 +79,7 @@ Begin VB.Form GuideFirms
       Width           =   2535
    End
    Begin VB.ListBox lbM 
-      Height          =   255
+      Height          =   240
       Left            =   3780
       TabIndex        =   13
       Top             =   2100
@@ -97,7 +97,7 @@ Begin VB.Form GuideFirms
       Width           =   795
    End
    Begin VB.ListBox lbKP 
-      Height          =   840
+      Height          =   816
       ItemData        =   "GuideFirms.frx":0000
       Left            =   3300
       List            =   "GuideFirms.frx":0010
@@ -165,8 +165,8 @@ Begin VB.Form GuideFirms
       TabIndex        =   5
       Top             =   960
       Width           =   11715
-      _ExtentX        =   20664
-      _ExtentY        =   11351
+      _ExtentX        =   20659
+      _ExtentY        =   11345
       _Version        =   393216
       MergeCells      =   2
       AllowUserResizing=   1
@@ -232,9 +232,9 @@ Grid.SetFocus
 End Sub
 
 Private Sub cmAdd_Click()
-If Grid.TextMatrix(Grid.Rows - 1, gfId) <> "" Then Grid.AddItem ("")
+If Grid.TextMatrix(Grid.rows - 1, gfId) <> "" Then Grid.AddItem ("")
 
-Grid.row = Grid.Rows - 1
+Grid.row = Grid.rows - 1
 Grid.col = gfNazwFirm 'название
 Grid.SetFocus
 textBoxInGridCell tbMobile, Grid
@@ -280,7 +280,7 @@ quantity = quantity - 1
 If quantity = 0 Then
     clearGridRow Grid, mousRow
 Else
-    Grid.RemoveItem mousRow
+    Grid.removeItem mousRow
 End If
 
 'Grid.SetFocus
@@ -340,7 +340,7 @@ Dim I As Long, strWhere As String, str As String
 Me.MousePointer = flexHourglass
 Grid.Visible = False
 clearGrid Grid
-strWhere = Trim(tbFind.Text)
+strWhere = trimAll(tbFind.Text)
 If Not strWhere = "" Then
 '    strWhere = "Where (((GuideFirms.Name) = '" & strWhere & "' )) "
     strWhere = "(GuideFirms.Name) = '" & strWhere & "'"
@@ -402,7 +402,7 @@ If Not tbFirms.BOF Then
     Grid.AddItem ("")
 AA: tbFirms.MoveNext
   Wend
-  If quantity > 0 Then Grid.RemoveItem (quantity + 1)
+  If quantity > 0 Then Grid.removeItem (quantity + 1)
 End If
 tbFirms.Close
 EN1:
@@ -748,7 +748,7 @@ End Sub
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
 Dim str As String, I As Integer, strId As String
 If KeyCode = vbKeyReturn Then
- str = Trim(tbMobile.Text)
+ str = trimAll(tbMobile.Text)
  gFirmId = Grid.TextMatrix(mousRow, gfId)
 
  If mousCol = gfNazwFirm Then

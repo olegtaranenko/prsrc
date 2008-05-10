@@ -689,7 +689,7 @@ If Regim = "" Then ' для распечатки
     laPageSize.Visible = True
     laPageOf.Visible = True
     tbPageSize.Visible = True
-    tbPageSize.Text = cfg.getParam("gCfgOrderPageSize")
+    tbPageSize.Text = getEffectiveSetting("gCfgOrderPageSize", 35)
     
 ElseIf Regim = "predmeti" Then ' в цеху
     Me.Caption = "Предметы к заказу."
@@ -748,7 +748,7 @@ End Sub
 Sub paginateResult()
 Dim stdPageRows As Integer
 
-    stdPageRows = CInt(cfg.getParam("gCfgOrderPageSize"))
+    stdPageRows = CInt(getEffectiveSetting("gCfgOrderPageSize"))
     
     If quantity2 < stdPageRows Then
         pageNum = 1
@@ -1157,8 +1157,8 @@ End Sub
 Private Sub tbPageSize_KeyPress(KeyAscii As Integer)
     If KeyAscii = vbKeyReturn Then
         If IsNumeric(tbPageSize.Text) Then
-            cfg.setParam "gCfgOrderPageSize", tbPageSize.Text
-            cfg.saveCfg "local"
+            getEffectiveSetting "gCfgOrderPageSize", tbPageSize.Text
+            saveFileSettings appCfgFile, appSettings
             paginateResult
             setPage (1)
         End If

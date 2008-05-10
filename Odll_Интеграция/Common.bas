@@ -1,10 +1,16 @@
 Attribute VB_Name = "Common"
 Option Explicit
-'Проэкт\Свойства\Создание\Аргументы компиляции:
+'Проeкт\Свойства\Создание\Аргументы компиляции:
 ' - onErrorOtlad = 1 ' ловля редких err
 
 ' Размер страницы (к-во строк) при печати накладной.
 ' Задается в настройках, используется в модуле Nakladna.frm
+
+Public argumentSettings() As MapEntry
+Public appSettings() As MapEntry
+Public siteSettings() As MapEntry
+Public settings() As MapEntry
+
 Public gCfgOrderPageSize As Integer
 
 Public isOrders As Boolean
@@ -13,9 +19,6 @@ Public isZagruz As Boolean
 Public isFindFirm As Boolean
 Public mainTitle As String
 Public flReportArhivOrders As Boolean
-'Public base() As String         '$$2
-'Public basePath() As String     '
-
 
 Public myBase As Database
 Public wrkDefault As Workspace
@@ -324,10 +327,10 @@ End Function
 
 Sub clearGrid(Grid As MSFlexGrid, Optional fixed As Integer = 1)
 If fixed = 1 Then
-    Grid.Rows = 2
+    Grid.rows = 2
     clearGridRow Grid, 1
 Else
-    Grid.Rows = 3
+    Grid.rows = 3
     clearGridRow Grid, 2
 End If
 End Sub
@@ -436,7 +439,7 @@ End Sub
 Function findValInCol(Grid As MSFlexGrid, value, col As Integer) As Boolean
 Dim il As Long
 findValInCol = False
-For il = 1 To Grid.Rows - 1
+For il = 1 To Grid.rows - 1
     If value = Grid.TextMatrix(il, orNomZak) Then
         Grid.TopRow = il
         Grid.row = il
@@ -457,7 +460,7 @@ Else
     beg = pos
 End If
 value = UCase(value)
-For il = beg To Grid.Rows - 1
+For il = beg To Grid.rows - 1
     str = UCase(Grid.TextMatrix(il, col))
     If InStr(str, value) > 0 Then
         Grid.TopRow = il
@@ -864,7 +867,7 @@ objExel.Workbooks.Add
 With objExel.ActiveSheet
 .Cells(1, 2).value = title
 ReDim Preserve strA(Grid.Cols + 1)
-For r = 0 To Grid.Rows - 1
+For r = 0 To Grid.rows - 1
     For c = 1 To Grid.Cols - 1
         str = Grid.TextMatrix(r, c) '=' - наверно зарезервирован для ввода формул
         If Left$(str, 1) = "=" Then str = "." & str
@@ -902,15 +905,18 @@ ReDim tmpL(0)
 '    dostup = "a"
 '    otlad = Command()
 'Else
-If Len(Command()) > 4 Then
-    dostup = Mid$(Command(), 6)
-    otlad = Left$(Command(), 5)
-Else
-    dostup = Command()
-    otlad = ""
-End If
+'If Len(Command()) > 4 Then
+'    dostup = Mid$(Command(), 6)
+'    otlad = Left$(Command(), 5)
+'Else
+'    dostup = Command()
+'    otlad = ""
+'End If
+
 cfg.isLoad = False  '$$2
-If Not cfg.loadCfg Then End '$$2
+loadEffectiveSettings
+dostup = getEffectiveSetting("dostup")
+
 
 isXP = (Dir$("C:\WINDOWS\net.exe") = "") 'в XP нет файла
 On Error GoTo ERRs ' не дает Err если в сети не б.найден server, хотя из под DOS дает сист.Err=53
@@ -946,19 +952,19 @@ Set wrkDefault = DBEngine.CreateWorkspace("wrkDefault", "dba", "sql", dbUseODBC)
 If otlad = "otlaD" Then '
   webSvodkaPath = "C:\WINDOWS\TEMP\svodkaW."
   webLoginsPath = "C:\WINDOWS\TEMP\logins."
-  cfg.baseOpen '"C:\VB_DIMA\dlsricN.mdb"
+  cfg.baseOpen
 
 Else
     webSvodkaPath = cfg.SvodkaPath          '$$2
     webLoginsPath = cfg.loginsPath          '
     
-    If dostup = "a" Or dostup = "m" Or dostup = "" Or dostup = "b" Then '$$2
-        I = cfg.curBaseInd  '$$2
-    Else                    '
-        I = 0               'в цеху всегда рабочая
-    End If                  '
+'    If dostup = "a" Or dostup = "m" Or dostup = "" Or dostup = "b" Then '$$2
+'        I = cfg.curBaseInd  '$$2
+'    Else                    '
+'        I = 0               'в цеху всегда рабочая
+'    End If                  '
 '    mainTitle = "         " & base(I) '$$2
-    cfg.baseOpen I
+    cfg.baseOpen
 '    mainTitle = "              New"
 End If
 
@@ -1009,7 +1015,7 @@ checkNextYear '$$3 если сменился год - пересчет статистики посещений
 'If Not (dostup = "c" Or dostup = "y") Then
 If dostup = "a" Or dostup = "m" Or dostup = "" Or dostup = "b" Then
  'logFile = "C:\Windows\Orders" ' без расширения
- logFile = App.Path & "\" & App.EXEName
+ logFile = App.path & "\" & App.EXEName
  str2 = logFile & "$.log" ' временный файл
  logFile = logFile & ".log"
  
