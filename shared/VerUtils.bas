@@ -25,7 +25,7 @@ Private Declare Function FreeLibrary Lib "kernel32" _
 '-- VB type casting!
 Public Declare Sub CopyMemoryFromPointer Lib "kernel32" _
         Alias "RtlMoveMemory" (Destination As Any, _
-        ByVal Source As Long, ByVal Length As Long)
+        ByVal Source As Long, ByVal length As Long)
 
 Type VS_VERSIONINFO
   wLength As Integer
