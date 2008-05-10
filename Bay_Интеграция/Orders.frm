@@ -1979,32 +1979,6 @@ If getSqlWhere <> "" Then getSqlWhere = " WHERE (" & getSqlWhere & ")"
     
 End Function
 
-'Function sqlWhereFromCol(Optional nomZak As String = "") As Boolean
-'Dim i As Integer, value As String, str As String
-
-'sqlWhereFromCol = False
-'If nomZak = "" Then
-'    value = Grid.TextMatrix(mousRow, mousCol)
-'    If mousCol = orNomZak Or zakazNum = 0 Then
-'    If mousCol = orNomZak Then
-'        mousCol = orNomZak
-'        value = InputBox("Введите номер заказа", "Поиск", value)
-''        If value = "" Then GoTo LAEX
-'        If Not IsNumeric(value) Then Exit Function
-'        For i = 1 To orColNumber
-'            orSqlWhere(i) = ""
-'        Next i
-'    End If
-'Else
-'    value = nomZak ' поиск из цеха
-'End If
-'str = strWhereByValCol(value, CInt(mousCol))
-'If str <> "" Then
-'    sqlWhereFromCol = True
-'    orSqlWhere(mousCol) = str
-'End If
-'End Function
-
 Function strWhereByValCol(value As String, col As Integer, Optional _
 operator As String = "=") As String
 Dim str As String, typ As String, oper As String
