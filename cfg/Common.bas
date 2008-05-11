@@ -11,23 +11,21 @@ Dim myFilename As String
 Dim failed As Boolean
 
 
-    parsedArgs = GetCommandLine
-        
+    loadEffectiveSettings
+
     myFilename = getFullExeName()
     
     existsFile = Dir(myFilename)
     If existsFile = "" Or ((GetAttr(myFilename) And vbDirectory) = vbDirectory) Then
-        MsgBox "Файл " & myFilename & " не обнаружен. " _
-        & vbCr & "Необходимо исправить конфигурацию запуска приложения cfg.exe", vbExclamation, "Ошибка, свяжитесь с администратором"
-        End
+        fatalError "Файл " & myFilename & " не обнаружен. " _
+        & vbCr & "Необходимо исправить конфигурацию запуска приложения cfg.exe"
     End If
     
     
     failed = Not checkVersionExe(myFilename)
     
     If failed Then
-        MsgBox "При запуске программы произошла ошибка. Обратитесь к администратору.", vbExclamation, "Ошибка"
-        End
+        fatalError "При запуске программы произошла ошибка. Обратитесь к администратору."
     End If
 
     'exeHandle = Shell(myFilename & " " & getAppArguments, vbNormalFocus)

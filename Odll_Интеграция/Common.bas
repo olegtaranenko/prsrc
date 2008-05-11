@@ -6,11 +6,6 @@ Option Explicit
 ' Размер страницы (к-во строк) при печати накладной.
 ' Задается в настройках, используется в модуле Nakladna.frm
 
-Public argumentSettings() As MapEntry
-Public appSettings() As MapEntry
-Public siteSettings() As MapEntry
-Public settings() As MapEntry
-
 Public gCfgOrderPageSize As Integer
 
 Public isOrders As Boolean

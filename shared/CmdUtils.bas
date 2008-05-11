@@ -2,6 +2,14 @@ Attribute VB_Name = "CmdUtils"
 Option Explicit
 
 Dim rawCmdArguments() As String
+Public argumentSettings() As MapEntry
+Public appSettings() As MapEntry
+Public siteSettings() As MapEntry
+Public settings() As MapEntry
+
+
+
+
 Public appCfgFile As String
 Public siteCfgFile As String
 
@@ -187,16 +195,14 @@ Sub loadEffectiveSettings()
 
     parseCommandLine
     If Not loadCmdSettings(argumentSettings) Then
-        MsgBox "Ошибка параметра запуска программы", vbExclamation, "Обратитесь к администратору"
-        End
+        fatalError "Ошибка аргумента в командной строке"
     End If
     appCfgFile = getCurrentSetting("appCfgFile", argumentSettings)
     If appCfgFile = "" Then
         appCfgFile = getAppCfgDefaultName
     End If
-    If Not loadFileSettings(appCfgFile, appSettings) Then
-        MsgBox "Ошибка при загрузке файла конфигурации программы (appCfgFile)", vbExclamation, "Обратитесь к администратору"
-        End
+    If loadFileSettings(appCfgFile, appSettings) < 0 Then
+        fatalError "Ошибка при загрузке файла конфигурации программы (appCfgFile)"
     End If
     siteCfgFile = getCurrentSetting("siteCfgFile", argumentSettings)
     If siteCfgFile = "" Then
@@ -205,14 +211,22 @@ Sub loadEffectiveSettings()
     If siteCfgFile = "" Then
         siteCfgFile = getSiteCfgDefaultName
     End If
-    If Not loadFileSettings(appCfgFile, siteSettings) Then
-        MsgBox "Ошибка при загрузке файла конфигурации рабочего места (siteCfgFile)", vbExclamation, "Обратитесь к администратору"
-        End
+    If loadFileSettings(appCfgFile, siteSettings) < 0 Then
+        fatalError "Ошибка при загрузке файла конфигурации рабочего места (siteCfgFile)"
     End If
+End Sub
+
+Sub loadEffectiveSettingCfg()
+    loadEffectiveSettings
     buildEffectiveSettings
 End Sub
 
-Function loadFileSettings(filePath As String, ByRef curSettings() As MapEntry) As Boolean
+Sub loadEffectiveSettingApp()
+    loadEffectiveSettings
+    buildEffectiveSettings
+End Sub
+
+Function loadFileSettings(filePath As String, ByRef curSettings() As MapEntry) As Integer
 Dim entry As MapEntry
 
     Dim str As String, str2 As String, I As Integer, j As Integer
@@ -221,7 +235,8 @@ Dim entry As MapEntry
     
     On Error GoTo EN1 'если сетевая папка недоступна, то Dir дает ERR
     If Dir$(str) = "" Then
-        loadFileSettings = False
+        ' отсутствие файла конфигурации не является ошибкой
+        loadFileSettings = 0
     Else
       Open str For Input As #1
       While Not EOF(1)
@@ -231,11 +246,11 @@ Dim entry As MapEntry
       Wend
       Close #1
       
-      loadFileSettings = True
+      loadFileSettings = 1
     End If
     Exit Function
 EN1:
-    loadFileSettings = False
+    loadFileSettings = -1
 End Function
 
 Sub saveFileSettings(filePath As String, ByRef curSettings() As MapEntry)
@@ -361,7 +376,8 @@ Dim value As String
                 value = rawCmdArguments(I + 1)
                 exists = getCurrentSetting(entry.key, curSettings)
                 If Not IsEmpty(exists) Then
-                    exists.value = exists.value & " " & value
+                    exists = exists & " " & value
+                    appendValue curSettings, entry.key, value, " "
                 Else
                     entry.value = value
                     append argumentSettings, entry
@@ -407,3 +423,16 @@ Dim ln As Integer
     ReDim Preserve curSettings(ln)
     curSettings(ln) = entry
 End Sub
+
+Sub appendValue(curSettings() As MapEntry, key As String, value As Variant, separator As String)
+Dim sz As Integer, I As Integer
+
+    sz = UBound(curSettings)
+    For I = 1 To sz
+        If curSettings(I).key = key Then
+            curSettings(I).value = curSettings(I).value & separator & value
+            Exit Sub
+        End If
+    Next I
+End Sub
+
