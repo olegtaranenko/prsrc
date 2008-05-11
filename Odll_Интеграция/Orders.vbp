@@ -24,6 +24,7 @@ Form=Otgruz.frm
 Form=cfg.frm
 Form=OnFly.frm
 Module=CmdUtils; ..\shared\CmdUtils.bas
+Module=Errors; ..\shared\CommonUtils.bas
 IconForm="Orders"
 Startup="Sub Main"
 HelpFile=""
