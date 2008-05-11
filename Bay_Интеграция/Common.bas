@@ -197,7 +197,7 @@ If maxi < 1 Then
     MsgBox "мало параметров дл€ п\п byErrSqlGetValues()"
     Exit Function
 End If
-str = CStr(val(0)): c = Left$(str, 1)
+str = CStr(val(0)): c = left$(str, 1)
 If c = "W" Then str = Mid$(str, 2)
 'str = Mid$(str, 3)
 Set tabl = myOpenRecordSet(str, CStr(val(1)), dbOpenForwardOnly) 'dbOpenDynaset)$#$
@@ -410,7 +410,7 @@ Sub textBoxInGridCell(tb As TextBox, Grid As MSFlexGrid)
     tb.Width = Grid.CellWidth
 '    tb.Text = Grid.TextMatrix(mousRow, mousCol)
     tb.Text = Grid.TextMatrix(Grid.row, Grid.col)
-    tb.Left = Grid.CellLeft + Grid.Left
+    tb.left = Grid.CellLeft + Grid.left
     tb.Top = Grid.CellTop + Grid.Top
     tb.SelStart = 0
     tb.SelLength = Len(tb.Text)
@@ -428,7 +428,7 @@ Dim I As Integer
     Else
         lb.Top = Grid.CellTop + Grid.Top - lb.Height + Grid.CellHeight
     End If
-    lb.Left = Grid.CellLeft + Grid.Left
+    lb.left = Grid.CellLeft + Grid.left
     lb.ListIndex = 0
     If sel <> "" Then
         For I = 0 To lb.ListCount - 1 '
@@ -523,12 +523,12 @@ ReDim Preserve strA(Grid.Cols + 1)
 For r = 0 To Grid.Rows - 1
     For c = 1 To Grid.Cols - 1
         str = Grid.TextMatrix(r, c) '=' - наверно зарезервирован дл€ ввода формул
-        If Left$(str, 1) = "=" Then str = "." & str
+        If left$(str, 1) = "=" Then str = "." & str
 'иногда символы Cr и Lf (поле MEMO в базе) дают Err в Excel, поэтому из пол€
         I = InStr(str, vbCr) 'MEMO берем только первую строчку
-        If I > 0 Then str = Left$(str, I - 1)
+        If I > 0 Then str = left$(str, I - 1)
         I = InStr(str, vbLf) 'MEMO берем только первую строчку
-        If I > 0 Then str = Left$(str, I - 1)
+        If I > 0 Then str = left$(str, I - 1)
         strA(c - 1) = str
     Next c
 '    On Error Resume Next
@@ -549,6 +549,8 @@ If App.PrevInstance = True Then
     MsgBox "ѕрограмма уже запущена", , "Error"
     End
 End If
+
+mainTitle = getMainTitle
 
 ReDim NN(0): ReDim QQ(0): ReDim QQ2(0): ReDim QQ3(0) 'чтобы Ubound никогда не давала Err
 
@@ -651,7 +653,7 @@ CurDate = str 'без часов и минут
     Input #2, str
     I = InStr(str, vbTab)
     If I < 9 Then GoTo ENlog
-    str1 = Left$(str, I - 1)
+    str1 = left$(str, I - 1)
     If Not IsDate(str1) Then GoTo ENlog
     'tmpDate = str
     If DateDiff("d", str1, CurDate) <= 7 Then Print #3, str ' удал€ем > 7ми дней давности
@@ -920,7 +922,7 @@ Else
 '        MsgBox "неверный формат даты", , "ќшибка"
 '    Else
         'str = Left$(str, 6) & "20" & Mid$(str, 7, 2)
-        str = "20" & Right$(str, 2) & "-" & Mid$(str, 4, 2) & "-" & Left$(str, 2)
+        str = "20" & right$(str, 2) & "-" & Mid$(str, 4, 2) & "-" & left$(str, 2)
         If IsDate(str) Then
             tmpDate = str
             If fryDays = "" Then
@@ -990,7 +992,7 @@ sql = "UPDATE " & table & " SET " & table & "." & field & _
 AA:
 'MsgBox "sql = " & sql
 
-If Left$(myErrCod, 1) = "W" Then
+If left$(myErrCod, 1) = "W" Then
     myErrCod = Mid$(myErrCod, 2)
     ValueToTableField = myExecute(myErrCod, sql, 0) 'не сообщать если не WHERE
 Else

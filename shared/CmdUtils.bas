@@ -60,58 +60,6 @@ End Sub
 
 
 
-
-Function getFullExeName() As String
-Dim path As String, exe As String
-    exe = getExeName()
-    If Not isAbsolute(exe) Then
-        getFullExeName = getExePath() & "\" & exe
-    Else
-        getFullExeName = exe
-    End If
-End Function
-
-Function getExePath() As String
-Dim absolute As Boolean
-
-    getExePath = getCurrentSetting("path", argumentSettings)
-    
-    If getExePath <> "" Then
-        ' check if path is relative or absolute
-    End If
-    If Not isAbsolute(getExePath) Then
-        getExePath = App.path & "\" & getExePath
-    End If
-    If Len(getExePath) = 0 Then
-        getExePath = App.path
-    End If
-End Function
-
-
-Function getExeName() As String
-Dim I As Integer
-Dim hasExt As Boolean
-Dim appAliases(3) As MapEntry
-    appAliases(1).key = "prior": appAliases(1).value = "PriorN.exe"
-    appAliases(2).key = "stime": appAliases(2).value = "stimeN.exe"
-    appAliases(3).key = "rowmat": appAliases(3).value = "Rowmat_N.exe"
-    
-    getExeName = getCurrentSetting("exe", argumentSettings)
-    For I = 1 To UBound(appAliases)
-        If getExeName = appAliases(I).key Then
-            getExeName = appAliases(I).value
-            Exit Function
-        End If
-    Next I
-    
-    If Len(getExeName) > 0 Then
-        If Not Right(getExeName, 4) = ".exe" Then
-            getExeName = getExeName & ".exe"
-        End If
-    End If
-End Function
-
-
 Function isAbsolute(path As String) As Boolean
 Dim firstChar As String, secondChar As String
 
@@ -131,7 +79,7 @@ Function delegateArguments(key As String, Optional separator As String = " ") As
 Dim I As Integer
 Dim argTokens As MapEntry
 Dim argSnippet As String
-
+    
     For I = 1 To UBound(rawCmdArguments)
         If rawCmdArguments(I) = "-" & key Then
             argTokens = tokenizeKeyValue(rawCmdArguments(I + 1))
@@ -160,7 +108,7 @@ Dim equalPos As Long
 
     equalPos = InStr(1, match, delimiter, vbTextCompare)
     If equalPos <> 0 Then
-        result.key = trimAll(Left(match, equalPos - 1))
+        result.key = trimAll(left(match, equalPos - 1))
         result.value = trimAll(Mid(match, equalPos + 1))
     Else
         result.key = match
@@ -186,7 +134,7 @@ AA:
         ch = Mid$(str, I, 1)
         If ch <> " " And ch <> vbTab Then Exit For
     Next I
-    trimAll = Left$(str, I)
+    trimAll = left$(str, I)
     
 End Function
 
@@ -211,7 +159,7 @@ Sub loadEffectiveSettings()
     If siteCfgFile = "" Then
         siteCfgFile = getSiteCfgDefaultName
     End If
-    If loadFileSettings(appCfgFile, siteSettings) < 0 Then
+    If loadFileSettings(siteCfgFile, siteSettings) < 0 Then
         fatalError "Ошибка при загрузке файла конфигурации рабочего места (siteCfgFile)"
     End If
 End Sub
@@ -273,7 +221,7 @@ Function getAppCfgDefaultName() As String
 End Function
 
 Function getSiteCfgDefaultName() As String
-    getSiteCfgDefaultName = App.path & "\..\site.cfg"
+    getSiteCfgDefaultName = App.path & "\site.cfg"
 End Function
 
 Function getCurrentSetting(key As String, ByRef curSettings() As MapEntry) As Variant
@@ -396,7 +344,7 @@ Dim value As String
 End Function
 
 Function isKey(arg As String) As Boolean
-    If Left(arg, 1) = "-" Then
+    If left(arg, 1) = "-" Then
         isKey = True
     Else
         isKey = False
@@ -449,3 +397,15 @@ Dim curSettings() As MapEntry, curCfgFile As String
 End Sub
 
 
+Function stripPath(myFile As String) As String
+Dim I As Integer
+Dim sz As Integer
+    sz = Len(myFile)
+    For I = sz - 1 To 1 Step -1
+        If Mid(myFile, I, 1) = "\" Then
+            stripPath = Mid(myFile, I + 1)
+            Exit Function
+        End If
+    Next I
+    stripPath = myFile
+End Function

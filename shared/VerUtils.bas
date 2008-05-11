@@ -27,6 +27,24 @@ Public Declare Sub CopyMemoryFromPointer Lib "kernel32" _
         Alias "RtlMoveMemory" (Destination As Any, _
         ByVal Source As Long, ByVal length As Long)
 
+
+'--------------Shell API and Constants----------
+Private Const WAIT_FAILED = -1&
+Private Const WAIT_OBJECT_0 = 0
+Private Const WAIT_ABANDONED = &H80&
+Private Const WAIT_ABANDONED_0 = &H80&
+Private Const WAIT_TIMEOUT = &H102&
+Private Const INFINITE = &HFFFFFFFF       '  Infinite timeout
+Private Const NORMAL_PRIORITY_CLASS = &H20
+Private Const SYNCHRONIZE = &H100000
+
+Private Declare Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)
+Private Declare Function WaitForInputIdle Lib "user32" (ByVal hProcess As Long, ByVal dwMilliseconds As Long) As Long
+Private Declare Function CloseHandle Lib "kernel32" (ByVal hObject As Long) As Long
+Private Declare Function WaitForSingleObject Lib "kernel32" (ByVal hHandle As Long, ByVal dwMilliseconds As Long) As Long
+Private Declare Function OpenProcess Lib "kernel32" (ByVal dwDesiredAccess As Long, ByVal bInheritHandle As Long, ByVal dwProcessId As Long) As Long
+
+
 Type VS_VERSIONINFO
   wLength As Integer
   wValueLength As Integer
@@ -55,12 +73,10 @@ Type VS_FIXEDFILEINFO
 End Type
 
 
+
 Function GetDllVersion(ByVal supFile As String, _
-                       ByRef loadpath As String, _
-                       ByRef maj As Long, _
-                       ByRef min As Long, _
-                       ByRef rev As Long, _
-                       ByRef build As Long) As Boolean
+                    ByRef info As VersionInfo _
+                    ) As Boolean
 '---------------------------------------------------------------
 '   This function uses the supFile parameter to do a dynamic
 '   load of the dll name.  Once loaded, the version resource
@@ -78,6 +94,12 @@ Function GetDllVersion(ByVal supFile As String, _
 Dim hDll As Long
 Dim retval As Long
 
+Dim loadpath As String
+Dim maj As Long
+Dim min As Long
+Dim rev As Long
+Dim build As Long
+
 maj = -1: min = -1: rev = -1: build = -1
 
 GetDllVersion = False           '-- pessimistic view
@@ -91,7 +113,7 @@ If (hDll) Then
         '-- make sure there is a null(0)
         If (InStr(tmpPath, Chr$(0)) > 0) Then
             '-- trim the returned string
-            loadpath = Left$(tmpPath, InStr(tmpPath, Chr$(0)) - 1)
+            loadpath = left$(tmpPath, InStr(tmpPath, Chr$(0)) - 1)
         End If
     End If
     '-- find the version resource
@@ -140,6 +162,7 @@ If (hDll) Then
                     rev = fInfo.dwFileVersionLS / 65535
                     build = fInfo.dwFileVersionLS And &H7FFF
                     GetDllVersion = True    '-- SUCCESS!!!
+                    info.maj = maj: info.min = min: info.rev = rev: info.bld = build: info.path = loadpath
                 End If
             End If
         End If
@@ -147,5 +170,163 @@ If (hDll) Then
     '-- unload the library instance count...
     FreeLibrary (hDll)
 End If
+End Function
+
+
+
+'Shell and wait for a process to finish
+
+'One of the limitation of using the Shell function is that it is asynchronous. Below are a couple of different methods of shelling processes and waiting until they are finished (or initialised):
+
+
+'Purpose   :    Shells a process synchronised i.e. Holds execution until application has closed.
+'Inputs    :    sCommandLine        =   The Command line to run the application e.g. "Notepad.exe"
+'               State               =   The Window State to run of the shelled program (A Long)
+'Outputs   :    Returns the Process Handle
+'Notes     :    Have noticed side effects. Other applications like Internet Explorer seem to be effected by this.
+
+Function ShellAndHold(sCommandLine As String, Optional lState As Long = vbNormalFocus) As Long
+    Dim lRetVal As Long, FileToOpen As String
+    
+    'Check to see that the file exists
+    If FileExists(sCommandLine) Then
+        'Add double quotes around the path (otherwise you can't use spaces in the path)
+        If left$(sCommandLine, 1) <> Chr(34) Then
+            sCommandLine = Chr(34) & sCommandLine
+        End If
+        If right$(sCommandLine, 1) <> Chr(34) Then
+            sCommandLine = sCommandLine & Chr(34)
+        End If
+    End If
+    
+    'Start the shell
+    lRetVal = Shell(sCommandLine, lState)
+    'Open the process
+    ShellAndHold = OpenProcess(SYNCHRONIZE, False, lRetVal)
+    
+    'Wait for the process to complete
+    lRetVal = WaitForSingleObject(ShellAndHold, INFINITE)
+    lRetVal = CloseHandle(ShellAndHold)
+End Function
+
+
+'Purpose   :    Holds execution until application has closed.
+'Inputs    :    sFilePath       =   The path to the application to run e.g. "Notepad.exe"
+'               [sCommandLine]  =   Any command line arguments
+'               [lState]        =   The Window State to run of the shelled program (A Long)
+'               [lMaxTimeOut]   =   The maximum amount of time to wait for the process to finish (in secs).
+'                                   -1 = infinate
+'Outputs   :    Returns the True if failed open a process or complete within the specified timeout.
+'Notes     :    Similiar to ShellAndHold, but will not get any 'spiking' effects using this method.
+
+
+Function ShellAndWait(sFilePath As String, Optional sCommandLine, Optional lState As VbAppWinStyle = vbNormalFocus, Optional lMaxTimeOut As Long = -1) As Boolean
+    Dim lRetVal As Long, siStartTime As Single, lProcID As Long
+
+    'Check to see that the file exists
+    If FileExists(sFilePath) Then
+        'Add double quotes around the path (otherwise you can't use spaces in the path)
+        If left$(sFilePath, 1) <> Chr(34) Then
+            sFilePath = Chr(34) & sFilePath
+        End If
+        If right$(sFilePath, 1) <> Chr(34) Then
+            sFilePath = sFilePath & Chr(34)
+        End If
+    End If
+    
+    'Start the shell
+    lRetVal = Shell(Trim$(sFilePath + " " + sCommandLine), lState)
+    'Open the process
+    lProcID = OpenProcess(SYNCHRONIZE, True, lRetVal)
+    
+    siStartTime = Timer
+    Do
+        lRetVal = WaitForSingleObject(lProcID, 0)
+        If lRetVal = WAIT_OBJECT_0 Then
+            'Finished process
+            lRetVal = CloseHandle(lProcID)
+            ShellAndWait = False
+            Exit Do
+        ElseIf lRetVal = WAIT_FAILED Then
+            lRetVal = CloseHandle(lProcID)
+            'Failed to open process
+            ShellAndWait = True
+            Exit Do
+        End If
+        Sleep 100
+        If lMaxTimeOut > 0 Then
+            'Check timeout has not been exceeded
+            If siStartTime + lMaxTimeOut < Timer Then
+                'Failed, timeout exceeded
+                lRetVal = CloseHandle(lProcID)
+                ShellAndWait = True
+            End If
+        End If
+    Loop
+End Function
+
+
+'Purpose   :    Holds execution until application has finished opening
+'Inputs    :    sCommandLine     =   The Command line to run the application e.g. "Notepad.exe"
+'               lState           =   The Window State to run of the shelled program (A Long)
+'Outputs   :    Returns the Process Handle
+'Notes     :    Use this when you want to wait for an application to finishing opening before proceeding
+'               The side effects mentioned in ShellAndHold will be negligible since the most applications
+'               load in under 5 seconds.
+
+
+Function ShellAndWaitReady(sCommandLine As String, Optional lState As Long = vbNormalFocus) As Long
+    Dim lhProc As Long
+    
+    If left$(sCommandLine, 1) <> Chr(34) Then
+        sCommandLine = Chr(34) & sCommandLine
+    End If
+    If right$(sCommandLine, 1) <> Chr(34) Then
+        sCommandLine = sCommandLine & Chr(34)
+    End If
+    lhProc = Shell(sCommandLine, lState)
+    'Wait for the process to initialize
+    Call WaitForInputIdle(lhProc, INFINITE)
+    'Return the handle
+    ShellAndWaitReady = lhProc
+End Function
+
+
+'Purpose     :  Checks if a file exists
+'Inputs      :  sFilePathName                   The path and file name e.g. "C:\Autoexec.bat"
+'Outputs     :  Returns True if the file exists
+
+
+Function FileExists(sFilePathName As String) As Boolean
+    
+    On Error GoTo ErrFailed
+    If Len(sFilePathName) Then
+        If (GetAttr(sFilePathName) And vbDirectory) < 1 Then
+            'File Exists
+            FileExists = True
+        End If
+    End If
+    Exit Function
+    
+ErrFailed:
+    'File Exists
+    FileExists = False
+    On Error GoTo 0
+End Function
+
+'Purpose     :  Converts a File Name and Path to a Path
+'Inputs      :  sFilePathName                   The path and file name e.g. "C:\Autoexec.bat"
+'Outputs     :  Returns the path
+
+
+Function PathFileToPath(sFilePathName As String) As String
+    Dim ThisChar As Long
+
+    For ThisChar = 0 To Len(sFilePathName) - 1
+        If Mid$(sFilePathName, Len(sFilePathName) - ThisChar, 1) = "\" Then
+            PathFileToPath = left$(sFilePathName, Len(sFilePathName) - ThisChar)
+            Exit For
+        End If
+    Next
 End Function
 

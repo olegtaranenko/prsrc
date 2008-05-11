@@ -283,7 +283,7 @@ If maxi < 1 Then
     MsgBox "мало параметров для п\п byErrSqlGetValues()"
     Exit Function
 End If
-str = CStr(val(0)): c = Left$(str, 1)
+str = CStr(val(0)): c = left$(str, 1)
 If c = "W" Then str = Mid$(str, 2)
 Set tabl = myOpenRecordSet(str, CStr(val(1)), dbOpenForwardOnly) 'dbOpenDynaset)$#$
 'If tabl Is Nothing Then Exit Function
@@ -488,7 +488,7 @@ End Function
 
 'год ставит на первое место, а день на последнее - для правильной сортировки
 Function yymmdd(dateStr As String) As String
-yymmdd = Right$(dateStr, 2) & "." & Mid$(dateStr, 4, 2) & "." & Left$(dateStr, 2)
+yymmdd = right$(dateStr, 2) & "." & Mid$(dateStr, 4, 2) & "." & left$(dateStr, 2)
 End Function
 
 Function getSystemField(field As String) As Variant
@@ -566,7 +566,7 @@ For I = 1 To Len(str)
     getNumFromStr = Mid$(str, I, 1)
     If Not IsNumeric(getNumFromStr) Then Exit For
 Next I
-gNzak = Left$(str, I - 1)
+gNzak = left$(str, I - 1)
 
 End Function
 '$odbc10$
@@ -720,7 +720,7 @@ Sub textBoxInGridCell(tb As TextBox, Grid As MSFlexGrid)
     tb.Width = Grid.CellWidth
 '    tb.Text = Grid.TextMatrix(mousRow, mousCol)
     tb.Text = Grid.TextMatrix(Grid.row, Grid.col)
-    tb.Left = Grid.CellLeft + Grid.Left
+    tb.left = Grid.CellLeft + Grid.left
     tb.Top = Grid.CellTop + Grid.Top
     tb.SelStart = 0
     tb.SelLength = Len(tb.Text)
@@ -796,7 +796,7 @@ Dim I As Integer
     Else
         lb.Top = Grid.CellTop + Grid.Top - lb.Height + Grid.CellHeight
     End If
-    lb.Left = Grid.CellLeft + Grid.Left
+    lb.left = Grid.CellLeft + Grid.left
     lb.ListIndex = 0
     If sel <> "" Then
         For I = 0 To lb.ListCount - 1 '
@@ -863,7 +863,7 @@ ReDim Preserve strA(Grid.Cols + 1)
 For r = 0 To Grid.rows - 1
     For c = 1 To Grid.Cols - 1
         str = Grid.TextMatrix(r, c) '=' - наверно зарезервирован для ввода формул
-        If Left$(str, 1) = "=" Then str = "." & str
+        If left$(str, 1) = "=" Then str = "." & str
         strA(c - 1) = str
     Next c
    .Range(.Cells(begRow + r, 1), .Cells(begRow + r, Grid.Cols)).FormulaArray = strA
@@ -941,6 +941,7 @@ End If
 baseOpen
 'Set wrkDefault = DBEngine.Workspaces(0) ' для орг-ии транзакций
 
+mainTitle = getMainTitle
 
 If otlad = "otlaD" Then '
   webSvodkaPath = "C:\WINDOWS\TEMP\svodkaW."
@@ -955,7 +956,6 @@ Else
 '    Else                    '
 '        I = 0               'в цеху всегда рабочая
 '    End If                  '
-'    mainTitle = "         " & base(I) '$$2
 '    cfg.baseOpen
 '    mainTitle = "              New"
 End If
@@ -1018,7 +1018,7 @@ If dostup = "a" Or dostup = "m" Or dostup = "" Or dostup = "b" Then
     Input #2, str
     I = InStr(str, vbTab)
     If I < 9 Then GoTo ENlog
-    str1 = Left$(str, I - 1)
+    str1 = left$(str, I - 1)
     If Not IsDate(str1) Then GoTo ENlog
     If DateDiff("d", str1, curDate) <= 7 Then Print #3, str ' удаляем > 7ми дней давности
  Wend
@@ -1418,7 +1418,7 @@ Dim strNow As String, DateFromNum As String, dNow As Date
 strNow = Format(Now, "dd.mm.yyyy")
 curDate = strNow 'без часов и минут
 dNow = strNow
-strNow = Right$(Format(curDate, "yymmdd"), 5)
+strNow = right$(Format(curDate, "yymmdd"), 5)
  
 befDays = 0
 
@@ -1441,7 +1441,7 @@ If tbSystem!resursLock = "nextDay" Then
 Else
  str = tbSystem!lastPrivatNum
  If Len(str) > 6 Then
-    DateFromNum = Mid$(str, 4, 2) & "." & Mid$(str, 2, 2) & ".200" & Left$(str, 1)
+    DateFromNum = Mid$(str, 4, 2) & "." & Mid$(str, 2, 2) & ".200" & left$(str, 1)
     tmpDate = DateFromNum
     
     If tmpDate < dNow Then
@@ -1777,8 +1777,8 @@ If year = "" Then
  str = Reports.tbStartDate.Text
  Report.laHeader.Caption = "Статистика посещений фирм за период с " & str & _
                 " по " & Reports.tbEndDate.Text
- nMonth = Left$(str, 2)
- nYear = Right$(str, 4)
+ nMonth = left$(str, 2)
+ nYear = right$(str, 4)
  mCount = DateDiff("m", str, Reports.tbEndDate.Text) + 1
 
  str = "|<Название фирмы|^М |Kатегория|Скидки"
@@ -2029,7 +2029,7 @@ Else
 '        MsgBox "неверный формат даты", , "Ошибка"
 '    Else
         'str = Left$(str, 6) & "20" & Mid$(str, 7, 2)
-        str = "20" & Right$(str, 2) & "-" & Mid$(str, 4, 2) & "-" & Left$(str, 2)
+        str = "20" & right$(str, 2) & "-" & Mid$(str, 4, 2) & "-" & left$(str, 2)
         If IsDate(str) Then
             tmpDate = str
             If fryDays = "" Then
@@ -2108,7 +2108,7 @@ sql = "UPDATE " & table & " SET " & table & "." & field & _
 AA:
 'MsgBox "sql = " & sql
 
-If Left$(myErrCod, 1) = "W" Then
+If left$(myErrCod, 1) = "W" Then
     myErrCod = Mid$(myErrCod, 2)
     ValueToTableField = myExecute(myErrCod, sql, 0) 'не сообщать если не WHERE
 Else
@@ -2133,7 +2133,7 @@ End If
 If Frm.Grid5.TextMatrix(v_row, prType) = "изделие" Then
     str = Frm.Grid5.TextMatrix(v_row, prName) '
     I = InStr(str, "/")
-    prExt = 0: If I > 1 Then prExt = Left$(str, I - 1)   'номер поставки
+    prExt = 0: If I > 1 Then prExt = left$(str, I - 1)   'номер поставки
     gProductId = Frm.Grid5.TextMatrix(v_row, prId)
 Else
     gNomNom = Frm.Grid5.TextMatrix(v_row, prId)

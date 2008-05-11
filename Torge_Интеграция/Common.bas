@@ -85,7 +85,7 @@ Public startDate As String, endDate As String
 Function dateBasic2Sybase(aDay As String)
 Dim dt_str As String
 
-dt_str = "20" & Right$(aDay, 2) & "-" & Mid$(aDay, 4, 2) & "-" & Left$(aDay, 2)
+dt_str = "20" & right$(aDay, 2) & "-" & Mid$(aDay, 4, 2) & "-" & left$(aDay, 2)
 dateBasic2Sybase = CDate(dt_str)
 
 End Function
@@ -94,7 +94,7 @@ End Function
 Function dateSybase2Basic(aDay As String)
 Dim dt_str As String
 
-dt_str = Left(aDay, 4) & "-" & Mid(aDay, 5, 2) & "-" & Right(aDay, 2)
+dt_str = left(aDay, 4) & "-" & Mid(aDay, 5, 2) & "-" & right(aDay, 2)
 dateSybase2Basic = dt_str
 
 End Function
@@ -249,7 +249,7 @@ End Sub
 Sub GridToExcel(Grid As MSFlexGrid, Optional title As String = "")
 
 Dim objExel As Excel.Application, c As Long, r As Long
-Dim I As Integer, strA() As String, begRow As Integer, str As String
+Dim i As Integer, strA() As String, begRow As Integer, str As String
 
 
 begRow = 3
@@ -266,7 +266,7 @@ ReDim Preserve strA(Grid.Cols + 1)
 For r = 0 To Grid.Rows - 1
     For c = 1 To Grid.Cols - 1
         str = Grid.TextMatrix(r, c) '=' - наверно зарезервирован для ввода формул
-        If Left$(str, 1) = "=" Then str = ":" & str
+        If left$(str, 1) = "=" Then str = ":" & str
         strA(c - 1) = str
     Next c
    .Range(.Cells(begRow + r, 1), .Cells(begRow + r, Grid.Cols)).FormulaArray = strA
@@ -291,7 +291,7 @@ Dim v_yyyy As Integer
         v_dd = CInt(dt)
         dt = ""
     Else
-        v_dd = CInt(Left(dt, dotPos))
+        v_dd = CInt(left(dt, dotPos))
         dt = Mid(dt, dotPos + 1)
     End If
     
@@ -301,7 +301,7 @@ Dim v_yyyy As Integer
             v_mm = CInt(dt)
             dt = ""
         Else
-            v_mm = CInt(Left(dt, dotPos))
+            v_mm = CInt(left(dt, dotPos))
             dt = Mid(dt, dotPos + 1)
         End If
     Else
@@ -365,7 +365,7 @@ Else
 '        MsgBox "неверный формат даты", , "Ошибка"
 '    Else
         'str = Left$(str, 6) & "20" & Mid$(str, 7, 2)
-        str = "20" & Right$(str, 2) & "-" & Mid$(str, 4, 2) & "-" & Left$(str, 2)
+        str = "20" & right$(str, 2) & "-" & Mid$(str, 4, 2) & "-" & left$(str, 2)
         If IsDate(str) Then
             tmpDate = str
             If fryDays = "" Then
@@ -429,7 +429,7 @@ findExValInCol = -1
 End Function
 
 Sub listBoxInGridCell(lb As ListBox, Grid As MSFlexGrid, Optional sel As String = "")
-Dim I As Integer, l As Long
+Dim i As Integer, l As Long
     l = 195 * lb.ListCount + 100 ' Для больших списков
     If l > Grid.Height / 2 + 500 Then l = Grid.Height / 2 + 500
     lb.Height = l
@@ -439,17 +439,17 @@ Dim I As Integer, l As Long
     Else
         lb.Top = Grid.CellTop + Grid.Top - lb.Height + Grid.CellHeight
     End If
-    lb.Left = Grid.CellLeft + Grid.Left
+    lb.left = Grid.CellLeft + Grid.left
     lb.ListIndex = 0
     If sel <> "" Then
-        For I = 0 To lb.ListCount - 1 '
-            If Grid.Text = lb.List(I) Then
+        For i = 0 To lb.ListCount - 1 '
+            If Grid.Text = lb.List(i) Then
 '                noClick = True
-                lb.ListIndex = I 'вызывает ложное onClick
+                lb.ListIndex = i 'вызывает ложное onClick
 '                noClick = False
                 Exit For
             End If
-        Next I
+        Next i
     End If
 
     lb.Visible = True
@@ -479,12 +479,14 @@ End Function
 
 
 Sub Main()
-Dim str As String, I As Integer
+Dim str As String, i As Integer
 
 If App.PrevInstance = True Then
     MsgBox "Программа уже запущена", , "Error"
     End
 End If
+
+mainTitle = getMainTitle
 
 
 Set sc = CreateObject("ScriptControl")
@@ -577,7 +579,7 @@ End Function
 
 Function ValueToGuideSourceField(myErrCod As String, value As String, _
 field As String, Optional passErr As Integer = -11111) As Integer
-Dim I As Integer
+Dim i As Integer
 
 ValueToGuideSourceField = False
 sql = "UPDATE sGuideSource SET [" & field & _
@@ -689,12 +691,12 @@ If noOpen = "" Then tbNomenk.Close
 End Function
 
 Sub rowViem(numRow As Long, Grid As MSFlexGrid)
-Dim I As Integer
+Dim i As Integer
 
-I = Grid.Height \ Grid.RowHeight(1) - 1 ' столько умещается строк
-I = numRow - I \ 2 ' в центр
-If I < 1 Then I = 1
-Grid.TopRow = I
+i = Grid.Height \ Grid.RowHeight(1) - 1 ' столько умещается строк
+i = numRow - i \ 2 ' в центр
+If i < 1 Then i = 1
+Grid.TopRow = i
 
 End Sub
 
@@ -727,7 +729,7 @@ End Sub
 
 
 Sub backNomenk()
-Dim q As Single, I As Integer, str As String, n As Integer, rr As Integer
+Dim q As Single, i As Integer, str As String, n As Integer, rr As Integer
 
 wrkDefault.BeginTrans
 
@@ -773,17 +775,17 @@ ReDim QQ(0)
 End Sub
 
 Sub getDocExtNomFromStr(nom As String)
-Dim I As Integer
-I = InStr(nom, "/")
-If I = 0 Then
+Dim i As Integer
+i = InStr(nom, "/")
+If i = 0 Then
     numDoc = nom
     numExt = 254
 'ElseIf i = Len(nom) Then
 '    numDoc = Left$(nom, i - 1)
 '    numExt = 0
 Else
-    numDoc = Left$(nom, I - 1)
-    numExt = Mid$(nom, I + 1)
+    numDoc = left$(nom, i - 1)
+    numExt = Mid$(nom, i + 1)
 End If
 End Sub
 
@@ -937,7 +939,7 @@ End Sub
 'м. задать константу "1" и принять ее в i. Тогда если i=0 то была Err Where
 '$odbc15$
 Function byErrSqlGetValues(ParamArray val() As Variant) As Boolean
-Dim tabl As Recordset, I As Integer, maxi As Integer, str As String, c As String
+Dim tabl As Recordset, i As Integer, maxi As Integer, str As String, c As String
 
 byErrSqlGetValues = False
 maxi = UBound(val())
@@ -946,13 +948,13 @@ If maxi < 1 Then
     MsgBox "мало параметров для п\п byErrSqlGetValues()"
     Exit Function
 End If
-str = CStr(val(0)): c = Left$(str, 1)
+str = CStr(val(0)): c = left$(str, 1)
 If c = "W" Then str = Mid$(str, 2)
 Set tabl = myOpenRecordSet(str, CStr(val(1)), dbOpenForwardOnly) 'dbOpenDynaset)$#$
 'If tabl Is Nothing Then Exit Function
 If tabl.BOF Then
     If c = "W" Then
-        For I = 2 To maxi: val(I) = 0: Next I
+        For i = 2 To maxi: val(i) = 0: Next i
         GoTo EN1
     Else
 '        msgOfEnd CStr(val(0)), "Нет записей удовлетворяющих Where."
@@ -962,17 +964,17 @@ If tabl.BOF Then
     End If
 End If
 'tabl.MoveFirst $#$
-For I = 2 To maxi
-    str = TypeName(val(I))
+For i = 2 To maxi
+    str = TypeName(val(i))
     If (str = "Single" Or str = "Integer" Or str = "Long" Or str = "Double") _
-    And IsNull(tabl.fields(I - 2)) Then
-        val(I) = 0
-    ElseIf str = "String" And IsNull(tabl.fields(I - 2)) Then
-        val(I) = ""
+    And IsNull(tabl.fields(i - 2)) Then
+        val(i) = 0
+    ElseIf str = "String" And IsNull(tabl.fields(i - 2)) Then
+        val(i) = ""
     Else
-        val(I) = tabl.fields(I - 2)
+        val(i) = tabl.fields(i - 2)
     End If
-Next I
+Next i
 EN1:
 byErrSqlGetValues = True
 EN2:
@@ -1017,11 +1019,11 @@ End Function
 
 
 Function sumInGridCol(Grid As MSFlexGrid, col As Long) As Single
-Dim v, I As Integer
+Dim v, i As Integer
     
     sumInGridCol = 0
-    For I = Grid.row To Grid.RowSel
-        v = Grid.TextMatrix(I, col)
+    For i = Grid.row To Grid.RowSel
+        v = Grid.TextMatrix(i, col)
         If Not IsNumeric(v) Then
             v = 0
         Else
@@ -1030,13 +1032,13 @@ Dim v, I As Integer
             End If
         End If
         
-    Next I
+    Next i
 End Function
 
 
 Public Sub quickSort(varArray As Variant, _
  Optional lngLeft As Long = dhcMissing, Optional lngRight As Long = dhcMissing)
-Dim I As Long, j As Long, varTestVal As Variant, lngMid As Long
+Dim i As Long, j As Long, varTestVal As Variant, lngMid As Long
 
     If lngLeft = dhcMissing Then lngLeft = LBound(varArray)
     If lngRight = dhcMissing Then lngRight = UBound(varArray)
@@ -1044,28 +1046,28 @@ Dim I As Long, j As Long, varTestVal As Variant, lngMid As Long
     If lngLeft < lngRight Then
         lngMid = (lngLeft + lngRight) \ 2
         varTestVal = varArray(lngMid)
-        I = lngLeft
+        i = lngLeft
         j = lngRight
         Do
-            Do While varArray(I) < varTestVal
-                I = I + 1
+            Do While varArray(i) < varTestVal
+                i = i + 1
             Loop
             Do While varArray(j) > varTestVal
                 j = j - 1
             Loop
-            If I <= j Then
-                Call SwapElements(varArray, I, j)
-                I = I + 1
+            If i <= j Then
+                Call SwapElements(varArray, i, j)
+                i = i + 1
                 j = j - 1
             End If
-        Loop Until I > j
+        Loop Until i > j
         ' To optimize the sort, always sort the
         ' smallest segment first.
         If j <= lngMid Then
             Call quickSort(varArray, lngLeft, j)
-            Call quickSort(varArray, I, lngRight)
+            Call quickSort(varArray, i, lngRight)
         Else
-            Call quickSort(varArray, I, lngRight)
+            Call quickSort(varArray, i, lngRight)
             Call quickSort(varArray, lngLeft, j)
         End If
     End If
@@ -1089,7 +1091,7 @@ Sub textBoxInGridCell(tb As TextBox, Grid As MSFlexGrid, Optional value As Strin
     Else
         tb.Text = value
     End If
-    tb.Left = Grid.CellLeft + Grid.Left
+    tb.left = Grid.CellLeft + Grid.left
     tb.Top = Grid.CellTop + Grid.Top
     tb.SelStart = 0
     tb.SelLength = Len(tb.Text)
