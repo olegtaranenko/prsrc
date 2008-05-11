@@ -285,7 +285,7 @@ End Sub
 Sub exitAll()
 If isOrders Then Unload Orders
 If isFindFirm Then Unload FindFirm
-myBase.Close
+'myBase.Close
 
 End Sub
 

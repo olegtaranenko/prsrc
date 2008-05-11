@@ -7,13 +7,8 @@ Private Const dhcMissing = -2 'нужна для quickSort
 Public sql As String, strWhere As String
 Public webProducts As String
 Public webNomenks As String
-Public base() As String         '$$2
-Public basePath() As String     '
-
-Public baseNamePath As String
 Public mainTitle As String
-Public myBase As Database
-Public wrkDefault As Workspace
+
 Public tbSystem As Recordset
 Public Table As Recordset
 Public tbNomenk As Recordset
@@ -249,7 +244,7 @@ End Sub
 Sub GridToExcel(Grid As MSFlexGrid, Optional title As String = "")
 
 Dim objExel As Excel.Application, c As Long, r As Long
-Dim i As Integer, strA() As String, begRow As Integer, str As String
+Dim I As Integer, strA() As String, begRow As Integer, str As String
 
 
 begRow = 3
@@ -429,7 +424,7 @@ findExValInCol = -1
 End Function
 
 Sub listBoxInGridCell(lb As ListBox, Grid As MSFlexGrid, Optional sel As String = "")
-Dim i As Integer, l As Long
+Dim I As Integer, l As Long
     l = 195 * lb.ListCount + 100 ' Для больших списков
     If l > Grid.Height / 2 + 500 Then l = Grid.Height / 2 + 500
     lb.Height = l
@@ -442,14 +437,14 @@ Dim i As Integer, l As Long
     lb.Left = Grid.CellLeft + Grid.Left
     lb.ListIndex = 0
     If sel <> "" Then
-        For i = 0 To lb.ListCount - 1 '
-            If Grid.Text = lb.List(i) Then
+        For I = 0 To lb.ListCount - 1 '
+            If Grid.Text = lb.List(I) Then
 '                noClick = True
-                lb.ListIndex = i 'вызывает ложное onClick
+                lb.ListIndex = I 'вызывает ложное onClick
 '                noClick = False
                 Exit For
             End If
-        Next i
+        Next I
     End If
 
     lb.Visible = True
@@ -479,15 +474,12 @@ End Function
 
 
 Sub Main()
-Dim str As String, i As Integer
+Dim str As String, I As Integer
 
 If App.PrevInstance = True Then
     MsgBox "Программа уже запущена", , "Error"
     End
 End If
-
-cfg.isLoad = False  '$$2
-If Not cfg.loadCfg Then End '$$2
 
 
 Set sc = CreateObject("ScriptControl")
@@ -502,6 +494,11 @@ ReDim DMCnomNom(0)
 
 
 CurDate = Now
+
+loadEffectiveSettingsApp
+baseOpen
+    sql = "create variable @manager varchar(20)"
+    If myExecute("##0.2", sql, 0) = 0 Then End
 
 AUTO.Show
 
@@ -569,7 +566,7 @@ End Function
 
 Function ValueToGuideSourceField(myErrCod As String, value As String, _
 field As String, Optional passErr As Integer = -11111) As Integer
-Dim i As Integer
+Dim I As Integer
 
 ValueToGuideSourceField = False
 sql = "UPDATE sGuideSource SET [" & field & _
@@ -681,12 +678,12 @@ If noOpen = "" Then tbNomenk.Close
 End Function
 
 Sub rowViem(numRow As Long, Grid As MSFlexGrid)
-Dim i As Integer
+Dim I As Integer
 
-i = Grid.Height \ Grid.RowHeight(1) - 1 ' столько умещается строк
-i = numRow - i \ 2 ' в центр
-If i < 1 Then i = 1
-Grid.TopRow = i
+I = Grid.Height \ Grid.RowHeight(1) - 1 ' столько умещается строк
+I = numRow - I \ 2 ' в центр
+If I < 1 Then I = 1
+Grid.TopRow = I
 
 End Sub
 
@@ -719,7 +716,7 @@ End Sub
 
 
 Sub backNomenk()
-Dim q As Single, i As Integer, str As String, n As Integer, rr As Integer
+Dim q As Single, I As Integer, str As String, n As Integer, rr As Integer
 
 wrkDefault.BeginTrans
 
@@ -765,17 +762,17 @@ ReDim QQ(0)
 End Sub
 
 Sub getDocExtNomFromStr(nom As String)
-Dim i As Integer
-i = InStr(nom, "/")
-If i = 0 Then
+Dim I As Integer
+I = InStr(nom, "/")
+If I = 0 Then
     numDoc = nom
     numExt = 254
 'ElseIf i = Len(nom) Then
 '    numDoc = Left$(nom, i - 1)
 '    numExt = 0
 Else
-    numDoc = Left$(nom, i - 1)
-    numExt = Mid$(nom, i + 1)
+    numDoc = Left$(nom, I - 1)
+    numExt = Mid$(nom, I + 1)
 End If
 End Sub
 
@@ -929,7 +926,7 @@ End Sub
 'м. задать константу "1" и принять ее в i. Тогда если i=0 то была Err Where
 '$odbc15$
 Function byErrSqlGetValues(ParamArray val() As Variant) As Boolean
-Dim tabl As Recordset, i As Integer, maxi As Integer, str As String, c As String
+Dim tabl As Recordset, I As Integer, maxi As Integer, str As String, c As String
 
 byErrSqlGetValues = False
 maxi = UBound(val())
@@ -944,7 +941,7 @@ Set tabl = myOpenRecordSet(str, CStr(val(1)), dbOpenForwardOnly) 'dbOpenDynaset)
 'If tabl Is Nothing Then Exit Function
 If tabl.BOF Then
     If c = "W" Then
-        For i = 2 To maxi: val(i) = 0: Next i
+        For I = 2 To maxi: val(I) = 0: Next I
         GoTo EN1
     Else
 '        msgOfEnd CStr(val(0)), "Нет записей удовлетворяющих Where."
@@ -954,17 +951,17 @@ If tabl.BOF Then
     End If
 End If
 'tabl.MoveFirst $#$
-For i = 2 To maxi
-    str = TypeName(val(i))
+For I = 2 To maxi
+    str = TypeName(val(I))
     If (str = "Single" Or str = "Integer" Or str = "Long" Or str = "Double") _
-    And IsNull(tabl.fields(i - 2)) Then
-        val(i) = 0
-    ElseIf str = "String" And IsNull(tabl.fields(i - 2)) Then
-        val(i) = ""
+    And IsNull(tabl.fields(I - 2)) Then
+        val(I) = 0
+    ElseIf str = "String" And IsNull(tabl.fields(I - 2)) Then
+        val(I) = ""
     Else
-        val(i) = tabl.fields(i - 2)
+        val(I) = tabl.fields(I - 2)
     End If
-Next i
+Next I
 EN1:
 byErrSqlGetValues = True
 EN2:
@@ -1009,11 +1006,11 @@ End Function
 
 
 Function sumInGridCol(Grid As MSFlexGrid, col As Long) As Single
-Dim v, i As Integer
+Dim v, I As Integer
     
     sumInGridCol = 0
-    For i = Grid.row To Grid.RowSel
-        v = Grid.TextMatrix(i, col)
+    For I = Grid.row To Grid.RowSel
+        v = Grid.TextMatrix(I, col)
         If Not IsNumeric(v) Then
             v = 0
         Else
@@ -1022,13 +1019,13 @@ Dim v, i As Integer
             End If
         End If
         
-    Next i
+    Next I
 End Function
 
 
 Public Sub quickSort(varArray As Variant, _
  Optional lngLeft As Long = dhcMissing, Optional lngRight As Long = dhcMissing)
-Dim i As Long, j As Long, varTestVal As Variant, lngMid As Long
+Dim I As Long, j As Long, varTestVal As Variant, lngMid As Long
 
     If lngLeft = dhcMissing Then lngLeft = LBound(varArray)
     If lngRight = dhcMissing Then lngRight = UBound(varArray)
@@ -1036,28 +1033,28 @@ Dim i As Long, j As Long, varTestVal As Variant, lngMid As Long
     If lngLeft < lngRight Then
         lngMid = (lngLeft + lngRight) \ 2
         varTestVal = varArray(lngMid)
-        i = lngLeft
+        I = lngLeft
         j = lngRight
         Do
-            Do While varArray(i) < varTestVal
-                i = i + 1
+            Do While varArray(I) < varTestVal
+                I = I + 1
             Loop
             Do While varArray(j) > varTestVal
                 j = j - 1
             Loop
-            If i <= j Then
-                Call SwapElements(varArray, i, j)
-                i = i + 1
+            If I <= j Then
+                Call SwapElements(varArray, I, j)
+                I = I + 1
                 j = j - 1
             End If
-        Loop Until i > j
+        Loop Until I > j
         ' To optimize the sort, always sort the
         ' smallest segment first.
         If j <= lngMid Then
             Call quickSort(varArray, lngLeft, j)
-            Call quickSort(varArray, i, lngRight)
+            Call quickSort(varArray, I, lngRight)
         Else
-            Call quickSort(varArray, i, lngRight)
+            Call quickSort(varArray, I, lngRight)
             Call quickSort(varArray, lngLeft, j)
         End If
     End If

@@ -137,37 +137,7 @@ Dim str  As String
     cmExit.Visible = False
     tbEnable.Visible = False
     
-Dim i As Integer
-
-'If InStr(otlad, ":\") > 0 Then '$$2
-'    str = "\"
-'    If Right$(otlad, 1) = "\" Then str = ""
-'    baseNamePath = otlad & str & "dlsricN.mdb"
-'    webProducts = otlad & str & "Products"
-'    mainTitle = "    " & baseNamePath
-'    webNomenks = otlad & str & "Nomenks."
-If otlad = "work" Or otlad = "" Then '
-'    mainTitle = ""
-'   baseNamePath = "\\Server\D\!INSTAL!\EPILOG\RADIUS.V20\dlsricN.mdb"
-'    webProducts = "\\SERVER\C\WebServers\home\petmas.ru\mirror\files\Products."
-'    webNomenks = "\\Server\C\WebServers\home\petmas.ru\mirror\files\Nomenks."
-    webProducts = cfg.ProductsPath '$$2
-    webNomenks = cfg.NomenksPath '$$2
-'    mainTitle = "         " & base(cfg.curBaseInd) '$$2
-    cfg.baseOpen cfg.curBaseInd  '$$2
-'ElseIf otlad = "otlad" Then
-'    baseNamePath = "\\Server\D\!INSTAL!\EPILOG\RADIUS.V20\pitchN.mdb"
-'    webProducts = "Products."
-'    mainTitle = "Учебная"
-'    webNomenks = "Nomenks."
-Else '"otlaD"
-'   baseNamePath = "D:\VB_DIMA\dlsricN.mdb"
-    webProducts = "D:\VB_DIMA\Products"
-    webNomenks = "D:\VB_DIMA\Nomenks."
-'    mainTitle = baseNamePath
-'    mainTitle = "    otlad"
-    cfg.baseOpen '"C:\VB_DIMA\dlsricN.mdb"
-End If
+Dim I As Integer
 
 'On Error GoTo ERRb $$2
 '                                                                                                                                                                            Set myBase = OpenDatabase(baseNamePath, False, False, ";PWD=play")
@@ -199,20 +169,20 @@ If IsNull(begDate) Then End
 sql = "SELECT * From GuideManag WHERE Manag <>'not'  ORDER BY forSort;"
 Set Table = myOpenRecordSet("##03", sql, dbOpenForwardOnly)
 If Table Is Nothing Then myBase.Close: End
-i = 0: ReDim manId(0):
+I = 0: ReDim manId(0):
 Dim imax As Integer: imax = 0: ReDim Manag(0)
 While Not Table.EOF
     If LCase(Table!ForSort) <> "unused" Then
         str = Table!Manag
         If Table!ManagId <> 0 Then cbM.AddItem str
-        manId(i) = Table!ManagId
+        manId(I) = Table!ManagId
         If imax < Table!ManagId Then
             imax = Table!ManagId
             ReDim Preserve Manag(imax)
         End If
         Manag(Table!ManagId) = str
-        i = i + 1
-        ReDim Preserve manId(i):
+        I = I + 1
+        ReDim Preserve manId(I):
     End If
     Table.MoveNext
 Wend
@@ -224,11 +194,11 @@ ReDim Status(0)
 Set Table = myOpenRecordSet("##05", "GuideStatus", dbOpenForwardOnly)
 If Table Is Nothing Then myBase.Close: End
 'Table.MoveFirst
-i = 0 'макс индекс
+I = 0 'макс индекс
 While Not Table.EOF
-    If i < Table!StatusId Then
-        i = Table!StatusId
-        ReDim Preserve Status(i)
+    If I < Table!StatusId Then
+        I = Table!StatusId
+        ReDim Preserve Status(I)
     End If
     Status(Table!StatusId) = Table!Status
     Table.MoveNext
@@ -293,16 +263,15 @@ Private Sub Form_Load()
 'If InStr(Command(), ":\") > 0 Then '$$2
 '    otlad = Command()
 'Else
-If Len(Command()) > 4 Then
-    otlad = Left$(Command(), 5)
-End If
+otlad = getEffectiveSetting("otlad")
 
 If otlad = "otlaD" Then
     Me.BackColor = otladColor
 End If
 
+dostup = getEffectiveSetting("dostup")
 'If InStr(Command(), "       wkdh") <> 0 Then
-If Right$(Command(), 4) = "wkdh" Then
+If otlad = "otlaD" Then
     dostup = "a"
     nextWindow
     cbM.ListIndex = cbM.ListCount - 1
@@ -351,15 +320,15 @@ Private Sub tbEnable_KeyDown(KeyCode As Integer, Shift As Integer)
 End Sub
 
 Private Sub Timer1_Timer()
-Dim i As Long
+Dim I As Long
 Static sek As Integer
 
 'If sek > 32000 Then End
 sek = sek + 1
 If sek = 10 Then
   If isSinhro Then
-    i = DateDiff("s", tmpDate, Now()) - 1
-    laInform.Caption = "Синхронизация прошла успешно (коррекция  " & i & " сек.)"
+    I = DateDiff("s", tmpDate, Now()) - 1
+    laInform.Caption = "Синхронизация прошла успешно (коррекция  " & I & " сек.)"
   Else
     laInform.Caption = "Система не смогла синхронизировать часы!"
   End If
