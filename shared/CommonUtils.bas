@@ -1,4 +1,4 @@
-Attribute VB_Name = "Errors"
+Attribute VB_Name = "CommonUtils"
 Option Explicit
 
 Sub fatalError(msg As String)

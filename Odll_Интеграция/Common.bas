@@ -909,7 +909,7 @@ ReDim tmpL(0)
 'End If
 
 cfg.isLoad = False  '$$2
-loadEffectiveSettings
+loadEffectiveSettingsApp
 dostup = getEffectiveSetting("dostup")
 
 

@@ -11,7 +11,7 @@ Dim myFilename As String
 Dim failed As Boolean
 
 
-    loadEffectiveSettings
+    loadEffectiveSettingsCfg
 
     myFilename = getFullExeName()
     
@@ -28,7 +28,10 @@ Dim failed As Boolean
         fatalError "При запуске программы произошла ошибка. Обратитесь к администратору."
     End If
 
-    'exeHandle = Shell(myFilename & " " & getAppArguments, vbNormalFocus)
+    CmdLine = myFilename & " " & getAppArguments
+    setAndSave "app", "lastRun", CmdLine
+    
+    exeHandle = Shell(myFilename & " " & getAppArguments, vbNormalFocus)
     Debug.Print myFilename & getAppArguments
 End Sub
 

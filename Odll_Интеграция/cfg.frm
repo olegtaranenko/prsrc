@@ -383,14 +383,12 @@ Sub baseOpen()
 Dim str As String, dburl As String
     dburl = getEffectiveSetting("dbUrl")
     
-    If otlad = "otlaD" Then
-'        dburl = "dev_prior"
-        mainTitle = "    otlad"
-    Else
-'        dburl = "prior"
-        mainTitle = "Prior, build [324] от 18.04.2008"
+    If dburl = "" Then
+        fatalError "Необходимо исправить конфигурацию запуска программы." & vbCr & "Не установлено значение параметра dbUrl"
     End If
     
+On Error GoTo ERRb
+
     Set myBase = wrkDefault.OpenDatabase("Connection1", _
        dbDriverNoPrompt, False, _
        "ODBC;UID=dba;PWD=sql;DSN=" & dburl)
@@ -404,12 +402,8 @@ Dim str As String, dburl As String
 ERRb:
        
     If errorCodAndMsg("388", -100) Then '##388
-        MsgBox "Не обнаружен Сервер базы", , "Сообщите Администратору!"
-        End
+        fatalError "Проблемы с доступом к серверу базы данных." & vbCr & "dbUrl = " & dburl
     End If
-    
-    End
-    
 End Sub
 
 

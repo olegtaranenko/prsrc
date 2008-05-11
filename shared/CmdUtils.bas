@@ -216,12 +216,12 @@ Sub loadEffectiveSettings()
     End If
 End Sub
 
-Sub loadEffectiveSettingCfg()
+Sub loadEffectiveSettingsCfg()
     loadEffectiveSettings
     buildEffectiveSettings
 End Sub
 
-Sub loadEffectiveSettingApp()
+Sub loadEffectiveSettingsApp()
     loadEffectiveSettings
     buildEffectiveSettings
 End Sub
@@ -435,4 +435,17 @@ Dim sz As Integer, I As Integer
         End If
     Next I
 End Sub
+
+Sub setAndSave(scope As String, key As String, value As String)
+Dim curSettings() As MapEntry, curCfgFile As String
+
+    If scope = "app" Then
+        curSettings = appSettings
+        curCfgFile = appCfgFile
+    End If
+
+    setCurrentSetting curSettings, key, value
+    saveFileSettings curCfgFile, curSettings
+End Sub
+
 
