@@ -123,7 +123,10 @@ Option Explicit
 Dim isOn As Boolean, isSinhro As Boolean ', baseIsOpen As Boolean
 
 Sub nextWindow()
-Dim str  As String
+Dim str As String
+Dim I As Integer
+
+    
     cmSklad.Visible = True
     cmBook.Visible = True
     cmExit2.Visible = True
@@ -137,11 +140,6 @@ Dim str  As String
     cmExit.Visible = False
     tbEnable.Visible = False
     
-Dim I As Integer
-
-'On Error GoTo ERRb $$2
-'                                                                                                                                                                            Set myBase = OpenDatabase(baseNamePath, False, False, ";PWD=play")
-'Set myBase = OpenDatabase(baseNamePath)
 
 On Error GoTo 0
 begDate = getSystemField("begDate")

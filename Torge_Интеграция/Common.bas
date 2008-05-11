@@ -9,6 +9,12 @@ Public webProducts As String
 Public webNomenks As String
 Public mainTitle As String
 
+Public loginsPath As String
+Public SvodkaPath As String
+Public NomenksPath As String
+Public ProductsPath As String
+
+
 Public tbSystem As Recordset
 Public Table As Recordset
 Public tbNomenk As Recordset
@@ -495,6 +501,12 @@ ReDim DMCnomNom(0)
 CurDate = Now
 
 loadEffectiveSettingsApp
+
+webProducts = getEffectiveSetting("ProductsPath")
+webNomenks = getEffectiveSetting("NomenksPath")
+loginsPath = getEffectiveSetting("loginsPath")
+SvodkaPath = getEffectiveSetting("SvodkaPath")
+
 baseOpen
     sql = "create variable @manager varchar(20)"
     If myExecute("##0.2", sql, 0) = 0 Then End
