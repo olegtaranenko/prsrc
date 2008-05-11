@@ -3,14 +3,14 @@ Begin VB.Form Pribil
    BackColor       =   &H8000000A&
    BorderStyle     =   1  'Fixed Single
    Caption         =   "Реализация"
-   ClientHeight    =   6612
+   ClientHeight    =   6132
    ClientLeft      =   552
    ClientTop       =   9336
    ClientWidth     =   11424
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   6612
+   ScaleHeight     =   6132
    ScaleWidth      =   11424
    StartUpPosition =   1  'CenterOwner
    Begin VB.Frame Frame7 
@@ -26,8 +26,8 @@ Begin VB.Form Pribil
          Enabled         =   0   'False
          Height          =   432
          Left            =   120
-         TabIndex        =   32
-         Top             =   100
+         TabIndex        =   31
+         Top             =   96
          Width           =   1215
       End
       Begin VB.Label laPmResultTotal 
@@ -107,7 +107,7 @@ Begin VB.Form Pribil
       Height          =   492
       Left            =   480
       TabIndex        =   40
-      Top             =   1680
+      Top             =   2160
       Width           =   10692
       Begin VB.CommandButton cmDetailMM 
          Caption         =   "Маркмастер"
@@ -195,7 +195,7 @@ Begin VB.Form Pribil
       Height          =   492
       Left            =   480
       TabIndex        =   35
-      Top             =   2160
+      Top             =   2520
       Width           =   10692
       Begin VB.CommandButton cmDetailAN 
          Caption         =   "Аналитика"
@@ -203,7 +203,7 @@ Begin VB.Form Pribil
          Height          =   315
          Left            =   120
          TabIndex        =   36
-         Top             =   120
+         Top             =   240
          Width           =   1215
       End
       Begin VB.Label laAnResultTotal 
@@ -285,7 +285,7 @@ Begin VB.Form Pribil
       Height          =   492
       Left            =   480
       TabIndex        =   27
-      Top             =   3240
+      Top             =   3600
       Width           =   5412
       Begin VB.CommandButton cmDetail3 
          Caption         =   "Услуги"
@@ -332,7 +332,7 @@ Begin VB.Form Pribil
       Height          =   492
       Left            =   480
       TabIndex        =   23
-      Top             =   2640
+      Top             =   3000
       Width           =   10692
       Begin VB.CommandButton cmItogo 
          Caption         =   "Всего"
@@ -492,7 +492,7 @@ Begin VB.Form Pribil
       Height          =   492
       Left            =   480
       TabIndex        =   18
-      Top             =   4440
+      Top             =   4800
       Width           =   5412
       Begin VB.CommandButton cmSales 
          Caption         =   " Продажа"
@@ -541,7 +541,7 @@ Begin VB.Form Pribil
       Height          =   552
       Left            =   480
       TabIndex        =   15
-      Top             =   5040
+      Top             =   5400
       Width           =   5352
       Begin VB.CommandButton cmDetail 
          Caption         =   "Списания"
@@ -569,7 +569,7 @@ Begin VB.Form Pribil
       Height          =   492
       Left            =   480
       TabIndex        =   10
-      Top             =   3840
+      Top             =   4200
       Width           =   5412
       Begin VB.CommandButton cmDetail1 
          Caption         =   "Товары"
@@ -702,7 +702,7 @@ Begin VB.Form Pribil
          Caption         =   "Период  с "
          Height          =   195
          Left            =   120
-         TabIndex        =   10
+         TabIndex        =   46
          Top             =   240
          Width           =   795
       End
@@ -1287,7 +1287,7 @@ tbStartDate.Text = "01." & Format(CurDate, "mm/yy")
 End Sub
 'для отчета Прибыль
 Function getProductNomenkSum() As Variant
-Dim i As Integer, j As Integer, gr() As String, sum As Single
+Dim I As Integer, j As Integer, gr() As String, sum As Single
 
 getProductNomenkSum = Null
 'вариантная ном-ра изделия
@@ -1309,11 +1309,11 @@ sql = "SELECT sProducts.xgroup, n.cost*sProducts.quantity" & _
 'MsgBox sql
 Set tbNomenk = myOpenRecordSet("##192", sql, dbOpenDynaset)
 If tbNomenk Is Nothing Then Exit Function
-ReDim gr(0): i = 0: sum = 0
+ReDim gr(0): I = 0: sum = 0
 While Not tbNomenk.EOF
-    i = i + 1
+    I = I + 1
     sum = sum + tbNomenk!sum
-    ReDim Preserve gr(i): gr(i) = tbNomenk!xgroup
+    ReDim Preserve gr(I): gr(I) = tbNomenk!xgroup
     tbNomenk.MoveNext
 Wend
 tbNomenk.Close
@@ -1334,7 +1334,7 @@ While Not tbNomenk.EOF
     For j = 1 To UBound(gr) ' если группа состоит из одной ном-ры, то она
         If gr(j) = tbNomenk!xgroup Then GoTo NXT ' НЕвариантна, т.к. не
     Next j                                      ' не попала в xVariantNomenc
-    i = i + 1
+    I = I + 1
     sum = sum + tbNomenk!sum
 NXT: tbNomenk.MoveNext
 Wend
