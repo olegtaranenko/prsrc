@@ -15,8 +15,6 @@ Public isFindFirm As Boolean
 Public mainTitle As String
 Public flReportArhivOrders As Boolean
 
-Public myBase As Database
-Public wrkDefault As Workspace
 Public tbOrders As Recordset
 Public tqOrders As Recordset
 Public tbSystem As Recordset
@@ -940,14 +938,13 @@ And dostup <> "s" Then '$$$ceh
     End
 End If
 
+baseOpen
 'Set wrkDefault = DBEngine.Workspaces(0) ' для орг-ии транзакций
-Set wrkDefault = DBEngine.CreateWorkspace("wrkDefault", "dba", "sql", dbUseODBC) ' для орг-ии транзакций
 
 
 If otlad = "otlaD" Then '
   webSvodkaPath = "C:\WINDOWS\TEMP\svodkaW."
   webLoginsPath = "C:\WINDOWS\TEMP\logins."
-  cfg.baseOpen
 
 Else
     webSvodkaPath = cfg.SvodkaPath          '$$2
@@ -959,7 +956,7 @@ Else
 '        I = 0               'в цеху всегда рабочая
 '    End If                  '
 '    mainTitle = "         " & base(I) '$$2
-    cfg.baseOpen
+'    cfg.baseOpen
 '    mainTitle = "              New"
 End If
 

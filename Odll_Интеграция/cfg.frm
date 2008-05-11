@@ -1,4 +1,4 @@
-@VERSION 5.00
+VERSION 5.00
 Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "comdlg32.ocx"
 Begin VB.Form cfg 
@@ -376,34 +376,6 @@ End If
   
 
 Grid_EnterCell
-End Sub
-
-
-Sub baseOpen()
-Dim str As String, dburl As String
-    dburl = getEffectiveSetting("dbUrl")
-    
-    If dburl = "" Then
-        fatalError "Необходимо исправить конфигурацию запуска программы." & vbCr & "Не установлено значение параметра dbUrl"
-    End If
-    
-On Error GoTo ERRb
-
-    Set myBase = wrkDefault.OpenDatabase("Connection1", _
-       dbDriverNoPrompt, False, _
-       "ODBC;UID=dba;PWD=sql;DSN=" & dburl)
-    If myBase Is Nothing Then End
-    
-    sql = "call bootstrap_blocking()"
-    If myExecute("##bootstrap", sql, 0) = 0 Then End
-    
-    Exit Sub
-    
-ERRb:
-       
-    If errorCodAndMsg("388", -100) Then '##388
-        fatalError "Проблемы с доступом к серверу базы данных." & vbCr & "dbUrl = " & dburl
-    End If
 End Sub
 
 

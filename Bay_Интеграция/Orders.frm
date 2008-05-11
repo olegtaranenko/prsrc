@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCTL.OCX"
+Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "mscomctl.ocx"
 Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Orders 
    Appearance      =   0  'Flat
@@ -317,12 +317,6 @@ Begin VB.Form Orders
    End
    Begin VB.Menu mnMeassure 
       Caption         =   "Настройка"
-      Begin VB.Menu mnPathSet 
-         Caption         =   "Установка путей"
-      End
-      Begin VB.Menu mnBaseChoise 
-         Caption         =   "Выбор базы"
-      End
    End
    Begin VB.Menu mnSklad 
       Caption         =   "Склад"
@@ -624,7 +618,7 @@ End Sub
 
 
 Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim str As String, value As String, i As Integer, il As Long
+Dim str As String, value As String, I As Integer, il As Long
 
 If cbM.ListIndex < 0 Then
     cbM_LostFocus
@@ -656,9 +650,9 @@ AA:     value = InputBox("Введите номер заказа", "Поиск", value)
         If findValInCol(Grid, value, orNomZak) Then Exit Sub
         If MsgBox("Выполнить поиск заказа по всей базе?", vbYesNo, _
         "Среди загруженных заказ не найден!") = vbNo Then Exit Sub
-        For i = 1 To orColNumber
-            orSqlWhere(i) = ""
-        Next i
+        For I = 1 To orColNumber
+            orSqlWhere(I) = ""
+        Next I
         loadWithFiltr value
         Grid_EnterCell 'поскольку одна строчка
     ElseIf mousCol = orFirma Then
@@ -719,7 +713,7 @@ End Sub
 
 
 Private Sub Form_Load()
-Dim i As Integer, str As String
+Dim I As Integer, str As String
 
 oldHeight = Me.Height
 oldWidth = Me.Width
@@ -732,7 +726,6 @@ If otlad = "otlaD" Then
 '    tbEnable.Visible = True
     tbEnable.Text = "arh"
 End If
-If dostup <> "a" Then mnPathSet.Visible = False '$$2
 
 'lb.AddItem table!Problem
 
@@ -774,7 +767,7 @@ tbEndDate.Text = Format(CurDate, "dd/mm/yy")
 sql = "SELECT * From GuideManag ORDER BY forSort;"
 Set table = myOpenRecordSet("##03", sql, dbOpenForwardOnly)
 If table Is Nothing Then myBase.Close: End
-i = 0: ReDim manId(0):
+I = 0: ReDim manId(0):
 Dim imax As Integer: imax = 0: ReDim Manag(0)
 While Not table.EOF
     str = table!Manag
@@ -783,9 +776,9 @@ While Not table.EOF
     ElseIf LCase(table!forSort) <> "unused" Then
         If table!ManagId <> 0 Then cbM.AddItem str
         lbM.AddItem str
-        manId(i) = table!ManagId
-        i = i + 1
-        ReDim Preserve manId(i):
+        manId(I) = table!ManagId
+        I = I + 1
+        ReDim Preserve manId(I):
 AA:     If imax < table!ManagId Then
             imax = table!ManagId
             ReDim Preserve Manag(imax)
@@ -800,9 +793,9 @@ lbM.Height = lbM.Height + 195 * (lbM.ListCount - 1)
 
 If otlad = "otlaD" Then cbM.ListIndex = cbM.ListCount - 1
 
-For i = 0 To UBound(Problems)
-    lbProblem.AddItem Problems(i)
-Next i
+For I = 0 To UBound(Problems)
+    lbProblem.AddItem Problems(I)
+Next I
 lbProblem.Height = lbProblem.Height + 195 * (lbProblem.ListCount - 1)
 
 '*******
@@ -824,12 +817,12 @@ End Sub
  
 
 Sub begFiltr() '******* начальный фильтр
-Dim stDate As String, enDate As String, i As Integer
+Dim stDate As String, enDate As String, I As Integer
 Dim addNullDate As String, strWhere As String
  
- For i = 1 To orColNumber
-    orSqlWhere(i) = ""
- Next i
+ For I = 1 To orColNumber
+    orSqlWhere(I) = ""
+ Next I
  
  
  If cbStartDate.value = 1 Then
@@ -990,7 +983,7 @@ End Function
 Private Sub Grid_DblClick()
 Dim str As String, statId As Integer
 Dim billCompany As String
-Dim i As Integer
+Dim I As Integer
 
 
 If zakazNum = 0 Then Exit Sub
@@ -1059,9 +1052,9 @@ ElseIf mousCol = orFirma Then
         mnBillFirma.Visible = True
         mnBillFirma.Caption = "Плательщик: " + billCompany
         
-        For i = mnQuickBill.UBound To 1 Step -1
-            Unload mnQuickBill(i)
-        Next i
+        For I = mnQuickBill.UBound To 1 Step -1
+            Unload mnQuickBill(I)
+        Next I
         
         If serverIsAccessible(Grid.TextMatrix(mousRow, orVenture)) Then
         
@@ -1079,23 +1072,23 @@ ElseIf mousCol = orFirma Then
             If Not tbOrders.BOF Then
     '            Load mnQuickBill(0)
     '            mnQuickBill(0).Caption = "-"
-                i = 0
+                I = 0
                 While Not tbOrders.EOF
                     If CStr(tbOrders!id_bill) <> Grid.TextMatrix(mousRow, orBillId) Then
                         mnQuickBill(0).Visible = True
-                        Load mnQuickBill(1 + i)
-                        mnQuickBill(i + 1).Tag = tbOrders!id_bill
+                        Load mnQuickBill(1 + I)
+                        mnQuickBill(I + 1).Tag = tbOrders!id_bill
                         sql = "select wf_retrieve_bill_company(" + CStr(tbOrders!id_bill) + ", '" + Grid.TextMatrix(mousRow, orVenture) + "')"
                         byErrSqlGetValues "W##102.1", sql, billCompany
-                        mnQuickBill(i + 1).Caption = billCompany
-                        i = i + 1
+                        mnQuickBill(I + 1).Caption = billCompany
+                        I = I + 1
                     End If
                     tbOrders.MoveNext
                 Wend
                 tbOrders.Close
             End If
         End If
-        If i = 0 Then
+        If I = 0 Then
             mnQuickBill(0).Visible = False
         End If
         
@@ -1104,9 +1097,9 @@ ElseIf mousCol = orFirma Then
     Else
         mnBillFirma.Visible = False
         mnQuickBill(0).Visible = False
-        For i = mnQuickBill.UBound To 1 Step -1
-            Unload mnQuickBill(i)
-        Next i
+        For I = mnQuickBill.UBound To 1 Step -1
+            Unload mnQuickBill(I)
+        Next I
     End If
     Me.PopupMenu mnContext
 ElseIf mousCol = orZakazano Then
@@ -1407,7 +1400,7 @@ If KeyCode = vbKeyReturn Then lbDel_DblClick
 End Sub
 
 Private Sub lbM_DblClick()
-Dim str As String, i As Integer
+Dim str As String, I As Integer
 
 If noClick Then Exit Sub
 If lbM.Visible = False Then Exit Sub
@@ -1538,7 +1531,7 @@ End Function
 
 
 Private Sub lbProblem_DblClick()
-Dim str As String, i As Integer, DNM As String
+Dim str As String, I As Integer, DNM As String
 
 If noClick Then Exit Sub
 If lbProblem.Visible = False Then Exit Sub
@@ -1573,12 +1566,12 @@ End If
 End Sub
 
 Private Sub lbVenture_DblClick()
-Dim str As Variant, i As Integer, newInv As String
+Dim str As Variant, I As Integer, newInv As String
 
 If noClick Then Exit Sub
 If lbVenture.Visible = False Then Exit Sub
-i = ValueToTableField("##72", lbVenture.ListIndex, "BayOrders", "ventureId")
-If i = 0 Then
+I = ValueToTableField("##72", lbVenture.ListIndex, "BayOrders", "ventureId")
+If I = 0 Then
     Grid.Text = lbVenture.Text
     If (lbVenture.ListIndex = 0) Then Grid.Text = ""
     sql = "select invoice from bayorders where numOrder = " & Grid.TextMatrix(mousRow, orNomZak)
@@ -1605,14 +1598,6 @@ Report.Regim = "allOrdersByFirmName"
 Report.Show vbModal
 Grid.SetFocus
 Me.MousePointer = flexDefault
-End Sub
-
-Private Sub mnBaseChoise_Click()
-cfg.loadCfg ' обновляем информацию на всякий случай
-cfg.Regim = "baseChoise"
-cfg.setRegim
-cfg.Show vbModal
-
 End Sub
 
 Private Sub mnBillFirma_Click()
@@ -1689,16 +1674,6 @@ End Sub
 Private Sub mnNomenk_Click()
 sProducts.Regim = "ostat"
 sProducts.Show vbModal
-End Sub
-
-
-
-Private Sub mnPathSet_Click()
-cfg.loadCfg ' обновляем информацию на всякий случай $$2
-cfg.Regim = "pathSet"
-cfg.setRegim
-cfg.Show vbModal
-
 End Sub
 
 Private Sub mnQuickBill_Click(Index As Integer)
@@ -1885,7 +1860,7 @@ isDateTbox tbStartDate
 End Sub
 
 Sub LoadBase(Optional reg As String = "")
-Dim i As Integer, v As Variant
+Dim I As Integer, v As Variant
 
 laInform.Caption = ""
 Grid.Visible = False
@@ -1961,19 +1936,19 @@ End If
 End Sub
 
 Function getSqlWhere() As String
-Dim i As Integer
+Dim I As Integer
 
 getSqlWhere = ""
-For i = 0 To orColNumber
-  If orSqlWhere(i) <> "" Then
+For I = 0 To orColNumber
+  If orSqlWhere(I) <> "" Then
     If getSqlWhere = "" Then
-        getSqlWhere = "(" & orSqlWhere(i) & ")"
+        getSqlWhere = "(" & orSqlWhere(I) & ")"
     Else
-        getSqlWhere = getSqlWhere & " AND " & "(" & orSqlWhere(i) & ")"
+        getSqlWhere = getSqlWhere & " AND " & "(" & orSqlWhere(I) & ")"
     End If
 '    MsgBox "orSqlWhere=" & orSqlWhere(i) & "  getSqlWhere=" & getSqlWhere
   End If
-Next i
+Next I
 If getSqlWhere <> "" Then getSqlWhere = " WHERE (" & getSqlWhere & ")"
 'MsgBox "Where = " & getSqlWhere
     
@@ -2020,11 +1995,11 @@ strWhereByValCol = "(" & str & ")" & value
 End Function
 
 Sub loadFirmOrders(stat As String, Optional ordNom As String = "")
-Dim i As Integer
+Dim I As Integer
 
-For i = 1 To orColNumber
-    orSqlWhere(i) = ""
-Next i
+For I = 1 To orColNumber
+    orSqlWhere(I) = ""
+Next I
 If stat = "noArhiv" Then
     stat = ""
     setWhereInvoice ' только заказы со счетом или с еще отгрузка не начата
@@ -2093,7 +2068,7 @@ End Sub
     
 Function cbMOsetByText(cb As ComboBox, stat As Variant) As Boolean
     cbMOsetByText = False
-Dim i As Integer, txt As String
+Dim I As Integer, txt As String
     txt = ""
     If Not IsNull(stat) Then txt = CStr(stat)
     If txt = "готов" Then
@@ -2103,12 +2078,12 @@ Dim i As Integer, txt As String
         cbMOsetByText = True
     ElseIf txt = "утвержден" Then
         If cb.List(3) = "готов" Then
-            i = 4
+            I = 4
         Else
-            i = 3
+            I = 3
         End If
-        If cb.List(i) <> "утвержден" Then cb.AddItem "утвержден", i
-        cb.ListIndex = i
+        If cb.List(I) <> "утвержден" Then cb.AddItem "утвержден", I
+        cb.ListIndex = I
     ElseIf txt = "собран" Then
         cb.ListIndex = 2
         cbMOsetByText = True
