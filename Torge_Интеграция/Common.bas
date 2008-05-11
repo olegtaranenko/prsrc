@@ -75,6 +75,7 @@ Public aRowSortable() As Boolean
 Public arowSubtitle() As Boolean
 Public startDate As String, endDate As String
 
+
 Function dateBasic2Sybase(aDay As String)
 Dim dt_str As String
 
@@ -105,8 +106,6 @@ Sub setStartEndDates(tbStartDate As TextBox, Optional tbEndDate As TextBox)
             endDate = "'" & Format(tmpDate, "yyyy-mm-dd") & " 11:59:59 PM'"
         End If
     End If
-    
-
 
 End Sub
 
