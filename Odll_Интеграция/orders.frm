@@ -666,17 +666,17 @@ Dim strNow As String, DateFromNum As String, dNow As Date
  
  strNow = Format(Now, "dd.mm.yyyy")
  dNow = strNow
- strNow = Right$(Format(Now, "yymmdd"), 5)
+ strNow = right$(Format(Now, "yymmdd"), 5)
  
  wrkDefault.BeginTrans 'lock01
  sql = "update system set resursLock = resursLock" 'lock02
  myBase.Execute (sql) 'lock03
 
 str = getSystemField("lastPrivatNum")
-DateFromNum = Mid$(str, 4, 2) & "." & Mid$(str, 2, 2) & ".200" & Left$(str, 1)
+DateFromNum = Mid$(str, 4, 2) & "." & Mid$(str, 2, 2) & ".200" & left$(str, 1)
 tmpDate = DateFromNum
-DateFromNum = Left$(str, 5)
-intNum = Right$(str, Len(str) - 5)
+DateFromNum = left$(str, 5)
+intNum = right$(str, Len(str) - 5)
 
 'если это небольшое расхождение часов то считаем, что отстающие тоже там
     If tmpDate >= dNow Then
@@ -1225,7 +1225,7 @@ ElseIf KeyCode = vbKeyB And Shift = vbCtrlMask Then
         Filtr.lbFirm.Selected(0) = True
     End If
 BB:
-    If Left$(Filtr.cmAdvan.Caption, 1) = "С" Then Filtr.cmAdvan_Click
+    If left$(Filtr.cmAdvan.Caption, 1) = "С" Then Filtr.cmAdvan_Click
     Filtr.lbStatus.Clear
     For I = 0 To 7 ' статусы м. повторятся
        If tbEnable.Visible Or I <> 6 Then Filtr.lbStatus.AddItem status(I)
@@ -1533,7 +1533,7 @@ cmZagrCO2.Top = cmZagrCO2.Top + h
 cmZagrSUB.Top = cmZagrSUB.Top + h '$$ceh
 cmExvel.Top = cmExvel.Top + h
 tbEnable.Top = tbEnable.Top + h
-tbEnable.Left = tbEnable.Left + w
+tbEnable.left = tbEnable.left + w
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
@@ -1713,7 +1713,7 @@ sqle:
     
 End Function
 Function OrderIsMerged() As Boolean
-Dim Exists As Integer
+Dim exists As Integer
 
     OrderIsMerged = False
     sql = "select count(*) from orders o" _
@@ -1724,8 +1724,8 @@ Dim Exists As Integer
         & " and numorder != " & Grid.TextMatrix(mousRow, orNomZak)
 '        Debug.Print sql
         
-    byErrSqlGetValues "##OrderIsMerged", sql, Exists
-    If Exists > 0 Then
+    byErrSqlGetValues "##OrderIsMerged", sql, exists
+    If exists > 0 Then
         OrderIsMerged = True
     End If
     
@@ -2710,8 +2710,8 @@ cfg.loadFileConfiguration ' обновляем информацию на всякий случай
 cfg.Regim = "pathSet"
 cfg.setRegim
 cfg.Show vbModal
-webSvodkaPath = cfg.SvodkaPath          '$$2
-webLoginsPath = cfg.loginsPath          '
+webSvodkaPath = SvodkaPath          '$$2
+webLoginsPath = loginsPath          '
 
 End Sub
 
@@ -3143,14 +3143,14 @@ If str = "" Then
     MsgBox "По этому полю фильтр не предусмотрен"
     Exit Function
 End If
-typ = Left$(str, 1)
+typ = left$(str, 1)
 str = Mid$(str, 2)
 If typ = "d" Then
     If value = "" Then
         value = " Is Null"
     Else
         If operator = "=" Then
-            value = Left$(value, 6) & "20" & Mid$(value, 7, 2) 'это нужно если в Win98 установлен "гггг" - формат года
+            value = left$(value, 6) & "20" & Mid$(value, 7, 2) 'это нужно если в Win98 установлен "гггг" - формат года
             value = " Like '" & value & "%'"
         ElseIf operator = "<" Then
             value = " <= '" & Format(value, "yyyy-mm-dd") & " 11:59:59 PM'"
@@ -3689,7 +3689,7 @@ End If
 
 For I = 1 To UBound(NN) ' перебор всех групп
   str = NN(I)
-  findId = Right$(str, 4) ' извлекаем из имен группы id группы
+  findId = right$(str, 4) ' извлекаем из имен группы id группы
   
 '$comtec$  Далее ссылки на табл.sGuideNomenk и на ее поля надо заменить на
 'эквиваленты из базы Comtec исходя из след.соответствия с колонками
@@ -3711,7 +3711,7 @@ For I = 1 To UBound(NN) ' перебор всех групп
 'Этот блок не требует изменения (здесь выдаются заголовки групп)------------
         If Not bilo Then
             bilo = True
-            str = Left$(str, Len(str) - 6)
+            str = left$(str, Len(str) - 6)
             If toExel = "" Then
                 str = "<b>" & str & "</b>"
 'в файле поля Код и Размер на последних местах, но в Web они на первом и третьем
@@ -3875,7 +3875,7 @@ On Error GoTo ERR2
 
 For I = 1 To UBound(NN) ' перебор всех групп
   str = NN(I)
-  findId = Right$(str, 4) ' извлекаем из имен группы id группы
+  findId = right$(str, 4) ' извлекаем из имен группы id группы
 
 '$comtec$  Далее ссылки на табл.sGuideProducts и на ее поля надо заменить на
 'эквиваленты из базы Comtec исходя из след.соответствия с колонками
@@ -3901,7 +3901,7 @@ For I = 1 To UBound(NN) ' перебор всех групп
                 .Borders(xlEdgeBottom).Weight = xlThin
             End With
             
-            str = Left$(str, Len(str) - 6)
+            str = left$(str, Len(str) - 6)
             objExel.ActiveSheet.Cells(exRow, 2).value = str
             objExel.ActiveSheet.Cells(exRow, 2).Font.Bold = True
             objExel.ActiveSheet.Cells(exRow, 8).Borders(xlEdgeRight). _

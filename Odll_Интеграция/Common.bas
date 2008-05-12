@@ -49,6 +49,13 @@ Public webLoginsPath As String
 Public webNomenks As String '- есть и в sTime
 Public webProducts As String
 
+' Перенесено из cfg.frm
+Public loginsPath As String
+Public SvodkaPath As String
+Public NomenksPath As String
+Public ProductsPath As String
+
+
 'Public baseNamePath As String
 Public begDate As Date ' Дата вступительных остатков
 Public logFile As String
@@ -909,6 +916,10 @@ ReDim tmpL(0)
 cfg.isLoad = False  '$$2
 loadEffectiveSettingsApp
 dostup = getEffectiveSetting("dostup")
+loginsPath = getEffectiveSetting("loginsPath")
+SvodkaPath = getEffectiveSetting("SvodkaPath")
+NomenksPath = getEffectiveSetting("NomenksPath")
+ProductsPath = getEffectiveSetting("ProductsPath")
 
 
 isXP = (Dir$("C:\WINDOWS\net.exe") = "") 'в XP нет файла
@@ -948,8 +959,8 @@ If otlad = "otlaD" Then '
   webLoginsPath = "C:\WINDOWS\TEMP\logins."
 
 Else
-    webSvodkaPath = cfg.SvodkaPath          '$$2
-    webLoginsPath = cfg.loginsPath          '
+    webSvodkaPath = SvodkaPath          '$$2
+    webLoginsPath = loginsPath          '
     
 '    If dostup = "a" Or dostup = "m" Or dostup = "" Or dostup = "b" Then '$$2
 '        I = cfg.curBaseInd  '$$2

@@ -188,10 +188,6 @@ Option Explicit
 'Public gCfgFilePath As String
 'Public curBaseInd As Integer
 'Public workBasePath As String
-Public loginsPath As String
-Public SvodkaPath As String
-Public NomenksPath As String
-Public ProductsPath As String
 Public isLoad As Boolean
 Private clickedRow As Integer
 
@@ -348,7 +344,7 @@ ElseIf Regim = "comtexAdmin" Then
     Grid.Width = Grid.ColWidth(bsDbName) + Grid.ColWidth(bsServer) + Grid.ColWidth(bsActive) + Grid.ColWidth(bsPrefix) + 350
     I = Grid.Width - I
     Me.Width = Me.Width + I
-    cmExit.Left = cmExit.Left + I
+    cmExit.left = cmExit.left + I
     cmExit.Top = Grid.Top + Grid.Height + 100
     sql = "GuideVenture"
     
