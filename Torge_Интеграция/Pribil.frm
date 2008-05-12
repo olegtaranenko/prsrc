@@ -4,9 +4,9 @@ Begin VB.Form Pribil
    BorderStyle     =   1  'Fixed Single
    Caption         =   "Реализация"
    ClientHeight    =   6132
-   ClientLeft      =   552
-   ClientTop       =   9336
-   ClientWidth     =   11424
+   ClientLeft      =   555
+   ClientTop       =   9330
+   ClientWidth     =   12450
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False

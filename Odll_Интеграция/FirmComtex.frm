@@ -3,15 +3,15 @@ Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form FirmComtex 
    BorderStyle     =   1  'Fixed Single
    Caption         =   "Выбор фирмы плательщика из бух.базы Комтех"
-   ClientHeight    =   8184
-   ClientLeft      =   48
-   ClientTop       =   336
-   ClientWidth     =   11892
+   ClientHeight    =   8190
+   ClientLeft      =   45
+   ClientTop       =   330
+   ClientWidth     =   11895
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    MinButton       =   0   'False
-   ScaleHeight     =   8184
-   ScaleWidth      =   11892
+   ScaleHeight     =   8190
+   ScaleWidth      =   11895
    Begin VB.CommandButton cmExel 
       Caption         =   "Печать в Exel"
       Height          =   315
@@ -24,7 +24,7 @@ Begin VB.Form FirmComtex
       Appearance      =   0  'Flat
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   9.6
+         Size            =   9.75
          Charset         =   204
          Weight          =   400
          Underline       =   0   'False
@@ -74,7 +74,7 @@ Begin VB.Form FirmComtex
       Appearance      =   0  'Flat
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   9.6
+         Size            =   9.75
          Charset         =   204
          Weight          =   400
          Underline       =   0   'False
@@ -109,8 +109,8 @@ Begin VB.Form FirmComtex
       TabIndex        =   3
       Top             =   720
       Width           =   11715
-      _ExtentX        =   20659
-      _ExtentY        =   12192
+      _ExtentX        =   20664
+      _ExtentY        =   12197
       _Version        =   393216
       MergeCells      =   2
       AllowUserResizing=   1

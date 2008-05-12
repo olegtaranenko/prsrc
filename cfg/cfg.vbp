@@ -1,5 +1,5 @@
 Type=Exe
-Object={831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0; mscomctl.ocx
+Object={831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0; MSCOMCTL.OCX
 Form=main.frm
 Module=Common; Common.bas
 Module=VerUtils; ..\shared\VerUtils.bas
@@ -12,13 +12,13 @@ HelpFile=""
 Title="cfg"
 ExeName32="cfg.exe"
 Path32=".."
-Command32="-exe prior -arg dbUrl=prior"
+Command32="-exe prior"
 Name="cfg"
 HelpContextID="0"
 CompatibleMode="0"
 MajorVer=1
 MinorVer=0
-RevisionVer=0
+RevisionVer=2
 AutoIncrementVer=1
 ServerSupportFiles=0
 VersionCompanyName="Development"

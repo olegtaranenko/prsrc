@@ -3,13 +3,13 @@ Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form GuideManag 
    BackColor       =   &H8000000A&
    Caption         =   "Справочник менеджеров"
-   ClientHeight    =   5148
+   ClientHeight    =   5145
    ClientLeft      =   60
    ClientTop       =   1740
-   ClientWidth     =   6756
+   ClientWidth     =   6750
    LinkTopic       =   "Form1"
-   ScaleHeight     =   5148
-   ScaleWidth      =   6756
+   ScaleHeight     =   5145
+   ScaleWidth      =   6750
    Begin VB.CommandButton cmRepl 
       Caption         =   "--->"
       Enabled         =   0   'False
@@ -58,8 +58,8 @@ Begin VB.Form GuideManag
       TabIndex        =   0
       Top             =   300
       Width           =   6495
-      _ExtentX        =   11451
-      _ExtentY        =   7430
+      _ExtentX        =   11456
+      _ExtentY        =   7435
       _Version        =   393216
       AllowUserResizing=   1
    End

@@ -81,11 +81,11 @@ Begin VB.Form Report
    Begin VB.Label laRecCount 
       BackColor       =   &H8000000A&
       Caption         =   "Число записей:"
-      Height          =   192
+      Height          =   195
       Left            =   3780
       TabIndex        =   8
       Top             =   7800
-      Width           =   1332
+      Width           =   1335
    End
    Begin VB.Label laCount 
       BackColor       =   &H8000000E&
@@ -101,7 +101,7 @@ Begin VB.Form Report
       Alignment       =   1  'Right Justify
       BackColor       =   &H8000000E&
       BorderStyle     =   1  'Fixed Single
-      Height          =   312
+      Height          =   315
       Left            =   60
       TabIndex        =   6
       Top             =   7800
@@ -110,7 +110,7 @@ Begin VB.Form Report
    Begin VB.Label laSum 
       BackColor       =   &H8000000A&
       Caption         =   "Сумма:"
-      Height          =   192
+      Height          =   195
       Left            =   1260
       TabIndex        =   5
       Top             =   7860

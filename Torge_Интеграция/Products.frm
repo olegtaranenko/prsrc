@@ -4,7 +4,7 @@ Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Products 
    BackColor       =   &H8000000A&
    Caption         =   "Справочник готовых изделий"
-   ClientHeight    =   6396
+   ClientHeight    =   6390
    ClientLeft      =   60
    ClientTop       =   1740
    ClientWidth     =   11880
@@ -13,7 +13,7 @@ Begin VB.Form Products
    LinkTopic       =   "Form1"
    LockControls    =   -1  'True
    MinButton       =   0   'False
-   ScaleHeight     =   6396
+   ScaleHeight     =   6390
    ScaleWidth      =   11880
    WhatsThisHelp   =   -1  'True
    Begin VB.CommandButton cmExit 
@@ -221,7 +221,7 @@ Begin VB.Form Products
       End
    End
    Begin VB.ListBox lbPrWeb 
-      Height          =   432
+      Height          =   450
       ItemData        =   "Products.frx":0000
       Left            =   3900
       List            =   "Products.frx":000A
@@ -231,7 +231,7 @@ Begin VB.Form Products
       Width           =   435
    End
    Begin VB.ListBox lbWeb 
-      Height          =   432
+      Height          =   450
       ItemData        =   "Products.frx":0015
       Left            =   7560
       List            =   "Products.frx":001F
@@ -329,8 +329,8 @@ Begin VB.Form Products
       TabIndex        =   1
       Top             =   240
       Width           =   3675
-      _ExtentX        =   6477
-      _ExtentY        =   9758
+      _ExtentX        =   6482
+      _ExtentY        =   9763
       _Version        =   393216
       AllowBigSelection=   0   'False
       AllowUserResizing=   1
@@ -341,8 +341,8 @@ Begin VB.Form Products
       TabIndex        =   0
       Top             =   240
       Width           =   2415
-      _ExtentX        =   4255
-      _ExtentY        =   9758
+      _ExtentX        =   4260
+      _ExtentY        =   9763
       _Version        =   393217
       HideSelection   =   0   'False
       Indentation     =   706
@@ -358,8 +358,8 @@ Begin VB.Form Products
       Top             =   240
       Visible         =   0   'False
       Width           =   4335
-      _ExtentX        =   7641
-      _ExtentY        =   9758
+      _ExtentX        =   7646
+      _ExtentY        =   9763
       _Version        =   393216
       AllowBigSelection=   0   'False
       AllowUserResizing=   1

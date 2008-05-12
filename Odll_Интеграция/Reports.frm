@@ -4,14 +4,14 @@ Begin VB.Form Reports
    BorderStyle     =   3  'Fixed Dialog
    Caption         =   "־עקועû"
    ClientHeight    =   5340
-   ClientLeft      =   48
-   ClientTop       =   336
-   ClientWidth     =   4308
+   ClientLeft      =   45
+   ClientTop       =   330
+   ClientWidth     =   4305
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
    ScaleHeight     =   5340
-   ScaleWidth      =   4308
+   ScaleWidth      =   4305
    ShowInTaskbar   =   0   'False
    StartUpPosition =   2  'CenterScreen
    Begin VB.Frame Frame3 
@@ -40,7 +40,7 @@ Begin VB.Form Reports
       Visible         =   0   'False
       Width           =   4035
       Begin VB.ListBox lbType 
-         Height          =   1200
+         Height          =   1230
          ItemData        =   "Reports.frx":0000
          Left            =   1500
          List            =   "Reports.frx":0016
@@ -75,7 +75,7 @@ Begin VB.Form Reports
       End
       Begin VB.ListBox lbTema 
          Enabled         =   0   'False
-         Height          =   2352
+         Height          =   2400
          Left            =   2100
          MultiSelect     =   2  'Extended
          TabIndex        =   10

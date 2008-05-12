@@ -3,14 +3,14 @@ Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Nakladna 
    BackColor       =   &H8000000A&
    Caption         =   "Предметы "
-   ClientHeight    =   5532
+   ClientHeight    =   5535
    ClientLeft      =   60
-   ClientTop       =   348
+   ClientTop       =   345
    ClientWidth     =   9840
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   5532
+   ScaleHeight     =   5535
    ScaleWidth      =   9840
    StartUpPosition =   2  'CenterScreen
    Begin VB.TextBox tbPageSize 
@@ -56,8 +56,8 @@ Begin VB.Form Nakladna
          Top             =   240
          Visible         =   0   'False
          Width           =   5295
-         _ExtentX        =   9335
-         _ExtentY        =   1080
+         _ExtentX        =   9340
+         _ExtentY        =   1085
          _Version        =   393216
          AllowBigSelection=   0   'False
          AllowUserResizing=   1
@@ -88,8 +88,8 @@ Begin VB.Form Nakladna
       TabIndex        =   0
       Top             =   780
       Width           =   9615
-      _ExtentX        =   16955
-      _ExtentY        =   7218
+      _ExtentX        =   16960
+      _ExtentY        =   7223
       _Version        =   393216
       AllowBigSelection=   0   'False
       MergeCells      =   3
@@ -127,8 +127,8 @@ Begin VB.Form Nakladna
       Top             =   3120
       Visible         =   0   'False
       Width           =   9615
-      _ExtentX        =   16955
-      _ExtentY        =   3408
+      _ExtentX        =   16960
+      _ExtentY        =   3413
       _Version        =   393216
       AllowBigSelection=   0   'False
       AllowUserResizing=   1
@@ -161,7 +161,7 @@ Begin VB.Form Nakladna
       Caption         =   "laDest"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   7.8
+         Size            =   8.25
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -180,7 +180,7 @@ Begin VB.Form Nakladna
       Caption         =   "laSours"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   7.8
+         Size            =   8.25
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -199,7 +199,7 @@ Begin VB.Form Nakladna
       Caption         =   "laDocNum"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   7.8
+         Size            =   8.25
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -226,12 +226,12 @@ Begin VB.Form Nakladna
    End
    Begin VB.Label laOt 
       Caption         =   "От:"
-      Height          =   204
+      Height          =   255
       Index           =   0
       Left            =   180
       TabIndex        =   22
-      Top             =   360
-      Width           =   252
+      Top             =   480
+      Width           =   255
    End
    Begin VB.Label laNakl 
       Caption         =   "Накладная №"
@@ -243,11 +243,11 @@ Begin VB.Form Nakladna
       Width           =   1095
    End
    Begin VB.Label laDate 
-      Height          =   204
-      Left            =   8520
+      Height          =   195
+      Left            =   7020
       TabIndex        =   18
-      Top             =   60
-      Width           =   1152
+      Top             =   0
+      Width           =   1155
    End
    Begin VB.Label laSignatura 
       BackColor       =   &H00FFFFFF&
@@ -259,33 +259,33 @@ Begin VB.Form Nakladna
    End
    Begin VB.Label laPerson 
       Caption         =   "Исполнитель:"
-      Height          =   200
+      Height          =   195
       Left            =   5700
       TabIndex        =   12
-      Top             =   360
+      Top             =   420
       Width           =   1155
    End
    Begin VB.Label laFirm 
       Caption         =   "laFirm"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   7.8
+         Size            =   8.25
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   200
-      Left            =   3720
+      Height          =   195
+      Left            =   3600
       TabIndex        =   11
       Top             =   60
-      Width           =   3492
+      Width           =   3495
    End
    Begin VB.Label laPlatel 
       Caption         =   "Плательщик:"
-      Height          =   200
-      Left            =   2640
+      Height          =   195
+      Left            =   2520
       TabIndex        =   10
       Top             =   60
       Width           =   1035
@@ -294,45 +294,45 @@ Begin VB.Form Nakladna
       Caption         =   "laDest"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   7.8
+         Size            =   8.25
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   200
+      Height          =   255
       Index           =   0
       Left            =   3600
       TabIndex        =   9
-      Top             =   360
+      Top             =   480
       Width           =   2055
    End
    Begin VB.Label laKomu 
       Caption         =   "Кому:"
-      Height          =   200
+      Height          =   195
       Index           =   0
       Left            =   3060
       TabIndex        =   8
-      Top             =   360
+      Top             =   480
       Width           =   495
    End
    Begin VB.Label laSours 
       Caption         =   "laSours"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   7.8
+         Size            =   8.25
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   200
+      Height          =   255
       Index           =   0
       Left            =   540
       TabIndex        =   7
-      Top             =   360
+      Top             =   480
       Width           =   2295
    End
    Begin VB.Label laOt 
@@ -349,23 +349,23 @@ Begin VB.Form Nakladna
       Caption         =   "laDocNum"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   7.8
+         Size            =   8.25
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   200
+      Height          =   195
       Index           =   0
-      Left            =   1440
+      Left            =   1320
       TabIndex        =   5
       Top             =   60
-      Width           =   1092
+      Width           =   1095
    End
    Begin VB.Label laTitle 
       Caption         =   "Накладная №"
-      Height          =   200
+      Height          =   195
       Left            =   180
       TabIndex        =   4
       Top             =   60
