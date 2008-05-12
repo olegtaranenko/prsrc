@@ -5,6 +5,7 @@ Module=Common; Common.bas
 Module=VerUtils; ..\shared\VerUtils.bas
 Module=CmdUtils; ..\shared\CmdUtils.bas
 Module=CommonUtils; ..\shared\CommonUtils.bas
+Module=LogUtils; ..\shared\LogUtils.bas
 IconForm="Startup"
 Startup="Sub Main"
 HelpFile=""

@@ -1,0 +1,201 @@
+Attribute VB_Name = "LogUtils"
+Public logFileName As String
+Public logLevel As Integer
+
+Private Const LOG_PANIC As Integer = 0
+Private Const LOG_ERROR As Integer = 10
+Private Const LOG_WARN As Integer = 20
+Private Const LOG_INFO As Integer = 30
+Private Const LOG_DEBUG As Integer = 40
+Private Const LOG_TRACE As Integer = 50
+
+
+Private logEnabled As Boolean
+
+
+Function panic(msg As String, Optional logger_id) As String
+    If isPanicEnabled Then
+        fileLogMsg msg, LOG_PANIC
+    End If
+End Function
+
+Function err(msg As String, Optional logger_id) As String
+    If isErrorEnabled Then
+        fileLogMsg msg, LOG_DEBUG
+    End If
+End Function
+Function warn(msg As String, Optional logger_id) As String
+    If isWarningEnabled Then
+        fileLogMsg msg, LOG_WARN
+    End If
+End Function
+
+Function info(msg As String, Optional logger_id) As String
+    If isInfoEnabled Then
+        fileLogMsg msg, LOG_INFO
+    End If
+End Function
+
+Function dbg(msg As String, Optional logger_id) As String
+    If isDebugEnabled Then
+        fileLogMsg msg, LOG_DEBUG
+    End If
+End Function
+
+Function trace(msg As String, Optional logger_id) As String
+    If isTraceEnabled Then
+        fileLogMsg msg, LOG_TRACE
+    End If
+End Function
+
+
+Function isPanicEnabled() As Boolean
+    If logEnabled Then
+        isPanicEnabled = True
+    Else
+        isPanicEnabled = False
+    End If
+End Function
+
+Function isErrorEnabled() As Boolean
+    If logEnabled And logLevel > LOG_PANIC Then
+        isErrorEnabled = True
+    Else
+        isErrorEnabled = False
+    End If
+End Function
+
+Function isWarningEnabled() As Boolean
+    If logEnabled And logLevel > LOG_ERROR Then
+        isWarningEnabled = True
+    Else
+        isWarningEnabled = False
+    End If
+End Function
+
+Function isInfoEnabled() As Boolean
+    If logEnabled And logLevel > LOG_WARN Then
+        isInfoEnabled = True
+    Else
+        isInfoEnabled = False
+    End If
+End Function
+
+Function isDebugEnabled() As Boolean
+    If logEnabled And logLevel > LOG_INFO Then
+        isDebugEnabled = True
+    Else
+        isDebugEnabled = False
+    End If
+End Function
+
+Function isTraceEnabled() As Boolean
+    If logEnabled And logLevel > LOG_DEBUG Then
+        isTraceEnabled = True
+    Else
+        isTraceEnabled = False
+    End If
+End Function
+
+
+Sub fileLogMsg(msg, level As Integer)
+Dim fileNumber
+    If Not logEnabled Then
+        Exit Sub
+    End If
+    fileNumber = FreeFile
+    Open logFileName For Output As #fileNumber
+    Print #fileNumber, formatLogMessage(msg, level)
+    Close #fileNumber
+    
+End Sub
+
+
+Function formatted(msg, level As Integer)
+Dim level As String
+
+    level = Level2String
+    formatted = Format(Now, "dd.mm.yyyy hh:mi:ss") & "-" & level & " - " & msg
+End Function
+
+Function Level2String(level As Integer)
+    
+    If level = 0 Then
+        Level2String = "     "
+    ElseIf level < LOG_ERROR Then
+        Level2String = "PANIC"
+    ElseIf level < LOG_WARN Then
+        Level2String = "ERROR"
+    ElseIf level < LOG_INFO Then
+        Level2String = "WARN "
+    ElseIf level < LOG_DEBUG Then
+        Level2String = "INFO "
+    ElseIf level < LOG_TRACE Then
+        Level2String = "DEBUG"
+    Else
+        Level2String = "TRACE"
+    End If
+End Function
+
+
+Sub initLogFileName()
+Dim attr As Boolean
+
+    logFileName = getEffectiveSetting("logger")
+
+    If logFileName = "" Then
+        logFileName = App.path & "\" & App.EXEName & ".log"
+    End If
+On Error GoTo IOErr
+    logEnabled = True
+    If Dir(logFileName) Then
+        attr = GetAttr(logFileName) And vbDirectory < 1
+    End If
+    fileLogMsg " =========== Start new log session for " & App.EXEName, 0
+    setLogLevel (getEffectiveSetting("log"))
+    
+IOErr:
+    If attr Then
+        MsgBox "Ошибка инициализации лог-файла: " & logFileName _
+        & vbCr & "Функции протоколирования будут отключены", _
+        vbExclamation, "Предупреждения"
+        logEnabled = False
+    Else
+        logEnabled = True
+    End If
+    
+End Sub
+
+Public Sub setLogLevel(level)
+Dim levelInt As Integer
+
+    If IsNumeric(level) Then
+        levelInt = CInt(level)
+    Else
+        levelInt = string2LogLevel(CStr(level))
+    End If
+    info ("Уровень протоколирования установлен в " & Level2String(levelInt))
+    logLevel = level
+End Sub
+
+Function string2LogLevel(level As String)
+    If LCase(level) = "panic" Then
+        string2LogLevel = LOG_PANIC
+    ElseIf LCase(level) = "error" Then
+        string2LogLevel = LOG_ERROR
+    ElseIf LCase(level) = "warn" Then
+        string2LogLevel = LOG_WARN
+    ElseIf LCase(level) = "info" Then
+        string2LogLevel = LOG_INFO
+    ElseIf LCase(level) = "debug" Then
+        string2LogLevel = LOG_DEBUG
+    ElseIf LCase(level) = "trace" Then
+        string2LogLevel = LOG_TRACE
+    Else
+        MsgBox "Неизвестный уровень протокола " & level _
+        & vbCr & "Протоколирование будет отключено", vbExclamation, "Предупреждение"
+        logEnabled = False
+    End If
+    
+End Function
+

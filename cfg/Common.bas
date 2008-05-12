@@ -12,6 +12,8 @@ Dim failed As Boolean
 
 
     loadEffectiveSettingsCfg
+    initLogFileName
+    
 
     myFilename = getFullExeName()
 
