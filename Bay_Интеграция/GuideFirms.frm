@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "msflxgrd.ocx"
+Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form GuideFirms 
    BackColor       =   &H8000000A&
    BorderStyle     =   1  'Fixed Single
@@ -33,7 +33,7 @@ Begin VB.Form GuideFirms
       Width           =   915
    End
    Begin VB.Frame Frame1 
-      BorderStyle     =   0  'Нет
+      BorderStyle     =   0  'None
       Caption         =   "Frame1"
       Height          =   3675
       Left            =   5760
@@ -45,7 +45,7 @@ Begin VB.Form GuideFirms
          Height          =   2835
          Left            =   120
          MultiLine       =   -1  'True
-         ScrollBars      =   2  'Вертикаль
+         ScrollBars      =   2  'Vertical
          TabIndex        =   20
          Top             =   240
          Width           =   4515
@@ -243,7 +243,7 @@ Begin VB.Form GuideFirms
    End
    Begin VB.Label laQuant 
       BackColor       =   &H8000000A&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Caption         =   " "
       Height          =   315
       Left            =   5520
@@ -311,7 +311,7 @@ Grid.SetFocus
 End Sub
 
 Private Sub cmDel_Click()
-Dim strId As String, i As Integer
+Dim strId As String, I As Integer
 
 If MsgBox("По кнопке <Да> вся информация по фирме будет безвозвратно " & _
 "удалена из базы!", vbYesNo, "Удалить Фирму?") = vbNo Then Exit Sub
@@ -327,13 +327,13 @@ strId = Grid.TextMatrix(mousRow, gfId)
 'tbFirms.Close
 
 sql = "DELETE FROM BayGuideFirms WHERE FirmId = " & strId
-i = myExecute("##67", sql, -198)
-If i = -2 Then
+I = myExecute("##67", sql, -198)
+If I = -2 Then
     MsgBox "У этой фирмы есть заказы. Перед ее удалением необходимо " & _
     "в этих заказах выбать другую фирму, либо удалить эти заказы", , _
     "Удаление невозможно!"
     GoTo EN1
-ElseIf i <> 0 Then
+ElseIf I <> 0 Then
     GoTo EN1
 End If
 
@@ -395,7 +395,7 @@ Grid_EnterCell
 End Sub
 
 Sub loadGuide()
-Dim i As Long, strWhere As String, str As String
+Dim I As Long, strWhere As String, str As String
 
 Me.MousePointer = flexHourglass
 Grid.Visible = False
@@ -417,7 +417,11 @@ If strWhere <> "" Then strWhere = "Where ((" & strWhere & ")) "
 'MsgBox "strWhere = " & strWhere
 quantity = 0
 
-sql = "SELECT * FROM BayGuideFirms " & strWhere & " ORDER BY Name;"
+sql = "SELECT f.*, isnull(r.region, '') as region " _
+& " FROM BayGuideFirms f " _
+& " left join BayRegion r on r.regionid = f.regionid" _
+& strWhere _
+& " ORDER BY Name"
 'MsgBox sql
 Set tbFirms = myOpenRecordSet("##15", sql, dbOpenForwardOnly)
 If tbFirms Is Nothing Then GoTo EN1
@@ -428,7 +432,7 @@ If Not tbFirms.BOF Then
     If tbFirms!firmId = 0 Then GoTo AA
     quantity = quantity + 1
 If tbFirms!firmId = 39 Then
-i = i
+I = I
 End If
     Grid.TextMatrix(quantity, gfId) = tbFirms!firmId
     Grid.TextMatrix(quantity, gfNazwFirm) = tbFirms!Name
@@ -447,7 +451,7 @@ End If
     fieldToCol tbFirms!Email, gfEmail
     fieldToCol tbFirms!Type, gfType
     fieldToCol tbFirms!Pass, gfPass
-    fieldToCol tbFirms!Kategor, gfRegion
+    fieldToCol tbFirms!region, gfRegion
     fieldToCol tbFirms!xLogin, gfLogin
     fieldToCol tbFirms!Phone, gfTlf
     Grid.AddItem ("")
@@ -529,7 +533,7 @@ If KeyCode = vbKeyEscape Then lbHide
 End Sub
 
 Private Sub Form_Load()
-Dim i As Integer
+Dim I As Integer
 quantity = 0
 pos = 0
 oldHeight = Me.Height
@@ -565,14 +569,14 @@ Grid.ColWidth(gfId) = 480
 
 cbM.AddItem "все менеджеры"
 lbM.AddItem "not"
-For i = 0 To Orders.lbM.ListCount - 1
-    If i < Orders.lbM.ListCount - 1 Then lbM.AddItem Orders.lbM.List(i)
-    If Orders.lbM.List(i) = "" Then
+For I = 0 To Orders.lbM.ListCount - 1
+    If I < Orders.lbM.ListCount - 1 Then lbM.AddItem Orders.lbM.List(I)
+    If Orders.lbM.List(I) = "" Then
         cbM.AddItem cEmpty
     Else
-        cbM.AddItem "менеджер " & Orders.lbM.List(i)
+        cbM.AddItem "менеджер " & Orders.lbM.List(I)
     End If
-Next i
+Next I
 cbM.ListIndex = 0
 lbM.Height = lbM.Height + 195 * (lbM.ListCount - 1)
 
@@ -583,7 +587,7 @@ Set tbGuide = myOpenRecordSet("##349", sql, dbOpenForwardOnly)
 'tbGuide.Index = "Region"
 'If Not tbGuide Is Nothing Then
   While Not tbGuide.EOF
-    lbRegion.AddItem tbGuide!Region
+    lbRegion.AddItem tbGuide!region
     tbGuide.MoveNext
   Wend
   tbGuide.Close
@@ -612,6 +616,9 @@ End If
 cmAdd.Visible = True
 cmDel.Visible = True
 
+Set table = myOpenRecordSet("##72", "bayRegion", dbOpenForwardOnly)
+If table Is Nothing Then myBase.Close: End
+
 'loadGuide не надо, т.к. при загрузке cbM_Click
 Timer1.Interval = 100
 Timer1.Enabled = True
@@ -639,7 +646,7 @@ Grid.Height = Grid.Height + h
 Grid.Width = Grid.Width + w
 cmSel.Top = cmSel.Top + h
 cmExit.Top = cmExit.Top + h
-cmExit.Left = cmExit.Left + w
+cmExit.left = cmExit.left + w
 cmDel.Top = cmDel.Top + h
 cmAdd.Top = cmAdd.Top + h
 laHeadQ.Top = laHeadQ.Top + h
@@ -672,7 +679,7 @@ End If
 End Sub
 
 Private Sub Grid_DblClick()
-Dim i As Integer
+Dim I As Integer
 
 If Grid.CellBackColor = vbYellow Then Exit Sub
 
@@ -683,14 +690,14 @@ If mousCol = gfM Then
 ElseIf mousCol = gfOborud Then
     listBoxInGridCell lbOborud, Grid, "select"
 ElseIf mousCol = gfRegion Then ' Регион
-        For i = 0 To lbRegion.ListCount - 1 '
-            If Grid.Text = lbRegion.List(i) Then
+        For I = 0 To lbRegion.ListCount - 1 '
+            If Grid.Text = lbRegion.List(I) Then
 '                noClick = True
-                lbRegion.ListIndex = i 'вызывает ложное onClick
+                lbRegion.ListIndex = I 'вызывает ложное onClick
 '                noClick = False
                 Exit For
             End If
-        Next i
+        Next I
     lbRegion.Visible = True
     lbRegion.ZOrder
     lbRegion.SetFocus
@@ -793,11 +800,22 @@ End Sub
 
 Private Sub lbRegion_DblClick()
 'Region
-ValueToTableField "##354", "'" & lbRegion.Text & "'", "BayGuideFirms", "Kategor", "byFirmId"
+
+If lbRegion.Text = "" Then
+    sql = "update bayguidefirms set regionid = null " _
+    & " where bayguidefirms.firmId = " & gFirmId
+Else
+    sql = "update bayguidefirms set regionid = r.regionid " _
+    & " from bayregion r" _
+    & " where bayguidefirms.firmId = " & gFirmId _
+    & " and r.region = '" & lbRegion.Text & "'"
+End If
+
+myExecute "##354", sql
+
 Grid.TextMatrix(mousRow, gfRegion) = lbRegion.Text
 lbHide
 cmAdd.Enabled = True
-'cmDel.Enabled = True
 cmExit.Enabled = True
 cbM.Enabled = True
 cmExel.Enabled = True
@@ -857,7 +875,7 @@ lbHide
 End Sub
 
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim str As String, i As Integer, strId As String
+Dim str As String, I As Integer, strId As String
 If KeyCode = vbKeyReturn Then
  str = Trim(tbMobile.Text)
  gFirmId = Grid.TextMatrix(mousRow, gfId)
@@ -875,8 +893,8 @@ If KeyCode = vbKeyReturn Then
     
     sql = "insert into bayGuideFirms (firmId, name, ManagId) values (" & _
     gFirmId & ", '" & str & "', 14)"
-    i = myExecute("##50", sql, -196)
-    If i <> 0 Then GoTo ERR0:
+    I = myExecute("##50", sql, -196)
+    If I <> 0 Then GoTo ERR0:
     wrkDefault.CommitTrans
     
     
@@ -898,8 +916,8 @@ If KeyCode = vbKeyReturn Then
     sql = "UPDATE BayGuideFirms SET Name = '" & str & _
     "' WHERE (((FirmId)=" & strId & "));"
 '    MsgBox sql
-    i = myExecute("##356", sql, -196)
-    If i <> 0 Then GoTo ERR0:
+    I = myExecute("##356", sql, -196)
+    If I <> 0 Then GoTo ERR0:
     
    End If
    On Error GoTo 0
@@ -938,7 +956,7 @@ AA:
 End If
 Exit Sub
 
-ERR0: If i = -2 Then
+ERR0: If I = -2 Then
         MsgBox "Такая фирма уже есть", , "Ошибка!"
         tbMobile.SetFocus
       Else

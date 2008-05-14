@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "msflxgrd.ocx"
+Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Report 
    BackColor       =   &H8000000A&
    Caption         =   "Отчет"
@@ -48,7 +48,7 @@ Begin VB.Form Report
       AllowUserResizing=   1
    End
    Begin VB.Label laHeader 
-      Alignment       =   2  'Центровка
+      Alignment       =   2  'Center
       BeginProperty Font 
          Name            =   "MS Sans Serif"
          Size            =   8.25
@@ -75,7 +75,7 @@ Begin VB.Form Report
    End
    Begin VB.Label laCount 
       BackColor       =   &H8000000E&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Caption         =   " "
       Height          =   255
       Left            =   1560
@@ -164,7 +164,7 @@ End If
 End Sub
 
 Sub statistic(Optional year As String = "")
-Dim nRow As Long, nCol As Long, str As String, i As Integer, j As Integer
+Dim nRow As Long, nCol As Long, str As String, I As Integer, j As Integer
 Dim iMonth As Integer, iYear As Integer, iCount As Integer, strWhere As String
 Dim nMonth As Integer, nYear As Integer, mCount As Integer, lastCol As Integer
 Dim wtSum As Single, paidSum As Single, orderSum As Single, visits As Integer, visitSum As Integer
@@ -178,8 +178,8 @@ If year = "" Then
  str = Reports.tbStartDate.Text
  Report.laHeader.Caption = "Статистика посещений фирм за период с " & str & _
                 " по " & Reports.tbEndDate.Text
- nMonth = Left$(str, 2)
- nYear = Right$(str, 4)
+ nMonth = left$(str, 2)
+ nYear = right$(str, 4)
  mCount = DateDiff("m", str, Reports.tbEndDate.Text) + 1
 
  str = "|<Название фирмы|^М |Регион|Скидки"
@@ -201,15 +201,6 @@ If year = "" Then
  Report.Grid.ColWidth(3) = 1605
 'Grid.ColWidth(lastCol + 2) = 795
  Report.nCols = lastCol + 2
- 'If Report.Regim = "KK" Then
- '   strWhere = "WHERE (((BayGuideFirms.Kategor)='К'));"
- '   Report.Grid.ColWidth(4) = 0
- 'ElseIf Report.Regim = "RA" Then
- '   strWhere = "WHERE (((BayGuideFirms.Kategor)='П' Or (BayGuideFirms.Kategor)='Д'));"
- '   Report.Grid.ColWidth(4) = 375
- 'Else
- '   Exit Sub
- 'End If
   
  nRow = 1
 Else
@@ -219,12 +210,11 @@ Else
  strWhere = ""
 End If
 
-'sql = "SELECT BayGuideFirms.FirmId, BayGuideFirms.Name, BayGuideFirms.Kategor, " & _
-"BayGuideFirms.year01, BayGuideFirms.year02, BayGuideFirms.year03, BayGuideFirms.year04, " & _
-"BayGuideFirms.Sale, GuideManag.Manag FROM BayGuideFirms LEFT JOIN GuideManag " & _
-"ON BayGuideFirms.ManagId = GuideManag.ManagId " & strWhere
-sql = "SELECT FirmId, Name, Kategor, year01, year02, year03, year04, " & _
-"Sale, ManagId FROM BayGuideFirms " & strWhere
+sql = "SELECT f.FirmId, f.Name, isnull(r.region, '') as Kategor, f.year01, f.year02, f.year03, f.year04, f.Sale, f.ManagId " _
+& " FROM BayGuideFirms f" _
+& " left join bayRegion r on f.regionid = r.regionid" _
+& strWhere
+
 'MsgBox sql
 Set tbFirms = myOpenRecordSet("##68", sql, dbOpenDynaset) 'ForwardOnly)
 If tbFirms Is Nothing Then Exit Sub
@@ -511,7 +501,7 @@ End Sub
 'Regim = "allOrdersByFirmName" 'Отчет "Все заказы Фирмы"'
 'Regim = "OrdersByFirmName"    'Отчет "Незакрытые заказы"'
 Sub firmOrders()
-Dim l As Long, str As String, i As Integer, j As Integer
+Dim l As Long, str As String, I As Integer, j As Integer
 Dim strFirm As String, strFrom As String, strWhere As String
 Grid.FormatString = "|<№ заказа|^M |<Статус|<Проблемы|" & _
 "<Дата выдачи|<Время выдачи|Заказано|Оплачено|Отгружено"
@@ -654,7 +644,7 @@ laHeader.Width = laHeader.Width + w
 cmExel.Top = cmExel.Top + h
 cmPrint.Top = cmPrint.Top + h
 cmExit.Top = cmExit.Top + h
-cmExit.Left = cmExit.Left + w
+cmExit.left = cmExit.left + w
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)

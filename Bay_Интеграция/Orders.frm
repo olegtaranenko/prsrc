@@ -460,8 +460,8 @@ sql = "update system set resursLock = resursLock" 'lock02
 myBase.Execute (sql) 'lock03
 
 str = getSystemField("lastPrivatNum")
-DateFromNum = Left$(str, 5)
-intNum = Right$(str, Len(str) - 5)
+DateFromNum = left$(str, 5)
+intNum = right$(str, Len(str) - 5)
 
 intNum = intNum + 1
 If intNum < 100 Then
@@ -621,7 +621,7 @@ Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
 Dim str As String, value As String, I As Integer, il As Long
 
 If cbM.ListIndex < 0 Then
-    cbM_LostFocus
+'    cbM_LostFocus
     Exit Sub
 End If
 
@@ -889,7 +889,7 @@ cmAdd.Top = cmAdd.Top + h
 'cmExAll.Top = cmExAll.Top + h
 cmExvel.Top = cmExvel.Top + h
 tbEnable.Top = tbEnable.Top + h
-tbEnable.Left = tbEnable.Left + w
+tbEnable.left = tbEnable.left + w
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
@@ -1965,14 +1965,14 @@ If str = "" Then
     MsgBox "По этому полю фильтр не предусмотрен"
     Exit Function
 End If
-typ = Left$(str, 1)
+typ = left$(str, 1)
 str = Mid$(str, 2)
 If typ = "d" Then
     If value = "" Then
         value = " Is Null"
     Else
         If operator = "=" Then
-            value = Left$(value, 6) & "20" & Mid$(value, 7, 2) 'это нужно если в Win98 установлен "гггг" - формат года
+            value = left$(value, 6) & "20" & Mid$(value, 7, 2) 'это нужно если в Win98 установлен "гггг" - формат года
             value = " Like '" & value & "%'"
         ElseIf operator = "<" Then
             value = " <= '" & Format(value, "yyyy-mm-dd") & " 11:59:59 PM'"
