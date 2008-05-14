@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "msflxgrd.ocx"
+Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form CehOrders 
    BackColor       =   &H8000000A&
    Caption         =   " "
@@ -22,7 +22,7 @@ Begin VB.Form CehOrders
       Width           =   2175
    End
    Begin VB.Frame Frame1 
-      BorderStyle     =   0  'Нет
+      BorderStyle     =   0  'None
       Caption         =   "Frame1"
       Height          =   435
       Left            =   5040
@@ -30,10 +30,10 @@ Begin VB.Form CehOrders
       Top             =   2280
       Width           =   2295
       Begin VB.Label Label2 
-         Alignment       =   2  'Центровка
-         Appearance      =   0  'Плоска
+         Alignment       =   2  'Center
+         Appearance      =   0  'Flat
          BackColor       =   &H80000005&
-         BorderStyle     =   1  'Фиксировано один
+         BorderStyle     =   1  'Fixed Single
          Caption         =   "Идет загрузка..."
          ForeColor       =   &H80000008&
          Height          =   315
@@ -258,7 +258,7 @@ tmpTopRow = Grid.TopRow
     On Error GoTo errMsg
     GoTo START
 errMsg:
-    MsgBox Error, , "Ошибка  " & Err & " в п\п cehBegin" '
+    MsgBox Error, , "Ошибка  " & err & " в п\п cehBegin" '
     End
 START:
 #End If
@@ -285,8 +285,8 @@ colWdth(chFirma) = Grid.ColWidth(chFirma)
 colWdth(chLogo) = Grid.ColWidth(chLogo) + Grid.ColWidth(chDataRes)
 
 Grid.Visible = False
-For il = Grid.Rows To 3 Step -1
-    Grid.RemoveItem (il)
+For il = Grid.rows To 3 Step -1
+    Grid.removeItem (il)
 Next il
 Grid.row = 1
 For il = 0 To Grid.Cols - 1
@@ -372,7 +372,7 @@ Dim color As Long, str1 As String  ', is100 As Boolean
     On Error GoTo errMsg
     GoTo START
 errMsg:
-    MsgBox Error, , "Ошибка  " & Err & " в п\п toCehFromStr" '
+    MsgBox Error, , "Ошибка  " & err & " в п\п toCehFromStr" '
     End
 START:
 #End If
@@ -550,6 +550,7 @@ Grid.ColWidth(chIzdelia) = 2450
 
 Timer1.Interval = 500
 Timer1.Enabled = True 'вызов cehBegin
+
 End Sub
 
 Private Sub Form_Resize()
@@ -566,10 +567,10 @@ Grid.Height = Grid.Height + h
 Grid.Width = Grid.Width + w
 cmRefresh.Top = cmRefresh.Top + h
 cmExAll.Top = cmExAll.Top + h
-cmExAll.Left = cmExAll.Left + w
+cmExAll.left = cmExAll.left + w
 cmZagruz.Top = cmZagruz.Top + h
-cmZagruz.Left = cmZagruz.Left + w
-cmPrint.Left = cmPrint.Left + w
+cmZagruz.left = cmZagruz.left + w
+cmPrint.left = cmPrint.left + w
 cmNaklad.Top = cmNaklad.Top + h
 End Sub
 
@@ -745,10 +746,10 @@ ElseIf v Then
         wrkDefault.CommitTrans
         cehBegin
     Else
-        wrkDefault.Rollback
+        wrkDefault.rollback
     End If
 Else ' заказ уже удален Менеджером
-    wrkDefault.Rollback
+    wrkDefault.rollback
     msgZakazDeleted
 End If
 
@@ -775,10 +776,10 @@ If I = 0 Then
         wrkDefault.CommitTrans  ' подтверждение транзакции
         cehBegin
     Else
-ER1:    wrkDefault.Rollback    ' отммена транзакции
+ER1:    wrkDefault.rollback    ' отммена транзакции
     End If
 ElseIf I = -1 Then
-    wrkDefault.Rollback
+    wrkDefault.rollback
     msgZakazDeleted
 End If
 
@@ -834,7 +835,7 @@ Dim str As String, I As Integer
     On Error GoTo errMsg
     GoTo START
 errMsg:
-    MsgBox Error, , "Ошибка  " & Err & " в п\п lbStatus_DblClick" '
+    MsgBox Error, , "Ошибка  " & err & " в п\п lbStatus_DblClick" '
     End
 START:
 #End If
@@ -897,10 +898,10 @@ AA:     If ValueToTableField("##39", "0", "Orders", "ProblemId") = 0 Then
             wrkDefault.CommitTrans
             cehBegin
         Else
-ER1:        wrkDefault.Rollback
+ER1:        wrkDefault.rollback
         End If
     Else
-ER2:    wrkDefault.Rollback
+ER2:    wrkDefault.rollback
         msgZakazDeleted
     End If
 End If
@@ -994,7 +995,7 @@ AA:
         tbOrders.Edit
     End If
     tbOrders!virabotka = virabotka
-    tbOrders.Update
+    tbOrders.update
     tbOrders.Close
 'End If
     

@@ -1,6 +1,8 @@
 Attribute VB_Name = "LogUtils"
-Public logFileName As String
-Public logLevel As Integer
+Private logFileName As String
+Private logLevel As Integer
+Private logLevelStr As String
+
 
 Private Const LOG_PANIC As Integer = 0
 Private Const LOG_ERROR As Integer = 10
@@ -19,7 +21,7 @@ Function panic(msg As String, Optional logger_id) As String
     End If
 End Function
 
-Function err(msg As String, Optional logger_id) As String
+Function erro(msg As String, Optional logger_id) As String
     If isErrorEnabled Then
         fileLogMsg msg, LOG_DEBUG
     End If
@@ -104,18 +106,18 @@ Dim fileNumber
         Exit Sub
     End If
     fileNumber = FreeFile
-    Open logFileName For Output As #fileNumber
-    Print #fileNumber, formatLogMessage(msg, level)
+    Open logFileName For Append As #fileNumber
+    Print #fileNumber, formatted(msg, level)
     Close #fileNumber
     
 End Sub
 
 
 Function formatted(msg, level As Integer)
-Dim level As String
+Dim levelStr As String
 
-    level = Level2String
-    formatted = Format(Now, "dd.mm.yyyy hh:mi:ss") & "-" & level & " - " & msg
+    levelStr = Level2String(level)
+    formatted = Format(Now, "dd.mm.yyyy hh:m:ss") & "-" & levelStr & " - " & msg
 End Function
 
 Function Level2String(level As Integer)
@@ -148,11 +150,12 @@ Dim attr As Boolean
     End If
 On Error GoTo IOErr
     logEnabled = True
-    If Dir(logFileName) Then
-        attr = GetAttr(logFileName) And vbDirectory < 1
-    End If
+'    If Dir(logFileName) Then
+'        attr = (GetAttr(logFileName) And vbDirectory) = vbDirectory
+'    End If
     fileLogMsg " =========== Start new log session for " & App.EXEName, 0
-    setLogLevel (getEffectiveSetting("log"))
+    logLevelStr = getEffectiveSetting("log")
+    setLogLevel (logLevelStr)
     
 IOErr:
     If attr Then
@@ -175,10 +178,10 @@ Dim levelInt As Integer
         levelInt = string2LogLevel(CStr(level))
     End If
     info ("Уровень протоколирования установлен в " & Level2String(levelInt))
-    logLevel = level
+    logLevel = levelInt
 End Sub
 
-Function string2LogLevel(level As String)
+Function string2LogLevel(ByVal level As String)
     If LCase(level) = "panic" Then
         string2LogLevel = LOG_PANIC
     ElseIf LCase(level) = "error" Then

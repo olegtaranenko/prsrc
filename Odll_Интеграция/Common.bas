@@ -381,11 +381,11 @@ On Error GoTo 0
 Exit Sub
 
 ERR1:
-If Err = 9 Then
+If err = 9 Then
     maxLen = 0
     Resume Next
 Else
-    MsgBox Error, , "Ошибка 17-" & Err & ":  " '##17
+    MsgBox Error, , "Ошибка 17-" & err & ":  " '##17
     End
 End If
 
@@ -663,11 +663,11 @@ getResurs = maxDay '1:
 Exit Function
 
 ERR1:
-If Err = 9 Then
+If err = 9 Then
     dayMassLenght 'корректируем размерности, если надо
     Resume
 Else
-    MsgBox Error, , "Ошибка 18-" & Err & ":  " '##18
+    MsgBox Error, , "Ошибка 18-" & err & ":  " '##18
     myBase.Close: End
 End If
 
@@ -920,6 +920,8 @@ loginsPath = getEffectiveSetting("loginsPath")
 SvodkaPath = getEffectiveSetting("SvodkaPath")
 NomenksPath = getEffectiveSetting("NomenksPath")
 ProductsPath = getEffectiveSetting("ProductsPath")
+
+initLogFileName
 
 
 isXP = (Dir$("C:\WINDOWS\net.exe") = "") 'в XP нет файла
@@ -2364,7 +2366,7 @@ Dim I As Integer, s As Single
     On Error GoTo errMsg
     GoTo START
 errMsg:
-    MsgBox Error, , "Ошибка  " & Err & " в п\п predmetiIsClose" '
+    MsgBox Error, , "Ошибка  " & err & " в п\п predmetiIsClose" '
     End
 START:
 #End If

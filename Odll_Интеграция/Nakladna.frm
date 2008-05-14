@@ -736,9 +736,8 @@ End If
 
 loadToGrid 0
 
-paginateResult
+    paginateResult
 setPage (1)
-
 
 MousePointer = flexDefault
 End Sub
@@ -748,7 +747,7 @@ End Sub
 Sub paginateResult()
 Dim stdPageRows As Integer
 
-    stdPageRows = CInt(getEffectiveSetting("gCfgOrderPageSize"))
+    stdPageRows = CInt(getEffectiveSetting("gCfgOrderPageSize", 35))
     
     If quantity2 < stdPageRows Then
         pageNum = 1
@@ -772,7 +771,7 @@ Dim stdPageRows As Integer
 End Sub
 
 Function getPageSize(ByVal rows As Integer) As Long
-    getPageSize = 250 + (Grid2(0).CellHeight + 12) * rows
+    getPageSize = 300 + (Grid2(0).CellHeight + 12) * rows
 End Function
 
 Sub setPage(pageNo As Integer)
@@ -991,15 +990,15 @@ Dim h As Integer, w As Integer
     cmExel.Top = cmExel.Top + h
     cmSostav.Top = cmSostav.Top + h
     cmClose.Top = cmClose.Top + h
-    cmClose.Left = cmClose.Left + w
+    cmClose.left = cmClose.left + w
     cmExit.Top = cmExit.Top + h
-    cmExit.Left = cmExit.Left + w
-    laDate.Left = laDate.Left + w
-    tbPageSize.Left = cmExit.Left - tbPageSize.Width - 150
+    cmExit.left = cmExit.left + w
+    laDate.left = laDate.left + w
+    tbPageSize.left = cmExit.left - tbPageSize.Width - 150
     tbPageSize.Top = cmExit.Top
-    laPageSize.Left = tbPageSize.Left - laPageSize.Width - 50
+    laPageSize.left = tbPageSize.left - laPageSize.Width - 50
     laPageSize.Top = cmExit.Top
-    laPageOf.Left = laDate.Left - 100 - laPageOf.Width
+    laPageOf.left = laDate.left - 100 - laPageOf.Width
     
 End Sub
 
