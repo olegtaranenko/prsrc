@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCTL.OCX"
+Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "mscomctl.ocx"
 Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Nomenklatura 
    BackColor       =   &H8000000A&
@@ -1022,7 +1022,7 @@ If cmKlassLoad.Visible Then 'после режима "fltOborot"
     cmKlassLoad.Visible = False
     tv.Visible = True
     Grid.Width = Grid.Width - tv.Width
-    Grid.Left = Grid.Left + tv.Width
+    Grid.left = Grid.left + tv.Width
 End If
 If Regim = "nomenkSelect" Or Regim = "singleSelect" Then 'из справ-ка гот.изделий
 '    cmSel.Visible = True
@@ -1052,7 +1052,7 @@ ElseIf Regim = "asOborot" Or Regim = "sourOborot" Then
     "затем  в левой панели выберите группу с требуемой номенклатурой."
 ElseIf Regim = "fltOborot" Then
     tv.Visible = False
-    Grid.Left = Grid.Left - tv.Width
+    Grid.left = Grid.left - tv.Width
     Grid.Width = Grid.Width + tv.Width
     cmKlassLoad.Visible = True
     Me.Caption = "Номенклатура для закупки"
@@ -1435,7 +1435,7 @@ cmHide.Top = cmHide.Top + h
 cmExcel.Top = cmExcel.Top + h
 'cmSel.Top = cmSel.Top + h
 cmExit.Top = cmExit.Top + h
-cmExit.Left = cmExit.Left + w
+cmExit.left = cmExit.left + w
 cmObrez.Top = cmObrez.Top + h
 ckUnUsed.Top = ckUnUsed.Top + h
 '.Left = .Left + w
@@ -2049,12 +2049,14 @@ Dim klassid As String
 Dim newKey As String, xDate As String, groupText As String
 Dim queryTimeout As Variant
 
+
     msgOk = MsgBox("Вы уверены, что хотите пересчитать себестоимоть?" _
         , vbOKCancel, "Предупреждение")
     If msgOk <> vbOK Then
         Exit Sub
     End If
     
+    MousePointer = flexHourglass
     Set tvNode = tv.Nodes(tv.SelectedItem.Index)
     klassid = Mid(tvNode.key, 2)
     
@@ -2084,6 +2086,7 @@ Dim queryTimeout As Variant
             , vbOKOnly, "Предупреждение"
     End If
     
+    MousePointer = flexDefault
 End Sub
 
 Private Sub mnDel_Click()
@@ -2728,9 +2731,9 @@ Grid.Visible = False
 If filtr = "obrez" Then
     strWhere = "WHERE sGuideNomenk.perList > 1.0 "
 ElseIf filtr <> "" Then
-    If Left$(filtr, 1) = "F" Then
+    If left$(filtr, 1) = "F" Then
         strWhere = "WHERE sGuideNomenk.nomNom Like '*" & Mid$(filtr, 2) & "*'"
-    ElseIf Left$(filtr, 1) = "G" Then
+    ElseIf left$(filtr, 1) = "G" Then
         strWhere = "WHERE sGuideNomenk.nomName Like '*" & Mid$(filtr, 2) & "*'"
     End If
 ElseIf Regim = "checkCurOstat" Or Regim = "fltOborot" Then

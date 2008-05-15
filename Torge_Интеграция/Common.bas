@@ -510,6 +510,9 @@ loginsPath = getEffectiveSetting("loginsPath")
 SvodkaPath = getEffectiveSetting("SvodkaPath")
 
 baseOpen
+
+CheckIntegration
+
     sql = "create variable @manager varchar(20)"
     If myExecute("##0.2", sql, 0) = 0 Then End
 
