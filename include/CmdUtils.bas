@@ -23,6 +23,8 @@ End Type
 Sub parseCommandLine(Optional MaxArgs)
    'Declare variables.
    Dim c, CmdLine, CmdLnLen, InArg, I, NumArgs
+   Dim inQuoted As Boolean
+   
    'See if MaxArgs was provided.
    If IsMissing(MaxArgs) Then MaxArgs = 10
    'Make array of the correct size.
@@ -35,8 +37,18 @@ Sub parseCommandLine(Optional MaxArgs)
    'at a time.
    For I = 1 To CmdLnLen
       c = Mid(CmdLine, I, 1)
+      If c = """" Then
+          If inQuoted Then
+             InArg = False
+             inQuoted = False
+          Else
+            If NumArgs = MaxArgs Then Exit For
+            NumArgs = NumArgs + 1
+            InArg = True
+            inQuoted = True
+          End If
       'Test for space or tab.
-      If (c <> " " And c <> vbTab) Then
+      ElseIf (c <> " " And c <> vbTab) Or inQuoted Then
          'Neither space nor tab.
          'Test if already in argument.
          If Not InArg Then
@@ -53,6 +65,7 @@ Sub parseCommandLine(Optional MaxArgs)
          'Set InArg flag to False.
          InArg = False
       End If
+      
    Next I
    'Resize array just enough to hold arguments.
    ReDim Preserve rawCmdArguments(NumArgs)
