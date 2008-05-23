@@ -14,11 +14,14 @@ Dim failed As Boolean
     loadEffectiveSettingsCfg
     initLogFileName
     
-
+    'printWindowsVersion
+    
     myFilename = getFullExeName()
 
     existsFile = Dir(myFilename)
     If existsFile = "" Or ((GetAttr(myFilename) And vbDirectory) = vbDirectory) Then
+        dbg "Exe filename = "
+        erro "File " & myFilename & " does not exists"
         fatalError "Файл " & myFilename & " не обнаружен. " _
         & vbCr & "Необходимо исправить конфигурацию запуска приложения cfg.exe"
     End If
@@ -45,11 +48,14 @@ Dim repositoryExe As String, repositoryPath As String
 Dim check As Integer
 
     repositoryPath = getEffectiveSetting("repositoryPath")
+    
     nameWithoutPath = stripPath(myFilename)
     repositoryExe = repositoryPath & "\" & nameWithoutPath
     
     checkVersionExe = True
-    If GetDllVersion(myFilename, myInfo) And GetDllVersion(repositoryExe, repositoryInfo) Then
+    If GetDllVersion(nameWithoutPath, myInfo) Then
+    If GetDllVersion(repositoryExe, repositoryInfo) Then
+        
         check = compareVersion(myInfo, repositoryInfo)
         If check < 0 Then
             If vbYes = MsgBox("Обнаружена новая версия программы " & nameWithoutPath & ". " _
@@ -61,6 +67,7 @@ Dim check As Integer
                 'do copy
                 ShellAndHold "xcopy /y " & repositoryExe & " " & myFilename, vbHide
             End If
+        End If
         End If
     Else
         MsgBox "Невозможно определить версию файла " & myFilename, vbExclamation
@@ -82,7 +89,7 @@ Dim absolute As Boolean
         ' check if path is relative or absolute
     End If
     If Not isAbsolute(getExePath) Then
-        getExePath = App.path & "\" & getExePath
+        getExePath = App.path & getExePath
     End If
     If Len(getExePath) = 0 Then
         getExePath = App.path

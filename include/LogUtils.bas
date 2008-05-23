@@ -146,14 +146,14 @@ Dim attr As Boolean
     logFileName = getEffectiveSetting("logger")
 
     If logFileName = "" Then
-        logFileName = App.path & "\" & App.EXEName & ".log"
+        logFileName = App.path & "\" & App.exeName & ".log"
     End If
 On Error GoTo IOErr
     logEnabled = True
 '    If Dir(logFileName) Then
 '        attr = (GetAttr(logFileName) And vbDirectory) = vbDirectory
 '    End If
-    fileLogMsg " =========== Start new log session for " & App.EXEName, 0
+    fileLogMsg " =========== Start new log session for " & App.exeName, 0
     logLevelStr = getEffectiveSetting("log")
     setLogLevel (logLevelStr)
     
@@ -195,9 +195,10 @@ Function string2LogLevel(ByVal level As String)
     ElseIf LCase(level) = "trace" Then
         string2LogLevel = LOG_TRACE
     Else
-        MsgBox "Неизвестный уровень протокола " & level _
+        string2LogLevel = LOG_WARN
+        'MsgBox "Неизвестный уровень протокола " & level _
         & vbCr & "Протоколирование будет отключено", vbExclamation, "Предупреждение"
-        logEnabled = False
+        logEnabled = True
     End If
     
 End Function

@@ -230,7 +230,7 @@ EN1:
 End Sub
 
 Function getAppCfgDefaultName() As String
-    getAppCfgDefaultName = App.path & "\" & App.EXEName & ".cfg"
+    getAppCfgDefaultName = App.path & "\" & App.exeName & ".cfg"
 End Function
 
 Function getSiteCfgDefaultName() As String
@@ -422,3 +422,19 @@ Dim sz As Integer
     Next I
     stripPath = myFile
 End Function
+
+Sub checkReloadCfg()
+Dim reloadCfg As String
+
+    reloadCfg = getCurrentSetting("reloadCfg", argumentSettings)
+    If reloadCfg <> "" Then
+        MsgBox "Обнаружена необходимость обновления управляющей программы." _
+            & vbCr & "Это произойдет автоматически, после чего нужно будет запустить программу еще раз.", vbExclamation, "Предупреждение"
+        ShellAndWait "xcopy", " /y """ & reloadCfg & """", vbHide, 1000
+        
+        
+        End
+    End If
+
+End Sub
+

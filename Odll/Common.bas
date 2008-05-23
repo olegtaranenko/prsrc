@@ -381,11 +381,11 @@ On Error GoTo 0
 Exit Sub
 
 ERR1:
-If err = 9 Then
+If Err = 9 Then
     maxLen = 0
     Resume Next
 Else
-    MsgBox Error, , "Ошибка 17-" & err & ":  " '##17
+    MsgBox Error, , "Ошибка 17-" & Err & ":  " '##17
     End
 End If
 
@@ -663,11 +663,11 @@ getResurs = maxDay '1:
 Exit Function
 
 ERR1:
-If err = 9 Then
+If Err = 9 Then
     dayMassLenght 'корректируем размерности, если надо
     Resume
 Else
-    MsgBox Error, , "Ошибка 18-" & err & ":  " '##18
+    MsgBox Error, , "Ошибка 18-" & Err & ":  " '##18
     myBase.Close: End
 End If
 
@@ -887,6 +887,9 @@ colNum = orColNumber
 ReDim Preserve orSqlFields(orColNumber + 1)
 orSqlFields(orColNumber) = field
 End Sub
+
+
+
 '$odbc10$
 Sub Main()
 Dim I As Integer, s As Single, str As String, str1 As String, str2 As String
@@ -923,6 +926,7 @@ ProductsPath = getEffectiveSetting("ProductsPath")
 
 initLogFileName
 
+checkReloadCfg
 
 isXP = (Dir$("C:\WINDOWS\net.exe") = "") 'в XP нет файла
 On Error GoTo ERRs ' не дает Err если в сети не б.найден server, хотя из под DOS дает сист.Err=53
@@ -1020,7 +1024,7 @@ checkNextYear '$$3 если сменился год - пересчет статистики посещений
 'If Not (dostup = "c" Or dostup = "y") Then
 If dostup = "a" Or dostup = "m" Or dostup = "" Or dostup = "b" Then
  'logFile = "C:\Windows\Orders" ' без расширения
- logFile = App.path & "\" & App.EXEName
+ logFile = App.path & "\" & App.exeName
  str2 = logFile & "$.log" ' временный файл
  logFile = logFile & ".log"
  
@@ -2366,7 +2370,7 @@ Dim I As Integer, s As Single
     On Error GoTo errMsg
     GoTo START
 errMsg:
-    MsgBox Error, , "Ошибка  " & err & " в п\п predmetiIsClose" '
+    MsgBox Error, , "Ошибка  " & Err & " в п\п predmetiIsClose" '
     End
 START:
 #End If

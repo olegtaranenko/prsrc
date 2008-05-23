@@ -4,6 +4,19 @@ Option Explicit
 Private Declare Function LoadLibrary Lib "kernel32" _
         Alias "LoadLibraryA" _
         (ByVal lpLibFileName As String) As Long
+
+Private Declare Function LoadLibraryEx Lib "kernel32" _
+        Alias "LoadLibraryExA" _
+        (ByVal lpLibFileName As String _
+            , ByVal hFile As Long _
+            , ByVal dwFlags As Long _
+        ) As Long
+
+
+Private Declare Function GetModuleHandle Lib "kernel32" _
+        Alias "GetModuleHandleA" _
+        (ByVal lpLibFileName As String) As Long
+        
 Private Declare Function FindResource Lib "kernel32" _
         Alias "FindResourceA" (ByVal hInstance As Long, _
         ByVal lpName As String, ByVal lpType As String) As Long
@@ -20,6 +33,8 @@ Private Declare Function GetModuleFileName Lib "kernel32" _
         ByVal lpFileName As String, ByVal nSize As Long) As Long
 Private Declare Function FreeLibrary Lib "kernel32" _
         (ByVal hLibModule As Long) As Long
+Private Declare Function GetLastError Lib "kernel32" _
+        () As Long
 
 
 '-- VB type casting!
@@ -37,12 +52,16 @@ Private Const WAIT_TIMEOUT = &H102&
 Private Const INFINITE = &HFFFFFFFF       '  Infinite timeout
 Private Const NORMAL_PRIORITY_CLASS = &H20
 Private Const SYNCHRONIZE = &H100000
+Private Const LOAD_LIBRARY_AS_DATAFILE = &H2
 
 Private Declare Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)
 Private Declare Function WaitForInputIdle Lib "user32" (ByVal hProcess As Long, ByVal dwMilliseconds As Long) As Long
 Private Declare Function CloseHandle Lib "kernel32" (ByVal hObject As Long) As Long
 Private Declare Function WaitForSingleObject Lib "kernel32" (ByVal hHandle As Long, ByVal dwMilliseconds As Long) As Long
 Private Declare Function OpenProcess Lib "kernel32" (ByVal dwDesiredAccess As Long, ByVal bInheritHandle As Long, ByVal dwProcessId As Long) As Long
+
+
+Private Declare Function GetVersion Lib "kernel32" () As Long
 
 
 Type VS_VERSIONINFO
@@ -103,7 +122,12 @@ Dim build As Long
 maj = -1: min = -1: rev = -1: build = -1
 
 GetDllVersion = False           '-- pessimistic view
-hDll = LoadLibrary(supFile)     '-- try to load the file
+
+Dim errorCode As Long
+Dim hFile As Long
+hDll = LoadLibraryEx(supFile, hFile, LOAD_LIBRARY_AS_DATAFILE)     '-- try to load the file
+errorCode = GetLastError
+
 If (hDll) Then
     '-- get the load path
     Dim tmpPath As String
@@ -169,6 +193,8 @@ If (hDll) Then
     End If
     '-- unload the library instance count...
     FreeLibrary (hDll)
+Else
+    erro " Ошибка при определении версии файла. GetLastError = " & errorCode
 End If
 End Function
 
@@ -329,4 +355,44 @@ Function PathFileToPath(sFilePathName As String) As String
         End If
     Next
 End Function
+
+
+Private Function getRepositoryPathFile(exeName As String, ByRef version As VersionInfo) As String
+    getRepositoryPathFile = PathFileToPath(version.path) & "\" & version.maj & "\" & version.min & "\" & exeName & ".exe" _
+        & "." & version.maj & "." & version.min & "." & version.bld
+End Function
+
+
+Public Sub GetHiLoByte(X As Integer, LoByte As Integer, HiByte As Integer)
+    LoByte = X And &HFF&
+    HiByte = X \ &H100
+End Sub
+
+
+Public Sub GetHiLoWord(X As Long, LoWord As Integer, HiWord As Integer)
+    LoWord = CInt(X And &HFFFF&)
+    HiWord = CInt(X \ &H10000)
+End Sub
+
+
+Public Sub printWindowsVersion()
+    Dim WinMajor As Integer
+    Dim WinMinor As Integer
+    Dim DosMajor As Integer
+    Dim DosMinor As Integer
+    Dim RetLong As Long
+    Dim LoWord As Integer
+    Dim HiWord As Integer
+
+    RetLong = GetVersion()
+    Call GetHiLoWord(RetLong, LoWord, HiWord)
+
+    Call GetHiLoByte(LoWord, WinMajor, WinMinor)
+    Call GetHiLoByte(HiWord, DosMinor, DosMajor)
+
+    info "Windows version:" & WinMajor & "." & WinMinor
+    info "DOS version:" & DosMajor & "." & DosMinor
+
+End Sub
+
 
