@@ -225,6 +225,7 @@ Begin VB.Form Nakladna
       Width           =   495
    End
    Begin VB.Label laOt 
+      BackColor       =   &H8000000A&
       Caption         =   "От:"
       Height          =   255
       Index           =   0
@@ -243,14 +244,16 @@ Begin VB.Form Nakladna
       Width           =   1095
    End
    Begin VB.Label laDate 
+      BackColor       =   &H8000000A&
       Height          =   195
-      Left            =   7020
+      Left            =   8340
       TabIndex        =   18
-      Top             =   0
+      Top             =   120
+      Visible         =   0   'False
       Width           =   1155
    End
    Begin VB.Label laSignatura 
-      BackColor       =   &H00FFFFFF&
+      BackColor       =   &H8000000A&
       Height          =   200
       Left            =   7020
       TabIndex        =   13
@@ -258,6 +261,7 @@ Begin VB.Form Nakladna
       Width           =   2472
    End
    Begin VB.Label laPerson 
+      BackColor       =   &H8000000A&
       Caption         =   "Исполнитель:"
       Height          =   195
       Left            =   5700
@@ -266,6 +270,7 @@ Begin VB.Form Nakladna
       Width           =   1155
    End
    Begin VB.Label laFirm 
+      BackColor       =   &H8000000A&
       Caption         =   "laFirm"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
@@ -283,6 +288,7 @@ Begin VB.Form Nakladna
       Width           =   3495
    End
    Begin VB.Label laPlatel 
+      BackColor       =   &H8000000A&
       Caption         =   "Плательщик:"
       Height          =   195
       Left            =   2520
@@ -291,6 +297,7 @@ Begin VB.Form Nakladna
       Width           =   1035
    End
    Begin VB.Label laDest 
+      BackColor       =   &H8000000A&
       Caption         =   "laDest"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
@@ -309,6 +316,7 @@ Begin VB.Form Nakladna
       Width           =   2055
    End
    Begin VB.Label laKomu 
+      BackColor       =   &H8000000A&
       Caption         =   "Кому:"
       Height          =   195
       Index           =   0
@@ -318,6 +326,7 @@ Begin VB.Form Nakladna
       Width           =   495
    End
    Begin VB.Label laSours 
+      BackColor       =   &H8000000A&
       Caption         =   "laSours"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
@@ -346,6 +355,7 @@ Begin VB.Form Nakladna
       Width           =   255
    End
    Begin VB.Label laDocNum 
+      BackColor       =   &H8000000A&
       Caption         =   "laDocNum"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
@@ -364,6 +374,7 @@ Begin VB.Form Nakladna
       Width           =   1095
    End
    Begin VB.Label laTitle 
+      BackColor       =   &H8000000A&
       Caption         =   "Накладная №"
       Height          =   195
       Left            =   180
@@ -600,6 +611,7 @@ End Sub
 Private Sub cmPrint_Click()
 Dim I As Integer
 
+laDate.Visible = True
 laDate.Caption = Format(Now(), "dd.mm.yy hh:nn")
 
 For I = 1 To pageNum
@@ -771,7 +783,7 @@ Dim stdPageRows As Integer
 End Sub
 
 Function getPageSize(ByVal rows As Integer) As Long
-    getPageSize = 300 + (Grid2(0).CellHeight + 12) * rows
+    getPageSize = 300 + (Grid2(0).CellHeight + 25) * rows
 End Function
 
 Sub setPage(pageNo As Integer)
