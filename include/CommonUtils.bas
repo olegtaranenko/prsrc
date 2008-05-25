@@ -16,6 +16,7 @@ Sub fatalError(msg As String)
 End Sub
 
 Sub getAppInfo(ByRef version As VersionInfo)
+    version.path = App.path & "\" & App.exeName & ".exe"
     version.maj = App.Major
     version.min = App.Minor
     version.bld = App.Revision

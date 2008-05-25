@@ -7,40 +7,79 @@ Dim exeHandle As Double
 Dim existsFile As String
 
 '-- Main application entry point.
-Dim myFilename As String
+Dim localExe As String
 Dim failed As Boolean
 
 
     loadEffectiveSettingsCfg
     initLogFileName
-    
-    'printWindowsVersion
-    
-    myFilename = getFullExeName()
 
-    existsFile = Dir(myFilename)
-    If existsFile = "" Or ((GetAttr(myFilename) And vbDirectory) = vbDirectory) Then
+    
+    printWindowsVersion
+    
+    localExe = getFullExeName()
+
+    existsFile = Dir(localExe)
+    If existsFile = "" Or ((GetAttr(localExe) And vbDirectory) = vbDirectory) Then
         dbg "Exe filename = "
-        erro "File " & myFilename & " does not exists"
-        fatalError "Файл " & myFilename & " не обнаружен. " _
+        erro "File " & localExe & " does not exists"
+        fatalError "Файл " & localExe & " не обнаружен. " _
         & vbCr & "Необходимо исправить конфигурацию запуска приложения cfg.exe"
     End If
     
+    Dim repositoryExe As String, currentExe As String
+    failed = checkSelfVersion(localExe)
+    If failed Then
+        fatalError "При проверке версии управляющей программы произошла ошибка."
+    End If
     
-    failed = Not checkVersionExe(myFilename)
+    
+    failed = Not checkVersionExe(localExe)
     
     If failed Then
-        fatalError "При запуске программы произошла ошибка. Обратитесь к администратору."
+        fatalError "При проверке версии программы " & localExe & "произошла ошибка."
     End If
 
-    CmdLine = myFilename & getAppArguments
+    CmdLine = localExe & getAppArguments
 '    setAndSave "app", "lastRun", CmdLine
     
     exeHandle = Shell(CmdLine, vbNormalFocus)
-    Debug.Print myFilename & getAppArguments
+    Debug.Print localExe & getAppArguments
 End Sub
 
-Function checkVersionExe(myFilename As String) As Boolean
+
+Function checkSelfVersion(ByVal localExe As String) As Boolean
+Dim myInfo As VersionInfo, repositoryInfo As VersionInfo
+Dim repositoryPath As String
+Dim repositoryExe As String, appExe As String
+
+    checkSelfVersion = True             ' optimistic view
+    
+On Error GoTo EN1
+    repositoryPath = getEffectiveSetting("repositoryPath")
+    repositoryExe = repositoryPath & "\" & App.exeName & ".exe"
+    
+    getAppInfo myInfo
+    If GetDllVersion(repositoryExe, repositoryInfo) Then
+        If compareVersion(myInfo, repositoryInfo) < 0 Then
+            Dim cmd As String
+            cmd = localExe & " -reloadCfgSrc " & repositoryExe & " -reloadCfgDst " & myInfo.path
+            ' запустить обновление ...
+            Shell cmd, vbHide
+            '... и молча уйти
+            End
+        End If
+    Else
+        GoTo EN1
+    End If
+    
+    Exit Function
+EN1:
+    checkSelfVersion = False
+End Function
+
+
+Function checkVersionExe(localExe As String) As Boolean
 Dim myInfo As VersionInfo, repositoryInfo As VersionInfo
 Dim m As Variant
 Dim nameWithoutPath As String
@@ -49,7 +88,7 @@ Dim check As Integer
 
     repositoryPath = getEffectiveSetting("repositoryPath")
     
-    nameWithoutPath = stripPath(myFilename)
+    nameWithoutPath = stripPath(localExe)
     repositoryExe = repositoryPath & "\" & nameWithoutPath
     
     checkVersionExe = True
@@ -65,12 +104,12 @@ Dim check As Integer
                 , vbYesNo, "Внимание") _
             Then
                 'do copy
-                ShellAndHold "xcopy /y " & repositoryExe & " " & myFilename, vbHide
+                ShellAndHold "xcopy /y " & repositoryExe & " " & localExe, vbHide
             End If
         End If
         End If
     Else
-        MsgBox "Невозможно определить версию файла " & myFilename, vbExclamation
+        MsgBox "Невозможно определить версию файла " & localExe, vbExclamation
         checkVersionExe = False
     End If
 End Function

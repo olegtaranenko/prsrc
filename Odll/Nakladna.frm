@@ -3,14 +3,14 @@ Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Nakladna 
    BackColor       =   &H8000000A&
    Caption         =   "Предметы "
-   ClientHeight    =   5535
+   ClientHeight    =   5532
    ClientLeft      =   60
-   ClientTop       =   345
+   ClientTop       =   348
    ClientWidth     =   9840
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   5535
+   ScaleHeight     =   5532
    ScaleWidth      =   9840
    StartUpPosition =   2  'CenterScreen
    Begin VB.TextBox tbPageSize 
@@ -56,8 +56,8 @@ Begin VB.Form Nakladna
          Top             =   240
          Visible         =   0   'False
          Width           =   5295
-         _ExtentX        =   9340
-         _ExtentY        =   1085
+         _ExtentX        =   9335
+         _ExtentY        =   1080
          _Version        =   393216
          AllowBigSelection=   0   'False
          AllowUserResizing=   1
@@ -88,8 +88,8 @@ Begin VB.Form Nakladna
       TabIndex        =   0
       Top             =   780
       Width           =   9615
-      _ExtentX        =   16960
-      _ExtentY        =   7223
+      _ExtentX        =   16955
+      _ExtentY        =   7218
       _Version        =   393216
       AllowBigSelection=   0   'False
       MergeCells      =   3
@@ -127,8 +127,8 @@ Begin VB.Form Nakladna
       Top             =   3120
       Visible         =   0   'False
       Width           =   9615
-      _ExtentX        =   16960
-      _ExtentY        =   3413
+      _ExtentX        =   16955
+      _ExtentY        =   3408
       _Version        =   393216
       AllowBigSelection=   0   'False
       AllowUserResizing=   1
@@ -161,7 +161,7 @@ Begin VB.Form Nakladna
       Caption         =   "laDest"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   8.25
+         Size            =   7.8
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -180,7 +180,7 @@ Begin VB.Form Nakladna
       Caption         =   "laSours"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   8.25
+         Size            =   7.8
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -199,7 +199,7 @@ Begin VB.Form Nakladna
       Caption         =   "laDocNum"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   8.25
+         Size            =   7.8
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -274,7 +274,7 @@ Begin VB.Form Nakladna
       Caption         =   "laFirm"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   8.25
+         Size            =   7.8
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -301,7 +301,7 @@ Begin VB.Form Nakladna
       Caption         =   "laDest"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   8.25
+         Size            =   7.8
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -330,7 +330,7 @@ Begin VB.Form Nakladna
       Caption         =   "laSours"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   8.25
+         Size            =   7.8
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -359,7 +359,7 @@ Begin VB.Form Nakladna
       Caption         =   "laDocNum"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   8.25
+         Size            =   7.8
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -783,7 +783,7 @@ Dim stdPageRows As Integer
 End Sub
 
 Function getPageSize(ByVal rows As Integer) As Long
-    getPageSize = 300 + (Grid2(0).CellHeight + 25) * rows
+    getPageSize = 350 + (Grid2(0).CellHeight + 25) * rows
 End Function
 
 Sub setPage(pageNo As Integer)

@@ -559,6 +559,8 @@ ReDim tmpL(0)
 
 loadEffectiveSettingsApp
 
+checkReloadCfg
+
 baseOpen
 dostup = getEffectiveSetting("dostup")
 otlad = getEffectiveSetting("otlad")

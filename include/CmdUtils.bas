@@ -424,17 +424,20 @@ Dim sz As Integer
 End Function
 
 Sub checkReloadCfg()
-Dim reloadCfg As String
+Dim reloadCfgSrc As String, reloadCfgDst As String
 
-    reloadCfg = getCurrentSetting("reloadCfg", argumentSettings)
-    If reloadCfg <> "" Then
+    reloadCfgSrc = getCurrentSetting("reloadCfgSrc", argumentSettings)
+    reloadCfgDst = getCurrentSetting("reloadCfgDst", argumentSettings)
+    If reloadCfgSrc <> "" Then
         MsgBox "ќбнаружена необходимость обновлени€ управл€ющей программы." _
             & vbCr & "Ёто произойдет автоматически, после чего нужно будет запустить программу еще раз.", vbExclamation, "ѕредупреждение"
-        ShellAndWait "xcopy", " /y """ & reloadCfg & """", vbHide, 1000
-        
-        
+            On Error GoTo EN1
+            FileCopy reloadCfgSrc, reloadCfgDst
         End
     End If
-
+    Exit Sub
+EN1:
+    fatalError "ќшибка при копировании управл€ющей программы cfg.exe"
+    End
 End Sub
 
