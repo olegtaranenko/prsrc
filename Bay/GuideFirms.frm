@@ -4,17 +4,17 @@ Begin VB.Form GuideFirms
    BackColor       =   &H8000000A&
    BorderStyle     =   1  'Fixed Single
    Caption         =   "Справочник сторонних организаций"
-   ClientHeight    =   8184
-   ClientLeft      =   48
-   ClientTop       =   336
+   ClientHeight    =   8190
+   ClientLeft      =   45
+   ClientTop       =   330
    ClientWidth     =   11880
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    MinButton       =   0   'False
-   ScaleHeight     =   8184
+   ScaleHeight     =   8190
    ScaleWidth      =   11880
    Begin VB.ListBox lbOborud 
-      Height          =   1584
+      Height          =   1620
       ItemData        =   "GuideFirms.frx":0000
       Left            =   1320
       List            =   "GuideFirms.frx":001C
@@ -76,7 +76,7 @@ Begin VB.Form GuideFirms
       End
    End
    Begin VB.ListBox lbRegion 
-      Height          =   5616
+      Height          =   5715
       ItemData        =   "GuideFirms.frx":005E
       Left            =   2640
       List            =   "GuideFirms.frx":0060
@@ -104,7 +104,7 @@ Begin VB.Form GuideFirms
    Begin VB.TextBox tbInform 
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   9.6
+         Size            =   9.75
          Charset         =   204
          Weight          =   400
          Underline       =   0   'False
@@ -150,7 +150,7 @@ Begin VB.Form GuideFirms
       Width           =   2535
    End
    Begin VB.ListBox lbM 
-      Height          =   240
+      Height          =   255
       Left            =   420
       TabIndex        =   12
       Top             =   1860
@@ -226,8 +226,8 @@ Begin VB.Form GuideFirms
       TabIndex        =   5
       Top             =   1020
       Width           =   11715
-      _ExtentX        =   20659
-      _ExtentY        =   11345
+      _ExtentX        =   20664
+      _ExtentY        =   11351
       _Version        =   393216
       MergeCells      =   2
       AllowUserResizing=   1
