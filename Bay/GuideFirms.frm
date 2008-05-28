@@ -4,17 +4,17 @@ Begin VB.Form GuideFirms
    BackColor       =   &H8000000A&
    BorderStyle     =   1  'Fixed Single
    Caption         =   "Справочник сторонних организаций"
-   ClientHeight    =   8190
-   ClientLeft      =   45
-   ClientTop       =   330
+   ClientHeight    =   8184
+   ClientLeft      =   48
+   ClientTop       =   336
    ClientWidth     =   11880
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    MinButton       =   0   'False
-   ScaleHeight     =   8190
+   ScaleHeight     =   8184
    ScaleWidth      =   11880
    Begin VB.ListBox lbOborud 
-      Height          =   1620
+      Height          =   1584
       ItemData        =   "GuideFirms.frx":0000
       Left            =   1320
       List            =   "GuideFirms.frx":001C
@@ -76,7 +76,7 @@ Begin VB.Form GuideFirms
       End
    End
    Begin VB.ListBox lbRegion 
-      Height          =   5715
+      Height          =   5616
       ItemData        =   "GuideFirms.frx":005E
       Left            =   2640
       List            =   "GuideFirms.frx":0060
@@ -104,7 +104,7 @@ Begin VB.Form GuideFirms
    Begin VB.TextBox tbInform 
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   9.75
+         Size            =   9.6
          Charset         =   204
          Weight          =   400
          Underline       =   0   'False
@@ -150,7 +150,7 @@ Begin VB.Form GuideFirms
       Width           =   2535
    End
    Begin VB.ListBox lbM 
-      Height          =   255
+      Height          =   240
       Left            =   420
       TabIndex        =   12
       Top             =   1860
@@ -226,8 +226,8 @@ Begin VB.Form GuideFirms
       TabIndex        =   5
       Top             =   1020
       Width           =   11715
-      _ExtentX        =   20664
-      _ExtentY        =   11351
+      _ExtentX        =   20659
+      _ExtentY        =   11345
       _Version        =   393216
       MergeCells      =   2
       AllowUserResizing=   1
@@ -417,9 +417,10 @@ If strWhere <> "" Then strWhere = "Where ((" & strWhere & ")) "
 'MsgBox "strWhere = " & strWhere
 quantity = 0
 
-sql = "SELECT f.*, isnull(r.region, '') as region " _
+sql = "SELECT f.*, isnull(r.region, '') as region, isnull(u.oborud, '') as oborud " _
 & " FROM BayGuideFirms f " _
 & " left join BayRegion r on r.regionid = f.regionid" _
+& " left join GuideOborud u on u.oborudId = f.oborudId" _
 & strWhere _
 & " ORDER BY Name"
 'MsgBox sql
@@ -788,8 +789,20 @@ If Grid.MouseRow = 0 And Shift = 2 Then _
 End Sub
 
 Private Sub lbOborud_DblClick()
-If ValueToTableField("##354", "'" & lbOborud.Text & "'", "BayGuideFirms", "Oborud", "byFirmId") = 0 _
-    Then Grid.TextMatrix(mousRow, gfOborud) = lbOborud.Text
+
+If lbOborud.Text = "" Then
+    sql = "update bayguidefirms set Oborudid = null " _
+    & " where bayguidefirms.firmId = " & gFirmId
+Else
+    sql = "update bayguidefirms set Oborudid = u.Oborudid " _
+    & " from GuideOborud u" _
+    & " where bayguidefirms.firmId = " & gFirmId _
+    & " and u.Oborud = '" & lbOborud.Text & "'"
+End If
+myExecute "##354", sql
+
+Grid.TextMatrix(mousRow, gfOborud) = lbOborud.Text
+
 lbHide
 
 End Sub
