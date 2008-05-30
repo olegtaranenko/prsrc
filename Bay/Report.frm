@@ -3,13 +3,13 @@ Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Report 
    BackColor       =   &H8000000A&
    Caption         =   "Отчет"
-   ClientHeight    =   8190
+   ClientHeight    =   8184
    ClientLeft      =   60
-   ClientTop       =   345
+   ClientTop       =   348
    ClientWidth     =   11880
    ControlBox      =   0   'False
    LinkTopic       =   "Form1"
-   ScaleHeight     =   8190
+   ScaleHeight     =   8184
    ScaleWidth      =   11880
    Begin VB.CommandButton cmPrint 
       Caption         =   "Печать"
@@ -41,8 +41,8 @@ Begin VB.Form Report
       TabIndex        =   0
       Top             =   240
       Width           =   11655
-      _ExtentX        =   20558
-      _ExtentY        =   13150
+      _ExtentX        =   20553
+      _ExtentY        =   13145
       _Version        =   393216
       MergeCells      =   2
       AllowUserResizing=   1
@@ -51,7 +51,7 @@ Begin VB.Form Report
       Alignment       =   2  'Center
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   8.25
+         Size            =   7.8
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -247,7 +247,7 @@ While Not tbFirms.EOF '                         *******************
     "WHERE ((" & strWhere & ") AND " & _
     "(Not ((StatusId)=0 Or (StatusId)=7)) AND " & _
     "((FirmId)=" & tbFirms!firmId & "));"
-'MsgBox sql
+'Debug.Print sql
     Set tbOrders = myOpenRecordSet("##69", sql, dbOpenForwardOnly)
     If tbOrders Is Nothing Then Exit Sub
     visits = 0:

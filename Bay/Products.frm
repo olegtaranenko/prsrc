@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCTL.OCX"
+Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "mscomctl.ocx"
 Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form sProducts 
    BackColor       =   &H8000000A&
@@ -315,12 +315,12 @@ Private Sub cmExit_Click()
 End Sub
 
 Private Sub cmHide_Click()
-Dim i As Integer
+Dim I As Integer
 If quantity = 0 Then Exit Sub
-For i = Grid.row To Grid.RowSel
+For I = Grid.row To Grid.RowSel
     Grid.RemoveItem Grid.row
     quantity = quantity - 1
-Next i
+Next I
 Grid.SetFocus
 Grid_EnterCell
 End Sub
@@ -343,7 +343,7 @@ laQuant.Enabled = True
 End Sub
 
 Private Sub Form_Load()
-Dim str As String, i As Integer, delta As Single
+Dim str As String, I As Integer, delta As Single
 
 'oldHeight = Me.Height
 'oldWidth = Me.Width
@@ -393,7 +393,7 @@ If Regim = "ostat" Then
     Grid.Width = 7000 '6230
     Me.Width = Grid.Width + 2527
     Frame.Width = Grid.Width
-    cmExit.Left = Me.Width - cmExit.Width - 200
+    cmExit.left = Me.Width - cmExit.Width - 200
     Grid2.Width = 0 'для Resize
     GoTo EN1
 ElseIf Regim = "" Or Regim = "closeZakaz" Then
@@ -512,7 +512,7 @@ End Sub
 
 Sub loadSeria()
 Dim key As String, pKey As String, K() As String, pK()  As String
-Dim i As Integer, iErr As Integer
+Dim I As Integer, iErr As Integer
 bilo = False
 sql = "SELECT sGuideSeries.*  From sGuideSeries ORDER BY sGuideSeries.seriaId;"
 Set tbSeries = myOpenRecordSet("##110", sql, dbOpenForwardOnly)
@@ -539,16 +539,16 @@ tbSeries.Close
 
 While bilo ' необходимы еще проходы
   bilo = False
-  For i = 1 To UBound(K())
-    If K(i) <> "" Then
+  For I = 1 To UBound(K())
+    If K(I) <> "" Then
         On Error GoTo ERR2 ' назначить еще проход
-        Set Node = tv.Nodes.Add(pK(i), tvwChild, K(i), NN(i))
+        Set Node = tv.Nodes.Add(pK(I), tvwChild, K(I), NN(I))
         On Error GoTo 0
-        K(i) = ""
+        K(I) = ""
         Node.Sorted = True
     End If
 NXT:
-  Next i
+  Next I
 Wend
 tv.Nodes.Item("k0").Expanded = True
 Exit Sub
@@ -582,27 +582,27 @@ oldWidth = Me.Width
 tv.Height = tv.Height + h
 tv.Width = tv.Width + w * tvVes
 
-Grid.Left = Grid.Left + w * tvVes
-laGrid1.Left = Grid.Left
-laBegin.Left = Grid.Left
+Grid.left = Grid.left + w * tvVes
+laGrid1.left = Grid.left
+laBegin.left = Grid.left
 Grid.Height = Grid.Height + h
 Grid.Width = Grid.Width + w * gridVes
 
-Grid2.Left = Grid2.Left + w * (tvVes + gridVes)
-laGrid2.Left = Grid2.Left
+Grid2.left = Grid2.left + w * (tvVes + gridVes)
+laGrid2.left = Grid2.left
 Grid2.Height = Grid2.Height + h
 Grid2.Width = Grid2.Width + w * grid2Ves
 
 cmSel.Top = cmSel.Top + h
-cmSel.Left = cmSel.Left + w
+cmSel.left = cmSel.left + w
 tbQuant.Top = tbQuant.Top + h
-tbQuant.Left = tbQuant.Left + w
+tbQuant.left = tbQuant.left + w
 laQuant.Top = laQuant.Top + h
-laQuant.Left = laQuant.Left + w
+laQuant.left = laQuant.left + w
 cmExit.Top = cmExit.Top + h
-cmExit.Left = cmExit.Left + w
+cmExit.left = cmExit.left + w
 cmExel2.Top = cmExel2.Top + h
-cmExel2.Left = cmExel2.Left + w
+cmExel2.left = cmExel2.left + w
 cmExel.Top = cmExel.Top + h
 cmHide.Top = cmHide.Top + h
 
@@ -867,16 +867,9 @@ End Sub
 
 
 
-Private Sub Grid5_Click()
-
-End Sub
-
-Private Sub mnCancel2_Click()
-
-End Sub
 
 Private Sub mnDel_Click()
-Dim pQuant As Single, i As Integer ', str  As String
+Dim pQuant As Single, I As Integer ', str  As String
 
 If beNaklads() Then Exit Sub
 
@@ -949,17 +942,6 @@ EN1:
 If noOpen = "" Then lockSklad "un"
 End Function
 
-Private Sub tbMobile2_Change()
-
-End Sub
-
-Private Sub tbMobile5_Change()
-
-End Sub
-
-Private Sub mnDel2_Click()
-
-End Sub
 
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
 Dim c As Single, s As Single, str As String
@@ -1065,7 +1047,7 @@ End If
 End Sub
 'при delta < 0 - возм. удаление
 Function nomenkToDMCrez(delta As Single, Optional mov As String = "") As Boolean
-Dim s As Single, i As Integer
+Dim s As Single, I As Integer
 
 nomenkToDMCrez = False
 
@@ -1113,7 +1095,7 @@ End Sub
 
 Sub loadKlass()
 Dim key As String, pKey As String, K() As String, pK()  As String
-Dim i As Integer, iErr As Integer
+Dim I As Integer, iErr As Integer
 bilo = False
 sql = "SELECT sGuideKlass.*  From sGuideKlass ORDER BY sGuideKlass.parentKlassId;"
 Set tbKlass = myOpenRecordSet("##102", sql, dbOpenForwardOnly)
@@ -1142,16 +1124,16 @@ tbKlass.Close
 
 While bilo ' необходимы еще проходы
   bilo = False
-  For i = 1 To UBound(K())
-    If K(i) <> "" Then
+  For I = 1 To UBound(K())
+    If K(I) <> "" Then
         On Error GoTo ERR2 ' назначить еще проход
-        Set Node = tv.Nodes.Add(pK(i), tvwChild, K(i), NN(i))
+        Set Node = tv.Nodes.Add(pK(I), tvwChild, K(I), NN(I))
         On Error GoTo 0
-        K(i) = ""
+        K(I) = ""
         Node.Sorted = True
     End If
 NXT:
-  Next i
+  Next I
 Wend
 tv.Nodes.Item("k0").Expanded = True
 Exit Sub
@@ -1227,7 +1209,7 @@ End Sub
 
     
 Private Sub tv_KeyUp(KeyCode As Integer, Shift As Integer)
-Dim i As Integer, str As String
+Dim I As Integer, str As String
 If KeyCode = vbKeyReturn Or KeyCode = vbKeyEscape Then
 '    tv_NodeClick tv.SelectedItem
 End If

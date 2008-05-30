@@ -304,10 +304,6 @@ Begin VB.Form Orders
       Begin VB.Menu mnFirmFind 
          Caption         =   "Поиск фирмы по названию               F12"
       End
-      Begin VB.Menu mnReports 
-         Caption         =   "Отчеты"
-         Visible         =   0   'False
-      End
       Begin VB.Menu mnSep1 
          Caption         =   "-"
       End
@@ -322,6 +318,18 @@ Begin VB.Form Orders
       Caption         =   "Склад"
       Begin VB.Menu mnNomenk 
          Caption         =   "Остатки по ном-ре    F4"
+      End
+      Begin VB.Menu mnRecalc 
+         Caption         =   "Пересчет статистики"
+      End
+      Begin VB.Menu mnSep 
+         Caption         =   "-"
+      End
+      Begin VB.Menu mnReports 
+         Caption         =   "Посещения фирм по месяцам"
+      End
+      Begin VB.Menu mnAnalityc 
+         Caption         =   "Аналитика по продажам"
       End
    End
    Begin VB.Menu mnContext 
@@ -1600,6 +1608,13 @@ Grid.SetFocus
 Me.MousePointer = flexDefault
 End Sub
 
+Private Sub mnAnalityc_Click()
+    Me.MousePointer = flexHourglass
+    Analityc.Show vbModal
+    
+    Me.MousePointer = flexDefault
+End Sub
+
 Private Sub mnBillFirma_Click()
 Dim ventureName As String
 
@@ -1679,6 +1694,14 @@ End Sub
 Private Sub mnQuickBill_Click(Index As Integer)
     If Index = 0 Then Exit Sub
     FirmComtex.makeBillChoice mnQuickBill(Index).Tag, Grid.TextMatrix(mousRow, orServername)
+
+End Sub
+
+Private Sub mnRecalc_Click()
+Me.MousePointer = flexHourglass
+    'statistic
+    'Report.statistic "all"
+Me.MousePointer = flexDefault
 
 End Sub
 
