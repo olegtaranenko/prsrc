@@ -202,7 +202,6 @@ begin
 
                 if r_parentid != v_prev_id then
                     set v_cur_pos = r_ord + 1;
---  --                message v_cur_pos , ': ', r_childs, ': ', r_ord to client;
                 else 
                     set v_cur_pos = v_cur_pos + 1 + v_prev_count;
                 end if;
@@ -701,119 +700,6 @@ end;
 ----------------------------------------------------------------------
 
 
-if exists (select 1 from sysprocedure where proc_name = 'wf_sort_klasses') then
-	drop procedure wf_sort_klasses;
-end if;
-
-
-CREATE procedure wf_sort_klasses(
-)
-begin
-	declare v_lvl integer;
-	declare v_prev_count integer;
-	declare v_cur_pos integer;
-	declare v_exit    integer;
-	declare v_prev_id integer;
---create variable @v_lvl        integer;
---create variable @v_prev_count integer;
---create variable @v_cur_pos    integer;
---create variable @v_exit       integer;
---create variable @v_prev_id    integer;
-
-
-
-	set v_lvl = 1;
-	set v_prev_count = 0;
-	set v_cur_pos = 1;
-
-create table #klass_childs (parent integer, child_count integer, lvl integer);
-
-	insert into #klass_childs 
-	select parentklassid, count(*), v_lvl from sguideklass 
-	where parentklassid != 0
-	group by parentklassid;
-
-		
-	branch: loop
-		insert into #klass_childs
-			select c.parentklassid, sum(child_count), v_lvl + 1
-			from sguideklass c
-			join #klass_childs p on c.klassid = p.parent
-            where lvl = v_lvl and parentklassid != 0
-			group by c.parentklassid;
-
-		if @@rowcount = 0 then
-			set v_lvl = v_lvl + 1;
-			leave branch;
-		end if;
-		set v_lvl = v_lvl + 1;
-	end loop;
-
-
-	-- на уровне v_lvl + 1 хранятся полное количество детей включая всех потомков.
-	insert into #klass_childs
-		select parent, sum(child_count), v_lvl + 1
-		from #klass_childs p 
-		group by parent;
-
-
-
-	-- нумеруем первый ряд после корня.
-	for schich0 as s0 dynamic scroll cursor for
-		select klassid as r_klassid, klassname as r_klassname, isnull(p.child_count, 0) as r_child_count
-        from sguideklass k
-        left join #klass_childs p on p.parent = k.klassid and p.lvl = v_lvl + 1
-        where parentklassid = 0 and klassid != 0 order by klassname
-	do
-    
-        insert into #klass_ordered (id, ord) select r_klassid, v_cur_pos;
-        --message '[', r_klassid, '] ', r_klassname, ': ', v_cur_pos to client;
-        set v_prev_count = r_child_count;
-        set v_cur_pos = v_cur_pos + 1 + v_prev_count;
-
-    end for;
-
-
-	-- нумеруем оставшиеся ряды (или уровни).
-	branch2: loop
-        set v_exit = 0;
-
-        set v_prev_count = 0;
-        set v_prev_id = 0;
-		for schich1 as s1 dynamic scroll cursor for
-            select klassid as r_klassid, klassname as r_klassname, parentklassid as r_parentid, ord as r_ord, isnull(p.child_count, 0) as r_childs
-            from sguideklass k
-            join #klass_ordered o on o.id = k.parentklassid
-            left join #klass_childs p on k.klassid = p.parent and p.lvl = v_lvl + 1
-            where not exists (select 1 from #klass_ordered o1 where o1.id = k.klassid)
-            order by parentklassid, klassname
-		do
-			if r_parentid != v_prev_id then
-		        set v_cur_pos = r_ord + 1;
---                message v_cur_pos , ': ', r_childs, ': ', r_ord to client;
-		    else 
-		    	set v_cur_pos = v_cur_pos + 1 + v_prev_count;
-		    end if;
-    
-            insert into #klass_ordered (id, ord) select r_klassid, v_cur_pos;
-            set v_exit = 1;
---            message '[', r_klassid, '] ', r_klassname, '-', r_parentid, ': ', v_cur_pos, ': ', r_ord to client;
-            set v_prev_id = r_parentid;
-            set v_prev_count = r_childs;
-
-    
-        end for;
-        if v_exit = 0 then 
-        	leave branch2;
-        end if;
-	end loop;
-
-	
-	drop table #klass_childs;
-
-end;
-
-
 
 if exists (select 1 from sysprocedure where proc_name = 'wf_nomenk_saled') then
 	drop procedure wf_nomenk_saled;
@@ -824,30 +710,42 @@ CREATE procedure wf_nomenk_saled(
 	, p_end datetime default null
 )
 begin
+	declare v_ord_table varchar(64);
+	declare p_table_name varchar(64);    
+	declare p_id_name varchar(64);       
+	declare p_parent_id_name varchar(64);
+	declare p_order_by_name varchar(256);
+--	create table #klass_ordered (id integer, ord integer);
+	set p_table_name = 'sGuideKlass';
+	set v_ord_table = get_tmp_ord_table_name(p_table_name);
+	execute immediate 'create table ' + v_ord_table + ' (id integer, ord integer)';
+
+	set p_id_name = 'klassId';
+	set p_parent_id_name = 'parentKlassId';
+	set p_order_by_name = 'klassName';
+	call wf_sort_klassificator(p_table_name, p_id_name, p_parent_id_name, p_order_by_name);
+
+
 	create table #nomenk_saled (nomnom varchar(20), quant double, cenaTotal double);
-	create table #klass_ordered (id integer, ord integer);
 
-	call wf_sort_klasses;
-
-
-insert into #nomenk_saled
-select d.prnomnom, sum(round(d.quant, 2)) as quant, sum(round(d.cenaEd, 2) * round(d.quant, 2))
-from itemWallShip d
-WHERE d.type = 8 and outDate between isnull(p_start, '20010101') and isnull(p_end, '21001231')
-group by d.prnomnom
-;
-
-select '' as outtype, trim(n.cod + ' ' + nomname + ' ' + n.size) as name, s.quant, s.cenaTotal, s.nomnom, o.ord
-, k.klassid, wf_breadcrump_klass(k.klassid) as klassname, n.cost, n.ed_izmer2
-from #nomenk_saled s
-join sguidenomenk n on n.nomnom = s.nomnom
-join #klass_ordered o on o.id = n.klassid
-join sguideklass k on k.klassid = n.klassid
-order by o.ord, 1
-;
+	insert into #nomenk_saled
+	select d.prnomnom, sum(round(d.quant, 2)) as quant, sum(round(d.cenaEd, 2) * round(d.quant, 2))
+		from itemWallShip d
+		WHERE d.type = 8 and outDate between isnull(p_start, '20010101') and isnull(p_end, '21001231')
+		group by d.prnomnom
+		;
+	
+	select '' as outtype, trim(n.cod + ' ' + nomname + ' ' + n.size) as name, s.quant, s.cenaTotal, s.nomnom, o.ord
+		, k.klassid, wf_breadcrump_klass(k.klassid) as klassname, n.cost, n.ed_izmer2
+		from #nomenk_saled s
+		join sguidenomenk n on n.nomnom = s.nomnom
+		join #sGuideKlass_ord o on o.id = n.klassid
+		join sguideklass k on k.klassid = n.klassid
+		order by o.ord, 1
+	;
 
 	drop table #nomenk_saled;
-	drop table #klass_ordered;
+	drop table #sGuideKlass_ord;
 
 end;
 
@@ -868,11 +766,24 @@ CREATE procedure wf_nomenk_reserved_all(
 )
 begin
 
-	create table #klass_ordered (id integer, ord integer);
+	declare v_ord_table varchar(64);
+	declare p_table_name varchar(64);    
+	declare p_id_name varchar(64);       
+	declare p_parent_id_name varchar(64);
+	declare p_order_by_name varchar(256);
+--	create table #klass_ordered (id integer, ord integer);
+	set p_table_name = 'sGuideKlass';
+	set v_ord_table = get_tmp_ord_table_name(p_table_name);
+	execute immediate 'create table ' + v_ord_table + ' (id integer, ord integer)';
+
+	set p_id_name = 'klassId';
+	set p_parent_id_name = 'parentKlassId';
+	set p_order_by_name = 'klassName';
+	call wf_sort_klassificator(p_table_name, p_id_name, p_parent_id_name, p_order_by_name);
+
+
+	
 	create table #nomenk (nomnom varchar(20), quant double, sm double);
-
-	call wf_sort_klasses;
-
 	insert into #nomenk(nomnom, quant)
 	select r.nomnom, sum(r.quant)
 	from isumBranRsrv  r
@@ -887,12 +798,12 @@ begin
 		, wf_breadcrump_klass(k.klassid) as klassname, n.ed_izmer2
 	from #nomenk r
 	join sguidenomenk n on n.nomnom = r.nomnom
-	join #klass_ordered o on o.id = n.klassid
+	join #sGuideKlass_ord o on o.id = n.klassid
 	join sguideklass k on k.klassid = n.klassid
 	order by 1, 2, 3
 	;
 
-	drop table #klass_ordered;
+	drop table #sGuideKlass_ord;
 	drop table #nomenk;
 
 end;
@@ -946,17 +857,29 @@ begin
 	declare C_USED_NULL integer;
 	declare C_ZU_VIEL integer;
 
+	declare v_ord_table varchar(64);
+	declare p_table_name varchar(64);    
+	declare p_id_name varchar(64);       
+	declare p_parent_id_name varchar(64);
+	declare p_order_by_name varchar(256);
+
 	set C_NULL_COST = 1;
 	set C_NEGATIVE_QTY = 2;
 	set C_USED_NULL = 3;
 	set C_ZU_VIEL = 4;
 
-	create table #klass_ordered (id integer, ord integer);
+--	create table #klass_ordered (id integer, ord integer);
+	set p_table_name = 'sGuideKlass';
+	set v_ord_table = get_tmp_ord_table_name(p_table_name);
+	execute immediate 'create table ' + v_ord_table + ' (id integer, ord integer)';
+
+	set p_id_name = 'klassId';
+	set p_parent_id_name = 'parentKlassId';
+	set p_order_by_name = 'klassName';
+	call wf_sort_klassificator(p_table_name, p_id_name, p_parent_id_name, p_order_by_name);
+
+
 	create table #nomenk (nomnom varchar(20));
-
-	call wf_sort_klasses;
-
-
 	if isnull(p_anormal_index, C_NULL_COST) = C_NULL_COST then
 		insert into #nomenk(nomnom)
 		select 
@@ -1000,7 +923,7 @@ begin
 			, wf_breadcrump_klass(k.klassid) as klassname, k.klassid
 			, o.ord as klassOrdered, n.mark
 		from sguidenomenk n
-		join #klass_ordered o on n.klassid = o.id
+		join #sGuideKlass_ord o on n.klassid = o.id
 		join sguideklass k on k.klassid = n.klassid
 		order by o.ord, text;
 	else
@@ -1013,14 +936,14 @@ begin
 			, o.ord as klassOrdered, n.mark
 		from sguidenomenk n
 		join #nomenk f on n.nomnom = f.nomnom
-		join #klass_ordered o on n.klassid = o.id
+		join #sGuideKlass_ord o on n.klassid = o.id
 		join sguideklass k on k.klassid = n.klassid
 		order by o.ord, text;
 
 	end if;
 
 	drop table #nomenk;
-	drop table #klass_ordered;
+	drop table #sGuideKlass_ord;
 
 end;    
 
@@ -1058,127 +981,6 @@ end;
 
 
 
-if exists (select 1 from sysprocedure where proc_name = 'wf_sort_series') then
-	drop procedure wf_sort_series;
-end if;
-
-
-CREATE procedure wf_sort_series(
-)
-begin
-	declare v_lvl integer;
-	declare v_prev_count integer;
-	declare v_cur_pos integer;
-	declare v_exit    integer;
-	declare v_prev_id integer;
---create variable @v_lvl        integer;
---create variable @v_prev_count integer;
---create variable @v_cur_pos    integer;
---create variable @v_exit       integer;
---create variable @v_prev_id    integer;
-
-
-
-	set v_lvl = 1;
-	set v_prev_count = 0;
-	set v_cur_pos = 1;
-
-create table #seria_childs (parent integer, child_count integer, lvl integer);
---create table #seria_ordered (id integer, ord integer);
-
-	insert into #seria_childs 
-	select parentseriaid, count(*), v_lvl from sguideseries 
-	where parentseriaid != 0
-	group by parentseriaid;
-
-		
-	branch: loop
-		insert into #seria_childs
-			select c.parentseriaid, sum(child_count), v_lvl + 1
-			from sguideseries c
-			join #seria_childs p on c.seriaid = p.parent
-            where lvl = v_lvl and parentseriaid != 0
-			group by c.parentseriaid;
-
-		if @@rowcount = 0 then
-			set v_lvl = v_lvl + 1;
-			leave branch;
-		end if;
-		set v_lvl = v_lvl + 1;
-	end loop;
-
-
-	insert into #seria_childs
-		select parent, sum(child_count), v_lvl + 1
-		from #seria_childs p 
-		group by parent;
-	-- на уровне v_lvl + 1 хранятся полное количество детей включая всех потомков.
-
-
-
-	-- нумеруем первый ряд после корня.
-	for schich0 as s0 dynamic scroll cursor for
-		select seriaid as r_seriaid, serianame as r_serianame, isnull(p.child_count, 0) as r_child_count
-        from sguideseries k
-        left join #seria_childs p on p.parent = k.seriaid and p.lvl = v_lvl + 1
-        where parentseriaid = 0 and seriaid != 0 order by serianame
-	do
-    
-        insert into #seria_ordered (id, ord) select r_seriaid, v_cur_pos;
-        --message '[', r_seriaid, '] ', r_serianame, ': ', v_cur_pos to client;
-        set v_prev_count = r_child_count;
-        set v_cur_pos = v_cur_pos + 1 + v_prev_count;
-
-    end for;
-
-
-	-- нумеруем оставшиеся ряды (или уровни).
-	branch2: loop
-        set v_exit = 0;
-
-        set v_prev_count = 0;
-        set v_prev_id = 0;
-		for schich1 as s1 dynamic scroll cursor for
-            select seriaid as r_seriaid, serianame as r_serianame, parentseriaid as r_parentid, ord as r_ord, isnull(p.child_count, 0) as r_childs
-            from sguideseries k
-            join #seria_ordered o on o.id = k.parentseriaid
-            left join #seria_childs p on k.seriaid = p.parent and p.lvl = v_lvl + 1
-            where not exists (select 1 from #seria_ordered o1 where o1.id = k.seriaid)
-            order by parentseriaid, serianame
-		do
-			if r_parentid != v_prev_id then
-		        set v_cur_pos = r_ord + 1;
---                message v_cur_pos , ': ', r_childs, ': ', r_ord to client;
-		    else 
-		    	set v_cur_pos = v_cur_pos + 1 + v_prev_count;
-		    end if;
-    
-            insert into #seria_ordered (id, ord) select r_seriaid, v_cur_pos;
-            set v_exit = 1;
-            message '[', r_seriaid, '] ', r_serianame, '-', r_parentid, ': ', v_cur_pos, ': ', r_ord to client;
-            set v_prev_id = r_parentid;
-            set v_prev_count = r_childs;
-
-    
-        end for;
-        if v_exit = 0 then 
-        	leave branch2;
-        end if;
-	end loop;
-
-	
---	select * from #seria_childs where lvl = v_lvl + 1;
---	select * from #seria_ordered order by ord; 
-
---	drop table #seria_ordered;
-	drop table #seria_childs;
-
-end;
-
-
-
-
-
 if exists (select 1 from sysprocedure where proc_name = 'wf_nomenk_reliz') then
 	drop procedure wf_nomenk_reliz;
 end if;
@@ -1188,61 +990,85 @@ CREATE procedure wf_nomenk_reliz(
 	, p_end datetime default null
 )
 begin
+
+	
+	declare v_ord_table varchar(64);
+	declare p_table_name varchar(64);    
+	declare p_id_name varchar(64);       
+	declare p_parent_id_name varchar(64);
+	declare p_order_by_name varchar(256);
+--	create table #klass_ordered (id integer, ord integer);
+	set p_table_name = 'sGuideKlass';
+	set v_ord_table = get_tmp_ord_table_name(p_table_name);
+	execute immediate 'create table ' + v_ord_table + ' (id integer, ord integer)';
+
+	set p_id_name = 'klassId';
+	set p_parent_id_name = 'parentKlassId';
+	set p_order_by_name = 'klassName';
+	call wf_sort_klassificator(p_table_name, p_id_name, p_parent_id_name, p_order_by_name);
+
+
+	set p_table_name = 'sGuideSeries';
+	set v_ord_table = get_tmp_ord_table_name(p_table_name);
+	execute immediate 'create table ' + v_ord_table + ' (id integer, ord integer)';
+
+	set p_id_name = 'seriaId';
+	set p_parent_id_name = 'parentSeriaId';
+	set p_order_by_name = 'seriaName';
+	call wf_sort_klassificator(p_table_name, p_id_name, p_parent_id_name, p_order_by_name);
+
+	
 	create table #nomenk_reliz (nomnom varchar(20), quant double, sm double);
 	create table #izdelia_reliz (prid integer, quant double, sm double, costTotal double);
-	create table #klass_ordered (id integer, ord integer);
-	create table #seria_ordered (id integer, ord integer);
-
-	call wf_sort_series;
-	call wf_sort_klasses;
 
 
-insert into #izdelia_reliz
-select 
-	po.prId, sum(po.quant) as quant, sum(p.cenaEd * po.quant) as cenaTotal, sum(io.costEd * po.quant) as costTotal
-from xpredmetybyizdeliaout po
-join xpredmetybyizdelia p on p.numorder = po.numorder and p.prid = po.prid and p.prext = po.prext
-join orderWareShip io on po.outdate = io.outdate and io.numorder = po.numorder and io.prid = po.prid and io.prext = po.prext
-WHERE po.outDate between isnull(p_start, '20010101') and isnull(p_end, '21001231')
-group by po.prid
-;
+	insert into #izdelia_reliz
+	    select 
+    		po.prId, sum(po.quant) as quant, sum(p.cenaEd * po.quant) as cenaTotal, sum(io.costEd * po.quant) as costTotal
+		from xpredmetybyizdeliaout po
+		join xpredmetybyizdelia p on p.numorder = po.numorder and p.prid = po.prid and p.prext = po.prext
+		join orderWareShip io on po.outdate = io.outdate and io.numorder = po.numorder and io.prid = po.prid and io.prext = po.prext
+		WHERE po.outDate between isnull(p_start, '20010101') and isnull(p_end, '21001231')
+		group by po.prid
+	;
 
 
-insert into #nomenk_reliz
-select po.nomnom, sum(po.quant / n.perlist) as quant, sum(p.cenaEd * po.quant) as sum
-from xpredmetybynomenkout po
-join xpredmetybynomenk p on p.numorder = po.numorder and p.nomnom = po.nomnom
-join sguidenomenk n on n.nomnom = po.nomnom and n.nomnom = p.nomnom
-WHERE po.outDate between isnull(p_start, '20010101') and isnull(p_end, '21001231')
-group by po.nomnom
-;
+	insert into #nomenk_reliz
+	    select po.nomnom, sum(po.quant / n.perlist) as quant, sum(p.cenaEd * po.quant) as sum
+    	from xpredmetybynomenkout po
+		join xpredmetybynomenk p on p.numorder = po.numorder and p.nomnom = po.nomnom
+		join sguidenomenk n on n.nomnom = po.nomnom and n.nomnom = p.nomnom
+		WHERE po.outDate between isnull(p_start, '20010101') and isnull(p_end, '21001231')
+		group by po.nomnom
+	;
 
 
 
-select 'Изделия' as outtype, o.ord, trim(g.prDescript + ' ' + g.prsize) as name
-	, quant, sm as cenaTotal, convert(varchar(20), r.prid) as id, g.prname as nomnom, g.prSeriaId as klassid
-	, wf_breadcrump_seria(g.prseriaid) as klassname, 'шт.' as ed_izmer2
-	, r.costTotal / quant as cost -- costEd
-from #izdelia_reliz r
-join sguideproducts g on g.prid = r.prid
-join #seria_ordered o on o.id = g.prSeriaId
-	union
-select 'Номенклатура' as outtype, o.ord, trim(n.cod + ' ' + nomname + ' ' + n.size) as name
-	, s.quant, s.sm as cenaTotal, s.nomnom as id, s.nomnom, k.klassid
-	, wf_breadcrump_klass(k.klassid) as klassname, n.ed_izmer2
-	, n.cost
-from #nomenk_reliz s
-join sguidenomenk n on n.nomnom = s.nomnom
-join #klass_ordered o on o.id = n.klassid
-join sguideklass k on k.klassid = n.klassid
-order by 1, 2, 3
-;
-
-
+	select 'Изделия' as outtype, o.ord, trim(g.prDescript + ' ' + g.prsize) as name
+			, quant, sm as cenaTotal, convert(varchar(20), r.prid) as id, g.prname as nomnom, g.prSeriaId as klassid
+	    	, wf_breadcrump_seria(g.prseriaid) as klassname, 'шт.' as ed_izmer2
+    		, r.costTotal / quant as cost -- costEd
+		from #izdelia_reliz r
+		join sguideproducts g on g.prid = r.prid
+		join #sGuideSeries_ord o on o.id = g.prSeriaId
+			union
+	select 'Номенклатура' as outtype, o.ord, trim(n.cod + ' ' + nomname + ' ' + n.size) as name
+    	, s.quant, s.sm as cenaTotal, s.nomnom as id, s.nomnom, k.klassid
+		, wf_breadcrump_klass(k.klassid) as klassname, n.ed_izmer2
+		, n.cost
+	from #nomenk_reliz s
+		join sguidenomenk n on n.nomnom = s.nomnom
+		join #sGuideKlass_ord o on o.id = n.klassid
+    	join sguideklass k on k.klassid = n.klassid
+	    order by 1, 2, 3
+	;
+	
+	
 	drop table #nomenk_reliz;
 	drop table #izdelia_reliz;
-	drop table #klass_ordered;
-	drop table #seria_ordered;
+
+	drop table #sGuideKlass_ord;
+	drop table #sGuideSeries_ord;
 
 end;
 
@@ -8202,787 +8028,6 @@ end;
 
 
 
-
-----------------------------------------------------------------------
---------------         xPredmetyByNomenkOut          -----------------
-----------------------------------------------------------------------
-if exists (select 1 from systriggers where trigname = 'wf_xPredmetyByNomenkOut_outcome_di' and tname = 'xPredmetyByNomenkOut') then 
-	drop trigger xPredmetyByNomenkOut.wf_xPredmetyByNomenkOut_outcome_di;
-end if;
-/*
-create 
-	trigger wf_xPredmetyByNomenkOut_outcome_di before delete order 1 on 
-xPredmetyByNomenkOut
-referencing old as old_name
-for each row
-begin
---	declare v_id_mat integer;
-	declare v_id_jmat integer;
-	declare v_sysname varchar(50);
-
---	set v_id_mat = old_name.id_mat;
-	set v_id_jmat = old_name.id_jmat;
-
-	select v.sysname
-	into v_sysname
-	from orders o
-		left join guideventure v on v.ventureid = o.ventureid and v.standalone = 0
-	where numorder = old_name.numorder;
-
-	call wf_otgruz_remove (
-		v_id_jmat
-		,'stime'
-	);
-
-	if v_sysname is not null and v_sysname != 'stime' then
-		call wf_otgruz_remove (
-			v_id_jmat
-			,v_sysname
-		);
-
-	end if;
-
-		
-		
-end;
-*/
-
-
-
-
-if exists (select 1 from systriggers where trigname = 'wf_xPredmetyByNomenkOut_outcome_ui' and tname = 'xPredmetyByNomenkOut') then 
-	drop trigger xPredmetyByNomenkOut.wf_xPredmetyByNomenkOut_outcome_ui;
-end if;
-/*
-create 
-	trigger wf_xPredmetyByNomenkOut_outcome_ui before update order 1 on 
-xPredmetyByNomenkOut
-referencing new as new_name old as old_name
-for each row
-begin
-	declare v_id_mat integer;
-	declare v_id_jmat integer;
-	declare v_sysname varchar(50);
-	declare v_cena float;
-
-	if update(quant) and old_name.quant != new_name.quant then
-		set v_id_mat = old_name.id_mat;
-		set v_id_jmat = old_name.id_jmat;
-
-		select cenaEd into v_cena from xPredmetybyNomenk where numOrder = new_name.numOrder and nomnom = new_name.nomNom;
-
-		select v.sysname
-		into v_sysname
-		from orders o
-		left join guideventure v on v.ventureid = o.ventureid and v.standalone = 0
-		where numorder = old_name.numorder;
-		
-
-		call wf_otgruz_quant(
-			v_id_mat
-			,v_id_jmat
-			,new_name.quant
-			,v_cena
-			,'stime'
-		);
-
-		if v_sysname is not null and v_sysname != 'stime' then
-			call wf_otgruz_quant(
-				v_id_mat
-				,v_id_jmat
-				,new_name.quant
-				,v_cena
-				,v_sysname
-			);
-
-		end if;
-
-
-	end if;
-end;
-*/
-
-if exists (select 1 from systriggers where trigname = 'wf_xPredmetyByNomenkOut_outcome_bi' and tname = 'xPredmetyByNomenkOut') then 
-	drop trigger xPredmetyByNomenkOut.wf_xPredmetyByNomenkOut_outcome_bi;
-end if;
-
-/*
-create 
-	trigger wf_xPredmetyByNomenkOut_outcome_bi before insert order 1 on 
-xPredmetyByNomenkOut
-referencing new as new_name
-for each row
-begin
-	declare v_id_jmat integer;
-	declare v_id_mat integer;
-	declare v_jmat_nu varchar(20);
-	declare v_mat_nu varchar(20);
-	declare v_currency_rate float;
-	declare v_datev date;
-	declare v_id_currency integer;
-	declare v_id_source integer;
-	declare v_id_dest integer;
---	declare v_osn varchar(100);
-	declare v_id_jscet integer;
---	declare v_venture_id integer;
-	declare v_firm_id integer;
-	declare v_sysname varchar(50);
-	declare v_ventureName varchar(100);
-	declare v_cena float;
-	declare v_cur_otgruz_date date;
-
-
-	if get_standalone('stime') = 1 then
-		call log_warning('Информация об отгрузке по заказу ' + convert(varchar(20), new_name.numorder) + ' не попадает в аналитическую базу stime.');
-		return;
-	end if;
-
-	select max(id_jmat) into v_id_jmat 
-	from xPredmetyByIzdeliaOut 
-	where numOrder = new_name.numorder and outDate = new_name.outDate;
-
-	if v_id_jmat is null then
-		select max(id_jmat) into v_id_jmat 
-		from xPredmetyByNomenkOut 
-		where numOrder = new_name.numorder and outDate = new_name.outDate;
-	end if;
-
-	select 
-		 o.id_jscet
-		, isnull(s.id_voc_names, 0)
-		, isnull(f.id_voc_names,0)
-		, v.ventureName
-		, v.sysname
-	into  
-		 v_id_jscet
-		, v_id_source
-		, v_id_dest
-		, v_ventureName
-		, v_sysname
-	from orders o
-		left join guideventure v on v.ventureid = o.ventureid and v.standalone = 0
-		left join guidefirms f on o.firmid = f.firmid
-		left join sguidesource s on sourceid = -1001
-	where numorder = new_name.numorder;
-
-	
-	set v_id_currency = system_currency();
-	call slave_currency_rate_stime(v_datev, v_currency_rate);
-
---	select id_voc_names into v_id_dest from guidefirms where firmid = v_firm_id;
---	    message 'v_id_dest = ', v_id_dest to client;
-	-- со склада 1 
-	-- ?? хотя по идее нужно бы отгружать со склада готовой продукции
---	select id_voc_names into v_id_source from sguidesource where sourceid = -1001;
-
-	if v_id_jmat is null then
---	    message '---' to client;
-		set v_id_jmat = wf_otgruz_jmat(
-			new_name.numorder
-			, v_id_jscet
---			, v_venture_id
-			, new_name.outDate
-			, v_id_source
-			, v_id_dest
-			, v_id_currency
-			, v_datev
-			, v_currency_rate
-			, v_sysname
-		);
---		update orders set id_jmat = v_id_jmat where numorder = new_name.numorder;
-	end if;
-
-	set v_id_mat = get_nextid('mat');
-	call slave_select_stime(v_mat_nu, 'mat', 'max(nu)', 'id_jmat = ' + convert(varchar(20), v_id_jmat));
-	set v_mat_nu = convert(varchar(20), convert(integer, isnull(v_mat_nu, 0)) + 1);
-	select cenaEd into v_cena from xPredmetybyNomenk where numOrder = new_name.numOrder and nomnom = new_name.nomNom;
-
-	call wf_otgruz_nom(
-		  v_id_mat
-		, v_id_jmat
-		, new_name.nomnom
-		, new_name.quant
-		, v_cena
-		, v_mat_nu
-		, v_id_source
-		, v_id_dest
-		, v_currency_rate
-		, v_sysname
-	);
-	set new_name.id_mat = v_id_mat;
-	set new_name.id_jmat = v_id_jmat;
-
-end;
-*/
-
-
-----------------------------------------------------------------------
---------------       Otgruz helpers PROCEDURIES           ------------
-----------------------------------------------------------------------
-if exists (select 1 from sysprocedure where proc_name = 'wf_otgruz_remove') then
-	drop procedure wf_otgruz_remove;
-end if;
-
-/*
-CREATE procedure wf_otgruz_remove(
-	  p_id_jmat integer
-	, p_sysname varchar(50)
-) 
-begin
-	execute immediate 'call slave_delete_'+p_sysname+'(''jmat''
-		, ''id = '' + convert(varchar(20), '+convert(varchar(20), p_id_jmat)+'))'
-	;
-	execute immediate 'call slave_delete_'+p_sysname+'(''mat''
-		, ''id_jmat = '' + convert(varchar(20), '+convert(varchar(20), p_id_jmat)+'))'
-	;
-end;
-*/
-
-
-if exists (select 1 from sysprocedure where proc_name = 'wf_otgruz_quant') then
-	drop procedure wf_otgruz_quant;
-end if;
-
-/*
-CREATE procedure wf_otgruz_quant(
-	  p_id_mat integer
-	, p_id_jmat integer
-	, p_quant  float
-	, p_cena float
---	, p_currency_rate float
-	, p_sysname varchar(50)
-) 
-begin
-	declare v_currency_rate float;
-
-
-	execute immediate 'call slave_select_'+p_sysname+'(v_currency_rate, ''jmat'', ''curr'', ''id = '' + convert(varchar(20), ' + convert(varchar(20), p_id_jmat) +'))';
---	select v_currency_rate;
-	execute immediate 'call slave_update_'+p_sysname+'(''mat''
-		, ''kol1''
-		, '''+convert(varchar(20), round(p_quant, 2))+'''
-		, ''id = '' + convert(varchar(20), '+convert(varchar(20), p_id_mat)+'))';
-	execute immediate 'call slave_update_'+p_sysname+'(''mat''
-		, ''kol3''
-		, '''+convert(varchar(20), round(p_quant, 2))+'''
-		, ''id = '' + convert(varchar(20), '+convert(varchar(20), p_id_mat)+'))';
-	execute immediate 'call slave_update_'+p_sysname+'(''mat''
-		, ''summa_sale''
-		, '''+convert(varchar(20), round(p_quant* p_cena * v_currency_rate, 2))+'''
-		, ''id = '' + convert(varchar(20), '+convert(varchar(20), p_id_mat)+'))';
-	execute immediate 'call slave_update_'+p_sysname+'(''mat''
-		, ''summa_salev''
-		, '''+convert(varchar(20), round(p_quant* p_cena, 2))+'''
-		, ''id = '' + convert(varchar(20), '+convert(varchar(20), p_id_mat)+'))';
-end;
-*/
-
-if exists (select 1 from sysprocedure where proc_name = 'wf_otgruz_nom') then
-	drop procedure wf_otgruz_nom;
-end if;
-/*
-
-CREATE procedure wf_otgruz_nom(
-	  p_id_mat integer
-	, p_id_jmat integer
-	, p_nomnom varchar(50)
-	, p_quant  float
-	, p_cena float
-	, p_mat_nu varchar(20)
-	, p_id_source integer
-	, p_id_dest integer
-	, p_currency_rate float
-	, p_sysname varchar(50) default null
-) 
-begin
---	declare v_id_jmat integer;
---	declare v_id_mat integer;
---	declare v_mat_nu varchar(20);
---	declare v_currency_rate float;
---	declare v_datev date;
---	declare v_id_currency integer;
-	declare v_id_inv integer;
---	declare v_id_source integer;
---	declare v_id_dest integer;
---	declare v_cost float;
-	declare v_perList float;
-
-	declare sync char(1);
-
-	select id_inv, perList into v_id_inv, v_perList from sguidenomenk where nomnom = p_nomnom;
-
-
---	call call_host('block_table', 'sync, ''prior'', ''mat''');
-	call block_remote('stime', get_server_name(), 'mat');
-	
-	call wf_insert_mat (
-		'stime'
-		,p_id_mat
-		,p_Id_jmat
-		,v_id_inv
-		,p_mat_nu
-		,p_quant 
-		,p_cena
-		,p_currency_rate
-		,p_id_source
-		,p_id_dest
-		,v_perList
-	);
-	
-	if p_sysname is not null and p_sysname != 'stime' then
-		call wf_insert_mat (
-			p_sysname
-			,p_id_mat
-			,p_Id_jmat
-			,v_id_inv
-			,p_mat_nu
-			,p_quant 
-			,p_cena
-			,p_currency_rate
-			,p_id_source
-			,p_id_dest
-			,v_perList
-		);
-	
-	end if;
-
-
-	call block_remote('stime', get_server_name(), 'mat');
---	call call_host('unblock_table', 'sync, ''prior'', ''mat''');
-	--	set wf_otgruz_nom = v_id_mat;
-end;
-*/
-
-
-	
-	
-if exists (select 1 from sysprocedure where proc_name = 'wf_otgruz_jmat') then
-	drop function wf_otgruz_jmat;
-end if;
-
-/*
-CREATE FUNCTION wf_otgruz_jmat(
-	p_numorder integer
-	,p_id_jscet integer
---	,p_venture_id integer
-	,p_date date
-	,p_id_source integer
-	,p_id_dest integer
-	,p_id_currency integer
-	,p_datev date
-	,p_currency_rate float
-	,p_sysname varchar(50) default null
-) 
-	returns integer
-begin
-	
-	declare v_id_jmat integer;
-	declare v_id_mat integer;
-	declare v_jmat_nu varchar(20);
---	declare v_currency_rate float;
---	declare v_datev date;
-	declare v_id_currency integer;
---	declare v_id_source integer;
---	declare v_id_dest integer;
-	declare v_osn varchar(100);
---	declare v_sysname varchar(50);
---	declare v_ventureName varchar(200);
-
-		set v_id_jmat = get_nextid('jmat');
---		set v_id_currency = system_currency();
---		call slave_currency_rate_stime(v_datev, v_currency_rate);
-		set v_jmat_nu = nextnu_remote('stime', 'jmat');
-		--select id_voc_names into v_id_source from sguidesource where sourceid = new_name.sourid;
-		--select id_voc_names into v_id_dest from sguidesource where sourceid = new_name.destid;
-
-		set v_osn = 'заказ N ' + convert(varchar(20), p_numorder);
-	    
-		call wf_insert_jmat (
-			'stime'
-			,'1210' --v_id_guide_jmat
-			,v_id_jmat
-			,p_date --v_jmat_date
-			,v_jmat_nu
-			,v_osn
-			,p_id_currency
-			,p_datev
-			,p_currency_rate
-			,p_id_source
-			,p_id_dest
-		);
-
-		if p_sysname is not null and p_sysname != 'stime' then
-			call wf_insert_jmat (
-				p_sysname
-				,'1210' --v_id_guide_jmat
-				,v_id_jmat
-				,p_date --v_jmat_date
-				,v_jmat_nu
-				,v_osn
-				,p_id_currency
-				,p_datev
-				,p_currency_rate
-				,p_id_source
-				,p_id_dest
-				,p_id_jscet
-			);
-		end if;
-
-		set wf_otgruz_jmat = v_id_jmat;
-
-end;
-*/
-
-
-----------------------------------------------------------------------
---------------         xPredmetyByIzdeliaOut          ----------------
-----------------------------------------------------------------------
-if exists (select 1 from systriggers where trigname = 'wf_xPredmetyByIzdeliaOut_outcome_di' and tname = 'xPredmetyByIzdeliaOut') then 
-	drop trigger xPredmetyByIzdeliaOut.wf_xPredmetyByIzdeliaOut_outcome_di;
-end if;
-
-/*
-create 
-	trigger wf_xPredmetyByIzdeliaOut_outcome_di before delete order 1 on 
-xPredmetyByIzdeliaOut
-referencing old as old_name
-for each row
-begin
-
---	declare v_id_mat integer;
-	declare v_id_jmat integer;
-	declare v_sysname varchar(50);
-
---	set v_id_mat = old_name.id_mat;
-	set v_id_jmat = old_name.id_jmat;
-
-	select v.sysname
-	into v_sysname
-	from orders o
-		left join guideventure v on v.ventureid = o.ventureid and v.standalone = 0
-	where numorder = old_name.numorder;
-
-	call wf_otgruz_remove (
-		v_id_jmat
-		,'stime'
-	);
-
-	if v_sysname is not null and v_sysname != 'stime' then
-		call wf_otgruz_remove (
-			v_id_jmat
-			,v_sysname
-		);
-
-	end if;
-
-		
-		
-end;
-
-*/
-
-
-
-if exists (select 1 from systriggers where trigname = 'wf_xPredmetyByIzdeliaOut_outcome_ui' and tname = 'xPredmetyByIzdeliaOut') then 
-	drop trigger xPredmetyByIzdeliaOut.wf_xPredmetyByIzdeliaOut_outcome_ui;
-end if;
-
-/*
-create 
-	trigger wf_xPredmetyByIzdeliaOut_outcome_ui before update order 1 on 
-xPredmetyByIzdeliaOut
-referencing new as new_name old as old_name
-for each row
-begin
-
-	declare v_id_mat integer;
-	declare v_id_jmat integer;
-	declare v_sysname varchar(50);
-	declare v_cena float;
-
-	if update(quant) and old_name.quant != new_name.quant then
-		set v_id_mat = old_name.id_mat;
-		set v_id_jmat = old_name.id_jmat;
-
-		select cenaEd into v_cena 
-		from xPredmetybyIzdelia pi
-		where numOrder = new_name.numOrder 
-			and pi.prId = new_name.prId 
-			and pi.prExt = new_name.prExt
-		;
-
-		select v.sysname
-		into v_sysname
-		from orders o
-		left join guideventure v on v.ventureid = o.ventureid and v.standalone = 0
-		where numorder = old_name.numorder;
-		
-
-		call wf_otgruz_quant(
-			v_id_mat
-			,v_id_jmat
-			,new_name.quant
-			,v_cena
-			,'stime'
-		);
-
-		if v_sysname is not null and v_sysname != 'stime' then
-			call wf_otgruz_quant(
-				v_id_mat
-				,v_id_jmat
-				,new_name.quant
-				,v_cena
-				,v_sysname
-			);
-
-		end if;
-
-
-	end if;
-
-end;
-*/
-
-if exists (select 1 from systriggers where trigname = 'wf_xPredmetyByIzdeliaOut_outcome_bi' and tname = 'xPredmetyByIzdeliaOut') then 
-	drop trigger xPredmetyByIzdeliaOut.wf_xPredmetyByIzdeliaOut_outcome_bi;
-end if;
-/*
-create 
-	trigger wf_xPredmetyByIzdeliaOut_outcome_bi before insert order 1 on 
-xPredmetyByIzdeliaOut
-referencing new as new_name
-for each row
-begin
-	declare v_id_jmat integer;
-	declare v_id_mat integer;
-	declare v_jmat_nu varchar(20);
---	declare v_mat_nu varchar(20);
-	declare v_currency_rate float;
-	declare v_datev date;
-	declare v_id_currency integer;
-	declare v_id_source integer;
-	declare v_id_dest integer;
---	declare v_osn varchar(100);
-	declare v_id_jscet integer;
---	declare v_venture_id integer;
-	declare v_firm_id integer;
-	declare v_sysname varchar(50);
-	declare v_ventureName varchar(100);
-	declare v_cena float;
-	declare v_cur_otgruz_date date;
-
-
-
---	set v_id_jmat = old_name.id_jmat;
-	select max(id_jmat) into v_id_jmat 
-	from xPredmetyByIzdeliaOut 
-	where numOrder = new_name.numorder and outDate = new_name.outDate;
-
-	if v_id_jmat is null then
-		select max(id_jmat) into v_id_jmat 
-		from xPredmetyByNomenkOut 
-		where numOrder = new_name.numorder and outDate = new_name.outDate;
-	end if;
-
-	select 
-		 o.id_jscet
-		, isnull(s.id_voc_names, 0)
-		, isnull(f.id_voc_names,0)
-		, v.ventureName
-		, v.sysname
-	into  
-		 v_id_jscet
-		, v_id_source
-		, v_id_dest
-		, v_ventureName
-		, v_sysname
-	from orders o
-		left join guideventure v on v.ventureid = o.ventureid and v.standalone = 0
-		left join guidefirms f on o.firmid = f.firmid
-		left join sguidesource s on sourceid = -1001
-	where numorder = new_name.numorder;
-
-	
-	set v_id_currency = system_currency();
-	call slave_currency_rate_stime(v_datev, v_currency_rate);
-
-	if v_id_jmat is null then
-		set v_id_jmat = wf_otgruz_jmat(
-			new_name.numorder
-			, v_id_jscet
---			, v_venture_id
-			, new_name.outDate
-			, v_id_source
-			, v_id_dest
-			, v_id_currency
-			, v_datev
-			, v_currency_rate
-			, v_sysname
-		);
-	end if;
-
---	message 'v_id_jscet = ', v_id_jscet to client;
---	message 'v_id_jmat = ', v_id_jmat to client;
-	set v_id_mat = get_nextid('mat');
---	call slave_select_stime(v_mat_nu, 'mat', 'max(nu)', 'id_jmat = ' + convert(varchar(20), v_id_jmat));
---	set v_mat_nu = convert(varchar(20), convert(integer, isnull(v_mat_nu, 0)) + 1);
-
-	select cenaEd 
-	into v_cena
-	from xPredmetybyIzdelia pi
-	where pi.numOrder = new_name.numOrder 
-		and pi.prId = new_name.prId 
-		and pi.prExt = new_name.prExt;
-
-	call wf_otgruz_izd(
-		  v_id_mat
-		, v_id_jmat
-		, new_name.numOrder
-		, new_name.prId
-		, new_name.prExt
-		, new_name.quant
-		, v_cena
---		, v_mat_nu
-		, v_id_source
-		, v_id_dest
-		, v_currency_rate
-		, v_sysname
-	);
-	
-	
-	set new_name.id_mat = v_id_mat;
-	set new_name.id_jmat = v_id_jmat;
-
-end;
-*/
-
-if exists (select 1 from sysprocedure where proc_name = 'wf_otgruz_izd') then
-	drop procedure wf_otgruz_izd;
-end if;
-/*
-
-CREATE procedure wf_otgruz_izd(
-	  p_id_mat integer
-	, p_id_jmat integer
-	, p_numOrder integer
-	, p_prId integer
-	, p_prExt integer
-	, p_quant  float
-	, p_cena float
---	, p_mat_nu varchar(20)
-	, p_id_source integer
-	, p_id_dest integer
-	, p_currency_rate float
-	, p_sysname varchar(50) default null
-) 
-begin
---	declare v_id_jmat integer;
---	declare v_id_mat integer;
-	declare v_mat_nu varchar(20);
---	declare v_currency_rate float;
---	declare v_datev date;
---	declare v_id_currency integer;
-	declare v_id_inv integer;
---	declare v_id_source integer;
---	declare v_id_dest integer;
---	declare v_cost float;
---	declare v_quant float;
-
-	declare sync char(1);
-
-	
---	call call_host('block_table', 'sync, ''prior'', ''mat''');
-
-	call slave_select_stime(v_mat_nu, 'mat', 'max(nu)', 'id_jmat = ' + convert(varchar(20), p_id_jmat));
---	set v_mat_nu = convert(varchar(20), convert(integer, isnull(v_mat_nu, 0)) + 1);
-   
-	for aCursor as a dynamic scroll cursor for
-	
-		select id_inv r_id_inv, cost as r_cost, pr.quantity r_quant, nom.perList as r_perList
-		from sguidenomenk nom
-		join (
-			select nomnom, quantity 
-			from sproducts p
-			where p.productId = p_prId 
-			and ( exists (
-					select 1 from sguidevariant vp 
-					where 
-						p.productid = vp.productid and p.xgroup = vp.xgroup and vp.c = 1
-					)
-					or p.xgroup = '' or p.xgroup is null
-				)
-					union 
-			select v.nomnom, p.quantity 
-			from xvariantnomenc v
-				join sproducts p on p.productid = v.prid and p.nomnom = v.nomnom
-			where v.prid = p_prId and v.numorder = p_numOrder and v.prExt=p_prExt
-		) pr on pr.nomnom = nom.nomnom
-	do
-	
-		
-		set v_mat_nu = convert(varchar(20), convert(integer, isnull(v_mat_nu, 0)) + 1);
-		call wf_insert_mat (
-			'stime'
-			,p_id_mat
-			,p_Id_jmat
-			,r_id_inv
-			,v_mat_nu
-			,p_quant * r_quant
-			,r_cost
-			,p_currency_rate
-			,p_id_source
-			,p_id_dest
-			,r_perList
-		);
-		set p_id_mat = p_id_mat + 1;
-
-	end for;
-
-	
-	if p_sysname is not null and p_sysname != 'stime' then
-	
---	message 'p_prId = ', p_prId to client;
-		if not exists (select 1 from svariantpower where productId = p_prid) then
-			select id_inv into v_id_inv from sguideproducts where prId = p_prId;
-		else 
-			select id_inv into v_Id_inv 
-			from xPredmetyByIzdelia pi 
-			where pi.prId = p_prId 
-				and pi.prExt = p_prExt
-				and pi.numOrder = p_numOrder
-		end if;
---	message 'v_id_inv = ', v_id_inv to client;
-
-		execute immediate 'call slave_select_'+p_sysname+'(v_mat_nu, ''mat'', ''max(nu)'''
-			+', ''id_jmat = '' + convert(varchar(20), '+convert(varchar(20), p_id_jmat)+'))';
-
-		set v_mat_nu = convert(varchar(20), convert(integer, isnull(v_mat_nu, 0)) + 1);
-
-		call wf_insert_mat (
-			p_sysname
-			,p_id_mat
-			,p_Id_jmat
-			,v_id_inv
-			,v_mat_nu
-			,p_quant 
-			,p_cena
-			,p_currency_rate
-			,p_id_source
-			,p_id_dest
-			,1
-		);
-	
-	end if;
-
-
---	call call_host('unblock_table', 'sync, ''prior'', ''mat''');
-	--	set wf_otgruz_izd = v_id_mat;
-end;
-*/
-	
-
-
-
 -------------------------------------------------------------------------
 --------------             BayOrders      ----------------------------
 -------------------------------------------------------------------------
@@ -9314,429 +8359,6 @@ end;
 
 
 
-----------------------------------------------------------------------
---------------         BayNomenkOut          -----------------
-----------------------------------------------------------------------
-if exists (select 1 from systriggers where trigname = 'wf_BayNomenkOut_outcome_di' and tname = 'BayNomenkOut') then 
-	drop trigger BayNomenkOut.wf_BayNomenkOut_outcome_di;
-end if;
-/*
-create 
-	trigger wf_BayNomenkOut_outcome_di before delete order 1 on 
-BayNomenkOut
-referencing old as old_name
-for each row
-begin
---	declare v_id_mat integer;
-	declare v_id_jmat integer;
-	declare v_sysname varchar(50);
-
---	set v_id_mat = old_name.id_mat;
-	set v_id_jmat = old_name.id_jmat;
-
-	select v.sysname
-	into v_sysname
-	from BayOrders o
-		left join guideventure v on v.ventureid = o.ventureid and v.standalone = 0
-	where numorder = old_name.numOrder;
-
-	call wf_otgruz_remove (
-		v_id_jmat
-		,'stime'
-	);
-
-	if v_sysname is not null and v_sysname != 'stime' then
-		call wf_otgruz_remove (
-			v_id_jmat
-			,v_sysname
-		);
-
-	end if;
-
-		
-		
-end;
-
-*/
-
-
-
-if exists (select 1 from systriggers where trigname = 'wf_BayNomenkOut_outcome_ui' and tname = 'BayNomenkOut') then 
-	drop trigger BayNomenkOut.wf_BayNomenkOut_outcome_ui;
-end if;
-
-/*
-
-create 
-	trigger wf_BayNomenkOut_outcome_ui before update order 1 on 
-BayNomenkOut
-referencing new as new_name old as old_name
-for each row
-begin
-	declare v_id_mat integer;
-	declare v_id_jmat integer;
-	declare v_sysname varchar(50);
-	declare v_cena float;
-
-	if update(quant) and old_name.quant != new_name.quant then
-		set v_id_mat = old_name.id_mat;
-		set v_id_jmat = old_name.id_jmat;
-
-		select intQuant into v_cena from sDmcRez where numOrder = new_name.numOrder and nomnom = new_name.nomNom;
-
-		select v.sysname
-		into v_sysname
-		from BayOrders o
-		left join guideventure v on v.ventureid = o.ventureid and v.standalone = 0
-		where numorder = old_name.numOrder;
-		
-
-		call wf_otgruz_quant(
-			v_id_mat
-			,v_id_jmat
-			,new_name.quant
-			,v_cena
-			,'stime'
-		);
-
-		if v_sysname is not null and v_sysname != 'stime' then
-			call wf_otgruz_quant(
-				v_id_mat
-				,v_id_jmat
-				,new_name.quant
-				,v_cena
-				,v_sysname
-			);
-
-		end if;
-
-
-	end if;
-end;
-*/
-
-
-if exists (select 1 from systriggers where trigname = 'wf_BayNomenkOut_outcome_bi' and tname = 'BayNomenkOut') then 
-	drop trigger BayNomenkOut.wf_BayNomenkOut_outcome_bi;
-end if;
-/*
-create 
-	trigger wf_BayNomenkOut_outcome_bi before insert order 1 on 
-BayNomenkOut
-referencing new as new_name
-for each row
-begin
-	declare v_id_jmat integer;
-	declare v_id_mat integer;
-	declare v_jmat_nu varchar(20);
-	declare v_mat_nu varchar(20);
-	declare v_currency_rate float;
-	declare v_datev date;
-	declare v_id_currency integer;
-	declare v_id_source integer;
-	declare v_id_dest integer;
---	declare v_osn varchar(100);
-	declare v_id_jscet integer;
---	declare v_venture_id integer;
-	declare v_firm_id integer;
-	declare v_sysname varchar(50);
-	declare v_ventureName varchar(100);
-	declare v_cena float;
-	declare v_cur_otgruz_date date;
-
-
-
-	select max(id_jmat) into v_id_jmat 
-	from BayNomenkOut 
-	where numOrder = new_name.numOrder and outDate = new_name.outDate;
-
-	select 
-		 o.id_jscet
-		, isnull(s.id_voc_names, 0)
-		, isnull(f.id_voc_names,0)
-		, v.ventureName
-		, v.sysname
-	into  
-		 v_id_jscet
-		, v_id_source
-		, v_id_dest
-		, v_ventureName
-		, v_sysname
-	from BayOrders o
-		left join guideventure v on v.ventureid = o.ventureid and v.standalone = 0
-		left join BayGuideFirms f on o.firmid = f.firmid
-		left join sguidesource s on sourceid = -1001
-	where numorder = new_name.numOrder;
-
-	
-	set v_id_currency = system_currency();
-	call slave_currency_rate_stime(v_datev, v_currency_rate);
-
---	select id_voc_names into v_id_dest from guidefirms where firmid = v_firm_id;
---	    message 'v_id_dest = ', v_id_dest to client;
-	-- со склада 1 
-	-- ?? хотя по идее нужно бы отгружать со склада готовой продукции
---	select id_voc_names into v_id_source from sguidesource where sourceid = -1001;
-
-	if v_id_jmat is null then
---	    message '---' to client;
-		set v_id_jmat = wf_otgruz_jmat(
-			new_name.numOrder
-			, v_id_jscet
---			, v_venture_id
-			, new_name.outDate
-			, v_id_source
-			, v_id_dest
-			, v_id_currency
-			, v_datev
-			, v_currency_rate
-			, v_sysname
-		);
---		update BayOrders set id_jmat = v_id_jmat where numorder = new_name.numOrder;
-	end if;
-
-	set v_id_mat = get_nextid('mat');
-	call slave_select_stime(v_mat_nu, 'mat', 'max(nu)', 'id_jmat = ' + convert(varchar(20), v_id_jmat));
-	set v_mat_nu = convert(varchar(20), convert(integer, isnull(v_mat_nu, 0)) + 1);
-	select intQuant into v_cena from sDmcRez where numDoc = new_name.numOrder and nomnom = new_name.nomNom;
-
-	call wf_otgruz_nom(
-		  v_id_mat
-		, v_id_jmat
-		, new_name.nomnom
-		, new_name.quant
-		, v_cena
-		, v_mat_nu
-		, v_id_source
-		, v_id_dest
-		, v_currency_rate
-		, v_sysname
-	);
-	set new_name.id_mat = v_id_mat;
-	set new_name.id_jmat = v_id_jmat;
-
-end;
-
-*/
-
-
-
-----------------------------------------------------------------------
---------------         xUslugOut          -----------------
-----------------------------------------------------------------------
-if exists (select 1 from systriggers where trigname = 'wf_xUslugOut_outcome_di' and tname = 'xUslugOut') then 
-	drop trigger xUslugOut.wf_xUslugOut_outcome_di;
-end if;
-
-/*
-create 
-	trigger wf_xUslugOut_outcome_di before delete order 1 on 
-xUslugOut
-referencing old as old_name
-for each row
-begin
---	declare v_id_mat integer;
-	declare v_id_jmat integer;
-	declare v_sysname varchar(50);
-
---	set v_id_mat = old_name.id_mat;
-	set v_id_jmat = old_name.id_jmat;
-
-	select v.sysname
-	into v_sysname
-	from Orders o
-		left join guideventure v on v.ventureid = o.ventureid and v.standalone = 0
-	where numorder = old_name.numOrder;
-
-	call wf_otgruz_remove (
-		v_id_jmat
-		,'stime'
-	);
-
-	if v_sysname is not null and v_sysname != 'stime' then
-		call wf_otgruz_remove (
-			v_id_jmat
-			,v_sysname
-		);
-
-	end if;
-
-		
-		
-end;
-
-*/
-
-
-
-if exists (select 1 from systriggers where trigname = 'wf_xUslugOut_outcome_ui' and tname = 'xUslugOut') then 
-	drop trigger xUslugOut.wf_xUslugOut_outcome_ui;
-end if;
-
-/*
-create 
-	trigger wf_xUslugOut_outcome_ui before update order 1 on 
-xUslugOut
-referencing new as new_name old as old_name
-for each row
-begin
-	declare v_id_mat integer;
-	declare v_id_jmat integer;
-	declare v_sysname varchar(50);
-	declare v_cena float;
-
-	if update(quant) and old_name.quant != new_name.quant then
-		set v_id_mat = old_name.id_mat;
-		set v_id_jmat = old_name.id_jmat;
-
---		select intQuant into v_cena from sDmcRez where numOrder = new_name.numOrder and nomnom = new_name.nomNom;
-
-		select v.sysname
-			,o.ordered
-		into v_sysname
-			, v_cena
-		from Orders o
-		left join guideventure v on v.ventureid = o.ventureid and v.standalone = 0
-		where numorder = old_name.numOrder;
-		
-
-		call wf_otgruz_quant(
-			v_id_mat
-			,v_id_jmat
-			,new_name.quant
-			,v_cena
-			,'stime'
-		);
-
-		if v_sysname is not null and v_sysname != 'stime' then
-			call wf_otgruz_quant(
-				v_id_mat
-				,v_id_jmat
-				,new_name.quant
-				,v_cena
-				,v_sysname
-			);
-
-		end if;
-
-
-	end if;
-end;
-*/
-
-
-
-
-if exists (select 1 from systriggers where trigname = 'wf_xUslugOut_outcome_bi' and tname = 'xUslugOut') then 
-	drop trigger xUslugOut.wf_xUslugOut_outcome_bi;
-end if;
-
-/*
-create 
-	trigger wf_xUslugOut_outcome_bi before insert order 1 on 
-xUslugOut
-referencing new as new_name
-for each row
-begin
-	declare v_id_jmat integer;
-	declare v_id_mat integer;
-	declare v_jmat_nu varchar(20);
-	declare v_mat_nu varchar(20);
-	declare v_currency_rate float;
-	declare v_datev date;
-	declare v_id_currency integer;
-	declare v_id_source integer;
-	declare v_id_dest integer;
---	declare v_osn varchar(100);
-	declare v_id_jscet integer;
---	declare v_venture_id integer;
-	declare v_firm_id integer;
-	declare v_sysname varchar(50);
-	declare v_ventureName varchar(100);
-	declare v_cena float;
-	declare v_cur_otgruz_date date;
-	declare v_nomnom char(10);
-
-
-
-	set v_nomnom = 'УСЛ';
-
-	select max(id_jmat) into v_id_jmat 
-	from xUslugOut 
-	where numOrder = new_name.numOrder and outDate = new_name.outDate;
-
-	select 
-		 o.id_jscet
-		, isnull(s.id_voc_names, 0)
-		, isnull(f.id_voc_names,0)
-		, v.ventureName
-		, v.sysname
-		, o.ordered
-	into  
-		 v_id_jscet
-		, v_id_source
-		, v_id_dest
-		, v_ventureName
-		, v_sysname
-		, v_cena
-	from Orders o
-		left join guideventure v on v.ventureid = o.ventureid and v.standalone = 0
-		left join BayGuideFirms f on o.firmid = f.firmid
-		left join sguidesource s on sourceid = -1001
-	where numorder = new_name.numOrder;
-
-	
-	set v_id_currency = system_currency();
-	call slave_currency_rate_stime(v_datev, v_currency_rate);
-
---	select id_voc_names into v_id_dest from guidefirms where firmid = v_firm_id;
---	    message 'v_id_dest = ', v_id_dest to client;
-	-- со склада 1 
-	-- ?? хотя по идее нужно бы отгружать со склада готовой продукции
---	select id_voc_names into v_id_source from sguidesource where sourceid = -1001;
-
-	if v_id_jmat is null then
---	    message '---' to client;
-		set v_id_jmat = wf_otgruz_jmat(
-			new_name.numOrder
-			, v_id_jscet
---			, v_venture_id
-			, new_name.outDate
-			, v_id_source
-			, v_id_dest
-			, v_id_currency
-			, v_datev
-			, v_currency_rate
-			, v_sysname
-		);
-	end if;
-
-	set v_id_mat = get_nextid('mat');
-	call slave_select_stime(v_mat_nu, 'mat', 'max(nu)', 'id_jmat = ' + convert(varchar(20), v_id_jmat));
-	set v_mat_nu = convert(varchar(20), convert(integer, isnull(v_mat_nu, 0)) + 1);
---	select intQuant into v_cena from sDmcRez where numDoc = new_name.numOrder and nomnom = new_name.nomNom;
-
-	call wf_otgruz_nom(
-		  v_id_mat
-		, v_id_jmat
-		, v_nomnom
-		, new_name.quant
-		, v_cena
-		, v_mat_nu
-		, v_id_source
-		, v_id_dest
-		, v_currency_rate
-		, v_sysname
-	);
-	set new_name.id_mat = v_id_mat;
-	set new_name.id_jmat = v_id_jmat;
-
-end;
-
-*/
-
-
-
 //===============================================
 //    Процедуры обеспечения живучести программ
 //===============================================
@@ -10014,130 +8636,3 @@ end;
 
 
 
-/*
-----------------------------------------------------------------------
---------------                 sDocsVenture          ------------------------
-----------------------------------------------------------------------
-if exists (select 1 from systriggers where trigname = 'wf_delete' and tname = 'sDocsVenture') then 
-	drop trigger sDocsVenture.wf_delete;
-end if;
-
-create TRIGGER wf_delete before delete on
-sDocsVenture
-referencing old as old_name
-for each row
-begin
-	declare remoteServer varchar(32);
-	declare no_echo integer;
-
-	set no_echo = 0;
-
-  	begin
-		select @stime into no_echo; 
-	exception 
-		when other then
-			set no_echo = 0;
-	end;
-
-	if no_echo = 1 then
-		return;
-	end if;
-
-
-
-	if (old_name.id_jmat is not null) then
-		call block_remote('stime', get_server_name(), 'jmat');
-		call block_remote('stime', get_server_name(), 'mat');
-		call delete_remote('stime', 'jmat', 'id = ' + convert(varchar(20), old_name.id_jmat));
-		call unblock_remote('stime', get_server_name(), 'jmat');
-		call unblock_remote('stime', get_server_name(), 'mat');
-	end if;
-
-end;
-
-
-
-if exists (select 1 from systriggers where trigname = 'wf_insert' and tname = 'sDocsVenture') then 
-	drop trigger sDocsVenture.wf_insert;
-end if;
-
-create 
-	trigger wf_insert before insert on 
-sDocsVenture
-referencing new as new_name
-for each row
-begin
-	declare v_id_jmat integer;
-	declare v_id_mat integer;
-	declare v_jmat_nu varchar(20);
-	declare v_currency_rate float;
-	declare v_datev date;
-	declare v_id_currency integer;
-	declare v_id_source integer;
-	declare v_id_dest integer;
-	declare v_osn varchar(100);
-	declare v_id_guide_jmat integer;
-
-
-
-
-		set v_id_jmat = get_nextid('jmat');
-		set v_id_currency = system_currency();
-		call slave_currency_rate_stime(v_datev, v_currency_rate);
---		set v_jmat_nu = new_name.numdoc;
-		select id_voc_names into v_id_source from sguidesource where sourceid = new_name.sourid;
-		select id_voc_names into v_id_dest from sguidesource where sourceid = new_name.destid;
-		set v_osn = '[Prior: '+ convert(varchar(20), new_name.numdoc) +']';
-	    
-		call wf_insert_jmat (
-			'stime'
-			,v_id_guide_jmat
-			,v_id_jmat
-			,now() --v_jmat_date
-			,v_jmat_nu
-			,v_osn
-			,v_id_currency
-			,v_datev
-			,v_currency_rate
-			,v_id_source
-			,v_id_dest
-		);
-		set new_name.id_jmat = v_id_jmat;
-
-
-end;
-
-if exists (select 1 from systriggers where trigname = 'wf_update' and tname = 'sDocsVenture') then 
-	drop trigger sDocsVenture.wf_update;
-end if;
-
-create 
-	trigger wf_update before update on 
-sDocsVenture
-referencing new as new_name old as old_name
-for each row
-begin
-	declare v_id_jmat integer;
-	declare v_id_mat integer;
-	declare v_jmat_nu varchar(20);
-	declare v_currency_rate float;
-	declare v_datev date;
-	declare v_id_currency integer;
-	declare v_id_source integer;
-	declare v_id_dest integer;
-	declare v_osn varchar(100);
-
-	if update(sourid) then
-		select id_voc_names into v_id_source from sguidesource where sourceid = new_name.sourid;
-		call slave_update_stime('jmat', 'id_s', convert(varchar(20), v_id_source), 'id = ' + convert(varchar(20), old_name.id_jmat));
-	end if;
-	if update(destid) then
-		select id_voc_names into v_id_dest from sguidesource where sourceid = new_name.destid;
-		call slave_update_stime('jmat', 'id_d', convert(varchar(20), v_id_dest), 'id = ' + convert(varchar(20), old_name.id_jmat));
-	end if;
-	if update(note) then
-		set v_osn = '[Prior: '+ new_name.note +']';
-		call slave_update_stime('jmat', 'osn', '''' +v_osn + '''', 'id = ' + convert(varchar(20), old_name.id_jmat));
-	end if;
-end;
-*/
