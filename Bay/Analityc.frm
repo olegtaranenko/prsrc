@@ -3,119 +3,107 @@ Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "mscomctl.ocx"
 Object = "{86CF1D34-0C5F-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCT2.OCX"
 Begin VB.Form Analityc 
    Caption         =   "Параметры запроса"
-   ClientHeight    =   10584
+   ClientHeight    =   9192
    ClientLeft      =   48
    ClientTop       =   432
-   ClientWidth     =   6732
+   ClientWidth     =   5364
    LinkTopic       =   "Form1"
-   ScaleHeight     =   10584
-   ScaleWidth      =   6732
+   ScaleHeight     =   9192
+   ScaleWidth      =   5364
    StartUpPosition =   3  'Windows Default
    Begin VB.Frame Frame4 
       Caption         =   "Группировки ..."
       Height          =   1332
-      Left            =   120
+      Left            =   240
       TabIndex        =   21
-      Top             =   1200
-      Width           =   5052
-      Begin VB.TextBox Text1 
+      Top             =   1800
+      Width           =   4932
+      Begin VB.TextBox tbTop 
          Appearance      =   0  'Flat
          BorderStyle     =   0  'None
-         Height          =   288
-         Left            =   2160
-         TabIndex        =   35
+         Height          =   192
+         Left            =   2040
+         TabIndex        =   33
          Text            =   "10"
          Top             =   960
          Width           =   252
       End
-      Begin VB.CheckBox Check1 
+      Begin VB.CheckBox ckTop 
          Caption         =   "Только первые "
          Height          =   252
          Left            =   360
-         TabIndex        =   34
+         TabIndex        =   32
          Top             =   960
          Width           =   1572
       End
-      Begin VB.ComboBox Combo1 
+      Begin VB.ComboBox cbGroupByRow 
          Height          =   288
-         Left            =   2760
-         TabIndex        =   32
-         Text            =   "Combo3"
-         Top             =   480
-         Width           =   1572
-      End
-      Begin VB.ComboBox Combo3 
-         Height          =   288
+         ItemData        =   "Analityc.frx":0000
          Left            =   360
-         TabIndex        =   22
-         Text            =   "Combo3"
+         List            =   "Analityc.frx":0013
+         TabIndex        =   30
+         Text            =   "Фирмы"
          Top             =   480
-         Width           =   1572
+         Width           =   2052
+      End
+      Begin VB.ComboBox cbGroupByColumn 
+         Height          =   288
+         ItemData        =   "Analityc.frx":0053
+         Left            =   2640
+         List            =   "Analityc.frx":0069
+         TabIndex        =   22
+         Text            =   "Месяцы"
+         Top             =   480
+         Width           =   2172
       End
       Begin VB.Label Label4 
          Caption         =   "позиций"
          Height          =   252
-         Left            =   2640
-         TabIndex        =   36
+         Left            =   2400
+         TabIndex        =   34
          Top             =   960
          Width           =   852
       End
       Begin VB.Label Label3 
          Caption         =   "... по строкам"
          Height          =   252
-         Left            =   2520
-         TabIndex        =   33
+         Left            =   120
+         TabIndex        =   31
          Top             =   240
          Width           =   1452
       End
       Begin VB.Label Label1 
          Caption         =   "... по столбцам"
          Height          =   252
-         Left            =   120
+         Left            =   2400
          TabIndex        =   23
          Top             =   240
          Width           =   1452
       End
    End
-   Begin VB.CommandButton cmExcel 
-      Caption         =   "Печать в Exel"
-      Height          =   315
-      Left            =   5400
-      TabIndex        =   27
-      Top             =   840
-      Width           =   1215
-   End
    Begin VB.CommandButton cmExit 
       Caption         =   "Выход"
       Height          =   315
-      Left            =   5400
-      TabIndex        =   26
-      Top             =   1800
-      Width           =   735
-   End
-   Begin VB.CommandButton cmPrint 
-      Caption         =   "Печать"
-      Height          =   315
-      Left            =   5400
+      Left            =   4080
       TabIndex        =   25
-      Top             =   1320
-      Width           =   735
+      Top             =   1440
+      Width           =   972
    End
    Begin VB.CommandButton cmApply 
       Caption         =   "Применить"
       Height          =   315
-      Left            =   5400
+      Left            =   360
       TabIndex        =   24
-      Top             =   360
+      Top             =   1440
       Width           =   1095
    End
    Begin VB.Frame Frame3 
       Caption         =   "Выбор периода"
       Height          =   1212
-      Left            =   120
+      Left            =   240
       TabIndex        =   14
       Top             =   120
-      Width           =   5052
+      Width           =   4932
       Begin VB.CheckBox ckStartDate 
          Caption         =   " "
          Height          =   315
@@ -135,7 +123,7 @@ Begin VB.Form Analityc
       Begin VB.CommandButton cmDayRight 
          Caption         =   ">"
          Height          =   252
-         Left            =   2640
+         Left            =   2520
          TabIndex        =   17
          Top             =   600
          Width           =   372
@@ -143,56 +131,58 @@ Begin VB.Form Analityc
       Begin VB.CommandButton cmDayLeft 
          Caption         =   "<"
          Height          =   252
-         Left            =   2160
+         Left            =   2040
          TabIndex        =   16
          Top             =   600
          Width           =   372
       End
-      Begin VB.ComboBox Combo2 
+      Begin VB.ComboBox cbDateShift 
          Height          =   288
-         Left            =   3240
+         ItemData        =   "Analityc.frx":009A
+         Left            =   3120
+         List            =   "Analityc.frx":00B0
          TabIndex        =   15
-         Text            =   "Combo2"
+         Text            =   "на год"
          Top             =   600
-         Width           =   1572
+         Width           =   1692
       End
       Begin MSComCtl2.DTPicker tbStartDate 
          Height          =   288
          Left            =   720
-         TabIndex        =   29
+         TabIndex        =   27
          Top             =   240
          Width           =   1092
          _ExtentX        =   1926
          _ExtentY        =   508
          _Version        =   393216
-         Format          =   16449537
+         Format          =   16384001
          CurrentDate     =   39599
       End
       Begin MSComCtl2.DTPicker tbEndDate 
          Height          =   288
          Left            =   720
-         TabIndex        =   30
+         TabIndex        =   28
          Top             =   600
          Width           =   1092
          _ExtentX        =   1926
          _ExtentY        =   508
          _Version        =   393216
-         Format          =   16449537
+         Format          =   16384001
          CurrentDate     =   39599
       End
       Begin VB.Label Label5 
-         Caption         =   "Сдвинуть даты на период..."
+         Caption         =   "Одновременно сдвинуть даты"
          Height          =   252
-         Left            =   2160
-         TabIndex        =   37
-         Top             =   240
+         Left            =   1920
+         TabIndex        =   35
+         Top             =   360
          Width           =   2772
       End
       Begin VB.Label Label2 
          Caption         =   "C"
          Height          =   192
          Left            =   120
-         TabIndex        =   31
+         TabIndex        =   29
          Top             =   240
          Width           =   180
       End
@@ -210,13 +200,13 @@ Begin VB.Form Analityc
       Height          =   4572
       Left            =   240
       TabIndex        =   0
-      Top             =   2880
+      Top             =   3120
       Width           =   4932
       Begin VB.CheckBox ckKriteriumOborud 
          Caption         =   "Выбор оборудования"
          Height          =   252
          Left            =   120
-         TabIndex        =   28
+         TabIndex        =   26
          Top             =   3840
          Width           =   3252
       End
@@ -300,7 +290,7 @@ Begin VB.Form Analityc
       Height          =   1332
       Left            =   240
       TabIndex        =   4
-      Top             =   7560
+      Top             =   7680
       Width           =   4932
       Begin VB.CommandButton cmFilterApply 
          Appearance      =   0  'Flat
@@ -308,7 +298,7 @@ Begin VB.Form Analityc
          Enabled         =   0   'False
          Height          =   252
          Left            =   3720
-         Picture         =   "Analityc.frx":0000
+         Picture         =   "Analityc.frx":00F3
          Style           =   1  'Graphical
          TabIndex        =   9
          ToolTipText     =   "Удалить Фильтр"
@@ -337,7 +327,7 @@ Begin VB.Form Analityc
          BackColor       =   &H8000000A&
          Height          =   252
          Left            =   3720
-         Picture         =   "Analityc.frx":03EA
+         Picture         =   "Analityc.frx":04DD
          Style           =   1  'Graphical
          TabIndex        =   6
          ToolTipText     =   "Сохранить фильтр"
@@ -350,7 +340,7 @@ Begin VB.Form Analityc
          BackColor       =   &H8000000A&
          Height          =   252
          Left            =   4080
-         Picture         =   "Analityc.frx":07B9
+         Picture         =   "Analityc.frx":08AC
          Style           =   1  'Graphical
          TabIndex        =   5
          ToolTipText     =   "Удалить Фильтр"
@@ -480,6 +470,10 @@ ERR1:
  Resume Next
 
 ERR2: bilo = True: Resume NXT
+
+End Sub
+
+Private Sub loadRegions()
 
 End Sub
 

@@ -1,4 +1,238 @@
-	
+if exists (select 1 from sysprocedure where proc_name = 'get_tmp_ord_table_name') then
+	drop procedure get_tmp_ord_table_name;
+end if;
+
+create function get_tmp_ord_table_name(
+	p_table_name varchar(64)
+) returns varchar(64)
+begin
+	return '#' + p_table_name + '_ord';
+end;
+
+
+if exists (select 1 from sysprocedure where proc_name = 'wf_territory_catalog') then
+	drop procedure wf_territory_catalog;
+end if;
+
+CREATE procedure wf_territory_catalog (
+)
+begin
+	declare v_ord_table varchar(64);
+	declare p_table_name varchar(64);    
+	declare p_id_name varchar(64);       
+	declare p_parent_id_name varchar(64);
+	declare p_order_by_name varchar(256);
+
+	set p_table_name = 'bayRegion';
+	set p_id_name = 'regionId';
+	set p_parent_id_name = 'territoryId';
+	set p_order_by_name = 'region';
+
+	set v_ord_table = get_tmp_ord_table_name(p_table_name);
+	execute immediate 'create table ' + v_ord_table + ' (id integer, ord integer)';
+
+	call wf_sort_klassificator(p_table_name, p_id_name, p_parent_id_name, p_order_by_name);
+
+	select r.regionId, r.region, r.territoryId, o.ord
+	from bayRegion r 
+	join #bayRegion_ord o on o.id = r.regionId
+	order by o.ord, r.region;
+
+	execute immediate 'drop table ' + v_ord_table;
+end;
+
+
+
+
+--create variable @v_lvl        integer;
+--create variable @v_prev_count integer;
+--create variable @v_cur_pos    integer;
+--create variable @v_exit       integer;
+--create variable @v_prev_id    integer;
+--
+--create variable @p_table_name varchar(64);
+--create variable @p_id_name varchar(64);
+--create variable @p_parent_id_name varchar(64);
+--create variable @p_order_by_name varchar(256);
+--create variable @v_tmp_child varchar(64);
+--create variable @v_ord_table varchar(64);
+
+
+if exists (select 1 from sysprocedure where proc_name = 'wf_sort_klassificator') then
+	drop procedure wf_sort_klassificator;
+end if;
+
+
+CREATE procedure wf_sort_klassificator(
+	  p_table_name varchar(64)
+	, p_id_name varchar(64)
+	, p_parent_id_name varchar(64)
+	, p_order_by_name varchar(256)
+)
+begin
+	declare v_sql long varchar;
+    declare v_loop_sql long varchar;
+
+    declare v_lvl integer;
+    declare v_prev_count integer;
+    declare v_cur_pos integer;
+    declare v_exit    integer;
+    declare v_prev_id integer;
+    declare v_tmp_child varchar(64);
+    declare v_ord_table varchar(64);
+
+    set v_ord_table = get_tmp_ord_table_name(p_table_name);
+    set v_tmp_child = '#' + p_table_name + '_child';
+
+
+    set v_lvl = 1;
+    set v_prev_count = 0;
+    set v_cur_pos = 1;
+
+    execute immediate 'create table ' + v_tmp_child + ' (parent integer, child_count integer, lvl integer)';
+
+
+    set v_sql = 
+        'insert into ' + v_tmp_child + ' '
+        + ' select ' + p_parent_id_name + ', count(*), v_lvl from ' + p_table_name + ' '
+        + ' where isnull(' + p_parent_id_name + ', 0) != 0'
+        + ' group by ' + p_parent_id_name + '';
+
+--    message '01. ', v_sql to client;
+    execute immediate v_sql;
+
+        
+    branch: loop
+        set v_sql = 
+          'insert into ' + v_tmp_child + ''
+            + ' select c.' + p_parent_id_name + ', sum(child_count), v_lvl + 1'
+            + ' from ' + p_table_name + ' c'
+            + ' join ' + v_tmp_child + ' p on c.' + p_id_name + ' = p.parent'
+            + ' where lvl = v_lvl and isnull(' + p_parent_id_name + ', 0) != 0'
+            + ' group by c.' + p_parent_id_name;
+--	    message '02. ', v_sql to client;
+	    execute immediate v_sql;
+
+        if @@rowcount = 0 then
+            set v_lvl = v_lvl + 1;
+            leave branch;
+        end if;
+        set v_lvl = v_lvl + 1;
+    end loop;
+
+
+
+    set v_sql = 
+         'insert into ' + v_tmp_child + ''
+        + '    select parent, sum(child_count), v_lvl + 1'
+        + '    from ' + v_tmp_child + ' p '
+        + '    group by parent';
+--    message '03. ', v_sql to client;
+    execute immediate v_sql;
+
+
+    set v_loop_sql = 
+        ' select ' + p_id_name + ' as r_klassid, ' + p_order_by_name + ' as r_klassname, isnull(p.child_count, 0) as r_child_count'
+        + '    from ' + p_table_name + ' k'
+        + '       left join ' + v_tmp_child + ' p on p.parent = k.' + p_id_name + ' and p.lvl = v_lvl + 1'
+        + '       where isnull(' + p_parent_id_name + ', 0) = 0 and ' + p_id_name + ' != 0 order by ' + p_order_by_name
+    ;
+
+--    message '04. ', v_loop_sql to client;
+
+    begin
+        declare c_loop no scroll cursor using v_loop_sql;
+        declare r_klassid integer;
+        declare r_klassname long varchar;
+        declare r_child_count integer;
+
+        
+        open c_loop;
+        
+        loop_lable: loop
+            fetch c_loop into r_klassid, r_klassname, r_child_count;
+            if SQLCODE != 0 then 
+                leave loop_lable;
+            end if;
+
+            set v_sql = 
+                'insert into ' + v_ord_table + ' (id, ord) select r_klassid, v_cur_pos';
+--    message '05. ', v_sql to client;
+            execute immediate v_sql;
+
+            set v_prev_count = r_child_count;
+            set v_cur_pos = v_cur_pos + 1 + v_prev_count;
+        
+        end loop;
+        close c_loop;
+    end;
+
+
+    branch2: loop
+        set v_exit = 0;
+
+        set v_prev_count = 0;
+        set v_prev_id = 0;
+
+        set v_loop_sql = 
+              '        select ' + p_id_name + ' as r_klassid, ' + p_order_by_name + ' as r_klassname, ' + p_parent_id_name + ' as r_parentid, ord as r_ord, isnull(p.child_count, 0) as r_childs'
+             + '           from ' + p_table_name + ' k'
+             + '           join ' + v_ord_table + ' o on o.id = k.' + p_parent_id_name
+             + '           left join ' + v_tmp_child + ' p on k.' + p_id_name + ' = p.parent and p.lvl = v_lvl + 1'
+             + '           where not exists (select 1 from ' + v_ord_table + ' o1 where o1.id = k.' + p_id_name + ')'
+             + '           order by ' + p_parent_id_name + ', ' + p_order_by_name
+        ;
+--        message '06. ', v_loop_sql to client;
+        
+        begin
+            declare c_loop2 no scroll cursor using v_loop_sql;
+            declare r_klassid integer;
+            declare r_klassname long varchar;
+            declare r_parentid integer;
+            declare r_ord integer;
+            declare r_childs integer;
+            
+            open c_loop2;
+
+            schich1: loop
+                fetch c_loop2 into r_klassid, r_klassname, r_parentid, r_ord, r_childs;
+                if SQLCODE != 0 then
+                    leave schich1;
+                end if;
+
+                if r_parentid != v_prev_id then
+                    set v_cur_pos = r_ord + 1;
+--  --                message v_cur_pos , ': ', r_childs, ': ', r_ord to client;
+                else 
+                    set v_cur_pos = v_cur_pos + 1 + v_prev_count;
+                end if;
+
+                set v_sql = 
+                    'insert into ' + v_ord_table + ' (id, ord) select r_klassid, v_cur_pos';
+--    message '07. ', v_sql to client;
+    			execute immediate v_sql;
+                set v_exit = 1;
+                set v_prev_id = r_parentid;
+                set v_prev_count = r_childs;
+    
+        
+            end loop;
+    
+            if v_exit = 0 then 
+                leave branch2;
+            end if;
+        end;    
+    end loop;
+
+    execute immediate 'drop table ' + v_tmp_child;
+
+end;
+
+
+
+
+
+    
 if exists (select 1 from sysprocedure where proc_name = 'wf_income_nomnom_brief') then
 	drop procedure wf_income_nomnom_brief;
 end if;
@@ -516,11 +750,11 @@ create table #klass_childs (parent integer, child_count integer, lvl integer);
 	end loop;
 
 
+	-- на уровне v_lvl + 1 хранятся полное количество детей включая всех потомков.
 	insert into #klass_childs
 		select parent, sum(child_count), v_lvl + 1
 		from #klass_childs p 
 		group by parent;
-	-- на уровне v_lvl + 1 хранятся полное количество детей включая всех потомков.
 
 
 
