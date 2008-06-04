@@ -1,5 +1,5 @@
 if exists (select 1 from sysprocedure where proc_name = 'get_tmp_ord_table_name') then
-	drop procedure get_tmp_ord_table_name;
+	drop function get_tmp_ord_table_name;
 end if;
 
 create function get_tmp_ord_table_name(
@@ -8,6 +8,66 @@ create function get_tmp_ord_table_name(
 begin
 	return '#' + p_table_name + '_ord';
 end;
+
+
+if exists (select 1 from sysprocedure where proc_name = 'get_tmp_ord_create_sql') then
+	drop function get_tmp_ord_create_sql;
+end if;
+
+create function get_tmp_ord_create_sql(
+	p_ord_table varchar(64)
+) returns varchar(128)
+begin
+	return 'create table ' + p_ord_table + ' (id integer, ord integer, lvl integer)';
+end;
+
+
+if exists (select 1 from sysprocedure where proc_name = 'get_tmp_ord_drop_sql') then
+	drop function get_tmp_ord_drop_sql;
+end if;
+
+create function get_tmp_ord_drop_sql(
+	p_ord_table varchar(64)
+) returns varchar(128)
+begin
+	return 'drop table ' + p_ord_table;
+end;
+
+
+
+if exists (select 1 from sysprocedure where proc_name = 'wf_klass_catalog') then
+	drop procedure wf_klass_catalog;
+end if;
+
+CREATE procedure wf_klass_catalog (
+)
+begin
+	declare v_ord_table varchar(64);
+	declare p_table_name varchar(64);    
+	declare p_id_name varchar(64);       
+	declare p_parent_id_name varchar(64);
+	declare p_order_by_name varchar(256);
+
+	set p_table_name = 'sGuideKlass';
+	set v_ord_table = get_tmp_ord_table_name(p_table_name);
+	execute immediate get_tmp_ord_create_sql(v_ord_table);
+
+	set p_id_name = 'klassId';
+	set p_parent_id_name = 'parentKlassId';
+	set p_order_by_name = 'klassName';
+	set v_ord_table = get_tmp_ord_table_name(p_table_name);
+
+	call wf_sort_klassificator(p_table_name, p_id_name, p_parent_id_name, p_order_by_name);
+
+	select k.klassId, k.klassName, k.parentKlassId, o.ord
+	from sGuideKlass k 
+	join #sGuideKlass_ord o on o.id = k.klassId
+	where isnull(klassName, '') != ''
+	order by o.ord, k.klassName;
+
+	execute immediate get_tmp_ord_drop_sql(v_ord_table);
+end;
+
 
 
 if exists (select 1 from sysprocedure where proc_name = 'wf_territory_catalog') then
@@ -33,12 +93,15 @@ begin
 
 	call wf_sort_klassificator(p_table_name, p_id_name, p_parent_id_name, p_order_by_name);
 
-	select r.regionId, r.region, r.territoryId, o.ord
+--	select * from #bayRegion_ord order by 1;
+
+	select r.regionId, r.region, r.territoryId as territoryId, o.ord
 	from bayRegion r 
 	join #bayRegion_ord o on o.id = r.regionId
+	where isnull(region, '') != ''
 	order by o.ord, r.region;
 
-	execute immediate 'drop table ' + v_ord_table;
+	execute immediate get_tmp_ord_drop_sql(v_ord_table);
 end;
 
 
@@ -718,7 +781,7 @@ begin
 --	create table #klass_ordered (id integer, ord integer);
 	set p_table_name = 'sGuideKlass';
 	set v_ord_table = get_tmp_ord_table_name(p_table_name);
-	execute immediate 'create table ' + v_ord_table + ' (id integer, ord integer)';
+	execute immediate get_tmp_ord_create_sql(v_ord_table);
 
 	set p_id_name = 'klassId';
 	set p_parent_id_name = 'parentKlassId';
@@ -774,7 +837,7 @@ begin
 --	create table #klass_ordered (id integer, ord integer);
 	set p_table_name = 'sGuideKlass';
 	set v_ord_table = get_tmp_ord_table_name(p_table_name);
-	execute immediate 'create table ' + v_ord_table + ' (id integer, ord integer)';
+	execute immediate get_tmp_ord_create_sql(v_ord_table);
 
 	set p_id_name = 'klassId';
 	set p_parent_id_name = 'parentKlassId';
@@ -871,7 +934,7 @@ begin
 --	create table #klass_ordered (id integer, ord integer);
 	set p_table_name = 'sGuideKlass';
 	set v_ord_table = get_tmp_ord_table_name(p_table_name);
-	execute immediate 'create table ' + v_ord_table + ' (id integer, ord integer)';
+	execute immediate get_tmp_ord_create_sql(v_ord_table);
 
 	set p_id_name = 'klassId';
 	set p_parent_id_name = 'parentKlassId';
@@ -1000,7 +1063,7 @@ begin
 --	create table #klass_ordered (id integer, ord integer);
 	set p_table_name = 'sGuideKlass';
 	set v_ord_table = get_tmp_ord_table_name(p_table_name);
-	execute immediate 'create table ' + v_ord_table + ' (id integer, ord integer)';
+	execute immediate get_tmp_ord_create_sql(v_ord_table);
 
 	set p_id_name = 'klassId';
 	set p_parent_id_name = 'parentKlassId';
@@ -1010,7 +1073,7 @@ begin
 
 	set p_table_name = 'sGuideSeries';
 	set v_ord_table = get_tmp_ord_table_name(p_table_name);
-	execute immediate 'create table ' + v_ord_table + ' (id integer, ord integer)';
+	execute immediate get_tmp_ord_create_sql(v_ord_table);
 
 	set p_id_name = 'seriaId';
 	set p_parent_id_name = 'parentSeriaId';

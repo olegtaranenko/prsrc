@@ -155,7 +155,7 @@ Begin VB.Form Analityc
          _ExtentX        =   1926
          _ExtentY        =   508
          _Version        =   393216
-         Format          =   16384001
+         Format          =   16449537
          CurrentDate     =   39599
       End
       Begin MSComCtl2.DTPicker tbEndDate 
@@ -167,7 +167,7 @@ Begin VB.Form Analityc
          _ExtentX        =   1926
          _ExtentY        =   508
          _Version        =   393216
-         Format          =   16384001
+         Format          =   16449537
          CurrentDate     =   39599
       End
       Begin VB.Label Label5 
@@ -227,6 +227,9 @@ Begin VB.Form Analityc
          _ExtentX        =   7641
          _ExtentY        =   2350
          _Version        =   393217
+         Indentation     =   529
+         LabelEdit       =   1
+         LineStyle       =   1
          Style           =   7
          Checkboxes      =   -1  'True
          Appearance      =   1
@@ -279,6 +282,8 @@ Begin VB.Form Analityc
          _ExtentX        =   7641
          _ExtentY        =   2350
          _Version        =   393217
+         Indentation     =   529
+         LineStyle       =   1
          Style           =   7
          Checkboxes      =   -1  'True
          Appearance      =   1
@@ -421,73 +426,69 @@ Private Sub checkDirtyFilterCommads()
 
 End Sub
 
-Sub loadKlass()
+
+Sub loadRegions()
 Dim key As String, pKey As String, K() As String, pK()  As String
-Dim I As Integer, iErr As Integer
-bilo = False
-sql = "SELECT sGuideKlass.*  From sGuideKlass ORDER BY sGuideKlass.parentKlassId;"
-Set tbKlass = myOpenRecordSet("##102", sql, dbOpenForwardOnly)
-If tbKlass Is Nothing Then myBase.Close: End
-If Not tbKlass.BOF Then
- tvMat.Nodes.Clear
- Set Node = tvMat.Nodes.Add(, , "k0", "Классификатор")
- Node.Sorted = True
- 
- ReDim K(0): ReDim pK(0): ReDim NN(0): iErr = 0
- While Not tbKlass.EOF
-    If tbKlass!klassId = 0 Then GoTo NXT1
-    key = "k" & tbKlass!klassId
-    pKey = "k" & tbKlass!parentKlassId
-    On Error GoTo ERR1 ' назначить второй проход
-    Set Node = tvMat.Nodes.Add(pKey, tvwChild, key, tbKlass!klassName)
-    On Error GoTo 0
-    Node.Sorted = True
-NXT1:
-    tbKlass.MoveNext
- Wend
-End If
-tbKlass.Close
 
-While bilo ' необходимы еще проходы
-  bilo = False
-  For I = 1 To UBound(K())
-    If K(I) <> "" Then
-        On Error GoTo ERR2 ' назначить еще проход
-        Set Node = tvMat.Nodes.Add(pK(I), tvwChild, K(I), NN(I))
-        On Error GoTo 0
-        K(I) = ""
-        Node.Sorted = True
+
+    sql = "call wf_territory_catalog"
+    Set tbKlass = myOpenRecordSet("##loadRegions", sql, dbOpenForwardOnly)
+    If tbKlass Is Nothing Then myBase.Close: End
+    
+    If Not tbKlass.BOF Then
+        tvRegion.Nodes.Clear
+        While Not tbKlass.EOF
+            key = "k" & tbKlass!RegionId
+            If Not IsNull(tbKlass!territoryId) Then
+                pKey = "k" & tbKlass!territoryId
+                Set Node = tvRegion.Nodes.Add(pKey, tvwChild, key, tbKlass!region)
+            Else
+                Set Node = tvRegion.Nodes.Add(, , key, tbKlass!region)
+            End If
+            
+            tbKlass.MoveNext
+        Wend
     End If
-NXT:
-  Next I
-Wend
-tvMat.Nodes.Item("k0").Expanded = True
-Exit Sub
-ERR1:
- iErr = iErr + 1: bilo = True
- ReDim Preserve K(iErr): ReDim Preserve pK(iErr): ReDim Preserve NN(iErr)
- K(iErr) = key: pK(iErr) = pKey: NN(iErr) = tbKlass!klassName
- Resume Next
-
-ERR2: bilo = True: Resume NXT
+    tbKlass.Close
 
 End Sub
 
-Private Sub loadRegions()
+
+Sub loadKlass()
+Dim key As String, pKey As String, K() As String, pK()  As String
+    sql = "call wf_klass_catalog"
+    Set tbKlass = myOpenRecordSet("##loadKlasss", sql, dbOpenForwardOnly)
+    If tbKlass Is Nothing Then myBase.Close: End
+    
+    If Not tbKlass.BOF Then
+        tvMat.Nodes.Clear
+'        Set Node = tvMat.Nodes.Add(, , "k0", "Все регионы")
+'        Node.Sorted = True
+        While Not tbKlass.EOF
+            key = "k" & tbKlass!KlassId
+            If Not IsNull(tbKlass!parentKlassId) And (tbKlass!parentKlassId <> 0) Then
+                pKey = "k" & tbKlass!parentKlassId
+                Set Node = tvMat.Nodes.Add(pKey, tvwChild, key, tbKlass!KlassName)
+            Else
+                Set Node = tvMat.Nodes.Add(, , key, tbKlass!KlassName)
+            End If
+            
+            tbKlass.MoveNext
+        Wend
+    End If
+    tbKlass.Close
 
 End Sub
 
 Private Sub Form_Load()
     loadKlass
+    loadRegions
 End Sub
 
 Private Sub tvMat_NodeCheck(ByVal Node As MSComctlLib.Node)
     checkDirtyFilterCommads
     If Not Node.Child Is Nothing Then
         setRecursiveNodeChecked Node.Child, Node.Checked
-    End If
-    If Not Node.Checked And Not Node.Parent Is Nothing Then
-        setRecursiveParent Node.Parent, False
     End If
 End Sub
 
@@ -514,3 +515,11 @@ Private Sub setRecursiveParent(ByRef root As Node, value As Boolean)
 End Sub
 
 
+
+Private Sub tvRegion_NodeCheck(ByVal Node As MSComctlLib.Node)
+    checkDirtyFilterCommads
+    If Not Node.Child Is Nothing Then
+        setRecursiveNodeChecked Node.Child, Node.Checked
+    End If
+
+End Sub
