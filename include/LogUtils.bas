@@ -11,8 +11,17 @@ Private Const LOG_INFO As Integer = 30
 Private Const LOG_DEBUG As Integer = 40
 Private Const LOG_TRACE As Integer = 50
 
+'
 
 Private logEnabled As Boolean
+
+
+'Howto как пользоваться системой журналирования
+' в cfg.cfg установить параметры:
+' log = DEBUG|TRACE|...
+' logger = <file name>
+'
+'
 
 
 Function panic(msg As String, Optional logger_id) As String

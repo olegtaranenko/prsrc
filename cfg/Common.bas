@@ -1,67 +1,91 @@
 Attribute VB_Name = "Common"
 Option Explicit
 
-Sub Main()
-Dim CmdLine As String, path As String, exe As String
-Dim exeHandle As Double
-Dim existsFile As String
-
 '-- Main application entry point.
-Dim localExe As String
-Dim failed As Boolean
-'Dim repositoryExe As String, currentExe As String
+Sub Main()
 
+Dim localExe As String
+
+Dim success As Boolean
 
     loadEffectiveSettingsCfg
     initLogFileName
 
-    
     printWindowsVersion
-    
-    
     
     If getEffectiveSetting("exe") <> "" Then
         localExe = getFullExeName(getEffectiveSetting("exe"))
-
-        On Error GoTo ER1
-        existsFile = Dir(localExe)
-        If existsFile = "" Or ((GetAttr(localExe) And vbDirectory) = vbDirectory) Then
-            dbg "Exe filename = "
-            erro "File " & localExe & " does not exists"
-            fatalError "Файл " & localExe & " не обнаружен. " _
-            & vbCr & "Необходимо исправить конфигурацию запуска приложения cfg.exe"
-        End If
-        
-        failed = checkSelfVersion(localExe)
-        If failed Then
-            fatalError "Oшибка при проверке версии управляющей программы."
-        End If
-        
-        
-        failed = checkVersionExe(localExe)
-        
-        If failed Then
-            fatalError "Oшибка при проверке версии программы " & localExe & "."
-        End If
-    
-        CmdLine = localExe & getAppArguments
-    '    setAndSave "app", "lastRun", CmdLine
-        
-        exeHandle = Shell(CmdLine, vbNormalFocus)
-'        Debug.Print localExe & getAppArguments
+        success = exeStart(localExe)
     ElseIf getCurrentSetting("deploy", argumentSettings) <> "" Then
         localExe = getFullExeName(getCurrentSetting("deploy", argumentSettings))
-        failed = checkVersionDeploy(localExe)
-        
-        If failed Then
-            fatalError "Error by deploy " & localExe & "."
-        End If
+        success = exeDeploy(localExe)
     End If
-    Exit Sub
-ER1:
-     
-    fatalError "Unexpected error " & Err.Description
+    
+    If Not success Then
+        fatalError "Unexpected error " & Err.Description
+    End If
 End Sub
+
+
+' returns true if succes false otherwise
+Private Function exeDeploy(localExe As String) As Boolean
+    exeDeploy = False
+    On Error GoTo failed
+    
+    failed = checkVersionDeploy(localExe)
+    
+    If failed Then
+        fatalError "Error by deploy " & localExe & "."
+    End If
+    exeDeploy = True
+    Exit Function
+failed:
+End Function
+
+
+' returns true if succes false otherwise
+Private Function exeStart(localExe As String) As Boolean
+
+Dim existsFile As String
+Dim failed As Boolean
+Dim CmdLine As String, path As String, exe As String
+Dim exeHandle As Double
+
+
+    exeStart = False
+    
+    On Error GoTo failed
+    existsFile = Dir(localExe)
+    If existsFile = "" Or ((GetAttr(localExe) And vbDirectory) = vbDirectory) Then
+        trace "Exe filename = "
+        erro "File " & localExe & " does not exists"
+        fatalError "Файл " & localExe & " не обнаружен. " _
+        & vbCr & "Строка запуска cfg.exe: " & Command() _
+        & vbCr & "Необходимо исправить конфигурацию запуска приложения cfg.exe"
+    End If
+    
+    failed = checkSelfVersion(localExe)
+    If failed Then
+        fatalError "Oшибка при проверке версии управляющей программы."
+    End If
+    
+    ' проверяем сами себя. Если вдруг обнаружена более свежая версия
+    ' то тогда через клиентскую программу обновляем cfg.exe
+    failed = checkVersionExe(localExe)
+    
+    If failed Then
+        fatalError "Oшибка при проверке версии программы " & localExe & "."
+    End If
+
+    CmdLine = localExe & getAppArguments
+    
+    exeHandle = Shell(CmdLine, vbNormalFocus)
+'        Debug.Print localExe & getAppArguments
+    exeStart = True
+    Exit Function
+failed:
+    
+End Function
 
 
 Function checkSelfVersion(ByVal localExe As String) As Boolean
@@ -191,7 +215,11 @@ On Error GoTo EN1
         checkVersionExe = True
     End If
     If doCopy Then
-        ShellAndHold "xcopy /y " & repositoryExe & " " & localExe, vbHide
+        'ShellAndHold "xcopy /y " & repositoryExe & " " & localExe, vbHide
+        info "Found update for " & localExe & ", version: " & infoToString(myInfo)
+        info "New file: " & repositoryExe & " Version: " & infoToString(repositoryInfo)
+        FileCopy repositoryExe, localExe
+        info "... update was successful"
     End If
     Exit Function
 EN1:
