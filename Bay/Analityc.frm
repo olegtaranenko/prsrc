@@ -300,7 +300,6 @@ Begin VB.Form Analityc
       Begin VB.CommandButton cmFilterApply 
          Appearance      =   0  'Flat
          BackColor       =   &H8000000A&
-         Enabled         =   0   'False
          Height          =   252
          Left            =   3720
          Picture         =   "Analityc.frx":00F3
@@ -330,6 +329,7 @@ Begin VB.Form Analityc
       Begin VB.CommandButton cmFilterAdd 
          Appearance      =   0  'Flat
          BackColor       =   &H8000000A&
+         Enabled         =   0   'False
          Height          =   252
          Left            =   3720
          Picture         =   "Analityc.frx":04DD
@@ -364,6 +364,9 @@ Option Explicit
 Dim tbKlass As Recordset
 Dim Node As Node
 
+Dim flagInitFilter As Boolean
+
+
 Private Sub cbOborud_Click(Index As Integer)
     checkDirtyFilterCommads
 End Sub
@@ -395,17 +398,17 @@ Private Sub ckKriteriumRegion_Click()
 End Sub
 
 Private Sub ckKriteriumOborud_Click()
-Dim I As Integer
+Dim i As Integer
 
     checkDirtyFilterCommads
     If ckKriteriumOborud.value = 1 Then
-        For I = 0 To 2
-            cbOborud(I).Enabled = True
-        Next I
+        For i = 0 To 2
+            cbOborud(i).Enabled = True
+        Next i
     Else
-        For I = 0 To 2
-            cbOborud(I).Enabled = False
-        Next I
+        For i = 0 To 2
+            cbOborud(i).Enabled = False
+        Next i
     End If
 End Sub
 
@@ -423,6 +426,9 @@ Private Sub cmExit_Click()
 End Sub
 
 Private Sub checkDirtyFilterCommads()
+    If Not flagInitFilter Then
+        cmFilterAdd.Enabled = True
+    End If
 
 End Sub
 
@@ -480,9 +486,88 @@ Dim key As String, pKey As String, K() As String, pK()  As String
 
 End Sub
 
+Sub initFilter(filterName As String)
+    flagInitFilter = True
+    txFilterName.Text = cbFilters.Text
+
+    sql = " select " _
+        & " i.id as itemId, p.id as paramId, isActive as isActive, itemType, paramType, paramClass, intValue, charValue" _
+        & " from nFilter f" _
+        & "  left join nItem i       on i.filterid    = f.id" _
+        & "  left join nItemType it  on i.itemTypeId  = it.id" _
+        & "  left join nParam p      on p.itemId      = i.id" _
+        & "  left join nParamType pt on p.paramTypeId = pt.id" _
+        & "  where f.name = '" & filterName & "'"
+    
+    Set table = myOpenRecordSet("##initFilter", sql, dbOpenForwardOnly)
+    If table Is Nothing Then myBase.Close: End
+
+    While Not table.EOF
+        If table!itemType = "materials" Then
+            If table!isActive = 1 Then
+                ckKriteriumMat.value = 1
+            Else
+                ckKriteriumMat.value = 0
+            End If
+            Set Node = tvMat.Nodes("k" & table!intValue)
+            expandParents Node
+            
+            Node.Checked = True
+        End If
+        
+        If table!itemType = "regions" Then
+            If table!isActive = 1 Then
+                ckKriteriumRegion.value = 1
+            Else
+                ckKriteriumRegion.value = 0
+            End If
+            Set Node = tvRegion.Nodes("k" & table!intValue)
+            Node.Checked = True
+            expandParents Node
+        End If
+        
+        table.MoveNext
+    Wend
+    table.Close
+    flagInitFilter = False
+
+End Sub
+
+Private Sub saveFilter(filterName As String)
+    
+End Sub
+
+Private Sub expandParents(ByRef aNode As Node)
+    
+    If Not aNode.Parent Is Nothing Then
+        aNode.Parent.Expanded = True
+        expandParents aNode.Parent
+    End If
+End Sub
+
+
+
+Private Sub cmFilterApply_Click()
+    initFilter (CStr(cbFilters.Text))
+    
+End Sub
+
 Private Sub Form_Load()
     loadKlass
     loadRegions
+
+    Set table = myOpenRecordSet("##72", "nFilter", dbOpenForwardOnly)
+    If table Is Nothing Then myBase.Close: End
+    cbFilters.Text = ""
+
+    While Not table.EOF
+        cbFilters.AddItem "" & table!Name & ""
+        table.MoveNext
+    Wend
+    table.Close
+    On Error Resume Next
+    cbFilters.ListIndex = getEffectiveSetting("CurrentFilter", 0)
+
 End Sub
 
 Private Sub tvMat_NodeCheck(ByVal Node As MSComctlLib.Node)

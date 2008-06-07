@@ -22,7 +22,7 @@ End Type
 
 Sub parseCommandLine(Optional MaxArgs)
    'Declare variables.
-   Dim c, CmdLine, CmdLnLen, InArg, I, NumArgs
+   Dim c, CmdLine, CmdLnLen, InArg, i, NumArgs
    Dim inQuoted As Boolean
    
    'See if MaxArgs was provided.
@@ -35,8 +35,8 @@ Sub parseCommandLine(Optional MaxArgs)
    CmdLnLen = Len(CmdLine)
    'Go thru command line one character
    'at a time.
-   For I = 1 To CmdLnLen
-      c = Mid(CmdLine, I, 1)
+   For i = 1 To CmdLnLen
+      c = Mid(CmdLine, i, 1)
       If c = """" Then
           If inQuoted Then
              InArg = False
@@ -66,7 +66,7 @@ Sub parseCommandLine(Optional MaxArgs)
          InArg = False
       End If
       
-   Next I
+   Next i
    'Resize array just enough to hold arguments.
    ReDim Preserve rawCmdArguments(NumArgs)
 End Sub
@@ -89,13 +89,13 @@ End Function
 
 Function delegateArguments(key As String, Optional separator As String = " ") As String
 
-Dim I As Integer
+Dim i As Integer
 Dim argTokens As MapEntry
 Dim argSnippet As String
     
-    For I = 1 To UBound(rawCmdArguments)
-        If rawCmdArguments(I) = "-" & key Then
-            argTokens = tokenizeKeyValue(rawCmdArguments(I + 1))
+    For i = 1 To UBound(rawCmdArguments)
+        If rawCmdArguments(i) = "-" & key Then
+            argTokens = tokenizeKeyValue(rawCmdArguments(i + 1))
             If argTokens.value <> "" Then
                 argSnippet = separator & "-" & argTokens.key & " " & argTokens.value
             Else
@@ -103,7 +103,7 @@ Dim argSnippet As String
             End If
             delegateArguments = delegateArguments & argSnippet
         End If
-    Next I
+    Next i
 End Function
 
 Function tokenizeKeyValue(ByVal match As String) As MapEntry
@@ -133,21 +133,21 @@ End Function
 
 'кроме нач и кон пробелов удал€ет и vbTab
 Function trimAll(str As String) As String
-    Dim I As Integer, ch As String ', lPoz As Integer, rPoz As Integer
+    Dim i As Integer, ch As String ', lPoz As Integer, rPoz As Integer
     
-    For I = 1 To Len(str)
-        ch = Mid$(str, I, 1)
+    For i = 1 To Len(str)
+        ch = Mid$(str, i, 1)
         If ch <> " " And ch <> vbTab Then GoTo AA
-    Next I
+    Next i
     trimAll = ""
     Exit Function
 AA:
-    str = Mid$(str, I)
-    For I = Len(str) To 1 Step -1
-        ch = Mid$(str, I, 1)
+    str = Mid$(str, i)
+    For i = Len(str) To 1 Step -1
+        ch = Mid$(str, i, 1)
         If ch <> " " And ch <> vbTab Then Exit For
-    Next I
-    trimAll = left$(str, I)
+    Next i
+    trimAll = left$(str, i)
     
 End Function
 
@@ -190,7 +190,7 @@ End Sub
 Function loadFileSettings(filePath As String, ByRef curSettings() As MapEntry) As Integer
 Dim entry As MapEntry
 
-    Dim str As String, str2 As String, I As Integer, j As Integer
+    Dim str As String, str2 As String, i As Integer, j As Integer
     str = filePath
     ReDim curSettings(0)
     
@@ -215,22 +215,22 @@ EN1:
 End Function
 
 Sub saveFileSettings(filePath As String, ByRef curSettings() As MapEntry)
-Dim I As Integer, str  As String
+Dim i As Integer, str  As String
 Dim doSave As Boolean
 
     str = filePath
     On Error GoTo EN1
     Open str For Output As #1
-    For I = 1 To UBound(curSettings)
-        Print #1, curSettings(I).key & " = " & curSettings(I).value
-    Next I
+    For i = 1 To UBound(curSettings)
+        Print #1, curSettings(i).key & " = " & curSettings(i).value
+    Next i
 EN1:
     On Error Resume Next
     Close #1
 End Sub
 
 Function getAppCfgDefaultName() As String
-    getAppCfgDefaultName = App.path & "\" & App.exeName & ".cfg"
+    getAppCfgDefaultName = App.path & "\" & App.EXEName & ".cfg"
 End Function
 
 Function getSiteCfgDefaultName() As String
@@ -238,38 +238,38 @@ Function getSiteCfgDefaultName() As String
 End Function
 
 Function getCurrentSetting(key As String, ByRef curSettings() As MapEntry) As Variant
-Dim I As Integer
-    For I = 1 To UBound(curSettings)
-        If curSettings(I).key = key Then
-            getCurrentSetting = curSettings(I).value
+Dim i As Integer
+    For i = 1 To UBound(curSettings)
+        If curSettings(i).key = key Then
+            getCurrentSetting = curSettings(i).value
             Exit Function
         End If
-    Next I
+    Next i
 '    getCurrentSetting = Null
 End Function
 
 ' возвращает индекс key в массиве curSettings
 ' Empty если не найдет такой параметр
 Function getMapEntry(ByRef curSettings() As MapEntry, key As String) As Integer
-Dim I As Integer
-    For I = 1 To UBound(curSettings)
-        If curSettings(I).key = key Then
-            getMapEntry = I
+Dim i As Integer
+    For i = 1 To UBound(curSettings)
+        If curSettings(i).key = key Then
+            getMapEntry = i
             Exit Function
         End If
-    Next I
+    Next i
     getMapEntry = Empty
 End Function
 
 Sub buildEffectiveSettings()
 Dim ln As Integer
-Dim I As Integer
+Dim i As Integer
 
     ln = UBound(argumentSettings)
     ReDim settings(ln)
-    For I = 1 To ln
-        settings(I) = argumentSettings(I)
-    Next I
+    For i = 1 To ln
+        settings(i) = argumentSettings(i)
+    Next i
 
     mergeWithPreference settings, appSettings
     
@@ -280,23 +280,23 @@ End Sub
 Sub mergeWithPreference(ByRef mergeTo() As MapEntry, mergeFrom() As MapEntry)
 
 Dim lnFrom As Integer
-Dim I As Integer
+Dim i As Integer
 Dim entry As MapEntry
 Dim exists As Variant
 
     lnFrom = UBound(mergeFrom)
-    For I = 1 To lnFrom
-        entry = mergeFrom(I)
+    For i = 1 To lnFrom
+        entry = mergeFrom(i)
         exists = getCurrentSetting(entry.key, mergeTo)
         If IsEmpty(exists) Then
            append mergeTo, entry
         End If
-    Next I
+    Next i
 
 End Sub
 
 Public Sub setCurrentSetting(curSettings() As MapEntry, key As String, paramVal)
-Dim I As Integer
+Dim i As Integer
 Dim entry As MapEntry, value
 
     value = getCurrentSetting(key, curSettings)
@@ -325,16 +325,16 @@ Dim entry As MapEntry, value
 End Function
 
 Function loadCmdSettings(curSettings() As MapEntry) As Boolean
-Dim I As Integer
+Dim i As Integer
 Dim entry As MapEntry, exists
 Dim value As String
 
     ReDim argumentSettings(0)
-    For I = 1 To UBound(rawCmdArguments)
-        If isKey(rawCmdArguments(I)) Then
-            If isNotKey(I + 1) Then
-                entry.key = Mid(rawCmdArguments(I), 2)
-                value = rawCmdArguments(I + 1)
+    For i = 1 To UBound(rawCmdArguments)
+        If isKey(rawCmdArguments(i)) Then
+            If isNotKey(i + 1) Then
+                entry.key = Mid(rawCmdArguments(i), 2)
+                value = rawCmdArguments(i + 1)
                 exists = getCurrentSetting(entry.key, curSettings)
                 If Not IsEmpty(exists) Then
                     exists = exists & " " & value
@@ -343,16 +343,16 @@ Dim value As String
                     entry.value = value
                     append argumentSettings, entry
                 End If
-                I = I + 1
+                i = i + 1
             Else
-                exists = getCurrentSetting(rawCmdArguments(I), curSettings)
+                exists = getCurrentSetting(rawCmdArguments(i), curSettings)
                 If IsNull(exists) Then
-                    entry.key = rawCmdArguments(I)
+                    entry.key = rawCmdArguments(i)
                     append argumentSettings, entry
                 End If
             End If
         End If
-    Next I
+    Next i
     loadCmdSettings = True
 End Function
 
@@ -364,15 +364,15 @@ Function isKey(arg As String) As Boolean
     End If
 End Function
 
-Function isNotKey(I As Integer) As Boolean
+Function isNotKey(i As Integer) As Boolean
 Dim arg As String
 Dim sz As Integer
 
     sz = UBound(rawCmdArguments)
-    If I > sz Then
+    If i > sz Then
         isNotKey = True
     Else
-        isNotKey = Not isKey(rawCmdArguments(I))
+        isNotKey = Not isKey(rawCmdArguments(i))
     End If
 End Function
 
@@ -386,15 +386,15 @@ Dim ln As Integer
 End Sub
 
 Sub appendValue(curSettings() As MapEntry, key As String, value As Variant, separator As String)
-Dim sz As Integer, I As Integer
+Dim sz As Integer, i As Integer
 
     sz = UBound(curSettings)
-    For I = 1 To sz
-        If curSettings(I).key = key Then
-            curSettings(I).value = curSettings(I).value & separator & value
+    For i = 1 To sz
+        If curSettings(i).key = key Then
+            curSettings(i).value = curSettings(i).value & separator & value
             Exit Sub
         End If
-    Next I
+    Next i
 End Sub
 
 Sub setAndSave(scope As String, key As String, value As String)
@@ -411,33 +411,39 @@ End Sub
 
 
 Function stripPath(myFile As String) As String
-Dim I As Integer
+Dim i As Integer
 Dim sz As Integer
     sz = Len(myFile)
-    For I = sz - 1 To 1 Step -1
-        If Mid(myFile, I, 1) = "\" Then
-            stripPath = Mid(myFile, I + 1)
+    For i = sz - 1 To 1 Step -1
+        If Mid(myFile, i, 1) = "\" Then
+            stripPath = Mid(myFile, i + 1)
             Exit Function
         End If
-    Next I
+    Next i
     stripPath = myFile
 End Function
 
 Sub checkReloadCfg()
 Dim reloadCfgSrc As String, reloadCfgDst As String
 
+'    MsgBox App.EXEName & ""
+
     reloadCfgSrc = getCurrentSetting("reloadCfgSrc", argumentSettings)
+    trace "reloadCfgSrc = " & reloadCfgSrc
     reloadCfgDst = getCurrentSetting("reloadCfgDst", argumentSettings)
+    trace "reloadCfgDst = " & reloadCfgDst
+
     If reloadCfgSrc <> "" Then
         MsgBox "ќбнаружена необходимость обновлени€ управл€ющей программы." _
             & vbCr & "Ёто произойдет автоматически, после чего нужно будет запустить программу еще раз.", vbExclamation, "ѕредупреждение"
-            On Error GoTo EN1
-            FileCopy reloadCfgSrc, reloadCfgDst
+        On Error GoTo EN1
+
+        FileCopy reloadCfgSrc, reloadCfgDst
         End
     End If
     Exit Sub
 EN1:
-    fatalError "ќшибка при копировании управл€ющей программы cfg.exe"
+    fatalError "ќшибка при копировании управл€ющей программы cfg.exe" & vbCr & Err.Description
     End
 End Sub
 

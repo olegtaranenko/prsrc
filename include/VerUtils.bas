@@ -390,8 +390,8 @@ Public Sub printWindowsVersion()
     Call GetHiLoByte(LoWord, WinMajor, WinMinor)
     Call GetHiLoByte(HiWord, DosMinor, DosMajor)
 
-    info "Windows version:" & WinMajor & "." & WinMinor
-    info "DOS version:" & DosMajor & "." & DosMinor
+    dbg "Windows version:" & WinMajor & "." & WinMinor
+    dbg "DOS version:" & DosMajor & "." & DosMinor
 
 End Sub
 

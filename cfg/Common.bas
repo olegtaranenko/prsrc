@@ -29,6 +29,7 @@ End Sub
 
 ' returns true if succes false otherwise
 Private Function exeDeploy(localExe As String) As Boolean
+Dim failed As Boolean
     exeDeploy = False
     On Error GoTo failed
     
@@ -93,6 +94,7 @@ Dim myInfo As VersionInfo, repositoryInfo As VersionInfo
 Dim repositoryPath As String
 Dim repositoryExe As String, appExe As String
 
+    trace "checkSelfVersion() start..."
     checkSelfVersion = False             ' optimistic view
     
 On Error GoTo EN1
@@ -100,12 +102,21 @@ On Error GoTo EN1
     repositoryExe = repositoryPath & "\" & App.exeName & ".exe"
     
     getAppInfo myInfo
+    trace "myInfo: " & infoToString(myInfo)
+    
     If GetDllVersion(repositoryExe, repositoryInfo) Then
+        trace "repository info: " & infoToString(repositoryInfo)
+        
         If compareVersion(myInfo, repositoryInfo) < 0 Then
             Dim cmd As String
             cmd = localExe & " -reloadCfgSrc " & repositoryExe & " -reloadCfgDst " & myInfo.path
             ' запустить обновление ...
-            Shell cmd, vbHide
+            trace "cmd line " & cmd
+            Dim handle As Variant
+
+            handle = Shell(cmd, vbNormalFocus)
+
+            trace "after executing shell. Exe handle = " & handle
             '... и молча уйти
             End
         End If

@@ -140,8 +140,8 @@ Private Sub cmYear_Click()
 End Sub
 
 Private Sub Form_Load()
-Dim I As Integer
-Frame3.Visible = True
+Dim i As Integer
+'Frame3.Visible = True
 Frame2.Visible = True
 tbEndDate.Text = Format(CurDate, "mm.yyyy")
 tbStartDate.Text = tbEndDate.Text

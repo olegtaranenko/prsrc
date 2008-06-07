@@ -1,3 +1,139 @@
+if exists (select 1 from sysprocedure where proc_name = 'n_saveFilterItem') then
+	drop procedure n_saveFilterItem;
+end if;
+
+CREATE procedure n_saveFilterItem (
+	  p_filter_name varchar(64)
+	, p_item_name varchar(64)
+	, p_active integer
+)
+begin
+    declare v_exists integer;
+	
+
+	if p_active >= 0 then
+
+		update nItem i set isActive = p_active
+		from 
+			  nItemType it
+			, nFilter f
+		where 
+			i.itemTypeId = it.id and it.itemType = p_item_name
+		and
+			i.filterId = f.id and f.name = p_filter_name
+		;
+
+		set v_exists = @@rowcount;
+		message 'v_exists = ', v_exists to client;
+    
+		if v_exists = 0 then
+			insert into nItem (filterId, itemTypeId, isActive) 
+			select f.id,  it.id, p_active
+			from 
+				nItemType it 
+				, nFilter f
+			where 
+				it.itemType = p_item_name
+			and
+				f.name = p_filter_name
+			;
+			message '@@rowcount = ', @@rowcount to client;
+		end if;
+	else 
+		delete from nItem i
+		from
+			  nItemType it
+			, nFilter f
+		where 
+			i.itemTypeId = it.id and it.itemType = p_item_name
+		and
+			i.filterId = f.id and f.name = p_filter_name
+		;
+
+	end if;
+
+end;
+
+	
+	
+
+
+
+
+if exists (select 1 from sysprocedure where proc_name = 'n_saveFilterParam') then
+	drop procedure n_saveFilterParam;
+end if;
+
+CREATE procedure n_saveFilterParam (
+	  p_filter_name  varchar(64)
+	, p_item_name    varchar(64)
+	, p_param_name   varchar(64)
+	, p_intValue     integer
+	, p_charValue    long varchar default null
+	, p_delete       integer default null
+)
+begin
+    declare v_exists integer;
+	
+	if p_delete is null then
+		update nParam p set intValue = p_intValue, char_value = p_charValue
+		from 
+			  nItem i
+			, nItemType it
+			, nFilter f
+			, paramType pt
+		where 
+			p.paramTypeId = pt.id and pt.paramType = p_param_name
+		and 
+			(p.intValue = p_intValue or p.charValue = p_charValue)
+		and 
+			p.ItemId = i.id and i.itemTypeId = it.id and it.itemType = p_item_name
+		and
+			i.filterId = f.id and f.name = p_filter_name
+		;
+
+		set v_exists = @@rowcount;
+
+		message 'v_exists = ', v_exists to client;
+		if v_exists = 0 then
+			insert into nParam (itemId, paramTypeId, intValue) 
+			select it.id,  pt.id,  p_intValue, p_charValue
+			from 
+				nParamType pt 
+				, nItem i
+				, nItemType it
+				, nFilter f
+			where 
+				p.paramTypeId = pt.id and pt.paramType = p_param_name
+			and 
+				p.ItemId = i.id and i.itemTypeId = it.id and it.itemType = p_item_name
+			and
+				i.filterId = f.id and f.name = p_filter_name
+			;
+			message '@@rowcount = ', @@rowcount to client;
+		end if;
+	else
+		delete from nParam p 
+		from 
+			  nItem i
+			, nItemType it
+			, nFilter f
+			, paramType pt
+		where 
+			p.paramTypeId = pt.id and pt.paramType = p_param_name 
+		and 
+			(p.intValue = p_intValue or p.charValue = p_charValue)
+		and 
+			p.ItemId = i.id and i.itemTypeId = it.id and it.itemType = p_item_name
+		and
+			i.filterId = f.id and f.name = p_filter_name
+		;
+	end if;
+end;
+
+	
+	
+
 if exists (select 1 from sysprocedure where proc_name = 'get_tmp_ord_table_name') then
 	drop function get_tmp_ord_table_name;
 end if;
