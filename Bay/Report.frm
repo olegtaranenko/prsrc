@@ -36,13 +36,13 @@ Begin VB.Form Report
       Width           =   1215
    End
    Begin MSFlexGridLib.MSFlexGrid Grid 
-      Height          =   7455
+      Height          =   7212
       Left            =   120
       TabIndex        =   0
-      Top             =   240
-      Width           =   11655
+      Top             =   480
+      Width           =   11652
       _ExtentX        =   20553
-      _ExtentY        =   13145
+      _ExtentY        =   12721
       _Version        =   393216
       MergeCells      =   2
       AllowUserResizing=   1
@@ -59,11 +59,11 @@ Begin VB.Form Report
          Strikethrough   =   0   'False
       EndProperty
       ForeColor       =   &H000000C0&
-      Height          =   195
+      Height          =   432
       Left            =   60
       TabIndex        =   5
       Top             =   0
-      Width           =   11775
+      Width           =   11772
    End
    Begin VB.Label laRecCount 
       Caption         =   "Число записей:"
@@ -164,7 +164,7 @@ End If
 End Sub
 
 Sub statistic(Optional year As String = "")
-Dim nRow As Long, nCol As Long, str As String, I As Integer, j As Integer
+Dim nRow As Long, nCol As Long, str As String, i As Integer, j As Integer
 Dim iMonth As Integer, iYear As Integer, iCount As Integer, strWhere As String
 Dim nMonth As Integer, nYear As Integer, mCount As Integer, lastCol As Integer
 Dim wtSum As Single, paidSum As Single, orderSum As Single, visits As Integer, visitSum As Integer
@@ -213,7 +213,8 @@ End If
 sql = "SELECT f.FirmId, f.Name, isnull(r.region, '') as Kategor, f.year01, f.year02, f.year03, f.year04, f.Sale, f.ManagId " _
 & " FROM BayGuideFirms f" _
 & " left join bayRegion r on f.regionid = r.regionid" _
-& strWhere
+& strWhere _
+& " order by f.name"
 
 'MsgBox sql
 Set tbFirms = myOpenRecordSet("##68", sql, dbOpenDynaset) 'ForwardOnly)
@@ -274,12 +275,14 @@ While Not tbFirms.EOF '                         *******************
           End If
           tbOrders.MoveNext
       Wend
+      tbOrders.Close
+      
     End If
     If visits > 0 And year = "" Then
         If Not bilo Then
             Report.Grid.TextMatrix(nRow, 1) = tbFirms!Name
-            If Not IsNull(tbFirms!ManagId) Then _
-                    Report.Grid.TextMatrix(nRow, 2) = Manag(tbFirms!ManagId)
+            If Not IsNull(tbFirms!managId) Then _
+                    Report.Grid.TextMatrix(nRow, 2) = Manag(tbFirms!managId)
             Report.Grid.TextMatrix(nRow, 3) = tbFirms!Kategor
             If Not IsNull(tbFirms!Sale) Then _
                     Report.Grid.TextMatrix(nRow, 4) = tbFirms!Sale
@@ -326,6 +329,7 @@ NXT:
 Wend '*******************
 EN1:
 tbFirms.Close
+'tbOrders.Close
 If year = "" Then
   If nRow > 1 Then Report.Grid.RemoveItem (nRow)
   Report.laCount.Caption = nRow - 1
@@ -460,7 +464,7 @@ If Not tbOrders Is Nothing Then
         Grid.TextMatrix(quantity, rtNomZak) = tbOrders!numOrder
         Grid.TextMatrix(quantity, rtCeh) = "Продажа"
         LoadDate Grid, quantity, rtData, tbOrders!inDate, "dd.mm.yy"
-        Grid.TextMatrix(quantity, rtMen) = Manag(tbOrders!ManagId)
+        Grid.TextMatrix(quantity, rtMen) = Manag(tbOrders!managId)
         Grid.TextMatrix(quantity, rtStatus) = status(tbOrders!StatusId)
         Grid.TextMatrix(quantity, rtFirma) = tbOrders!Name
         Grid.TextMatrix(quantity, rtReserv) = s
@@ -501,7 +505,7 @@ End Sub
 'Regim = "allOrdersByFirmName" 'Отчет "Все заказы Фирмы"'
 'Regim = "OrdersByFirmName"    'Отчет "Незакрытые заказы"'
 Sub firmOrders()
-Dim l As Long, str As String, I As Integer, j As Integer
+Dim l As Long, str As String, i As Integer, j As Integer
 Dim strFirm As String, strFrom As String, strWhere As String
 Grid.FormatString = "|<№ заказа|^M |<Статус|<Проблемы|" & _
 "<Дата выдачи|<Время выдачи|Заказано|Оплачено|Отгружено"

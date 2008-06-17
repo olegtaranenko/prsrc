@@ -138,9 +138,9 @@ Begin VB.Form Analityc
       End
       Begin VB.ComboBox cbDateShift 
          Height          =   288
-         ItemData        =   "Analityc.frx":009A
+         ItemData        =   "Analityc.frx":00A5
          Left            =   3120
-         List            =   "Analityc.frx":00B0
+         List            =   "Analityc.frx":00BB
          TabIndex        =   15
          Text            =   "на год"
          Top             =   600
@@ -155,7 +155,7 @@ Begin VB.Form Analityc
          _ExtentX        =   1926
          _ExtentY        =   508
          _Version        =   393216
-         Format          =   16449537
+         Format          =   16515073
          CurrentDate     =   39599
       End
       Begin MSComCtl2.DTPicker tbEndDate 
@@ -167,7 +167,7 @@ Begin VB.Form Analityc
          _ExtentX        =   1926
          _ExtentY        =   508
          _Version        =   393216
-         Format          =   16449537
+         Format          =   16515073
          CurrentDate     =   39599
       End
       Begin VB.Label Label5 
@@ -202,13 +202,21 @@ Begin VB.Form Analityc
       TabIndex        =   0
       Top             =   3120
       Width           =   4932
+      Begin VB.CheckBox ckKriteriumNoOborud 
+         Caption         =   "Без оборудования"
+         Height          =   252
+         Left            =   2640
+         TabIndex        =   36
+         Top             =   3840
+         Width           =   2052
+      End
       Begin VB.CheckBox ckKriteriumOborud 
          Caption         =   "Выбор оборудования"
          Height          =   252
          Left            =   120
          TabIndex        =   26
          Top             =   3840
-         Width           =   3252
+         Width           =   2052
       End
       Begin VB.CheckBox ckKriteriumRegion 
          Caption         =   "Выбор региона"
@@ -245,32 +253,32 @@ Begin VB.Form Analityc
       End
       Begin VB.CheckBox cbOborud 
          Caption         =   "Механика"
+         Enabled         =   0   'False
          Height          =   252
-         Index           =   0
-         Left            =   3000
+         Index           =   3
+         Left            =   3600
          TabIndex        =   1
          Top             =   4200
-         Value           =   1  'Checked
-         Width           =   1500
+         Width           =   1140
       End
       Begin VB.CheckBox cbOborud 
          Caption         =   "Сублимация"
+         Enabled         =   0   'False
          Height          =   252
          Index           =   2
-         Left            =   1440
+         Left            =   1800
          TabIndex        =   2
          Top             =   4200
-         Value           =   1  'Checked
          Width           =   1380
       End
       Begin VB.CheckBox cbOborud 
          Caption         =   "Лазер"
+         Enabled         =   0   'False
          Height          =   252
          Index           =   1
-         Left            =   360
+         Left            =   600
          TabIndex        =   3
          Top             =   4200
-         Value           =   1  'Checked
          Width           =   900
       End
       Begin MSComctlLib.TreeView tvRegion 
@@ -302,7 +310,7 @@ Begin VB.Form Analityc
          BackColor       =   &H8000000A&
          Height          =   252
          Left            =   3720
-         Picture         =   "Analityc.frx":00F3
+         Picture         =   "Analityc.frx":00FE
          Style           =   1  'Graphical
          TabIndex        =   9
          ToolTipText     =   "Удалить Фильтр"
@@ -314,7 +322,6 @@ Begin VB.Form Analityc
          Height          =   288
          Left            =   120
          TabIndex        =   8
-         Text            =   "Combo1"
          Top             =   360
          Width           =   3492
       End
@@ -322,7 +329,6 @@ Begin VB.Form Analityc
          Height          =   288
          Left            =   120
          TabIndex        =   7
-         Text            =   "Text1"
          Top             =   840
          Width           =   3492
       End
@@ -332,7 +338,7 @@ Begin VB.Form Analityc
          Enabled         =   0   'False
          Height          =   252
          Left            =   3720
-         Picture         =   "Analityc.frx":04DD
+         Picture         =   "Analityc.frx":04E8
          Style           =   1  'Graphical
          TabIndex        =   6
          ToolTipText     =   "Сохранить фильтр"
@@ -345,7 +351,7 @@ Begin VB.Form Analityc
          BackColor       =   &H8000000A&
          Height          =   252
          Left            =   4080
-         Picture         =   "Analityc.frx":08AC
+         Picture         =   "Analityc.frx":08B7
          Style           =   1  'Graphical
          TabIndex        =   5
          ToolTipText     =   "Удалить Фильтр"
@@ -363,13 +369,16 @@ Attribute VB_Exposed = False
 Option Explicit
 Dim tbKlass As Recordset
 Dim Node As Node
+Dim managId As String
+
 
 Dim flagInitFilter As Boolean
 
 
-Private Sub cbOborud_Click(Index As Integer)
+Private Sub cbOborud_Click(index As Integer)
     checkDirtyFilterCommads
 End Sub
+
 
 Private Sub ckEndDate_Click()
     If ckEndDate.value = 1 Then
@@ -379,12 +388,23 @@ Private Sub ckEndDate_Click()
     End If
 End Sub
 
+
 Private Sub ckKriteriumMat_Click()
     checkDirtyFilterCommads
     If ckKriteriumMat.value = 1 Then
         tvMat.Enabled = True
     Else
         tvMat.Enabled = False
+    End If
+End Sub
+
+
+Private Sub ckKriteriumNoOborud_Click()
+    checkDirtyFilterCommads
+    If ckKriteriumNoOborud.value = 1 Then
+        If ckKriteriumOborud.value = 1 Then
+            ckKriteriumOborud.value = 0
+        End If
     End If
 End Sub
 
@@ -397,16 +417,20 @@ Private Sub ckKriteriumRegion_Click()
     End If
 End Sub
 
+
 Private Sub ckKriteriumOborud_Click()
 Dim i As Integer
 
     checkDirtyFilterCommads
     If ckKriteriumOborud.value = 1 Then
-        For i = 0 To 2
+        If ckKriteriumNoOborud.value = 1 Then
+            ckKriteriumNoOborud.value = 0
+        End If
+        For i = 1 To 3
             cbOborud(i).Enabled = True
         Next i
     Else
-        For i = 0 To 2
+        For i = 1 To 3
             cbOborud(i).Enabled = False
         Next i
     End If
@@ -419,6 +443,17 @@ Private Sub ckStartDate_Click()
     Else
         tbStartDate.Enabled = False
     End If
+End Sub
+
+Private Sub cmApply_Click()
+Dim filterId As Integer
+
+    Results.left = Me.left + Me.Width
+    Results.Top = Me.Top
+    Results.filterId = submitFilter("")
+    Results.applyTriggered = True
+    Results.Show , Me
+
 End Sub
 
 Private Sub cmExit_Click()
@@ -486,10 +521,56 @@ Dim key As String, pKey As String, K() As String, pK()  As String
 
 End Sub
 
-Sub initFilter(filterName As String)
+
+Private Sub cleanTree(tView As TreeView)
+Dim currentNode As Node
+Dim i As Integer, nCount As Integer
+Dim enabledFlag As Boolean
+
+    enabledFlag = tView.Enabled
+    tView.Enabled = True
+    
+    nCount = tView.Nodes.Count
+    For i = 1 To nCount
+        Set currentNode = tView.Nodes(i)
+        If currentNode.Checked Then
+            currentNode.Checked = False
+            currentNode.Expanded = False
+        End If
+    Next i
+
+    tView.Enabled = enabledFlag
+End Sub
+
+Private Sub cleanOborud()
+Dim currentOborud As CheckBox
+Dim i As Integer, nCount As Integer
+
+    'nCount = UBound(cbOborud)
+    For i = 1 To 3
+        Set currentOborud = cbOborud(i)
+        currentOborud.value = 0
+    Next i
+End Sub
+
+Private Sub cleanFilterWindows()
+    ckKriteriumMat.value = 0
+    cleanTree tvMat
+    ckKriteriumRegion.value = 0
+    cleanTree tvRegion
+    
+    ckKriteriumOborud.value = 0
+    ckKriteriumNoOborud.value = 0
+    cleanOborud
+End Sub
+
+
+Sub initFilter(filterName As String, personal As Integer)
     flagInitFilter = True
     txFilterName.Text = cbFilters.Text
+    cmFilterAdd.Enabled = False
 
+    cleanFilterWindows
     sql = " select " _
         & " i.id as itemId, p.id as paramId, isActive as isActive, itemType, paramType, paramClass, intValue, charValue" _
         & " from nFilter f" _
@@ -497,7 +578,7 @@ Sub initFilter(filterName As String)
         & "  left join nItemType it  on i.itemTypeId  = it.id" _
         & "  left join nParam p      on p.itemId      = i.id" _
         & "  left join nParamType pt on p.paramTypeId = pt.id" _
-        & "  where f.name = '" & filterName & "'"
+        & "  where f.name = '" & filterName & "' and f.personal = " & personal
     
     Set table = myOpenRecordSet("##initFilter", sql, dbOpenForwardOnly)
     If table Is Nothing Then myBase.Close: End
@@ -526,6 +607,27 @@ Sub initFilter(filterName As String)
             expandParents Node
         End If
         
+        If table!itemType = "oborudItems" Then
+            If table!isActive = 1 And ckKriteriumNoOborud.value = 0 Then
+                ckKriteriumOborud.value = 1
+            Else
+                ckKriteriumRegion.value = 0
+            End If
+            cbOborud(table!intValue).value = 1
+        End If
+        
+        If table!itemType = "noOboruds" Then
+            ckKriteriumNoOborud.value = 1
+        End If
+        
+        If table!itemType = "byrow" Then
+            setListIndexByItemDataValue cbGroupByRow, table!isActive
+        End If
+    
+        If table!itemType = "bycolumn" Then
+            setListIndexByItemDataValue cbGroupByColumn, table!isActive
+        End If
+        
         table.MoveNext
     Wend
     table.Close
@@ -533,33 +635,162 @@ Sub initFilter(filterName As String)
 
 End Sub
 
-Private Sub saveFilter(filterName As String)
-    
-End Sub
 
-Private Sub expandParents(ByRef aNode As Node)
+Private Function prepareFilter(filterName As String, personal As Integer) As Integer
+Dim exists As Integer, result As Integer
+
+    sql = "select id from nFilter where name = '" & filterName & "' and personal = " & personal
+    byErrSqlGetValues "W#prepareFilter", sql, result
     
-    If Not aNode.Parent Is Nothing Then
-        aNode.Parent.Expanded = True
-        expandParents aNode.Parent
+    If result <> 0 Then
+        sql = "delete from nItem i from nFilter f where f.name = '" & filterName & "'" _
+            & " and i.filterId = f.id and f.personal = " & personal
+        myExecute "W#deleteFilter", sql, -1
+    Else
+        sql = "select n_insertFilter ('" & filterName & "', '" & managId & "', " & personal & ")"
+        byErrSqlGetValues "W#clearFilter", sql, result
     End If
-End Sub
+    
+    prepareFilter = result
 
+End Function
+
+
+Private Function saveFilterItem(filterId As Integer, itemName As String, value As Variant) As Integer
+Dim result As Integer
+    
+    sql = "select n_insertItem (" _
+    & filterId _
+    & ", '" & itemName & "', "
+    If IsNumeric(value) Then
+        sql = sql & CStr(value)
+    Else
+        sql = sql & "'" & CStr(value) & "'"
+    End If
+    sql = sql & ")"
+    byErrSqlGetValues "##insertFilterItem", sql, result
+    saveFilterItem = result
+End Function
+
+
+Private Function saveFilterParam(itemId As Integer, paramName As String, value As Variant) As Integer
+Dim result As Integer
+    
+    sql = "select n_insertParam(" _
+        & itemId _
+        & ",'" & paramName & "', "
+        If IsNumeric(value) Then
+            sql = sql & CStr(value) & ", null"
+        Else
+            sql = sql & "null, '" & CStr(value) & "'"
+        End If
+        sql = sql & ")"
+    
+    byErrSqlGetValues "##insertFilterParam", sql, result
+    saveFilterParam = result
+    
+End Function
+
+
+Private Function submitFilter(filterName As String) As Integer
+Dim hasCheckedMat As Boolean, hasCheckedReg As Boolean, hasOborud As Boolean
+Dim itemId As Integer
+Dim filterId As Integer
+Dim personal As Integer
+
+    ' проверяем группы материалов
+    hasCheckedMat = getCheckedInTree(tvMat)
+    If Not hasCheckedMat And ckKriteriumMat.value = 1 Then
+        MsgBox "Не выбрано ни одной группы материалов. " _
+        & vbCr & "Нужно выбрать хотя бы одну или отключить критерий по материалом", vbExclamation, "Неправильный выбор параметров"
+        Exit Function
+    End If
+    
+    ' проверяем регионы
+    hasCheckedReg = getCheckedInTree(tvRegion)
+    If Not hasCheckedReg And ckKriteriumRegion.value = 1 Then
+        MsgBox "Не выбрано ни одного региона. " _
+        & vbCr & "Нужно выбрать хотя бы один или отключить критерий по регионам", vbExclamation, "Неправильный выбор параметров"
+        Exit Function
+    End If
+
+    hasOborud = getOborudItems
+    
+    If Not hasOborud And ckKriteriumOborud.value = 1 Then
+        MsgBox "Не выбрано никакого типа оборудования. " _
+        & vbCr & "Нужно выбрать хотя бы один или отключить критерий по оборудования", vbExclamation, "Неправильный выбор параметров"
+        Exit Function
+    End If
+
+    If txFilterName.Text = "" Then
+        filterName = managId
+        personal = 1
+    Else
+        filterName = txFilterName.Text
+        personal = 0
+    End If
+
+    filterId = prepareFilter(filterName, personal)
+    
+    If hasCheckedMat Then
+        itemId = saveFilterItem(filterId, "materials", ckKriteriumMat.value)
+        saveParamsOfTree tvMat, itemId, "klassId"
+    End If
+
+    If hasOborud Then
+        itemId = saveFilterItem(filterId, "oborudItems", ckKriteriumOborud.value)
+        Dim i As Integer
+        For i = 1 To 3
+            If cbOborud(i).value Then
+                saveFilterParam itemId, "oborudItemId", i
+            End If
+        Next i
+    End If
+    
+    If ckKriteriumNoOborud.value = 1 Then
+        itemId = saveFilterItem(filterId, "noOboruds", 1)
+    End If
+    
+    Dim index As Integer
+    index = cbGroupByRow.ListIndex
+    If index = -1 Then
+        index = 0
+    End If
+    itemId = saveFilterItem(filterId, "byrow", cbGroupByRow.ItemData(index))
+    
+    index = cbGroupByColumn.ListIndex
+    If index = -1 Then
+        index = 0
+    End If
+    itemId = saveFilterItem(filterId, "bycolumn", cbGroupByColumn.ItemData(index))
+    
+    submitFilter = filterId
+End Function
+
+
+Private Sub cmFilterAdd_Click()
+    submitFilter txFilterName.Text
+    cmFilterAdd.Enabled = False
+    
+End Sub
 
 
 Private Sub cmFilterApply_Click()
-    initFilter (CStr(cbFilters.Text))
-    
+    initFilter CStr(cbFilters.Text), 0
+
 End Sub
+
 
 Private Sub Form_Load()
     loadKlass
     loadRegions
+    managId = Orders.cbM.Text
 
-    Set table = myOpenRecordSet("##72", "nFilter", dbOpenForwardOnly)
+    Set table = myOpenRecordSet("W#72", "select * from nFilter where personal != 1", dbOpenForwardOnly)
     If table Is Nothing Then myBase.Close: End
     cbFilters.Text = ""
-
+    
+    cbFilters.AddItem ""
     While Not table.EOF
         cbFilters.AddItem "" & table!Name & ""
         table.MoveNext
@@ -570,6 +801,7 @@ Private Sub Form_Load()
 
 End Sub
 
+
 Private Sub tvMat_NodeCheck(ByVal Node As MSComctlLib.Node)
     checkDirtyFilterCommads
     If Not Node.Child Is Nothing Then
@@ -578,9 +810,52 @@ Private Sub tvMat_NodeCheck(ByVal Node As MSComctlLib.Node)
 End Sub
 
 
+Private Function getOborudItems() As Boolean
+Dim i As Integer
+
+    For i = 1 To 3
+        If cbOborud(i).value = 1 Then
+            getOborudItems = True
+            Exit Function
+        End If
+    Next i
+
+End Function
+
+
+Private Function getCheckedInTree(tView As TreeView) As Boolean
+Dim currentNode As Node
+Dim i As Integer
+
+    getCheckedInTree = False
+    For i = 1 To tView.Nodes.Count
+        Set currentNode = tView.Nodes(i)
+        If currentNode.Checked Then
+            getCheckedInTree = True
+            Exit Function
+        End If
+    Next i
+    
+End Function
+
+
+Private Sub saveParamsOfTree(tView As TreeView, itemId As Integer, paramName As String)
+Dim currentNode As Node
+Dim i As Integer, nCount As Integer
+
+    nCount = tView.Nodes.Count
+    For i = 1 To nCount
+        Set currentNode = tView.Nodes(i)
+        If currentNode.Checked Then
+            saveFilterParam itemId, paramName, CInt(Mid(currentNode.key, 2))
+        End If
+    Next i
+    
+End Sub
+
+
 Private Sub setRecursiveNodeChecked(ByRef root As Node, value As Boolean)
 Dim NextNode As Node
-
 
     root.Checked = value
     Set NextNode = root.Next
@@ -592,6 +867,7 @@ Dim NextNode As Node
     End If
 End Sub
 
+
 Private Sub setRecursiveParent(ByRef root As Node, value As Boolean)
     root.Checked = value
     If Not root.Parent Is Nothing Then
@@ -599,6 +875,14 @@ Private Sub setRecursiveParent(ByRef root As Node, value As Boolean)
     End If
 End Sub
 
+
+Private Sub expandParents(ByRef aNode As Node)
+    
+    If Not aNode.Parent Is Nothing Then
+        aNode.Parent.Expanded = True
+        expandParents aNode.Parent
+    End If
+End Sub
 
 
 Private Sub tvRegion_NodeCheck(ByVal Node As MSComctlLib.Node)
@@ -608,3 +892,18 @@ Private Sub tvRegion_NodeCheck(ByVal Node As MSComctlLib.Node)
     End If
 
 End Sub
+
+Private Sub txFilterName_Change()
+    cmFilterAdd.Enabled = True
+End Sub
+
+Private Sub setListIndexByItemDataValue(ByRef cb As ComboBox, ByVal itemDataValue As Integer)
+Dim i As Integer
+    For i = 0 To cb.ListCount
+        If cb.ItemData(i) = itemDataValue Then
+            cb.ListIndex = i
+            Exit Sub
+        End If
+    Next i
+End Sub
+

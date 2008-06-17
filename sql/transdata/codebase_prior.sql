@@ -1,7 +1,530 @@
+if exists (select 1 from sysprocedure where proc_name = 'n_filter_params') then
+	drop procedure n_filter_params;
+end if;
+
+
+CREATE procedure n_filter_params (
+	  p_filterid    integer
+)
+begin
+	select 
+		  i.isActive as r_isActive
+		, i.id as r_itemId
+		, it.itemType as r_itemType
+		, it.sqlClause as r_sqlClause
+		, p.id as r_paramId
+		, intValue as r_intValue
+		, charValue as r_charValue
+		, pt.paramType as r_paramType
+		, pt.paramClass as r_paramClass
+		, pt.paramKey as r_paramKey
+	from nfilter f
+	join nitem i on f.id = i.filterid
+	join nItemType it on it.id = i.itemTypeId
+	left join nparam p on i.id = p.itemid
+	left join nParamType pt on pt.id = p.paramTypeId
+	where f.id = p_filterid;
+end;
+
+if exists (select 1 from sysprocedure where proc_name = 'n_boot_filter') then
+	drop procedure n_boot_filter;
+end if;
+
+
+CREATE procedure n_boot_filter (
+	  p_filterid    integer
+	, p_managId     varchar(16)
+) 
+begin
+	declare groupByRows    varchar(64);
+	declare groupByColumns varchar(64);
+	declare periodType     varchar(64);
+	declare implemented    integer;
+
+	set implemented = 0;
+
+	for x as xc dynamic scroll cursor for
+		call n_filter_params(p_filterid)
+	do
+		
+		if r_itemType = 'byrow' then
+			if r_isActive = 1 then
+				set groupByRows = 'firm';
+			end if;
+			set implemented = 1;
+		elseif r_itemType = 'bycolumn' then
+			if r_isActive <= 5 then
+				set groupByColumns = 'periods';
+				if r_isActive = 1 then
+					set periodType = 'month'; 
+				elseif r_isActive = 2 then
+					set periodType = 'year'; 
+				elseif r_isActive = 3 then
+					set periodType = 'quarter'; 
+				elseif r_isActive = 4 then
+					set periodType = 'week'; 
+				elseif r_isActive = 5 then
+					set periodType = 'day'; 
+				end if;
+			elseif r_isActive = 6 then
+				set groupByColumns = 'materials';
+			end if;
+		else
+		end if;
+	end for;
+
+	select 'implemented' as pkey, convert(varchar(20), implemented) as pvalue 
+		union
+	select 'groupByColumns'       , convert(varchar(20), groupByColumns)          
+		union
+	select 'periodType'       , convert(varchar(20), periodType)          
+		union
+	select 'groupByRows'       , convert(varchar(20), groupByRows)          
+	;
+end;
+
+
+
+if exists (select 1 from sysprocedure where proc_name = 'n_exec_filter') then
+	drop function n_exec_filter;
+end if;
+
+
+CREATE procedure n_exec_filter (
+	  p_begin       date
+	, p_end         date
+	, p_filterid    integer
+) 
+begin
+	declare v_sql long varchar;
+	declare groupByRows    varchar(64);
+	declare groupByColumns varchar(64);
+	declare periodType     varchar(64);
+	
+	for y as yc dynamic scroll cursor for
+		call n_boot_filter(p_filterid, 'M')
+	do
+		message pkey, ' = ', pvalue to client;
+		if pkey = 'implemented' and pvalue != '1' then
+			return;
+		end if;
+		if pkey = 'groupByRows' then
+			set groupByRows = pvalue;
+		end if;
+
+		if pkey = 'groupByColumns' then
+			set groupByColumns = pvalue;
+		end if;
+
+		if pkey = 'periodType' then
+			set periodType = pvalue;
+		end if;
+	end for;
+
+
+create table #regions (regionId integer);
+create table #materials (klassId integer);
+create table #oborudItems (oborudItemId integer);
+create table #noOboruds (noOborud integer);
+	
+	for x as xc dynamic scroll cursor for
+		call n_filter_params(p_filterid)
+	do
+		if r_itemType = 'byrow' then
+		elseif r_itemType = 'bycolumn' then
+		else
+			set v_sql = 'insert into #' + r_itemType;
+			if r_paramClass = 'ids' then
+				set v_sql = v_sql + '( ' + r_paramType + ')';
+			end if;
+    
+			set v_sql = v_sql + ' values (';
+			if r_intValue is not null then
+				set v_sql = v_sql + convert(varchar(20), r_intValue);
+			elseif r_charValue is not null then
+				set v_sql = v_sql + '''' + r_charValue + '''';
+			else
+				set v_sql = v_sql + convert(varchar(20), r_isActive);
+			end if;
+			set v_sql = v_sql + ')';
+    
+			message v_sql to client;
+			execute immediate v_sql;
+		end if;
+	end for;
+
+
+	create table #results (
+		  label        varchar(64)
+		, year         integer
+		, orders_cnt   integer
+		, paid         float
+		, qty          float
+		, saled        float
+		, name         varchar(512)
+		, region       varchar(256)
+		, regionid     integer
+		, periodid     integer
+	);
+
+	execute immediate 'call n_list_' + groupByRows + '_by_' + groupByColumns + '(p_begin, p_end, '''+ periodType + ''')';
+
+	select * from #results order by name, periodid;
+
+end;
+
+
+
+if exists (select 1 from sysprocedure where proc_name = 'n_list_firm_by_periods') then
+	drop procedure n_list_firm_by_periods;
+end if;
+
+
+CREATE procedure n_list_firm_by_periods (
+	  p_begin date
+	, p_end date
+	, p_period_type varchar(20)
+)
+begin
+
+	declare v_region_flag integer;
+	declare v_material_flag integer;
+	declare v_oborud_flag integer;
+	declare v_no_oborud_flag integer;
+
+	select count(*) into v_region_flag   from #regions;
+	select count(*) into v_material_flag from #materials;
+	select count(*) into v_no_oborud_flag   from #noOboruds;
+	if v_no_oborud_flag = 0 then
+		select count(*) into v_oborud_flag   from #oborudItems;
+	end if;
+
+
+
+
+	create table #periods (periodId int default autoincrement, st date, en date, label varchar(32), year integer);
+	call n_fill_periods(p_begin, p_end, p_period_type);
+
+
+
+	
+	create table #sale_isum(
+		  numorder   integer
+		, paid       float
+		, indate     date
+		, periodid   integer
+		, firmId     integer
+	);
+
+	
+	insert into #sale_isum (
+		numorder, indate, firmId, paid
+	)
+	select numorder, indate, firmId, paid
+	from 
+		bayorders o
+	where 
+			o.indate >= p_begin and o.inDate < p_end 
+		and (v_region_flag = 0 or exists (select 1 from #regions r, bayguidefirms f where f.firmid = o.firmid and r.regionid = f.regionid))
+--	and (v_oborud_flag = 0 or exists (select 1 from #oboruds r, bayguidefirms f where f.firmid = o.firmid and r.oborudid = f.oborudid))
+	;
+
+	update #sale_isum s set s.periodId = p.periodId
+	from #periods p 
+	where 
+		s.indate >= p.st and s.inDate < p.en
+	;
+
+	
+
+	
+	create table #sale_item (
+		 numorder    integer
+		,nomnom      varchar(20)
+		,qty         float
+		,sm          float
+		,inDate      date
+		,firmId      integer
+		,klassid     integer
+		,periodid    integer
+	);
+
+
+	insert into #sale_item (
+		 numorder
+		,nomnom
+		,qty
+		,sm
+		,inDate
+		,firmId      
+		,klassid
+		,periodId
+	)
+	select
+		  o.numorder as numorder
+		, i.nomnom
+		, i.quant / n.perlist as qty
+		, (i.quant / n.perlist) * i.cenaEd as sm
+		, o.inDate
+		, o.firmId
+		, n.klassid
+		, si.periodId
+	from itemSellOrde i
+	join bayorders o on o.numorder = i.numorder 
+	join sguidenomenk n on i.nomnom = n.nomnom
+	join #sale_isum si on si.numorder = i.numorder
+	where 
+			o.indate >= p_begin and o.inDate < p_end 
+		and (v_material_flag = 0 or exists (select 1 from #materials m where n.klassid = m.klassid))
+	;
+
+
+	insert into #results
+	select 
+		  p.label
+		, p.year
+		, o.orders_cnt
+		, o.paid
+		, i.qty
+		, i.saled
+		, f.name
+		, r.region
+		, r.regionid
+		, p.periodid
+	from #periods p 
+	join (
+		select sum(sm) as saled, sum(qty) as qty, firmid, periodId
+		from #sale_item
+		group by firmid, periodId
+	) i on 
+		i.periodid = p.periodId
+	join (
+		select sum(isnull(paid, 0)) as paid, count(*) as orders_cnt, firmId, periodId
+		from #sale_isum
+		group by firmId, periodId
+	) o on 
+		o.firmId = i.firmId and o.periodId = i.periodId
+	join bayguidefirms f on f.firmid = i.firmid
+	join bayregion r on r.regionid = f.regionid
+	;
+	
+end;
+
+
+
+if exists (select 1 from sysprocedure where proc_name = 'n_get_period_st') then
+	drop function n_get_period_st;
+end if;
+
+CREATE function n_get_period_st (
+	  p_begin date
+	, p_period_type varchar(20) default 'month'
+) returns date
+begin
+	declare v_cur date;
+	declare v_shift_back integer;
+
+	if p_period_type = 'month' then
+		set n_get_period_st = ymd(year(p_begin), month(p_begin), 1);
+	elseif p_period_type = 'year' then
+		set n_get_period_st = ymd(year(p_begin), 1, 1);
+	elseif p_period_type = 'week' then
+
+		set v_cur = p_begin;
+		set v_shift_back = 0;
+		while datepart(dw, v_cur) != 2 loop 		-- понедельник
+			set v_cur = dateadd(day, 1, v_cur);
+			set v_shift_back = -1;
+		end loop;
+		set n_get_period_st = dateadd(week, v_shift_back, v_cur);
+	else
+		set n_get_period_st = p_begin;
+	end if;
+end;
+
+
+
+if exists (select 1 from sysprocedure where proc_name = 'n_get_period_next') then
+	drop function n_get_period_next;
+end if;
+
+CREATE function n_get_period_next (
+	  p_cur date
+	, p_period_type varchar(20) default 'month'
+) returns date
+begin
+	execute immediate 'select dateadd(' + p_period_type + ', 1, p_cur) into n_get_period_next';
+end;
+
+
+
+if exists (select 1 from sysprocedure where proc_name = 'n_get_label') then
+	drop function n_get_label;
+end if;
+
+CREATE function n_get_label (
+	  p_st date
+	, p_period_type varchar(20) default 'month'
+) returns varchar(20)
+begin
+	if p_period_type = 'month' then
+		set n_get_label = substring(convert(varchar(20), p_st, 112), 5, 2);
+	elseif p_period_type = 'year' then
+		set n_get_label = substring(convert(varchar(20), p_st, 112), 3, 2);
+	else
+		execute immediate 'select datepart(' + p_period_type + ', p_st) into n_get_label';
+	end if;
+end;
+
+
+
+
+if exists (select 1 from sysprocedure where proc_name = 'n_fill_periods') then
+	drop procedure n_fill_periods;
+end if;
+
+
+--	year | quarter | month | week | day 
+
+CREATE procedure n_fill_periods (
+	  p_begin       date
+	, p_end         date
+	, p_period_type varchar(20) default 'month'
+	, p_flag_enumerate integer  default 0
+)
+begin
+	declare v_st        date;
+	declare v_en        date;
+	declare v_cur       date;
+	declare v_prev      date;
+	declare v_period_st date;
+	declare v_period_en date;
+
+	if p_flag_enumerate = 1 then
+		create table #periods (periodId int default autoincrement, st date, en date, label varchar(32), year integer);
+	end if;
+	
+	
+	set v_cur = n_get_period_st(p_begin, p_period_type);
+	set v_period_st = v_cur;
+
+	set n_fill_periods = 0;
+	all_periods:
+	loop
+		message v_cur to client;
+
+		set v_prev = v_cur;
+		if v_period_st < p_begin then
+			set v_period_st = p_begin;
+		else 
+			set v_period_st = v_prev;
+		end if;
+
+		set v_cur = n_get_period_next(v_cur, p_period_type);
+		if v_cur < p_end then
+			set v_period_en = v_cur;
+		else
+			set v_period_en = p_end;
+		end if;	
+		
+    	insert into #periods (st, en, label, year) values (v_period_st, v_period_en, n_get_label(v_period_st, p_period_type), year(v_period_st)); 
+		set n_fill_periods = n_fill_periods + 1;
+
+		if v_cur >= p_end then 
+			leave all_periods;
+		end if;
+	end loop;
+
+	if p_flag_enumerate = 1 then
+		select * from #periods order by 1;
+	end if
+end;
+
+
+
+
+if exists (select 1 from sysprocedure where proc_name = 'n_insertFilter') then
+	drop function n_insertFilter;
+end if;
+
+CREATE function n_insertFilter (
+	  p_filter_name  varchar(64)
+	, p_manager      char(1)
+	, p_personal     integer
+	, p_time         datetime default null
+) returns integer
+begin
+	insert into nFilter (name, managId, personal, created)
+	select 
+		p_filter_name, m.managId, p_personal, isnull(p_time, now())
+	from 
+		GuideManag m 
+	where 
+		m.manag = p_manager
+	;
+
+	set n_insertFilter = @@identity;
+end;
+
+
+
+if exists (select 1 from sysprocedure where proc_name = 'n_insertItem') then
+	drop function n_insertItem;
+end if;
+
+CREATE function n_insertItem (
+	  p_filter_id  varchar(64)
+	, p_item_name    varchar(64)
+	, p_active       integer
+) returns integer
+begin
+	insert into nItem (filterId, itemTypeId, isActive) 
+	select p_filter_id, it.id, p_active
+	from 
+		nItemType it 
+	where 
+		it.itemType = p_item_name
+	;
+
+	set n_insertItem = @@identity;
+end;
+
+
+
+if exists (select 1 from sysprocedure where proc_name = 'n_insertParam') then
+	drop function n_insertParam;
+end if;
+
+CREATE function n_insertParam (
+	   p_item_id     integer
+	, p_param_name   varchar(64)
+	, p_intValue     integer default null
+	, p_charValue    long varchar default null
+) returns integer
+begin
+
+	insert into nParam (itemId, paramTypeId, intValue, charValue) 
+	select p_item_id,  pt.id,  p_intValue, p_charValue
+	from 
+		  nParamType pt 
+		, nItem i
+	where 
+		pt.paramType = p_param_name 
+	and i.id = p_item_id 
+	and i.itemTypeId = pt.itemTypeId
+	;
+
+	set n_insertParam = @@identity;
+
+end;
+
+
+
 if exists (select 1 from sysprocedure where proc_name = 'n_saveFilterItem') then
 	drop procedure n_saveFilterItem;
 end if;
 
+/*
 CREATE procedure n_saveFilterItem (
 	  p_filter_name varchar(64)
 	, p_item_name varchar(64)
@@ -53,9 +576,10 @@ begin
 	end if;
 
 end;
+*/
+	
+	
 
-	
-	
 
 
 
@@ -64,6 +588,7 @@ if exists (select 1 from sysprocedure where proc_name = 'n_saveFilterParam') the
 	drop procedure n_saveFilterParam;
 end if;
 
+/*
 CREATE procedure n_saveFilterParam (
 	  p_filter_name  varchar(64)
 	, p_item_name    varchar(64)
@@ -104,9 +629,9 @@ begin
 				, nItemType it
 				, nFilter f
 			where 
-				p.paramTypeId = pt.id and pt.paramType = p_param_name
+				nParam.paramTypeId = pt.id and pt.paramType = p_param_name
 			and 
-				p.ItemId = i.id and i.itemTypeId = it.id and it.itemType = p_item_name
+				nParam.ItemId = i.id and i.itemTypeId = it.id and it.itemType = p_item_name
 			and
 				i.filterId = f.id and f.name = p_filter_name
 			;
@@ -131,6 +656,7 @@ begin
 	end if;
 end;
 
+*/
 	
 	
 
