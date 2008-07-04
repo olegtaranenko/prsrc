@@ -488,8 +488,8 @@ Dim isBaseOrder As Boolean
 Dim baseFirmId As Integer, baseFirm As String
 Dim baseProblemId As Integer, baseProblem As String, begPubNum As Long
 
-gNzak = Grid.TextMatrix(Orders.mousRow, orNomZak)
-If InStr(Orders.cmAdd.Caption, "+") > 0 Then
+gNzak = Grid.TextMatrix(orders.mousRow, orNomZak)
+If InStr(orders.cmAdd.Caption, "+") > 0 Then
   sql = "SELECT BayOrders.CehId, BayOrders.ProblemId, BayOrders.FirmId, " & _
         "GuideCeh.Ceh, GuideProblem.Problem, BayGuideFirms.Name " & _
         "FROM GuideProblem INNER JOIN (BayGuideFirms INNER JOIN " & _
@@ -544,7 +544,7 @@ Grid.TextMatrix(zakazNum, 0) = zakazNum
 Grid.TextMatrix(zakazNum, orInvoice) = "счет ?"
 Grid.TextMatrix(zakazNum, orNomZak) = l
 Grid.TextMatrix(zakazNum, orData) = Format(Now, "dd.mm.yy")
-Grid.TextMatrix(zakazNum, orMen) = Orders.cbM.Text
+Grid.TextMatrix(zakazNum, orMen) = orders.cbM.Text
 Grid.TextMatrix(zakazNum, orStatus) = status(0)
 If isBaseOrder Then
   Grid.TextMatrix(zakazNum, orProblem) = baseProblem
@@ -702,7 +702,7 @@ Optional field As String = "")
 
 If orColNumber = 0 Then
     Grid.Cols = 2
-    Grid.ColWidth(0) = 0
+    Grid.colWidth(0) = 0
 Else
     Grid.Cols = Grid.Cols + 1
 End If
@@ -714,7 +714,7 @@ curCol = orColNumber
 ReDim Preserve orSqlFields(orColNumber + 1)
 orSqlFields(orColNumber) = field
 
-If colWdth >= 0 Then Grid.ColWidth(orColNumber) = colWdth
+If colWdth >= 0 Then Grid.colWidth(orColNumber) = colWdth
 Grid.TextMatrix(0, orColNumber) = colName
 
 End Sub
@@ -835,7 +835,7 @@ Dim addNullDate As String, strWhere As String
  
  If cbStartDate.value = 1 Then
     stDate = "(BayOrders.inDate)>='" & _
-             Format(Orders.tbStartDate.Text, "yyyy-mm-dd") & "'"
+             Format(orders.tbStartDate.Text, "yyyy-mm-dd") & "'"
     addNullDate = ""
  Else
     stDate = ""
@@ -844,7 +844,7 @@ Dim addNullDate As String, strWhere As String
 
  If cbEndDate.value = 1 Then
     enDate = "(BayOrders.inDate)<='" & _
-            Format(Orders.tbEndDate.Text, "yyyy-mm-dd") & " 11:59:59 PM'"
+            Format(orders.tbEndDate.Text, "yyyy-mm-dd") & " 11:59:59 PM'"
  Else
     enDate = ""
  End If
@@ -971,7 +971,7 @@ Dim tmpRow As Long, tmpCol As Long
 '    mousRow = tmpRow
 '    mousCol = tmpCol
 '    BayOrders.Enabled = True
-    Orders.SetFocus
+    orders.SetFocus
 
 End Sub
 
@@ -1240,7 +1240,7 @@ End Sub
 
 Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then _
-        MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
+        MsgBox "ColWidth = " & Grid.colWidth(Grid.MouseCol)
 End Sub
 
 Private Sub Grid_RowColChange()
@@ -1552,7 +1552,7 @@ manId(cbM.ListIndex) & ", BayOrders.ProblemId = [BayGuideProblem].[ProblemId] " 
 If myExecute("##49", sql) <> 0 Then GoTo EN1
 Grid.Text = lbProblem.Text
 
-DNM = Format(Now(), "dd.mm.yy hh:nn") & vbTab & Orders.cbM.Text & " " & gNzak ' именно vbTab
+DNM = Format(Now(), "dd.mm.yy hh:nn") & vbTab & orders.cbM.Text & " " & gNzak ' именно vbTab
 On Error Resume Next ' в некот.ситуациях один из Open logFile дает Err: файл уже открыт
 Open logFile For Append As #2
 Print #2, DNM & " проблема=" & lbProblem.Text & _
@@ -1610,7 +1610,7 @@ End Sub
 
 Private Sub mnAnalityc_Click()
     Me.MousePointer = flexHourglass
-    Analityc.Show
+    Analityc.Show vbModeless, Me
     
     Me.MousePointer = flexDefault
 End Sub
@@ -2053,11 +2053,11 @@ Dim str  As String
  Grid.TextMatrix(row, orMen) = Manag(tqOrders!managId)
  Grid.TextMatrix(row, orFirma) = tqOrders!Name
  Grid.TextMatrix(row, orStatus) = status(tqOrders!StatusId)
- Orders.Grid.TextMatrix(row, orProblem) = Problems(tqOrders!problemId)
+ orders.Grid.TextMatrix(row, orProblem) = Problems(tqOrders!problemId)
  
  LoadDate Grid, row, orData, tqOrders!inDate, "dd.mm.yy"
- LoadDate Orders.Grid, row, orDataVid, tqOrders!outDateTime, "dd.mm.yy"
- LoadDate Orders.Grid, row, orVrVid, tqOrders!outDateTime, "hh"
+ LoadDate orders.Grid, row, orDataVid, tqOrders!outDateTime, "dd.mm.yy"
+ LoadDate orders.Grid, row, orVrVid, tqOrders!outDateTime, "hh"
  
  
  gNzak = tqOrders!numOrder

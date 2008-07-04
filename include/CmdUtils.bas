@@ -294,6 +294,9 @@ Dim exists As Variant
     Next i
 
 End Sub
+Public Sub cleanSettings(curSetting() As MapEntry)
+    ReDim curSetting(0)
+End Sub
 
 Public Sub setCurrentSetting(curSettings() As MapEntry, key As String, paramVal)
 Dim i As Integer
@@ -429,9 +432,9 @@ Dim reloadCfgSrc As String, reloadCfgDst As String
 '    MsgBox App.EXEName & ""
 
     reloadCfgSrc = getCurrentSetting("reloadCfgSrc", argumentSettings)
-    trace "reloadCfgSrc = " & reloadCfgSrc
+    'trace "reloadCfgSrc = " & reloadCfgSrc
     reloadCfgDst = getCurrentSetting("reloadCfgDst", argumentSettings)
-    trace "reloadCfgDst = " & reloadCfgDst
+    'trace "reloadCfgDst = " & reloadCfgDst
 
     If reloadCfgSrc <> "" Then
         MsgBox "ќбнаружена необходимость обновлени€ управл€ющей программы." _

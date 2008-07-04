@@ -151,8 +151,8 @@ Begin VB.Form Analityc
          Left            =   720
          TabIndex        =   27
          Top             =   240
-         Width           =   1092
-         _ExtentX        =   1926
+         Width           =   1212
+         _ExtentX        =   2138
          _ExtentY        =   508
          _Version        =   393216
          Format          =   16515073
@@ -163,8 +163,8 @@ Begin VB.Form Analityc
          Left            =   720
          TabIndex        =   28
          Top             =   600
-         Width           =   1092
-         _ExtentX        =   1926
+         Width           =   1212
+         _ExtentX        =   2138
          _ExtentY        =   508
          _Version        =   393216
          Format          =   16515073
@@ -173,7 +173,7 @@ Begin VB.Form Analityc
       Begin VB.Label Label5 
          Caption         =   "Одновременно сдвинуть даты"
          Height          =   252
-         Left            =   1920
+         Left            =   2040
          TabIndex        =   35
          Top             =   360
          Width           =   2772
@@ -452,6 +452,16 @@ Dim filterId As Integer
     Results.Top = Me.Top
     Results.filterId = submitFilter("")
     Results.applyTriggered = True
+    If ckStartDate.value = 1 Then
+        Results.StartDate = tbStartDate.value
+    Else
+        Results.StartDate = Empty
+    End If
+    If ckEndDate.value = 1 Then
+        Results.endDate = tbEndDate.value
+    Else
+        Results.endDate = Empty
+    End If
     Results.Show , Me
 
 End Sub
@@ -582,6 +592,10 @@ Sub initFilter(filterName As String, personal As Integer)
     
     Set table = myOpenRecordSet("##initFilter", sql, dbOpenForwardOnly)
     If table Is Nothing Then myBase.Close: End
+    ckStartDate.value = 0
+    tbStartDate.value = Now()
+    ckEndDate.value = 0
+    tbEndDate.value = Now()
 
     While Not table.EOF
         If table!itemType = "materials" Then
@@ -626,6 +640,17 @@ Sub initFilter(filterName As String, personal As Integer)
     
         If table!itemType = "bycolumn" Then
             setListIndexByItemDataValue cbGroupByColumn, table!isActive
+        End If
+        
+        If table!itemType = "filterPeriod" Then
+            If table!paramType = "periodStart" Then
+                ckStartDate.value = 1
+                tbStartDate.value = table!charValue
+            End If
+            If table!paramType = "periodEnd" Then
+                ckEndDate.value = 1
+                tbEndDate.value = table!r_charValue
+            End If
         End If
         
         table.MoveNext
@@ -764,6 +789,16 @@ Dim personal As Integer
     End If
     itemId = saveFilterItem(filterId, "bycolumn", cbGroupByColumn.ItemData(index))
     
+    If ckStartDate.value = 1 Or ckEndDate.value = 1 Then
+        itemId = saveFilterItem(filterId, "filterPeriod", 1)
+        If ckStartDate.value = 1 Then
+            saveFilterParam itemId, "periodStart", tbStartDate.value
+        End If
+        If ckEndDate.value = 1 Then
+            saveFilterParam itemId, "periodEnd", tbEndDate.value
+        End If
+    End If
+    
     submitFilter = filterId
 End Function
 
@@ -784,7 +819,7 @@ End Sub
 Private Sub Form_Load()
     loadKlass
     loadRegions
-    managId = Orders.cbM.Text
+    managId = orders.cbM.Text
 
     Set table = myOpenRecordSet("W#72", "select * from nFilter where personal != 1", dbOpenForwardOnly)
     If table Is Nothing Then myBase.Close: End
@@ -798,7 +833,10 @@ Private Sub Form_Load()
     table.Close
     On Error Resume Next
     cbFilters.ListIndex = getEffectiveSetting("CurrentFilter", 0)
-
+    
+    If cbFilters.ListIndex = 0 Then
+        initFilter managId, 1
+    End If
 End Sub
 
 

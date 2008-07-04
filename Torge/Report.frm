@@ -382,7 +382,7 @@ cbAnormal.Visible = False
 
 If Regim = "subDetail" Then
     laHeader.Caption = "Детализация сумм " & param3 & "  по отгрузке от " & _
-    Left$(param2, 8) & " по заказу №" & gNzak
+    left$(param2, 8) & " по заказу №" & gNzak
     subDetail
 ElseIf Regim = "subDetailMat" Then
     laHeader.Caption = "Детализация суммы" & param3 & " по накладной №" & gNzak
@@ -1153,7 +1153,7 @@ Grid.ColWidth(5) = 420
 Grid.ColWidth(6) = 1080
 
 strWhere = "20" & Mid$(param2, 7, 2) & "-" & Mid$(param2, 4, 2) & "-" & _
-Left$(param2, 2) & Mid$(param2, 9)
+left$(param2, 2) & Mid$(param2, 9)
 
 If param1 = "p" Or param1 = "w" Then 'есть  гот.изделия
   sql = "SELECT r.prId, r.prExt, " & _
@@ -1710,11 +1710,11 @@ cbAnormal.Top = cbAnormal.Top + h
 cbReserveTerm.Top = cbAnormal.Top
 
 
-cmExit.Left = cmExit.Left + w
-cmExel.Left = cmExit.Left - 50 - cmExel.Width
-cmPrint.Left = cmExel.Left - 50 - cmPrint.Width
-cbAnormal.Left = ckSubtitle.Left + ckSubtitle.Width + 50
-cbReserveTerm.Left = cbAnormal.Left
+cmExit.left = cmExit.left + w
+cmExel.left = cmExit.left - 50 - cmExel.Width
+cmPrint.left = cmExel.left - 50 - cmPrint.Width
+cbAnormal.left = ckSubtitle.left + ckSubtitle.Width + 50
+cbReserveTerm.left = cbAnormal.left
 
 
 
@@ -1811,7 +1811,6 @@ Private Sub Grid_Click()
 End Sub
 
 Private Sub Grid_Compare(ByVal Row1 As Long, ByVal Row2 As Long, Cmp As Integer)
-    Static sortAsc As Boolean
     Dim cell_1, cell_2 As String, ord1 As Integer, ord2 As Integer, empty1 As String, empty2 As String
     Dim date1, date2 As Date
     Dim num1, num2 As Single
@@ -1830,7 +1829,7 @@ Private Sub Grid_Compare(ByVal Row1 As Long, ByVal Row2 As Long, Cmp As Integer)
         Else
             If empty1 = "" And empty2 = "" Then
                 ' чтобы подзаголовки не прыгали
-                If (Grid.TextMatrix(Row1, subtitleColIndex) = "") Then
+                If Grid.TextMatrix(Row1, subtitleColIndex) = "" Then
                     Cmp = -1
                 ElseIf Grid.TextMatrix(Row1, subtitleColIndex) <> "" Then
                     Cmp = 1

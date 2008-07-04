@@ -26,6 +26,7 @@ begin
 	where f.id = p_filterid;
 end;
 
+
 if exists (select 1 from sysprocedure where proc_name = 'n_boot_filter') then
 	drop procedure n_boot_filter;
 end if;
@@ -91,15 +92,15 @@ end if;
 
 
 CREATE procedure n_exec_filter (
-	  p_begin       date
-	, p_end         date
-	, p_filterid    integer
+	p_filterid    integer
 ) 
 begin
 	declare v_sql long varchar;
 	declare groupByRows    varchar(64);
 	declare groupByColumns varchar(64);
 	declare periodType     varchar(64);
+	declare p_begin       date;
+	declare p_end         date;
 	
 	for y as yc dynamic scroll cursor for
 		call n_boot_filter(p_filterid, 'M')
@@ -132,6 +133,13 @@ create table #noOboruds (noOborud integer);
 	do
 		if r_itemType = 'byrow' then
 		elseif r_itemType = 'bycolumn' then
+		elseif r_itemType = 'filterPeriod' then
+			if r_paramType = 'periodStart' then
+				set p_begin = convert(date, r_charValue, 104);
+			end if;
+			if r_paramType = 'periodEnd' then
+				set p_end = convert(date, r_charValue, 104);
+			end if;
 		else
 			set v_sql = 'insert into #' + r_itemType;
 			if r_paramClass = 'ids' then
@@ -165,11 +173,59 @@ create table #noOboruds (noOborud integer);
 		, region       varchar(256)
 		, regionid     integer
 		, periodid     integer
+		, firmId       integer
 	);
+
+	call n_default_period(p_begin, p_end);
 
 	execute immediate 'call n_list_' + groupByRows + '_by_' + groupByColumns + '(p_begin, p_end, '''+ periodType + ''')';
 
-	select * from #results order by name, periodid;
+
+
+	create table #firm_besuch (firmId integer, erst date, letzt date);
+
+	insert into #firm_besuch (firmId, erst, letzt) 
+	select firmId, min(o.inDate), max(o.inDate)
+	from bayOrders o
+	where 
+		exists (select 1 from #results r where r.firmId = o.firmId)
+	group by firmId
+	;
+
+
+	-- 
+	select r.*, b.erst, b.letzt
+	from #results r
+	join #firm_besuch b on b.firmId = r.firmId
+	order by r.name, r.periodid;
+
+
+
+end;
+
+
+
+if exists (select 1 from sysprocedure where proc_name = 'n_default_period') then
+	drop procedure n_default_period;
+end if;
+
+
+CREATE procedure n_default_period (
+	  inout p_begin  char(20)
+	, inout p_end    char(20)
+)
+begin
+
+	if p_begin is null or char_length(p_begin) = 0 then
+		select min(indate) into p_begin from bayorders;
+	end if;
+
+	if p_end is null or char_length(p_end) = 0 then
+		set p_end = now();
+	end if;
+	
+	message 'p_begin = ', p_begin to client;
+	message 'p_end = ', p_end to client;
 
 end;
 
@@ -200,12 +256,14 @@ begin
 	end if;
 
 
-
-
-	create table #periods (periodId int default autoincrement, st date, en date, label varchar(32), year integer);
+	create table #periods (
+		periodId int default autoincrement
+		, st date
+		, en date
+		, label varchar(32)
+		, year integer
+	);
 	call n_fill_periods(p_begin, p_end, p_period_type);
-
-
 
 	
 	create table #sale_isum(
@@ -224,7 +282,7 @@ begin
 	from 
 		bayorders o
 	where 
-			o.indate >= p_begin and o.inDate < p_end 
+			o.indate >= isnull(p_begin, o.inDate) and (p_end is null or o.inDate < p_end)
 		and (v_region_flag = 0 or exists (select 1 from #regions r, bayguidefirms f where f.firmid = o.firmid and r.regionid = f.regionid))
 --	and (v_oborud_flag = 0 or exists (select 1 from #oboruds r, bayguidefirms f where f.firmid = o.firmid and r.oborudid = f.oborudid))
 	;
@@ -279,18 +337,31 @@ begin
 	;
 
 
-	insert into #results
+	insert into #results (
+		  label        
+		, year         
+		, orders_cnt   
+		, paid         
+		, qty          
+		, saled        
+		, name         
+		, region       
+		, regionid     
+		, periodid     
+		, firmId       
+	)
 	select 
 		  p.label
 		, p.year
-		, o.orders_cnt
-		, o.paid
-		, i.qty
-		, i.saled
-		, f.name
+		, o.orders_cnt  -- число заказов за период
+		, o.paid        -- общий объем заказов (уе)
+		, i.qty         -- к-во проданных единиц по выбранным материалам (шт, листов и т.д.)
+		, i.saled    	-- сумма по выбраннм материалам
+		, f.name        -- фирма
 		, r.region
 		, r.regionid
 		, p.periodid
+		, o.firmId
 	from #periods p 
 	join (
 		select sum(sm) as saled, sum(qty) as qty, firmid, periodId
@@ -307,7 +378,8 @@ begin
 	join bayguidefirms f on f.firmid = i.firmid
 	join bayregion r on r.regionid = f.regionid
 	;
-	
+
+
 end;
 
 
@@ -400,10 +472,11 @@ begin
 	declare v_period_st date;
 	declare v_period_en date;
 
+	call n_default_period(p_begin, p_end);
+
 	if p_flag_enumerate = 1 then
 		create table #periods (periodId int default autoincrement, st date, en date, label varchar(32), year integer);
 	end if;
-	
 	
 	set v_cur = n_get_period_st(p_begin, p_period_type);
 	set v_period_st = v_cur;
@@ -502,9 +575,27 @@ CREATE function n_insertParam (
 	, p_charValue    long varchar default null
 ) returns integer
 begin
+	declare v_paramClass varchar(32);
+	declare v_varchar long varchar;
+	declare v_dateValue date;
+
+	select paramClass 
+	into v_paramClass 
+	from nParamType pt
+	join nItem i           on i.itemTypeId = pt.itemTypeId
+	where 
+			i.id = p_item_id 
+		and pt.paramType = p_param_name;
+
+	if v_paramClass = 'date' then
+		set v_dateValue = convert(date, substring(p_charValue, 1, 10), 104);
+		set v_varchar = convert(varchar(20), v_dateValue, 104);
+	else
+		set v_varchar = p_charValue;
+	end if;
 
 	insert into nParam (itemId, paramTypeId, intValue, charValue) 
-	select p_item_id,  pt.id,  p_intValue, p_charValue
+	select p_item_id,  pt.id,  p_intValue, v_varchar
 	from 
 		  nParamType pt 
 		, nItem i
