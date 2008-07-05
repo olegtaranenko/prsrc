@@ -146,5 +146,6 @@ Frame2.Visible = True
 tbEndDate.Text = Format(CurDate, "mm.yyyy")
 tbStartDate.Text = tbEndDate.Text
 
+
 End Sub
 
