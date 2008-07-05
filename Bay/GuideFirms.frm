@@ -274,9 +274,6 @@ Dim quantity As Integer 'количество найденных фирм
 Dim pos As Long 'поиция поиска
 Const cEmpty = "пустой менеджер"
 
-Private Sub chClose_Click()
-
-End Sub
 
 Private Sub cbM_Click()
 loadGuide
@@ -311,7 +308,7 @@ Grid.SetFocus
 End Sub
 
 Private Sub cmDel_Click()
-Dim strId As String, I As Integer
+Dim strId As String, i As Integer
 
 If MsgBox("По кнопке <Да> вся информация по фирме будет безвозвратно " & _
 "удалена из базы!", vbYesNo, "Удалить Фирму?") = vbNo Then Exit Sub
@@ -327,13 +324,13 @@ strId = Grid.TextMatrix(mousRow, gfId)
 'tbFirms.Close
 
 sql = "DELETE FROM BayGuideFirms WHERE FirmId = " & strId
-I = myExecute("##67", sql, -198)
-If I = -2 Then
+i = myExecute("##67", sql, -198)
+If i = -2 Then
     MsgBox "У этой фирмы есть заказы. Перед ее удалением необходимо " & _
     "в этих заказах выбать другую фирму, либо удалить эти заказы", , _
     "Удаление невозможно!"
     GoTo EN1
-ElseIf I <> 0 Then
+ElseIf i <> 0 Then
     GoTo EN1
 End If
 
@@ -395,7 +392,7 @@ Grid_EnterCell
 End Sub
 
 Sub loadGuide()
-Dim I As Long, strWhere As String, str As String
+Dim i As Long, strWhere As String, str As String
 
 Me.MousePointer = flexHourglass
 Grid.Visible = False
@@ -433,11 +430,11 @@ If Not tbFirms.BOF Then
     If tbFirms!firmId = 0 Then GoTo AA
     quantity = quantity + 1
 If tbFirms!firmId = 39 Then
-I = I
+i = i
 End If
     Grid.TextMatrix(quantity, gfId) = tbFirms!firmId
     Grid.TextMatrix(quantity, gfNazwFirm) = tbFirms!Name
-    Grid.TextMatrix(quantity, gfM) = Manag(tbFirms!ManagId)
+    Grid.TextMatrix(quantity, gfM) = Manag(tbFirms!managId)
     fieldToCol tbFirms!Oborud, gfOborud
     fieldToCol tbFirms!Sale, gfSale
     fieldToCol tbFirms!Kontakt, gfKontakt
@@ -534,7 +531,7 @@ If KeyCode = vbKeyEscape Then lbHide
 End Sub
 
 Private Sub Form_Load()
-Dim I As Integer
+Dim i As Integer
 quantity = 0
 pos = 0
 oldHeight = Me.Height
@@ -549,35 +546,35 @@ Grid.TextMatrix(0, gf2002) = Format(lastYear - 2, "0000") '$$3
 Grid.TextMatrix(0, gf2003) = Format(lastYear - 1, "0000")
 Grid.TextMatrix(0, gf2004) = Format(lastYear, "0000")
 
-If lastYear < 2007 Then Grid.ColWidth(gf2001) = 0 '$$3
-If lastYear < 2006 Then Grid.ColWidth(gf2002) = 0
-If lastYear < 2005 Then Grid.ColWidth(gf2003) = 0
+If lastYear < 2007 Then Grid.colWidth(gf2001) = 0 '$$3
+If lastYear < 2006 Then Grid.colWidth(gf2002) = 0
+If lastYear < 2005 Then Grid.colWidth(gf2003) = 0
 
 Grid.MergeRow(0) = True
-Grid.ColWidth(0) = 0
-Grid.ColWidth(gfM) = 330
-Grid.ColWidth(gfNazwFirm) = 2730
-Grid.ColWidth(gfOborud) = 735
-Grid.ColWidth(gfRegion) = 1140
-Grid.ColWidth(gfSale) = 655
-Grid.ColWidth(gfKontakt) = 700
-Grid.ColWidth(gfOtklik) = 645
-Grid.ColWidth(gfFIO) = 1410
-Grid.ColWidth(gfTlf) = 1140
+Grid.colWidth(0) = 0
+Grid.colWidth(gfM) = 330
+Grid.colWidth(gfNazwFirm) = 2730
+Grid.colWidth(gfOborud) = 735
+Grid.colWidth(gfRegion) = 1140
+Grid.colWidth(gfSale) = 655
+Grid.colWidth(gfKontakt) = 700
+Grid.colWidth(gfOtklik) = 645
+Grid.colWidth(gfFIO) = 1410
+Grid.colWidth(gfTlf) = 1140
 'Grid.ColWidth(gfType) = 615 в Resize
-Grid.ColWidth(gfLogin) = 780
-Grid.ColWidth(gfId) = 480
+Grid.colWidth(gfLogin) = 780
+Grid.colWidth(gfId) = 480
 
 cbM.AddItem "все менеджеры"
 lbM.AddItem "not"
-For I = 0 To Orders.lbM.ListCount - 1
-    If I < Orders.lbM.ListCount - 1 Then lbM.AddItem Orders.lbM.List(I)
-    If Orders.lbM.List(I) = "" Then
+For i = 0 To Orders.lbM.ListCount - 1
+    If i < Orders.lbM.ListCount - 1 Then lbM.AddItem Orders.lbM.List(i)
+    If Orders.lbM.List(i) = "" Then
         cbM.AddItem cEmpty
     Else
-        cbM.AddItem "менеджер " & Orders.lbM.List(I)
+        cbM.AddItem "менеджер " & Orders.lbM.List(i)
     End If
-Next I
+Next i
 cbM.ListIndex = 0
 lbM.Height = lbM.Height + 195 * (lbM.ListCount - 1)
 
@@ -631,9 +628,9 @@ Dim h As Integer, w As Integer
 
 If Me.WindowState = vbMinimized Then Exit Sub
 If Me.WindowState = vbMaximized And Me.Width > cDELLwidth Then 'экран DELL
-    Grid.ColWidth(gfType) = 5430
+    Grid.colWidth(gfType) = 5430
 Else
-    Grid.ColWidth(gfType) = 615
+    Grid.colWidth(gfType) = 615
 End If
 On Error Resume Next
 
@@ -680,7 +677,7 @@ End If
 End Sub
 
 Private Sub Grid_DblClick()
-Dim I As Integer
+Dim i As Integer
 
 If Grid.CellBackColor = vbYellow Then Exit Sub
 
@@ -691,14 +688,14 @@ If mousCol = gfM Then
 ElseIf mousCol = gfOborud Then
     listBoxInGridCell lbOborud, Grid, "select"
 ElseIf mousCol = gfRegion Then ' Регион
-        For I = 0 To lbRegion.ListCount - 1 '
-            If Grid.Text = lbRegion.List(I) Then
+        For i = 0 To lbRegion.ListCount - 1 '
+            If Grid.Text = lbRegion.List(i) Then
 '                noClick = True
-                lbRegion.ListIndex = I 'вызывает ложное onClick
+                lbRegion.ListIndex = i 'вызывает ложное onClick
 '                noClick = False
                 Exit For
             End If
-        Next I
+        Next i
     lbRegion.Visible = True
     lbRegion.ZOrder
     lbRegion.SetFocus
@@ -785,7 +782,7 @@ End Sub
 
 Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then _
-        MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
+        MsgBox "ColWidth = " & Grid.colWidth(Grid.MouseCol)
 End Sub
 
 Private Sub lbOborud_DblClick()
@@ -888,7 +885,7 @@ lbHide
 End Sub
 
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim str As String, I As Integer, strId As String
+Dim str As String, i As Integer, strId As String
 If KeyCode = vbKeyReturn Then
  str = Trim(tbMobile.Text)
  gFirmId = Grid.TextMatrix(mousRow, gfId)
@@ -906,8 +903,8 @@ If KeyCode = vbKeyReturn Then
     
     sql = "insert into bayGuideFirms (firmId, name, ManagId) values (" & _
     gFirmId & ", '" & str & "', 14)"
-    I = myExecute("##50", sql, -196)
-    If I <> 0 Then GoTo ERR0:
+    i = myExecute("##50", sql, -196)
+    If i <> 0 Then GoTo ERR0:
     wrkDefault.CommitTrans
     
     
@@ -929,8 +926,8 @@ If KeyCode = vbKeyReturn Then
     sql = "UPDATE BayGuideFirms SET Name = '" & str & _
     "' WHERE (((FirmId)=" & strId & "));"
 '    MsgBox sql
-    I = myExecute("##356", sql, -196)
-    If I <> 0 Then GoTo ERR0:
+    i = myExecute("##356", sql, -196)
+    If i <> 0 Then GoTo ERR0:
     
    End If
    On Error GoTo 0
@@ -969,7 +966,7 @@ AA:
 End If
 Exit Sub
 
-ERR0: If I = -2 Then
+ERR0: If i = -2 Then
         MsgBox "Такая фирма уже есть", , "Ошибка!"
         tbMobile.SetFocus
       Else
