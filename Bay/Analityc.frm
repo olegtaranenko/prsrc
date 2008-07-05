@@ -419,20 +419,20 @@ End Sub
 
 
 Private Sub ckKriteriumOborud_Click()
-Dim i As Integer
+Dim I As Integer
 
     checkDirtyFilterCommads
     If ckKriteriumOborud.value = 1 Then
         If ckKriteriumNoOborud.value = 1 Then
             ckKriteriumNoOborud.value = 0
         End If
-        For i = 1 To 3
-            cbOborud(i).Enabled = True
-        Next i
+        For I = 1 To 3
+            cbOborud(I).Enabled = True
+        Next I
     Else
-        For i = 1 To 3
-            cbOborud(i).Enabled = False
-        Next i
+        For I = 1 To 3
+            cbOborud(I).Enabled = False
+        Next I
     End If
 End Sub
 
@@ -534,33 +534,33 @@ End Sub
 
 Private Sub cleanTree(tView As TreeView)
 Dim currentNode As Node
-Dim i As Integer, nCount As Integer
+Dim I As Integer, nCount As Integer
 Dim enabledFlag As Boolean
 
     enabledFlag = tView.Enabled
     tView.Enabled = True
     
     nCount = tView.Nodes.Count
-    For i = 1 To nCount
-        Set currentNode = tView.Nodes(i)
+    For I = 1 To nCount
+        Set currentNode = tView.Nodes(I)
         If currentNode.Checked Then
             currentNode.Checked = False
             currentNode.Expanded = False
         End If
-    Next i
+    Next I
 
     tView.Enabled = enabledFlag
 End Sub
 
 Private Sub cleanOborud()
 Dim currentOborud As CheckBox
-Dim i As Integer, nCount As Integer
+Dim I As Integer, nCount As Integer
 
     'nCount = UBound(cbOborud)
-    For i = 1 To 3
-        Set currentOborud = cbOborud(i)
+    For I = 1 To 3
+        Set currentOborud = cbOborud(I)
         currentOborud.value = 0
-    Next i
+    Next I
 End Sub
 
 Private Sub cleanFilterWindows()
@@ -760,16 +760,18 @@ Dim personal As Integer
     If hasCheckedMat Then
         itemId = saveFilterItem(filterId, "materials", ckKriteriumMat.value)
         saveParamsOfTree tvMat, itemId, "klassId"
+    Else
+        itemId = saveFilterItem(filterId, "materials", ckKriteriumMat.value)
     End If
 
     If hasOborud Then
         itemId = saveFilterItem(filterId, "oborudItems", ckKriteriumOborud.value)
-        Dim i As Integer
-        For i = 1 To 3
-            If cbOborud(i).value Then
-                saveFilterParam itemId, "oborudItemId", i
+        Dim I As Integer
+        For I = 1 To 3
+            If cbOborud(I).value Then
+                saveFilterParam itemId, "oborudItemId", I
             End If
-        Next i
+        Next I
     End If
     
     If ckKriteriumNoOborud.value = 1 Then
@@ -849,45 +851,45 @@ End Sub
 
 
 Private Function getOborudItems() As Boolean
-Dim i As Integer
+Dim I As Integer
 
-    For i = 1 To 3
-        If cbOborud(i).value = 1 Then
+    For I = 1 To 3
+        If cbOborud(I).value = 1 Then
             getOborudItems = True
             Exit Function
         End If
-    Next i
+    Next I
 
 End Function
 
 
 Private Function getCheckedInTree(tView As TreeView) As Boolean
 Dim currentNode As Node
-Dim i As Integer
+Dim I As Integer
 
     getCheckedInTree = False
-    For i = 1 To tView.Nodes.Count
-        Set currentNode = tView.Nodes(i)
+    For I = 1 To tView.Nodes.Count
+        Set currentNode = tView.Nodes(I)
         If currentNode.Checked Then
             getCheckedInTree = True
             Exit Function
         End If
-    Next i
+    Next I
     
 End Function
 
 
 Private Sub saveParamsOfTree(tView As TreeView, itemId As Integer, paramName As String)
 Dim currentNode As Node
-Dim i As Integer, nCount As Integer
+Dim I As Integer, nCount As Integer
 
     nCount = tView.Nodes.Count
-    For i = 1 To nCount
-        Set currentNode = tView.Nodes(i)
+    For I = 1 To nCount
+        Set currentNode = tView.Nodes(I)
         If currentNode.Checked Then
             saveFilterParam itemId, paramName, CInt(Mid(currentNode.key, 2))
         End If
-    Next i
+    Next I
     
 End Sub
 
@@ -936,12 +938,12 @@ Private Sub txFilterName_Change()
 End Sub
 
 Private Sub setListIndexByItemDataValue(ByRef cb As ComboBox, ByVal itemDataValue As Integer)
-Dim i As Integer
-    For i = 0 To cb.ListCount
-        If cb.ItemData(i) = itemDataValue Then
-            cb.ListIndex = i
+Dim I As Integer
+    For I = 0 To cb.ListCount
+        If cb.ItemData(I) = itemDataValue Then
+            cb.ListIndex = I
             Exit Sub
         End If
-    Next i
+    Next I
 End Sub
 

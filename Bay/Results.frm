@@ -246,6 +246,7 @@ Private Sub LoadTable()
 ' Номер строки в таблице
 Dim rownum As Integer
 
+
     cleanTable
     
     setFilterParams
@@ -268,9 +269,9 @@ Dim rownum As Integer
     End If
     
     table.MoveFirst
-    Dim i As Integer ' номер столбца
+    Dim I As Integer ' номер столбца
     Dim colShift As Integer, ln As Integer
-    Dim saled As Single, paid As Single, orders As Integer
+    Dim orderQty As Integer, orderOrdered As Single, materialQty As Single, materialSaled As Single
     Dim prevFirmId As Integer
     Dim totals() As Double
     
@@ -283,35 +284,34 @@ Dim rownum As Integer
     While Not table.EOF
 
         If prevFirmId <> table!firmId Then
-            i = PreHeaderCount + multiplyCols * ln
+            I = PreHeaderCount + multiplyCols * ln
             If rownum > 0 Then
                 colShift = periodCount * multiplyCols + PreHeaderCount
-                Grid.TextMatrix(rownum, colShift) = Format(orders, "# ##0")
-                orders = 0
-                Grid.TextMatrix(rownum, colShift + 1) = Format(saled, "# ###.00")
-                saled = 0
-                Grid.TextMatrix(rownum, colShift + 2) = Format(paid, "# ###.00")
-                paid = 0
+                Grid.TextMatrix(rownum, colShift) = Format(totals(1), "# ##0"): totals(1) = 0
+                Grid.TextMatrix(rownum, colShift + 1) = Format(totals(2), "# ###.00"): totals(2) = 0
+                Grid.TextMatrix(rownum, colShift + 2) = Format(totals(3), "# ##0"): totals(3) = 0
+                Grid.TextMatrix(rownum, colShift + 3) = Format(totals(4), "# ###.00"): totals(4) = 0
                 Grid.AddItem ""
             End If
             rownum = rownum + 1
         End If
 
-        i = 1
-        Grid.TextMatrix(rownum, i) = table!Name: i = i + 1
-        Grid.TextMatrix(rownum, i) = table!region: i = i + 1
-        Grid.TextMatrix(rownum, i) = table!erst: i = i + 1
-        Grid.TextMatrix(rownum, i) = table!letzt: i = i + 1
+        I = 1
+        Grid.TextMatrix(rownum, I) = table!Name: I = I + 1
+        Grid.TextMatrix(rownum, I) = table!region: I = I + 1
+        Grid.TextMatrix(rownum, I) = table!erst: I = I + 1
+        Grid.TextMatrix(rownum, I) = table!letzt: I = I + 1
         
-        colShift = i + getPeriodShift(table!periodId) * multiplyCols
-        Grid.TextMatrix(rownum, colShift) = table!orders_cnt
-        Grid.TextMatrix(rownum, colShift + 1) = Format(table!paid, "# ###.00")
-        Grid.TextMatrix(rownum, colShift + 2) = table!qty
-        Grid.TextMatrix(rownum, colShift + 3) = Format(table!saled, "# ###.00")
+        colShift = I + getPeriodShift(table!periodId) * multiplyCols
+        Grid.TextMatrix(rownum, colShift) = table("orderQty")
+        Grid.TextMatrix(rownum, colShift + 1) = Format(table("orderOrdered"), "# ###.00")
+        Grid.TextMatrix(rownum, colShift + 2) = table("materialQty")
+        Grid.TextMatrix(rownum, colShift + 3) = Format(table("materialSaled"), "# ###.00")
         
-        paid = table!paid + paid
-        saled = table!saled + saled
-        orders = table!orders_cnt + orders
+        totals(1) = table("orderQty") + totals(1)
+        totals(2) = table("orderOrdered") + totals(2)
+        totals(3) = table("materialQty") + totals(3)
+        totals(4) = table("materialSaled") + totals(4)
         
         prevFirmId = table!firmId
         
@@ -328,36 +328,37 @@ End Sub
 
 
 Private Function getPeriodShift(periodId As Integer) As Integer
-Dim i As Integer
+Dim I As Integer
 Dim ln As Integer
     ln = UBound(columns)
-    For i = 0 To ln
-        If columns(i).periodId = periodId Then
-            getPeriodShift = columns(i).index
+    For I = 0 To ln
+        If columns(I).periodId = periodId Then
+            getPeriodShift = columns(I).index
             Exit Function
         End If
-    Next i
+    Next I
 End Function
 
 Private Function setGridHeaders() As Boolean
 Dim periodType As Variant
 Dim index As Integer
 Dim colInfo As ColumnInfo
-Dim colIndex As Integer, i As Integer
+Dim colIndex As Integer, I As Integer
 Dim GridHeaderHead As String
 Dim GridHeaderTail As String
 
     'Optimistic view
     setGridHeaders = True
 
-    GridHeaderHead = "|<Название фирмы|<Регион|>1. Визит|>Посл.Визит"
-    GridHeaderTail = ">Заказов|>На общую сумму|>Проплачено"
+    GridHeaderHead = "|<Название фирмы|<Регион|>Перв.Визит|>Посл.Визит"
+    GridHeaderTail = ">Заказов|>Сумма заказов|>К-во матер.|>Сумма матер."
+    
     periodType = getCurrentSetting("periodType", filterSettings)
 
     
-    PreHeaderCount = analyzeHeader(GridHeaderHead)
-    PostHeaderCount = analyzeHeader(GridHeaderTail)
-    multiplyCols = 4
+    PreHeaderCount = parseHeaderMetrics(GridHeaderHead)
+    PostHeaderCount = parseHeaderMetrics(GridHeaderTail)
+    multiplyCols = parseTabStrip(GridHeaderTail, TabStrip1)
 
     sql = "call n_fill_periods( "
     
@@ -403,15 +404,14 @@ Dim GridHeaderTail As String
     
     
     periodCount = UBound(columns) + 1
-'    Grid.Cols = PreHeaderCount + periodCount * multiplyCols + PostHeaderCount
     Grid.row = 0
     
     
-    For i = 0 To periodCount - 1
+    For I = 0 To periodCount - 1
         For colIndex = 0 To multiplyCols - 1
-            GridHeaderHead = GridHeaderHead & "|>" & columns(i).label
+            GridHeaderHead = GridHeaderHead & "|>" & columns(I).label
         Next colIndex
-    Next i
+    Next I
     If GridHeaderTail <> "" Then
         GridHeaderHead = GridHeaderHead & "|" & GridHeaderTail
     End If
@@ -426,7 +426,7 @@ Dim GridHeaderTail As String
 End Function
 
 
-Private Function getColumnWidth(i As Integer, label As String)
+Private Function getColumnWidth(I As Integer, label As String)
     getColumnWidth = 500
 End Function
 
@@ -451,55 +451,91 @@ Private Sub cleanTable()
     cleanSettings filterSettings
     clearGrid Me.Grid
     Me.Grid.Cols = 2
+    TabStrip1.Tabs.Clear
 
 End Sub
 
 
-Private Function analyzeHeader(header As String) As Integer
-Dim i As Integer, ln As Integer
+Private Function parseHeaderMetrics(header As String) As Integer
+Dim I As Integer, ln As Integer
 
     ln = Len(header)
     If ln > 0 Then
-        analyzeHeader = 1
+        parseHeaderMetrics = 1
     Else
-        analyzeHeader = 0
+        parseHeaderMetrics = 0
         Exit Function
     End If
 
-    For i = 1 To ln
-        If Mid(header, i, 1) = "|" Then
-            analyzeHeader = analyzeHeader + 1
+    For I = 1 To ln
+        If Mid(header, I, 1) = "|" Then
+            parseHeaderMetrics = parseHeaderMetrics + 1
         End If
-    Next i
+    Next I
+End Function
+
+Private Function parseTabStrip(formatStr As String, tabStrip As tabStrip) As Integer
+Dim I As Integer
+Dim loopDone As Boolean, delimitorPos As Long
+Dim headerRest As String, headerRestLn As Long, tabName As String
+
+    headerRest = formatStr
+    loopDone = False
+    I = 1
+    While Not loopDone
+        headerRestLn = Len(headerRest)
+        If headerRestLn > 0 Then
+            parseTabStrip = parseTabStrip + 1
+            delimitorPos = InStr(1, headerRest, "|", vbBinaryCompare)
+            If delimitorPos = 0 Then
+                tabName = headerRest
+                headerRest = ""
+            Else
+                tabName = left(headerRest, delimitorPos - 1)
+                headerRest = Mid(headerRest, delimitorPos + 1)
+            End If
+            If Len(tabName) > 0 Then
+                Dim controlChar As String
+                controlChar = left(tabName, 1)
+                If InStr(1, "^<>", controlChar, vbBinaryCompare) > 0 Then
+                    tabName = Mid(tabName, 2)
+                End If
+                tabStrip.Tabs.Add , "tab" & CStr(I), tabName
+            End If
+            I = I + 1
+        Else
+            loopDone = True
+        End If
+    Wend
 End Function
 
 
 Private Sub activateTab(tabNumber As Integer)
-Dim i As Integer, j As Integer, colIndex As Integer
+Dim I As Integer, j As Integer, colIndex As Integer
 
     activeTab = tabNumber
 
-    For i = 0 To periodCount - 1
+    For I = 0 To periodCount - 1
         For j = 0 To multiplyCols - 1
-            colIndex = PreHeaderCount + (i * multiplyCols) + j
+            colIndex = PreHeaderCount + (I * multiplyCols) + j
             If j + 1 = tabNumber Then
-                Grid.colWidth(colIndex) = columns(i).colWidth
+                Grid.colWidth(colIndex) = columns(I).colWidth
             Else
                 Grid.colWidth(colIndex) = 0
             End If
         Next j
-    Next i
+    Next I
 End Sub
 
 
 Sub saveGridColWidth()
-Dim i As Integer, colIndex As Integer
+Dim I As Integer, colIndex As Integer
 Dim ln As Integer
 
-    For i = 0 To periodCount - 1
-        colIndex = PreHeaderCount + (i * multiplyCols) + activeTab - 1
-        columns(i).colWidth = Grid.colWidth(colIndex)
-    Next i
+    For I = 0 To periodCount - 1
+        colIndex = PreHeaderCount + (I * multiplyCols) + activeTab - 1
+        columns(I).colWidth = Grid.colWidth(colIndex)
+    Next I
     
 End Sub
 

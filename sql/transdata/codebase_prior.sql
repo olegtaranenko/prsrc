@@ -123,10 +123,10 @@ begin
 	end for;
 
 
-create table #regions (regionId integer);
-create table #materials (klassId integer);
-create table #oborudItems (oborudItemId integer);
-create table #noOboruds (noOborud integer);
+create table #regions (regionId integer, isActive integer);
+create table #materials (klassId integer, isActive integer);
+create table #oborudItems (oborudItemId integer, isActive integer);
+create table #noOboruds (noOborud integer, isActive integer);
 	
 	for x as xc dynamic scroll cursor for
 		call n_filter_params(p_filterid)
@@ -143,16 +143,16 @@ create table #noOboruds (noOborud integer);
 		else
 			set v_sql = 'insert into #' + r_itemType;
 			if r_paramClass = 'ids' then
-				set v_sql = v_sql + '( ' + r_paramType + ')';
+				set v_sql = v_sql + '( ' + r_paramType + ', isActive)';
 			end if;
     
 			set v_sql = v_sql + ' values (';
 			if r_intValue is not null then
-				set v_sql = v_sql + convert(varchar(20), r_intValue);
+				set v_sql = v_sql + convert(varchar(20), r_intValue) + ', ' + convert(varchar(20), r_isActive);
 			elseif r_charValue is not null then
-				set v_sql = v_sql + '''' + r_charValue + '''';
+				set v_sql = v_sql + '''' + r_charValue + '''' + ', ' + convert(varchar(20), r_isActive);
 			else
-				set v_sql = v_sql + convert(varchar(20), r_isActive);
+				set v_sql = v_sql + convert(varchar(20), r_isActive) + ', null';
 			end if;
 			set v_sql = v_sql + ')';
     
@@ -163,17 +163,18 @@ create table #noOboruds (noOborud integer);
 
 
 	create table #results (
-		  label        varchar(64)
-		, year         integer
-		, orders_cnt   integer
-		, paid         float
-		, qty          float
-		, saled        float
-		, name         varchar(512)
-		, region       varchar(256)
-		, regionid     integer
-		, periodid     integer
-		, firmId       integer
+		  label         varchar(64)
+		, year          integer
+		, orderQty      integer
+		, orderPaid     float
+		, orderOrdered  float
+		, materialQty   float
+		, materialSaled float
+		, name          varchar(512)
+		, region        varchar(256)
+		, regionid      integer
+		, periodid      integer
+		, firmId        integer
 	);
 
 	call n_default_period(p_begin, p_end);
@@ -193,7 +194,7 @@ create table #noOboruds (noOborud integer);
 	;
 
 
-	-- 
+	-- выдача резалт-сета с полями первого и последнего посещения.
 	select r.*, b.erst, b.letzt
 	from #results r
 	join #firm_besuch b on b.firmId = r.firmId
@@ -224,7 +225,7 @@ begin
 		set p_end = now();
 	end if;
 	
-	message 'p_begin = ', p_begin to client;
+--	message 'p_begin = ', p_begin to client;
 	message 'p_end = ', p_end to client;
 
 end;
@@ -248,11 +249,11 @@ begin
 	declare v_oborud_flag integer;
 	declare v_no_oborud_flag integer;
 
-	select count(*) into v_region_flag   from #regions;
-	select count(*) into v_material_flag from #materials;
-	select count(*) into v_no_oborud_flag   from #noOboruds;
+	select count(*) into v_region_flag   from #regions where isActive = 1;
+	select count(*) into v_material_flag from #materials where isActive = 1;
+	select count(*) into v_no_oborud_flag   from #noOboruds where isActive = 1;
 	if v_no_oborud_flag = 0 then
-		select count(*) into v_oborud_flag   from #oborudItems;
+		select count(*) into v_oborud_flag   from #oborudItems where isActive = 1;
 	end if;
 
 
@@ -268,7 +269,8 @@ begin
 	
 	create table #sale_isum(
 		  numorder   integer
-		, paid       float
+		, orderPaid       float
+		, orderOrdered    float
 		, indate     date
 		, periodid   integer
 		, firmId     integer
@@ -276,11 +278,12 @@ begin
 
 	
 	insert into #sale_isum (
-		numorder, indate, firmId, paid
+		numorder, indate, firmId, orderPaid, orderOrdered
 	)
-	select numorder, indate, firmId, paid
+	select o.numorder, o.indate, o.firmId, o.paid, s.cena
 	from 
 		bayorders o
+	join orderSellOrde s on s.numorder = o.numorder
 	where 
 			o.indate >= isnull(p_begin, o.inDate) and (p_end is null or o.inDate < p_end)
 		and (v_region_flag = 0 or exists (select 1 from #regions r, bayguidefirms f where f.firmid = o.firmid and r.regionid = f.regionid))
@@ -299,7 +302,7 @@ begin
 	create table #sale_item (
 		 numorder    integer
 		,nomnom      varchar(20)
-		,qty         float
+		,materialQty         float
 		,sm          float
 		,inDate      date
 		,firmId      integer
@@ -311,7 +314,7 @@ begin
 	insert into #sale_item (
 		 numorder
 		,nomnom
-		,qty
+		,materialQty
 		,sm
 		,inDate
 		,firmId      
@@ -321,7 +324,7 @@ begin
 	select
 		  o.numorder as numorder
 		, i.nomnom
-		, i.quant / n.perlist as qty
+		, i.quant / n.perlist as materialQty
 		, (i.quant / n.perlist) * i.cenaEd as sm
 		, o.inDate
 		, o.firmId
@@ -338,39 +341,41 @@ begin
 
 
 	insert into #results (
-		  label        
-		, year         
-		, orders_cnt   
-		, paid         
-		, qty          
-		, saled        
-		, name         
-		, region       
-		, regionid     
-		, periodid     
-		, firmId       
+		  label
+		, year
+		, orderQty
+		, orderPaid
+		, orderOrdered
+		, materialQty
+		, materialSaled
+		, name
+		, region
+		, regionid
+		, periodid
+		, firmId
 	)
 	select 
 		  p.label
 		, p.year
-		, o.orders_cnt  -- число заказов за период
-		, o.paid        -- общий объем заказов (уе)
-		, i.qty         -- к-во проданных единиц по выбранным материалам (шт, листов и т.д.)
-		, i.saled    	-- сумма по выбраннм материалам
-		, f.name        -- фирма
+		, o.orderQty            -- число заказов за период
+		, o.orderPaid           -- общий объем заказов (уе)
+		, o.orderOrdered        -- общая сумма по заказам
+		, i.materialQty         -- к-во проданных единиц по выбранным материалам (шт, листов и т.д.)
+		, i.materialSaled    	-- сумма по выбраннм материалам
+		, f.name                -- фирма
 		, r.region
 		, r.regionid
 		, p.periodid
 		, o.firmId
 	from #periods p 
 	join (
-		select sum(sm) as saled, sum(qty) as qty, firmid, periodId
+		select sum(sm) as materialSaled, sum(materialQty) as materialQty, firmid, periodId
 		from #sale_item
 		group by firmid, periodId
 	) i on 
 		i.periodid = p.periodId
 	join (
-		select sum(isnull(paid, 0)) as paid, count(*) as orders_cnt, firmId, periodId
+		select sum(isnull(orderPaid, 0)) as orderPaid, count(*) as orderQty, firmId, periodId, sum(orderOrdered) as orderOrdered
 		from #sale_isum
 		group by firmId, periodId
 	) o on 
@@ -1916,38 +1921,6 @@ begin
 	end if;
 
 end;
-
-
-
-
--- Отчет А: строки дебитор/кредитор
-
-if exists (select 1 from sysviews where viewname = 'vDebitorKreditor' and vcreator = 'dba') then
-	drop view vDebitorKreditor;
-end if;
-
-create 
-    view vDebitorKreditor (numorder, name, k, d, type)
-as
-
-SELECT numorder, f.name, (isnull(if isnull(paid, 0) > isnull(shipped, 0) then isnull(paid, 0) - isnull(shipped, 0) endif , 0)) AS k
-, (isnull(if isnull(paid, 0) < isnull(shipped, 0) then isnull(shipped, 0) - isnull(paid, 0) endif , 0)) AS d, 't'
---, ordered, paid, shipped, statusid
-from orders o
-join guidefirms f on o.firmid = f.firmid
-where (k != 0 or d != 0)
-and statusid < 6
-        union all
-SELECT o.numorder, f.name, (isnull(if isnull(paid, 0) > isnull(cenaTotal, 0) then isnull(paid, 0) - isnull(cenaTotal, 0) endif , 0)) AS k
-, (isnull(if isnull(paid, 0) < isnull(cenaTotal, 0) then isnull(cenaTotal, 0) - isnull(paid, 0) endif , 0)) AS d, 'b'
---, ordered, paid, cenaTotal
-from bayorders o
-join bayguidefirms f on o.firmid = f.firmid
-left join orderSellShip ot on ot.numorder = o.numorder
-where (k != 0 or d != 0)
-and o.statusid < 6
-;
-
 
 
 

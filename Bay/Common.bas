@@ -169,15 +169,15 @@ End Function
 
 
 Function serverIsAccessible(ventureName As String) As Boolean
-Dim i As Integer
+Dim I As Integer
 
     serverIsAccessible = False
-    For i = 0 To Orders.lbVenture.ListCount
-        If Orders.lbVenture.List(i) = ventureName Then
+    For I = 0 To orders.lbVenture.ListCount
+        If orders.lbVenture.List(I) = ventureName Then
             serverIsAccessible = True
             Exit For
         End If
-    Next i
+    Next I
     
 End Function
 
@@ -187,7 +187,7 @@ End Function
 'параметры обнулить, если дл€ всех них нуль это возможное значение, то в sql
 'м. задать константу "1" и прин€ть ее в i. “огда если i=0 то была Err Where
 Function byErrSqlGetValues(ParamArray val() As Variant) As Boolean
-Dim tabl As Recordset, i As Integer, maxi As Integer, str As String
+Dim tabl As Recordset, I As Integer, maxi As Integer, str As String
 Dim c As String
 
 byErrSqlGetValues = False
@@ -212,19 +212,19 @@ Else
     c = ""
 End If
 
-For i = 2 To maxi
-    If IsNull(tabl.Fields(i - 2)) Or c = "W" Then
-        str = TypeName(val(i))
+For I = 2 To maxi
+    If IsNull(tabl.Fields(I - 2)) Or c = "W" Then
+        str = TypeName(val(I))
 '        If str = "Single" Or str = "Integer" Or str = "Long" Or str = "Double" Then
         If str = "String" Then
-            val(i) = ""
+            val(I) = ""
         Else
-            val(i) = 0
+            val(I) = 0
         End If
     Else
-        val(i) = tabl.Fields(i - 2)
+        val(I) = tabl.Fields(I - 2)
     End If
-Next i
+Next I
 'EN1:
 byErrSqlGetValues = True
 EN2:
@@ -283,7 +283,7 @@ Dim s As Single
 End Sub
 
 Sub exitAll()
-If isOrders Then Unload Orders
+If isOrders Then Unload orders
 If isFindFirm Then Unload FindFirm
 'myBase.Close
 
@@ -357,10 +357,10 @@ End Function
 
         
 Sub fitFormToGrid(frm As Form, Grid As MSFlexGrid)
-Dim i As Long, delta As Long
+Dim I As Long, delta As Long
 
-i = 350 + (Grid.CellHeight + 17) * Grid.Rows
-delta = i - Grid.Height
+I = 350 + (Grid.CellHeight + 17) * Grid.Rows
+delta = I - Grid.Height
 If frm.Height + delta > (Screen.Height - 400) Then _
     delta = (Screen.Height - 400) - frm.Height
 frm.Height = frm.Height + delta
@@ -422,7 +422,7 @@ End Sub
 
 
 Sub listBoxInGridCell(lb As ListBox, Grid As MSFlexGrid, Optional sel As String = "")
-Dim i As Integer
+Dim I As Integer
     If Grid.CellTop + lb.Height < Grid.Height Then
         lb.Top = Grid.CellTop + Grid.Top
     Else
@@ -431,14 +431,14 @@ Dim i As Integer
     lb.left = Grid.CellLeft + Grid.left
     lb.ListIndex = 0
     If sel <> "" Then
-        For i = 0 To lb.ListCount - 1 '
-            If Grid.Text = lb.List(i) Then
+        For I = 0 To lb.ListCount - 1 '
+            If Grid.Text = lb.List(I) Then
 '                noClick = True
-                lb.ListIndex = i 'вызывает ложное onClick
+                lb.ListIndex = I 'вызывает ложное onClick
 '                noClick = False
                 Exit For
             End If
-        Next i
+        Next I
     End If
     lb.Visible = True
     lb.ZOrder
@@ -478,24 +478,24 @@ Dim str As String
 End Function
 
 Sub loadLbMassFromGuide(lbMass() As String, tableName As String)
-Dim i As Integer
+Dim I As Integer
 
 Set table = myOpenRecordSet("##04", tableName, dbOpenForwardOnly)
 If table Is Nothing Then myBase.Close: End
 ReDim lbMass(0)
 While Not table.EOF
-    i = table.Fields(0)
-    ReDim Preserve lbMass(i)
+    I = table.Fields(0)
+    ReDim Preserve lbMass(I)
     If tableName = "GuideStatus" Then
         If table.Fields(1) = "в работе" Then
-            lbMass(i) = "собран" '
+            lbMass(I) = "собран" '
         ElseIf table.Fields(1) = "готов" Then
-            lbMass(i) = "выдан" '
+            lbMass(I) = "выдан" '
         Else
-            lbMass(i) = table.Fields(1)
+            lbMass(I) = table.Fields(1)
         End If
     Else
-        lbMass(i) = table.Fields(1)
+        lbMass(I) = table.Fields(1)
     End If
     table.MoveNext
 Wend
@@ -508,7 +508,7 @@ End Sub
 Sub GridToExcel(Grid As MSFlexGrid, Optional title As String = "")
 
 Dim objExel As Excel.Application, c As Long, r As Long
-Dim i As Integer, strA() As String, begRow As Integer, str As String
+Dim I As Integer, strA() As String, begRow As Integer, str As String
 
 begRow = 3
 If title = "" Then begRow = 1
@@ -525,10 +525,10 @@ For r = 0 To Grid.Rows - 1
         str = Grid.TextMatrix(r, c) '=' - наверно зарезервирован дл€ ввода формул
         If left$(str, 1) = "=" Then str = "." & str
 'иногда символы Cr и Lf (поле MEMO в базе) дают Err в Excel, поэтому из пол€
-        i = InStr(str, vbCr) 'MEMO берем только первую строчку
-        If i > 0 Then str = left$(str, i - 1)
-        i = InStr(str, vbLf) 'MEMO берем только первую строчку
-        If i > 0 Then str = left$(str, i - 1)
+        I = InStr(str, vbCr) 'MEMO берем только первую строчку
+        If I > 0 Then str = left$(str, I - 1)
+        I = InStr(str, vbLf) 'MEMO берем только первую строчку
+        If I > 0 Then str = left$(str, I - 1)
         strA(c - 1) = str
     Next c
 '    On Error Resume Next
@@ -542,7 +542,7 @@ Set objExel = Nothing
 End Sub
 
 Sub Main()
-Dim i As Integer, s As Single, str As String, str1 As String, str2 As String
+Dim I As Integer, s As Single, str As String, str1 As String, str2 As String
 Dim isXP As Boolean
 
 If App.PrevInstance = True Then
@@ -582,37 +582,10 @@ If otlad <> "otlaD" And InStr(otlad, ":\") = 0 Then '
 End If
 On Error GoTo 0
 
-'If InStr(otlad, ":\") > 0 Then '$$2
-'  str = "\"
-'  If Right$(otlad, 1) = "\" Then str = ""
-'  baseNamePath = otlad & str & "dlsricN.mdb"
-'  mainTitle = "    " & baseNamePath
-'Else
-If otlad = "otlaD" Then '
-'  baseNamePath = "C:\VB_DIMA\dlsricN.mdb"
-'  mainTitle = "    " & baseNamePath $$2
-'  cfg.baseOpen '"C:\VB_DIMA\dlsricN.mdb" $$2
-'ElseIf otlad = "otlad" Then
-'    baseNamePath = "\\Server\D\!INSTAL!\EPILOG\RADIUS.V20\pitchN.mdb"
-'    mainTitle = "      ”чебна€"
-Else
-'    mainTitle = ""
-'    baseNamePath = "\\Server\D\!INSTAL!\EPILOG\RADIUS.V20\dlsricN.mdb "
-'    mainTitle = "              New"
-'    cfg.baseOpen cfg.curBaseInd  '$$2
-End If
 
-If dostup = "0" Then i = 5 / i  'проверка наличи€ библиотеки сообщений
-
-'On Error GoTo ERRb '$$2
-'                                                                                                                                                                            Set myBase = OpenDatabase(baseNamePath, False, False, ";PWD=play")
-'Set myBase = OpenDatabase(baseNamePath) '$$2
-'If myBase Is Nothing Then End
+If dostup = "0" Then I = 5 / I  'проверка наличи€ библиотеки сообщений
 
 On Error GoTo 0
-
-'Set wrkDefault = DBEngine.Workspaces(0) ' дл€ орг-ии транзакций
-
 
 'проверка настройки Win98
 str = "05.08.2004"
@@ -621,7 +594,7 @@ If str <> Format(tmpDate, "dd.mm.yyyy") Then ' дл€ "’орватский" в Win98 не совпа
     str = "–егиональные стандарты " & Chr(151) & " установите  '–усский'."
     GoTo AA
 End If
-'begDate = "01.01.2003"
+ 'begDate = "01.01.2003"
 sql = "SELECT begDate, lastYear From System" ' WHERE (((System.begDate) Like '*##.##.20##*'));"
 Set tbSystem = myOpenRecordSet("##181", sql, dbOpenForwardOnly)
 If tbSystem Is Nothing Then myBase.Close: End
@@ -654,9 +627,9 @@ CurDate = str 'без часов и минут
  Open str2 For Output As #3
  While Not EOF(2)
     Input #2, str
-    i = InStr(str, vbTab)
-    If i < 9 Then GoTo ENlog
-    str1 = left$(str, i - 1)
+    I = InStr(str, vbTab)
+    If I < 9 Then GoTo ENlog
+    str1 = left$(str, I - 1)
     If Not IsDate(str1) Then GoTo ENlog
     'tmpDate = str
     If DateDiff("d", str1, CurDate) <= 7 Then Print #3, str ' удал€ем > 7ми дней давности
@@ -673,7 +646,7 @@ noClick = False
 loadLbMassFromGuide Problems(), "BayGuideProblem"
 loadLbMassFromGuide status(), "GuideStatus"
 'loadLbMassFromGuide manags, "GuideManag" $$7
-Orders.Show
+orders.Show
 
 Exit Sub
 ERRf:
@@ -839,18 +812,18 @@ End Sub
 
 
 Sub rowViem(numRow As Long, Grid As MSFlexGrid)
-Dim i As Integer
+Dim I As Integer
 
-i = Grid.Height \ Grid.RowHeight(1) - 1 ' столько умещаетс€ строк
-i = numRow - i \ 2 ' в центр
-If i < 1 Then i = 1
-Grid.TopRow = i
+I = Grid.Height \ Grid.RowHeight(1) - 1 ' столько умещаетс€ строк
+I = numRow - I \ 2 ' в центр
+If I < 1 Then I = 1
+Grid.TopRow = I
 End Sub
 
 'эта ф-€ д.заменить и startDay() и getNextDay() и getPrevDay()
 ' возвращает смещение до треб. дн€
 Function getWorkDay(offsDay As Integer, Optional baseDate As String = "") As Integer
-Dim i As Integer, j As Integer, step  As Integer
+Dim I As Integer, j As Integer, step  As Integer
 getWorkDay = -1
 If baseDate = "" Then
     tmpDate = CurDate
@@ -862,16 +835,16 @@ End If
 step = 1
 If offsDay < 0 Then step = -1
 
-j = 0: i = 0
+j = 0: I = 0
 While step * j < step * offsDay '
-    i = i + step
+    I = I + step
 '    day = Weekday(tmpDate + i)
-    day = Weekday(DateAdd("d", i, tmpDate))
+    day = Weekday(DateAdd("d", I, tmpDate))
     If Not (day = vbSunday Or day = vbSaturday) Then j = j + step
 Wend
-getWorkDay = i
+getWorkDay = I
 'tmpDate = tmpDate + i
-tmpDate = DateAdd("d", i, tmpDate)
+tmpDate = DateAdd("d", I, tmpDate)
 
 End Function
 
@@ -1091,7 +1064,7 @@ End Function
 
 
 Function predmetiIsClose() As Variant
-Dim i As Integer, s As Single
+Dim I As Integer, s As Single
 
 predmetiIsClose = Null
 'If gNzak = 4092402 Then
@@ -1124,44 +1097,44 @@ tbDMC.Close
 End Function
 
 Function getYearField(checkDate As Date) As String '$$3
-Dim i As Integer, lockYear As Integer
+Dim I As Integer, lockYear As Integer
 
 lockYear = getLockYear
-i = Format(checkDate, "yyyy")
+I = Format(checkDate, "yyyy")
 'If i <= lockYear Then
 '    getYearField = "lock" 'этот год учавствовал в отсечении базы
 '    Exit Function
 'End If
-i = i - lastYear + 4 'номер колонки
-If i < 1 Then     'если это не последние 3 года, то в кучу
+I = I - lastYear + 4 'номер колонки
+If I < 1 Then     'если это не последние 3 года, то в кучу
     getYearField = "year01"
 Else
-    getYearField = "year" & Format(i, "00")
+    getYearField = "year" & Format(I, "00")
 End If
 End Function
 
 
 Sub visits(oper As String, Optional firm As String = "")
-Dim str As String, i As Integer, statId As Integer
+Dim str As String, I As Integer, statId As Integer
 
 sql = "SELECT inDate, StatusId , FirmId From BayOrders " & _
 "WHERE (((numOrder)=" & gNzak & "));"
 'MsgBox sql
-If Not byErrSqlGetValues("##88", sql, tmpDate, statId, i) Then GoTo ER1
+If Not byErrSqlGetValues("##88", sql, tmpDate, statId, I) Then GoTo ER1
 
-If i = 0 Then Exit Sub
+If I = 0 Then Exit Sub
 If firm <> "" And (statId = 0 Or statId = 7) Then Exit Sub ' если мен€ем фирму
 
 'str = "year" & Format(tmpDate, "yy")
 str = getYearField(tmpDate) '$$3
 
 sql = "UPDATE BayGuideFirms SET BayGuideFirms." & str & " = [BayGuideFirms].[" & _
-str & "] " & oper & " 1  WHERE (((BayGuideFirms.FirmId)=" & i & "));"
+str & "] " & oper & " 1  WHERE (((BayGuideFirms.FirmId)=" & I & "));"
 'MsgBox sql
-i = myExecute("##87", sql, -143)
+I = myExecute("##87", sql, -143)
 
 'If i <> 3061 And i <> 0 Then '3061 - колонки этого года уже(или еще) нет в базе
-If i = -2 Then '3061 - колонки этого года уже(или еще) нет в базе
+If I = -2 Then '3061 - колонки этого года уже(или еще) нет в базе
 ER1:    MsgBox "ќшибка коррекции посещени€ фирм. —ообщите администратору!", , "Error-87"
 End If
 End Sub
@@ -1177,9 +1150,9 @@ If tbSystem Is Nothing Then myBase.Close: End
 tbSystem.Edit
 str = tbSystem!skladLock
 If Not back = "" Then
-    If str = Orders.cbM.Text Then tbSystem!skladLock = ""
+    If str = orders.cbM.Text Then tbSystem!skladLock = ""
 Else
-    If str <> "" And str <> Orders.cbM.Text Then
+    If str <> "" And str <> orders.cbM.Text Then
         tbSystem.Update: tbSystem.Close
         
         If MsgBox("ƒоступ к остаткам на складе временно зан€т менеджером '" & _
@@ -1190,7 +1163,7 @@ Else
             Exit Function
         End If
     End If
-    tbSystem!skladLock = Orders.cbM.Text
+    tbSystem!skladLock = orders.cbM.Text
 End If
 tbSystem.Update
 tbSystem.Close
