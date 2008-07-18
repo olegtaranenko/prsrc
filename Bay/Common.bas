@@ -317,7 +317,9 @@ value = UCase(value)
 For il = beg To Grid.Rows - 1
     str = UCase(Grid.TextMatrix(il, col))
     If InStr(str, value) > 0 Then
-        'Grid.TopRow = il
+        If Not Grid.RowIsVisible(il) Then
+            Grid.TopRow = il
+        End If
         Grid.row = il
         findExValInCol = il
         Exit Function
