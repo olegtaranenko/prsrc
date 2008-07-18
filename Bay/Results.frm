@@ -11,13 +11,22 @@ Begin VB.Form Results
    ScaleHeight     =   7812
    ScaleWidth      =   12360
    StartUpPosition =   3  'Windows Default
+   Begin VB.CommandButton cmFind 
+      Caption         =   "Поиск"
+      Height          =   315
+      Left            =   0
+      TabIndex        =   7
+      ToolTipText     =   "F7"
+      Top             =   7320
+      Width           =   735
+   End
    Begin VB.CommandButton cmExel 
       Caption         =   "Печать в Excel"
       Height          =   315
       Left            =   2100
       TabIndex        =   4
       Top             =   7320
-      Width           =   1215
+      Width           =   1332
    End
    Begin VB.CommandButton cmExit 
       Caption         =   "Выход"
@@ -34,26 +43,6 @@ Begin VB.Form Results
       TabIndex        =   2
       Top             =   7320
       Width           =   735
-   End
-   Begin MSFlexGridLib.MSFlexGrid Grid 
-      Height          =   5292
-      Left            =   120
-      TabIndex        =   1
-      Top             =   480
-      Width           =   11892
-      _ExtentX        =   20976
-      _ExtentY        =   9335
-      _Version        =   393216
-      AllowUserResizing=   1
-      BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
-         Name            =   "MS Sans Serif"
-         Size            =   7.8
-         Charset         =   204
-         Weight          =   400
-         Underline       =   0   'False
-         Italic          =   0   'False
-         Strikethrough   =   0   'False
-      EndProperty
    End
    Begin MSComctlLib.TabStrip TabStrip1 
       Height          =   372
@@ -78,6 +67,45 @@ Begin VB.Form Results
          EndProperty
       EndProperty
    End
+   Begin MSFlexGridLib.MSFlexGrid Grid 
+      Height          =   5292
+      Left            =   120
+      TabIndex        =   1
+      Top             =   480
+      Width           =   11892
+      _ExtentX        =   20976
+      _ExtentY        =   9335
+      _Version        =   393216
+      AllowBigSelection=   0   'False
+      AllowUserResizing=   1
+      BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
+         Name            =   "MS Sans Serif"
+         Size            =   7.8
+         Charset         =   204
+         Weight          =   400
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+   End
+   Begin VB.Label lbTotalQty 
+      AutoSize        =   -1  'True
+      Caption         =   "25 фирм"
+      Height          =   192
+      Left            =   5520
+      TabIndex        =   6
+      Top             =   5280
+      Width           =   720
+   End
+   Begin VB.Label lbTotal 
+      AutoSize        =   -1  'True
+      Caption         =   "Найдено"
+      Height          =   192
+      Left            =   3480
+      TabIndex        =   5
+      Top             =   7320
+      Width           =   720
+   End
 End
 Attribute VB_Name = "Results"
 Attribute VB_GlobalNameSpace = False
@@ -94,6 +122,7 @@ Dim PreHeaderCount As Integer, PostHeaderCount As Integer, multiplyCols As Integ
 Dim periodCount As Integer ' количество периодов (столбцов)
 Dim activeTab As Integer
 Dim mousCol As Integer
+Dim searchValue As String, searchPos As Long, searchAgain As Boolean
 
 Private Type ColumnInfo
     periodId As Integer
@@ -111,7 +140,7 @@ Dim columns() As ColumnInfo
 
 ' переменные используемые в сортировке таблицы
 Dim colType As String
-    'определяет тип текущей сортировки.
+' определяет тип текущей сортировки.
     
 Const CT_NUMBER = "numeric"
 Const CT_DATE = "date"
@@ -131,6 +160,33 @@ Private Sub cmExit_Click()
 End Sub
 
 
+Private Sub cmFind_Click()
+Const orFirma = 1
+Dim searchedFirm As Long
+    If Not searchAgain Then
+        searchValue = InputBox("Укажите полное название или фрагмент.", "Поиск по названию фирмы", searchValue)
+        If searchValue = "" Then
+            Exit Sub
+        End If
+    End If
+    searchedFirm = findExValInCol(Grid, searchValue, orFirma, searchPos)
+    If searchedFirm > 0 Then
+        Grid.row = searchedFirm
+        searchPos = searchedFirm + 1
+    Else
+        MsgBox "Достигнут конец таблицы", , "Поиск по " & searchValue
+        searchPos = -1
+    End If
+End Sub
+
+Private Sub cmFind_KeyDown(KeyCode As Integer, Shift As Integer)
+    Form_KeyDown KeyCode, Shift
+End Sub
+
+Private Sub cmFind_KeyUp(KeyCode As Integer, Shift As Integer)
+    Form_KeyUp KeyCode, Shift
+End Sub
+
 Private Sub cmPrint_Click()
     Me.PrintForm
 
@@ -144,6 +200,27 @@ Private Sub Form_Activate()
     End If
 End Sub
 
+
+Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
+    If KeyCode = vbKeyF7 Then
+        cmFind_Click
+    End If
+    If ((KeyCode And vbKeyShift) = vbKeyShift) And ((Shift And vbShiftMask) > 0) And (searchValue <> "") Then
+        searchAgain = True
+        cmFind.Caption = "Дальше"
+        cmFind.ToolTipText = "Shift+F7"
+    End If
+
+End Sub
+
+Private Sub Form_KeyUp(KeyCode As Integer, Shift As Integer)
+    If (KeyCode And vbKeyShift) = vbKeyShift Then
+        searchAgain = False
+        cmFind.Caption = "Поиск"
+        cmFind.ToolTipText = "F7"
+    End If
+
+End Sub
 
 Private Sub Form_Load()
     ReDim filterSettings(0)
@@ -166,7 +243,12 @@ Private Sub Form_Resize()
     cmExel.left = 500
     cmPrint.left = cmExel.left + cmExel.Width + 300
     cmExit.Visible = True
-    
+    lbTotal.left = cmPrint.left + cmPrint.Width + 300
+    lbTotal.Top = cmExit.Top + 50
+    lbTotalQty.Top = lbTotal.Top
+    lbTotalQty.left = lbTotal.left + lbTotal.Width + 50
+    cmFind.left = lbTotalQty.left + lbTotalQty.Width + 300
+    cmFind.Top = cmExit.Top
     Grid.Visible = True
 
 End Sub
@@ -174,10 +256,10 @@ End Sub
 
 Private Sub Grid_Click()
     If Grid.MouseRow = 0 Then
+        Grid_LeaveCell  ' только чтобы снять выделение
         mousCol = Grid.MouseCol
         colType = determineColType(mousCol)
         Grid.Sort = 9
-        Grid.row = 1    ' только чтобы снять выделение
     End If
     trigger = Not trigger
 
@@ -223,8 +305,31 @@ Dim num1, num2 As Single
 End Sub
 
 
+Private Sub Grid_EnterCell()
+    If Grid.row = 0 Or Grid.col = 0 Then
+        Exit Sub
+    End If
+    If Grid.col > 1 Then
+        Grid.CellBackColor = vbYellow
+    Else
+        Grid.CellBackColor = &H88FF88
+    End If
+    
+End Sub
+
+Private Sub Grid_KeyDown(KeyCode As Integer, Shift As Integer)
+    Form_KeyDown KeyCode, Shift
+End Sub
+
+Private Sub Grid_KeyUp(KeyCode As Integer, Shift As Integer)
+    Form_KeyUp KeyCode, Shift
+End Sub
+
 Private Sub Grid_LeaveCell()
-    If Grid.col <> 0 Then Grid.CellBackColor = Grid.BackColor
+'    Debug.Print "Grid_LeaveCell() => col = " & Grid.col & ", row = " & Grid.row
+    If Grid.col <> 0 Then
+        Grid.CellBackColor = Grid.BackColor
+    End If
 End Sub
 
 
@@ -269,10 +374,11 @@ Dim rownum As Integer
     End If
     
     table.MoveFirst
-    Dim I As Integer ' номер столбца
+    Dim i As Integer ' номер столбца
     Dim colShift As Integer, ln As Integer
     Dim orderQty As Integer, orderOrdered As Single, materialQty As Single, materialSaled As Single
-    Dim prevFirmId As Integer
+'    Dim prevFirmId As Integer
+    Dim prevFirm As String
     Dim totals() As Double
     
     ln = UBound(columns)
@@ -280,11 +386,11 @@ Dim rownum As Integer
     
     
     rownum = 0
-    prevFirmId = 0
+    prevFirm = ""
     While Not table.EOF
 
-        If prevFirmId <> table!firmId Then
-            I = PreHeaderCount + multiplyCols * ln
+        If prevFirm <> table!Name Then
+            i = PreHeaderCount + multiplyCols * ln
             If rownum > 0 Then
                 colShift = periodCount * multiplyCols + PreHeaderCount
                 Grid.TextMatrix(rownum, colShift) = Format(totals(1), "# ##0"): totals(1) = 0
@@ -296,13 +402,13 @@ Dim rownum As Integer
             rownum = rownum + 1
         End If
 
-        I = 1
-        Grid.TextMatrix(rownum, I) = table!Name: I = I + 1
-        Grid.TextMatrix(rownum, I) = table!region: I = I + 1
-        Grid.TextMatrix(rownum, I) = table!erst: I = I + 1
-        Grid.TextMatrix(rownum, I) = table!letzt: I = I + 1
+        i = 1
+        Grid.TextMatrix(rownum, i) = table!Name: i = i + 1
+        Grid.TextMatrix(rownum, i) = table!region: i = i + 1
+        Grid.TextMatrix(rownum, i) = table!erst: i = i + 1
+        Grid.TextMatrix(rownum, i) = table!letzt: i = i + 1
         
-        colShift = I + getPeriodShift(table!periodId) * multiplyCols
+        colShift = i + getPeriodShift(table!periodId) * multiplyCols
         Grid.TextMatrix(rownum, colShift) = table("orderQty")
         Grid.TextMatrix(rownum, colShift + 1) = Format(table("orderOrdered"), "# ###.00")
         Grid.TextMatrix(rownum, colShift + 2) = table("materialQty")
@@ -313,7 +419,7 @@ Dim rownum As Integer
         totals(3) = table("materialQty") + totals(3)
         totals(4) = table("materialSaled") + totals(4)
         
-        prevFirmId = table!firmId
+        prevFirm = table!Name
         
         table.MoveNext
     Wend
@@ -321,31 +427,35 @@ Dim rownum As Integer
     If rownum > 1 Then
         Grid.RemoveItem rownum
     End If
-    
+    If rownum > 0 Then
+        rownum = rownum - 1
+    End If
+    lbTotalQty.Caption = CStr(rownum) & " фирм"
     activateTab 1
 End Sub
 
 
 
 Private Function getPeriodShift(periodId As Integer) As Integer
-Dim I As Integer
+Dim i As Integer
 Dim ln As Integer
     ln = UBound(columns)
-    For I = 0 To ln
-        If columns(I).periodId = periodId Then
-            getPeriodShift = columns(I).index
+    For i = 0 To ln
+        If columns(i).periodId = periodId Then
+            getPeriodShift = columns(i).index
             Exit Function
         End If
-    Next I
+    Next i
 End Function
 
 Private Function setGridHeaders() As Boolean
 Dim periodType As Variant
 Dim index As Integer
 Dim colInfo As ColumnInfo
-Dim colIndex As Integer, I As Integer
+Dim colIndex As Integer, i As Integer
 Dim GridHeaderHead As String
 Dim GridHeaderTail As String
+Dim titleStartStr As String, titleEndStr As String
 
     'Optimistic view
     setGridHeaders = True
@@ -364,6 +474,7 @@ Dim GridHeaderTail As String
     
     If StartDate > "2000-01-01" Then
         sql = sql & "'" & Format(StartDate, "yyyymmdd") & "'"
+        titleStartStr = Format(StartDate, "dd.mm.yyyy")
     Else
         sql = sql & "null"
     End If
@@ -371,13 +482,32 @@ Dim GridHeaderTail As String
     
     If endDate > "2000-01-01" Then
         sql = sql & "'" & Format(endDate, "yyyymmdd") & "'"
+        titleEndStr = Format(endDate, "dd.mm.yyyy")
     Else
         sql = sql & "null"
     End If
     
     sql = sql & ", '" & periodType & "', 1)"
     
-    
+    Me.Caption = "Продажи: "
+    If titleStartStr = "" And titleEndStr = "" Then
+        Me.Caption = "весь учет"
+    Else
+        If titleStartStr <> "" Then
+            Me.Caption = Me.Caption & "с " & titleStartStr & " "
+        Else
+            Me.Caption = Me.Caption & "от начала учета "
+        End If
+        If titleEndStr <> "" Then
+            Me.Caption = Me.Caption & "по " & titleEndStr & " "
+        Else
+            Me.Caption = Me.Caption & "до окончания учета"
+        End If
+        
+        If titleStartStr <> "" And titleEndStr <> "" Then
+            Me.Caption = Me.Caption & "включительно"
+        End If
+    End If
     Set table = myOpenRecordSet("##Results.2", sql, dbOpenDynaset)
     ReDim columns(0)
     index = 0
@@ -407,11 +537,11 @@ Dim GridHeaderTail As String
     Grid.row = 0
     
     
-    For I = 0 To periodCount - 1
+    For i = 0 To periodCount - 1
         For colIndex = 0 To multiplyCols - 1
-            GridHeaderHead = GridHeaderHead & "|>" & columns(I).label
+            GridHeaderHead = GridHeaderHead & "|>" & columns(i).label
         Next colIndex
-    Next I
+    Next i
     If GridHeaderTail <> "" Then
         GridHeaderHead = GridHeaderHead & "|" & GridHeaderTail
     End If
@@ -426,7 +556,7 @@ Dim GridHeaderTail As String
 End Function
 
 
-Private Function getColumnWidth(I As Integer, label As String)
+Private Function getColumnWidth(i As Integer, label As String)
     getColumnWidth = 500
 End Function
 
@@ -435,7 +565,7 @@ Private Sub setFilterParams()
 Dim entry As MapEntry
 
     Grid.FormatString = "|Фирма|Регион"
-    sql = "call n_boot_filter(" & filterId & ", '" & orders.cbM.Text & "')"
+    sql = "call n_boot_filter(" & filterId & ", '" & Orders.cbM.Text & "')"
     
     Set table = myOpenRecordSet("##Results.3", sql, dbOpenDynaset)
     While Not table.EOF
@@ -452,12 +582,14 @@ Private Sub cleanTable()
     clearGrid Me.Grid
     Me.Grid.Cols = 2
     TabStrip1.Tabs.Clear
+    searchPos = -1
+    cmFind.Caption = "Поиск"
 
 End Sub
 
 
 Private Function parseHeaderMetrics(header As String) As Integer
-Dim I As Integer, ln As Integer
+Dim i As Integer, ln As Integer
 
     ln = Len(header)
     If ln > 0 Then
@@ -467,21 +599,21 @@ Dim I As Integer, ln As Integer
         Exit Function
     End If
 
-    For I = 1 To ln
-        If Mid(header, I, 1) = "|" Then
+    For i = 1 To ln
+        If Mid(header, i, 1) = "|" Then
             parseHeaderMetrics = parseHeaderMetrics + 1
         End If
-    Next I
+    Next i
 End Function
 
 Private Function parseTabStrip(formatStr As String, tabStrip As tabStrip) As Integer
-Dim I As Integer
+Dim i As Integer
 Dim loopDone As Boolean, delimitorPos As Long
 Dim headerRest As String, headerRestLn As Long, tabName As String
 
     headerRest = formatStr
     loopDone = False
-    I = 1
+    i = 1
     While Not loopDone
         headerRestLn = Len(headerRest)
         If headerRestLn > 0 Then
@@ -500,9 +632,9 @@ Dim headerRest As String, headerRestLn As Long, tabName As String
                 If InStr(1, "^<>", controlChar, vbBinaryCompare) > 0 Then
                     tabName = Mid(tabName, 2)
                 End If
-                tabStrip.Tabs.Add , "tab" & CStr(I), tabName
+                tabStrip.Tabs.Add , "tab" & CStr(i), tabName
             End If
-            I = I + 1
+            i = i + 1
         Else
             loopDone = True
         End If
@@ -511,31 +643,31 @@ End Function
 
 
 Private Sub activateTab(tabNumber As Integer)
-Dim I As Integer, j As Integer, colIndex As Integer
+Dim i As Integer, j As Integer, colIndex As Integer
 
     activeTab = tabNumber
 
-    For I = 0 To periodCount - 1
+    For i = 0 To periodCount - 1
         For j = 0 To multiplyCols - 1
-            colIndex = PreHeaderCount + (I * multiplyCols) + j
+            colIndex = PreHeaderCount + (i * multiplyCols) + j
             If j + 1 = tabNumber Then
-                Grid.colWidth(colIndex) = columns(I).colWidth
+                Grid.colWidth(colIndex) = columns(i).colWidth
             Else
                 Grid.colWidth(colIndex) = 0
             End If
         Next j
-    Next I
+    Next i
 End Sub
 
 
 Sub saveGridColWidth()
-Dim I As Integer, colIndex As Integer
+Dim i As Integer, colIndex As Integer
 Dim ln As Integer
 
-    For I = 0 To periodCount - 1
-        colIndex = PreHeaderCount + (I * multiplyCols) + activeTab - 1
-        columns(I).colWidth = Grid.colWidth(colIndex)
-    Next I
+    For i = 0 To periodCount - 1
+        colIndex = PreHeaderCount + (i * multiplyCols) + activeTab - 1
+        columns(i).colWidth = Grid.colWidth(colIndex)
+    Next i
     
 End Sub
 
@@ -578,3 +710,10 @@ Dim asNumber As Integer, asString As Integer, asEmpty As Integer, asDate As Inte
 End Function
 
 
+Private Sub TabStrip1_KeyDown(KeyCode As Integer, Shift As Integer)
+    Form_KeyDown KeyCode, Shift
+End Sub
+
+Private Sub TabStrip1_KeyUp(KeyCode As Integer, Shift As Integer)
+    Form_KeyUp KeyCode, Shift
+End Sub
