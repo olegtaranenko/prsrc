@@ -4,8 +4,8 @@ Begin VB.Form FindFirm
    BorderStyle     =   1  'Fixed Single
    Caption         =   "Расширенный поиск по всем фирмам из справочника"
    ClientHeight    =   5040
-   ClientLeft      =   45
-   ClientTop       =   330
+   ClientLeft      =   48
+   ClientTop       =   336
    ClientWidth     =   5520
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
@@ -41,12 +41,10 @@ Begin VB.Form FindFirm
    End
    Begin VB.CommandButton cmNoClose 
       Caption         =   "Отчет ""Незакрытые заказы""  "
-      Enabled         =   0   'False
       Height          =   315
       Left            =   840
       TabIndex        =   6
       Top             =   4320
-      Visible         =   0   'False
       Width           =   2535
    End
    Begin VB.CommandButton cmExit 
@@ -86,7 +84,7 @@ Begin VB.Form FindFirm
       Width           =   675
    End
    Begin VB.ListBox lb 
-      Height          =   3765
+      Height          =   3696
       Left            =   60
       TabIndex        =   1
       Top             =   480
@@ -282,10 +280,15 @@ isFindFirm = False
 End Sub
 
 Private Sub lb_Click()
-cmSelect.Enabled = True
+    cmSelect.Enabled = True
     cmNoClose.Enabled = True
     cmAllOrders.Enabled = True
     cmNoCloseFiltr.Enabled = True
+    
+    cmSelect.Visible = True
+    cmNoClose.Visible = True
+    cmAllOrders.Visible = True
+    cmNoCloseFiltr.Visible = True
 End Sub
 
 Private Sub lb_DblClick()
@@ -297,10 +300,10 @@ Dim i As Integer, wordLen As Integer, word As String
 
 word = LCase(tb.Text)
 wordLen = Len(word)
-If Left$(word, Len(oldWord)) <> oldWord Then pos = 0
+If left$(word, Len(oldWord)) <> oldWord Then pos = 0
 oldWord = word
 For i = pos To lb.ListCount - 1
-    If LCase(Left$(lb.List(i), wordLen)) = word Then
+    If LCase(left$(lb.List(i), wordLen)) = word Then
         lb.Selected(i) = True
         pos = i
         cmSelect.Enabled = True

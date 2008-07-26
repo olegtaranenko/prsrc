@@ -74,15 +74,49 @@ begin
 		end if;
 	end for;
 
-	select 'implemented' as pkey, convert(varchar(20), implemented) as pvalue 
+	select 'implemented' as pkey, convert(varchar(20), implemented) as pvalue
 		union
-	select 'groupByColumns'       , convert(varchar(20), groupByColumns)          
+	select 'groupByColumns'       , convert(varchar(20), groupByColumns)
 		union
-	select 'periodType'       , convert(varchar(20), periodType)          
+	select 'periodType'       , convert(varchar(20), periodType)
 		union
-	select 'groupByRows'       , convert(varchar(20), groupByRows)          
+	select 'groupByRows'       , convert(varchar(20), groupByRows)
 	;
 end;
+
+
+if exists (select 1 from sysprocedure where proc_name = 'n_exec_filter_portrait') then
+	drop function n_exec_filter_portrait;
+end if;
+
+
+CREATE procedure n_exec_filter_portrait (
+	p_filterId    integer
+	, p_firmId    integer
+) 
+begin
+end;
+
+
+
+
+if exists (select 1 from sysprocedure where proc_name = 'n_exec_filter_detail') then
+	drop function n_exec_filter_detail;
+end if;
+
+
+CREATE procedure n_exec_filter_detail (
+	p_filterId    integer
+	, p_firmId    integer
+	, p_periodId  integer default 0
+) 
+begin
+	if p_periodId = 0 then
+		
+	end if;
+end;
+
+
 
 
 
@@ -92,20 +126,26 @@ end if;
 
 
 CREATE procedure n_exec_filter (
-	p_filterid    integer
+	  p_filterId    integer
+	, p_byRowId   integer default 0
+	, p_byColumnId integer default 0
+	, p_showFirst  integer default 1
+	, p_showLast   integer default 1
 ) 
 begin
 	declare v_sql long varchar;
 	declare groupByRows    varchar(64);
 	declare groupByColumns varchar(64);
-	declare periodType     varchar(64);
-	declare p_begin       date;
-	declare p_end         date;
+	declare v_periodType     varchar(64);
+	declare v_begin       date;
+	declare v_end         date;
+	declare v_proc_name   varchar(128);
+	declare v_detail      varchar(64);
 	
 	for y as yc dynamic scroll cursor for
 		call n_boot_filter(p_filterid, 'M')
 	do
-		message pkey, ' = ', pvalue to client;
+--		message pkey, ' = ', pvalue to client;
 		if pkey = 'implemented' and pvalue != '1' then
 			return;
 		end if;
@@ -118,10 +158,28 @@ begin
 		end if;
 
 		if pkey = 'periodType' then
-			set periodType = pvalue;
+			set v_periodType = pvalue;
 		end if;
 	end for;
 
+/*
+
+	for x as xc dynamic scroll cursor for
+		call n_filter_params(p_filterid)
+	do
+		if r_itemType = 'byrow' then
+		elseif r_itemType = 'bycolumn' then
+		elseif r_itemType = 'filterPeriod' then
+		elseif r_paramClass = 'ids' then
+			select count(*) into f_exists from systable where table_name = '#' + r_ItemType;
+			if f_exists = 0 then
+				set v_sql = 'create table # ' r_itemType + '( ' + r_paramType + ' integer, isActive integer)';
+				message v_sql to client;
+				execute immediate v_sql;
+			end if;
+		end if;
+	end for;
+*/
 
 create table #regions (regionId integer, isActive integer);
 create table #materials (klassId integer, isActive integer);
@@ -135,10 +193,10 @@ create table #noOboruds (noOborud integer, isActive integer);
 		elseif r_itemType = 'bycolumn' then
 		elseif r_itemType = 'filterPeriod' then
 			if r_paramType = 'periodStart' then
-				set p_begin = convert(date, r_charValue, 104);
+				set v_begin = convert(date, r_charValue, 104);
 			end if;
 			if r_paramType = 'periodEnd' then
-				set p_end = convert(date, r_charValue, 104);
+				set v_end = convert(date, r_charValue, 104);
 			end if;
 		else
 			set v_sql = 'insert into #' + r_itemType;
@@ -156,7 +214,7 @@ create table #noOboruds (noOborud integer, isActive integer);
 			end if;
 			set v_sql = v_sql + ')';
     
-			message v_sql to client;
+--			message v_sql to client;
 			execute immediate v_sql;
 		end if;
 	end for;
@@ -177,29 +235,38 @@ create table #noOboruds (noOborud integer, isActive integer);
 		, firmId        integer
 	);
 
-	call n_default_period(p_begin, p_end);
+	call n_default_period(v_begin, v_end);
 
-	execute immediate 'call n_list_' + groupByRows + '_by_' + groupByColumns + '(p_begin, p_end, '''+ periodType + ''')';
+	set v_proc_name = 'n_list_' + groupByRows + '_by_' + groupByColumns;
+
+	if isnull(v_detail, '') != '' then 
+		set v_proc_name = v_proc_name + '_' + v_detail;
+	end if;
+
+	execute immediate 'call ' + v_proc_name + '(v_begin, v_end, '''+ v_periodType + ''')';
 
 
 
 	create table #firm_besuch (firmId integer, erst date, letzt date);
+	if p_showFirst is not null or p_showLast is not null then
+    
+		insert into #firm_besuch (firmId, erst, letzt) 
+		select firmId, min(o.inDate), max(o.inDate)
+		from bayOrders o
+		where 
+			exists (select 1 from #results r where r.firmId = o.firmId)
+		group by firmId
+		;
+	end if;
 
-	insert into #firm_besuch (firmId, erst, letzt) 
-	select firmId, min(o.inDate), max(o.inDate)
-	from bayOrders o
-	where 
-		exists (select 1 from #results r where r.firmId = o.firmId)
-	group by firmId
-	;
-
-
-	-- выдача резалт-сета с полями первого и последнего посещения.
-	select r.*, b.erst, b.letzt
-	from #results r
-	join #firm_besuch b on b.firmId = r.firmId
-	order by r.name, r.periodid;
-
+	if p_byRowId = 0 and p_byColumnId = 0 then
+		-- выдача резалт-сета с полями первого и последнего посещения.
+	    
+		select r.*, b.erst, b.letzt
+		from #results r
+		left join #firm_besuch b on b.firmId = r.firmId
+		order by r.name, r.firmid, r.periodid;
+	end if;
 
 
 end;
@@ -211,7 +278,11 @@ if exists (select 1 from sysprocedure where proc_name = 'n_default_period') then
 end if;
 
 
-CREATE procedure n_default_period (
+CREATE 
+	-- предохранение дат начала и окончания от нулевых значений.
+	-- при джойне на таблицу периодов удобнее, чтобы они были не пустым, а конкрентыми
+	-- если дата начало - ноль - ищем из таблицы самую раннюю дату 
+	procedure n_default_period (
 	  inout p_begin  char(20)
 	, inout p_end    char(20)
 )
@@ -226,7 +297,7 @@ begin
 	end if;
 	
 --	message 'p_begin = ', p_begin to client;
-	message 'p_end = ', p_end to client;
+--	message 'p_end = ', p_end to client;
 
 end;
 
@@ -295,8 +366,6 @@ begin
 	where 
 		s.indate >= p.st and s.inDate < p.en
 	;
-
-	
 
 	
 	create table #sale_item (

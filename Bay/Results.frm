@@ -125,7 +125,7 @@ Dim mousCol As Integer
 Dim searchValue As String, searchPos As Long, searchAgain As Boolean
 
 Private Type ColumnInfo
-    periodId As Integer
+    PeriodId As Integer
     label As String
     year As Integer
     index As Integer
@@ -305,14 +305,47 @@ Dim num1, num2 As Single
 End Sub
 
 
+Private Sub Grid_DblClick()
+Dim columnNo As Long, periodNo As Long
+Dim firmId As Long, PeriodId As Integer
+    'Dim PreHeaderCount As Integer, PostHeaderCount As Integer, multiplyCols As Integer
+    columnNo = Grid.col
+    firmId = CInt(Grid.TextMatrix(Grid.row, 0))
+    If columnNo = 1 Then
+        ' название фирмы (главного атрибута, по которому происходит группировка
+        '
+        Portrait.mode = "portrait"
+        Portrait.byRowId = firmId
+        Portrait.byColumnId = 0
+        Portrait.Show , Me
+    ElseIf columnNo >= PreHeaderCount And columnNo < PreHeaderCount + multiplyCols * periodCount Then
+        ' Нажали на ячейку с периодом
+        '
+        periodNo = getPeriodNoByColumn(columnNo)
+        PeriodId = columns(periodNo).PeriodId
+        
+        Portrait.mode = "detail"
+        Portrait.byRowId = firmId
+        Portrait.byColumnId = PeriodId
+        Portrait.Show , Me
+    ElseIf columnNo >= PreHeaderCount + multiplyCols * periodCount Then
+        ' нажали на итог по строке
+        '
+        Portrait.mode = "detail"
+        Portrait.byRowId = firmId
+        Portrait.byColumnId = 0
+        Portrait.Show , Me
+    End If
+End Sub
+
 Private Sub Grid_EnterCell()
     If Grid.row = 0 Or Grid.col = 0 Then
         Exit Sub
     End If
-    If Grid.col > 1 Then
-        Grid.CellBackColor = vbYellow
-    Else
+    If Grid.col = 1 Or Grid.col >= PreHeaderCount Then
         Grid.CellBackColor = &H88FF88
+    Else
+        Grid.CellBackColor = vbYellow
     End If
     
 End Sub
@@ -402,13 +435,14 @@ Dim rownum As Integer
             rownum = rownum + 1
         End If
 
-        i = 1
+        i = 0
+        Grid.TextMatrix(rownum, i) = table!firmId: i = i + 1
         Grid.TextMatrix(rownum, i) = table!Name: i = i + 1
         Grid.TextMatrix(rownum, i) = table!region: i = i + 1
         Grid.TextMatrix(rownum, i) = table!erst: i = i + 1
         Grid.TextMatrix(rownum, i) = table!letzt: i = i + 1
         
-        colShift = i + getPeriodShift(table!periodId) * multiplyCols
+        colShift = i + getPeriodShift(table!PeriodId) * multiplyCols
         Grid.TextMatrix(rownum, colShift) = table("orderQty")
         Grid.TextMatrix(rownum, colShift + 1) = Format(table("orderOrdered"), "# ###.00")
         Grid.TextMatrix(rownum, colShift + 2) = table("materialQty")
@@ -436,12 +470,12 @@ End Sub
 
 
 
-Private Function getPeriodShift(periodId As Integer) As Integer
+Private Function getPeriodShift(PeriodId As Integer) As Integer
 Dim i As Integer
 Dim ln As Integer
     ln = UBound(columns)
     For i = 0 To ln
-        If columns(i).periodId = periodId Then
+        If columns(i).PeriodId = PeriodId Then
             getPeriodShift = columns(i).index
             Exit Function
         End If
@@ -520,7 +554,7 @@ Dim titleStartStr As String, titleEndStr As String
         colInfo.year = table!year
         colInfo.stDate = table!st
         colInfo.enDate = table!EN
-        colInfo.periodId = table!periodId
+        colInfo.PeriodId = table!PeriodId
         colInfo.index = index
         colInfo.colWidth = getColumnWidth(index, table!label)
         
@@ -555,6 +589,9 @@ Dim titleStartStr As String, titleEndStr As String
     
 End Function
 
+Function getPeriodNoByColumn(columnNo As Long) As Integer
+    getPeriodNoByColumn = (columnNo - PreHeaderCount) \ multiplyCols
+End Function
 
 Private Function getColumnWidth(i As Integer, label As String)
     getColumnWidth = 500
