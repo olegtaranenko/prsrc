@@ -155,7 +155,7 @@ Begin VB.Form Analityc
          _ExtentX        =   2138
          _ExtentY        =   508
          _Version        =   393216
-         Format          =   16515073
+         Format          =   16384001
          CurrentDate     =   39599
       End
       Begin MSComCtl2.DTPicker tbEndDate 
@@ -167,7 +167,7 @@ Begin VB.Form Analityc
          _ExtentX        =   2138
          _ExtentY        =   508
          _Version        =   393216
-         Format          =   16515073
+         Format          =   16384001
          CurrentDate     =   39599
       End
       Begin VB.Label Label5 
@@ -375,6 +375,18 @@ Dim managId As String
 Dim flagInitFilter As Boolean
 
 
+Private Sub cbGroupByRow_Change()
+    initByColumnList cbGroupByRow.ItemData(cbGroupByRow.ListIndex)
+    If cbGroupByColumn.ListCount > 0 Then
+        cbGroupByColumn.ListIndex = 0
+    End If
+    checkDirtyFilterCommads
+End Sub
+
+Private Sub cbGroupByRow_Click()
+    cbGroupByRow_Change
+End Sub
+
 Private Sub cbOborud_Click(index As Integer)
     checkDirtyFilterCommads
 End Sub
@@ -419,20 +431,20 @@ End Sub
 
 
 Private Sub ckKriteriumOborud_Click()
-Dim I As Integer
+Dim i As Integer
 
     checkDirtyFilterCommads
     If ckKriteriumOborud.value = 1 Then
         If ckKriteriumNoOborud.value = 1 Then
             ckKriteriumNoOborud.value = 0
         End If
-        For I = 1 To 3
-            cbOborud(I).Enabled = True
-        Next I
+        For i = 1 To 3
+            cbOborud(i).Enabled = True
+        Next i
     Else
-        For I = 1 To 3
-            cbOborud(I).Enabled = False
-        Next I
+        For i = 1 To 3
+            cbOborud(i).Enabled = False
+        Next i
     End If
 End Sub
 
@@ -534,33 +546,33 @@ End Sub
 
 Private Sub cleanTree(tView As TreeView)
 Dim currentNode As Node
-Dim I As Integer, nCount As Integer
+Dim i As Integer, nCount As Integer
 Dim enabledFlag As Boolean
 
     enabledFlag = tView.Enabled
     tView.Enabled = True
     
     nCount = tView.Nodes.Count
-    For I = 1 To nCount
-        Set currentNode = tView.Nodes(I)
+    For i = 1 To nCount
+        Set currentNode = tView.Nodes(i)
         If currentNode.Checked Then
             currentNode.Checked = False
             currentNode.Expanded = False
         End If
-    Next I
+    Next i
 
     tView.Enabled = enabledFlag
 End Sub
 
 Private Sub cleanOborud()
 Dim currentOborud As CheckBox
-Dim I As Integer, nCount As Integer
+Dim i As Integer, nCount As Integer
 
     'nCount = UBound(cbOborud)
-    For I = 1 To 3
-        Set currentOborud = cbOborud(I)
+    For i = 1 To 3
+        Set currentOborud = cbOborud(i)
         currentOborud.value = 0
-    Next I
+    Next i
 End Sub
 
 Private Sub cleanFilterWindows()
@@ -576,27 +588,46 @@ End Sub
 
 
 Sub initFilter(filterName As String, personal As Integer)
+
+Dim filterId As Integer, byRowId As Integer, byColumnId As Integer
+
     flagInitFilter = True
     txFilterName.Text = cbFilters.Text
     cmFilterAdd.Enabled = False
 
     cleanFilterWindows
+    
+    sql = "select id, byrowId, bycolumnId from nFilter where name = '" & filterName & "' and personal = " & personal
+    
+    byErrSqlGetValues "W#initFilter.1", sql, filterId, byRowId, byColumnId
+    If filterId = 0 Then
+        'Нет еще такого фильтра
+        GoTo done
+    End If
+    
+    If setListIndexByItemDataValue(cbGroupByRow, byRowId) Then
+        cbGroupByRow_Change
+        setListIndexByItemDataValue cbGroupByColumn, byColumnId
+    End If
+    
+    
     sql = " select " _
         & " i.id as itemId, p.id as paramId, isActive as isActive, itemType, paramType, paramClass, intValue, charValue" _
-        & " from nFilter f" _
-        & "  left join nItem i       on i.filterid    = f.id" _
+        & " from nItem i" _
         & "  left join nItemType it  on i.itemTypeId  = it.id" _
         & "  left join nParam p      on p.itemId      = i.id" _
         & "  left join nParamType pt on p.paramTypeId = pt.id" _
-        & "  where f.name = '" & filterName & "' and f.personal = " & personal
+        & "  where i.filterid = " & filterId
     
-    Set table = myOpenRecordSet("##initFilter", sql, dbOpenForwardOnly)
+    Set table = myOpenRecordSet("##initFilter.2", sql, dbOpenForwardOnly)
     If table Is Nothing Then myBase.Close: End
     ckStartDate.value = 0
-    tbStartDate.value = Now()
+    tbStartDate.value = Now() - 365
+    tbStartDate.Enabled = False
     ckEndDate.value = 0
     tbEndDate.value = Now()
-
+    tbEndDate.Enabled = False
+    
     While Not table.EOF
         If table!itemType = "materials" Then
             If table!isActive = 1 Then
@@ -604,10 +635,12 @@ Sub initFilter(filterName As String, personal As Integer)
             Else
                 ckKriteriumMat.value = 0
             End If
-            Set Node = tvMat.Nodes("k" & table!intValue)
-            expandParents Node
+            If Not IsNull(table!intValue) Then
+                Set Node = tvMat.Nodes("k" & table!intValue)
+                expandParents Node
+                Node.Checked = True
+            End If
             
-            Node.Checked = True
         End If
         
         If table!itemType = "regions" Then
@@ -634,45 +667,47 @@ Sub initFilter(filterName As String, personal As Integer)
             ckKriteriumNoOborud.value = 1
         End If
         
-        If table!itemType = "byrow" Then
-            setListIndexByItemDataValue cbGroupByRow, table!isActive
-        End If
-    
-        If table!itemType = "bycolumn" Then
-            setListIndexByItemDataValue cbGroupByColumn, table!isActive
-        End If
-        
         If table!itemType = "filterPeriod" Then
             If table!paramType = "periodStart" Then
                 ckStartDate.value = 1
                 tbStartDate.value = table!charValue
+                tbStartDate.Enabled = True
             End If
             If table!paramType = "periodEnd" Then
                 ckEndDate.value = 1
                 tbEndDate.value = table!r_charValue
+                tbStartDate.Enabled = True
             End If
         End If
         
         table.MoveNext
     Wend
     table.Close
+    
+done:
     flagInitFilter = False
 
 End Sub
 
 
-Private Function prepareFilter(filterName As String, personal As Integer) As Integer
+Private Function prepareFilter(filterName As String, personal As Integer, byRowId As Integer, byColumnId As Integer) As Integer
 Dim exists As Integer, result As Integer
 
-    sql = "select id from nFilter where name = '" & filterName & "' and personal = " & personal
+    sql = "select id from nFilter " _
+        & "where name = '" & filterName & "' and personal = " & personal
     byErrSqlGetValues "W#prepareFilter", sql, result
     
     If result <> 0 Then
-        sql = "delete from nItem i from nFilter f where f.name = '" & filterName & "'" _
+        sql = "delete from nItem i from nFilter f " _
+            & " where f.name = '" & filterName & "'" _
             & " and i.filterId = f.id and f.personal = " & personal
         myExecute "W#deleteFilter", sql, -1
+        sql = "update nFilter set byrowid = " & byRowId & ", byColumnId = " & byColumnId _
+            & "where name = '" & filterName & "' and personal = " & personal
+        myExecute "W#updateFilter", sql, -1
     Else
-        sql = "select n_insertFilter ('" & filterName & "', '" & managId & "', " & personal & ")"
+        sql = "select n_insertFilter ('" & filterName & "', '" & managId & "', " & personal _
+            & ", " & byRowId & ", " & byColumnId & ")"
         byErrSqlGetValues "W#clearFilter", sql, result
     End If
     
@@ -755,7 +790,18 @@ Dim personal As Integer
         personal = 0
     End If
 
-    filterId = prepareFilter(filterName, personal)
+    Dim indexRow As Integer, indexColumn As Integer
+    indexRow = cbGroupByRow.ListIndex
+    If indexRow = -1 Then
+        indexRow = 0
+    End If
+    
+    indexColumn = cbGroupByColumn.ListIndex
+    If indexColumn = -1 Then
+        indexColumn = 0
+    End If
+    
+    filterId = prepareFilter(filterName, personal, cbGroupByRow.ItemData(indexRow), cbGroupByColumn.ItemData(indexColumn))
     
     If hasCheckedMat Then
         itemId = saveFilterItem(filterId, "materials", ckKriteriumMat.value)
@@ -766,30 +812,17 @@ Dim personal As Integer
 
     If hasOborud Then
         itemId = saveFilterItem(filterId, "oborudItems", ckKriteriumOborud.value)
-        Dim I As Integer
-        For I = 1 To 3
-            If cbOborud(I).value Then
-                saveFilterParam itemId, "oborudItemId", I
+        Dim i As Integer
+        For i = 1 To 3
+            If cbOborud(i).value Then
+                saveFilterParam itemId, "oborudItemId", i
             End If
-        Next I
+        Next i
     End If
     
     If ckKriteriumNoOborud.value = 1 Then
         itemId = saveFilterItem(filterId, "noOboruds", 1)
     End If
-    
-    Dim index As Integer
-    index = cbGroupByRow.ListIndex
-    If index = -1 Then
-        index = 0
-    End If
-    itemId = saveFilterItem(filterId, "byrow", cbGroupByRow.ItemData(index))
-    
-    index = cbGroupByColumn.ListIndex
-    If index = -1 Then
-        index = 0
-    End If
-    itemId = saveFilterItem(filterId, "bycolumn", cbGroupByColumn.ItemData(index))
     
     If ckStartDate.value = 1 Or ckEndDate.value = 1 Then
         itemId = saveFilterItem(filterId, "filterPeriod", 1)
@@ -819,9 +852,10 @@ End Sub
 
 
 Private Sub Form_Load()
+
     loadKlass
     loadRegions
-    managId = orders.cbM.Text
+    managId = Orders.cbM.Text
 
     Set table = myOpenRecordSet("W#72", "select * from nFilter where personal != 1", dbOpenForwardOnly)
     If table Is Nothing Then myBase.Close: End
@@ -833,14 +867,72 @@ Private Sub Form_Load()
         table.MoveNext
     Wend
     table.Close
-    On Error Resume Next
-    cbFilters.ListIndex = getEffectiveSetting("CurrentFilter", 0)
     
-    If cbFilters.ListIndex = 0 Then
-        initFilter managId, 1
+    'проинициализировать листбокс группировки по горизонтали
+    initByRowList
+    
+    Dim currentFilterId As Integer, filterName As String, personal As Integer
+    currentFilterId = getEffectiveSetting("CurrentFilter", 0)
+    
+    If currentFilterId > 0 And currentFilterId < cbFilters.ListCount Then
+        cbFilters.ListIndex = currentFilterId
+        filterName = cbFilters.List(currentFilterId)
+        personal = 0
     End If
+    
+    If filterName = "" Then
+        filterName = managId
+        personal = 1
+    End If
+    
+    initFilter filterName, personal
+    
 End Sub
 
+Private Sub populateAxeList(ByRef table As Recordset, cb As ComboBox)
+    
+    'проинициализировать комбобокс с доступными группировками по одной из оси (по строкам или по столбцам)
+    
+    If table Is Nothing Then
+        myBase.Close: End
+    End If
+    
+    cb.Clear
+    Dim i As Integer
+    i = 0
+    While Not table.EOF
+        cb.AddItem table!Name_ru
+        cb.ItemData(i) = table!id
+        i = i + 1
+        table.MoveNext
+    Wend
+    table.Close
+    
+End Sub
+
+Private Sub initByColumnList(byRowId As Integer)
+    sql = "select * from nAnalysCategory c" _
+        & " where c.bycolumn_flag = 1" _
+        & " and exists (select 1 from nAnalys a where a.byrow = " & byRowId & " and c.id = a.bycolumn)"
+        
+    Set table = myOpenRecordSet("W#initByRowList", sql, dbOpenForwardOnly)
+    Debug.Print sql
+    populateAxeList table, cbGroupByColumn
+    
+End Sub
+
+
+Private Sub initByRowList()
+    
+    sql = "select * from nAnalysCategory where byrow_flag = 1"
+    Set table = myOpenRecordSet("W#initByRowList", sql, dbOpenForwardOnly)
+    If table Is Nothing Then
+        myBase.Close: End
+    End If
+    
+    populateAxeList table, cbGroupByRow
+
+End Sub
 
 Private Sub tvMat_NodeCheck(ByVal Node As MSComctlLib.Node)
     checkDirtyFilterCommads
@@ -851,45 +943,45 @@ End Sub
 
 
 Private Function getOborudItems() As Boolean
-Dim I As Integer
+Dim i As Integer
 
-    For I = 1 To 3
-        If cbOborud(I).value = 1 Then
+    For i = 1 To 3
+        If cbOborud(i).value = 1 Then
             getOborudItems = True
             Exit Function
         End If
-    Next I
+    Next i
 
 End Function
 
 
 Private Function getCheckedInTree(tView As TreeView) As Boolean
 Dim currentNode As Node
-Dim I As Integer
+Dim i As Integer
 
     getCheckedInTree = False
-    For I = 1 To tView.Nodes.Count
-        Set currentNode = tView.Nodes(I)
+    For i = 1 To tView.Nodes.Count
+        Set currentNode = tView.Nodes(i)
         If currentNode.Checked Then
             getCheckedInTree = True
             Exit Function
         End If
-    Next I
+    Next i
     
 End Function
 
 
 Private Sub saveParamsOfTree(tView As TreeView, itemId As Integer, paramName As String)
 Dim currentNode As Node
-Dim I As Integer, nCount As Integer
+Dim i As Integer, nCount As Integer
 
     nCount = tView.Nodes.Count
-    For I = 1 To nCount
-        Set currentNode = tView.Nodes(I)
+    For i = 1 To nCount
+        Set currentNode = tView.Nodes(i)
         If currentNode.Checked Then
             saveFilterParam itemId, paramName, CInt(Mid(currentNode.key, 2))
         End If
-    Next I
+    Next i
     
 End Sub
 
@@ -937,13 +1029,17 @@ Private Sub txFilterName_Change()
     cmFilterAdd.Enabled = True
 End Sub
 
-Private Sub setListIndexByItemDataValue(ByRef cb As ComboBox, ByVal itemDataValue As Integer)
-Dim I As Integer
-    For I = 0 To cb.ListCount
-        If cb.ItemData(I) = itemDataValue Then
-            cb.ListIndex = I
-            Exit Sub
+Private Function setListIndexByItemDataValue(ByRef cb As ComboBox, ByVal itemDataValue As Integer) As Boolean
+
+Dim i As Integer
+
+    setListIndexByItemDataValue = True
+    For i = 0 To cb.ListCount - 1
+        If cb.ItemData(i) = itemDataValue Then
+            cb.ListIndex = i
+            Exit Function
         End If
-    Next I
-End Sub
+    Next i
+    setListIndexByItemDataValue = False
+End Function
 

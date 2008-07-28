@@ -52,7 +52,6 @@ begin
 			if r_isActive = 1 then
 				set groupByRows = 'firm';
 			end if;
-			set implemented = 1;
 		elseif r_itemType = 'bycolumn' then
 			if r_isActive <= 5 then
 				set groupByColumns = 'periods';
@@ -74,13 +73,14 @@ begin
 		end if;
 	end for;
 
+	set implemented = 1;
 	select 'implemented' as pkey, convert(varchar(20), implemented) as pvalue
 		union
-	select 'groupByColumns'       , convert(varchar(20), groupByColumns)
+	select 'groupByColumns'   , convert(varchar(20), groupByColumns)
 		union
 	select 'periodType'       , convert(varchar(20), periodType)
 		union
-	select 'groupByRows'       , convert(varchar(20), groupByRows)
+	select 'groupByRows'      , convert(varchar(20), groupByRows)
 	;
 end;
 
@@ -119,6 +119,81 @@ end;
 
 
 
+if exists (select 1 from sysprocedure where proc_name = 'n_exec_header') then
+	drop function n_exec_header;
+end if;
+
+
+CREATE procedure n_exec_header (
+	  p_filterId    integer
+) 
+begin
+	declare v_column_token  varchar(32);
+	declare v_parent_token  varchar(32);
+	declare v_proc_token    varchar(32);
+	declare v_sub_token     varchar(32);
+	declare v_sql           long varchar;
+	declare v_begin         date;
+	declare v_end           date;
+
+
+
+	for x as xc dynamic scroll cursor for
+		call n_filter_params(p_filterid)
+	do
+		if r_itemType = 'filterPeriod' then
+			if r_paramType = 'periodStart' then
+				set v_begin = convert(date, r_charValue, 104);
+			end if;
+			if r_paramType = 'periodEnd' then
+				set v_end = convert(date, r_charValue, 104);
+			end if;
+		end if;
+	end for;
+
+
+	select c.name, p.name 
+	into v_column_token, v_parent_token
+	from nAnalys a
+	join nAnalysCategory c on c.id = a.bycolumn
+	left join nAnalysCategory p on p.id = c.parentId
+	where exists (
+		select 1 from nfilter f where f.byrowid = a.byrow and f.bycolumnid = a.bycolumn and f.id = p_filterid
+	);
+
+	if v_parent_token is not null then
+		set v_proc_token = v_parent_token;
+		set v_sub_token = v_column_token;
+	else 		
+		set v_proc_token = v_column_token;
+		set v_sub_token = null;
+	end if;
+
+	if v_proc_token = 'periods' then
+		create table #periods (
+			periodId int default autoincrement
+			, st date
+			, en date
+			, label varchar(32)
+			, year integer
+		);
+	end if;
+	
+	set v_sql = 'call n_fill_' + v_proc_token + '(v_begin, v_end, v_sub_token)'; 
+
+	execute immediate v_sql;
+
+
+	if v_proc_token = 'periods' then
+		select * from #periods order by 1;
+	end if;
+
+end;
+
+
+
+
+
 
 if exists (select 1 from sysprocedure where proc_name = 'n_exec_filter') then
 	drop function n_exec_filter;
@@ -127,10 +202,10 @@ end if;
 
 CREATE procedure n_exec_filter (
 	  p_filterId    integer
-	, p_byRowId   integer default 0
-	, p_byColumnId integer default 0
-	, p_showFirst  integer default 1
-	, p_showLast   integer default 1
+	, p_rowId       integer default 0
+	, p_columnId    integer default 0
+	, p_showFirst   integer default 1
+	, p_showLast    integer default 1
 ) 
 begin
 	declare v_sql long varchar;
@@ -141,7 +216,38 @@ begin
 	declare v_end         date;
 	declare v_proc_name   varchar(128);
 	declare v_detail      varchar(64);
+
+	declare v_column_token  varchar(32);
+	declare v_parent_token  varchar(32);
+	declare v_proc_token    varchar(32);
+	declare v_sub_token     varchar(32);
+
+
+	select r.name, c.name, p.name 
+	into groupByRows, v_column_token, v_parent_token
+	from nAnalys a
+	join nAnalysCategory r on r.id = a.byrow
+	join nAnalysCategory c on c.id = a.bycolumn
+	left join nAnalysCategory p on p.id = c.parentId
+	where exists (
+		select 1 from nfilter f where f.byrowid = a.byrow and f.bycolumnid = a.bycolumn and f.id = p_filterid
+	);
+
+
+	if v_parent_token is not null then
+		set groupByColumns = v_parent_token;
+		set v_sub_token = v_column_token;
+	else 		
+		set groupByColumns = v_column_token;
+		set v_sub_token = null;
+	end if;
+
+
+	if groupByRows is null then
+		message 'Procedure not implemented yet!' to client;
+	end if;
 	
+/*
 	for y as yc dynamic scroll cursor for
 		call n_boot_filter(p_filterid, 'M')
 	do
@@ -162,7 +268,6 @@ begin
 		end if;
 	end for;
 
-/*
 
 	for x as xc dynamic scroll cursor for
 		call n_filter_params(p_filterid)
@@ -189,9 +294,7 @@ create table #noOboruds (noOborud integer, isActive integer);
 	for x as xc dynamic scroll cursor for
 		call n_filter_params(p_filterid)
 	do
-		if r_itemType = 'byrow' then
-		elseif r_itemType = 'bycolumn' then
-		elseif r_itemType = 'filterPeriod' then
+		if r_itemType = 'filterPeriod' then
 			if r_paramType = 'periodStart' then
 				set v_begin = convert(date, r_charValue, 104);
 			end if;
@@ -243,7 +346,7 @@ create table #noOboruds (noOborud integer, isActive integer);
 		set v_proc_name = v_proc_name + '_' + v_detail;
 	end if;
 
-	execute immediate 'call ' + v_proc_name + '(v_begin, v_end, '''+ v_periodType + ''')';
+	execute immediate 'call ' + v_proc_name + '(v_begin, v_end, v_sub_token, p_rowId, p_columnId)';
 
 
 
@@ -259,9 +362,9 @@ create table #noOboruds (noOborud integer, isActive integer);
 		;
 	end if;
 
-	if p_byRowId = 0 and p_byColumnId = 0 then
+	if p_rowId = 0 and p_columnId = 0 then
 		-- выдача резалт-сета с полями первого и последнего посещения.
-	    
+	    message 'get result to client ' to client;
 		select r.*, b.erst, b.letzt
 		from #results r
 		left join #firm_besuch b on b.firmId = r.firmId
@@ -282,7 +385,7 @@ CREATE
 	-- предохранение дат начала и окончания от нулевых значений.
 	-- при джойне на таблицу периодов удобнее, чтобы они были не пустым, а конкрентыми
 	-- если дата начало - ноль - ищем из таблицы самую раннюю дату 
-	procedure n_default_period (
+procedure n_default_period (
 	  inout p_begin  char(20)
 	, inout p_end    char(20)
 )
@@ -309,9 +412,11 @@ end if;
 
 
 CREATE procedure n_list_firm_by_periods (
-	  p_begin date
-	, p_end date
-	, p_period_type varchar(20)
+	  p_begin         date
+	, p_end           date
+	, p_period_type   varchar(20)
+	, p_rowId         integer
+	, p_columnId      integer
 )
 begin
 
@@ -535,8 +640,7 @@ end if;
 CREATE procedure n_fill_periods (
 	  p_begin       date
 	, p_end         date
-	, p_period_type varchar(20) default 'month'
-	, p_flag_enumerate integer  default 0
+	, p_period_type varchar(20) 
 )
 begin
 	declare v_st        date;
@@ -548,10 +652,6 @@ begin
 
 	call n_default_period(p_begin, p_end);
 
-	if p_flag_enumerate = 1 then
-		create table #periods (periodId int default autoincrement, st date, en date, label varchar(32), year integer);
-	end if;
-	
 	set v_cur = n_get_period_st(p_begin, p_period_type);
 	set v_period_st = v_cur;
 
@@ -582,9 +682,6 @@ begin
 		end if;
 	end loop;
 
-	if p_flag_enumerate = 1 then
-		select * from #periods order by 1;
-	end if
 end;
 
 
@@ -598,12 +695,14 @@ CREATE function n_insertFilter (
 	  p_filter_name  varchar(64)
 	, p_manager      char(1)
 	, p_personal     integer
+	, p_byrowid      integer
+	, p_bycolumnid   integer
 	, p_time         datetime default null
 ) returns integer
 begin
-	insert into nFilter (name, managId, personal, created)
+	insert into nFilter (name, managId, personal, created, byrowid, bycolumnid)
 	select 
-		p_filter_name, m.managId, p_personal, isnull(p_time, now())
+		p_filter_name, m.managId, p_personal, isnull(p_time, now()), p_byrowid, p_bycolumnid
 	from 
 		GuideManag m 
 	where 

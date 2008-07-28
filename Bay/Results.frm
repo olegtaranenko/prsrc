@@ -389,7 +389,7 @@ Dim rownum As Integer
     
     setFilterParams
     
-    If Not setGridHeaders() Then
+    If Not setGridHeaders(filterId) Then
         MsgBox "Отчет не содержит данных", vbExclamation
         Exit Sub
     End If
@@ -482,7 +482,9 @@ Dim ln As Integer
     Next i
 End Function
 
-Private Function setGridHeaders() As Boolean
+
+
+Private Function setGridHeaders(filterId As Integer) As Boolean
 Dim periodType As Variant
 Dim index As Integer
 Dim colInfo As ColumnInfo
@@ -497,31 +499,21 @@ Dim titleStartStr As String, titleEndStr As String
     GridHeaderHead = "|<Название фирмы|<Регион|>Перв.Визит|>Посл.Визит"
     GridHeaderTail = ">Заказов|>Сумма заказов|>К-во матер.|>Сумма матер."
     
-    periodType = getCurrentSetting("periodType", filterSettings)
+    'periodType = getCurrentSetting("periodType", filterSettings)
 
     
     PreHeaderCount = parseHeaderMetrics(GridHeaderHead)
     PostHeaderCount = parseHeaderMetrics(GridHeaderTail)
     multiplyCols = parseTabStrip(GridHeaderTail, TabStrip1)
 
-    sql = "call n_fill_periods( "
-    
     If StartDate > "2000-01-01" Then
-        sql = sql & "'" & Format(StartDate, "yyyymmdd") & "'"
         titleStartStr = Format(StartDate, "dd.mm.yyyy")
-    Else
-        sql = sql & "null"
     End If
-    sql = sql & ", "
     
     If endDate > "2000-01-01" Then
-        sql = sql & "'" & Format(endDate, "yyyymmdd") & "'"
         titleEndStr = Format(endDate, "dd.mm.yyyy")
-    Else
-        sql = sql & "null"
     End If
     
-    sql = sql & ", '" & periodType & "', 1)"
     
     Me.Caption = "Продажи: "
     If titleStartStr = "" And titleEndStr = "" Then
@@ -542,6 +534,10 @@ Dim titleStartStr As String, titleEndStr As String
             Me.Caption = Me.Caption & "включительно"
         End If
     End If
+    
+    
+    sql = "call n_exec_header( " & filterId & ") "
+    
     Set table = myOpenRecordSet("##Results.2", sql, dbOpenDynaset)
     ReDim columns(0)
     index = 0
@@ -557,8 +553,8 @@ Dim titleStartStr As String, titleEndStr As String
         colInfo.PeriodId = table!PeriodId
         colInfo.index = index
         colInfo.colWidth = getColumnWidth(index, table!label)
-        
-        
+
+
         ReDim Preserve columns(index)
         columns(index) = colInfo
         table.MoveNext
