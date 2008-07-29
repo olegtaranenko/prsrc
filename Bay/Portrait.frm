@@ -120,11 +120,48 @@ Private Sub Form_Load()
     If mode = "portrait" Then
         
     ElseIf mode = "detail" Then
-        If byColumnId = 0 Then
+        LoadTableDetail
     End If
 End Sub
 
+Private Sub LoadTableDetail()
 
+    sql = "call n_exec_filter( " & filterId & ", " & byRowId & ", " & byColumnId & ")"
+    Set table = myOpenRecordSet("##Results.1", sql, dbOpenDynaset)
+    If table Is Nothing Then
+        table.Close
+        MsgBox "Ошибка при загрузки данных из базы", vbCritical
+        Exit Sub
+    End If
+    If table.BOF Then
+        table.Close
+        MsgBox "Отчет не содержит данных", vbExclamation
+        Exit Sub
+    End If
+    
+    clearGrid Me.Grid
+    Me.Grid.FormatString "|Заказ|Дата|Заказано|Оплачено|К-во.мат.|Сумма мат."
+    rownum = 0
+    table.MoveFirst
+    Dim i As Integer ' номер столбца
+    While Not table.EOF
+        
+        i = 1
+        Grid.TextMatrix(rownum, i) = table!fnumorder: i = i + 1
+        Grid.TextMatrix(rownum, i) = table!inDate: i = i + 1
+        Grid.TextMatrix(rownum, i) = table!orderOrdered: i = i + 1
+        Grid.TextMatrix(rownum, i) = table!orderPaid: i = i + 1
+        Grid.TextMatrix(rownum, i) = table!materialQty: i = i + 1
+        Grid.TextMatrix(rownum, i) = table!materialSaled: i = i + 1
+        
+        table.MoveNext
+        rownum = rownum + 1
+        Grid.AddItem ""
+        
+    Wend
+    table.Close
+
+End Sub
 
 Private Sub Form_Resize()
     Dim h As Integer, w As Integer

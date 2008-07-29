@@ -247,44 +247,6 @@ begin
 		message 'Procedure not implemented yet!' to client;
 	end if;
 	
-/*
-	for y as yc dynamic scroll cursor for
-		call n_boot_filter(p_filterid, 'M')
-	do
---		message pkey, ' = ', pvalue to client;
-		if pkey = 'implemented' and pvalue != '1' then
-			return;
-		end if;
-		if pkey = 'groupByRows' then
-			set groupByRows = pvalue;
-		end if;
-
-		if pkey = 'groupByColumns' then
-			set groupByColumns = pvalue;
-		end if;
-
-		if pkey = 'periodType' then
-			set v_periodType = pvalue;
-		end if;
-	end for;
-
-
-	for x as xc dynamic scroll cursor for
-		call n_filter_params(p_filterid)
-	do
-		if r_itemType = 'byrow' then
-		elseif r_itemType = 'bycolumn' then
-		elseif r_itemType = 'filterPeriod' then
-		elseif r_paramClass = 'ids' then
-			select count(*) into f_exists from systable where table_name = '#' + r_ItemType;
-			if f_exists = 0 then
-				set v_sql = 'create table # ' r_itemType + '( ' + r_paramType + ' integer, isActive integer)';
-				message v_sql to client;
-				execute immediate v_sql;
-			end if;
-		end if;
-	end for;
-*/
 
 create table #regions (regionId integer, isActive integer);
 create table #materials (klassId integer, isActive integer);
@@ -336,6 +298,8 @@ create table #noOboruds (noOborud integer, isActive integer);
 		, regionid      integer
 		, periodid      integer
 		, firmId        integer
+		, inDate        date
+		, numorder      integer
 	);
 
 	call n_default_period(v_begin, v_end);
@@ -364,11 +328,14 @@ create table #noOboruds (noOborud integer, isActive integer);
 
 	if p_rowId = 0 and p_columnId = 0 then
 		-- выдача резалт-сета с полями первого и последнего посещения.
-	    message 'get result to client ' to client;
 		select r.*, b.erst, b.letzt
 		from #results r
 		left join #firm_besuch b on b.firmId = r.firmId
 		order by r.name, r.firmid, r.periodid;
+	elseif p_rowId != 0 then
+		select r.* 
+		from #results r
+		order by r.numorder;
 	end if;
 
 
@@ -414,7 +381,7 @@ end if;
 CREATE procedure n_list_firm_by_periods (
 	  p_begin         date
 	, p_end           date
-	, p_period_type   varchar(20)
+	, p_period_type   varchar(20) -- p_sub_token
 	, p_rowId         integer
 	, p_columnId      integer
 )
@@ -424,6 +391,25 @@ begin
 	declare v_material_flag integer;
 	declare v_oborud_flag integer;
 	declare v_no_oborud_flag integer;
+
+	declare v_detail      integer;
+	declare v_detail_fine integer;
+
+	declare v_begin       date;
+	declare v_end         date;
+
+	declare v_firmId      integer;
+
+	set v_firmId = p_rowId;
+
+	set v_detail      = 0;
+	set v_detail_fine = 0;
+	if isnull(p_rowId, 0) != 0 then
+		set v_detail = 1;
+		if isnull(p_columnId, 0) != 0 then
+			set v_detail_fine = 1;
+		end if;
+	end if;
 
 	select count(*) into v_region_flag   from #regions where isActive = 1;
 	select count(*) into v_material_flag from #materials where isActive = 1;
@@ -440,7 +426,16 @@ begin
 		, label varchar(32)
 		, year integer
 	);
-	call n_fill_periods(p_begin, p_end, p_period_type);
+
+	call n_fill_periods(p_begin, p_end, p_period_type, p_columnId);
+
+	set v_begin = p_begin;
+	set v_end   = p_end;
+	if v_detail_fine = 1 then 
+		select st, en 
+		into v_begin, v_end
+		from #periods where periodId = p_columnId;
+	end if;
 
 	
 	create table #sale_isum(
@@ -461,8 +456,9 @@ begin
 		bayorders o
 	join orderSellOrde s on s.numorder = o.numorder
 	where 
-			o.indate >= isnull(p_begin, o.inDate) and (p_end is null or o.inDate < p_end)
+			o.indate >= isnull(v_begin, o.inDate) and (v_end is null or o.inDate < v_end)
 		and (v_region_flag = 0 or exists (select 1 from #regions r, bayguidefirms f where f.firmid = o.firmid and r.regionid = f.regionid))
+		and (v_detail = 0 or o.firmId = v_firmId)
 --	and (v_oborud_flag = 0 or exists (select 1 from #oboruds r, bayguidefirms f where f.firmid = o.firmid and r.oborudid = f.oborudid))
 	;
 
@@ -509,55 +505,82 @@ begin
 	join sguidenomenk n on i.nomnom = n.nomnom
 	join #sale_isum si on si.numorder = i.numorder
 	where 
-			o.indate >= p_begin and o.inDate < p_end 
+			o.indate >= v_begin and o.inDate < v_end 
 		and (v_material_flag = 0 or exists (select 1 from #materials m where n.klassid = m.klassid))
 	;
 
 
-	insert into #results (
-		  label
-		, year
-		, orderQty
-		, orderPaid
-		, orderOrdered
-		, materialQty
-		, materialSaled
-		, name
-		, region
-		, regionid
-		, periodid
-		, firmId
-	)
-	select 
-		  p.label
-		, p.year
-		, o.orderQty            -- число заказов за период
-		, o.orderPaid           -- общий объем заказов (уе)
-		, o.orderOrdered        -- общая сумма по заказам
-		, i.materialQty         -- к-во проданных единиц по выбранным материалам (шт, листов и т.д.)
-		, i.materialSaled    	-- сумма по выбраннм материалам
-		, f.name                -- фирма
-		, r.region
-		, r.regionid
-		, p.periodid
-		, o.firmId
-	from #periods p 
-	join (
-		select sum(sm) as materialSaled, sum(materialQty) as materialQty, firmid, periodId
-		from #sale_item
-		group by firmid, periodId
-	) i on 
-		i.periodid = p.periodId
-	join (
-		select sum(isnull(orderPaid, 0)) as orderPaid, count(*) as orderQty, firmId, periodId, sum(orderOrdered) as orderOrdered
-		from #sale_isum
-		group by firmId, periodId
-	) o on 
-		o.firmId = i.firmId and o.periodId = i.periodId
-	join bayguidefirms f on f.firmid = i.firmid
-	join bayregion r on r.regionid = f.regionid
-	;
 
+	if v_detail = 0 then
+		insert into #results (
+			  label
+			, year
+			, orderQty
+			, orderPaid
+			, orderOrdered
+			, materialQty
+			, materialSaled
+			, name
+			, region
+			, regionid
+			, periodid
+			, firmId
+		)
+		select 
+			  p.label
+			, p.year
+			, o.orderQty            -- число заказов за период
+			, o.orderPaid           -- общий объем заказов (уе)
+			, o.orderOrdered        -- общая сумма по заказам
+			, i.materialQty         -- к-во проданных единиц по выбранным материалам (шт, листов и т.д.)
+			, i.materialSaled    	-- сумма по выбраннм материалам
+			, f.name                -- фирма
+			, r.region
+			, r.regionid
+			, p.periodid
+			, o.firmId
+		from #periods p 
+		join (
+			select sum(sm) as materialSaled, sum(materialQty) as materialQty, firmid, periodId
+			from #sale_item
+			group by firmid, periodId
+		) i on 
+			i.periodid = p.periodId
+		join (
+			select sum(isnull(orderPaid, 0)) as orderPaid, count(*) as orderQty, firmId, periodId, sum(orderOrdered) as orderOrdered
+			from #sale_isum
+			group by firmId, periodId
+		) o on 
+			o.firmId = i.firmId and o.periodId = i.periodId
+		join bayguidefirms f on f.firmid = i.firmid
+		join bayregion r on r.regionid = f.regionid
+		;
+	elseif v_detail = 1 then
+		insert into #results (
+			  orderPaid
+			, orderOrdered
+			, materialQty
+			, materialSaled
+			, indate
+			, numorder
+		)
+		select 
+			  s.orderPaid
+			, s.orderOrdered
+			, i.materialQty
+			, i.materialSaled
+			, s.indate
+			, s.numorder
+		from #sale_isum s 
+		join (
+			select sum(sm) as materialSaled, sum(materialQty) as materialQty, numorder
+			from #sale_item
+			group by numorder
+		) i on 
+			i.numorder = s.numorder
+		;
+
+	end if;
 
 end;
 
@@ -641,6 +664,7 @@ CREATE procedure n_fill_periods (
 	  p_begin       date
 	, p_end         date
 	, p_period_type varchar(20) 
+	, p_columnId    integer default 0
 )
 begin
 	declare v_st        date;
@@ -681,6 +705,10 @@ begin
 			leave all_periods;
 		end if;
 	end loop;
+
+	if isnull(p_columnId, 0) != 0 then
+		delete from #periods where periodId != p_columnId;
+	end if;
 
 end;
 

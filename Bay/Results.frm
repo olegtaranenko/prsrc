@@ -397,6 +397,7 @@ Dim rownum As Integer
     sql = "call n_exec_filter( " & filterId & ")"
     Set table = myOpenRecordSet("##Results.1", sql, dbOpenDynaset)
     If table Is Nothing Then
+        table.Close
         MsgBox "Ошибка при загрузки данных из базы", vbCritical
         Exit Sub
     End If
