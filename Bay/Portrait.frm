@@ -125,6 +125,7 @@ Private Sub Form_Load()
 End Sub
 
 Private Sub LoadTableDetail()
+Dim rownum As Integer
 
     sql = "call n_exec_filter( " & filterId & ", " & byRowId & ", " & byColumnId & ")"
     Set table = myOpenRecordSet("##Results.1", sql, dbOpenDynaset)
@@ -140,23 +141,25 @@ Private Sub LoadTableDetail()
     End If
     
     clearGrid Me.Grid
-    Me.Grid.FormatString "|Заказ|Дата|Заказано|Оплачено|К-во.мат.|Сумма мат."
-    rownum = 0
+    Me.Grid.FormatString = "|Номер зак.|Дата зак.|>Заказано|>Оплачено|>К-во.мат.|>Сумма мат."
+    rownum = 1
     table.MoveFirst
     Dim i As Integer ' номер столбца
     While Not table.EOF
         
         i = 1
-        Grid.TextMatrix(rownum, i) = table!fnumorder: i = i + 1
+        If rownum > 1 Then
+            Grid.AddItem ""
+        End If
+        Grid.TextMatrix(rownum, i) = table!numorder: i = i + 1
         Grid.TextMatrix(rownum, i) = table!inDate: i = i + 1
-        Grid.TextMatrix(rownum, i) = table!orderOrdered: i = i + 1
-        Grid.TextMatrix(rownum, i) = table!orderPaid: i = i + 1
-        Grid.TextMatrix(rownum, i) = table!materialQty: i = i + 1
-        Grid.TextMatrix(rownum, i) = table!materialSaled: i = i + 1
+        Grid.TextMatrix(rownum, i) = Format(table!orderOrdered, "# ###.00"): i = i + 1
+        Grid.TextMatrix(rownum, i) = Format(table!orderPaid, "# ###.00"): i = i + 1
+        Grid.TextMatrix(rownum, i) = Format(table!materialQty, "# ###.00"): i = i + 1
+        Grid.TextMatrix(rownum, i) = Format(table!materialSaled, "# ###.00"): i = i + 1
         
         table.MoveNext
         rownum = rownum + 1
-        Grid.AddItem ""
         
     Wend
     table.Close

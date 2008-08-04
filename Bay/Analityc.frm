@@ -3,19 +3,51 @@ Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "mscomctl.ocx"
 Object = "{86CF1D34-0C5F-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCT2.OCX"
 Begin VB.Form Analityc 
    Caption         =   "Параметры запроса"
-   ClientHeight    =   9192
+   ClientHeight    =   9276
    ClientLeft      =   48
    ClientTop       =   432
-   ClientWidth     =   5364
+   ClientWidth     =   5268
    LinkTopic       =   "Form1"
-   ScaleHeight     =   9192
-   ScaleWidth      =   5364
+   ScaleHeight     =   9276
+   ScaleWidth      =   5268
    StartUpPosition =   3  'Windows Default
+   Begin MSComctlLib.TreeView tvColumns 
+      Height          =   2532
+      Left            =   1440
+      TabIndex        =   36
+      Top             =   1680
+      Visible         =   0   'False
+      Width           =   3252
+      _ExtentX        =   5736
+      _ExtentY        =   4466
+      _Version        =   393217
+      LineStyle       =   1
+      Style           =   7
+      Checkboxes      =   -1  'True
+      Appearance      =   0
+      BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
+         Name            =   "MS Sans Serif"
+         Size            =   7.8
+         Charset         =   204
+         Weight          =   400
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+   End
+   Begin VB.CommandButton cmColumns 
+      Caption         =   "Выбор столбцов"
+      Height          =   315
+      Left            =   1440
+      TabIndex        =   34
+      Top             =   1320
+      Width           =   1452
+   End
    Begin VB.Frame Frame4 
       Caption         =   "Группировки ..."
-      Height          =   1332
+      Height          =   1212
       Left            =   240
-      TabIndex        =   21
+      TabIndex        =   19
       Top             =   1800
       Width           =   4932
       Begin VB.TextBox tbTop 
@@ -23,17 +55,17 @@ Begin VB.Form Analityc
          BorderStyle     =   0  'None
          Height          =   192
          Left            =   2040
-         TabIndex        =   33
+         TabIndex        =   31
          Text            =   "10"
-         Top             =   960
+         Top             =   840
          Width           =   252
       End
       Begin VB.CheckBox ckTop 
          Caption         =   "Только первые "
          Height          =   252
          Left            =   360
-         TabIndex        =   32
-         Top             =   960
+         TabIndex        =   30
+         Top             =   840
          Width           =   1572
       End
       Begin VB.ComboBox cbGroupByRow 
@@ -41,7 +73,7 @@ Begin VB.Form Analityc
          ItemData        =   "Analityc.frx":0000
          Left            =   360
          List            =   "Analityc.frx":0013
-         TabIndex        =   30
+         TabIndex        =   28
          Text            =   "Фирмы"
          Top             =   480
          Width           =   2052
@@ -51,7 +83,7 @@ Begin VB.Form Analityc
          ItemData        =   "Analityc.frx":0053
          Left            =   2640
          List            =   "Analityc.frx":0069
-         TabIndex        =   22
+         TabIndex        =   20
          Text            =   "Месяцы"
          Top             =   480
          Width           =   2172
@@ -60,15 +92,15 @@ Begin VB.Form Analityc
          Caption         =   "позиций"
          Height          =   252
          Left            =   2400
-         TabIndex        =   34
-         Top             =   960
+         TabIndex        =   32
+         Top             =   840
          Width           =   852
       End
       Begin VB.Label Label3 
          Caption         =   "... по строкам"
          Height          =   252
          Left            =   120
-         TabIndex        =   31
+         TabIndex        =   29
          Top             =   240
          Width           =   1452
       End
@@ -76,7 +108,7 @@ Begin VB.Form Analityc
          Caption         =   "... по столбцам"
          Height          =   252
          Left            =   2400
-         TabIndex        =   23
+         TabIndex        =   21
          Top             =   240
          Width           =   1452
       End
@@ -84,115 +116,115 @@ Begin VB.Form Analityc
    Begin VB.CommandButton cmExit 
       Caption         =   "Выход"
       Height          =   315
-      Left            =   4080
-      TabIndex        =   25
-      Top             =   1440
-      Width           =   972
+      Left            =   4320
+      TabIndex        =   23
+      Top             =   1320
+      Width           =   852
    End
    Begin VB.CommandButton cmApply 
       Caption         =   "Применить"
       Height          =   315
-      Left            =   360
-      TabIndex        =   24
-      Top             =   1440
+      Left            =   240
+      TabIndex        =   22
+      Top             =   1320
       Width           =   1095
    End
    Begin VB.Frame Frame3 
       Caption         =   "Выбор периода"
-      Height          =   1212
+      Height          =   1092
       Left            =   240
       TabIndex        =   14
       Top             =   120
       Width           =   4932
+      Begin MSComCtl2.UpDown UpDown1 
+         Height          =   492
+         Left            =   3360
+         TabIndex        =   35
+         ToolTipText     =   "Позволяет одновременно сдвинуть даты на одинаковый период"
+         Top             =   480
+         Width           =   312
+         _ExtentX        =   550
+         _ExtentY        =   868
+         _Version        =   393216
+         Enabled         =   -1  'True
+      End
       Begin VB.CheckBox ckStartDate 
          Caption         =   " "
          Height          =   315
-         Left            =   360
-         TabIndex        =   19
-         Top             =   240
+         Left            =   120
+         TabIndex        =   17
+         Top             =   600
          Width           =   195
       End
       Begin VB.CheckBox ckEndDate 
          Caption         =   " "
          Height          =   315
-         Left            =   360
-         TabIndex        =   18
-         Top             =   600
-         Width           =   200
-      End
-      Begin VB.CommandButton cmDayRight 
-         Caption         =   ">"
-         Height          =   252
-         Left            =   2520
-         TabIndex        =   17
-         Top             =   600
-         Width           =   372
-      End
-      Begin VB.CommandButton cmDayLeft 
-         Caption         =   "<"
-         Height          =   252
-         Left            =   2040
+         Left            =   1800
          TabIndex        =   16
          Top             =   600
-         Width           =   372
+         Width           =   200
       End
       Begin VB.ComboBox cbDateShift 
          Height          =   288
          ItemData        =   "Analityc.frx":00A5
-         Left            =   3120
+         Left            =   3720
          List            =   "Analityc.frx":00BB
          TabIndex        =   15
-         Text            =   "на год"
+         Text            =   "год"
+         ToolTipText     =   "Выбор периода сдвига даты"
          Top             =   600
-         Width           =   1692
+         Width           =   1092
       End
       Begin MSComCtl2.DTPicker tbStartDate 
          Height          =   288
-         Left            =   720
-         TabIndex        =   27
-         Top             =   240
+         Left            =   360
+         TabIndex        =   25
+         Top             =   600
          Width           =   1212
          _ExtentX        =   2138
          _ExtentY        =   508
          _Version        =   393216
-         Format          =   16384001
+         Format          =   16449537
          CurrentDate     =   39599
       End
       Begin MSComCtl2.DTPicker tbEndDate 
          Height          =   288
-         Left            =   720
-         TabIndex        =   28
+         Left            =   2040
+         TabIndex        =   26
          Top             =   600
          Width           =   1212
          _ExtentX        =   2138
          _ExtentY        =   508
          _Version        =   393216
-         Format          =   16384001
+         Format          =   16449537
          CurrentDate     =   39599
       End
       Begin VB.Label Label5 
-         Caption         =   "Одновременно сдвинуть даты"
-         Height          =   252
-         Left            =   2040
-         TabIndex        =   35
-         Top             =   360
-         Width           =   2772
+         AutoSize        =   -1  'True
+         Caption         =   "сдвинуть обе даты на"
+         Height          =   192
+         Left            =   3000
+         TabIndex        =   37
+         Top             =   240
+         Width           =   1800
       End
       Begin VB.Label Label2 
-         Caption         =   "C"
+         AutoSize        =   -1  'True
+         Caption         =   "Начиная с даты"
          Height          =   192
          Left            =   120
-         TabIndex        =   29
+         TabIndex        =   27
          Top             =   240
-         Width           =   180
+         Width           =   1296
       End
       Begin VB.Label laPo 
-         Caption         =   "по"
+         AutoSize        =   -1  'True
+         Caption         =   "по дату"
          Height          =   192
-         Left            =   120
-         TabIndex        =   20
-         Top             =   600
-         Width           =   180
+         Left            =   1800
+         TabIndex        =   18
+         Top             =   240
+         Width           =   624
       End
    End
    Begin VB.Frame Frame1 
@@ -206,7 +238,7 @@ Begin VB.Form Analityc
          Caption         =   "Без оборудования"
          Height          =   252
          Left            =   2640
-         TabIndex        =   36
+         TabIndex        =   33
          Top             =   3840
          Width           =   2052
       End
@@ -214,7 +246,7 @@ Begin VB.Form Analityc
          Caption         =   "Выбор оборудования"
          Height          =   252
          Left            =   120
-         TabIndex        =   26
+         TabIndex        =   24
          Top             =   3840
          Width           =   2052
       End
@@ -303,14 +335,14 @@ Begin VB.Form Analityc
       Height          =   1332
       Left            =   240
       TabIndex        =   4
-      Top             =   7680
+      Top             =   7800
       Width           =   4932
       Begin VB.CommandButton cmFilterApply 
          Appearance      =   0  'Flat
          BackColor       =   &H8000000A&
          Height          =   252
          Left            =   3720
-         Picture         =   "Analityc.frx":00FE
+         Picture         =   "Analityc.frx":00EC
          Style           =   1  'Graphical
          TabIndex        =   9
          ToolTipText     =   "Удалить Фильтр"
@@ -338,7 +370,7 @@ Begin VB.Form Analityc
          Enabled         =   0   'False
          Height          =   252
          Left            =   3720
-         Picture         =   "Analityc.frx":04E8
+         Picture         =   "Analityc.frx":04D6
          Style           =   1  'Graphical
          TabIndex        =   6
          ToolTipText     =   "Сохранить фильтр"
@@ -351,7 +383,7 @@ Begin VB.Form Analityc
          BackColor       =   &H8000000A&
          Height          =   252
          Left            =   4080
-         Picture         =   "Analityc.frx":08B7
+         Picture         =   "Analityc.frx":08A5
          Style           =   1  'Graphical
          TabIndex        =   5
          ToolTipText     =   "Удалить Фильтр"
@@ -370,7 +402,7 @@ Option Explicit
 Dim tbKlass As Recordset
 Dim Node As Node
 Dim managId As String
-
+Dim columnsVisible As Boolean
 
 Dim flagInitFilter As Boolean
 
@@ -431,20 +463,20 @@ End Sub
 
 
 Private Sub ckKriteriumOborud_Click()
-Dim i As Integer
+Dim I As Integer
 
     checkDirtyFilterCommads
     If ckKriteriumOborud.value = 1 Then
         If ckKriteriumNoOborud.value = 1 Then
             ckKriteriumNoOborud.value = 0
         End If
-        For i = 1 To 3
-            cbOborud(i).Enabled = True
-        Next i
+        For I = 1 To 3
+            cbOborud(I).Enabled = True
+        Next I
     Else
-        For i = 1 To 3
-            cbOborud(i).Enabled = False
-        Next i
+        For I = 1 To 3
+            cbOborud(I).Enabled = False
+        Next I
     End If
 End Sub
 
@@ -464,6 +496,7 @@ Dim filterId As Integer
     Results.Top = Me.Top
     Results.filterId = submitFilter("")
     Results.applyTriggered = True
+    Results.managId = managId
     If ckStartDate.value = 1 Then
         Results.StartDate = tbStartDate.value
     Else
@@ -477,6 +510,7 @@ Dim filterId As Integer
     Results.Show , Me
 
 End Sub
+
 
 Private Sub cmExit_Click()
     Unload Me
@@ -546,33 +580,33 @@ End Sub
 
 Private Sub cleanTree(tView As TreeView)
 Dim currentNode As Node
-Dim i As Integer, nCount As Integer
+Dim I As Integer, nCount As Integer
 Dim enabledFlag As Boolean
 
     enabledFlag = tView.Enabled
     tView.Enabled = True
     
     nCount = tView.Nodes.Count
-    For i = 1 To nCount
-        Set currentNode = tView.Nodes(i)
-        If currentNode.Checked Then
-            currentNode.Checked = False
+    For I = 1 To nCount
+        Set currentNode = tView.Nodes(I)
+        If currentNode.checked Then
+            currentNode.checked = False
             currentNode.Expanded = False
         End If
-    Next i
+    Next I
 
     tView.Enabled = enabledFlag
 End Sub
 
 Private Sub cleanOborud()
 Dim currentOborud As CheckBox
-Dim i As Integer, nCount As Integer
+Dim I As Integer, nCount As Integer
 
     'nCount = UBound(cbOborud)
-    For i = 1 To 3
-        Set currentOborud = cbOborud(i)
+    For I = 1 To 3
+        Set currentOborud = cbOborud(I)
         currentOborud.value = 0
-    Next i
+    Next I
 End Sub
 
 Private Sub cleanFilterWindows()
@@ -638,7 +672,7 @@ Dim filterId As Integer, byRowId As Integer, byColumnId As Integer
             If Not IsNull(table!intValue) Then
                 Set Node = tvMat.Nodes("k" & table!intValue)
                 expandParents Node
-                Node.Checked = True
+                Node.checked = True
             End If
             
         End If
@@ -650,7 +684,7 @@ Dim filterId As Integer, byRowId As Integer, byColumnId As Integer
                 ckKriteriumRegion.value = 0
             End If
             Set Node = tvRegion.Nodes("k" & table!intValue)
-            Node.Checked = True
+            Node.checked = True
             expandParents Node
         End If
         
@@ -812,12 +846,12 @@ Dim personal As Integer
 
     If hasOborud Then
         itemId = saveFilterItem(filterId, "oborudItems", ckKriteriumOborud.value)
-        Dim i As Integer
-        For i = 1 To 3
-            If cbOborud(i).value Then
-                saveFilterParam itemId, "oborudItemId", i
+        Dim I As Integer
+        For I = 1 To 3
+            If cbOborud(I).value Then
+                saveFilterParam itemId, "oborudItemId", I
             End If
-        Next i
+        Next I
     End If
     
     If ckKriteriumNoOborud.value = 1 Then
@@ -848,6 +882,83 @@ End Sub
 Private Sub cmFilterApply_Click()
     initFilter CStr(cbFilters.Text), 0
 
+End Sub
+
+
+Private Sub cmColumns_Click()
+Dim columnDefs() As columnDef
+    
+    
+    If Not columnsVisible Then
+        tvColumns.Visible = Not tvColumns.Visible
+    End If
+    columnsVisible = False
+    
+    If tvColumns.Visible Then
+        tvColumns.SetFocus
+        initColumns columnDefs, 0, managId, , cbGroupByRow.ItemData(cbGroupByRow.ListIndex), cbGroupByColumn.ItemData(cbGroupByColumn.ListIndex)
+        initColumnTree columnDefs
+    End If
+    'Debug.Print "cmColumns_Click, tvColumns.Visible = " & tvColumns.Visible
+End Sub
+
+
+
+Private Sub initColumnTree(ByRef headerList() As columnDef)
+Dim I As Integer, anySaved As Boolean, aNode As Node
+
+
+    tvColumns.Nodes.Clear
+    
+    For I = 0 To UBound(headerList)
+        Set aNode = tvColumns.Nodes.Add(, , "c" & headerList(I).columnId, headerList(I).nameRu)
+        If headerList(I).saved Then
+            aNode.checked = True
+        End If
+    Next I
+    
+End Sub
+
+' Используем инверсную логику: наличие записи в таблице означает исключение столбца.
+
+Private Sub persistColumnSelect(checked As Boolean, columnId As Integer, managId As String, byRow As Integer, byColumn As Integer)
+    If Not checked Then
+        sql = "insert into nHeaderColumnSelected (managId, templateId, columnId) select " _
+        & "'" & managId & "'" _
+        & ", a.templateId " _
+        & ", " & columnId _
+        & " from nAnalys a " _
+        & " where a.byrow = " & byRow _
+        & " and a.bycolumn = " & byColumn
+    Else
+        sql = "delete from nHeaderColumnSelected hc " _
+        & " from nAnalys a " _
+        & " where a.byrow = " & byRow _
+        & " and a.bycolumn = " & byColumn _
+        & " and hc.managId = '" & managId & "'" _
+        & " and hc.templateId = a.templateId " _
+        & " and hc.columnId = " & columnId
+    End If
+    
+    'Debug.Print sql
+    myExecute "W#ColumnSelect", sql, 0
+
+End Sub
+
+
+
+Private Sub tvColumns_NodeCheck(ByVal Node As MSComctlLib.Node)
+    persistColumnSelect Node.checked, CInt(Mid(Node.key, 2)), managId _
+        , cbGroupByRow.ItemData(cbGroupByRow.ListIndex) _
+        , cbGroupByColumn.ItemData(cbGroupByColumn.ListIndex)
+
+    
+End Sub
+
+Private Sub tvColumns_LostFocus()
+    tvColumns.Visible = False
+    'Debug.Print "tvColumns_LostFocus, tvColumns.Visible = " & tvColumns.Visible
+    columnsVisible = True
 End Sub
 
 
@@ -898,12 +1009,12 @@ Private Sub populateAxeList(ByRef table As Recordset, cb As ComboBox)
     End If
     
     cb.Clear
-    Dim i As Integer
-    i = 0
+    Dim I As Integer
+    I = 0
     While Not table.EOF
         cb.AddItem table!Name_ru
-        cb.ItemData(i) = table!id
-        i = i + 1
+        cb.ItemData(I) = table!id
+        I = I + 1
         table.MoveNext
     Wend
     table.Close
@@ -912,11 +1023,12 @@ End Sub
 
 Private Sub initByColumnList(byRowId As Integer)
     sql = "select * from nAnalysCategory c" _
-        & " where c.bycolumn_flag = 1" _
-        & " and exists (select 1 from nAnalys a where a.byrow = " & byRowId & " and c.id = a.bycolumn)"
+        & " where c.bycolumn_flag != 0" _
+        & " and exists (select 1 from nAnalys a where a.byrow = " & byRowId & " and c.id = a.bycolumn)" _
+        & " order by c.bycolumn_flag"
         
     Set table = myOpenRecordSet("W#initByRowList", sql, dbOpenForwardOnly)
-    Debug.Print sql
+    'Debug.Print sql
     populateAxeList table, cbGroupByColumn
     
 End Sub
@@ -924,7 +1036,9 @@ End Sub
 
 Private Sub initByRowList()
     
-    sql = "select * from nAnalysCategory where byrow_flag = 1"
+    sql = "select * from nAnalysCategory ac where byrow_flag = 1 " _
+        & " and exists (select 1 from nAnalys a where a.byrow = ac.id)"
+    
     Set table = myOpenRecordSet("W#initByRowList", sql, dbOpenForwardOnly)
     If table Is Nothing Then
         myBase.Close: End
@@ -934,54 +1048,56 @@ Private Sub initByRowList()
 
 End Sub
 
+
+
 Private Sub tvMat_NodeCheck(ByVal Node As MSComctlLib.Node)
     checkDirtyFilterCommads
     If Not Node.Child Is Nothing Then
-        setRecursiveNodeChecked Node.Child, Node.Checked
+        setRecursiveNodeChecked Node.Child, Node.checked
     End If
 End Sub
 
 
 Private Function getOborudItems() As Boolean
-Dim i As Integer
+Dim I As Integer
 
-    For i = 1 To 3
-        If cbOborud(i).value = 1 Then
+    For I = 1 To 3
+        If cbOborud(I).value = 1 Then
             getOborudItems = True
             Exit Function
         End If
-    Next i
+    Next I
 
 End Function
 
 
 Private Function getCheckedInTree(tView As TreeView) As Boolean
 Dim currentNode As Node
-Dim i As Integer
+Dim I As Integer
 
     getCheckedInTree = False
-    For i = 1 To tView.Nodes.Count
-        Set currentNode = tView.Nodes(i)
-        If currentNode.Checked Then
+    For I = 1 To tView.Nodes.Count
+        Set currentNode = tView.Nodes(I)
+        If currentNode.checked Then
             getCheckedInTree = True
             Exit Function
         End If
-    Next i
+    Next I
     
 End Function
 
 
 Private Sub saveParamsOfTree(tView As TreeView, itemId As Integer, paramName As String)
 Dim currentNode As Node
-Dim i As Integer, nCount As Integer
+Dim I As Integer, nCount As Integer
 
     nCount = tView.Nodes.Count
-    For i = 1 To nCount
-        Set currentNode = tView.Nodes(i)
-        If currentNode.Checked Then
+    For I = 1 To nCount
+        Set currentNode = tView.Nodes(I)
+        If currentNode.checked Then
             saveFilterParam itemId, paramName, CInt(Mid(currentNode.key, 2))
         End If
-    Next i
+    Next I
     
 End Sub
 
@@ -989,7 +1105,7 @@ End Sub
 Private Sub setRecursiveNodeChecked(ByRef root As Node, value As Boolean)
 Dim NextNode As Node
 
-    root.Checked = value
+    root.checked = value
     Set NextNode = root.Next
     If Not NextNode Is Nothing Then
         setRecursiveNodeChecked NextNode, value
@@ -1001,7 +1117,7 @@ End Sub
 
 
 Private Sub setRecursiveParent(ByRef root As Node, value As Boolean)
-    root.Checked = value
+    root.checked = value
     If Not root.Parent Is Nothing Then
         setRecursiveParent root.Parent, value
     End If
@@ -1020,7 +1136,7 @@ End Sub
 Private Sub tvRegion_NodeCheck(ByVal Node As MSComctlLib.Node)
     checkDirtyFilterCommads
     If Not Node.Child Is Nothing Then
-        setRecursiveNodeChecked Node.Child, Node.Checked
+        setRecursiveNodeChecked Node.Child, Node.checked
     End If
 
 End Sub
@@ -1031,15 +1147,15 @@ End Sub
 
 Private Function setListIndexByItemDataValue(ByRef cb As ComboBox, ByVal itemDataValue As Integer) As Boolean
 
-Dim i As Integer
+Dim I As Integer
 
     setListIndexByItemDataValue = True
-    For i = 0 To cb.ListCount - 1
-        If cb.ItemData(i) = itemDataValue Then
-            cb.ListIndex = i
+    For I = 0 To cb.ListCount - 1
+        If cb.ItemData(I) = itemDataValue Then
+            cb.ListIndex = I
             Exit Function
         End If
-    Next i
+    Next I
     setListIndexByItemDataValue = False
 End Function
 

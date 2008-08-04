@@ -32,56 +32,33 @@ if exists (select 1 from sysprocedure where proc_name = 'n_boot_filter') then
 end if;
 
 
+
+/**
+	Основная задача функции - выдать клиенту в виде резалтсета все параметры (или характеристики фильтра), 
+	которые ему потребуются для обработки уже конечных данных со значениями анализа.
+
+	Харастеристики фильтра бывают инвариантные, те. не зависящие от времени и автра запуска фильтра, 
+	и вариантные, т.е. зависящие от автора запуска фильтра.
+	Note: в текущей реализации вариантные не используются.
+	
+*/
 CREATE procedure n_boot_filter (
 	  p_filterid    integer
 	, p_managId     varchar(16)
-) 
+)
 begin
-	declare groupByRows    varchar(64);
-	declare groupByColumns varchar(64);
-	declare periodType     varchar(64);
-	declare implemented    integer;
 
-	set implemented = 0;
-
-	for x as xc dynamic scroll cursor for
-		call n_filter_params(p_filterid)
-	do
-		
-		if r_itemType = 'byrow' then
-			if r_isActive = 1 then
-				set groupByRows = 'firm';
-			end if;
-		elseif r_itemType = 'bycolumn' then
-			if r_isActive <= 5 then
-				set groupByColumns = 'periods';
-				if r_isActive = 1 then
-					set periodType = 'month'; 
-				elseif r_isActive = 2 then
-					set periodType = 'year'; 
-				elseif r_isActive = 3 then
-					set periodType = 'quarter'; 
-				elseif r_isActive = 4 then
-					set periodType = 'week'; 
-				elseif r_isActive = 5 then
-					set periodType = 'day'; 
-				end if;
-			elseif r_isActive = 6 then
-				set groupByColumns = 'materials';
-			end if;
-		else
-		end if;
-	end for;
-
-	set implemented = 1;
-	select 'implemented' as pkey, convert(varchar(20), implemented) as pvalue
-		union
-	select 'groupByColumns'   , convert(varchar(20), groupByColumns)
-		union
-	select 'periodType'       , convert(varchar(20), periodType)
-		union
-	select 'groupByRows'      , convert(varchar(20), groupByRows)
+--	insert into tmpNBootReport (paramName, paramValue)
+	select p.name as paramName, ab.paramValue as paramValue
+	from nAnalysBooting ab
+	join nAnalys a on ab.templateId = a.templateId
+	join nFilter f on f.byrowid = a.byrow and f.bycolumnid = a.bycolumn and f.id = p_filterId
+	left join nAnalysBootingParam p on p.id = ab.paramId
 	;
+	
+	-- 
+--	select * from tmpNBootReport;
+
 end;
 
 
@@ -105,18 +82,62 @@ if exists (select 1 from sysprocedure where proc_name = 'n_exec_filter_detail') 
 end if;
 
 
-CREATE procedure n_exec_filter_detail (
-	p_filterId    integer
-	, p_firmId    integer
-	, p_periodId  integer default 0
+if exists (select 1 from sysprocedure where proc_name = 'n_exec_result_columns_def') then
+	drop function n_exec_result_columns_def;
+end if;
+
+
+CREATE procedure n_exec_result_columns_def (
+	  p_headType    integer
+	, p_managId     varchar(16)
+	, p_filterId    integer default null
+	, p_byrow       integer default null
+	, p_bycolumn    integer default null
 ) 
 begin
-	if p_periodId = 0 then
-		
+	declare v_templateId    integer;
+	declare v_headerId      integer;
+
+
+	if isnull(p_filterId, 0) != 0 then
+		select a.templateId, t.headerId
+		into v_templateId, v_headerId
+		from nAnalys a
+		join nFilter f on f.id = p_filterId and a.byrow = f.byrowId and a.bycolumn = f.bycolumnid
+		join nAnalysTemplate t on t.id = a.templateId
+	;
+	else 
+		select a.templateId, t.headerId
+		into v_templateId, v_headerId
+		from nAnalys a 
+		join nAnalysTemplate t on t.id = a.templateId
+		where 
+			a.byrow = p_byrow and a.bycolumn = p_bycolumn
+		;
 	end if;
+
+
+	select 
+		c.id as columnId
+		, isnull(rc.sort, c.sort) as sort_token
+		, c.name as columnName
+		, name_ru as nameRu
+		, isnull(rc.align, c.align) as align
+    	, isnull(rc.hidden, c.hidden) as hidden
+		, headType
+		, isnull(us.width, c.width) as columnWidth
+		, c.format
+		, us.managId
+	from nAnalysTemplate t
+	join nResultHeader h on t.headerId = h.id
+	join nResultColumns rc on rc.headerId = t.headerId
+	join nResultColumnDef c on c.id = rc.columnId and (c.headType = p_headType or p_headType = 0)
+	left join nHeaderColumnSelected us on us.managId = p_managId and us.templateId = t.id and us.columnId = c.id
+	where t.id = v_templateId
+	order by headType, sort_token;
+
+
 end;
-
-
 
 
 if exists (select 1 from sysprocedure where proc_name = 'n_exec_header') then
@@ -314,10 +335,10 @@ create table #noOboruds (noOborud integer, isActive integer);
 
 
 
-	create table #firm_besuch (firmId integer, erst date, letzt date);
+	create table #firm_besuch (firmId integer, firstVisit date, lastVisit date);
 	if p_showFirst is not null or p_showLast is not null then
     
-		insert into #firm_besuch (firmId, erst, letzt) 
+		insert into #firm_besuch (firmId, firstVisit, lastVisit) 
 		select firmId, min(o.inDate), max(o.inDate)
 		from bayOrders o
 		where 
@@ -328,7 +349,7 @@ create table #noOboruds (noOborud integer, isActive integer);
 
 	if p_rowId = 0 and p_columnId = 0 then
 		-- выдача резалт-сета с полями первого и последнего посещения.
-		select r.*, b.erst, b.letzt
+		select r.*, b.firstVisit, b.lastVisit
 		from #results r
 		left join #firm_besuch b on b.firmId = r.firmId
 		order by r.name, r.firmid, r.periodid;
