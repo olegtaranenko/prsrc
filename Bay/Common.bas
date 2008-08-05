@@ -195,27 +195,31 @@ Dim filterStr As String
     
     index = 0
     While Not table.EOF
-        columnDefInfo.columnId = table!columnId
-        columnDefInfo.columnName = table!columnName
-        columnDefInfo.nameRu = table!nameRu
-        columnDefInfo.align = table!align
-        columnDefInfo.hidden = table!hidden
-        columnDefInfo.inHead = table!headType
-        If Not IsNull(table!columnWidth) Then
-            columnDefInfo.columnWidth = table!columnWidth
-        End If
-        If Not IsNull(table!Format) Then
-            columnDefInfo.columnFormat = table!Format
-        End If
         If IsNull(table!managId) Then
             columnDefInfo.saved = True
         Else
             columnDefInfo.saved = False
         End If
-
-        ReDim Preserve headerList(index)
-        headerList(index) = columnDefInfo
-        index = index + 1
+        
+        If columnDefInfo.saved Or headType = 0 Then
+            columnDefInfo.columnId = table!columnId
+            columnDefInfo.columnName = table!columnName
+            columnDefInfo.nameRu = table!nameRu
+            columnDefInfo.align = table!align
+            columnDefInfo.hidden = table!hidden
+            columnDefInfo.inHead = table!headType
+            If Not IsNull(table!columnWidth) Then
+                columnDefInfo.columnWidth = table!columnWidth
+            End If
+            If Not IsNull(table!Format) Then
+                columnDefInfo.columnFormat = table!Format
+            End If
+    
+            ReDim Preserve headerList(index)
+            headerList(index) = columnDefInfo
+            index = index + 1
+        End If
+        
         table.MoveNext
     Wend
     table.Close
@@ -357,11 +361,11 @@ If isFindFirm Then Unload FindFirm
 End Sub
 
     
-Function findValInCol(Grid As MSFlexGrid, value, col As Integer) As Boolean
+Function findValInCol(Grid As MSFlexGrid, Value, col As Integer) As Boolean
 Dim il As Long
 findValInCol = False
 For il = 1 To Grid.Rows - 1
-    If value = Grid.TextMatrix(il, orNomZak) Then
+    If Value = Grid.TextMatrix(il, orNomZak) Then
         Grid.TopRow = il
         Grid.row = il
         findValInCol = True
@@ -371,7 +375,7 @@ Next il
 
 End Function
         
-Function findExValInCol(Grid As MSFlexGrid, value As String, _
+Function findExValInCol(Grid As MSFlexGrid, Value As String, _
             ByVal col As Integer, Optional pos As Long = -1) As Long
 Dim il As Long, str  As String, beg As Long
 
@@ -380,10 +384,10 @@ If pos < 1 Then
 Else
     beg = pos
 End If
-value = UCase(value)
+Value = UCase(Value)
 For il = beg To Grid.Rows - 1
     str = UCase(Grid.TextMatrix(il, col))
-    If InStr(str, value) > 0 Then
+    If InStr(str, Value) > 0 Then
         If Not Grid.RowIsVisible(il) Then
             Grid.TopRow = il
         End If
@@ -396,15 +400,15 @@ findExValInCol = -1
 
 End Function
 
-Function existValueInTableFielf(ByVal value As Variant, tabl As String, field) As Boolean
+Function existValueInTableFielf(ByVal Value As Variant, tabl As String, field) As Boolean
 Dim table As Recordset
 
 existValueInTableFielf = False
 
-If Not IsNumeric(value) Then value = "'" & value & "'"
+If Not IsNumeric(Value) Then Value = "'" & Value & "'"
 
 sql = "SELECT " & field & " From " & tabl & " WHERE (((" & field & ") = " & _
-value & "));"
+Value & "));"
 'MsgBox sql
 Set table = myOpenRecordSet("##390", sql, dbOpenForwardOnly)
 'If table Is Nothing Then myBase.Close: End
@@ -587,7 +591,7 @@ objExel.Visible = True
 objExel.SheetsInNewWorkbook = 1
 objExel.Workbooks.Add
 With objExel.ActiveSheet
-.Cells(1, 2).value = title
+.Cells(1, 2).Value = title
 ReDim Preserve strA(Grid.Cols + 1)
 For r = 0 To Grid.Rows - 1
     For c = 1 To Grid.Cols - 1
@@ -1004,12 +1008,12 @@ End Sub
 
 'не записыват неуникальное значение, дл€ полей, где такие
 'значени€ запрещены. ј  генерит при этом error?
-Function ValueToTableField(myErrCod As String, value As String, table As String, _
+Function ValueToTableField(myErrCod As String, Value As String, table As String, _
 field As String, Optional by As String = "") As Integer
 Dim sql As String, byStr As String ', numOrd As String
 
 ValueToTableField = False
-If value = "" Then value = Chr(34) & Chr(34)
+If Value = "" Then Value = Chr(34) & Chr(34)
 If by = "" Then
     byStr = ".numOrder)= " & gNzak
 ElseIf by = "byFirmId" Then
@@ -1025,7 +1029,7 @@ ElseIf by = "byProductId" Then
 'ElseIf by = "bySourceId" Then
 '    byStr = ".sourceId)= " & gSourceId
 ElseIf by = "byNumDoc" Then
-    sql = "UPDATE " & table & " SET " & table & "." & field & "=" & value _
+    sql = "UPDATE " & table & " SET " & table & "." & field & "=" & Value _
         & " WHERE (((" & table & ".numDoc)=" & numDoc & " AND (" & table & _
         ".numExt)=" & numExt & " ));"
     GoTo AA
@@ -1033,7 +1037,7 @@ Else
     Exit Function
 End If
 sql = "UPDATE " & table & " SET " & table & "." & field & _
-" = " & value & " WHERE (((" & table & byStr & " ));"
+" = " & Value & " WHERE (((" & table & byStr & " ));"
 AA:
 'MsgBox "sql = " & sql
 

@@ -50,10 +50,10 @@ begin
 
 --	insert into tmpNBootReport (paramName, paramValue)
 	select p.name as paramName, ab.paramValue as paramValue
-	from nAnalysBooting ab
+	from nAnalysBootingParam p 
+	join nAnalysBooting ab on p.id = ab.paramId
 	join nAnalys a on ab.templateId = a.templateId
 	join nFilter f on f.byrowid = a.byrow and f.bycolumnid = a.bycolumn and f.id = p_filterId
-	left join nAnalysBootingParam p on p.id = ab.paramId
 	;
 	
 	-- 
@@ -314,7 +314,7 @@ create table #noOboruds (noOborud integer, isActive integer);
 		, orderOrdered  float
 		, materialQty   float
 		, materialSaled float
-		, name          varchar(512)
+		, firm          varchar(512)
 		, region        varchar(256)
 		, regionid      integer
 		, periodid      integer
@@ -352,7 +352,7 @@ create table #noOboruds (noOborud integer, isActive integer);
 		select r.*, b.firstVisit, b.lastVisit
 		from #results r
 		left join #firm_besuch b on b.firmId = r.firmId
-		order by r.name, r.firmid, r.periodid;
+		order by r.firm, r.firmid, r.periodid;
 	elseif p_rowId != 0 then
 		select r.* 
 		from #results r
@@ -541,7 +541,7 @@ begin
 			, orderOrdered
 			, materialQty
 			, materialSaled
-			, name
+			, firm
 			, region
 			, regionid
 			, periodid

@@ -125,6 +125,9 @@ Dim activeTab As Integer
 Dim mousCol As Integer
 Dim searchValue As String, searchPos As Long, searchAgain As Boolean
 
+Dim GridHeaderHeadDef() As columnDef
+Dim GridHeaderTailDef() As columnDef
+
 Private Type ColumnInfo
     PeriodId As Integer
     label As String
@@ -386,12 +389,15 @@ End Sub
 Private Sub LoadTable()
 ' Номер строки в таблице
 Dim rownum As Integer
+Dim groupSelectorColumn As String, prevSelector As Variant
+
 
 
     cleanTable
     
     setFilterParams
     
+    groupSelectorColumn = getCurrentSetting("groupSelectorColumn", filterSettings)
     If Not setGridHeaders(filterId) Then
         MsgBox "Отчет не содержит данных", vbExclamation
         Exit Sub
@@ -414,54 +420,55 @@ Dim rownum As Integer
     Dim I As Integer ' номер столбца
     Dim colShift As Integer, ln As Integer
     Dim orderQty As Integer, orderOrdered As Single, materialQty As Single, materialSaled As Single
-'    Dim prevFirmId As Integer
-    Dim prevFirm As String
+'    Dim prevFirm As String
     Dim totals() As Double
+    Dim columnIndex As Integer
+    Dim skipFixedInit As Boolean
     
     ln = UBound(columns)
     ReDim totals(multiplyCols)
     
     
     rownum = 0
-    prevFirm = ""
+    prevSelector = Null
+    skipFixedInit = False
     While Not table.EOF
 
-        If prevFirm <> table!Name Then
+        If prevSelector <> table(groupSelectorColumn) Or IsNull(prevSelector) Then
             I = PreHeaderCount + multiplyCols * ln
             If rownum > 0 Then
+                
                 colShift = periodCount * multiplyCols + PreHeaderCount
-                Grid.TextMatrix(rownum, colShift) = Format(totals(1), "# ##0"): totals(1) = 0
-                Grid.TextMatrix(rownum, colShift + 1) = Format(totals(2), "# ###.00"): totals(2) = 0
-                Grid.TextMatrix(rownum, colShift + 2) = Format(totals(3), "# ##0"): totals(3) = 0
-                Grid.TextMatrix(rownum, colShift + 3) = Format(totals(4), "# ###.00"): totals(4) = 0
+                For columnIndex = 0 To UBound(GridHeaderTailDef)
+                    Grid.TextMatrix(rownum, colShift + columnIndex) = Format(totals(columnIndex), GridHeaderTailDef(columnIndex).columnFormat)
+                    totals(columnIndex) = 0
+                Next columnIndex
+                
                 Grid.AddItem ""
             End If
             rownum = rownum + 1
         End If
 
-        I = 0
-        Grid.TextMatrix(rownum, I) = table!firmId: I = I + 1
-        Grid.TextMatrix(rownum, I) = table!Name: I = I + 1
-        Grid.TextMatrix(rownum, I) = table!region: I = I + 1
-        Grid.TextMatrix(rownum, I) = table!firstVisit: I = I + 1
-        Grid.TextMatrix(rownum, I) = table!lastVisit: I = I + 1
+        colShift = 0
+        For columnIndex = 0 To UBound(GridHeaderHeadDef)
+            Grid.TextMatrix(rownum, colShift + columnIndex) = table(GridHeaderHeadDef(columnIndex).columnName)
+        Next columnIndex
         
-        colShift = I + getPeriodShift(table!PeriodId) * multiplyCols
-        Grid.TextMatrix(rownum, colShift) = table("orderQty")
-        Grid.TextMatrix(rownum, colShift + 1) = Format(table("orderOrdered"), "# ###.00")
-        Grid.TextMatrix(rownum, colShift + 2) = table("materialQty")
-        Grid.TextMatrix(rownum, colShift + 3) = Format(table("materialSaled"), "# ###.00")
         
-        totals(1) = table("orderQty") + totals(1)
-        totals(2) = table("orderOrdered") + totals(2)
-        totals(3) = table("materialQty") + totals(3)
-        totals(4) = table("materialSaled") + totals(4)
+        colShift = getPeriodShift(table!PeriodId) * multiplyCols + UBound(GridHeaderHeadDef) + 1
+        For columnIndex = 0 To UBound(GridHeaderTailDef)
+            Dim curValue As Double
+            curValue = table(GridHeaderTailDef(columnIndex).columnName)
+            Grid.TextMatrix(rownum, colShift + columnIndex) = Format(curValue, GridHeaderTailDef(columnIndex).columnFormat)
+            totals(columnIndex) = totals(columnIndex) + curValue
+        Next columnIndex
         
-        prevFirm = table!Name
+        prevSelector = table(groupSelectorColumn)
         
         table.MoveNext
     Wend
     table.Close
+    
     If rownum > 1 Then
         Grid.RemoveItem rownum
     End If
@@ -521,17 +528,18 @@ Dim delim As String, delimHead As Integer, delimTail As Integer
     'Optimistic view
     setGridHeaders = True
 
-    initColumns headerList, 0, managId, filterId
+    initColumns GridHeaderHeadDef, 1, managId, filterId
+    initColumns GridHeaderTailDef, 2, managId, filterId
     
-    For index = 0 To UBound(headerList)
-        headerColumn = headerList(index)
-        If headerColumn.inHead = 1 Then
-            appendToHeader GridHeaderHead, headerColumn, delimHead
-        Else
-            appendToHeader GridHeaderTail, headerColumn, delimTail
-        End If
+    For index = 0 To UBound(GridHeaderHeadDef)
+        headerColumn = GridHeaderHeadDef(index)
+        appendToHeader GridHeaderHead, headerColumn, delimHead
     Next index
     
+    For index = 0 To UBound(GridHeaderTailDef)
+        headerColumn = GridHeaderTailDef(index)
+        appendToHeader GridHeaderTail, headerColumn, delimTail
+    Next index
     
     'GridHeaderHead = "|<Название фирмы|<Регион|>Перв.Визит|>Посл.Визит"
     'GridHeaderTail = ">Заказов|>Сумма заказов|>К-во матер.|>Сумма матер."
@@ -639,8 +647,8 @@ Dim entry As MapEntry
     
     Set table = myOpenRecordSet("##Results.3", sql, dbOpenDynaset)
     While Not table.EOF
-        entry.key = table!pKey
-        entry.value = table!pValue
+        entry.key = table!paramName
+        entry.Value = table!paramValue
         append filterSettings, entry
         table.MoveNext
     Wend
