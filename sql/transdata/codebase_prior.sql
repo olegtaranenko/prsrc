@@ -197,9 +197,23 @@ begin
 
 end;
 
+if exists (select 1 from sysprocedure where proc_name = 'n_filter_param_to_tables') then
+	drop procedure n_filter_param_to_tables;
+end if;
+
+
+CREATE procedure n_filter_param_to_tables (
+	  p_filterId    integer
+	  , out p_begin date
+	  , out p_end   date
+) 
+begin
+	
+end;
+
 
 if exists (select 1 from sysprocedure where proc_name = 'n_exec_header') then
-	drop function n_exec_header;
+	drop procedure n_exec_header;
 end if;
 
 
@@ -214,7 +228,14 @@ begin
 	declare v_sql           long varchar;
 	declare v_begin         date;
 	declare v_end           date;
+	declare v_sqlHeader     varchar(254);
 
+
+
+	create table #regions (regionId integer, isActive integer);
+	create table #materials (klassId integer, isActive integer);
+	create table #oborudItems (oborudItemId integer, isActive integer);
+	create table #noOboruds (noOborud integer, isActive integer);
 
 
 	for x as xc dynamic scroll cursor for
@@ -227,18 +248,37 @@ begin
 			if r_paramType = 'periodEnd' then
 				set v_end = convert(date, r_charValue, 104);
 			end if;
+		else
+			set v_sql = 'insert into #' + r_itemType;
+			if r_paramClass = 'ids' then
+				set v_sql = v_sql + '( ' + r_paramType + ', isActive)';
+			end if;
+    
+			set v_sql = v_sql + ' values (';
+			if r_intValue is not null then
+				set v_sql = v_sql + convert(varchar(20), r_intValue) + ', ' + convert(varchar(20), r_isActive);
+			elseif r_charValue is not null then
+				set v_sql = v_sql + '''' + r_charValue + '''' + ', ' + convert(varchar(20), r_isActive);
+			else
+				set v_sql = v_sql + convert(varchar(20), r_isActive) + ', null';
+			end if;
+			set v_sql = v_sql + ')';
+    
+			message v_sql to client;
+			execute immediate v_sql;
 		end if;
 	end for;
 
 
-	select c.name, p.name 
-	into v_column_token, v_parent_token
+
+	select c.name, p.name, t.sqlHeader
+	into v_column_token, v_parent_token, v_sqlHeader
 	from nAnalys a
 	join nAnalysCategory c on c.id = a.bycolumn
 	left join nAnalysCategory p on p.id = c.parentId
-	where exists (
-		select 1 from nfilter f where f.byrowid = a.byrow and f.bycolumnid = a.bycolumn and f.id = p_filterid
-	);
+	join nAnalysTemplate t on a.templateId = t.id
+	join nFilter f on f.id = 5 and f.byrowid = a.byrow and f.bycolumnid = a.bycolumn
+	;
 
 	if v_parent_token is not null then
 		set v_proc_token = v_parent_token;
@@ -248,24 +288,20 @@ begin
 		set v_sub_token = null;
 	end if;
 
-	if v_proc_token = 'periods' then
-		create table #periods (
-			periodId int default autoincrement
-			, st date
-			, en date
-			, label varchar(32)
-			, year integer
-		);
-	end if;
+	create table #periods (
+		  periodId int default autoincrement
+		, klassId integer 
+		, label varchar(32)
+		, st date
+		, en date
+		, year integer
+	);
 	
-	set v_sql = 'call n_fill_' + v_proc_token + '(v_begin, v_end, v_sub_token)'; 
+	set v_sql = v_sqlHeader; 
 
 	execute immediate v_sql;
 
-
-	if v_proc_token = 'periods' then
-		select * from #periods order by 1;
-	end if;
+	select * from #periods order by 1;
 
 end;
 
@@ -285,7 +321,7 @@ CREATE procedure n_exec_filter (
 	, p_columnId    integer default 0
 	, p_showFirst   integer default 1
 	, p_showLast    integer default 1
-) 
+)
 begin
 	declare v_sql long varchar;
 	declare groupByRows    varchar(64);
@@ -300,17 +336,18 @@ begin
 	declare v_parent_token  varchar(32);
 	declare v_proc_token    varchar(32);
 	declare v_sub_token     varchar(32);
+	declare v_sqlFunction   varchar(127);
 
 
-	select r.name, c.name, p.name 
-	into groupByRows, v_column_token, v_parent_token
+	select r.name, c.name, p.name, t.sqlFunction
+	into groupByRows, v_column_token, v_parent_token, v_sqlFunction
 	from nAnalys a
 	join nAnalysCategory r on r.id = a.byrow
 	join nAnalysCategory c on c.id = a.bycolumn
 	left join nAnalysCategory p on p.id = c.parentId
-	where exists (
-		select 1 from nfilter f where f.byrowid = a.byrow and f.bycolumnid = a.bycolumn and f.id = p_filterid
-	);
+	join nAnalysTemplate t on a.templateId = t.id
+	join nFilter f on f.id = 5 and f.byrowid = a.byrow and f.bycolumnid = a.bycolumn
+	;
 
 
 	if v_parent_token is not null then
@@ -322,15 +359,10 @@ begin
 	end if;
 
 
-	if groupByRows is null then
-		message 'Procedure not implemented yet!' to client;
-	end if;
-	
-
-create table #regions (regionId integer, isActive integer);
-create table #materials (klassId integer, isActive integer);
-create table #oborudItems (oborudItemId integer, isActive integer);
-create table #noOboruds (noOborud integer, isActive integer);
+	create table #regions (regionId integer, isActive integer);
+	create table #materials (klassId integer, isActive integer);
+	create table #oborudItems (oborudItemId integer, isActive integer);
+	create table #noOboruds (noOborud integer, isActive integer);
 	
 	for x as xc dynamic scroll cursor for
 		call n_filter_params(p_filterid)
@@ -381,6 +413,17 @@ create table #noOboruds (noOborud integer, isActive integer);
 		, numorder      integer
 	);
 
+
+		create table #periods (
+			  periodId int default autoincrement
+			, klassId integer 
+			, label varchar(32)
+			, st date
+			, en date
+			, year integer
+		);
+
+
 	call n_default_period(v_begin, v_end);
 
 	set v_proc_name = 'n_list_' + groupByRows + '_by_' + groupByColumns;
@@ -390,7 +433,6 @@ create table #noOboruds (noOborud integer, isActive integer);
 	end if;
 
 	execute immediate 'call ' + v_proc_name + '(v_begin, v_end, v_sub_token, p_rowId, p_columnId)';
-
 
 
 	create table #firm_besuch (firmId integer, firstVisit date, lastVisit date);
@@ -453,22 +495,155 @@ end;
 
 
 
+if exists (select 1 from sysprocedure where proc_name = 'n_internal_klasses') then
+	drop procedure n_internal_klasses;
+end if;
+CREATE procedure n_internal_klasses (
+	  p_begin         date
+	, p_end           date
+--	, out p_material_flag  integer
+	, p_table_name     varchar(64)
+)
+begin
+	declare v_region_flag integer;
+	declare v_oborud_flag integer;
+	declare v_no_oborud_flag integer;
+	declare v_sql long varchar;
+
+	declare v_detail      integer;
+	declare v_detail_fine integer;
+	declare v_firmId      integer;
+
+	declare v_ord_table varchar(64);
+	declare p_id_name varchar(64);       
+	declare p_parent_id_name varchar(64);
+	declare p_order_by_name varchar(256);
+
+	declare v_cnt integer;
+
+	declare v_material_flag integer;
+
+	set v_detail = 0;
+
+
+
+	select count(*) into v_region_flag   	from #regions   where isActive = 1;
+	select count(*) into v_material_flag 	from #materials where isActive = 1;
+	select count(*) into v_no_oborud_flag   from #noOboruds where isActive = 1;
+	if v_no_oborud_flag = 0 then
+		select count(*) into v_oborud_flag   from #oborudItems where isActive = 1;
+	end if;
+
+
+	message 'p_begin = ', p_begin to client;
+	message 'p_end = ', p_end to client;
+
+	insert into #sale_item (
+		 numorder
+		,nomnom
+		,materialQty
+		,sm
+		,inDate
+		,firmId      
+		,klassid
+	)
+	select
+		  o.numorder as numorder
+		, i.nomnom
+		, i.quant / n.perlist as materialQty
+		, (i.quant / n.perlist) * i.cenaEd as sm
+		, o.inDate
+		, o.firmId
+		, n.klassid
+	from itemSellOrde i
+	join bayorders o on o.numorder = i.numorder 
+	join sguidenomenk n on i.nomnom = n.nomnom
+	where 
+			(p_begin is null or o.indate >= p_begin) and (p_end is null or o.inDate < p_end)
+		and (v_material_flag = 0 or exists (select 1 from #materials m where n.klassid = m.klassid))
+	;
+	message 'count of #sale_item = ', @@rowcount to client;
+
+	delete from #materials where not exists (select 1 from #sale_item i where i.klassId = #materials.klassId);
+
+	select count(*) into v_cnt from #materials;
+	message 'count(*) from #materials = ', v_cnt to client;
+
+	set p_id_name = 'klassId';
+	set p_parent_id_name = 'parentKlassId';
+	set p_order_by_name = 'klassName';
+	set v_ord_table = get_tmp_ord_table_name(p_table_name);
+
+
+	call wf_sort_klassificator(p_table_name, p_id_name, p_parent_id_name, p_order_by_name);
+
+	if v_material_flag = 0 then
+		insert into #periods (klassId, label)
+		select k.klassId as r_klassId, k.klassName as r_klassName
+		--, k.parentKlassId as r_parentKlassId, o.ord as r_order
+		from sGuideKlass k 
+		join #sGuideKlass_ord o on o.id = k.klassId
+		where isnull(klassName, '') != ''
+		order by o.ord, k.klassName;
+	else
+		insert into #periods (klassId, label)
+		select k.klassId as r_klassId, k.klassName as r_klassName
+		--, k.parentKlassId as r_parentKlassId, o.ord as r_order
+		from sGuideKlass k 
+		join #sGuideKlass_ord o on o.id = k.klassId
+		join #materials m on m.klassId = k.klassId
+		where isnull(klassName, '') != ''
+		order by o.ord, k.klassName;
+	end if;		
+
+
+
+end;
+
+
+
+
+
+
 if exists (select 1 from sysprocedure where proc_name = 'n_fill_klasses') then
 	drop procedure n_fill_klasses;
 end if;
 
-
+-- в периоде времени [p_begin, p_end] находим, какие 
+-- продавалиь товары из выбранных груп..
+-- columnId - соответствует klassId группы материалов.
+-- выдача результат должна быть отсортирована в 
+-- соответсвии обходом дерева с отсортированным по 
+-- имени на одном уровне.
 CREATE procedure n_fill_klasses (
-	  p_begin       date
-	, p_end         date
-	, p_period_type varchar(20) 
-	, p_columnId    integer default 0
+	  p_filterId     integer
+	, p_begin         date  default null
+	, p_end           date  default null
 )
 begin
-	message 'p_begin       = ', p_begin       to client;
-	message 'p_end         = ', p_end         to client;
-	message 'p_period_type = ', p_period_type to client;
-	message 'p_columnId    = ', p_columnId    to client;
+
+	declare v_table_name    varchar(64);
+	declare v_ord_table varchar(64);
+
+	declare v_sql long varchar;
+
+	create table #sale_item (
+		 numorder    integer
+		,nomnom      varchar(20)
+		,materialQty         float
+		,sm          float
+		,inDate      date
+		,firmId      integer
+		,klassid     integer
+	);
+
+	set v_table_name = 'sGuideKlass';
+	set v_ord_table = get_tmp_ord_table_name(v_table_name);
+	execute immediate get_tmp_ord_create_sql(v_ord_table); -- #sGuideKlass_ord
+
+
+	call n_internal_klasses (p_begin, p_end, v_table_name);
+
 
 
 end;
@@ -487,11 +662,67 @@ CREATE procedure n_list_firm_by_klasses (
 	, p_columnId      integer
 )
 begin
+--	declare v_material_flag integer;
+
+	declare v_table_name    varchar(64);
+	declare v_ord_table varchar(64);
+
 	message 'p_begin       = ', p_begin       to client;
 	message 'p_end         = ', p_end         to client;
 	message 'p_period_type = ', p_period_type to client;
 	message 'p_rowId       = ', p_rowId       to client;
 	message 'p_columnId    = ', p_columnId    to client;
+
+
+
+	create table #sale_item (
+		 numorder    integer
+		,nomnom      varchar(20)
+		,materialQty float
+		,sm          float
+		,inDate      date
+		,firmId      integer
+		,klassid     integer
+	);
+
+	set v_table_name = 'sGuideKlass';
+	set v_ord_table = get_tmp_ord_table_name(v_table_name);
+	execute immediate get_tmp_ord_create_sql(v_ord_table); -- #sGuideKlass_ord
+
+
+	call n_internal_klasses (p_begin, p_end, v_table_name);
+
+
+	
+	insert into #results (
+		  label
+		, materialQty
+		, materialSaled
+		, firm
+		, region
+		, regionid
+		, periodid
+		, firmId
+	) select 
+		  p.label
+		, i.materialQty         -- к-во проданных единиц по выбранным материалам (шт, листов и т.д.)
+		, i.materialSaled    	-- сумма по выбраннм материалам
+		, f.name                -- фирма
+		, r.region
+		, r.regionid
+		, p.periodid
+		, f.firmId
+	from #periods p 
+	join (
+		select sum(sm) as materialSaled, sum(materialQty) as materialQty, firmid, klassId
+		from #sale_item
+		group by firmid, klassId
+	) i on 
+		i.klassId = p.klassId
+	join bayguidefirms f on f.firmid = i.firmid
+	join bayregion r on r.regionid = f.regionid
+	;
+
 end;
 
 
@@ -535,8 +766,8 @@ begin
 		end if;
 	end if;
 
-	select count(*) into v_region_flag   from #regions where isActive = 1;
-	select count(*) into v_material_flag from #materials where isActive = 1;
+	select count(*) into v_region_flag   	from #regions   where isActive = 1;
+	select count(*) into v_material_flag 	from #materials where isActive = 1;
 	select count(*) into v_no_oborud_flag   from #noOboruds where isActive = 1;
 	if v_no_oborud_flag = 0 then
 		select count(*) into v_oborud_flag   from #oborudItems where isActive = 1;
@@ -933,145 +1164,6 @@ end;
 
 
 
-if exists (select 1 from sysprocedure where proc_name = 'n_saveFilterItem') then
-	drop procedure n_saveFilterItem;
-end if;
-
-/*
-CREATE procedure n_saveFilterItem (
-	  p_filter_name varchar(64)
-	, p_item_name varchar(64)
-	, p_active integer
-)
-begin
-    declare v_exists integer;
-	
-
-	if p_active >= 0 then
-
-		update nItem i set isActive = p_active
-		from 
-			  nItemType it
-			, nFilter f
-		where 
-			i.itemTypeId = it.id and it.itemType = p_item_name
-		and
-			i.filterId = f.id and f.name = p_filter_name
-		;
-
-		set v_exists = @@rowcount;
-		message 'v_exists = ', v_exists to client;
-    
-		if v_exists = 0 then
-			insert into nItem (filterId, itemTypeId, isActive) 
-			select f.id,  it.id, p_active
-			from 
-				nItemType it 
-				, nFilter f
-			where 
-				it.itemType = p_item_name
-			and
-				f.name = p_filter_name
-			;
-			message '@@rowcount = ', @@rowcount to client;
-		end if;
-	else 
-		delete from nItem i
-		from
-			  nItemType it
-			, nFilter f
-		where 
-			i.itemTypeId = it.id and it.itemType = p_item_name
-		and
-			i.filterId = f.id and f.name = p_filter_name
-		;
-
-	end if;
-
-end;
-*/
-	
-	
-
-
-
-
-
-if exists (select 1 from sysprocedure where proc_name = 'n_saveFilterParam') then
-	drop procedure n_saveFilterParam;
-end if;
-
-/*
-CREATE procedure n_saveFilterParam (
-	  p_filter_name  varchar(64)
-	, p_item_name    varchar(64)
-	, p_param_name   varchar(64)
-	, p_intValue     integer
-	, p_charValue    long varchar default null
-	, p_delete       integer default null
-)
-begin
-    declare v_exists integer;
-	
-	if p_delete is null then
-		update nParam p set intValue = p_intValue, char_value = p_charValue
-		from 
-			  nItem i
-			, nItemType it
-			, nFilter f
-			, paramType pt
-		where 
-			p.paramTypeId = pt.id and pt.paramType = p_param_name
-		and 
-			(p.intValue = p_intValue or p.charValue = p_charValue)
-		and 
-			p.ItemId = i.id and i.itemTypeId = it.id and it.itemType = p_item_name
-		and
-			i.filterId = f.id and f.name = p_filter_name
-		;
-
-		set v_exists = @@rowcount;
-
-		message 'v_exists = ', v_exists to client;
-		if v_exists = 0 then
-			insert into nParam (itemId, paramTypeId, intValue) 
-			select it.id,  pt.id,  p_intValue, p_charValue
-			from 
-				nParamType pt 
-				, nItem i
-				, nItemType it
-				, nFilter f
-			where 
-				nParam.paramTypeId = pt.id and pt.paramType = p_param_name
-			and 
-				nParam.ItemId = i.id and i.itemTypeId = it.id and it.itemType = p_item_name
-			and
-				i.filterId = f.id and f.name = p_filter_name
-			;
-			message '@@rowcount = ', @@rowcount to client;
-		end if;
-	else
-		delete from nParam p 
-		from 
-			  nItem i
-			, nItemType it
-			, nFilter f
-			, paramType pt
-		where 
-			p.paramTypeId = pt.id and pt.paramType = p_param_name 
-		and 
-			(p.intValue = p_intValue or p.charValue = p_charValue)
-		and 
-			p.ItemId = i.id and i.itemTypeId = it.id and it.itemType = p_item_name
-		and
-			i.filterId = f.id and f.name = p_filter_name
-		;
-	end if;
-end;
-
-*/
-	
-	
 
 if exists (select 1 from sysprocedure where proc_name = 'get_tmp_ord_table_name') then
 	drop function get_tmp_ord_table_name;
@@ -1134,7 +1226,7 @@ begin
 
 	call wf_sort_klassificator(p_table_name, p_id_name, p_parent_id_name, p_order_by_name);
 
-	select k.klassId, k.klassName, k.parentKlassId, o.ord
+	select k.klassId as r_klassId, k.klassName as r_klassName, k.parentKlassId as r_parentKlassId, o.ord as r_order
 	from sGuideKlass k 
 	join #sGuideKlass_ord o on o.id = k.klassId
 	where isnull(klassName, '') != ''
@@ -1219,6 +1311,15 @@ begin
     declare v_tmp_child varchar(64);
     declare v_ord_table varchar(64);
 
+    declare x_klassid integer;
+    declare x_klassname varchar(254);
+    declare x_child_count integer;
+
+    declare x_parentid integer;
+    declare x_ord integer;
+    declare x_childs integer;
+    declare x_dummy varchar(254);
+
     set v_ord_table = get_tmp_ord_table_name(p_table_name);
     set v_tmp_child = '#' + p_table_name + '_child';
 
@@ -1226,6 +1327,8 @@ begin
     set v_lvl = 1;
     set v_prev_count = 0;
     set v_cur_pos = 1;
+
+
 
     execute immediate 'create table ' + v_tmp_child + ' (parent integer, child_count integer, lvl integer)';
 
@@ -1270,7 +1373,7 @@ begin
 
 
     set v_loop_sql = 
-        ' select ' + p_id_name + ' as r_klassid, ' + p_order_by_name + ' as r_klassname, isnull(p.child_count, 0) as r_child_count'
+        ' select ' + p_id_name + ', ' + p_order_by_name + ', isnull(p.child_count, 0)'
         + '    from ' + p_table_name + ' k'
         + '       left join ' + v_tmp_child + ' p on p.parent = k.' + p_id_name + ' and p.lvl = v_lvl + 1'
         + '       where isnull(' + p_parent_id_name + ', 0) = 0 and ' + p_id_name + ' != 0 order by ' + p_order_by_name
@@ -1280,25 +1383,22 @@ begin
 
     begin
         declare c_loop no scroll cursor using v_loop_sql;
-        declare r_klassid integer;
-        declare r_klassname long varchar;
-        declare r_child_count integer;
 
         
         open c_loop;
         
         loop_lable: loop
-            fetch c_loop into r_klassid, r_klassname, r_child_count;
+            fetch c_loop into x_klassid, x_klassname, x_child_count;
             if SQLCODE != 0 then 
                 leave loop_lable;
             end if;
 
             set v_sql = 
-                'insert into ' + v_ord_table + ' (id, ord) select r_klassid, v_cur_pos';
+                'insert into ' + v_ord_table + ' (id, ord) select x_klassid, v_cur_pos';
 --    message '05. ', v_sql to client;
             execute immediate v_sql;
 
-            set v_prev_count = r_child_count;
+            set v_prev_count = x_child_count;
             set v_cur_pos = v_cur_pos + 1 + v_prev_count;
         
         end loop;
@@ -1313,7 +1413,7 @@ begin
         set v_prev_id = 0;
 
         set v_loop_sql = 
-              '        select ' + p_id_name + ' as r_klassid, ' + p_order_by_name + ' as r_klassname, ' + p_parent_id_name + ' as r_parentid, ord as r_ord, isnull(p.child_count, 0) as r_childs'
+              '        select ' + p_id_name + ', ' + p_order_by_name + ', ' + p_parent_id_name + ', ord, isnull(p.child_count, 0)'
              + '           from ' + p_table_name + ' k'
              + '           join ' + v_ord_table + ' o on o.id = k.' + p_parent_id_name
              + '           left join ' + v_tmp_child + ' p on k.' + p_id_name + ' = p.parent and p.lvl = v_lvl + 1'
@@ -1324,33 +1424,30 @@ begin
         
         begin
             declare c_loop2 no scroll cursor using v_loop_sql;
-            declare r_klassid integer;
-            declare r_klassname long varchar;
-            declare r_parentid integer;
-            declare r_ord integer;
-            declare r_childs integer;
+--            declare r_klassid integer;
+--            declare r_klassname long varchar;
             
             open c_loop2;
 
             schich1: loop
-                fetch c_loop2 into r_klassid, r_klassname, r_parentid, r_ord, r_childs;
+                fetch c_loop2 into x_klassid, x_klassname, x_parentid, x_ord, x_childs;
                 if SQLCODE != 0 then
                     leave schich1;
                 end if;
 
-                if r_parentid != v_prev_id then
-                    set v_cur_pos = r_ord + 1;
+                if x_parentid != v_prev_id then
+                    set v_cur_pos = x_ord + 1;
                 else 
                     set v_cur_pos = v_cur_pos + 1 + v_prev_count;
                 end if;
 
                 set v_sql = 
-                    'insert into ' + v_ord_table + ' (id, ord) select r_klassid, v_cur_pos';
+                    'insert into ' + v_ord_table + ' (id, ord) select x_klassid, v_cur_pos';
 --    message '07. ', v_sql to client;
     			execute immediate v_sql;
                 set v_exit = 1;
-                set v_prev_id = r_parentid;
-                set v_prev_count = r_childs;
+                set v_prev_id = x_parentid;
+                set v_prev_count = x_childs;
     
         
             end loop;

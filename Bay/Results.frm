@@ -403,6 +403,8 @@ Dim checkResult As String
         & vbCr & "'" & checkResult & "'" _
         & vbCr & "Исправьте и попробуйте снова." _
         , vbExclamation, "Ошибка"
+        Unload Me
+        Exit Sub
     End If
     
     setFilterParams
@@ -410,7 +412,7 @@ Dim checkResult As String
     groupSelectorColumn = getCurrentSetting("groupSelectorColumn", filterSettings)
     If Not setGridHeaders(filterId) Then
         MsgBox "Отчет не содержит данных", vbExclamation
-        Exit Sub
+        Unload Me
     End If
     
     sql = "call n_exec_filter( " & filterId & ")"
@@ -447,13 +449,7 @@ Dim checkResult As String
         If prevSelector <> table(groupSelectorColumn) Or IsNull(prevSelector) Then
             i = PreHeaderCount + multiplyCols * ln
             If rownum > 0 Then
-                
-                colShift = periodCount * multiplyCols + PreHeaderCount
-                For columnIndex = 0 To UBound(GridHeaderTailDef)
-                    Grid.TextMatrix(rownum, colShift + columnIndex) = Format(totals(columnIndex), GridHeaderTailDef(columnIndex).columnFormat)
-                    totals(columnIndex) = 0
-                Next columnIndex
-                
+                totals(columnIndex) = 0
                 Grid.AddItem ""
             End If
             rownum = rownum + 1
@@ -473,18 +469,17 @@ Dim checkResult As String
             totals(columnIndex) = totals(columnIndex) + curValue
         Next columnIndex
         
+        colShift = periodCount * multiplyCols + PreHeaderCount
+        For columnIndex = 0 To UBound(GridHeaderTailDef)
+            Grid.TextMatrix(rownum, colShift + columnIndex) = Format(totals(columnIndex), GridHeaderTailDef(columnIndex).columnFormat)
+        Next columnIndex
+        
         prevSelector = table(groupSelectorColumn)
         
         table.MoveNext
     Wend
     table.Close
     
-    If rownum > 1 Then
-        Grid.RemoveItem rownum
-    End If
-    If rownum > 0 Then
-        rownum = rownum - 1
-    End If
     lbTotalQty.Caption = CStr(rownum) & " фирм"
     activateTab 1
 End Sub
@@ -593,14 +588,14 @@ Dim delim As String, delimHead As Integer, delimTail As Integer
     If table.BOF Then
         setGridHeaders = False
         Exit Function
-        
+
     End If
-    
+
     While Not table.EOF
         colInfo.label = table("label")
-        colInfo.year = table!year
-        colInfo.stDate = table!st
-        colInfo.enDate = table!EN
+        If Not IsNull(table!year) Then colInfo.year = table!year
+        If Not IsNull(table!st) Then colInfo.stDate = table!st
+        If Not IsNull(table!EN) Then colInfo.enDate = table!EN
         colInfo.PeriodId = table!PeriodId
         colInfo.index = index
         colInfo.colWidth = getColumnWidth(index, table!label)
