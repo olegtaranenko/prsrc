@@ -501,18 +501,15 @@ end if;
 CREATE procedure n_internal_klasses (
 	  p_begin         date
 	, p_end           date
---	, out p_material_flag  integer
-	, p_table_name     varchar(64)
+	, p_table_name    varchar(64)
+	, p_firmId        integer
+	, p_klassId       integer
 )
 begin
 	declare v_region_flag integer;
 	declare v_oborud_flag integer;
 	declare v_no_oborud_flag integer;
 	declare v_sql long varchar;
-
-	declare v_detail      integer;
-	declare v_detail_fine integer;
-	declare v_firmId      integer;
 
 	declare v_ord_table varchar(64);
 	declare p_id_name varchar(64);       
@@ -522,18 +519,32 @@ begin
 	declare v_cnt integer;
 
 	declare v_material_flag integer;
+	declare v_firmId           integer;
 
-	set v_detail = 0;
 
-
+	if isnull(p_klassId, 0) != 0 then
+		delete from #materials where klassId != p_klassId;
+		set v_material_flag = 1;
+	else
+		select count(*) into v_material_flag 	from #materials where isActive = 1;
+	end if;
 
 	select count(*) into v_region_flag   	from #regions   where isActive = 1;
-	select count(*) into v_material_flag 	from #materials where isActive = 1;
 	select count(*) into v_no_oborud_flag   from #noOboruds where isActive = 1;
 	if v_no_oborud_flag = 0 then
 		select count(*) into v_oborud_flag   from #oborudItems where isActive = 1;
 	end if;
 
+	set v_firmId = p_firmId;
+	if v_firmId = 0 then
+		set v_firmId = null;
+	end if;
+
+	message 'v_region_flag = ', v_region_flag to client;
+	message 'v_material_flag = ', v_material_flag to client;
+	message 'v_firmId = ', v_firmId to client;
+	message 'p_klassId = ', p_klassId to client;
+	message 'p_end = ', p_end to client;
 
 	message 'p_begin = ', p_begin to client;
 	message 'p_end = ', p_end to client;
@@ -558,9 +569,17 @@ begin
 	from itemSellOrde i
 	join bayorders o on o.numorder = i.numorder 
 	join sguidenomenk n on i.nomnom = n.nomnom
+	join bayGuideFirms f on o.firmId = f.firmId and isnull(v_firmId, f.firmId) = f.firmId
 	where 
 			(p_begin is null or o.indate >= p_begin) and (p_end is null or o.inDate < p_end)
 		and (v_material_flag = 0 or exists (select 1 from #materials m where n.klassid = m.klassid))
+		and (v_region_flag = 0 
+			or exists (
+				select 1 
+				from #regions r 
+				where r.regionid = f.regionId
+			)
+		)
 	;
 	message 'count of #sale_item = ', @@rowcount to client;
 
@@ -580,19 +599,17 @@ begin
 	if v_material_flag = 0 then
 		insert into #periods (klassId, label)
 		select k.klassId as r_klassId, k.klassName as r_klassName
-		--, k.parentKlassId as r_parentKlassId, o.ord as r_order
 		from sGuideKlass k 
 		join #sGuideKlass_ord o on o.id = k.klassId
-		where isnull(klassName, '') != ''
+		where isnull(k.klassName, '') != ''
 		order by o.ord, k.klassName;
 	else
 		insert into #periods (klassId, label)
 		select k.klassId as r_klassId, k.klassName as r_klassName
-		--, k.parentKlassId as r_parentKlassId, o.ord as r_order
 		from sGuideKlass k 
 		join #sGuideKlass_ord o on o.id = k.klassId
 		join #materials m on m.klassId = k.klassId
-		where isnull(klassName, '') != ''
+		where isnull(k.klassName, '') != ''
 		order by o.ord, k.klassName;
 	end if;		
 
@@ -642,8 +659,7 @@ begin
 	execute immediate get_tmp_ord_create_sql(v_ord_table); -- #sGuideKlass_ord
 
 
-	call n_internal_klasses (p_begin, p_end, v_table_name);
-
+	call n_internal_klasses (p_begin, p_end, v_table_name, null, null);
 
 
 end;
@@ -662,10 +678,12 @@ CREATE procedure n_list_firm_by_klasses (
 	, p_columnId      integer
 )
 begin
---	declare v_material_flag integer;
 
-	declare v_table_name    varchar(64);
-	declare v_ord_table varchar(64);
+	declare v_table_name  varchar(64);
+	declare v_ord_table   varchar(64);
+
+	declare v_firmId      integer;
+	declare v_klassId     integer;
 
 	message 'p_begin       = ', p_begin       to client;
 	message 'p_end         = ', p_end         to client;
@@ -690,38 +708,62 @@ begin
 	execute immediate get_tmp_ord_create_sql(v_ord_table); -- #sGuideKlass_ord
 
 
-	call n_internal_klasses (p_begin, p_end, v_table_name);
+	call n_internal_klasses (p_begin, p_end, v_table_name, p_rowId, p_columnId);
 
+	set v_firmId = p_rowId;
 
 	
-	insert into #results (
-		  label
-		, materialQty
-		, materialSaled
-		, firm
-		, region
-		, regionid
-		, periodid
-		, firmId
-	) select 
-		  p.label
-		, i.materialQty         -- к-во проданных единиц по выбранным материалам (шт, листов и т.д.)
-		, i.materialSaled    	-- сумма по выбраннм материалам
-		, f.name                -- фирма
-		, r.region
-		, r.regionid
-		, p.periodid
-		, f.firmId
-	from #periods p 
-	join (
-		select sum(sm) as materialSaled, sum(materialQty) as materialQty, firmid, klassId
-		from #sale_item
-		group by firmid, klassId
-	) i on 
-		i.klassId = p.klassId
-	join bayguidefirms f on f.firmid = i.firmid
-	join bayregion r on r.regionid = f.regionid
-	;
+	if isnull(v_firmId, 0) = 0 then
+		insert into #results (
+			  label
+			, materialQty
+			, materialSaled
+			, firm
+			, region
+			, regionid
+			, periodid
+			, firmId
+		) select 
+			  p.label
+			, i.materialQty         -- к-во проданных единиц по выбранным материалам (шт, листов и т.д.)
+			, i.materialSaled    	-- сумма по выбраннм материалам
+			, f.name                -- фирма
+			, r.region
+			, r.regionid
+			, p.klassid
+			, f.firmId
+		from #periods p 
+		join (
+			select sum(sm) as materialSaled, sum(materialQty) as materialQty, firmid, klassId
+			from #sale_item
+			group by firmid, klassId
+		) i on 
+			i.klassId = p.klassId
+		join bayguidefirms f on f.firmid = i.firmid
+		join bayregion r on r.regionid = f.regionid
+		;
+	else
+		insert into #results (
+			  materialQty
+			, materialSaled
+			, indate
+			, numorder
+		)
+		select 
+			  i.materialQty
+			, i.materialSaled
+			, o.indate
+			, o.numorder
+		from bayorders o 
+		join (
+			select sum(sm) as materialSaled, sum(materialQty) as materialQty, numorder
+			from #sale_item
+			group by numorder
+		) i on 
+			i.numorder = o.numorder
+		;
+
+	end if;
 
 end;
 
@@ -774,6 +816,7 @@ begin
 	end if;
 
 
+/*
 	create table #periods (
 		periodId int default autoincrement
 		, st date
@@ -781,7 +824,7 @@ begin
 		, label varchar(32)
 		, year integer
 	);
-
+*/
 	call n_fill_periods(p_begin, p_end, p_period_type, p_columnId);
 
 	set v_begin = p_begin;

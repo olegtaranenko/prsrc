@@ -128,6 +128,7 @@ Private Sub LoadTableDetail()
 Dim rownum As Integer
 
     sql = "call n_exec_filter( " & filterId & ", " & byRowId & ", " & byColumnId & ")"
+    Debug.Print sql
     Set table = myOpenRecordSet("##Results.1", sql, dbOpenDynaset)
     If table Is Nothing Then
         table.Close

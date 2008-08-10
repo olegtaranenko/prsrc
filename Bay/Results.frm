@@ -128,8 +128,8 @@ Dim searchValue As String, searchPos As Long, searchAgain As Boolean
 Dim GridHeaderHeadDef() As columnDef
 Dim GridHeaderTailDef() As columnDef
 
-Private Type ColumnInfo
-    PeriodId As Integer
+Private Type PeriodDef
+    periodId As Integer
     label As String
     year As Integer
     index As Integer
@@ -139,7 +139,7 @@ Private Type ColumnInfo
 End Type
 
 
-Dim columns() As ColumnInfo
+Dim periods() As PeriodDef
 
 
 ' переменные используемые в сортировке таблицы
@@ -311,8 +311,10 @@ End Sub
 
 Private Sub Grid_DblClick()
 Dim columnNo As Long, periodNo As Long
-Dim firmId As Long, PeriodId As Integer
+Dim firmId As Long, periodId As Integer
     'Dim PreHeaderCount As Integer, PostHeaderCount As Integer, multiplyCols As Integer
+    If Grid.CellBackColor = vbYellow Then Exit Sub
+
     columnNo = Grid.col
     Portrait.filterId = filterId
     firmId = CInt(Grid.TextMatrix(Grid.row, 0))
@@ -327,11 +329,11 @@ Dim firmId As Long, PeriodId As Integer
         ' Ќажали на €чейку с периодом
         '
         periodNo = getPeriodNoByColumn(columnNo)
-        PeriodId = columns(periodNo).PeriodId
+        periodId = periods(periodNo).periodId
         
         Portrait.mode = "detail"
         Portrait.byRowId = firmId
-        Portrait.byColumnId = PeriodId
+        Portrait.byColumnId = periodId
         Portrait.Show , Me
     ElseIf columnNo >= PreHeaderCount + multiplyCols * periodCount Then
         ' нажали на итог по строке
@@ -348,7 +350,7 @@ Private Sub Grid_EnterCell()
     If Grid.row = 0 Or Grid.col = 0 Then
         Exit Sub
     End If
-    If Grid.col = 1 Or Grid.col >= PreHeaderCount Then
+    If Grid.col >= PreHeaderCount Then
         Grid.CellBackColor = &H88FF88
     Else
         Grid.CellBackColor = vbYellow
@@ -436,10 +438,13 @@ Dim checkResult As String
     Dim totals() As Double
     Dim columnIndex As Integer
     Dim skipFixedInit As Boolean
+    Dim periodColumnName As String
     
-    ln = UBound(columns)
+    ln = UBound(periods)
     ReDim totals(multiplyCols)
     
+    periodColumnName = getCurrentSetting("periodId4detail", filterSettings)
+
     
     rownum = 0
     prevSelector = Null
@@ -449,7 +454,9 @@ Dim checkResult As String
         If prevSelector <> table(groupSelectorColumn) Or IsNull(prevSelector) Then
             i = PreHeaderCount + multiplyCols * ln
             If rownum > 0 Then
-                totals(columnIndex) = 0
+                For columnIndex = 0 To UBound(GridHeaderTailDef)
+                    totals(columnIndex) = 0
+                Next columnIndex
                 Grid.AddItem ""
             End If
             rownum = rownum + 1
@@ -461,7 +468,7 @@ Dim checkResult As String
         Next columnIndex
         
         
-        colShift = getPeriodShift(table!PeriodId) * multiplyCols + UBound(GridHeaderHeadDef) + 1
+        colShift = getPeriodShift(table("periodId")) * multiplyCols + UBound(GridHeaderHeadDef) + 1
         For columnIndex = 0 To UBound(GridHeaderTailDef)
             Dim curValue As Double
             curValue = table(GridHeaderTailDef(columnIndex).columnName)
@@ -486,13 +493,13 @@ End Sub
 
 
 
-Private Function getPeriodShift(PeriodId As Integer) As Integer
+Private Function getPeriodShift(periodId As Integer) As Integer
 Dim i As Integer
 Dim ln As Integer
-    ln = UBound(columns)
+    ln = UBound(periods)
     For i = 0 To ln
-        If columns(i).PeriodId = PeriodId Then
-            getPeriodShift = columns(i).index
+        If periods(i).periodId = periodId Then
+            getPeriodShift = periods(i).index
             Exit Function
         End If
     Next i
@@ -521,7 +528,7 @@ End Sub
 Private Function setGridHeaders(filterId As Integer) As Boolean
 Dim periodType As Variant
 Dim index As Integer
-Dim colInfo As ColumnInfo
+Dim colInfo As PeriodDef
 Dim colIndex As Integer, i As Integer
 Dim GridHeaderHead As String
 Dim GridHeaderTail As String
@@ -529,6 +536,7 @@ Dim titleStartStr As String, titleEndStr As String
 Dim headerList() As columnDef
 Dim headerColumn As columnDef
 Dim delim As String, delimHead As Integer, delimTail As Integer
+Dim periodColumnName As String
 
     'Optimistic view
     setGridHeaders = True
@@ -546,8 +554,8 @@ Dim delim As String, delimHead As Integer, delimTail As Integer
         appendToHeader GridHeaderTail, headerColumn, delimTail
     Next index
     
-    PreHeaderCount = parseHeaderMetrics(GridHeaderHead)
-    PostHeaderCount = parseHeaderMetrics(GridHeaderTail)
+    PreHeaderCount = UBound(GridHeaderHeadDef) + 1
+    PostHeaderCount = UBound(GridHeaderTailDef) + 1
     multiplyCols = parseTabStrip(GridHeaderTail, TabStrip1)
 
     If StartDate > "2000-01-01" Then
@@ -583,39 +591,41 @@ Dim delim As String, delimHead As Integer, delimTail As Integer
     sql = "call n_exec_header( " & filterId & ") "
     
     Set table = myOpenRecordSet("##Results.2", sql, dbOpenDynaset)
-    ReDim columns(0)
+    ReDim periods(0)
     index = 0
     If table.BOF Then
         setGridHeaders = False
         Exit Function
-
     End If
+
+    periodColumnName = getCurrentSetting("periodId4detail", filterSettings)
+    
 
     While Not table.EOF
         colInfo.label = table("label")
         If Not IsNull(table!year) Then colInfo.year = table!year
         If Not IsNull(table!st) Then colInfo.stDate = table!st
         If Not IsNull(table!EN) Then colInfo.enDate = table!EN
-        colInfo.PeriodId = table!PeriodId
+        colInfo.periodId = table(periodColumnName)
         colInfo.index = index
         colInfo.colWidth = getColumnWidth(index, table!label)
 
 
-        ReDim Preserve columns(index)
-        columns(index) = colInfo
+        ReDim Preserve periods(index)
+        periods(index) = colInfo
         table.MoveNext
         index = index + 1
     Wend
     table.Close
     
     
-    periodCount = UBound(columns) + 1
+    periodCount = UBound(periods) + 1
     Grid.row = 0
     
     
     For i = 0 To periodCount - 1
         For colIndex = 0 To multiplyCols - 1
-            GridHeaderHead = GridHeaderHead & "|>" & columns(i).label
+            GridHeaderHead = GridHeaderHead & "|" & GridHeaderTailDef(colIndex).align & periods(i).label
         Next colIndex
     Next i
     If GridHeaderTail <> "" Then
@@ -625,7 +635,7 @@ Dim delim As String, delimHead As Integer, delimTail As Integer
 '    For I = 0 To periodCount - 1
 '        For colIndex = 0 To multiplyCols - 1
 '        For colIndex = PreHeaderCount + (I * multiplyCols) To PreHeaderCount + (I + 1) * multiplyCols - 1
-'            Grid.colWidth(colIndex) = getColumnWidth(I, columns(I).label)
+'            Grid.colWidth(colIndex) = getColumnWidth(I, periods(I).label)
 '        Next colIndex
 '    Next I
     
@@ -721,6 +731,7 @@ Dim headerRest As String, headerRestLn As Long, tabName As String
 End Function
 
 
+
 Private Sub activateTab(tabNumber As Integer)
 Dim i As Integer, j As Integer, colIndex As Integer
 
@@ -730,7 +741,7 @@ Dim i As Integer, j As Integer, colIndex As Integer
         For j = 0 To multiplyCols - 1
             colIndex = PreHeaderCount + (i * multiplyCols) + j
             If j + 1 = tabNumber Then
-                Grid.colWidth(colIndex) = columns(i).colWidth
+                Grid.colWidth(colIndex) = periods(i).colWidth
             Else
                 Grid.colWidth(colIndex) = 0
             End If
@@ -745,10 +756,11 @@ Dim ln As Integer
 
     For i = 0 To periodCount - 1
         colIndex = PreHeaderCount + (i * multiplyCols) + activeTab - 1
-        columns(i).colWidth = Grid.colWidth(colIndex)
+        periods(i).colWidth = Grid.colWidth(colIndex)
     Next i
     
 End Sub
+
 
 
 Private Function determineColType(ByVal colIndex As Long) As String
