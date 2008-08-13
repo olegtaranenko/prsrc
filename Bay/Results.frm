@@ -154,6 +154,10 @@ Const CT_CUSTOM = "custom"
 Const CT_SCHET = "schet"
 
 
+' будут храниться итоги по столбам для показа их внизу таблицы
+Dim columnTotals() As Single
+
+
 Private Sub cmExel_Click()
     GridToExcel Grid
 End Sub
@@ -183,17 +187,19 @@ Dim searchedFirm As Long
     End If
 End Sub
 
+
 Private Sub cmFind_KeyDown(KeyCode As Integer, Shift As Integer)
     Form_KeyDown KeyCode, Shift
 End Sub
+
 
 Private Sub cmFind_KeyUp(KeyCode As Integer, Shift As Integer)
     Form_KeyUp KeyCode, Shift
 End Sub
 
+
 Private Sub cmPrint_Click()
     Me.PrintForm
-
 End Sub
 
 
@@ -214,8 +220,8 @@ Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
         cmFind.Caption = "Дальше"
         cmFind.ToolTipText = "Shift+F7"
     End If
-
 End Sub
+
 
 Private Sub Form_KeyUp(KeyCode As Integer, Shift As Integer)
     If (KeyCode And vbKeyShift) = vbKeyShift Then
@@ -223,8 +229,8 @@ Private Sub Form_KeyUp(KeyCode As Integer, Shift As Integer)
         cmFind.Caption = "Поиск"
         cmFind.ToolTipText = "F7"
     End If
-
 End Sub
+
 
 Private Sub Form_Load()
     ReDim filterSettings(0)
@@ -232,7 +238,6 @@ End Sub
 
 
 Private Sub Form_Resize()
-
     Grid.left = 100
     Grid.Width = Me.Width - 300
     TabStrip1.Top = 100
@@ -266,7 +271,6 @@ Private Sub Grid_Click()
         Grid.Sort = 9
     End If
     trigger = Not trigger
-
 End Sub
 
 
@@ -275,6 +279,20 @@ Dim cell_1, cell_2 As String
 Dim date1, date2 As Date
 Dim num1, num2 As Single
 
+    ' Всегда проверяем у строки 0-й столбец. если он пустой - считаем, что это строка с итогами по столбцам.
+    ' потому что у всех остальных там должен быть id (фирмы, регионах и т.д.)
+    
+    ' Эта строка всегда в конце таблицы при любой сортировке
+    If Grid.TextMatrix(Row1, 0) = "" Then
+        Cmp = 1
+        Exit Sub
+    End If
+    If Grid.TextMatrix(Row2, 0) = "" Then
+        Cmp = -1
+        Exit Sub
+    End If
+    
+    
     cell_1 = Grid.TextMatrix(Row1, mousCol)
     cell_2 = Grid.TextMatrix(Row2, mousCol)
     
@@ -305,7 +323,6 @@ Dim num1, num2 As Single
         Cmp = Sgn(CDate(cell_1) - CDate(cell_2))
     End If
     If trigger Then Cmp = -Cmp
-    
 End Sub
 
 
@@ -358,13 +375,16 @@ Private Sub Grid_EnterCell()
     
 End Sub
 
+
 Private Sub Grid_KeyDown(KeyCode As Integer, Shift As Integer)
     Form_KeyDown KeyCode, Shift
 End Sub
 
+
 Private Sub Grid_KeyUp(KeyCode As Integer, Shift As Integer)
     Form_KeyUp KeyCode, Shift
 End Sub
+
 
 Private Sub Grid_LeaveCell()
 '    Debug.Print "Grid_LeaveCell() => col = " & Grid.col & ", row = " & Grid.row
@@ -393,6 +413,17 @@ Private Sub LoadTable()
 Dim rownum As Integer
 Dim groupSelectorColumn As String, prevSelector As Variant
 Dim checkResult As String
+Dim i As Integer ' номер столбца
+Dim columnBaseIndex As Integer, periodCount As Integer
+Dim orderQty As Integer, orderOrdered As Single, materialQty As Single, materialSaled As Single
+Dim rowTotals() As Double
+Dim columnIndex As Integer
+Dim skipFixedInit As Boolean
+Dim periodColumnName As String
+Dim totalQtyLabel As String
+Dim totalBaseIndex As Integer
+Dim curValue As Double
+Dim periodIndex As Integer
 
 
     cleanTable
@@ -431,54 +462,49 @@ Dim checkResult As String
     End If
     
     table.MoveFirst
-    Dim i As Integer ' номер столбца
-    Dim colShift As Integer, ln As Integer
-    Dim orderQty As Integer, orderOrdered As Single, materialQty As Single, materialSaled As Single
-'    Dim prevFirm As String
-    Dim totals() As Double
-    Dim columnIndex As Integer
-    Dim skipFixedInit As Boolean
-    Dim periodColumnName As String
     
-    ln = UBound(periods)
-    ReDim totals(multiplyCols)
+    periodCount = UBound(periods) + 1
+    ReDim rowTotals(multiplyCols)
+    ReDim columnTotals((periodCount + 1) * multiplyCols)
     
     periodColumnName = getCurrentSetting("periodId4detail", filterSettings)
 
-    
     rownum = 0
     prevSelector = Null
     skipFixedInit = False
     While Not table.EOF
 
         If prevSelector <> table(groupSelectorColumn) Or IsNull(prevSelector) Then
-            i = PreHeaderCount + multiplyCols * ln
+            'totalBaseIndex = getPeriodShift(table("periodId")) * periodCount
+            i = PreHeaderCount + multiplyCols * periodCount
             If rownum > 0 Then
                 For columnIndex = 0 To UBound(GridHeaderTailDef)
-                    totals(columnIndex) = 0
+                    'columnTotals(totalBaseIndex + columnIndex) = columnTotals(totalBaseIndex + columnIndex) + rowTotals(columnIndex)
+                    rowTotals(columnIndex) = 0
                 Next columnIndex
                 Grid.AddItem ""
             End If
             rownum = rownum + 1
         End If
 
-        colShift = 0
+        columnBaseIndex = 0
         For columnIndex = 0 To UBound(GridHeaderHeadDef)
-            Grid.TextMatrix(rownum, colShift + columnIndex) = table(GridHeaderHeadDef(columnIndex).columnName)
+            Grid.TextMatrix(rownum, columnBaseIndex + columnIndex) = table(GridHeaderHeadDef(columnIndex).columnName)
         Next columnIndex
         
         
-        colShift = getPeriodShift(table("periodId")) * multiplyCols + UBound(GridHeaderHeadDef) + 1
+        totalBaseIndex = getPeriodShift(table("periodId")) * multiplyCols
+        columnBaseIndex = totalBaseIndex + UBound(GridHeaderHeadDef) + 1
         For columnIndex = 0 To UBound(GridHeaderTailDef)
-            Dim curValue As Double
             curValue = table(GridHeaderTailDef(columnIndex).columnName)
-            Grid.TextMatrix(rownum, colShift + columnIndex) = Format(curValue, GridHeaderTailDef(columnIndex).columnFormat)
-            totals(columnIndex) = totals(columnIndex) + curValue
-        Next columnIndex
+            Grid.TextMatrix(rownum, columnBaseIndex + columnIndex) = Format(curValue, GridHeaderTailDef(columnIndex).columnFormat)
+            rowTotals(columnIndex) = rowTotals(columnIndex) + curValue
+            columnTotals(totalBaseIndex + columnIndex) = columnTotals(totalBaseIndex + columnIndex) + curValue
+        Next
         
-        colShift = periodCount * multiplyCols + PreHeaderCount
+        columnBaseIndex = periodCount * multiplyCols + PreHeaderCount
         For columnIndex = 0 To UBound(GridHeaderTailDef)
-            Grid.TextMatrix(rownum, colShift + columnIndex) = Format(totals(columnIndex), GridHeaderTailDef(columnIndex).columnFormat)
+            Grid.TextMatrix(rownum, columnBaseIndex + columnIndex) = Format(rowTotals(columnIndex), GridHeaderTailDef(columnIndex).columnFormat)
         Next columnIndex
         
         prevSelector = table(groupSelectorColumn)
@@ -487,7 +513,33 @@ Dim checkResult As String
     Wend
     table.Close
     
-    lbTotalQty.Caption = CStr(rownum) & " фирм"
+    Grid.AddItem ""
+    Grid.col = 1: Grid.row = rownum + 1
+    Grid.CellFontBold = True
+    Grid.Text = "Итоги"
+    
+    For periodIndex = 0 To periodCount
+        columnBaseIndex = periodIndex * multiplyCols + PreHeaderCount
+        totalBaseIndex = periodCount * multiplyCols
+        For columnIndex = 0 To UBound(GridHeaderTailDef)
+
+            Grid.col = columnBaseIndex + columnIndex
+            Grid.CellFontBold = True
+            curValue = columnTotals(periodIndex * multiplyCols + columnIndex)
+            Grid.Text = Format(curValue, GridHeaderTailDef(columnIndex).columnFormat)
+
+            If periodIndex <> periodCount Then
+                columnTotals(totalBaseIndex + columnIndex) = columnTotals(totalBaseIndex + columnIndex) + curValue
+            End If
+        Next columnIndex
+        i = i
+    Next periodIndex
+    
+    
+    totalQtyLabel = getCurrentSetting("totalQtyLabel", filterSettings)
+    lbTotalQty.Caption = CStr(rownum) & " " & totalQtyLabel
+    cmFind.left = lbTotalQty.left + lbTotalQty.Width + 100
+    
     activateTab 1
 End Sub
 
