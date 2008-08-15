@@ -53,6 +53,7 @@ Begin VB.Form Analityc
       Begin VB.TextBox tbTop 
          Appearance      =   0  'Flat
          BorderStyle     =   0  'None
+         Enabled         =   0   'False
          Height          =   192
          Left            =   2040
          TabIndex        =   31
@@ -62,6 +63,7 @@ Begin VB.Form Analityc
       End
       Begin VB.CheckBox ckTop 
          Caption         =   "Только первые "
+         Enabled         =   0   'False
          Height          =   252
          Left            =   360
          TabIndex        =   30
@@ -146,7 +148,7 @@ Begin VB.Form Analityc
          _ExtentX        =   550
          _ExtentY        =   868
          _Version        =   393216
-         Enabled         =   -1  'True
+         Enabled         =   0   'False
       End
       Begin VB.CheckBox ckStartDate 
          Caption         =   " "
@@ -165,10 +167,11 @@ Begin VB.Form Analityc
          Width           =   200
       End
       Begin VB.ComboBox cbDateShift 
+         Enabled         =   0   'False
          Height          =   288
          ItemData        =   "Analityc.frx":00A5
          Left            =   3720
-         List            =   "Analityc.frx":00BB
+         List            =   "Analityc.frx":00BE
          TabIndex        =   15
          Text            =   "год"
          ToolTipText     =   "Выбор периода сдвига даты"
@@ -184,7 +187,7 @@ Begin VB.Form Analityc
          _ExtentX        =   2138
          _ExtentY        =   508
          _Version        =   393216
-         Format          =   45744129
+         Format          =   16384001
          CurrentDate     =   39599
       End
       Begin MSComCtl2.DTPicker tbEndDate 
@@ -196,7 +199,7 @@ Begin VB.Form Analityc
          _ExtentX        =   2138
          _ExtentY        =   508
          _Version        =   393216
-         Format          =   45744129
+         Format          =   16384001
          CurrentDate     =   39599
       End
       Begin VB.Label Label5 
@@ -342,7 +345,7 @@ Begin VB.Form Analityc
          BackColor       =   &H8000000A&
          Height          =   252
          Left            =   3720
-         Picture         =   "Analityc.frx":00EC
+         Picture         =   "Analityc.frx":00F8
          Style           =   1  'Graphical
          TabIndex        =   9
          ToolTipText     =   "Удалить Фильтр"
@@ -352,7 +355,9 @@ Begin VB.Form Analityc
       End
       Begin VB.ComboBox cbFilters 
          Height          =   288
+         ItemData        =   "Analityc.frx":04E2
          Left            =   120
+         List            =   "Analityc.frx":04E4
          TabIndex        =   8
          Top             =   360
          Width           =   3492
@@ -370,7 +375,7 @@ Begin VB.Form Analityc
          Enabled         =   0   'False
          Height          =   252
          Left            =   3720
-         Picture         =   "Analityc.frx":04D6
+         Picture         =   "Analityc.frx":04E6
          Style           =   1  'Graphical
          TabIndex        =   6
          ToolTipText     =   "Сохранить фильтр"
@@ -383,7 +388,7 @@ Begin VB.Form Analityc
          BackColor       =   &H8000000A&
          Height          =   252
          Left            =   4080
-         Picture         =   "Analityc.frx":08A5
+         Picture         =   "Analityc.frx":08B5
          Style           =   1  'Graphical
          TabIndex        =   5
          ToolTipText     =   "Удалить Фильтр"
@@ -415,6 +420,7 @@ Private Sub cbGroupByRow_Change()
     checkDirtyFilterCommads
 End Sub
 
+
 Private Sub cbGroupByRow_Click()
     cbGroupByRow_Change
 End Sub
@@ -430,6 +436,7 @@ Private Sub ckEndDate_Click()
     Else
         tbEndDate.Enabled = False
     End If
+    checkUpDown
 End Sub
 
 
@@ -463,20 +470,20 @@ End Sub
 
 
 Private Sub ckKriteriumOborud_Click()
-Dim i As Integer
+Dim I As Integer
 
     checkDirtyFilterCommads
     If ckKriteriumOborud.value = 1 Then
         If ckKriteriumNoOborud.value = 1 Then
             ckKriteriumNoOborud.value = 0
         End If
-        For i = 1 To 3
-            cbOborud(i).Enabled = True
-        Next i
+        For I = 1 To 3
+            cbOborud(I).Enabled = True
+        Next I
     Else
-        For i = 1 To 3
-            cbOborud(i).Enabled = False
-        Next i
+        For I = 1 To 3
+            cbOborud(I).Enabled = False
+        Next I
     End If
 End Sub
 
@@ -487,8 +494,17 @@ Private Sub ckStartDate_Click()
     Else
         tbStartDate.Enabled = False
     End If
+    checkUpDown
 End Sub
-
+Private Sub checkUpDown()
+    If tbStartDate.Enabled And tbEndDate.Enabled Then
+        UpDown1.Enabled = True
+        cbDateShift.Enabled = True
+    Else
+        UpDown1.Enabled = False
+        cbDateShift.Enabled = False
+    End If
+End Sub
 Private Sub cmApply_Click()
 Dim filterId As Integer
 
@@ -498,9 +514,9 @@ Dim filterId As Integer
     Results.applyTriggered = True
     Results.managId = managId
     If ckStartDate.value = 1 Then
-        Results.StartDate = tbStartDate.value
+        Results.startDate = tbStartDate.value
     Else
-        Results.StartDate = Empty
+        Results.startDate = Empty
     End If
     If ckEndDate.value = 1 Then
         Results.endDate = tbEndDate.value
@@ -580,33 +596,33 @@ End Sub
 
 Private Sub cleanTree(tView As TreeView)
 Dim currentNode As Node
-Dim i As Integer, nCount As Integer
+Dim I As Integer, nCount As Integer
 Dim enabledFlag As Boolean
 
     enabledFlag = tView.Enabled
     tView.Enabled = True
     
     nCount = tView.Nodes.Count
-    For i = 1 To nCount
-        Set currentNode = tView.Nodes(i)
+    For I = 1 To nCount
+        Set currentNode = tView.Nodes(I)
         If currentNode.checked Then
             currentNode.checked = False
             currentNode.Expanded = False
         End If
-    Next i
+    Next I
 
     tView.Enabled = enabledFlag
 End Sub
 
 Private Sub cleanOborud()
 Dim currentOborud As CheckBox
-Dim i As Integer, nCount As Integer
+Dim I As Integer, nCount As Integer
 
     'nCount = UBound(cbOborud)
-    For i = 1 To 3
-        Set currentOborud = cbOborud(i)
+    For I = 1 To 3
+        Set currentOborud = cbOborud(I)
         currentOborud.value = 0
-    Next i
+    Next I
 End Sub
 
 Private Sub cleanFilterWindows()
@@ -846,12 +862,12 @@ Dim personal As Integer
 
     If hasOborud Then
         itemId = saveFilterItem(filterId, "oborudItems", ckKriteriumOborud.value)
-        Dim i As Integer
-        For i = 1 To 3
-            If cbOborud(i).value Then
-                saveFilterParam itemId, "oborudItemId", i
+        Dim I As Integer
+        For I = 1 To 3
+            If cbOborud(I).value Then
+                saveFilterParam itemId, "oborudItemId", I
             End If
-        Next i
+        Next I
     End If
     
     If ckKriteriumNoOborud.value = 1 Then
@@ -905,17 +921,17 @@ End Sub
 
 
 Private Sub initColumnTree(ByRef headerList() As columnDef)
-Dim i As Integer, anySaved As Boolean, aNode As Node
+Dim I As Integer, anySaved As Boolean, aNode As Node
 
 
     tvColumns.Nodes.Clear
     
-    For i = 0 To UBound(headerList)
-        Set aNode = tvColumns.Nodes.Add(, , "c" & headerList(i).columnId, headerList(i).nameRu)
-        If headerList(i).saved Then
+    For I = 0 To UBound(headerList)
+        Set aNode = tvColumns.Nodes.Add(, , "c" & headerList(I).columnId, headerList(I).nameRu)
+        If headerList(I).saved Then
             aNode.checked = True
         End If
-    Next i
+    Next I
     
 End Sub
 
@@ -963,7 +979,12 @@ End Sub
 
 
 Private Sub Form_Load()
+Dim I As Integer
 
+    For I = 1 To cbDateShift.ListCount - 1
+        cbDateShift.ItemData(I) = I
+    Next I
+    
     loadKlass
     loadRegions
     managId = Orders.cbM.Text
@@ -1009,12 +1030,12 @@ Private Sub populateAxeList(ByRef table As Recordset, cb As ComboBox)
     End If
     
     cb.Clear
-    Dim i As Integer
-    i = 0
+    Dim I As Integer
+    I = 0
     While Not table.EOF
         cb.AddItem table!Name_ru
-        cb.ItemData(i) = table!id
-        i = i + 1
+        cb.ItemData(I) = table!id
+        I = I + 1
         table.MoveNext
     Wend
     table.Close
@@ -1059,45 +1080,45 @@ End Sub
 
 
 Private Function getOborudItems() As Boolean
-Dim i As Integer
+Dim I As Integer
 
-    For i = 1 To 3
-        If cbOborud(i).value = 1 Then
+    For I = 1 To 3
+        If cbOborud(I).value = 1 Then
             getOborudItems = True
             Exit Function
         End If
-    Next i
+    Next I
 
 End Function
 
 
 Private Function getCheckedInTree(tView As TreeView) As Boolean
 Dim currentNode As Node
-Dim i As Integer
+Dim I As Integer
 
     getCheckedInTree = False
-    For i = 1 To tView.Nodes.Count
-        Set currentNode = tView.Nodes(i)
+    For I = 1 To tView.Nodes.Count
+        Set currentNode = tView.Nodes(I)
         If currentNode.checked Then
             getCheckedInTree = True
             Exit Function
         End If
-    Next i
+    Next I
     
 End Function
 
 
 Private Sub saveParamsOfTree(tView As TreeView, itemId As Integer, paramName As String)
 Dim currentNode As Node
-Dim i As Integer, nCount As Integer
+Dim I As Integer, nCount As Integer
 
     nCount = tView.Nodes.Count
-    For i = 1 To nCount
-        Set currentNode = tView.Nodes(i)
+    For I = 1 To nCount
+        Set currentNode = tView.Nodes(I)
         If currentNode.checked Then
             saveFilterParam itemId, paramName, CInt(Mid(currentNode.key, 2))
         End If
-    Next i
+    Next I
     
 End Sub
 
@@ -1147,15 +1168,65 @@ End Sub
 
 Private Function setListIndexByItemDataValue(ByRef cb As ComboBox, ByVal itemDataValue As Integer) As Boolean
 
-Dim i As Integer
+Dim I As Integer
 
     setListIndexByItemDataValue = True
-    For i = 0 To cb.ListCount - 1
-        If cb.ItemData(i) = itemDataValue Then
-            cb.ListIndex = i
+    For I = 0 To cb.ListCount - 1
+        If cb.ItemData(I) = itemDataValue Then
+            cb.ListIndex = I
             Exit Function
         End If
-    Next i
+    Next I
     setListIndexByItemDataValue = False
 End Function
+
+Private Sub UpDownChange(ByVal upDirection As Integer)
+Dim startDate As Date, endDate As Date, shiftPeriod As Integer
+Dim dataAddInterval As String, dataAddNumber As Integer
+
+    startDate = tbStartDate.value
+    endDate = tbEndDate.value
+    If cbDateShift.ListIndex = -1 Then
+        cbDateShift.ListIndex = 0
+    End If
+    shiftPeriod = cbDateShift.ItemData(cbDateShift.ListIndex)
+    
+    If shiftPeriod = 1 Then
+        dataAddInterval = "m"
+        dataAddNumber = 6
+    ElseIf shiftPeriod = 2 Then
+        dataAddInterval = "q"
+        dataAddNumber = 1
+    ElseIf shiftPeriod = 3 Then
+        dataAddInterval = "m"
+        dataAddNumber = 1
+    ElseIf shiftPeriod = 4 Then
+        dataAddInterval = "d"
+        dataAddNumber = 10
+    ElseIf shiftPeriod = 5 Then
+        dataAddInterval = "w"
+        dataAddNumber = 1
+    ElseIf shiftPeriod = 6 Then
+        dataAddInterval = "d"
+        dataAddNumber = 1
+    ElseIf shiftPeriod = 7 Then
+        dataAddInterval = "d"
+        dataAddNumber = 1
+    Else
+        dataAddInterval = "yyyy"
+        dataAddNumber = 1
+    End If
+
+    tbStartDate.value = DateAdd(dataAddInterval, dataAddNumber * upDirection, startDate)
+    tbEndDate.value = DateAdd(dataAddInterval, dataAddNumber * upDirection, endDate)
+
+End Sub
+
+Private Sub UpDown1_DownClick()
+    UpDownChange -1
+End Sub
+
+Private Sub UpDown1_UpClick()
+    UpDownChange 1
+End Sub
 
