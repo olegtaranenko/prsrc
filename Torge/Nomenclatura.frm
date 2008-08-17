@@ -564,6 +564,7 @@ Dim nkPrihod As Integer
 Dim nkRashod As Integer
 Dim nkRashodBay As Integer
 Dim nkSaledProcent As Integer
+Dim nkAvgOutcome As Integer
 Dim nkEndOstat As Integer
 Dim nkCena As Integer
 Dim nkPrevCost As Integer
@@ -951,7 +952,8 @@ ElseIf Regim = "asOborot" Or Regim = "sourOborot" Then
 '    initCol nkEndOstat, "Кон.Остатки", 700  'парам-ры уст-ся в ckEndDate_Click
     initCol nkEndOstat, "", 700  'парам-ры уст-ся в ckEndDate_Click
     initCol nkDostup, "Д.остатки", 0 '
-    initCol nkZapas, "Мин.запас", 0  '
+    initCol nkAvgOutcome, "Ср.расход", 500, flexAlignRightTop
+    initCol nkZapas, "Мин.запас", 0
     initCol nkZakup, "Макс.запас", 0 '
     initCol nkDeficit, "К.заявке", 0 '
     initCol nkSaledProcent, "% Продаж", 500
@@ -2681,6 +2683,17 @@ Function getBaySaledQty(p_nomnom As String, p_startDate As String, p_endDate As 
     byErrSqlGetValues "##getBaySaledQty", sql, getBaySaledQty
 End Function
 
+Function getAvgOutcome(p_nomnom As String, ByVal p_startDate As String, ByVal p_endDate As String) As Single
+    If p_startDate = "" Then
+        p_startDate = "null"
+    End If
+    If p_endDate = "" Then
+        p_endDate = "null"
+    End If
+    sql = "select wf_sale_avg_sale ('" & p_nomnom & "', convert(datetime, " & p_startDate & "), convert(datetime, " & p_endDate & "))"
+    byErrSqlGetValues "##getBaySaledQty", sql, getAvgOutcome
+End Function
+
 
 Sub loadKlassNomenk(Optional filtr As String = "")
 Dim il As Long, strWhere As String, befWhere  As String
@@ -2758,7 +2771,7 @@ sql = "SELECT ph.prev_cost, sGuideNomenk.*, sGuideFormuls.Formula, " _
 & vbCr & " INNER JOIN sGuideFormuls ON sGuideNomenk.formulaNom = sGuideFormuls.nomer " _
 & vbCr & " left join (select h.cost as prev_cost, h.nomnom from spricehistory h join (select max(change_date) as change_date, nomnom from spricehistory m group by nomnom) mx on mx.nomnom = h.nomnom and mx.change_date = h.change_date ) ph on ph.nomnom = sguidenomenk.nomnom  " _
 & vbCr & strWhere & " ORDER BY sGuideNomenk.nomNom ;"
-'Debug.Print sql;
+Debug.Print sql;
 'MsgBox sql
 Set tbNomenk = myOpenRecordSet("##165", sql, dbOpenForwardOnly) ' dbOpenDynaset)
 If tbNomenk Is Nothing Then GoTo EN1
@@ -2855,6 +2868,14 @@ If Not tbNomenk.BOF Then
             If saled > 0 Then
                 Grid.TextMatrix(quantity, nkSaledProcent) = "100"
             End If
+        End If
+        Dim avgOutcome As Double
+        avgOutcome = getAvgOutcome(tbNomenk!nomnom, startDate, endDate)
+        If avgOutcome <> 0 Then
+            Grid.TextMatrix(quantity, nkAvgOutcome) = Format(avgOutcome, "# ##0.0")
+        Else
+            Grid.TextMatrix(quantity, nkAvgOutcome) = "-"
+            
         End If
         Grid.TextMatrix(quantity, nkEndOstat) = Round((beg + prih - rash) * gain, 2) ' остаток на конец
         If Regim = "asOborot" Then GoTo BB
