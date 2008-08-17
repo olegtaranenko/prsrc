@@ -98,8 +98,9 @@ Begin VB.Form Analityc
          Top             =   840
          Width           =   852
       End
-      Begin VB.Label Label3 
+      Begin VB.Label lbTop 
          Caption         =   "... по строкам"
+         Enabled         =   0   'False
          Height          =   252
          Left            =   120
          TabIndex        =   29
@@ -187,7 +188,7 @@ Begin VB.Form Analityc
          _ExtentX        =   2138
          _ExtentY        =   508
          _Version        =   393216
-         Format          =   16384001
+         Format          =   45744129
          CurrentDate     =   39599
       End
       Begin MSComCtl2.DTPicker tbEndDate 
@@ -199,7 +200,7 @@ Begin VB.Form Analityc
          _ExtentX        =   2138
          _ExtentY        =   508
          _Version        =   393216
-         Format          =   16384001
+         Format          =   45744129
          CurrentDate     =   39599
       End
       Begin VB.Label Label5 
@@ -348,7 +349,7 @@ Begin VB.Form Analityc
          Picture         =   "Analityc.frx":00F8
          Style           =   1  'Graphical
          TabIndex        =   9
-         ToolTipText     =   "Удалить Фильтр"
+         ToolTipText     =   "Применить Фильтр"
          Top             =   360
          UseMaskColor    =   -1  'True
          Width           =   252
@@ -411,6 +412,11 @@ Dim columnsVisible As Boolean
 
 Dim flagInitFilter As Boolean
 
+
+
+Private Sub cbGroupByColumn_Click()
+    checkDirtyFilterCommads
+End Sub
 
 Private Sub cbGroupByRow_Change()
     initByColumnList cbGroupByRow.ItemData(cbGroupByRow.ListIndex)
@@ -534,7 +540,9 @@ End Sub
 
 Private Sub checkDirtyFilterCommads()
     If Not flagInitFilter Then
-        cmFilterAdd.Enabled = True
+        If txFilterName <> "" Then
+            cmFilterAdd.Enabled = True
+        End If
     End If
 
 End Sub
@@ -796,6 +804,7 @@ Dim result As Integer
         End If
         sql = sql & ")"
     
+    Debug.Print sql
     byErrSqlGetValues "##insertFilterParam", sql, result
     saveFilterParam = result
     
@@ -856,8 +865,10 @@ Dim personal As Integer
     If hasCheckedMat Then
         itemId = saveFilterItem(filterId, "materials", ckKriteriumMat.value)
         saveParamsOfTree tvMat, itemId, "klassId"
-    Else
-        itemId = saveFilterItem(filterId, "materials", ckKriteriumMat.value)
+    End If
+    If hasCheckedReg Then
+        itemId = saveFilterItem(filterId, "regions", ckKriteriumRegion.value)
+        saveParamsOfTree tvRegion, itemId, "regionId"
     End If
 
     If hasOborud Then
@@ -927,9 +938,11 @@ Dim I As Integer, anySaved As Boolean, aNode As Node
     tvColumns.Nodes.Clear
     
     For I = 0 To UBound(headerList)
-        Set aNode = tvColumns.Nodes.Add(, , "c" & headerList(I).columnId, headerList(I).nameRu)
-        If headerList(I).saved Then
-            aNode.checked = True
+        If headerList(I).hidden <> 1 Then
+            Set aNode = tvColumns.Nodes.Add(, , "c" & headerList(I).columnId, headerList(I).nameRu)
+            If headerList(I).saved Then
+                aNode.checked = True
+            End If
         End If
     Next I
     
@@ -960,6 +973,7 @@ Private Sub persistColumnSelect(checked As Boolean, columnId As Integer, managId
     myExecute "W#ColumnSelect", sql, 0
 
 End Sub
+
 
 
 
@@ -1179,6 +1193,7 @@ Dim I As Integer
     Next I
     setListIndexByItemDataValue = False
 End Function
+
 
 Private Sub UpDownChange(ByVal upDirection As Integer)
 Dim startDate As Date, endDate As Date, shiftPeriod As Integer
