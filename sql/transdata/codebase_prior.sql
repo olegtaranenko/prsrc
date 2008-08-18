@@ -346,7 +346,7 @@ begin
 	join nAnalysCategory c on c.id = a.bycolumn
 	left join nAnalysCategory p on p.id = c.parentId
 	join nAnalysTemplate t on a.templateId = t.id
-	join nFilter f on f.id = 5 and f.byrowid = a.byrow and f.bycolumnid = a.bycolumn
+	join nFilter f on f.id = p_filterId and f.byrowid = a.byrow and f.bycolumnid = a.bycolumn
 	;
 
 
