@@ -3,7 +3,6 @@ Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "mscomctl.ocx"
 Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Orders 
    Appearance      =   0  'Flat
-   BackColor       =   &H8000000A&
    Caption         =   "Продажа"
    ClientHeight    =   6132
    ClientLeft      =   60
@@ -488,8 +487,8 @@ Dim isBaseOrder As Boolean
 Dim baseFirmId As Integer, baseFirm As String
 Dim baseProblemId As Integer, baseProblem As String, begPubNum As Long
 
-gNzak = Grid.TextMatrix(orders.mousRow, orNomZak)
-If InStr(orders.cmAdd.Caption, "+") > 0 Then
+gNzak = Grid.TextMatrix(Orders.mousRow, orNomZak)
+If InStr(Orders.cmAdd.Caption, "+") > 0 Then
   sql = "SELECT BayOrders.CehId, BayOrders.ProblemId, BayOrders.FirmId, " & _
         "GuideCeh.Ceh, GuideProblem.Problem, BayGuideFirms.Name " & _
         "FROM GuideProblem INNER JOIN (BayGuideFirms INNER JOIN " & _
@@ -528,7 +527,7 @@ End If
 'On Error GoTo ERR1
 tbOrders.AddNew
 tbOrders!StatusId = 0
-tbOrders!numOrder = l
+tbOrders!numorder = l
 tbOrders!inDate = Now
 tbOrders!managId = manId(cbM.ListIndex)
 'tbOrders!firmId = 0
@@ -544,7 +543,7 @@ Grid.TextMatrix(zakazNum, 0) = zakazNum
 Grid.TextMatrix(zakazNum, orInvoice) = "счет ?"
 Grid.TextMatrix(zakazNum, orNomZak) = l
 Grid.TextMatrix(zakazNum, orData) = Format(Now, "dd.mm.yy")
-Grid.TextMatrix(zakazNum, orMen) = orders.cbM.Text
+Grid.TextMatrix(zakazNum, orMen) = Orders.cbM.Text
 Grid.TextMatrix(zakazNum, orStatus) = status(0)
 If isBaseOrder Then
   Grid.TextMatrix(zakazNum, orProblem) = baseProblem
@@ -835,7 +834,7 @@ Dim addNullDate As String, strWhere As String
  
  If cbStartDate.value = 1 Then
     stDate = "(BayOrders.inDate)>='" & _
-             Format(orders.tbStartDate.Text, "yyyy-mm-dd") & "'"
+             Format(Orders.tbStartDate.Text, "yyyy-mm-dd") & "'"
     addNullDate = ""
  Else
     stDate = ""
@@ -844,7 +843,7 @@ Dim addNullDate As String, strWhere As String
 
  If cbEndDate.value = 1 Then
     enDate = "(BayOrders.inDate)<='" & _
-            Format(orders.tbEndDate.Text, "yyyy-mm-dd") & " 11:59:59 PM'"
+            Format(Orders.tbEndDate.Text, "yyyy-mm-dd") & " 11:59:59 PM'"
  Else
     enDate = ""
  End If
@@ -971,7 +970,7 @@ Dim tmpRow As Long, tmpCol As Long
 '    mousRow = tmpRow
 '    mousCol = tmpCol
 '    BayOrders.Enabled = True
-    orders.SetFocus
+    Orders.SetFocus
 
 End Sub
 
@@ -1552,7 +1551,7 @@ manId(cbM.ListIndex) & ", BayOrders.ProblemId = [BayGuideProblem].[ProblemId] " 
 If myExecute("##49", sql) <> 0 Then GoTo EN1
 Grid.Text = lbProblem.Text
 
-DNM = Format(Now(), "dd.mm.yy hh:nn") & vbTab & orders.cbM.Text & " " & gNzak ' именно vbTab
+DNM = Format(Now(), "dd.mm.yy hh:nn") & vbTab & Orders.cbM.Text & " " & gNzak ' именно vbTab
 On Error Resume Next ' в некот.ситуациях один из Open logFile дает Err: файл уже открыт
 Open logFile For Append As #2
 Print #2, DNM & " проблема=" & lbProblem.Text & _
@@ -1900,7 +1899,7 @@ Set tqOrders = myOpenRecordSet("##08", sql, dbOpenForwardOnly)
 If Not tqOrders.BOF Then
 While Not tqOrders.EOF
  
- gNzak = tqOrders!numOrder
+ gNzak = tqOrders!numorder
   
  
  If zakazNum > 0 Then Grid.AddItem ""
@@ -2053,14 +2052,14 @@ Dim str  As String
  Grid.TextMatrix(row, orMen) = Manag(tqOrders!managId)
  Grid.TextMatrix(row, orFirma) = tqOrders!Name
  Grid.TextMatrix(row, orStatus) = status(tqOrders!StatusId)
- orders.Grid.TextMatrix(row, orProblem) = Problems(tqOrders!problemId)
+ Orders.Grid.TextMatrix(row, orProblem) = Problems(tqOrders!problemId)
  
  LoadDate Grid, row, orData, tqOrders!inDate, "dd.mm.yy"
- LoadDate orders.Grid, row, orDataVid, tqOrders!outDateTime, "dd.mm.yy"
- LoadDate orders.Grid, row, orVrVid, tqOrders!outDateTime, "hh"
+ LoadDate Orders.Grid, row, orDataVid, tqOrders!outDateTime, "dd.mm.yy"
+ LoadDate Orders.Grid, row, orVrVid, tqOrders!outDateTime, "hh"
  
  
- gNzak = tqOrders!numOrder
+ gNzak = tqOrders!numorder
  
  
  'LoadNumeric Grid, row, orZakazano, tqOrders!ordered
