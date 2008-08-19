@@ -2684,15 +2684,15 @@ Function getBaySaledQty(p_nomnom As String, p_startDate As String, p_endDate As 
 End Function
 
 Private Sub getAvgOutcome(p_nomnom As String, ByVal p_startDate As String, ByVal p_endDate As String, _
-ByRef avgOutcome As Double, ByRef missedDays As Integer, ByRef saledQty As Double, ByRef income As Double, ByRef outcome As Double)
+ByRef avgOutcome As Double, ByRef missedDays As Integer, ByRef saledQty As Double)
     If p_startDate = "" Then
         p_startDate = "null"
     End If
     If p_endDate = "" Then
         p_endDate = "null"
     End If
-    sql = "call wf_sale_turnover_metrics ('" & p_nomnom & "', convert(datetime, " & p_startDate & "), convert(datetime, " & p_endDate & "))"
-    byErrSqlGetValues "##getAvgOutcome", sql, avgOutcome, missedDays, saledQty, income, outcome
+    sql = "select wf_sale_turnover_metrics ('" & p_nomnom & "', convert(datetime, " & p_startDate & "), convert(datetime, " & p_endDate & "))"
+    byErrSqlGetValues "##getAvgOutcome", sql, avgOutcome
 End Sub
 
 
@@ -2847,7 +2847,6 @@ If Not tbNomenk.BOF Then
     ElseIf Regim = "asOborot" Or Regim = "sourOborot" Then
         Dim saled As Double, saledProcent As Double
         Dim avgOutcome As Double, missedDays As Integer
-        getAvgOutcome tbNomenk!nomnom, startDate, endDate, avgOutcome, missedDays, saled, prih, rash
         
         prih = PrihodRashod2("+", strWhere)
         rash = PrihodRashod2("-", strWhere)
@@ -2864,6 +2863,7 @@ If Not tbNomenk.BOF Then
         Grid.TextMatrix(quantity, nkRashod) = Round(rash * gain, 2)
         
         
+        getAvgOutcome tbNomenk!nomnom, startDate, endDate, avgOutcome, missedDays, saled
 '        = getBaySaledQty(tbNomenk!nomnom, startDate, endDate)
         Grid.TextMatrix(quantity, nkRashodBay) = Round(saled, 2)
         If rash > 0 And saled > 0 Then
