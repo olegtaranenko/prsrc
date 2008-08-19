@@ -8,6 +8,11 @@ call isql logging_common stime
 call isql logging_common pm
 call isql logging_common mm
 
+:: permanent changes in comptex db schema.
+call isql ddl_comtex.sql stime
+call isql ddl_comtex.sql pm
+call isql ddl_comtex.sql mm
+
 rem call isql dbcc_prior.sql prior
 
 call isql slave_prior.sql prior
