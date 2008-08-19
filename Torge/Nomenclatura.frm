@@ -2683,22 +2683,23 @@ Function getBaySaledQty(p_nomnom As String, p_startDate As String, p_endDate As 
     byErrSqlGetValues "##getBaySaledQty", sql, getBaySaledQty
 End Function
 
-Function getAvgOutcome(p_nomnom As String, ByVal p_startDate As String, ByVal p_endDate As String) As Single
+Private Sub getAvgOutcome(p_nomnom As String, ByVal p_startDate As String, ByVal p_endDate As String, _
+ByRef avgOutcome As Double, ByRef missedDays As Integer, ByRef saledQty As Double, ByRef income As Double, ByRef outcome As Double)
     If p_startDate = "" Then
         p_startDate = "null"
     End If
     If p_endDate = "" Then
         p_endDate = "null"
     End If
-    sql = "select wf_sale_avg_sale ('" & p_nomnom & "', convert(datetime, " & p_startDate & "), convert(datetime, " & p_endDate & "))"
-    byErrSqlGetValues "##getBaySaledQty", sql, getAvgOutcome
-End Function
+    sql = "call wf_sale_turnover_metrics ('" & p_nomnom & "', convert(datetime, " & p_startDate & "), convert(datetime, " & p_endDate & "))"
+    byErrSqlGetValues "##getAvgOutcome", sql, avgOutcome, missedDays, saledQty, income, outcome
+End Sub
 
 
 Sub loadKlassNomenk(Optional filtr As String = "")
 Dim il As Long, strWhere As String, befWhere  As String
 Dim insWhere As String, strN As String, i As Integer, s As Single
-Dim beg As Single, prih As Single, rash As Single, oldNow As Single
+Dim beg As Single, prih As Double, rash As Double, oldNow As Single
 
 '
 ' Regim = "" - справочник по номенклатуре
@@ -2771,7 +2772,7 @@ sql = "SELECT ph.prev_cost, sGuideNomenk.*, sGuideFormuls.Formula, " _
 & vbCr & " INNER JOIN sGuideFormuls ON sGuideNomenk.formulaNom = sGuideFormuls.nomer " _
 & vbCr & " left join (select h.cost as prev_cost, h.nomnom from spricehistory h join (select max(change_date) as change_date, nomnom from spricehistory m group by nomnom) mx on mx.nomnom = h.nomnom and mx.change_date = h.change_date ) ph on ph.nomnom = sguidenomenk.nomnom  " _
 & vbCr & strWhere & " ORDER BY sGuideNomenk.nomNom ;"
-Debug.Print sql;
+'Debug.Print sql;
 'MsgBox sql
 Set tbNomenk = myOpenRecordSet("##165", sql, dbOpenForwardOnly) ' dbOpenDynaset)
 If tbNomenk Is Nothing Then GoTo EN1
@@ -2844,6 +2845,10 @@ If Not tbNomenk.BOF Then
         Grid.TextMatrix(quantity, nkEndOstat) = Round(gain * FO, 2) ' строка д.б после вызова nomencDostupOstatki
 '        GoTo AA
     ElseIf Regim = "asOborot" Or Regim = "sourOborot" Then
+        Dim saled As Double, saledProcent As Double
+        Dim avgOutcome As Double, missedDays As Integer
+        getAvgOutcome tbNomenk!nomnom, startDate, endDate, avgOutcome, missedDays, saled, prih, rash
+        
         prih = PrihodRashod2("+", strWhere)
         rash = PrihodRashod2("-", strWhere)
         If befWhere = "" Then
@@ -2858,21 +2863,21 @@ If Not tbNomenk.BOF Then
         Grid.TextMatrix(quantity, nkPrihod) = Round(prih * gain, 2)
         Grid.TextMatrix(quantity, nkRashod) = Round(rash * gain, 2)
         
-        Dim saled As Double, saledProcent As Double
         
-        saled = getBaySaledQty(tbNomenk!nomnom, startDate, endDate)
+'        = getBaySaledQty(tbNomenk!nomnom, startDate, endDate)
         Grid.TextMatrix(quantity, nkRashodBay) = Round(saled, 2)
         If rash > 0 And saled > 0 Then
-            Grid.TextMatrix(quantity, nkSaledProcent) = Format((saled / rash / gain) * 100, "##0")
+            Grid.TextMatrix(quantity, nkSaledProcent) = Format((saled / (rash * gain)) * 100, "##0")
         Else
             If saled > 0 Then
                 Grid.TextMatrix(quantity, nkSaledProcent) = "100"
             End If
         End If
-        Dim avgOutcome As Double
-        avgOutcome = getAvgOutcome(tbNomenk!nomnom, startDate, endDate)
         If avgOutcome <> 0 Then
             Grid.TextMatrix(quantity, nkAvgOutcome) = Format(avgOutcome, "# ##0.0")
+            If missedDays <> 0 Then
+                Grid.TextMatrix(quantity, nkAvgOutcome) = Grid.TextMatrix(quantity, nkAvgOutcome) & "*"
+            End If
         Else
             Grid.TextMatrix(quantity, nkAvgOutcome) = "-"
             
@@ -3063,14 +3068,14 @@ End Sub
 
 
 
-Private Sub tv_KeyUp(KeyCode As Integer, Shift As Integer)
+Private Sub tv_KeyDown(KeyCode As Integer, Shift As Integer)
 Dim i As Integer, str As String
-If Regim = "sourOborot" Then Exit Sub
-
-'If KeyCode = vbKeyReturn Or KeyCode = vbKeyEscape Then
-If KeyCode = vbKeyReturn Then
-    tv_NodeClick tv.SelectedItem
-End If
+    If Regim = "sourOborot" Then Exit Sub
+    
+    'If KeyCode = vbKeyReturn Or KeyCode = vbKeyEscape Then
+    If KeyCode = vbKeyReturn Then
+        tv_NodeClick tv.SelectedItem
+    End If
 End Sub
 
 Private Sub tv_MouseDown(Button As Integer, Shift As Integer, x As Single, y As Single)
@@ -3128,22 +3133,23 @@ End If
 End Sub
 
 Private Sub tv_NodeClick(ByVal Node As MSComctlLib.Node)
-
-gKlassId = Mid$(tv.SelectedItem.key, 2)
-gKlassType = Mid$(tv.SelectedItem.key, 1, 1)
-gSourceId = gKlassId
-If mousRight = 1 Then
-    mousRight = 2 ' правый клик был именно из Node
-    Exit Sub
-End If
-
-If Regim <> "sourOborot" And tv.SelectedItem.key = "k0" Then
-    If frmMode = "" Then controlVisible False
-    quantity = 0
-    Exit Sub
-End If
-
-loadKlassNomenk
+    If Not IsNull(tv.SelectedItem.key) Then
+        gKlassId = Mid$(tv.SelectedItem.key, 2)
+        gKlassType = Mid$(tv.SelectedItem.key, 1, 1)
+        gSourceId = gKlassId
+        If mousRight = 1 Then
+            mousRight = 2 ' правый клик был именно из Node
+            Exit Sub
+        End If
+        
+        If Regim <> "sourOborot" And tv.SelectedItem.key = "k0" Then
+            If frmMode = "" Then controlVisible False
+            quantity = 0
+            Exit Sub
+        End If
+        
+        loadKlassNomenk
+    End If
 'Grid.SetFocus
 'Grid_EnterCell
 
