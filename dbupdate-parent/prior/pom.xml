@@ -25,7 +25,7 @@
 		<syb.servicename>prior</syb.servicename>
 		<syb.username>dba</syb.username>
 		<syb.password>sql</syb.password>
-		<changelog.file>${project.build.sourceDirectory}/changeset-${artifactId}.xml</changelog.file>
+		<changelog.file>${changelog.PATH}/changeset-${artifactId}.xml</changelog.file>
 	</properties>
 
 </project>

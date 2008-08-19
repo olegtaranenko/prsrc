@@ -27,16 +27,24 @@
 						<driver>${sybase.driver}</driver>
 					    <username>${syb.username}</username>
 					    <password>${syb.password}</password>
+					    <logging>all</logging>
 					</configuration>
-				<executions>
-					<execution>
-						<id>update-schema</id>
-						<phase>process-resources</phase>
-						<goals>
-							<goal>update</goal>
-						</goals>
-					</execution>
-				</executions>
+					<executions>
+						<execution>
+							<id>generate-stime</id>
+							<phase>process-resources</phase>
+							<goals>
+								<goal>updateSQL</goal>
+							</goals>
+						</execution>
+						<execution>
+							<id>update-stime</id>
+							<phase>process-test-resources</phase>
+							<goals>
+								<goal>update</goal>
+							</goals>
+						</execution>
+					</executions>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -50,6 +58,6 @@
 		<sybase.driver>com.sybase.jdbc3.jdbc.SybDriver</sybase.driver>
 	 	<sybase.artifactId>jconn3</sybase.artifactId>
 		<sybase.driver.version>6.0</sybase.driver.version>
-		<changelog.file>${project.build.sourceDirectory}/changeset-${artifactId}.xml</changelog.file>
+		<changelog.PATH>src/main/liquibase</changelog.PATH>
 	</properties>
 </project>

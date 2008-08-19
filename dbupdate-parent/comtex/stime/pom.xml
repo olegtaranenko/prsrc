@@ -17,18 +17,9 @@
 				<groupId>org.liquibase</groupId>
 				<artifactId>liquibase-plugin</artifactId>
 				<version>${liquibase.version}</version>
-					<configuration>
-						<changeLogFile>${changelog.file}</changeLogFile>
-					</configuration>
-				<executions>
-					<execution>
-						<id>update-stime</id>
-						<phase>process-resources</phase>
-						<goals>
-							<goal>update</goal>
-						</goals>
-					</execution>
-				</executions>
+				<configuration>
+					<changeLogFile>${changelog.file}</changeLogFile>
+				</configuration>
 			</plugin>
 		</plugins>
 		
@@ -36,7 +27,7 @@
 	<properties>
 		<syb.server.port>49152</syb.server.port>
 		<syb.servicename>stime</syb.servicename>
-		<changelog.file>${project.build.sourceDirectory}/changeset-${artifactId}.xml</changelog.file>
+		<changelog.file>${changelog.PATH}/changeset-${artifactId}.xml</changelog.file>
 	</properties>
 
 </project>
