@@ -1,0 +1,31 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <parent>
+    <artifactId>comtex</artifactId>
+    <groupId>ru.petmas</groupId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>ru.petmas</groupId>
+  <artifactId>pm</artifactId>
+  <packaging>pom</packaging>
+  <name>Update accountn</name>
+  <version>1.0-SNAPSHOT</version>
+  <description>Бухгалтерская база для Петровских Мастерских</description>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.liquibase</groupId>
+				<artifactId>liquibase-plugin</artifactId>
+				<version>${liquibase.version}</version>
+				<configuration>
+					<changeLogFile>${changelog.file}</changeLogFile>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<properties>
+		<syb.server.port>49154</syb.server.port>
+		<syb.servicename>accountn</syb.servicename>
+		<changelog.file>${changelog.PATH}/changeset-${artifactId}.xml</changelog.file>
+	</properties>
+</project>

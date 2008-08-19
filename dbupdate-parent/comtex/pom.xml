@@ -13,6 +13,8 @@
   <description>update for all comtex databases</description>
   <modules>
   	<module>stime</module>
+  	<module>pm</module>
+  	<module>mm</module>
   </modules>
 
 
