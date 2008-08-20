@@ -2234,15 +2234,15 @@ if exists (select 1 from sysprocedure where proc_name = 'wf_sale_avg_sale') then
 end if;
 
 if exists (select 1 from sysprocedure where proc_name = 'wf_sale_turnover_metrics') then
-	drop procedure  wf_sale_turnover_metrics;
+	drop function  wf_sale_turnover_metrics;
 end if;
 
 create 
-	procedure wf_sale_turnover_metrics(
+	function  wf_sale_turnover_metrics(
 	  p_nomnom varchar(20)
 	, p_start datetime default null
 	, p_end datetime default null
-) 
+) returns varchar(127)
 begin
 
 	declare v_current_total   double;
@@ -2428,12 +2428,13 @@ begin
 	end if;
 
 
-	select o_average_outcome                        as avg_outcome
-		, v_full_period_days - v_period_outcome + 1 as zero_days 
-		, v_saled_quant                             as qty_sale
-		, v_income_quant
-		, v_outcome_quant
-	from dummy;
+	set wf_sale_turnover_metrics =
+				convert(varchar(20), o_average_outcome) 
+		+ ';' + convert(varchar(20), v_full_period_days - v_period_outcome + 1)
+		+ ';' + convert(varchar(20), v_saled_quant)
+		+ ';' + convert(varchar(20), v_income_quant)
+		+ ';' + convert(varchar(20), v_outcome_quant)
+	;
 
 end;
 

@@ -2684,7 +2684,8 @@ Function getBaySaledQty(p_nomnom As String, p_startDate As String, p_endDate As 
 End Function
 
 Private Sub getAvgOutcome(p_nomnom As String, ByVal p_startDate As String, ByVal p_endDate As String, _
-ByRef avgOutcome As Double, ByRef missedDays As Integer, ByRef saledQty As Double)
+ByRef avgOutcome As Double, ByRef missedDays As Integer, ByRef saledQty As Double, ByRef incomeQty As Double, ByRef outcomeQty As Double)
+Dim csvResult As String
     If p_startDate = "" Then
         p_startDate = "null"
     End If
@@ -2692,9 +2693,50 @@ ByRef avgOutcome As Double, ByRef missedDays As Integer, ByRef saledQty As Doubl
         p_endDate = "null"
     End If
     sql = "select wf_sale_turnover_metrics ('" & p_nomnom & "', convert(datetime, " & p_startDate & "), convert(datetime, " & p_endDate & "))"
-    byErrSqlGetValues "##getAvgOutcome", sql, avgOutcome
+    byErrSqlGetValues "##getAvgOutcome", sql, csvResult
+    parseCsvOutcome csvResult, avgOutcome, missedDays, saledQty, incomeQty, outcomeQty
 End Sub
+Private Sub parseCsvOutcome(ByVal csv As String, ByRef avgOutcome As Double, ByRef missedDays As Integer, ByRef saledQty As Double, ByRef incomeQty As Double, ByRef outcomeQty As Double)
+Dim done As Boolean, sepIndex As Long, token As String, restCsv As String, currentOrder As Integer
 
+    done = False
+    restCsv = csv
+    currentOrder = 0
+    
+    While Not done
+        sepIndex = InStr(1, restCsv, ";")
+        If restCsv = "" Then
+            done = True
+        Else
+            If sepIndex > 0 Then
+                token = left(restCsv, sepIndex - 1)
+                restCsv = Mid(restCsv, sepIndex + 1)
+            Else
+                token = restCsv
+                restCsv = ""
+            End If
+        End If
+        
+        If IsNumeric(token) Then
+            If currentOrder = 0 Then
+                avgOutcome = CDbl(token)
+            ElseIf currentOrder = 1 Then
+                missedDays = CInt(token)
+            ElseIf currentOrder = 2 Then
+                saledQty = CDbl(token)
+            ElseIf currentOrder = 3 Then
+                incomeQty = CDbl(token)
+            ElseIf currentOrder = 4 Then
+                outcomeQty = CDbl(token)
+            End If
+        End If
+        currentOrder = currentOrder + 1
+        If restCsv = "" Then
+            done = True
+        End If
+    Wend
+
+End Sub
 
 Sub loadKlassNomenk(Optional filtr As String = "")
 Dim il As Long, strWhere As String, befWhere  As String
@@ -2848,8 +2890,9 @@ If Not tbNomenk.BOF Then
         Dim saled As Double, saledProcent As Double
         Dim avgOutcome As Double, missedDays As Integer
         
-        prih = PrihodRashod2("+", strWhere)
-        rash = PrihodRashod2("-", strWhere)
+        getAvgOutcome tbNomenk!nomnom, startDate, endDate, avgOutcome, missedDays, saled, prih, rash
+'        prih = PrihodRashod2("+", strWhere)
+'        rash = PrihodRashod2("-", strWhere)
         If befWhere = "" Then
             beg = 0
         Else
@@ -2859,15 +2902,14 @@ If Not tbNomenk.BOF Then
         End If
     
         Grid.TextMatrix(quantity, nkBegOstat) = Round(beg * gain, 2) ' ост на начало
-        Grid.TextMatrix(quantity, nkPrihod) = Round(prih * gain, 2)
-        Grid.TextMatrix(quantity, nkRashod) = Round(rash * gain, 2)
+        Grid.TextMatrix(quantity, nkPrihod) = Round(prih, 2)
+        Grid.TextMatrix(quantity, nkRashod) = Round(rash, 2)
         
         
-        getAvgOutcome tbNomenk!nomnom, startDate, endDate, avgOutcome, missedDays, saled
 '        = getBaySaledQty(tbNomenk!nomnom, startDate, endDate)
         Grid.TextMatrix(quantity, nkRashodBay) = Round(saled, 2)
         If rash > 0 And saled > 0 Then
-            Grid.TextMatrix(quantity, nkSaledProcent) = Format((saled / (rash * gain)) * 100, "##0")
+            Grid.TextMatrix(quantity, nkSaledProcent) = Format((saled / (rash)) * 100, "##0")
         Else
             If saled > 0 Then
                 Grid.TextMatrix(quantity, nkSaledProcent) = "100"
@@ -2882,7 +2924,7 @@ If Not tbNomenk.BOF Then
             Grid.TextMatrix(quantity, nkAvgOutcome) = "-"
             
         End If
-        Grid.TextMatrix(quantity, nkEndOstat) = Round((beg + prih - rash) * gain, 2) ' остаток на конец
+        Grid.TextMatrix(quantity, nkEndOstat) = Round(beg * gain + prih - rash, 2)  ' остаток на конец
         If Regim = "asOborot" Then GoTo BB
     ElseIf Regim = "asOstat" Then
     
