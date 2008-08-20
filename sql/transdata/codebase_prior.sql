@@ -2288,12 +2288,12 @@ begin
 			and ((d.sourId = -1001 or d.destId <= -1001) ) --and not (d.sourId <= -1001 and d.destId <= -1001)
 		order by d.xdate, i.numdoc, i.numext
 	do
-		message '******************************** ********' to client;
-		message 'r_sourId = ', r_sourId to client;
-		message 'r_destId = ', r_destId to client;
-		message 'r_numdoc = ', r_numdoc to client;
-		message 'r_quant = ', r_quant to client;
-		message 'r_xdate = ', r_xdate to client;
+--		message '******************************** ********' to client;
+--		message 'r_sourId = ', r_sourId to client;
+--		message 'r_destId = ', r_destId to client;
+--		message 'r_numdoc = ', r_numdoc to client;
+--		message 'r_quant = ', r_quant to client;
+--		message 'r_xdate = ', r_xdate to client;
 
 
 		if p_start is null then
@@ -2302,19 +2302,19 @@ begin
 			else 
 				set v_interval_start = convert(date, r_xdate); -- truncate time.
 			end if;
-			message '1) v_interval_start = ', v_interval_start to client;
+--			message '1) v_interval_start = ', v_interval_start to client;
 		else
 			if r_xdate >= p_start then
 				if p_start < v_base_income_date then
 					set v_interval_start = v_base_income_date;
-					message '2) v_interval_start = ', v_interval_start to client;
+--					message '2) v_interval_start = ', v_interval_start to client;
 				else
 					set v_interval_start = p_start;
-					message '3) v_interval_start = ', v_interval_start to client;
+--					message '3) v_interval_start = ', v_interval_start to client;
 				end if;
 			else
 				set v_interval_start = null;
-				message '4) v_interval_start = ', v_interval_start to client;
+--				message '4) v_interval_start = ', v_interval_start to client;
 
 			end if;
 		end if;
@@ -2325,7 +2325,7 @@ begin
 			set v_current_total = v_current_total + r_quant;
 			if v_interval_start is not null then
 				set v_income_quant = v_income_quant + r_quant;
-				message 'v_income_quant = ', v_income_quant to client;
+--				message 'v_income_quant = ', v_income_quant to client;
 
 			end if;
 			set v_current_Income = r_quant;
@@ -2445,6 +2445,27 @@ if exists (select 1 from sysprocedure where proc_name = 'wf_sale_nomenk_qty') th
 	drop function  wf_sale_nomenk_qty;
 end if;
 
+create 
+	function wf_sale_nomenk_qty(
+	  p_nomnom varchar(20)
+	, p_start datetime default null
+	, p_end datetime default null
+) returns double
+begin
+
+select sum(i.quant / n.perList) AS quant
+    into wf_sale_nomenk_qty
+    from BayOrders o 
+    join sDocs d on d.numDoc = o.numOrder 
+    join sDMC i on d.numExt = i.numExt and d.numDoc = i.numDoc
+    join sDMCrez r on i.nomNom = r.nomNom and o.numOrder = r.numDoc
+    join sGuideNomenk n ON n.nomNom = i.nomNom and r.nomNom = i.nomNom 
+WHERE 
+	    i.nomnom = p_nomnom
+    and xDate between isnull(p_start, '20010101') and isnull(p_end, '21001231')
+    ;
+
+end;
 --=============================================================================
 
 
@@ -2619,9 +2640,9 @@ begin
 	declare v_sql long varchar;
 
 	set v_sql = wf_var_bind(p_sql, 'startDate', p_day);
---	message v_sql to client;
+	message v_sql to client;
 	set v_sql = wf_var_bind(v_sql, 'endDate', p_day);
---	message v_sql to client;
+	message v_sql to client;
 	begin
 		declare c_list no scroll cursor 
 		using v_sql;
@@ -2979,7 +3000,7 @@ begin
 	set no_echo = 0;
 
   	begin
---  		message '@stime_sdocs = ', @stime_sdocs to log;
+  		message '@stime_sdocs = ', @stime_sdocs to log;
 		select @stime_sdocs into no_echo; 
 	exception 
 		when other then
@@ -3217,7 +3238,7 @@ begin
 		order by k.nomName
 	do
 
---		message '*>>>', r_numdoc, ' ', r_sourId, ' ', r_destId, ' ', r_currency_iso to client;
+		message '*>>>', r_numdoc, ' ', r_sourId, ' ', r_destId, ' ', r_currency_iso to client;
 		if f_inserted = 0 then
 			set f_inserted = 1;
 
@@ -3228,7 +3249,7 @@ begin
 			end if;
 
 			set v_id_currency = select_remote('stime', 'jmat', 'id_curr', 'id = ' + convert(varchar(20), p_id_jmat));
---			message '	v_id_currency = ', v_id_currency to client;
+			message '	v_id_currency = ', v_id_currency to client;
 			set v_datev = select_remote('stime', 'jmat', 'datv', 'id = ' + convert(varchar(20), p_id_jmat));
 			set v_currency_rate = select_remote('stime', 'jmat', 'curr', 'id = ' + convert(varchar(20), p_id_jmat));
 
@@ -3390,7 +3411,7 @@ begin
 		return;
 	end if;
 
---	message 'old_Id_jmat = ', old_id_jmat to client;
+	message 'old_Id_jmat = ', old_id_jmat to client;
 
     for all_mat as m dynamic scroll cursor for
         select id_mat as r_id_mat from sdmc i
@@ -3406,7 +3427,7 @@ begin
     end for;
 
     set wf_jmat_shift_id = get_nextid('jmat');
---    message p_id_jmat to client;
+    message p_id_jmat to client;
     
     call update_remote(v_sysname_anl, 'jmat', 'id',  wf_jmat_shift_id, 'id = '+ convert(varchar(20), old_id_jmat));
 	if v_sysname != v_sysname_anl then
@@ -3706,12 +3727,12 @@ begin
 		else 
 			set f_distribute = 0;
 		end if;
---		message 'f_distribute = ',f_distribute to client;
+		message 'f_distribute = ',f_distribute to client;
 
 		if v_id_jmat is not null then
 			set old_id_guide_anl = select_remote('stime', 'jmat', 'id_guide', 'id = ' + convert(varchar(20), v_id_jmat));
---			message 'old_id_guide_anl = ',old_id_guide_anl to client;
---			message 'v_id_guide_anl = ',v_id_guide_anl to client;
+			message 'old_id_guide_anl = ',old_id_guide_anl to client;
+			message 'v_id_guide_anl = ',v_id_guide_anl to client;
 			if old_id_guide_anl != v_id_guide_anl then
 				call qualify_guide(
 					  v_id_guide_anl
@@ -3785,7 +3806,7 @@ begin
 					, v_id_guide_pmm
 	    		);
 
---	    	message 'after wf_jmat_distribute...' to client;
+	    	message 'after wf_jmat_distribute...' to client;
 
 		end if;
 	end if;
@@ -3993,7 +4014,7 @@ begin
 					end if;
 
 					if f_insert_mat = 1 then
---						message 'INSERT INTO MAT... ' to client;
+						message 'INSERT INTO MAT... ' to client;
 						set v_id_mat = get_nextid('mat');
 						call wf_insert_mat (
 							'stime'
@@ -4033,7 +4054,7 @@ begin
 	drop table #saldo;
 	drop table #itogo;
     
---	message 'procedure inventory_order ended successful.' to client;
+	message 'procedure inventory_order ended successful.' to client;
 end;
 
 
@@ -4555,7 +4576,7 @@ begin
 	from #saldo 
     group by nomnom, id;
 
---	message 'p_nomnom = ', p_nomnom to client;
+	message 'p_nomnom = ', p_nomnom to client;
 	select (sum(isnull(debit, 0)) - sum(isnull(kredit, 0))) / p_perlist
 	into inventory_qty
 	from #saldo
@@ -4803,7 +4824,7 @@ begin
 			from sys.sysservers s 
 			join guideventure v on s.srvname = v.sysname and v.standalone = 0
 		do
---			message 'call slave_cre_block_var_' + r_server + '(''' + make_block_name(get_server_name(), r_table) + ''')' to log;
+			message 'call slave_cre_block_var_' + r_server + '(''' + make_block_name(get_server_name(), r_table) + ''')' to log;
 			execute immediate 'call slave_cre_block_var_' + r_server + '(''' + make_block_name(get_server_name(), r_table) + ''')';
 
 		end for;
@@ -5485,14 +5506,14 @@ begin
 		set v_jmat_nu = convert(varchar(20), p_ivo_id);
 
 
---		message 'dst_sklad =', v_dst_id_sklad, ', src_sklad =', v_src_id_sklad to client;
+		message 'dst_sklad =', v_dst_id_sklad, ', src_sklad =', v_src_id_sklad to client;
 		if v_src_id_sklad is not null then
 			if v_dst_id_sklad is not null then
 				select id_voc_names into v_id_dest from sguidesource where sourceName like '%взаимозачет%' and sourceid < 0;
 			else
 				select id_voc_names into v_id_dest from sguidesource where sourceName like '%инвентаризация%' and sourceid < 0;
 			end if;
---			message 'v_id_dest =', v_id_dest to client;
+			message 'v_id_dest =', v_id_dest to client;
 
 			if r_id_jmat is not null then
 				-- проверим, не удалена ли она в Комехе?
@@ -5511,7 +5532,7 @@ begin
 				where 
 					id = p_ivo_id;
 			end if;
---			message 'r_id_jmat =', r_id_jmat to client;
+			message 'r_id_jmat =', r_id_jmat to client;
 
 			call block_remote(r_src_server, get_server_name(), 'jmat');
 			call wf_insert_jmat (
@@ -5540,7 +5561,7 @@ begin
 			else
 				select id_voc_names into v_id_source from sguidesource where sourceName like '%инвентаризация%' and sourceid > 0;
 			end if;
---			message 'v_id_source =', v_id_source to client;
+			message 'v_id_source =', v_id_source to client;
 
 			if r_id_jmat is not null then
 				-- проверим, не удалена ли она в Комехе?
@@ -5558,7 +5579,7 @@ begin
 					id = p_ivo_id;
 			end if;
 
---			message 'r_id_jmat =', r_id_jmat to client;
+			message 'r_id_jmat =', r_id_jmat to client;
 			call block_remote(r_dst_server, get_server_name(), 'jmat');
 			call wf_insert_jmat (
 				 r_dst_server
@@ -5800,7 +5821,7 @@ begin
 	declare vo_summa float;
 	declare ivo_id integer;
 
---	message 'Generate ivo for ', p_nomnom to client;
+	message 'Generate ivo for ', p_nomnom to client;
 
 		update #vntRest set rest = 0.00;
 		
@@ -5911,7 +5932,7 @@ begin
 									, p_term_start
 									, p_term_end
 								);
---								message '	cоздана/изменена накладная №', ivo_id to client;
+								message '	cоздана/изменена накладная №', ivo_id to client;
 								update #vntRest set rest = rest + vo_summa where ventureId = dv_dstVentureId;
 								update #vntRest set rest = rest - vo_summa where ventureId = sv_srcVentureId;
 								leave compensate;
@@ -5923,7 +5944,7 @@ begin
 /*			
 			select rest into rest1 from #vntRest where ventureId = 1;
 			select rest into rest2 from #vntRest where ventureId = 2;
---			message r_numDoc, '        ', r_nDate,'      ', r_qty, '      ', round(rest1 + rest2, 2), '      ', round(rest1, 2), '      ', round(rest2, 2) 
+			message r_numDoc, '        ', r_nDate,'      ', r_qty, '      ', round(rest1 + rest2, 2), '      ', round(rest1, 2), '      ', round(rest2, 2) 
 			, '      ', r_ventureId
 			, '      ', r_destventureId
 			to client;
@@ -6006,7 +6027,7 @@ begin
 	select v.ventureId into v_defaultVentureId 
 	from guideventure v 
 	join system s on s.id_analytic_default = v.id_analytic;
---	message 'Взаимозачет дляя накладной №', p_numdoc to client;
+	message 'Взаимозачет дляя накладной №', p_numdoc to client;
 
 
 	create table #vntRest (ventureId integer, rest float);
@@ -8184,9 +8205,9 @@ begin
 	    	set v_changed_by_id = null;
 	    	set no_history = '.';
 	    end;
---	    message 'no_hostory = ', no_history to client;
+	    message 'no_hostory = ', no_history to client;
 	    if no_history <> '.' then
---		    message 'insert inot ' to client;
+		    message 'insert inot ' to client;
 			insert into sPriceHistory (nomnom, cost, change_date, changed_by_id)
 			values ( old_name.nomnom, old_name.cost, now(), v_changed_by_id);
 		end if;

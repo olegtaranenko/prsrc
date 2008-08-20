@@ -589,6 +589,7 @@ Dim nkWebFormula As Integer 'скрыта
 Dim nkYesNo As Integer
 Dim nkMark As Integer
 
+
 Private Sub setMnPriceHistoryStatus()
 Dim cnt As String
     If nkPrevCost <> -1 Then
@@ -2697,7 +2698,8 @@ Dim csvResult As String
     parseCsvOutcome csvResult, avgOutcome, missedDays, saledQty, incomeQty, outcomeQty
 End Sub
 Private Sub parseCsvOutcome(ByVal csv As String, ByRef avgOutcome As Double, ByRef missedDays As Integer, ByRef saledQty As Double, ByRef incomeQty As Double, ByRef outcomeQty As Double)
-Dim done As Boolean, sepIndex As Long, token As String, restCsv As String, currentOrder As Integer
+Dim done As Boolean, sepIndex As Long, token As String
+Dim restCsv As String, currentOrder As Integer
 
     done = False
     restCsv = csv
@@ -2716,7 +2718,9 @@ Dim done As Boolean, sepIndex As Long, token As String, restCsv As String, curre
                 restCsv = ""
             End If
         End If
-        
+        If token = "" Then
+            token = "0"
+        End If
         If IsNumeric(token) Then
             If currentOrder = 0 Then
                 avgOutcome = CDbl(token)
