@@ -531,10 +531,14 @@ begin
 	end if;
 
 	select count(*) into v_region_flag   	from #regions   where isActive = 1;
-	select count(*) into v_no_oborud_flag   from #noOboruds where isActive = 1;
+	select count(*) into v_no_oborud_flag   from #noOboruds;
+
+	set v_oborud_flag = 0;
 	if v_no_oborud_flag = 0 then
 		select count(*) into v_oborud_flag   from #oborudItems where isActive = 1;
 	end if;
+
+
 
 	set v_firmId = p_firmId;
 	if v_firmId = 0 then
@@ -580,6 +584,16 @@ begin
 				from #regions r 
 				where r.regionid = f.regionId
 			)
+		)
+		and (v_oborud_flag = 0 
+			or exists (
+				select 1 from oborudKomplekt ok 
+				, #oborudItems oi
+				where ok.oborudId = f.oborudId and ok.oborudItemId = oi.oborudItemId
+			)
+		)
+		and (v_no_oborud_flag = 0 
+			or f.oborudId is null
 		)
 	;
 --	message 'count of #sale_item = ', @@rowcount to client;
@@ -814,21 +828,13 @@ begin
 
 	select count(*) into v_region_flag   	from #regions   where isActive = 1;
 	select count(*) into v_material_flag 	from #materials where isActive = 1;
-	select count(*) into v_no_oborud_flag   from #noOboruds where isActive = 1;
+	select count(*) into v_no_oborud_flag   from #noOboruds;
+	set v_oborud_flag = 0;
 	if v_no_oborud_flag = 0 then
 		select count(*) into v_oborud_flag   from #oborudItems where isActive = 1;
 	end if;
 
 
-/*
-	create table #periods (
-		periodId int default autoincrement
-		, st date
-		, en date
-		, label varchar(32)
-		, year integer
-	);
-*/
 	call n_fill_periods(p_begin, p_end, p_period_type, p_columnId);
 
 	set v_begin = p_begin;
@@ -849,7 +855,7 @@ begin
 		, firmId     integer
 	);
 
-	
+
 	insert into #sale_isum (
 		numorder, indate, firmId, orderPaid, orderOrdered
 	)
@@ -861,8 +867,21 @@ begin
 			o.indate >= isnull(v_begin, o.inDate) and (v_end is null or o.inDate < v_end)
 		and (v_region_flag = 0 or exists (select 1 from #regions r, bayguidefirms f where f.firmid = o.firmid and r.regionid = f.regionid))
 		and (v_detail = 0 or o.firmId = v_firmId)
---	and (v_oborud_flag = 0 or exists (select 1 from #oboruds r, bayguidefirms f where f.firmid = o.firmid and r.oborudid = f.oborudid))
+		and (v_oborud_flag = 0 
+			or exists (
+				select 1 from oborudKomplekt ok 
+				, #oborudItems oi, bayGuideFirms f
+				where ok.oborudId = f.oborudId and ok.oborudItemId = oi.oborudItemId and f.firmId = o.firmId
+			)
+		)
+		and (v_no_oborud_flag = 0 
+			or exists (
+				select 1 from bayGuideFirms f
+				where f.firmId = o.firmId and f.oborudId is null
+			)
+		)
 	;
+
 
 	update #sale_isum s set s.periodId = p.periodId
 	from #periods p 
