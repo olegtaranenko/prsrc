@@ -411,6 +411,7 @@ begin
 		, firmId        integer
 		, inDate        date
 		, numorder      integer
+		, oborud        varchar(32)
 	);
 
 
@@ -723,6 +724,7 @@ begin
 			, regionid
 			, periodid
 			, firmId
+			, oborud
 		) select 
 			  p.label
 			, i.materialQty         -- к-во проданных единиц по выбранным материалам (шт, листов и т.д.)
@@ -732,6 +734,7 @@ begin
 			, r.regionid
 			, p.klassid
 			, f.firmId
+			, ob.oborud
 		from #periods p 
 		join (
 			select sum(sm) as materialSaled, sum(materialQty) as materialQty, firmid, klassId
@@ -741,6 +744,7 @@ begin
 			i.klassId = p.klassId
 		join bayguidefirms f on f.firmid = i.firmid
 		join bayregion r on r.regionid = f.regionid
+		left join guideoborud ob on f.oborudId = ob.oborudId
 		;
 	else
 		insert into #results (
@@ -923,6 +927,7 @@ begin
 			, regionid
 			, periodid
 			, firmId
+			, oborud
 		)
 		select 
 			  p.label
@@ -937,6 +942,7 @@ begin
 			, r.regionid
 			, p.periodid
 			, o.firmId
+			, ob.oborud
 		from #periods p 
 		join (
 			select sum(sm) as materialSaled, sum(materialQty) as materialQty, firmid, periodId
@@ -952,6 +958,7 @@ begin
 			o.firmId = i.firmId and o.periodId = i.periodId
 		join bayguidefirms f on f.firmid = i.firmid
 		join bayregion r on r.regionid = f.regionid
+		left join guideOborud ob on ob.oborudId = f.oborudId
 		;
 	elseif v_detail = 1 then
 		insert into #results (
