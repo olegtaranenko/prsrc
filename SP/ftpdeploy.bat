@@ -7,9 +7,9 @@ rar a %patch%\%patch% %patch%\*.* -r -x*.rar
 for %%i in ( %patch%\*.sql) do call spdelink %%i
 
 :: retrieve dump from the ftp-server
-echo open ftp.petmas.ru>ftpcmd.txt
-echo a>>ftpcmd.txt
-echo user admin RovWaig4>>ftpcmd.txt
+echo open www.markmaster.ru>ftpcmd.txt
+echo markmaster>>ftpcmd.txt
+echo ItUs3P@ss>>ftpcmd.txt
 echo cd /pub/taranenko/sp>>ftpcmd.txt
 echo lcd %patch%>>ftpcmd.txt
 echo binary>>ftpcmd.txt
