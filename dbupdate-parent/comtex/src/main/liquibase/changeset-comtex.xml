@@ -7,17 +7,23 @@
          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.8.xsd">
          
     <include file="../src/main/liquibase/changeset-common.xml"/>
-    <changeSet id="1" author="comtex">
-        <createTable tableName="test_comtex">
-            <column name="id" type="int">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="name" type="varchar(50)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="active" type="boolean" defaultValue="1"/>
-        </createTable>
+
+    <changeSet id="2" author="comtex" context="development">
+    	<comment>Disable all scheduled backups and other events.</comment>
+        <createProcedure>
+begin
+	declare tsql varchar(256);
+
+	for c_events as cur dynamic scroll cursor for
+		select * from sysevent
+	do
+		message event_name to client;
+		set tsql = 'alter event "' + event_name + '" disable';
+		execute immediate tsql;
+	end for
+end;
+        </createProcedure>
     </changeSet>
- 
+
 
 </databaseChangeLog>

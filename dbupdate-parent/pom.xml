@@ -6,6 +6,30 @@
 	<name>dbupdate</name>
 	<version>1.0-SNAPSHOT</version>
 	<description>update database for Prior</description>
+
+
+	<profiles>
+		<profile>
+			<id>production</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<changelog.context>production</changelog.context>
+			</properties>
+		</profile>
+		<profile>
+			<id>development</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+				<property><name>development</name></property>
+			</activation>
+			<properties>
+				<changelog.context>development</changelog.context>
+			</properties>
+		</profile>
+	</profiles>
+
 	<build>
 		<sourceDirectory>src/main/liquibase</sourceDirectory>
 		<pluginManagement>
@@ -28,6 +52,7 @@
 					    <username>${syb.username}</username>
 					    <password>${syb.password}</password>
 					    <logging>all</logging>
+					    <contexts>${changelog.context}</contexts>
 					</configuration>
 					<executions>
 						<execution>
@@ -54,7 +79,7 @@
 		<module>comtex</module>
 	</modules>
 	<properties>
-		<liquibase.version>1.8.0.0</liquibase.version>
+		<liquibase.version>1.8.0.0-SNAPSHOT</liquibase.version>
 		<sybase.driver>com.sybase.jdbc3.jdbc.SybDriver</sybase.driver>
 	 	<sybase.artifactId>jconn3</sybase.artifactId>
 		<sybase.driver.version>6.0</sybase.driver.version>
