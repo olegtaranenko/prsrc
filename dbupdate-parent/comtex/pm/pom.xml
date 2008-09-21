@@ -24,7 +24,7 @@
 		</plugins>
 	</build>
 	<properties>
-		<syb.server.port>49154</syb.server.port>
+		<syb.server.port>${accountn.port}</syb.server.port>
 		<syb.servicename>accountn</syb.servicename>
 		<changelog.file>${changelog.PATH}/changeset-${artifactId}.xml</changelog.file>
 	</properties>

@@ -16,16 +16,26 @@
 			</activation>
 			<properties>
 				<changelog.context>production</changelog.context>
+				<prior.port>9800</prior.port>
+				<accountn.port>9801</accountn.port>
+				<markmaster.port>9802</markmaster.port>
+				<stime.port>9803</stime.port>
 			</properties>
 		</profile>
 		<profile>
-			<id>development</id>
+			<id>user-defined</id>
 			<activation>
 				<activeByDefault>false</activeByDefault>
-				<property><name>development</name></property>
+				<property>
+					<name>context</name>
+				</property>
 			</activation>
 			<properties>
-				<changelog.context>development</changelog.context>
+				<changelog.context>${context}</changelog.context>
+				<prior.port>9810</prior.port>
+				<accountn.port>9811</accountn.port>
+				<markmaster.port>9812</markmaster.port>
+				<stime.port>9813</stime.port>
 			</properties>
 		</profile>
 	</profiles>
@@ -81,7 +91,7 @@
 	<properties>
 		<liquibase.version>1.8.0.0-SNAPSHOT</liquibase.version>
 		<sybase.driver>com.sybase.jdbc3.jdbc.SybDriver</sybase.driver>
-	 	<sybase.artifactId>jconn3</sybase.artifactId>
+		<sybase.artifactId>jconn3</sybase.artifactId>
 		<sybase.driver.version>6.0</sybase.driver.version>
 		<changelog.PATH>src/main/liquibase</changelog.PATH>
 	</properties>

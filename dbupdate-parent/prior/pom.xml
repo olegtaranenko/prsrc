@@ -21,7 +21,7 @@
 	</build>
 
 	<properties>
-		<syb.server.port>2638</syb.server.port>
+		<syb.server.port>${prior.port}</syb.server.port>
 		<syb.servicename>prior</syb.servicename>
 		<syb.username>dba</syb.username>
 		<syb.password>sql</syb.password>
