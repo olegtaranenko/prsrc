@@ -7,17 +7,6 @@
          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.8.xsd">
  
     <include file="../src/main/liquibase/changeset-common.xml"/>
-    <changeSet id="1" author="prior">
-        <createTable tableName="test_prior">
-            <column name="id" type="int">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="name" type="varchar(50)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="active" type="boolean" defaultValue="1"/>
-        </createTable>
-    </changeSet>
  
 
 </databaseChangeLog>
