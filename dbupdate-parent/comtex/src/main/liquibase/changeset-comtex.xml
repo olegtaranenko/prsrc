@@ -4,11 +4,13 @@
   xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.8"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.8
-         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.8.xsd">
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.8.xsd"
+  logicalFilePath="changeset-comtex.xml"
+>
          
     <include file="../src/main/liquibase/changeset-common.xml"/>
 
-    <changeSet id="2" author="comtex" context="development">
+    <changeSet id="1" author="comtex" context="development">
     	<comment>Disable all scheduled backups and other events.</comment>
         <createProcedure>
 begin

@@ -4,7 +4,9 @@
   xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.8"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.8
-         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.8.xsd">
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.8.xsd"
+  logicalFilePath="changeset-pm.xml"
+>
  
     <include file="../src/main/liquibase/changeset-comtex.xml"/>
  
