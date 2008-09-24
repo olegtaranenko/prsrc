@@ -8,7 +8,49 @@
   logicalFilePath="changeset-prior.xml"
 >
  
-    <include file="../src/main/liquibase/changeset-common.xml"/>
- 
+	<include file="../src/main/liquibase/changeset-common.xml"/>
+	<changeSet id="ddl" author="mantis-7" context="does-not-work">
+		<comment>Prepare for repare table xPredmetyByNomenkOut from the backup</comment>
+		<sql>
+create server priord class 'ASAODBC' USING 'DSN=dev_prior;UID=dba;PWD=sql';
 
+call build_table_one_server('xPredmetyByNomenkOut', 'priord', 1);
+		</sql>
+
+		<rollback>
+			<sql>
+call build_table_one_server('xPredmetyByNomenkOut', 'priord', 0);
+drop server priord;
+			</sql>
+		</rollback>
+	</changeSet>
+
+	<changeSet id="dml" author="mantis-7" runOnChange="true">
+		<comment>Correct broken table xPredmetyByNomenkOut from the backup</comment>
+		<createProcedure>
+begin
+	create table #nomOut(outDate timestamp, numorder integer, nomnom varchar(50), quant float, used integer);
+
+	insert into #nomOut
+	select outDate, numorder, nomnom, quant, 0
+	from xPredmetyByNomenkOut_priord o;
+
+
+	for x as xx dynamic scroll cursor for
+		select numorder as r_numorder, nomnom as r_nomnom, quant as r_quant from xPredmetyByNomenkOut for update
+	do
+		lea:
+		for y as yy dynamic scroll cursor for
+			select outDate as r_outDate from #nomOut o where o.numorder = r_numorder and o.nomnom = r_nomnom and quant = r_quant and o.used = 0 for update
+		do
+			update xPredmetyByNomenkOut set outDate = r_outDate where current of xx;
+			update #nomOut set used = 1 where current of yy;
+			leave lea;
+		end for;
+		commit;
+	end for;
+
+end;
+		</createProcedure>
+	</changeSet>
 </databaseChangeLog>
