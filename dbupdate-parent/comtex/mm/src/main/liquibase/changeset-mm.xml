@@ -8,7 +8,7 @@
   logicalFilePath="changeset-mm.xml"
 >
  
-    <include file="../src/main/liquibase/changeset-comtex.xml"/>
+    <include file="../../../../src/main/liquibase/changeset-comtex.xml" isRelativePath="true"/>
  
 
 </databaseChangeLog>

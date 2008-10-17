@@ -8,7 +8,7 @@
   logicalFilePath="changeset-prior.xml"
 >
  
-	<include file="../src/main/liquibase/changeset-common.xml"/>
+	<include file="../../../../src/main/liquibase/changeset-common.xml" isRelativePath="true"/>
 	<changeSet id="ddl" author="mantis-7" context="does-not-work">
 		<comment>Prepare for repare table xPredmetyByNomenkOut from the backup</comment>
 		<sql>
@@ -25,7 +25,7 @@ drop server priord;
 		</rollback>
 	</changeSet>
 
-	<changeSet id="dml" author="mantis-7" runOnChange="true">
+	<changeSet id="dml" author="mantis-7" runOnChange="true" context="does-not-work">
 		<comment>Correct broken table xPredmetyByNomenkOut from the backup</comment>
 		<createProcedure>
 begin
@@ -53,4 +53,15 @@ begin
 end;
 		</createProcedure>
 	</changeSet>
+
+	<changeSet id="mantis-11" author="ddl">
+		<comment>Temporarly restore sales functionality</comment>
+		<addColumn tableName="bayguidefirms">
+			<column name="oborud" type="varchar(10)"><constraints nullable="true"/></column>
+		</addColumn>
+		<addColumn tableName="bayguidefirms">
+			<column name="kategor" type="varchar(50)"><constraints nullable="true"/></column>
+		</addColumn>
+	</changeSet>
+	
 </databaseChangeLog>
