@@ -414,7 +414,7 @@ If strWhere <> "" Then strWhere = "Where ((" & strWhere & ")) "
 'MsgBox "strWhere = " & strWhere
 quantity = 0
 
-sql = "SELECT f.*, isnull(r.region, '') as region, isnull(u.oborud, '') as oborud " _
+sql = "SELECT f.*, isnull(r.region, '') as region, isnull(u.oborud, '') as oborudName " _
 & " FROM BayGuideFirms f " _
 & " left join BayRegion r on r.regionid = f.regionid" _
 & " left join GuideOborud u on u.oborudId = f.oborudId" _
@@ -435,7 +435,7 @@ End If
     Grid.TextMatrix(quantity, gfId) = tbFirms!firmId
     Grid.TextMatrix(quantity, gfNazwFirm) = tbFirms!Name
     Grid.TextMatrix(quantity, gfM) = Manag(tbFirms!managId)
-    fieldToCol tbFirms!Oborud, gfOborud
+    fieldToCol tbFirms!OborudName, gfOborud
     fieldToCol tbFirms!Sale, gfSale
     fieldToCol tbFirms!Kontakt, gfKontakt
     fieldToCol tbFirms!Otklik, gfOtklik
