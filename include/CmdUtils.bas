@@ -329,15 +329,21 @@ End Function
 
 Function loadCmdSettings(curSettings() As MapEntry) As Boolean
 Dim i As Integer
-Dim entry As MapEntry, exists
-Dim value As String
+Dim entry As MapEntry, exists As Variant
+Dim value As Variant
 
     ReDim argumentSettings(0)
     For i = 1 To UBound(rawCmdArguments)
+        entry.value = Null
         If isKey(rawCmdArguments(i)) Then
+            entry.key = Mid(rawCmdArguments(i), 2)
             If isNotKey(i + 1) Then
-                entry.key = Mid(rawCmdArguments(i), 2)
-                value = rawCmdArguments(i + 1)
+                value = Null
+                If i + 1 <= UBound(rawCmdArguments) Then
+                    value = rawCmdArguments(i + 1)
+                    i = i + 1
+                End If
+                
                 exists = getCurrentSetting(entry.key, curSettings)
                 If Not IsEmpty(exists) Then
                     exists = exists & " " & value
@@ -346,11 +352,12 @@ Dim value As String
                     entry.value = value
                     append argumentSettings, entry
                 End If
-                i = i + 1
             Else
                 exists = getCurrentSetting(rawCmdArguments(i), curSettings)
                 If IsNull(exists) Then
                     entry.key = rawCmdArguments(i)
+                    append argumentSettings, entry
+                ElseIf Not IsEmpty(entry.key) Then
                     append argumentSettings, entry
                 End If
             End If

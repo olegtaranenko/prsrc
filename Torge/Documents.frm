@@ -345,6 +345,9 @@ Begin VB.Form Documents
          Caption         =   "Оборотная по предприятиям"
          Visible         =   0   'False
       End
+      Begin VB.Menu VentureRest 
+         Caption         =   "Остатки по предприятиям"
+      End
       Begin VB.Menu mnFiltrOborot 
          Caption         =   "Номенклатура для закупки"
          Visible         =   0   'False
@@ -473,7 +476,7 @@ Const dnEdIzm = 6
 
 'reg ="","single","add"
 Sub loadDocs(Optional reg As String = "")
-Dim strWhere As String, I As Integer, str As String
+Dim strWhere As String, i As Integer, str As String
  prevRow = -1
  Grid.Visible = False
  numExt = 255 'приходные накладные
@@ -577,7 +580,7 @@ Private Sub cmAdd_Click()
 Dim str As String, intNum As Integer, l As Long, il As Long
 Dim strNow As String, DateFromNum As String, dNow As Date
  
-il = Right$(Format(Now, "yymmdd\0\0"), 7) + 200001  ' чтобы не путались с заказами
+il = right$(Format(Now, "yymmdd\0\0"), 7) + 200001  ' чтобы не путались с заказами
 
 Set tbSystem = myOpenRecordSet("##149", "System", dbOpenTable)
 If tbSystem Is Nothing Then Exit Sub
@@ -877,19 +880,19 @@ Grid2.ColWidth(dnQuant2) = 660
 End Sub
 
 Sub loadLbInside()
-Dim I As Integer
+Dim i As Integer
 
 sql = "SELECT sGuideSource.sourceId, sGuideSource.sourceName From sGuideSource " & _
 "WHERE (((sGuideSource.sourceId)<-1000)) ORDER BY sGuideSource.sourceId DESC;"
 Set Table = myOpenRecordSet("##95", sql, dbOpenDynaset)
 If Table Is Nothing Then myBase.Close: End
-ReDim insideId(0): I = 0: ' ReDim statiaId(0): j = 0
+ReDim insideId(0): i = 0: ' ReDim statiaId(0): j = 0
 lbInside.Clear
 While Not Table.EOF
     lbInside.AddItem Table!SourceName
-    ReDim Preserve insideId(I)
-    insideId(I) = Table!sourceId
-    I = I + 1
+    ReDim Preserve insideId(i)
+    insideId(i) = Table!sourceId
+    i = i + 1
     Table.MoveNext
 Wend
 Table.Close
@@ -911,7 +914,7 @@ Grid.Width = Grid.Width + w / 2
 
 Grid2.Height = Grid2.Height + h
 Grid2.Width = Grid2.Width + w / 2
-Grid2.Left = Grid2.Left + w / 2
+Grid2.left = Grid2.left + w / 2
 cmLoad.Top = cmLoad.Top + h
 cmAdd.Top = cmAdd.Top + h
 cmDel.Top = cmDel.Top + h
@@ -969,7 +972,7 @@ End If
 End Sub
 
 Function loadDocNomenk(Optional reg As String = "") As Boolean
-Dim il As Long, str As String, s As Single, I As Integer ', str2 As String
+Dim il As Long, str As String, s As Single, i As Integer ', str2 As String
 Dim msgOst As String, r As Single, o As Single
 
 loadDocNomenk = True ' не надо отката - пока
@@ -1199,13 +1202,13 @@ If Grid2.MouseRow = 0 And Shift = 2 Then _
 End Sub
 
 Private Sub lbBad_DblClick()
-Dim I As Integer
-I = InStr(lbBad.Text, "  ")
-gNomNom = Left$(lbBad.Text, I - 1)
+Dim i As Integer
+i = InStr(lbBad.Text, "  ")
+gNomNom = left$(lbBad.Text, i - 1)
 ReDim DMCnomNom(1)
 DMCnomNom(1) = gNomNom
 KartaDMC.Grid.Visible = False
-KartaDMC.nomenkName = Mid$(lbBad.Text, I + 2)
+KartaDMC.nomenkName = Mid$(lbBad.Text, i + 2)
 KartaDMC.Show
 'frBad.Visible = False
 End Sub
@@ -1405,7 +1408,7 @@ Dim n1 As Nomenklatura
 End Sub
 'проверка на отрицат.остатки
 Private Sub mnOstat_Click()
-Dim ost As Single, bef As Integer, I As Integer
+Dim ost As Single, bef As Integer, i As Integer
 
 frBad.Visible = False
 Me.MousePointer = flexHourglass
@@ -1437,9 +1440,9 @@ While Not tbNomenk.EOF
   bef = 0
 
   While Not tbDMC.EOF
-    I = DateDiff("d", begDate, tbDMC!xDate)
-    If ost <= -0.01 And I <> bef Then GoTo NXT2
-    bef = I
+    i = DateDiff("d", begDate, tbDMC!xDate)
+    If ost <= -0.01 And i <> bef Then GoTo NXT2
+    bef = i
     If tbDMC!sourId < -1000 Then _
         ost = ost - tbDMC!quant
     If tbDMC!destId < -1000 Then _
@@ -1609,7 +1612,7 @@ End Function
 'Их и их поля klassId parentKlassId и klassName надо заменить аналогами из
 'базы Comtec(недостающие колонки можно добавить) $comtec$
 Sub ostatToWeb(Optional toExel As String = "")
-Dim tmpFile As String, I As Integer, findId As Integer, str As String
+Dim tmpFile As String, i As Integer, findId As Integer, str As String
 Dim minusQuant   As Integer
 minusQuant = 0
 
@@ -1624,10 +1627,10 @@ If tbNomenk Is Nothing Then Exit Sub
 'If tbGuide Is Nothing Then Exit Sub
 'tbGuide.index = "PrimaryKey"
 
-ReDim NN(0): I = 0
+ReDim NN(0): i = 0
 While Not tbNomenk.EOF
-    I = I + 1
-    ReDim Preserve NN(I): NN(I) = Format(tbNomenk!klassid, "0000")
+    i = i + 1
+    ReDim Preserve NN(i): NN(i) = Format(tbNomenk!klassid, "0000")
     findId = tbNomenk!klassid
 
 AA: 'tbGuide.Seek "=", findId
@@ -1637,7 +1640,7 @@ AA: 'tbGuide.Seek "=", findId
     If Not byErrSqlGetValues("##417", sql, str, findId) Then tbNomenk.Close: Exit Sub
             
 '    NN(i) = tbGuide!klassName & " / " & NN(i) ' к имени добавляем Id
-    NN(I) = str & " / " & NN(I) ' к имени добавляем Id
+    NN(i) = str & " / " & NN(i) ' к имени добавляем Id
 '    findId = tbGuide!parentKlassId
   
     If findId > 0 Then GoTo AA 'к имени текущей группы спереди приклеиваются
@@ -1692,9 +1695,9 @@ End If
 '------------------------------------------------------------------------
 
 
-For I = 1 To UBound(NN) ' перебор всех групп
-  str = NN(I)
-  findId = Right$(str, 4) ' извлекаем из имен группы id группы
+For i = 1 To UBound(NN) ' перебор всех групп
+  str = NN(i)
+  findId = right$(str, 4) ' извлекаем из имен группы id группы
   
 '$comtec$  Далее ссылки на табл.sGuideNomenk и на ее поля надо заменить на
 'эквиваленты из базы Comtec исходя из след.соответствия с колонками
@@ -1716,7 +1719,7 @@ For I = 1 To UBound(NN) ' перебор всех групп
 'Этот блок не требует изменения (здесь выдаются заголовки групп)------------
         If Not bilo Then
             bilo = True
-            str = Left$(str, Len(str) - 6)
+            str = left$(str, Len(str) - 6)
             If toExel = "" Then
                 str = "<b>" & str & "</b>"
 'в файле поля Код и Размер на последних местах, но в Web они на первом и третьем
@@ -1764,7 +1767,7 @@ End If
   End If
     tbNomenk.Close
 '  End If
-Next I
+Next i
 EN1:
 If toExel = "" Then
     Close #1
@@ -1803,7 +1806,7 @@ End If
 End Sub
 
 Private Sub mnWebs_Click()
-Dim str As String, ch As String, slen As Integer, oper As String, I As Integer
+Dim str As String, ch As String, slen As Integer, oper As String, i As Integer
 Dim tmpFile As String ', filtrList As String
 
 If MsgBox("По кнопке 'ДА' будет перезаписаны файлы для WEB: файл складcких " & _
@@ -1886,7 +1889,7 @@ lbHide
 End Sub
 
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim str As String, I As Integer
+Dim str As String, i As Integer
 
 If KeyCode = vbKeyReturn Then
  
@@ -1935,7 +1938,7 @@ End Sub
 
 Private Sub tbMobile2_KeyDown(KeyCode As Integer, Shift As Integer)
 Dim nowOst As Single, rezerv As Single, quant As Single, delta As Single
-Dim I As Integer, j As Integer, tmp As Long
+Dim i As Integer, j As Integer, tmp As Long
 
 If KeyCode = vbKeyReturn Then
     If Not isNumericTbox(tbMobile2, 0) Then Exit Sub
@@ -1992,13 +1995,13 @@ If KeyCode = vbKeyReturn Then
  'возможно, если в loadDocNomenk был откат то след-го If Else не надо
   If laFiltr.Visible Then   ' если вызов из карты
 '    If KartaDMC.DMCnomNomCur = gNomNom Then
-    For I = 1 To UBound(DMCnomNom)
-        If DMCnomNom(I) = gNomNom Then  ' и если редактировалась ном-ра
+    For i = 1 To UBound(DMCnomNom)
+        If DMCnomNom(i) = gNomNom Then  ' и если редактировалась ном-ра
             Timer1.Interval = 10        ' из карты
             Timer1.Enabled = True       ' то перерасчет карты
             Exit For
         End If
-    Next I
+    Next i
   Else 'если это не вызов из карты то ее выгружаем  чтобы там не оставалась
     If KartaDMC.isLoad Then Unload KartaDMC '      необновленная информация
   End If ' хотя можно проверить и если ном-ры нет в карте то и не надо выгружать
@@ -2015,14 +2018,14 @@ End If
 End Sub
 
 Private Sub Timer1_Timer()
-Dim I As Integer
+Dim i As Integer
     Timer1.Enabled = False
     Me.MousePointer = flexHourglass
 '    KartaDMC.Grid.Visible = False
     KartaDMC.quantity = 0
-    For I = 1 To UBound(DMCnomNom)
-        KartaDMC.getKartaDMC DMCnomNom(I)
-    Next I
+    For i = 1 To UBound(DMCnomNom)
+        KartaDMC.getKartaDMC DMCnomNom(i)
+    Next i
 '    KartaDMC.Grid.Visible = True
     KartaDMC.ZOrder
     Me.MousePointer = flexDefault

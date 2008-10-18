@@ -124,7 +124,7 @@ Dim isOn As Boolean, isSinhro As Boolean ', baseIsOpen As Boolean
 
 Sub nextWindow()
 Dim str As String
-Dim I As Integer
+Dim i As Integer
 
     
     cmSklad.Visible = True
@@ -167,20 +167,20 @@ If IsNull(begDate) Then End
 sql = "SELECT * From GuideManag WHERE Manag <>'not'  ORDER BY forSort;"
 Set Table = myOpenRecordSet("##03", sql, dbOpenForwardOnly)
 If Table Is Nothing Then myBase.Close: End
-I = 0: ReDim manId(0):
+i = 0: ReDim manId(0):
 Dim imax As Integer: imax = 0: ReDim Manag(0)
 While Not Table.EOF
     If LCase(Table!ForSort) <> "unused" Then
         str = Table!Manag
         If Table!ManagId <> 0 Then cbM.AddItem str
-        manId(I) = Table!ManagId
+        manId(i) = Table!ManagId
         If imax < Table!ManagId Then
             imax = Table!ManagId
             ReDim Preserve Manag(imax)
         End If
         Manag(Table!ManagId) = str
-        I = I + 1
-        ReDim Preserve manId(I):
+        i = i + 1
+        ReDim Preserve manId(i):
     End If
     Table.MoveNext
 Wend
@@ -192,11 +192,11 @@ ReDim Status(0)
 Set Table = myOpenRecordSet("##05", "GuideStatus", dbOpenForwardOnly)
 If Table Is Nothing Then myBase.Close: End
 'Table.MoveFirst
-I = 0 'макс индекс
+i = 0 'макс индекс
 While Not Table.EOF
-    If I < Table!StatusId Then
-        I = Table!StatusId
-        ReDim Preserve Status(I)
+    If i < Table!StatusId Then
+        i = Table!StatusId
+        ReDim Preserve Status(i)
     End If
     Status(Table!StatusId) = Table!Status
     Table.MoveNext
@@ -257,25 +257,20 @@ End If
 End Sub
 
 Private Sub Form_Load()
+Dim otladSet As Variant
 
-'If InStr(Command(), ":\") > 0 Then '$$2
-'    otlad = Command()
-'Else
-otlad = getEffectiveSetting("otlad")
+otladSet = getEffectiveSetting("otlad")
 
-If otlad = "otlaD" Then
-    Me.BackColor = otladColor
-End If
-
-dostup = getEffectiveSetting("dostup")
-'If InStr(Command(), "       wkdh") <> 0 Then
-If otlad = "otlaD" Then
+If Not IsEmpty(otladSet) Then
     dostup = "a"
     nextWindow
     cbM.ListIndex = cbM.ListCount - 1
     cmSklad.Enabled = True
     cmBook.Enabled = True
+    Me.BackColor = otladColor
     Exit Sub
+Else
+    dostup = getEffectiveSetting("dostup")
 End If
 
 isOn = True
@@ -318,15 +313,15 @@ Private Sub tbEnable_KeyDown(KeyCode As Integer, Shift As Integer)
 End Sub
 
 Private Sub Timer1_Timer()
-Dim I As Long
+Dim i As Long
 Static sek As Integer
 
 'If sek > 32000 Then End
 sek = sek + 1
 If sek = 10 Then
   If isSinhro Then
-    I = DateDiff("s", tmpDate, Now()) - 1
-    laInform.Caption = "Синхронизация прошла успешно (коррекция  " & I & " сек.)"
+    i = DateDiff("s", tmpDate, Now()) - 1
+    laInform.Caption = "Синхронизация прошла успешно (коррекция  " & i & " сек.)"
   Else
     laInform.Caption = "Система не смогла синхронизировать часы!"
   End If
