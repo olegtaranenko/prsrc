@@ -12,7 +12,11 @@
 		<profile>
 			<id>production</id>
 			<activation>
-				<activeByDefault>true</activeByDefault>
+				<activeByDefault>false</activeByDefault>
+				<property>
+					<name>context</name>
+					<value>production</value>
+				</property>
 			</activation>
 			<properties>
 				<changelog.context>production</changelog.context>
@@ -25,10 +29,7 @@
 		<profile>
 			<id>user-defined</id>
 			<activation>
-				<activeByDefault>false</activeByDefault>
-				<property>
-					<name>context</name>
-				</property>
+				<activeByDefault>true</activeByDefault>
 			</activation>
 			<properties>
 				<changelog.context>${context}</changelog.context>
@@ -56,13 +57,13 @@
 						</dependency>
 					</dependencies>
 					<configuration>
-			            <changeLogFile>${changelog.file}</changeLogFile>
+						<changeLogFile>${changelog.file}</changeLogFile>
 						<url>jdbc:sybase:Tds:localhost:${syb.server.port}?servicename=${syb.servicename}</url>
 						<driver>${sybase.driver}</driver>
-					    <username>${syb.username}</username>
-					    <password>${syb.password}</password>
-					    <logging>all</logging>
-					    <contexts>${changelog.context}</contexts>
+						<username>${syb.username}</username>
+						<password>${syb.password}</password>
+						<logging>info</logging>
+						<contexts>${changelog.context}</contexts>
 					</configuration>
 					<executions>
 						<execution>
@@ -89,7 +90,7 @@
 		<module>comtex</module>
 	</modules>
 	<properties>
-		<liquibase.version>1.8.0.0-SNAPSHOT</liquibase.version>
+		<liquibase.version>1.8.1.0-SNAPSHOT</liquibase.version>
 		<sybase.driver>com.sybase.jdbc3.jdbc.SybDriver</sybase.driver>
 		<sybase.artifactId>jconn3</sybase.artifactId>
 		<sybase.driver.version>6.0</sybase.driver.version>

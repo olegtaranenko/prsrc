@@ -5,6 +5,7 @@
 		<groupId>ru.petmas</groupId>
 		<version>1.0-SNAPSHOT</version>
 	</parent>
+	<packaging>pom</packaging>
 	<groupId>ru.petmas</groupId>
 	<artifactId>prior</artifactId>
 	<name>Update prior DB</name>

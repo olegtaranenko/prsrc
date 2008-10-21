@@ -120,6 +120,7 @@ Public endDate As Date
 Public managId As String
 Dim filterSettings() As MapEntry
 Dim PreHeaderCount As Integer, PostHeaderCount As Integer, multiplyCols As Integer
+Dim tableSettingNoRowDetail As Integer
 Dim periodCount As Integer ' количество периодов (столбцов)
 Dim activeTab As Integer
 Dim mousCol As Integer
@@ -364,9 +365,19 @@ Dim firmId As Long, periodId As Integer
 End Sub
 
 Private Sub Grid_EnterCell()
+
+    'Не менять цвет фиксированных элементов
     If Grid.row = 0 Or Grid.col = 0 Then
         Exit Sub
     End If
+    
+    'У отчета не может быть детализации по умолчанию.
+    If tableSettingNoRowDetail = 1 Then
+        Grid.CellBackColor = vbYellow
+        Exit Sub
+    End If
+    
+    
     If (Grid.col >= PreHeaderCount) And (Grid.row <> Grid.Rows - 1) Then
         Grid.CellBackColor = &H88FF88
     Else
@@ -387,7 +398,6 @@ End Sub
 
 
 Private Sub Grid_LeaveCell()
-'    Debug.Print "Grid_LeaveCell() => col = " & Grid.col & ", row = " & Grid.row
     If Grid.col <> 0 Then
         Grid.CellBackColor = Grid.BackColor
     End If
@@ -422,7 +432,7 @@ Dim skipFixedInit As Boolean
 Dim periodColumnName As String
 Dim totalQtyLabel As String
 Dim totalBaseIndex As Integer
-Dim curValue As Double
+Dim curValue As Variant
 Dim periodIndex As Integer
 
 
@@ -446,6 +456,7 @@ Dim periodIndex As Integer
     If Not setGridHeaders(filterId) Then
         MsgBox "Отчет не содержит данных", vbExclamation
         Unload Me
+        Exit Sub
     End If
     
     sql = "call n_exec_filter( " & filterId & ")"
@@ -458,6 +469,7 @@ Dim periodIndex As Integer
     If table.BOF Then
         table.Close
         MsgBox "Отчет не содержит данных", vbExclamation
+        Unload Me
         Exit Sub
     End If
     
@@ -501,6 +513,7 @@ Dim periodIndex As Integer
         columnBaseIndex = totalBaseIndex + UBound(GridHeaderHeadDef) + 1
         For columnIndex = 0 To UBound(GridHeaderTailDef)
             curValue = table(GridHeaderTailDef(columnIndex).columnName)
+            If IsNull(curValue) Then curValue = CDbl(0)
             Grid.TextMatrix(rownum, columnBaseIndex + columnIndex) = Format(curValue, GridHeaderTailDef(columnIndex).columnFormat)
             rowTotals(columnIndex) = rowTotals(columnIndex) + curValue
             columnTotals(totalBaseIndex + columnIndex) = columnTotals(totalBaseIndex + columnIndex) + curValue
@@ -654,7 +667,11 @@ Dim periodColumnName As String
         Exit Function
     End If
 
+    'может ли получить деталировку?
+    tableSettingNoRowDetail = getCurrentSetting("noRowDetail", filterSettings)
+    
     periodColumnName = getCurrentSetting("periodId4detail", filterSettings)
+    
     
 
     While Not table.EOF

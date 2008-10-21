@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="CP1251"?>
  
 <databaseChangeLog
   xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.8"
@@ -9,6 +9,7 @@
 >
  
 	<include file="../../../../src/main/liquibase/changeset-common.xml" isRelativePath="true"/>
+<!--
 	<changeSet id="ddl" author="mantis-7" context="does-not-work">
 		<comment>Prepare for repare table xPredmetyByNomenkOut from the backup</comment>
 		<sql>
@@ -53,6 +54,7 @@ begin
 end;
 		</createProcedure>
 	</changeSet>
+-->
 
 	<changeSet id="mantis-11" author="ddl">
 		<comment>Temporarly restore sales functionality</comment>
@@ -64,4 +66,55 @@ end;
 		</addColumn>
 	</changeSet>
 	
+
+<!--
+	<changeSet id="mantis-11" author="test-exception" runOnChange="true">
+		<sql splitStatements="true" stripComments="true" endDelimiter=";">
+
+	truncate table sdmcventure;
+	truncate table sdocsventure;
+
+//	call bootstrap_blocking();
+
+	call cre_block_var('supress_cum_update');
+	call cre_block_var('supress_diary_update');
+	waitfor delay convert(time, '00:00:01.000');
+
+//	call cre_block_var('supress_cum_update');
+//	call cre_block_var('supress_diary_update');
+
+//	call cre_block_var('blocks_inited');
+
+	call ivo_generate(10);
+
+
+		</sql>
+	</changeSet>
+
+	<changeSet id="mantis-10" author="correct-ivo" runOnChange="true">
+		<sqlFile path="src/main/liquibase/correct-ivo.sql" splitStatements="false" stripComments="false"/>
+	</changeSet>
+-->
+
+	<changeSet id="mantis-10" author="code" runOnChange="true">
+		<comment>Процедуры для анализа продаж</comment>
+		<sqlFile path="src/main/liquibase/sales-analys.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+	</changeSet>
+
+
+<!--
+	<changeSet id="mantis-10" author="rowmat-dml" runAlways="true">
+		<comment>Подготовить "Отчет об остатках по материалам по предприятиям"</comment>
+
+		<sqlFile path="src/main/liquibase/sales-analys.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sql splitStatements="false" stripComments="false"><![CDATA[
+
+		]]></sql>
+	</changeSet>
+-->
+	<changeSet id="mantis-10" author="rowmat-dml">
+		<comment>Подготовить "Отчет об остатках по материалам по предприятиям"</comment>
+		<sqlFile path="src/main/liquibase/sales-analys-dml.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+	</changeSet>
 </databaseChangeLog>
+

@@ -261,6 +261,8 @@ Dim i As Integer
     getMapEntry = Empty
 End Function
 
+
+
 Sub buildEffectiveSettings()
 Dim ln As Integer
 Dim i As Integer
@@ -276,6 +278,7 @@ Dim i As Integer
     mergeWithPreference settings, siteSettings
 
 End Sub
+
 
 Sub mergeWithPreference(ByRef mergeTo() As MapEntry, mergeFrom() As MapEntry)
 
@@ -297,6 +300,8 @@ End Sub
 Public Sub cleanSettings(curSetting() As MapEntry)
     ReDim curSetting(0)
 End Sub
+
+
 
 Public Sub setCurrentSetting(curSettings() As MapEntry, key As String, paramVal)
 Dim i As Integer
@@ -327,7 +332,13 @@ Dim entry As MapEntry, value
     
 End Function
 
+
 Function loadCmdSettings(curSettings() As MapEntry) As Boolean
+'Парсинг коммандной строки, можно аргумент задавать без значения.
+'В этом случае его значение равно Null.
+'Пример в строке stime -otlad -dostup a -devel параметр otlad имеет значение Null.
+'Если же stime -dostup a -devel, то тогда параметр otlad имеет значение Empty.
+
 Dim i As Integer
 Dim entry As MapEntry, exists As Variant
 Dim value As Variant
