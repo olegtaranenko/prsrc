@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCTL.OCX"
+Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "mscomctl.ocx"
 Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form sProducts 
    BackColor       =   &H8000000A&
@@ -460,7 +460,7 @@ If opProduct.value Then
   'проверка комплектации изделия ***********
   befColor = 0: bilo = False
   Grid.col = nkQuant
-  For il = Grid.Rows - 1 To 0 Step -1 'так в цикле м. выявить концы всех групп т.к. всегда есть Row=0 c другим цветом
+  For il = Grid.rows - 1 To 0 Step -1 'так в цикле м. выявить концы всех групп т.к. всегда есть Row=0 c другим цветом
      Grid.row = il
      grColor = Grid.CellBackColor
      If grColor <> befColor Then
@@ -571,7 +571,7 @@ AA: Me.Caption = "Ведомость остатков"
     Me.Width = Grid.Width + 2527
     Grid3.Width = Grid.Width
     laGrid.Width = Grid.Width
-    cmExit.Left = Me.Width - cmExit.Width - 200
+    cmExit.left = Me.Width - cmExit.Width - 200
     
     sql = "SELECT sourceId, sourceName From sGuideSource " & _
     "WHERE (((sourceId)<-1000)) ORDER BY sourceId DESC;"
@@ -705,7 +705,7 @@ If Regim = "ostatP" Or Regim = "ostat" Then Exit Sub
 If begWidth = 0 Then ' т.е. только один раз
     begWidth = Grid.Width
     begWidth2 = Grid2.Width
-    begLeft = Grid2.Left
+    begLeft = Grid2.left
 End If
 If opProduct.value Then
     delta = 2000 ' Product
@@ -716,11 +716,11 @@ End If
 If reg = "r" Then
     Grid.Width = begWidth
     Grid2.Width = begWidth2
-    Grid2.Left = begLeft
+    Grid2.left = begLeft
 ElseIf reg = "l" Then
     Grid.Width = begWidth + delta
     Grid2.Width = begWidth2 - delta
-    Grid2.Left = begLeft + delta
+    Grid2.left = begLeft + delta
 End If
 
 Grid3.Width = Grid.Width
@@ -751,43 +751,43 @@ oldWidth = Me.Width
 tv.Height = tv.Height + h
 tv.Width = tv.Width + w * tvVes
 
-Grid.Left = Grid.Left + w * tvVes
-laGrid.Left = Grid.Left
-cbInside.Left = laGrid1.Left + laGrid1.Width
+Grid.left = Grid.left + w * tvVes
+laGrid.left = Grid.left
+cbInside.left = laGrid1.left + laGrid1.Width
 Grid.Height = Grid.Height + h
 Grid.Width = Grid.Width + w * gridVes
-Grid3.Left = Grid.Left
-laGrid1.Left = Grid3.Left
-laBegin.Left = Grid3.Left
+Grid3.left = Grid.left
+laGrid1.left = Grid3.left
+laBegin.left = Grid3.left
 Grid3.Width = Grid.Width
 
-Grid2.Left = Grid2.Left + w * (tvVes + gridVes)
-laGrid2.Left = Grid2.Left
+Grid2.left = Grid2.left + w * (tvVes + gridVes)
+laGrid2.left = Grid2.left
 laGrid2.Top = laGrid2.Top + h / 2
 
 Grid2.Top = Grid2.Top + h / 2
 Grid2.Height = Grid2.Height + h / 2
 Grid2.Width = Grid2.Width + w * grid2Ves
-Grid5.Left = Grid2.Left
+Grid5.left = Grid2.left
 Grid5.Height = Grid5.Height + h / 2
 
-laGrid5.Left = laGrid5.Left + w * (tvVes + gridVes)
+laGrid5.left = laGrid5.left + w * (tvVes + gridVes)
 Grid5.Width = Grid2.Width
 
 cmSel.Top = cmSel.Top + h
-cmSel.Left = cmSel.Left + w
+cmSel.left = cmSel.left + w
 tbQuant.Top = tbQuant.Top + h
-tbQuant.Left = tbQuant.Left + w
+tbQuant.left = tbQuant.left + w
 laQuant.Top = laQuant.Top + h
-laQuant.Left = laQuant.Left + w
+laQuant.left = laQuant.left + w
 cmExit.Top = cmExit.Top + h
-cmExit.Left = cmExit.Left + w
+cmExit.left = cmExit.left + w
 cmExel2.Top = cmExel2.Top + h
-cmExel2.Left = cmExel2.Left + w
+cmExel2.left = cmExel2.left + w
 cmExel.Top = cmExel.Top + h
 cmHide.Top = cmHide.Top + h
 laBegin.Top = laBegin.Top + h
-laBegin.Left = laBegin.Left + w
+laBegin.left = laBegin.left + w
 
 End Sub
 
@@ -824,7 +824,7 @@ Grid4.ColWidth(frOstat) = 885
 
 If reg = "multiN" Then
     Grid.col = nkQuant: il = 0
-    For rr = 1 To Grid.Rows - 1
+    For rr = 1 To Grid.rows - 1
         Grid.row = rr
         If Grid.CellFontBold Then
             il = il + 1
@@ -833,7 +833,7 @@ If reg = "multiN" Then
             Grid4.AddItem ""
         End If
     Next rr
-    Grid4.removeItem Grid4.Rows - 1
+    Grid4.removeItem Grid4.rows - 1
 Else
     nomencOstatkiToGrid 1
 End If
@@ -913,7 +913,7 @@ ElseIf grColor = groupColor1 Or grColor = groupColor2 Then
         If Grid.CellBackColor <> grColor Then Exit For
         Grid.CellFontBold = False
     Next il
-    For il = curRow + 1 To Grid.Rows - 1 'вниз от клика
+    For il = curRow + 1 To Grid.rows - 1 'вниз от клика
         Grid.row = il
         If Grid.CellBackColor <> grColor Then Exit For
         Grid.CellFontBold = False
@@ -1221,7 +1221,7 @@ If Grid5.TextMatrix(mousRow5, prType) = "изделие" Then
         Grid2.TextMatrix(il, fnQuant) = QQ(il)
     Next il
 '    tbNomenk.Close
-    If quantity2 > 0 Then Grid2.removeItem Grid2.Rows - 1
+    If quantity2 > 0 Then Grid2.removeItem Grid2.rows - 1
   End If
 Else
     laGrid2.Caption = "Отдельная номенклатура"
@@ -1275,7 +1275,7 @@ ReDim selectedItems(0)
 currentCol = Grd.col
 currentRow = Grd.row
 
-For I = Grd.Rows - 1 To 1 Step -1
+For I = Grd.rows - 1 To 1 Step -1
     Grd.row = I
     For j = Grd.Cols - 1 To 1 Step -1
         Grd.col = j
@@ -1384,7 +1384,7 @@ End Sub
 Private Sub Grid5_MouseDown(Button As Integer, Shift As Integer, x As Single, y As Single)
 Dim I As Integer
 
-    If isCtrlDown And Button = 1 And Grid5.row <> 0 And Grid5.row <> Grid5.Rows - 1 Then
+    If isCtrlDown And Button = 1 And Grid5.row <> 0 And Grid5.row <> Grid5.rows - 1 Then
         'Подсветить всю строку
         If Grid5.CellBackColor = vbRed Then
             mark Grid5, False
@@ -1416,7 +1416,7 @@ Private Sub Grid5_MouseUp(Button As Integer, Shift As Integer, x As Single, y As
         End If
         If Grid5.MouseRow = 0 Then
             If Shift = 2 Then MsgBox "ColWidth = " & Grid5.ColWidth(Grid5.MouseCol)
-        ElseIf Button = 2 And 0 < Grid5.MouseRow And Grid5.MouseRow < Grid5.Rows - 1 _
+        ElseIf Button = 2 And 0 < Grid5.MouseRow And Grid5.MouseRow < Grid5.rows - 1 _
         And quantity5 > 0 And Regim <> "closeZakaz" Then
 '            Grid5.row = Grid5.MouseRow
 '            Grid5.col = prName
@@ -1458,9 +1458,9 @@ leng = UBound(NN)
     Next j
     leng = leng + 1
     ReDim Preserve NN(leng): NN(leng) = tbNomenk!nomNom
-    ReDim Preserve QQ(leng): QQ(leng) = pQuant * tbNomenk!quantity
-    ReDim Preserve QQ2(leng): QQ2(leng) = eQuant * tbNomenk!quantity
-    ReDim Preserve QQ3(leng): QQ3(leng) = prQuant * tbNomenk!quantity
+    ReDim Preserve QQ(leng): QQ(leng) = Round(pQuant * tbNomenk!quantity, 2)
+    ReDim Preserve QQ2(leng): QQ2(leng) = Round(eQuant * tbNomenk!quantity, 2)
+    ReDim Preserve QQ3(leng): QQ3(leng) = Round(prQuant * tbNomenk!quantity, 2)
     
 
 End Sub
@@ -1614,7 +1614,7 @@ tmpVar = saveOrdered
 If Not IsNumeric(tmpVar) Then GoTo ER1
 wrkDefault.CommitTrans
 
-Grid5.TextMatrix(Grid5.Rows - 1, prSumm) = tmpVar
+Grid5.TextMatrix(Grid5.rows - 1, prSumm) = tmpVar
 Orders.openOrdersRowToGrid "##220":    tqOrders.Close
     
 For j = 1 To UBound(selectedItems)
@@ -2078,7 +2078,7 @@ BB:         If str = "изделие" Then
                 Grid5.TextMatrix(mousRow5, prSumm) = Round(s, 2)
                 tmpVar = saveOrdered
                 If IsNumeric(tmpVar) Then
-                    Grid5.TextMatrix(Grid5.Rows - 1, prSumm) = tmpVar
+                    Grid5.TextMatrix(Grid5.rows - 1, prSumm) = tmpVar
                     Otgruz.saveShipped 'цена влияет и на отгрузку
                     Orders.openOrdersRowToGrid "##212"
                     tqOrders.Close
@@ -2175,7 +2175,7 @@ Else ' здесь только предметы заказы, поэтому всегда в одной(мелкой) ed.izmer
   If Not lockSklad Then Exit Sub
   
   Grid.col = nkQuant: il = 0
-  For rr = 1 To Grid.Rows - 1
+  For rr = 1 To Grid.rows - 1
     Grid.row = rr
     If Grid.CellFontBold Then
       il = il + 1
@@ -2196,7 +2196,7 @@ Else ' здесь только предметы заказы, поэтому всегда в одной(мелкой) ed.izmer
   
   Grid.col = nkQuant
   I = 0: ReDim NN(0)
-  For rr = 1 To Grid.Rows - 1
+  For rr = 1 To Grid.rows - 1
     Grid.row = rr
     If Grid.CellFontBold Then
       gNomNom = Grid.TextMatrix(rr, nkNomer)
