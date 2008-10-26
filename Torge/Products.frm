@@ -4,15 +4,16 @@ Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Products 
    BackColor       =   &H8000000A&
    Caption         =   "Справочник готовых изделий"
-   ClientHeight    =   6396
+   ClientHeight    =   6390
    ClientLeft      =   60
    ClientTop       =   1740
    ClientWidth     =   11880
    ClipControls    =   0   'False
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
+   LockControls    =   -1  'True
    MinButton       =   0   'False
-   ScaleHeight     =   6396
+   ScaleHeight     =   6390
    ScaleWidth      =   11880
    WhatsThisHelp   =   -1  'True
    Begin VB.CommandButton cmSostavExcel 
@@ -20,7 +21,7 @@ Begin VB.Form Products
       Height          =   315
       Left            =   9240
       TabIndex        =   42
-      Top             =   5880
+      Top             =   5940
       Width           =   1335
    End
    Begin VB.CommandButton cmExit 
@@ -228,7 +229,7 @@ Begin VB.Form Products
       End
    End
    Begin VB.ListBox lbPrWeb 
-      Height          =   432
+      Height          =   450
       ItemData        =   "Products.frx":0000
       Left            =   3900
       List            =   "Products.frx":000A
@@ -238,7 +239,7 @@ Begin VB.Form Products
       Width           =   435
    End
    Begin VB.ListBox lbWeb 
-      Height          =   432
+      Height          =   450
       ItemData        =   "Products.frx":0015
       Left            =   7560
       List            =   "Products.frx":001F
