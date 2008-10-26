@@ -1002,7 +1002,11 @@ laQuant.left = laQuant.left + w
 cmExit.Top = cmExit.Top + h
 cmExit.left = cmExit.left + w
 cmExcel.Top = cmExcel.Top + h
+cmExcel.left = Grid.left + Grid.Width - cmExcel.Width
 Frame1.left = Frame1.left + w
+cmSostavExcel.left = Grid2.left + Grid2.Width - cmSostavExcel.Width
+cmSostavExcel.Top = cmSostavExcel.Top + h
+
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
