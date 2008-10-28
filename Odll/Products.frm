@@ -2006,7 +2006,7 @@ If KeyCode = vbKeyReturn Then
 '            tmpStr = "xEtapByNomenk"
         End If
         If Not byErrSqlGetValues("##315", sql, c, s) Then Exit Sub
-        If Not isNumericTbox(tbMobile, 0, s - c) Then Exit Sub
+        If Not isNumericTbox(tbMobile, 0, Round(s - c, 2)) Then Exit Sub
         
         s = tbMobile.Text: s = Round(s + c, 2)
         

@@ -464,7 +464,7 @@ Function getNextDocNum() As Boolean
 Dim il As Long, l As Long
 getNextDocNum = False
 
-il = Right$(Format(Now, "yymmdd\0\0"), 7) + 200001  ' чтобы не путались с заказами
+il = right$(Format(Now, "yymmdd\0\0"), 7) + 200001  ' чтобы не путались с заказами
 sql = "select * from System"
 Set tbSystem = myOpenRecordSet("##149", sql, dbOpenForwardOnly)
 If tbSystem Is Nothing Then Exit Function
@@ -908,7 +908,7 @@ End If
 
 tbStartDate.Text = Format(DateAdd("d", -14, curDate), "dd/mm/yy")
 tbEndDate.Text = Format(curDate, "dd/mm/yy")
-If otlad = "otlaD" Then ckStartDate.value = 1
+If Not IsEmpty(otlad) Then ckStartDate.value = 1
 
 Grid.FormatString = "|<Дата|<№ Док-та|<Окуда|<Куда|<Примечание|<Предпр"
 Grid.ColWidth(dcSourId) = 0
@@ -986,7 +986,7 @@ Dim strWhere As String, moveWhere As String, I As Integer, str As String
     strWhere = "": str = ""
     moveWhere = Mid$(reg, I + 1)
     If moveWhere <> "" Then moveWhere = "((sDocs.numDoc)=" & moveWhere & ")  OR "
-    I = Left$(reg, I - 1)
+    I = left$(reg, I - 1)
     If numExt > 0 Then strWhere = "(sDocs.numExt)=" & numExt
     If I > 0 Then
         str = "(sDocs.numExt)=" & I
@@ -1076,7 +1076,7 @@ If I = 0 Then
         numExt = 254
     End If
 Else
-    numDoc = Left$(nom, I - 1)
+    numDoc = left$(nom, I - 1)
     numExt = Mid$(nom, I + 1)
 End If
 End Sub

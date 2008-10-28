@@ -60,7 +60,7 @@ Public ProductsPath As String
 Public begDate As Date ' Дата вступительных остатков
 Public logFile As String
 Public dostup As String
-Public otlad As String
+Public otlad As Variant
 Public tbSize As Integer
 Public cErr As String 'позволяет выявить место возникновения Err, если по
                       'всем местам сообщение об Err выдает один MsgBox
@@ -904,18 +904,6 @@ ReDim NN(0): ReDim QQ(0): ReDim QQ2(0): ReDim QQ3(0) 'чтобы Ubound никогда не да
 flReportArhivOrders = False
 ReDim tmpL(0)
 
-'If InStr(Command(), ":\") > 0 Then '$$2
-'    dostup = "a"
-'    otlad = Command()
-'Else
-'If Len(Command()) > 4 Then
-'    dostup = Mid$(Command(), 6)
-'    otlad = Left$(Command(), 5)
-'Else
-'    dostup = Command()
-'    otlad = ""
-'End If
-
 cfg.isLoad = False  '$$2
 loadEffectiveSettingsApp
 dostup = getEffectiveSetting("dostup")
@@ -930,18 +918,8 @@ checkReloadCfg
 
 isXP = (Dir$("C:\WINDOWS\net.exe") = "") 'в XP нет файла
 On Error GoTo ERRs ' не дает Err если в сети не б.найден server, хотя из под DOS дает сист.Err=53
-If otlad <> "otlaD" And InStr(otlad, ":\") = 0 Then '
-  If dostup = "t" Then 'при запуске с сервера не синхронизуем
-    dostup = ""
-    GoTo PASS
-  End If
-  If isXP Then
-    Shell "C:\WINDOWS\system32\net time \\server /SET /YES", vbHide ' winXP
-  Else
-    Shell "C:\WINDOWS\net time \\server /WORKGROUP:JOBSHOP /SET /YES", vbHide
-  End If
-End If
-PASS:
+otlad = getEffectiveSetting("otlad")
+
 On Error GoTo 0
 If dostup = "с" Then dostup = "c"
 If dostup = "0" Then
@@ -956,31 +934,17 @@ And dostup <> "s" Then '$$$ceh
 End If
 
 baseOpen
-'Set wrkDefault = DBEngine.Workspaces(0) ' для орг-ии транзакций
 
 mainTitle = getMainTitle
 
-If otlad = "otlaD" Then '
+If Not IsEmpty(otlad) Then '
   webSvodkaPath = "C:\WINDOWS\TEMP\svodkaW."
   webLoginsPath = "C:\WINDOWS\TEMP\logins."
 
 Else
     webSvodkaPath = SvodkaPath          '$$2
     webLoginsPath = loginsPath          '
-    
-'    If dostup = "a" Or dostup = "m" Or dostup = "" Or dostup = "b" Then '$$2
-'        I = cfg.curBaseInd  '$$2
-'    Else                    '
-'        I = 0               'в цеху всегда рабочая
-'    End If                  '
-'    cfg.baseOpen
-'    mainTitle = "              New"
 End If
-
-'On Error GoTo ERRb '$$2
-'                                                                                                                                                                            Set myBase = OpenDatabase(baseNamePath, False, False, ";PWD=play")
-'Set myBase = OpenDatabase(baseNamePath) '$$2
-'If myBase Is Nothing Then End'$$2
 
 On Error GoTo 0
 
@@ -1097,10 +1061,6 @@ MsgBox "Пуск\Настройка\Панель Управления\Язык и стандарты\Числа\" & _
       " Установите точку вместо запятой!", , "Для правильной работы " & _
       "программы необходимо выполнить настройку Win98: "
 End
-
-'ERRb:'$$2
-'MsgBox "Не удалось подключиться к базе " & mainTitle
-'End
 
 ERRs:
 MsgBox "Система не смогла синхронизировать часы", , "Сообщите администратору!"

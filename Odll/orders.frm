@@ -1265,7 +1265,7 @@ oldHeight = Me.Height
 oldWidth = Me.Width
 
 
-If otlad = "otlaD" Then
+If Not IsEmpty(otlad) Then
     Frame1.BackColor = otladColor
     Me.BackColor = otladColor
 
@@ -1368,7 +1368,7 @@ managLoad 'загрузка Manag() cbM lbM и Filtr.lbM
 lbM.Height = lbM.Height + 195 * (lbM.ListCount - 1)
 Filtr.lbM.Height = Filtr.lbM.Height + 195 * (Filtr.lbM.ListCount - 1)
 
-If otlad = "otlaD" Then cbM.ListIndex = cbM.ListCount - 1
+If Not IsEmpty(otlad) Then cbM.ListIndex = cbM.ListCount - 1
 
 
 
