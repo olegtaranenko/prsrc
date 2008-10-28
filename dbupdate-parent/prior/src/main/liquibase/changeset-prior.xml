@@ -116,5 +116,18 @@ end;
 		<comment>Подготовить "Отчет об остатках по материалам по предприятиям"</comment>
 		<sqlFile path="src/main/liquibase/sales-analys-dml.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 	</changeSet>
+
+	<changeSet id="mantis-14" author="prior">
+		<comment>Удалить ошибочно заведенный заказ</comment>
+		<delete tableName="xPredmetyByIzdelia">
+			<where>numorder = 8102012</where>
+		</delete>
+		<delete tableName="orders">
+			<where>numorder = 8102012</where>
+		</delete>
+		<delete tableName="sdmcrez">
+			<where>numdoc = 8102012</where>
+		</delete>
+	</changeSet>
 </databaseChangeLog>
 
