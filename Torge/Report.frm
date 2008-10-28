@@ -167,6 +167,7 @@ Const rtOplacheno = 10
 Const rzZatratName = 1
 Const rzMainCosts = 2
 Const rzAddCosts = 3
+Const rzTurnCosts = 4
 
 Const zdDate = 1
 Const zdSumm = 2
@@ -627,7 +628,7 @@ End Sub
 Sub ventureZatrat(ventureId As Integer)
 Dim sum As Single
 
-    Grid.FormatString = "|Наименование|>Осн.Затраты|>Вспом.Затраты"
+    Grid.FormatString = "|Наименование|>Осн.Затраты|>Вспом.Затраты|>Оборот.ср-ва"
     Grid.ColWidth(0) = 0
     Grid.ColWidth(rzZatratName) = 3600
     Grid.ColWidth(rzMainCosts) = 1500
@@ -671,6 +672,8 @@ Dim sum As Single
             
             If tbOrders!is_main_costs = 1 Then
                 Grid.TextMatrix(quantity, rzMainCosts) = Format(tbOrders!sm, "## ##0.00")
+            ElseIf tbOrders!is_main_costs = 2 Then
+                Grid.TextMatrix(quantity, rzTurnCosts) = Format(tbOrders!sm, "## ##0.00")
             Else
                 Grid.TextMatrix(quantity, rzAddCosts) = Format(tbOrders!sm, "## ##0.00")
             End If
@@ -682,8 +685,10 @@ Dim sum As Single
     Grid.row = quantity + 1
     Grid.col = rzMainCosts: Grid.CellFontBold = True
     Grid.col = rzAddCosts: Grid.CellFontBold = True
+    Grid.col = rzTurnCosts: Grid.CellFontBold = True
     Grid.TextMatrix(quantity + 1, rzMainCosts) = Format(param2, "## ##0.00")
     Grid.TextMatrix(quantity + 1, rzAddCosts) = Format(param1, "## ##0.00")
+    Grid.TextMatrix(quantity + 1, rzTurnCosts) = Format(param3, "## ##0.00")
 End Sub
 
 Sub ventureReport(ventureId As Integer)

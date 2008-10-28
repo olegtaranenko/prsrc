@@ -11,10 +11,10 @@ Begin VB.Form GuideShiz
    ScaleWidth      =   5964
    StartUpPosition =   1  'CenterOwner
    Begin VB.ListBox lbActive 
-      Height          =   624
+      Height          =   816
       ItemData        =   "GuideShiz.frx":0000
       Left            =   2760
-      List            =   "GuideShiz.frx":000F
+      List            =   "GuideShiz.frx":0013
       TabIndex        =   5
       Top             =   360
       Visible         =   0   'False
@@ -120,6 +120,8 @@ While Not tbGuide.EOF
         Grid.TextMatrix(quantity, shMainCosts) = "Не затраты"
     ElseIf tbGuide!is_main_costs = 0 Then
         Grid.TextMatrix(quantity, shMainCosts) = "Вспомогательные"
+    ElseIf tbGuide!is_main_costs = 2 Then
+        Grid.TextMatrix(quantity, shMainCosts) = "Оборотные ср-ва"
     Else
         Grid.TextMatrix(quantity, shMainCosts) = "Основные"
     End If
@@ -194,6 +196,8 @@ Dim success As Integer
         sql = sql & "1"
     ElseIf lbActive.Text = "Вспомогательные" Then
         sql = sql & "0"
+    ElseIf lbActive.Text = "Оборотные ср-ва" Then
+        sql = sql & "2"
     Else
         sql = sql & "null"
     End If
