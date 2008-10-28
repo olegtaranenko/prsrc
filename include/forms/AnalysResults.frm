@@ -126,6 +126,7 @@ Dim activeTab As Integer
 Dim mousCol As Integer
 Dim searchValue As String, searchPos As Long, searchAgain As Boolean
 
+
 Dim GridHeaderHeadDef() As columnDef
 Dim GridHeaderTailDef() As columnDef
 
@@ -438,7 +439,7 @@ Dim periodIndex As Integer
 
     cleanTable
     
-    sql = "select n_check_filter( " & filterId & ", '" & Orders.cbM.Text & "')"
+    sql = "select n_check_filter( " & filterId & ", '" & managId & "')"
     byErrSqlGetValues "##loadTable.1", sql, checkResult
     
     If checkResult <> "ok" Then
@@ -678,7 +679,7 @@ Dim periodColumnName As String
         colInfo.label = table("label")
         If Not IsNull(table!year) Then colInfo.year = table!year
         If Not IsNull(table!st) Then colInfo.stDate = table!st
-        If Not IsNull(table!EN) Then colInfo.enDate = table!EN
+        If Not IsNull(table!en) Then colInfo.enDate = table!en
         colInfo.periodId = table(periodColumnName)
         colInfo.index = index
         colInfo.colWidth = getColumnWidth(index, table!label)
@@ -728,7 +729,7 @@ Private Sub setFilterParams()
 Dim entry As MapEntry
 
     Grid.FormatString = "|Фирма|Регион"
-    sql = "call n_boot_filter(" & filterId & ", '" & Orders.cbM.Text & "')"
+    sql = "call n_boot_filter(" & filterId & ", '" & managId & "')"
     
     Set table = myOpenRecordSet("##Results.3", sql, dbOpenDynaset)
     While Not table.EOF

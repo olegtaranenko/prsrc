@@ -129,5 +129,27 @@ end;
 			<where>numdoc = 8102012</where>
 		</delete>
 	</changeSet>
+
+
+	<changeSet id="mantis-19" author="prior-ddl">
+		<comment>Перенести отчет по оборотам средств по предприятиям в Stime</comment>
+		<addColumn tableName="nAnalys">
+			<column name="application" type="varchar(16)"/>
+		</addColumn>
+		<update tableName="nAnalys">
+			<column name="application" value="bay"/>
+		</update>
+		<update tableName="nAnalys">
+			<column name="application" value="stime"/>
+			<where>id = 7</where>
+		</update>
+<!--
+		<modifyColumn tableName="nAnalys">
+			<column name="application" >
+				<constraints nullable="true"/>
+			</column>
+		</modifyColumn>
+-->
+	</changeSet>
 </databaseChangeLog>
 

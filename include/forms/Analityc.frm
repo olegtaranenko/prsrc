@@ -188,7 +188,7 @@ Begin VB.Form Analityc
          _ExtentX        =   2138
          _ExtentY        =   508
          _Version        =   393216
-         Format          =   45744129
+         Format          =   16449537
          CurrentDate     =   39599
       End
       Begin MSComCtl2.DTPicker tbEndDate 
@@ -200,7 +200,7 @@ Begin VB.Form Analityc
          _ExtentX        =   2138
          _ExtentY        =   508
          _Version        =   393216
-         Format          =   45744129
+         Format          =   16449537
          CurrentDate     =   39599
       End
       Begin VB.Label Label5 
@@ -405,9 +405,12 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
+Public managId As String
+Public applicationType As String
+
+
 Dim tbKlass As Recordset
 Dim Node As Node
-Dim managId As String
 Dim columnsVisible As Boolean
 
 Dim flagInitFilter As Boolean
@@ -476,20 +479,20 @@ End Sub
 
 
 Private Sub ckKriteriumOborud_Click()
-Dim I As Integer
+Dim i As Integer
 
     checkDirtyFilterCommads
     If ckKriteriumOborud.value = 1 Then
         If ckKriteriumNoOborud.value = 1 Then
             ckKriteriumNoOborud.value = 0
         End If
-        For I = 1 To 3
-            cbOborud(I).Enabled = True
-        Next I
+        For i = 1 To 3
+            cbOborud(i).Enabled = True
+        Next i
     Else
-        For I = 1 To 3
-            cbOborud(I).Enabled = False
-        Next I
+        For i = 1 To 3
+            cbOborud(i).Enabled = False
+        Next i
     End If
 End Sub
 
@@ -549,7 +552,7 @@ End Sub
 
 
 Sub loadRegions()
-Dim key As String, pKey As String, K() As String, pK()  As String
+Dim key As String, pKey As String, k() As String, pK()  As String
 
 
     sql = "call wf_territory_catalog"
@@ -576,7 +579,7 @@ End Sub
 
 
 Sub loadKlass()
-Dim key As String, pKey As String, K() As String, pK()  As String
+Dim key As String, pKey As String, k() As String, pK()  As String
     sql = "call wf_klass_catalog"
     Set tbKlass = myOpenRecordSet("##loadKlasss", sql, dbOpenForwardOnly)
     If tbKlass Is Nothing Then myBase.Close: End
@@ -604,33 +607,33 @@ End Sub
 
 Private Sub cleanTree(tView As TreeView)
 Dim currentNode As Node
-Dim I As Integer, nCount As Integer
+Dim i As Integer, nCount As Integer
 Dim enabledFlag As Boolean
 
     enabledFlag = tView.Enabled
     tView.Enabled = True
     
     nCount = tView.Nodes.Count
-    For I = 1 To nCount
-        Set currentNode = tView.Nodes(I)
+    For i = 1 To nCount
+        Set currentNode = tView.Nodes(i)
         If currentNode.checked Then
             currentNode.checked = False
             currentNode.Expanded = False
         End If
-    Next I
+    Next i
 
     tView.Enabled = enabledFlag
 End Sub
 
 Private Sub cleanOborud()
 Dim currentOborud As CheckBox
-Dim I As Integer, nCount As Integer
+Dim i As Integer, nCount As Integer
 
     'nCount = UBound(cbOborud)
-    For I = 1 To 3
-        Set currentOborud = cbOborud(I)
+    For i = 1 To 3
+        Set currentOborud = cbOborud(i)
         currentOborud.value = 0
-    Next I
+    Next i
 End Sub
 
 Private Sub cleanFilterWindows()
@@ -804,7 +807,7 @@ Dim result As Integer
         End If
         sql = sql & ")"
     
-    Debug.Print sql
+    'Debug.Print sql
     byErrSqlGetValues "##insertFilterParam", sql, result
     saveFilterParam = result
     
@@ -873,12 +876,12 @@ Dim personal As Integer
 
     If hasOborud Then
         itemId = saveFilterItem(filterId, "oborudItems", ckKriteriumOborud.value)
-        Dim I As Integer
-        For I = 1 To 3
-            If cbOborud(I).value Then
-                saveFilterParam itemId, "oborudItemId", I
+        Dim i As Integer
+        For i = 1 To 3
+            If cbOborud(i).value Then
+                saveFilterParam itemId, "oborudItemId", i
             End If
-        Next I
+        Next i
     End If
     
     If ckKriteriumNoOborud.value = 1 Then
@@ -932,19 +935,19 @@ End Sub
 
 
 Private Sub initColumnTree(ByRef headerList() As columnDef)
-Dim I As Integer, anySaved As Boolean, aNode As Node
+Dim i As Integer, anySaved As Boolean, aNode As Node
 
 
     tvColumns.Nodes.Clear
     
-    For I = 0 To UBound(headerList)
-        If headerList(I).hidden <> 1 Then
-            Set aNode = tvColumns.Nodes.Add(, , "c" & headerList(I).columnId, headerList(I).nameRu)
-            If headerList(I).saved Then
+    For i = 0 To UBound(headerList)
+        If headerList(i).hidden <> 1 Then
+            Set aNode = tvColumns.Nodes.Add(, , "c" & headerList(i).columnId, headerList(i).nameRu)
+            If headerList(i).saved Then
                 aNode.checked = True
             End If
         End If
-    Next I
+    Next i
     
 End Sub
 
@@ -993,15 +996,14 @@ End Sub
 
 
 Private Sub Form_Load()
-Dim I As Integer
+Dim i As Integer
 
-    For I = 1 To cbDateShift.ListCount - 1
-        cbDateShift.ItemData(I) = I
-    Next I
+    For i = 1 To cbDateShift.ListCount - 1
+        cbDateShift.ItemData(i) = i
+    Next i
     
     loadKlass
     loadRegions
-    managId = Orders.cbM.Text
 
     Set table = myOpenRecordSet("W#72", "select * from nFilter where personal != 1", dbOpenForwardOnly)
     If table Is Nothing Then myBase.Close: End
@@ -1044,12 +1046,12 @@ Private Sub populateAxeList(ByRef table As Recordset, cb As ComboBox)
     End If
     
     cb.Clear
-    Dim I As Integer
-    I = 0
+    Dim i As Integer
+    i = 0
     While Not table.EOF
         cb.AddItem table!Name_ru
-        cb.ItemData(I) = table!id
-        I = I + 1
+        cb.ItemData(i) = table!id
+        i = i + 1
         table.MoveNext
     Wend
     table.Close
@@ -1072,7 +1074,7 @@ End Sub
 Private Sub initByRowList()
     
     sql = "select * from nAnalysCategory ac where byrow_flag = 1 " _
-        & " and exists (select 1 from nAnalys a where a.byrow = ac.id)"
+        & " and exists (select 1 from nAnalys a where a.byrow = ac.id and application = '" & applicationType & "')"
     
     Set table = myOpenRecordSet("W#initByRowList", sql, dbOpenForwardOnly)
     If table Is Nothing Then
@@ -1094,45 +1096,45 @@ End Sub
 
 
 Private Function getOborudItems() As Boolean
-Dim I As Integer
+Dim i As Integer
 
-    For I = 1 To 3
-        If cbOborud(I).value = 1 Then
+    For i = 1 To 3
+        If cbOborud(i).value = 1 Then
             getOborudItems = True
             Exit Function
         End If
-    Next I
+    Next i
 
 End Function
 
 
 Private Function getCheckedInTree(tView As TreeView) As Boolean
 Dim currentNode As Node
-Dim I As Integer
+Dim i As Integer
 
     getCheckedInTree = False
-    For I = 1 To tView.Nodes.Count
-        Set currentNode = tView.Nodes(I)
+    For i = 1 To tView.Nodes.Count
+        Set currentNode = tView.Nodes(i)
         If currentNode.checked Then
             getCheckedInTree = True
             Exit Function
         End If
-    Next I
+    Next i
     
 End Function
 
 
 Private Sub saveParamsOfTree(tView As TreeView, itemId As Integer, paramName As String)
 Dim currentNode As Node
-Dim I As Integer, nCount As Integer
+Dim i As Integer, nCount As Integer
 
     nCount = tView.Nodes.Count
-    For I = 1 To nCount
-        Set currentNode = tView.Nodes(I)
+    For i = 1 To nCount
+        Set currentNode = tView.Nodes(i)
         If currentNode.checked Then
             saveFilterParam itemId, paramName, CInt(Mid(currentNode.key, 2))
         End If
-    Next I
+    Next i
     
 End Sub
 
@@ -1182,15 +1184,15 @@ End Sub
 
 Private Function setListIndexByItemDataValue(ByRef cb As ComboBox, ByVal itemDataValue As Integer) As Boolean
 
-Dim I As Integer
+Dim i As Integer
 
     setListIndexByItemDataValue = True
-    For I = 0 To cb.ListCount - 1
-        If cb.ItemData(I) = itemDataValue Then
-            cb.ListIndex = I
+    For i = 0 To cb.ListCount - 1
+        If cb.ItemData(i) = itemDataValue Then
+            cb.ListIndex = i
             Exit Function
         End If
-    Next I
+    Next i
     setListIndexByItemDataValue = False
 End Function
 

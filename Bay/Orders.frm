@@ -1609,6 +1609,8 @@ End Sub
 
 Private Sub mnAnalityc_Click()
     Me.MousePointer = flexHourglass
+    Analityc.managId = Orders.cbM.Text
+    Analityc.applicationType = "bay"
     Analityc.Show vbModeless, Me
     
     Me.MousePointer = flexDefault

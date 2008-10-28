@@ -343,7 +343,6 @@ Begin VB.Form Documents
       End
       Begin VB.Menu ventureOborot 
          Caption         =   "Оборотная по предприятиям"
-         Visible         =   0   'False
       End
       Begin VB.Menu VentureRest 
          Caption         =   "Остатки по предприятиям"
@@ -841,13 +840,13 @@ End If
 
 sql = "SELECT sGuideSource.sourceName From sGuideSource " & _
 "WHERE (((sGuideSource.sourceId)>0)) ORDER BY sGuideSource.sourceName;"
-Set Table = myOpenRecordSet("##144", sql, dbOpenForwardOnly)
-If Table Is Nothing Then End
-While Not Table.EOF
-    lbSource.AddItem Table!SourceName
-    Table.MoveNext
+Set table = myOpenRecordSet("##144", sql, dbOpenForwardOnly)
+If table Is Nothing Then End
+While Not table.EOF
+    lbSource.AddItem table!SourceName
+    table.MoveNext
 Wend
-Table.Close
+table.Close
 'lbSource.Height = 195 * lbSource.ListCount + 100
 
 loadLbInside
@@ -859,23 +858,23 @@ tbStartDate.Text = Format(DateAdd("d", -7, CurDate), "dd/mm/yy")
 tbEndDate.Text = Format(CurDate, "dd/mm/yy")
 
 Grid.FormatString = "|<Дата|<№ Док-та|<Откуда|<Куда|<Предпр|<Примечание"
-Grid.ColWidth(0) = 0
-Grid.ColWidth(dcDate) = 800
-Grid.ColWidth(dcNumDoc) = 915
+Grid.colWidth(0) = 0
+Grid.colWidth(dcDate) = 800
+Grid.colWidth(dcNumDoc) = 915
 'Grid.ColWidth(dcM) = 300
-Grid.ColWidth(dcSour) = 1100
-Grid.ColWidth(dcDest) = 1100
-Grid.ColWidth(dcNote) = 1530
-Grid.ColWidth(dcVenture) = 800
+Grid.colWidth(dcSour) = 1100
+Grid.colWidth(dcDest) = 1100
+Grid.colWidth(dcNote) = 1530
+Grid.colWidth(dcVenture) = 800
 
 Grid2.FormatString = "|<Номер|<Название|кол-во|<Ед.измерения|кол-во|<Ед.изм.производства"
-Grid2.ColWidth(0) = 0
-Grid2.ColWidth(dnNomNom) = 0 '945
-Grid2.ColWidth(dnNomName) = 2400 + 430 + 650 + 945
-Grid2.ColWidth(dnEdIzm) = 0 '435
-Grid2.ColWidth(dnQuant) = 0 '660
-Grid2.ColWidth(dnEdIzm2) = 435
-Grid2.ColWidth(dnQuant2) = 660
+Grid2.colWidth(0) = 0
+Grid2.colWidth(dnNomNom) = 0 '945
+Grid2.colWidth(dnNomName) = 2400 + 430 + 650 + 945
+Grid2.colWidth(dnEdIzm) = 0 '435
+Grid2.colWidth(dnQuant) = 0 '660
+Grid2.colWidth(dnEdIzm2) = 435
+Grid2.colWidth(dnQuant2) = 660
 
 End Sub
 
@@ -884,18 +883,18 @@ Dim i As Integer
 
 sql = "SELECT sGuideSource.sourceId, sGuideSource.sourceName From sGuideSource " & _
 "WHERE (((sGuideSource.sourceId)<-1000)) ORDER BY sGuideSource.sourceId DESC;"
-Set Table = myOpenRecordSet("##95", sql, dbOpenDynaset)
-If Table Is Nothing Then myBase.Close: End
+Set table = myOpenRecordSet("##95", sql, dbOpenDynaset)
+If table Is Nothing Then myBase.Close: End
 ReDim insideId(0): i = 0: ' ReDim statiaId(0): j = 0
 lbInside.Clear
-While Not Table.EOF
-    lbInside.AddItem Table!SourceName
+While Not table.EOF
+    lbInside.AddItem table!SourceName
     ReDim Preserve insideId(i)
-    insideId(i) = Table!sourceId
+    insideId(i) = table!sourceId
     i = i + 1
-    Table.MoveNext
+    table.MoveNext
 Wend
-Table.Close
+table.Close
 lbInside.Height = lbInside.Height + 195 * (lbInside.ListCount - 1)
 End Sub
 
@@ -1095,16 +1094,16 @@ Wend
 
 sql = "select * from GuideVenture where standalone = 0 and id_analytic is not null"
 
-Set Table = myOpenRecordSet("##72", sql, dbOpenForwardOnly)
-If Table Is Nothing Then myBase.Close: End
+Set table = myOpenRecordSet("##72", sql, dbOpenForwardOnly)
+If table Is Nothing Then myBase.Close: End
 
 'lbVenture.AddItem "", 0
-While Not Table.EOF
-    lbVenture.AddItem "" & Table!ventureName & ""
-    lbVenture.ItemData(lbVenture.ListCount - 1) = Table!ventureId
-    Table.MoveNext
+While Not table.EOF
+    lbVenture.AddItem "" & table!ventureName & ""
+    lbVenture.ItemData(lbVenture.ListCount - 1) = table!ventureId
+    table.MoveNext
 Wend
-Table.Close
+table.Close
 lbVenture.Height = 225 * lbVenture.ListCount
 
 End Sub
@@ -1123,7 +1122,7 @@ End Sub
 
 Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then _
-        MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
+        MsgBox "ColWidth = " & Grid.colWidth(Grid.MouseCol)
 End Sub
 
 Private Sub Grid2_Click()
@@ -1198,7 +1197,7 @@ End Sub
 
 Private Sub Grid2_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
 If Grid2.MouseRow = 0 And Shift = 2 Then _
-        MsgBox "ColWidth = " & Grid2.ColWidth(Grid2.MouseCol)
+        MsgBox "ColWidth = " & Grid2.colWidth(Grid2.MouseCol)
 End Sub
 
 Private Sub lbBad_DblClick()
@@ -1313,14 +1312,14 @@ End Sub
 
 
 Private Sub lbVenture_DblClick()
-Dim newNote As String, ncount As Integer
+Dim newNote As String, nCount As Integer
 
 If lbVenture.Visible = False Then Exit Sub
 sql = "select wf_make_venture_income(" & Grid.TextMatrix(mousRow, dcNumDoc) & ", " & lbVenture.ItemData(lbVenture.ListIndex) & ")"
 
 'i = orderUpdate("##72", lbVenture.ItemData(lbVenture.ListIndex), "Orders", "ventureId")
-byErrSqlGetValues "##126.1", sql, ncount
-If ncount > 0 Then
+byErrSqlGetValues "##126.1", sql, nCount
+If nCount > 0 Then
     Grid.Text = lbVenture.Text
     newNote = getValueFromTable("sDocs", "Note", "numDoc = " & Grid.TextMatrix(mousRow, dcNumDoc))
     If IsNull(newNote) Then newNote = ""
@@ -1674,12 +1673,12 @@ Else
     objExel.ActiveSheet.Cells(exRow, 4).value = "Ед.измерения"
     objExel.ActiveSheet.Cells(exRow, 5).value = "Кол-во"
     objExel.ActiveSheet.Cells(exRow, 6).value = "Цена"
-    objExel.ActiveSheet.Columns(1).ColumnWidth = 12.57
-    objExel.ActiveSheet.Columns(2).ColumnWidth = 39.71
-    objExel.ActiveSheet.Columns(3).ColumnWidth = 10
-    objExel.ActiveSheet.Columns(4).ColumnWidth = 6.2
-    objExel.ActiveSheet.Columns(5).ColumnWidth = 6.2
-    objExel.ActiveSheet.Columns(6).ColumnWidth = 6
+    objExel.ActiveSheet.Columns(1).columnWidth = 12.57
+    objExel.ActiveSheet.Columns(2).columnWidth = 39.71
+    objExel.ActiveSheet.Columns(3).columnWidth = 10
+    objExel.ActiveSheet.Columns(4).columnWidth = 6.2
+    objExel.ActiveSheet.Columns(5).columnWidth = 6.2
+    objExel.ActiveSheet.Columns(6).columnWidth = 6
     objExel.ActiveSheet.Columns(6).HorizontalAlignment = xlHAlignRight
     cErr = setVertBorders(xlMedium)
 'xlColumnDataType
@@ -2032,9 +2031,7 @@ Dim i As Integer
 End Sub
 
 Private Sub ventureOborot_Click()
-Dim n1 As Nomenklatura
-    Set n1 = New Nomenklatura
-    n1.Regim = "ventureOborot"
-    n1.Show
-    n1.setRegim
+    Analityc.applicationType = "stime"
+    Analityc.managId = AUTO.cbM.Text
+    Analityc.Show
 End Sub
