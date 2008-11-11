@@ -38,7 +38,7 @@ Begin VB.Form Pribil
          Left            =   9840
          TabIndex        =   53
          Top             =   180
-         Width           =   1104
+         Width           =   1200
       End
       Begin VB.Label laPmResultMain 
          Alignment       =   1  'Right Justify
@@ -48,7 +48,7 @@ Begin VB.Form Pribil
          Left            =   6240
          TabIndex        =   52
          Top             =   180
-         Width           =   1100
+         Width           =   1200
       End
       Begin VB.Label laPmAddCosts 
          Alignment       =   1  'Right Justify
@@ -58,7 +58,7 @@ Begin VB.Form Pribil
          Left            =   7440
          TabIndex        =   51
          Top             =   180
-         Width           =   1100
+         Width           =   1200
       End
       Begin VB.Label laPmMainCosts 
          Alignment       =   1  'Right Justify
@@ -68,17 +68,17 @@ Begin VB.Form Pribil
          Left            =   5040
          TabIndex        =   50
          Top             =   180
-         Width           =   1100
+         Width           =   1200
       End
       Begin VB.Label laPmturnCosts 
          Alignment       =   1  'Right Justify
          BackStyle       =   0  'Transparent
          BorderStyle     =   1  'Fixed Single
          Height          =   312
-         Left            =   8616
+         Left            =   8640
          TabIndex        =   72
          Top             =   180
-         Width           =   1104
+         Width           =   1200
       End
       Begin VB.Label laMaterialsPM 
          Alignment       =   1  'Right Justify
@@ -88,7 +88,7 @@ Begin VB.Form Pribil
          Left            =   2640
          TabIndex        =   45
          Top             =   180
-         Width           =   1100
+         Width           =   1200
       End
       Begin VB.Label laRealizPM 
          Alignment       =   1  'Right Justify
@@ -98,7 +98,7 @@ Begin VB.Form Pribil
          Left            =   1440
          TabIndex        =   34
          Top             =   180
-         Width           =   1100
+         Width           =   1200
       End
       Begin VB.Label laClearPM 
          Alignment       =   1  'Right Justify
@@ -108,7 +108,7 @@ Begin VB.Form Pribil
          Left            =   3840
          TabIndex        =   33
          Top             =   180
-         Width           =   1100
+         Width           =   1200
       End
    End
    Begin VB.Frame Frame9 
@@ -136,7 +136,7 @@ Begin VB.Form Pribil
          Left            =   9840
          TabIndex        =   62
          Top             =   120
-         Width           =   1104
+         Width           =   1200
       End
       Begin VB.Label laMmResultMain 
          Alignment       =   1  'Right Justify
@@ -146,7 +146,7 @@ Begin VB.Form Pribil
          Left            =   6240
          TabIndex        =   61
          Top             =   120
-         Width           =   1104
+         Width           =   1200
       End
       Begin VB.Label laMmAddCosts 
          Alignment       =   1  'Right Justify
@@ -156,7 +156,7 @@ Begin VB.Form Pribil
          Left            =   7440
          TabIndex        =   60
          Top             =   120
-         Width           =   1104
+         Width           =   1200
       End
       Begin VB.Label laMmMainCosts 
          Alignment       =   1  'Right Justify
@@ -166,17 +166,17 @@ Begin VB.Form Pribil
          Left            =   5040
          TabIndex        =   59
          Top             =   120
-         Width           =   1104
+         Width           =   1200
       End
       Begin VB.Label laMmturnCosts 
          Alignment       =   1  'Right Justify
          BackStyle       =   0  'Transparent
          BorderStyle     =   1  'Fixed Single
          Height          =   312
-         Left            =   8616
+         Left            =   8640
          TabIndex        =   73
          Top             =   120
-         Width           =   1104
+         Width           =   1200
       End
       Begin VB.Label laClearMM 
          Alignment       =   1  'Right Justify
@@ -186,7 +186,7 @@ Begin VB.Form Pribil
          Left            =   3840
          TabIndex        =   44
          Top             =   120
-         Width           =   1104
+         Width           =   1200
       End
       Begin VB.Label laMaterialsMM 
          Alignment       =   1  'Right Justify
@@ -196,7 +196,7 @@ Begin VB.Form Pribil
          Left            =   2640
          TabIndex        =   43
          Top             =   120
-         Width           =   1104
+         Width           =   1200
       End
       Begin VB.Label laRealizMM 
          Alignment       =   1  'Right Justify
@@ -206,7 +206,7 @@ Begin VB.Form Pribil
          Left            =   1440
          TabIndex        =   42
          Top             =   120
-         Width           =   1100
+         Width           =   1200
       End
    End
    Begin VB.Frame Frame8 
@@ -234,7 +234,7 @@ Begin VB.Form Pribil
          Left            =   9840
          TabIndex        =   66
          Top             =   120
-         Width           =   1104
+         Width           =   1200
       End
       Begin VB.Label laAnResultMain 
          Alignment       =   1  'Right Justify
@@ -244,7 +244,7 @@ Begin VB.Form Pribil
          Left            =   6240
          TabIndex        =   65
          Top             =   120
-         Width           =   1104
+         Width           =   1200
       End
       Begin VB.Label laAnAddCosts 
          Alignment       =   1  'Right Justify
@@ -254,7 +254,7 @@ Begin VB.Form Pribil
          Left            =   7440
          TabIndex        =   64
          Top             =   120
-         Width           =   1104
+         Width           =   1200
       End
       Begin VB.Label laAnMainCosts 
          Alignment       =   1  'Right Justify
@@ -264,7 +264,7 @@ Begin VB.Form Pribil
          Left            =   5040
          TabIndex        =   63
          Top             =   120
-         Width           =   1104
+         Width           =   1200
       End
       Begin VB.Label laAnturnCosts 
          Alignment       =   1  'Right Justify
@@ -274,7 +274,7 @@ Begin VB.Form Pribil
          Left            =   8640
          TabIndex        =   74
          Top             =   120
-         Width           =   1104
+         Width           =   1200
       End
       Begin VB.Label laRealizAn 
          Alignment       =   1  'Right Justify
@@ -284,7 +284,7 @@ Begin VB.Form Pribil
          Left            =   1440
          TabIndex        =   39
          Top             =   120
-         Width           =   1100
+         Width           =   1200
       End
       Begin VB.Label laClearAn 
          Alignment       =   1  'Right Justify
@@ -294,7 +294,7 @@ Begin VB.Form Pribil
          Left            =   3840
          TabIndex        =   38
          Top             =   120
-         Width           =   1104
+         Width           =   1200
       End
       Begin VB.Label laMaterialsAn 
          Alignment       =   1  'Right Justify
@@ -304,7 +304,7 @@ Begin VB.Form Pribil
          Left            =   2640
          TabIndex        =   37
          Top             =   120
-         Width           =   1104
+         Width           =   1200
       End
    End
    Begin VB.Frame Frame6 
@@ -334,7 +334,7 @@ Begin VB.Form Pribil
          Left            =   3840
          TabIndex        =   30
          Top             =   120
-         Width           =   1104
+         Width           =   1200
       End
       Begin VB.Label laUslug 
          Alignment       =   1  'Right Justify
@@ -344,7 +344,7 @@ Begin VB.Form Pribil
          Left            =   1440
          TabIndex        =   29
          Top             =   120
-         Width           =   1100
+         Width           =   1200
       End
    End
    Begin VB.Frame Frame5 
@@ -399,7 +399,7 @@ Begin VB.Form Pribil
          Left            =   9840
          TabIndex        =   58
          Top             =   120
-         Width           =   1104
+         Width           =   1200
       End
       Begin VB.Label laTotalResultMain 
          Alignment       =   1  'Right Justify
@@ -418,7 +418,7 @@ Begin VB.Form Pribil
          Left            =   6240
          TabIndex        =   57
          Top             =   120
-         Width           =   1104
+         Width           =   1200
       End
       Begin VB.Label laTotalAddCosts 
          Alignment       =   1  'Right Justify
@@ -437,7 +437,7 @@ Begin VB.Form Pribil
          Left            =   7440
          TabIndex        =   56
          Top             =   120
-         Width           =   1104
+         Width           =   1200
       End
       Begin VB.Label laTotalMainCosts 
          Alignment       =   1  'Right Justify
@@ -456,7 +456,7 @@ Begin VB.Form Pribil
          Left            =   5040
          TabIndex        =   55
          Top             =   120
-         Width           =   1104
+         Width           =   1200
       End
       Begin VB.Label laTotalturnCosts 
          Alignment       =   1  'Right Justify
@@ -472,10 +472,10 @@ Begin VB.Form Pribil
             Strikethrough   =   0   'False
          EndProperty
          Height          =   312
-         Left            =   8616
+         Left            =   8640
          TabIndex        =   75
          Top             =   120
-         Width           =   1104
+         Width           =   1200
       End
       Begin VB.Label laRealiz 
          Alignment       =   1  'Right Justify
@@ -494,7 +494,7 @@ Begin VB.Form Pribil
          Left            =   1440
          TabIndex        =   26
          Top             =   120
-         Width           =   1100
+         Width           =   1200
       End
       Begin VB.Label laClear 
          Alignment       =   1  'Right Justify
@@ -513,7 +513,7 @@ Begin VB.Form Pribil
          Left            =   3840
          TabIndex        =   25
          Top             =   120
-         Width           =   1104
+         Width           =   1200
       End
       Begin VB.Label laMaterials 
          Alignment       =   1  'Right Justify
@@ -532,7 +532,7 @@ Begin VB.Form Pribil
          Left            =   2640
          TabIndex        =   24
          Top             =   120
-         Width           =   1104
+         Width           =   1200
       End
    End
    Begin VB.Frame Frame4 
@@ -560,7 +560,7 @@ Begin VB.Form Pribil
          Left            =   2640
          TabIndex        =   22
          Top             =   120
-         Width           =   1104
+         Width           =   1200
       End
       Begin VB.Label laClear2 
          Alignment       =   1  'Right Justify
@@ -570,7 +570,7 @@ Begin VB.Form Pribil
          Left            =   3840
          TabIndex        =   21
          Top             =   120
-         Width           =   1104
+         Width           =   1200
       End
       Begin VB.Label laRealiz2 
          Alignment       =   1  'Right Justify
@@ -580,7 +580,7 @@ Begin VB.Form Pribil
          Left            =   1440
          TabIndex        =   20
          Top             =   120
-         Width           =   1100
+         Width           =   1200
       End
    End
    Begin VB.Frame Frame3 
@@ -609,7 +609,7 @@ Begin VB.Form Pribil
          Left            =   2640
          TabIndex        =   17
          Top             =   120
-         Width           =   1104
+         Width           =   1200
       End
    End
    Begin VB.Frame Frame2 
@@ -637,7 +637,7 @@ Begin VB.Form Pribil
          Left            =   1440
          TabIndex        =   14
          Top             =   120
-         Width           =   1100
+         Width           =   1200
       End
       Begin VB.Label laMaterials1 
          Alignment       =   1  'Right Justify
@@ -647,7 +647,7 @@ Begin VB.Form Pribil
          Left            =   2640
          TabIndex        =   13
          Top             =   120
-         Width           =   1104
+         Width           =   1200
       End
       Begin VB.Label laClear1 
          Alignment       =   1  'Right Justify
@@ -657,7 +657,7 @@ Begin VB.Form Pribil
          Left            =   3840
          TabIndex        =   12
          Top             =   120
-         Width           =   1104
+         Width           =   1200
       End
    End
    Begin VB.Frame Frame1 
