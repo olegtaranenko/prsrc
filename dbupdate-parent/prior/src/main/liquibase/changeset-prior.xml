@@ -151,5 +151,30 @@ end;
 		</modifyColumn>
 -->
 	</changeSet>
+
+<!--
+	<changeSet id="mantis-12" author="code" runOnChange="true">
+		<comment>Отчет для продаж - ВСЕ материалы купленные фирмой(ами)</comment>
+		<sqlFile path="src/main/liquibase/nomnom-firma.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+	</changeSet>
+
+
+	<changeSet id="mantis-12" author="dml">
+		<comment>Отчет для продаж - ВСЕ материалы купленные фирмой(ами)</comment>
+		<sqlFile path="src/main/liquibase/nomnom-firma-dml.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+	</changeSet>
+
+-->
+
+
+<!--
+!!! почему-то не работает из-под ликвибейза. Возможно неправильно настрое автокоммит?? хорошо бы разобраться...
+
+	<changeSet id="mantis-23" author="dml">
+		<comment>синхронизировать справочник фирм с бухгалтерскими базами комтеха.</comment>
+		<sqlFile path="src/main/liquibase/sync_guidefirms.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+	</changeSet>
+-->
+
 </databaseChangeLog>
 
