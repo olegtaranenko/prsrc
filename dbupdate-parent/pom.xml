@@ -62,19 +62,19 @@
 						<driver>${sybase.driver}</driver>
 						<username>${syb.username}</username>
 						<password>${syb.password}</password>
-						<logging>info</logging>
+						<logLevel>FINE</logLevel>
 						<contexts>${changelog.context}</contexts>
 					</configuration>
 					<executions>
 						<execution>
-							<id>generate-stime</id>
+							<id>generate-sql-for-update</id>
 							<phase>process-resources</phase>
 							<goals>
 								<goal>updateSQL</goal>
 							</goals>
 						</execution>
 						<execution>
-							<id>update-stime</id>
+							<id>execute-db-update</id>
 							<phase>process-test-resources</phase>
 							<goals>
 								<goal>update</goal>
@@ -90,7 +90,7 @@
 		<module>comtex</module>
 	</modules>
 	<properties>
-		<liquibase.version>1.8.1.0-SNAPSHOT</liquibase.version>
+		<liquibase.version>1.9.0.0-SNAPSHOT</liquibase.version>
 		<sybase.driver>com.sybase.jdbc3.jdbc.SybDriver</sybase.driver>
 		<sybase.artifactId>jconn3</sybase.artifactId>
 		<sybase.driver.version>6.0</sybase.driver.version>

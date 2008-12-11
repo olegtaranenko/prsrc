@@ -3,14 +3,14 @@ Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form CehOrders 
    BackColor       =   &H8000000A&
    Caption         =   " "
-   ClientHeight    =   5730
+   ClientHeight    =   5724
    ClientLeft      =   60
-   ClientTop       =   345
+   ClientTop       =   348
    ClientWidth     =   11880
    Icon            =   "CehOrders.frx":0000
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
-   ScaleHeight     =   5730
+   ScaleHeight     =   5724
    ScaleWidth      =   11880
    StartUpPosition =   2  'CenterScreen
    Begin VB.CommandButton cmNaklad 
@@ -97,7 +97,7 @@ Begin VB.Form CehOrders
       Width           =   1575
    End
    Begin VB.ListBox lbProblem 
-      Height          =   1425
+      Height          =   1392
       Left            =   3300
       TabIndex        =   5
       Top             =   3240
@@ -113,7 +113,7 @@ Begin VB.Form CehOrders
       Width           =   915
    End
    Begin VB.ListBox lbStatus 
-      Height          =   1815
+      Height          =   1776
       ItemData        =   "CehOrders.frx":030A
       Left            =   540
       List            =   "CehOrders.frx":0329
@@ -123,7 +123,7 @@ Begin VB.Form CehOrders
       Width           =   795
    End
    Begin VB.ListBox lbObrazec 
-      Height          =   450
+      Height          =   432
       ItemData        =   "CehOrders.frx":0361
       Left            =   1560
       List            =   "CehOrders.frx":036B
@@ -133,7 +133,7 @@ Begin VB.Form CehOrders
       Width           =   615
    End
    Begin VB.ListBox lbMaket 
-      Height          =   450
+      Height          =   432
       ItemData        =   "CehOrders.frx":0378
       Left            =   2460
       List            =   "CehOrders.frx":0382
@@ -148,8 +148,8 @@ Begin VB.Form CehOrders
       TabIndex        =   0
       Top             =   360
       Width           =   11655
-      _ExtentX        =   20558
-      _ExtentY        =   8705
+      _ExtentX        =   20553
+      _ExtentY        =   8700
       _Version        =   393216
       AllowUserResizing=   1
    End
@@ -258,7 +258,7 @@ tmpTopRow = Grid.TopRow
     On Error GoTo errMsg
     GoTo START
 errMsg:
-    MsgBox Error, , "ќшибка  " & err & " в п\п cehBegin" '
+    MsgBox Error, , "ќшибка  " & Err & " в п\п cehBegin" '
     End
 START:
 #End If
@@ -372,7 +372,7 @@ Dim color As Long, str1 As String  ', is100 As Boolean
     On Error GoTo errMsg
     GoTo START
 errMsg:
-    MsgBox Error, , "ќшибка  " & err & " в п\п toCehFromStr" '
+    MsgBox Error, , "ќшибка  " & Err & " в п\п toCehFromStr" '
     End
 START:
 #End If
@@ -835,7 +835,7 @@ Dim str As String, I As Integer
     On Error GoTo errMsg
     GoTo START
 errMsg:
-    MsgBox Error, , "ќшибка  " & err & " в п\п lbStatus_DblClick" '
+    MsgBox Error, , "ќшибка  " & Err & " в п\п lbStatus_DblClick" '
     End
 START:
 #End If

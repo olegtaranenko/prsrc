@@ -16,7 +16,7 @@ Sub fatalError(msg As String)
 End Sub
 
 Sub getAppInfo(ByRef version As VersionInfo)
-    version.path = App.path & "\" & App.exeName & ".exe"
+    version.path = App.path & "\" & App.EXEName & ".exe"
     version.maj = App.Major
     version.min = App.Minor
     version.bld = App.Revision
@@ -80,4 +80,15 @@ Dim version As VersionInfo
     getAppInfo version
     getMainTitle = " [версия " & infoToString(version) & "]"
 
+End Function
+
+Function existsInTreeview(ByRef tTree As TreeView, Key As String) As Boolean
+Dim I As Integer
+    For I = 1 To tTree.Nodes.Count
+        If tTree.Nodes(I).Key = Key Then
+            existsInTreeview = True
+            Exit Function
+        End If
+    Next I
+    existsInTreeview = False
 End Function

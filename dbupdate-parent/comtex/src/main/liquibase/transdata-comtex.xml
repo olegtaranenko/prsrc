@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ 
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd"
+  logicalFilePath="transdata-comtex.xml"
+>
+         
+    <changeSet id="1" author="ddl-comtex.sql">
+    	<comment>Recreate foreign keys of table "compl" to make it cascade.</comment>
+        <dropForeignKey baseTableName="compl" constraintName="compl_2_inv"/>
+        <dropForeignKey baseTableName="compl" constraintName="compl_2_inv_belong"/>
+
+        <addForeignKeyConstraint constraintName="compl_2_inv"
+            baseTableName="compl" baseColumnNames="id_inv"
+            referencedTableName="inv" referencedColumnNames="id" onDelete="CASCADE" onUpdate="CASCADE"
+        />
+        <addForeignKeyConstraint constraintName="compl_2_inv_belong"
+            baseTableName="compl" baseColumnNames="id_inv_belong"
+            referencedTableName="inv" referencedColumnNames="id" onDelete="CASCADE" onUpdate="CASCADE"
+        />
+    </changeSet>
+
+
+</databaseChangeLog>

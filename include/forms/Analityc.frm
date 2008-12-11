@@ -188,7 +188,7 @@ Begin VB.Form Analityc
          _ExtentX        =   2138
          _ExtentY        =   508
          _Version        =   393216
-         Format          =   16449537
+         Format          =   16515073
          CurrentDate     =   39599
       End
       Begin MSComCtl2.DTPicker tbEndDate 
@@ -200,7 +200,7 @@ Begin VB.Form Analityc
          _ExtentX        =   2138
          _ExtentY        =   508
          _Version        =   393216
-         Format          =   16449537
+         Format          =   16515073
          CurrentDate     =   39599
       End
       Begin VB.Label Label5 
@@ -238,6 +238,14 @@ Begin VB.Form Analityc
       TabIndex        =   0
       Top             =   3120
       Width           =   4932
+      Begin VB.CheckBox ckKriteriumFirms 
+         Caption         =   "Выбор фирм(ы)"
+         Height          =   252
+         Left            =   2880
+         TabIndex        =   38
+         Top             =   2040
+         Width           =   1692
+      End
       Begin VB.CheckBox ckKriteriumNoOborud 
          Caption         =   "Без оборудования"
          Height          =   252
@@ -260,7 +268,7 @@ Begin VB.Form Analityc
          Left            =   120
          TabIndex        =   12
          Top             =   2040
-         Width           =   3252
+         Width           =   1692
       End
       Begin MSComctlLib.TreeView tvMat 
          Height          =   1332
@@ -449,6 +457,15 @@ Private Sub ckEndDate_Click()
 End Sub
 
 
+Private Sub ckKriteriumFirms_Click()
+    checkDirtyFilterCommads
+    If ckKriteriumMat.value = 1 Then
+'        tvMat.Enabled = True
+    Else
+'        tvMat.Enabled = False
+    End If
+End Sub
+
 Private Sub ckKriteriumMat_Click()
     checkDirtyFilterCommads
     If ckKriteriumMat.value = 1 Then
@@ -472,27 +489,29 @@ Private Sub ckKriteriumRegion_Click()
     checkDirtyFilterCommads
     If ckKriteriumRegion.value = 1 Then
         tvRegion.Enabled = True
+        ckKriteriumFirms.Enabled = True
     Else
         tvRegion.Enabled = False
+        ckKriteriumFirms.Enabled = False
     End If
 End Sub
 
 
 Private Sub ckKriteriumOborud_Click()
-Dim i As Integer
+Dim I As Integer
 
     checkDirtyFilterCommads
     If ckKriteriumOborud.value = 1 Then
         If ckKriteriumNoOborud.value = 1 Then
             ckKriteriumNoOborud.value = 0
         End If
-        For i = 1 To 3
-            cbOborud(i).Enabled = True
-        Next i
+        For I = 1 To 3
+            cbOborud(I).Enabled = True
+        Next I
     Else
-        For i = 1 To 3
-            cbOborud(i).Enabled = False
-        Next i
+        For I = 1 To 3
+            cbOborud(I).Enabled = False
+        Next I
     End If
 End Sub
 
@@ -552,23 +571,35 @@ End Sub
 
 
 Sub loadRegions()
-Dim key As String, pKey As String, k() As String, pK()  As String
+Dim Key As String, pKey As Variant, k() As String, pK()  As String
 
 
-    sql = "call wf_territory_catalog"
+    sql = "call wf_territory_catalog (1)"
     Set tbKlass = myOpenRecordSet("##loadRegions", sql, dbOpenForwardOnly)
     If tbKlass Is Nothing Then myBase.Close: End
     
     If Not tbKlass.BOF Then
         tvRegion.Nodes.Clear
         While Not tbKlass.EOF
-            key = "k" & tbKlass!RegionId
+            Key = "k" & tbKlass!regionId
             If Not IsNull(tbKlass!territoryId) Then
                 pKey = "k" & tbKlass!territoryId
-                Set Node = tvRegion.Nodes.Add(pKey, tvwChild, key, tbKlass!region)
             Else
-                Set Node = tvRegion.Nodes.Add(, , key, tbKlass!region)
+                pKey = Null
             End If
+            
+            If IsNull(pKey) Then
+                Set Node = tvRegion.Nodes.Add(, , Key, tbKlass!region)
+            Else
+                If Not existsInTreeview(tvRegion, Key) Then
+                    Set Node = tvRegion.Nodes.Add(pKey, tvwChild, Key, tbKlass!region)
+                End If
+            End If
+            
+            If Not IsNull(tbKlass!firmId) Then
+                Set Node = tvRegion.Nodes.Add(Key, tvwChild, "f" & tbKlass!firmId, tbKlass!firmName)
+            End If
+                
             
             tbKlass.MoveNext
         Wend
@@ -579,7 +610,7 @@ End Sub
 
 
 Sub loadKlass()
-Dim key As String, pKey As String, k() As String, pK()  As String
+Dim Key As String, pKey As String, k() As String, pK()  As String
     sql = "call wf_klass_catalog"
     Set tbKlass = myOpenRecordSet("##loadKlasss", sql, dbOpenForwardOnly)
     If tbKlass Is Nothing Then myBase.Close: End
@@ -589,12 +620,12 @@ Dim key As String, pKey As String, k() As String, pK()  As String
 '        Set Node = tvMat.Nodes.Add(, , "k0", "Все регионы")
 '        Node.Sorted = True
         While Not tbKlass.EOF
-            key = "k" & tbKlass!r_KlassId
+            Key = "k" & tbKlass!r_KlassId
             If Not IsNull(tbKlass!r_parentKlassId) And (tbKlass!r_parentKlassId <> 0) Then
                 pKey = "k" & tbKlass!r_parentKlassId
-                Set Node = tvMat.Nodes.Add(pKey, tvwChild, key, tbKlass!r_KlassName)
+                Set Node = tvMat.Nodes.Add(pKey, tvwChild, Key, tbKlass!r_KlassName)
             Else
-                Set Node = tvMat.Nodes.Add(, , key, tbKlass!r_KlassName)
+                Set Node = tvMat.Nodes.Add(, , Key, tbKlass!r_KlassName)
             End If
             
             tbKlass.MoveNext
@@ -605,35 +636,35 @@ Dim key As String, pKey As String, k() As String, pK()  As String
 End Sub
 
 
-Private Sub cleanTree(tView As TreeView)
+Private Sub cleanTree(ByRef tView As TreeView)
 Dim currentNode As Node
-Dim i As Integer, nCount As Integer
+Dim I As Integer, nCount As Integer
 Dim enabledFlag As Boolean
 
     enabledFlag = tView.Enabled
     tView.Enabled = True
     
     nCount = tView.Nodes.Count
-    For i = 1 To nCount
-        Set currentNode = tView.Nodes(i)
+    For I = 1 To nCount
+        Set currentNode = tView.Nodes(I)
         If currentNode.checked Then
             currentNode.checked = False
             currentNode.Expanded = False
         End If
-    Next i
+    Next I
 
     tView.Enabled = enabledFlag
 End Sub
 
 Private Sub cleanOborud()
 Dim currentOborud As CheckBox
-Dim i As Integer, nCount As Integer
+Dim I As Integer, nCount As Integer
 
     'nCount = UBound(cbOborud)
-    For i = 1 To 3
-        Set currentOborud = cbOborud(i)
+    For I = 1 To 3
+        Set currentOborud = cbOborud(I)
         currentOborud.value = 0
-    Next i
+    Next I
 End Sub
 
 Private Sub cleanFilterWindows()
@@ -876,12 +907,12 @@ Dim personal As Integer
 
     If hasOborud Then
         itemId = saveFilterItem(filterId, "oborudItems", ckKriteriumOborud.value)
-        Dim i As Integer
-        For i = 1 To 3
-            If cbOborud(i).value Then
-                saveFilterParam itemId, "oborudItemId", i
+        Dim I As Integer
+        For I = 1 To 3
+            If cbOborud(I).value Then
+                saveFilterParam itemId, "oborudItemId", I
             End If
-        Next i
+        Next I
     End If
     
     If ckKriteriumNoOborud.value = 1 Then
@@ -935,19 +966,19 @@ End Sub
 
 
 Private Sub initColumnTree(ByRef headerList() As columnDef)
-Dim i As Integer, anySaved As Boolean, aNode As Node
+Dim I As Integer, anySaved As Boolean, aNode As Node
 
 
     tvColumns.Nodes.Clear
     
-    For i = 0 To UBound(headerList)
-        If headerList(i).hidden <> 1 Then
-            Set aNode = tvColumns.Nodes.Add(, , "c" & headerList(i).columnId, headerList(i).nameRu)
-            If headerList(i).saved Then
+    For I = 0 To UBound(headerList)
+        If headerList(I).hidden <> 1 Then
+            Set aNode = tvColumns.Nodes.Add(, , "c" & headerList(I).columnId, headerList(I).nameRu)
+            If headerList(I).saved Then
                 aNode.checked = True
             End If
         End If
-    Next i
+    Next I
     
 End Sub
 
@@ -981,7 +1012,7 @@ End Sub
 
 
 Private Sub tvColumns_NodeCheck(ByVal Node As MSComctlLib.Node)
-    persistColumnSelect Node.checked, CInt(Mid(Node.key, 2)), managId _
+    persistColumnSelect Node.checked, CInt(Mid(Node.Key, 2)), managId _
         , cbGroupByRow.ItemData(cbGroupByRow.ListIndex) _
         , cbGroupByColumn.ItemData(cbGroupByColumn.ListIndex)
 
@@ -996,11 +1027,11 @@ End Sub
 
 
 Private Sub Form_Load()
-Dim i As Integer
+Dim I As Integer
 
-    For i = 1 To cbDateShift.ListCount - 1
-        cbDateShift.ItemData(i) = i
-    Next i
+    For I = 1 To cbDateShift.ListCount - 1
+        cbDateShift.ItemData(I) = I
+    Next I
     
     loadKlass
     loadRegions
@@ -1046,12 +1077,12 @@ Private Sub populateAxeList(ByRef table As Recordset, cb As ComboBox)
     End If
     
     cb.Clear
-    Dim i As Integer
-    i = 0
+    Dim I As Integer
+    I = 0
     While Not table.EOF
         cb.AddItem table!Name_ru
-        cb.ItemData(i) = table!id
-        i = i + 1
+        cb.ItemData(I) = table!id
+        I = I + 1
         table.MoveNext
     Wend
     table.Close
@@ -1096,45 +1127,45 @@ End Sub
 
 
 Private Function getOborudItems() As Boolean
-Dim i As Integer
+Dim I As Integer
 
-    For i = 1 To 3
-        If cbOborud(i).value = 1 Then
+    For I = 1 To 3
+        If cbOborud(I).value = 1 Then
             getOborudItems = True
             Exit Function
         End If
-    Next i
+    Next I
 
 End Function
 
 
 Private Function getCheckedInTree(tView As TreeView) As Boolean
 Dim currentNode As Node
-Dim i As Integer
+Dim I As Integer
 
     getCheckedInTree = False
-    For i = 1 To tView.Nodes.Count
-        Set currentNode = tView.Nodes(i)
+    For I = 1 To tView.Nodes.Count
+        Set currentNode = tView.Nodes(I)
         If currentNode.checked Then
             getCheckedInTree = True
             Exit Function
         End If
-    Next i
+    Next I
     
 End Function
 
 
 Private Sub saveParamsOfTree(tView As TreeView, itemId As Integer, paramName As String)
 Dim currentNode As Node
-Dim i As Integer, nCount As Integer
+Dim I As Integer, nCount As Integer
 
     nCount = tView.Nodes.Count
-    For i = 1 To nCount
-        Set currentNode = tView.Nodes(i)
+    For I = 1 To nCount
+        Set currentNode = tView.Nodes(I)
         If currentNode.checked Then
-            saveFilterParam itemId, paramName, CInt(Mid(currentNode.key, 2))
+            saveFilterParam itemId, paramName, CInt(Mid(currentNode.Key, 2))
         End If
-    Next i
+    Next I
     
 End Sub
 
@@ -1184,15 +1215,15 @@ End Sub
 
 Private Function setListIndexByItemDataValue(ByRef cb As ComboBox, ByVal itemDataValue As Integer) As Boolean
 
-Dim i As Integer
+Dim I As Integer
 
     setListIndexByItemDataValue = True
-    For i = 0 To cb.ListCount - 1
-        If cb.ItemData(i) = itemDataValue Then
-            cb.ListIndex = i
+    For I = 0 To cb.ListCount - 1
+        If cb.ItemData(I) = itemDataValue Then
+            cb.ListIndex = I
             Exit Function
         End If
-    Next i
+    Next I
     setListIndexByItemDataValue = False
 End Function
 
