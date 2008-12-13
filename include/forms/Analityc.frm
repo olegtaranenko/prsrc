@@ -490,7 +490,7 @@ Private Sub ckKriteriumRegion_Click()
     checkDirtyFilterCommads
     If ckKriteriumRegion.value = 1 Then
         tvRegion.Enabled = True
-        ckKriteriumFirms.Enabled = True
+        'ckKriteriumFirms.Enabled = True
     Else
         tvRegion.Enabled = False
         ckKriteriumFirms.Enabled = False
@@ -575,7 +575,7 @@ Sub loadRegions()
 Dim Key As String, pKey As Variant, k() As String, pK()  As String
 
 
-    sql = "call wf_territory_catalog (1)"
+    sql = "call wf_territory_catalog (0)"
     Set tbKlass = myOpenRecordSet("##loadRegions", sql, dbOpenForwardOnly)
     If tbKlass Is Nothing Then myBase.Close: End
     
@@ -597,9 +597,9 @@ Dim Key As String, pKey As Variant, k() As String, pK()  As String
                 End If
             End If
             
-            If Not IsNull(tbKlass!firmId) Then
-                Set Node = tvRegion.Nodes.Add(Key, tvwChild, "f" & tbKlass!firmId, tbKlass!FirmName)
-            End If
+            'If Not IsNull(tbKlass!firmId) Then
+            '    Set Node = tvRegion.Nodes.Add(Key, tvwChild, "f" & tbKlass!firmId, tbKlass!FirmName)
+            'End If
                 
             
             tbKlass.MoveNext
