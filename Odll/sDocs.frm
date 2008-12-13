@@ -552,7 +552,7 @@ cmBay.Enabled = True
 End Sub
 
 Function sqlDeficitToNNQQ(sklad As String, Optional reg As String = "") As Boolean
-Static I As Integer, s As Single
+Static I As Integer, s As Double
 
 sqlDeficitToNNQQ = False
     
@@ -595,7 +595,7 @@ End If
 End Function
 
 Private Sub cmClose_Click()
-Dim s  As Single, str  As String, I As Integer
+Dim s  As Double, str  As String, I As Integer
 
 If Not lockSklad Then Exit Sub
   
@@ -644,7 +644,7 @@ End Sub
 '$odbc15$
 Private Sub cmDel_Click()
 Dim str As String, isZakaz As Integer, count As Integer
-Dim s As Single, sId As Integer, dId As Integer, I  As Integer
+Dim s As Double, sId As Integer, dId As Integer, I  As Integer
 
 If MsgBox("Удалить накладную № '" & getStrDocExtNum(numDoc, numExt) & _
 "', Вы уверены?", vbYesNo Or vbDefaultButton2, "Подтвердите удаление") _
@@ -1104,8 +1104,8 @@ End Sub
 
 'Optional reg As String = ""
 Function loadDocNomenk() As Boolean
-Dim il As Long, str As String, str2 As String, q As Single, I As Integer
-Dim msgOst As String, r As Single, b As Single
+Dim il As Long, str As String, str2 As String, q As Double, I As Integer
+Dim msgOst As String, r As Double, b As Double
 
 loadDocNomenk = True ' не надо отката - пока
 msgOst = ""

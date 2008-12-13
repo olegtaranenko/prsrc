@@ -417,8 +417,8 @@ Const nkIntQuant = 10
 '$odbc15$
 Private Sub cmClose_Click()
 Dim I As Integer, j As Integer, NN2() As String, k As Integer
-Dim numExtO As Integer, id As Integer, l As Long, s As Single
-Dim mov As Single, moveNum As String, per As Single, str As String, str2 As String
+Dim numExtO As Integer, id As Integer, l As Long, s As Double
+Dim mov As Double, moveNum As String, per As Double, str As String, str2 As String
 
 If Not lockSklad Then Exit Sub
 
@@ -839,7 +839,7 @@ End Sub
 
 'ind=1 м.б. только при Regim = ""
 Sub loadToGrid(ind As Integer)
-Dim I As Integer, s As Single, s2 As Single, str As String, str2 As String
+Dim I As Integer, s As Double, s2 As Double, str As String, str2 As String
 
 
 ReDim NN(0): ReDim QQ(0): ReDim QQ2(0): QQ2(0) = 0: ReDim QQ3(0)
@@ -1019,14 +1019,14 @@ Regim = "" 'нужно для lbInside_LostFocus
 End Sub
 
 Private Sub Grid2_DblClick(Index As Integer)
-Dim str As String, per As Single, ed_Izmer As String
+Dim str As String, per As Double, ed_Izmer As String
 
 If Grid2(Index).CellBackColor = &H88FF88 Then '****************************
  
 If mousCol2 = nkIntQuant Then
     str = Grid2(Index).TextMatrix(mousRow2, nkQuant)
     If Not IsNumeric(str) Then GoTo AA
-    If CSng(str) <= 0 Then
+    If CDbl(str) <= 0 Then
 AA:     MsgBox "Сначала проставте значение в колонке 'кол-во'", , "Предупреждение"
         Exit Sub
     End If
@@ -1075,7 +1075,7 @@ End If '*************************************************************
 End Sub
 
 Private Sub Grid2_EnterCell(Index As Integer)
-Dim t As Single, s As Single
+Dim t As Double, s As Double
 If Index > 0 Then Exit Sub
 mousRow2 = Grid2(Index).row
 mousCol2 = Grid2(Index).col
@@ -1120,7 +1120,7 @@ If Grid4.MouseRow = 0 And Shift = 2 Then _
 End Sub
 
 Private Sub tbMobile2_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim delta As Single, quant As Single, s As Single, str As String
+Dim delta As Double, quant As Double, s As Double, str As String
 
 If KeyCode = vbKeyReturn Then
   
@@ -1140,7 +1140,7 @@ If KeyCode = vbKeyReturn Then
 Else 'nkIntQuant
     If Not isNumericTbox(tbMobile2, 0) Then Exit Sub
     quant = Round(tbMobile2.Text, 0)
-    If quant <> CSng(tbMobile2.Text) Then
+    If quant <> CDbl(tbMobile2.Text) Then
         MsgBox "Количество должно быть целым!", , "Предупреждение"
         Exit Sub
     End If

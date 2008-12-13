@@ -247,7 +247,7 @@ Private Const tbDescript = 5
 Private cFldNames(tbCena4 To tbDescript) As String
 
 Private usedNomnom() As String
-Private usedQty() As Single
+Private usedQty() As Double
 Private usedWhole() As Integer
 
 ' ћассив содержащий доступных значений количества нового издели€ в заказе
@@ -303,7 +303,7 @@ Dim I As Integer, ret As Boolean
 End Function
 
 
-Private Sub dbConvertSelected(newProductId As Integer, qty As Integer, Optional cenaEd As Single)
+Private Sub dbConvertSelected(newProductId As Integer, qty As Integer, Optional cenaEd As Double)
 Dim I As Integer
 
     ' —начала удал€ем предметы из состава заказа
@@ -340,8 +340,8 @@ End Sub
 Private Function dbAddIzdelie( _
     prSeriaId As Integer, prName As String, prDescript As String _
     , Optional prSortNom As String, Optional prWeb As Boolean _
-    , Optional prSize As String, Optional prTime As Single _
-    , Optional prCost As Single _
+    , Optional prSize As String, Optional prTime As Double _
+    , Optional prCost As Double _
 ) As Integer
 Dim fields As String, values As String
 Dim prId As Integer
@@ -430,7 +430,7 @@ Dim I As Integer, newProductId As Integer, qty As Single
         )
         
         For I = 1 To UBound(usedNomnom)
-            qty = usedQty(I) / CSng(tbQty.Text)
+            qty = usedQty(I) / CDbl(tbQty.Text)
             sql = "insert into sproducts( productid, nomnom, quantity)" _
                 & " values( " & newProductId & ", '" & usedNomnom(I) & "', " & qty _
                 & ")"
@@ -440,7 +440,7 @@ Dim I As Integer, newProductId As Integer, qty As Single
         sProducts.tbQuant.Text = Me.tbQty.Text
         gProductId = newProductId
         prExt = 0
-        dbConvertSelected newProductId, CInt(tbQty.Text), CSng(tbField(tbCena4).Text)
+        dbConvertSelected newProductId, CInt(tbQty.Text), CDbl(tbField(tbCena4).Text)
         
         wrkDefault.CommitTrans
         
@@ -530,7 +530,7 @@ End Function
 
 Private Sub putNomenkToGrid(Grd As MSFlexGrid, p_nomnom As String _
     , p_qty As Single, p_edIzm As String, p_Size As String, p_cod As String _
-    , p_perList As Single, p_NomName As String)
+    , p_perList As Double, p_NomName As String)
 Dim v_name As String
 Dim v_rowUsed As Long
 Dim v_qty As Single
@@ -553,7 +553,7 @@ Dim v_qty As Single
         appendQty p_qty, p_perList
     Else
         usedQty(v_rowUsed) = usedQty(v_rowUsed) + p_qty
-'        v_qty = CSng(Grd.TextMatrix(v_rowUsed, ofQty))
+'        v_qty = CDbl(Grd.TextMatrix(v_rowUsed, ofQty))
 '        Grd.TextMatrix(v_rowUsed, ofQty) = CStr(v_qty + p_qty)
     End If
     
@@ -582,7 +582,7 @@ Dim sz As Integer
             loadProduct _
                   gProductId _
                 , prExt _
-                , CSng(Grd.TextMatrix(selectedItems(I), prQuant))
+                , CDbl(Grd.TextMatrix(selectedItems(I), prQuant))
         Else
             loadNomenk _
                   Grd.TextMatrix(selectedItems(I), prId) _
@@ -670,7 +670,7 @@ Dim I As Integer
 
 End Sub
 
-Private Sub appendQty(p_qty As Single, p_perList As Single)
+Private Sub appendQty(p_qty As Single, p_perList As Double)
 
     ReDim Preserve usedQty(UBound(usedQty) + 1)
     usedQty(UBound(usedQty)) = p_qty
@@ -683,7 +683,7 @@ End Sub
 
 ' ѕроверка, €вл€етс€ od делителем qty
 Private Function tryOD(ByVal qty As Integer, od As Integer) As Boolean
-Dim unround As Single
+Dim unround As Double
 
     tryOD = False
     unround = qty / od

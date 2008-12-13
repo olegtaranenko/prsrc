@@ -560,7 +560,7 @@ Dim flDelRowInMobile As Boolean
 Dim minut As Integer
 Dim objExel As Excel.Application, exRow As Long
 Dim head1 As String, head2 As String, head3 As String, head4 As String
-Dim gain2 As Single, gain3 As Single, gain4 As Single
+Dim gain2 As Double, gain3 As Double, gain4 As Double
 
 
 
@@ -1602,7 +1602,7 @@ Dim tmpRow As Long, tmpCol As Long
 End Sub
 
 Function haveUslugi() As Boolean
-Dim s As Single
+Dim s As Double
 
 End Function
 Function stopOrderAtVenture() As Boolean
@@ -1734,7 +1734,7 @@ End Function
 
 '$odbc08!$
 Private Sub Grid_DblClick()
-Dim str As String, statId As Integer, s As Single
+Dim str As String, statId As Integer, s As Double
 Dim orderTimestamp As Date
 Dim lastManager As String
 Dim strDate As String
@@ -1778,7 +1778,7 @@ ElseIf mousCol = orNomZak Then
     End If
     str = Grid.TextMatrix(mousRow, orZakazano)
     If Not IsNumeric(str) Then GoTo AA
-    If CSng(str) > 0 Then
+    If CDbl(str) > 0 Then
         str = "(=" & str & ") "
     Else
 AA:     str = ""
@@ -1786,7 +1786,7 @@ AA:     str = ""
     
     tmpStr = Grid.TextMatrix(mousRow, orOtgrugeno)
     If Not IsNumeric(tmpStr) Then GoTo BB
-    If CSng(tmpStr) > 0 Then
+    If CDbl(tmpStr) > 0 Then
         tmpStr = "(=" & tmpStr & ") "
     Else
 BB:     tmpStr = ""
@@ -2858,7 +2858,7 @@ lbHide
 End Sub
 
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim str As String, DNM As String, s As Single
+Dim str As String, DNM As String, s As Double
 Dim id_jscet_split As Integer
 Dim id_jscet_merge As Integer
 Dim mFault As String
@@ -3302,8 +3302,8 @@ Dim I As Integer, txt As String
 End Function
 '$odbc08!$
 Function startParams(Optional idCeh As Integer = 0) As Boolean
-Dim I As Integer, str As String, j As Integer ', sumSroch As Single
-Dim item As ListItem, id As Integer, v As Variant, s As Single
+Dim I As Integer, str As String, j As Integer ', sumSroch As Double
+Dim item As ListItem, id As Integer, v As Variant, s As Double
 
 startParams = False
 
@@ -3588,7 +3588,7 @@ setVertBorders = Err
 
 End Function
 
-Function nomencDostupOstatki(nomer) As Single
+Function nomencDostupOstatki(nomer) As Double
 '$comtec$ «десь надо вычисл€ть ƒоступные(т.е. с учетом зарезервированного)
 '         остатки дл€ номенклатуры с уникальным Ќомером в nomer
 
@@ -3994,7 +3994,7 @@ AA:         Otgruz.closeZakaz = (Grid.TextMatrix(mousRow, orStatus) = "закрыт")
 End Sub
 '$odbc15$
 Function oldUslug() As Boolean
-Dim s As Single, o
+Dim s As Double, o
 
 oldUslug = False
 
@@ -4027,7 +4027,7 @@ tbProduct.Close
 End Function
 
 Function isNewEtap() As Variant
-Dim s As Single
+Dim s As Double
 
 #If onErrorOtlad Then
     On Error GoTo errMsg
@@ -4062,7 +4062,7 @@ sql = "SELECT Max([eQuant]-[prevQuant]) as max From xEtapByIzdelia " & _
 End Function
 
 Function havePredmetiNew() As Boolean
-Dim s As Single
+Dim s As Double
 
 havePredmetiNew = False
 sql = "SELECT quant From xPredmetyByIzdelia " & _

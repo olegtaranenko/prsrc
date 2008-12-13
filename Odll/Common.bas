@@ -41,7 +41,7 @@ Public manId() As Integer '$$7
 Public Manag() As String  '
 Public insideId() As String
 Public Const begCehProblemId = 10 ' начало цеховых проблем в справочнике
-Public neVipolnen As Single, neVipolnen_O As Single
+Public neVipolnen As Double, neVipolnen_O As Double
 Public maxDay As Integer ' число дней в реестре
 Public befDays As Integer ' число дней до даты реестра (когда сменилась дата)
 Public webSvodkaPath As String
@@ -85,12 +85,12 @@ Public endDay As Integer ' день последнего куска заказа
 Public begDayMO As Integer ' день первого куска ћќ заказа
 Public endDayMO As Integer ' день последнего куска ћќ заказа
 Public flEdit As String ' редактируетс€ ресурс
-Public Nstan As Single
-Public kpd As Single
-Public newRes As Single ' смена по умолчанию
-Public nr As Single ', dr As Single 'убываощие ном. и доп. ресурсы
+Public Nstan As Double
+Public kpd As Double
+Public newRes As Double ' смена по умолчанию
+Public nr As Double ', dr As Double 'убываощие ном. и доп. ресурсы
 Public isLive As Boolean ' флаг - заказ живой
-Public zagAll As Single, zagLive As Single
+Public zagAll As Double, zagLive As Double
 
 Public table As Recordset '
 Public myQuery As QueryDef
@@ -101,7 +101,7 @@ Public trigger As Boolean '
 Public tmpDate As Date    '
 Public tmpStr As String
 Public tmpVar As Variant
-Public tmpSng As Single
+Public tmpSng As Double
 Public day As Integer     '
 Public tiki As Integer    '
 Public flClickDouble As Boolean
@@ -131,8 +131,8 @@ Public orBillId As Integer
 Public orVocnameId As Integer
 Public orServername As Integer
 
-Public NN() As String, QQ() As Single ' откатываема€ номенклатура и кол-во
-Public QQ2() As Single, QQ3() As Single
+Public NN() As String, QQ() As Double ' откатываема€ номенклатура и кол-во
+Public QQ2() As Double, QQ3() As Double
 Public skladId As Integer
 
 Private Const dhcMissing = -2 'нужна дл€ quickSort
@@ -248,11 +248,11 @@ Public Const prNowSum = 11
 Public stDays() As Integer        ' включа€ дни пропуска (—б,¬с,праздники)
 Public stDay As Integer 'равен последнему stDays(—егодн€)
                             
-Public nomRes() As Single
-Public delta() As Single
-Public tmp() As Single
+Public nomRes() As Double
+Public delta() As Double
+Public tmp() As Double
 Public tmpL() As Long
-Public ost() As Single, befOst() As Single
+Public ost() As Double, befOst() As Double
 
 ' список выбранных позиций в таблице предметов к заказу
 ' (по CtrlLeftClick) в sProducts.Grid5
@@ -402,8 +402,8 @@ If newLen < maxLen Then Exit Sub
 ReDim Preserve Mass(newLen + 20)
 End Sub
 
-Sub delay(tau As Single)
-Dim s As Single
+Sub delay(tau As Double)
+Dim s As Double
     s = Timer
     While Timer - s < tau ' 1 сек
         DoEvents
@@ -578,7 +578,7 @@ gNzak = left$(str, I - 1)
 End Function
 '$odbc10$
 Function getResurs() As Integer
-Dim I As Integer, j As Integer, rMaxDay As Integer, s As Single
+Dim I As Integer, j As Integer, rMaxDay As Integer, s As Double
 
 Set tbSystem = myOpenRecordSet("##93", "System", dbOpenForwardOnly)
 If tbSystem Is Nothing Then myBase.Close: End
@@ -823,7 +823,7 @@ Dim I As Integer
 End Sub
 
 Function LoadNumeric(Grid As MSFlexGrid, row As Long, col As Integer, _
-        val As Variant, Optional myErr As String = "") As Single
+        val As Variant, Optional myErr As String = "") As Double
  If IsNull(val) Then
     Grid.TextMatrix(row, col) = ""
     LoadNumeric = 0 ' дл€ log файла
@@ -892,7 +892,7 @@ End Sub
 
 '$odbc10$
 Sub Main()
-Dim I As Integer, s As Single, str As String, str1 As String, str2 As String
+Dim I As Integer, s As Double, str As String, str1 As String, str2 As String
 Dim isXP As Boolean
 If App.PrevInstance = True Then
     MsgBox "ѕрограмма уже запущена", , "Error"
@@ -1164,7 +1164,7 @@ EN1:
 End Function
 '$NOodbc$
 Sub checkNextYear()
-Dim I As Integer, s As Single
+Dim I As Integer, s As Double
 
 I = Format(Now, "yyyy")
 If I <= lastYear Then Exit Sub
@@ -1299,7 +1299,7 @@ End Function
 
 '$odbc10$
 Sub nextDay()  'возможен прыжок на неск дней
-Dim I As Integer, str As String, str1 As String, j As Integer, s As Single
+Dim I As Integer, str As String, str1 As String, j As Integer, s As Double
 Dim ch As String
 'MsgBox "переход на новую дату"
 
@@ -1504,8 +1504,8 @@ End Sub
 
 '$odbc10$
 Function replaceResurs(id As Integer) As Boolean
-Dim oldRes As Single, s As Single, n As Single, I As Integer, j As Integer
-Dim newRes As Single
+Dim oldRes As Double, s As Double, n As Double, I As Integer, j As Integer
+Dim newRes As Double
 
 replaceResurs = False
         
@@ -1618,7 +1618,7 @@ Grid.MousePointer = flexDefault
 End Sub
 
 Function StatParamsLoad(row As Long)
-Dim s As Single, log As String, str As String
+Dim s As Double, log As String, str As String
 
 
  log = Format(Now(), "dd.mm.yy hh:nn") & vbTab & Orders.cbM.Text & " " & gNzak ' именно vbTab
@@ -1742,7 +1742,7 @@ Sub statistic(Optional year As String = "")
 Dim nRow As Long, nCol As Long, str As String, I As Integer, j As Integer
 Dim iMonth As Integer, iYear As Integer, iCount As Integer, strWhere As String
 Dim nMonth As Integer, nYear As Integer, mCount As Integer, lastCol As Integer
-Dim wtSum As Single, paidSum As Single, orderSum As Single, visits As Integer, visitSum As Integer
+Dim wtSum As Double, paidSum As Double, orderSum As Double, visits As Integer, visitSum As Integer
 Dim year01 As Integer, year02 As Integer, year03 As Integer, year04 As Integer
 Dim errCurYear As Integer, errBefYear As Integer, whereByTemaAndType As String
 
@@ -2227,7 +2227,7 @@ End Sub
 
 Function beNaklads(Optional reg As String = "") As Boolean
 beNaklads = True
-Dim s As Single
+Dim s As Double
 'отпущено
 sql = "SELECT Sum(sDMC.quant) AS Sum_quant From sDMC " & _
 "WHERE (((sDMC.numExt)< 254) AND ((sDMC.numDoc)=" & numDoc & "));"
@@ -2324,7 +2324,7 @@ End Function
 'reg = "prev" - проверка, что списано ровно по пред.этапу, не больше
 'иначе - проверка, что списано по этапу, не менее
 Function predmetiIsClose(Optional reg As String = "") As Boolean
-Dim I As Integer, s As Single
+Dim I As Integer, s As Double
 
 #If onErrorOtlad Then
     On Error GoTo errMsg
@@ -2354,8 +2354,8 @@ predmetiIsClose = True
 End Function
 
 
-Function PrihodRashod(reg As String, skladId As Integer) As Single
-Dim qWhere As String, s As Single
+Function PrihodRashod(reg As String, skladId As Integer) As Double
+Dim qWhere As String, s As Double
 
 PrihodRashod = 0
 
@@ -2384,7 +2384,7 @@ byErrSqlGetValues "##157", sql, PrihodRashod
 
 End Function
 '$odbc15$
-Function ostatCorr(delta As Single) As Boolean
+Function ostatCorr(delta As Double) As Boolean
 Dim sId As Integer, dId As Integer
 
 ostatCorr = False

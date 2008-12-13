@@ -394,7 +394,7 @@ Dim oldHeight As Integer, oldWidth As Integer
 Dim ZbDay As Integer, ZeDay As Integer, ObDay As Integer, OeDay As Integer
 
 Dim FormIsActiv As Boolean
-Dim perekr As Single  'перекрываема€ часть MO
+Dim perekr As Double  'перекрываема€ часть MO
 Dim parts As String
 Dim be_cmRepit As Boolean
 Dim tmpMaxDay As Integer
@@ -552,7 +552,7 @@ End Function
 'reg = "fromCehZagruz"
 'reg = "setka" по F1,F2 - т.е. первый раз
 Sub newZagruz(Optional reg As String = "")
-Dim s As Single, nevip As Single, I As Integer
+Dim s As Double, nevip As Double, I As Integer
 Dim bDay As Integer, eDay As Integer, stat As String
 
 'isMzagruz = (frm.name = "Zakaz")
@@ -580,7 +580,7 @@ End If
 
 
 ReDim ost(maxDay): ReDim befOst(maxDay)
-Dim firstRes As Single
+Dim firstRes As Double
 'firstRes = Round(nr * Nstan * kpd, 1)  '23.11.04
 firstRes = nr * Nstan * kpd             '
 ost(1) = firstRes
@@ -780,7 +780,7 @@ Sub dayCorrect(bDay As Integer, eDay As Integer, Optional urgen As String = "")
     If bDay > eDay Then bDay = eDay
 End Sub
 
-Sub ukladka(ost() As Single, bDay As Integer, eDay As Integer, ByVal nevip As Single)
+Sub ukladka(ost() As Double, bDay As Integer, eDay As Integer, ByVal nevip As Double)
 Dim I As Integer, stp As Integer
 
 stp = 1
@@ -978,7 +978,7 @@ End If
 End Sub
 '$odbc08$
 Private Sub cmAdd_Click()
-Dim I As Integer, str As String, item As ListItem, s As Single, t As Single
+Dim I As Integer, str As String, item As ListItem, s As Double, t As Double
 Dim id As Integer, VrVip As String, VrVipO As String, editWorkTime As Boolean
 Dim workTime As String
 
@@ -1001,7 +1001,7 @@ AA: If getSystemField("resursLock") = Orders.cbM.Text Then unLockBase '≈сли имен
 End If
 id = statId(Zakaz.cbStatus.ListIndex)
 
-Dim workTimeOld As Single, statIdOld As Integer
+Dim workTimeOld As Double, statIdOld As Integer
 workTimeOld = 0
 If Not IsNull(tbOrders!workTime) Then workTimeOld = tbOrders!workTime
 statIdOld = tbOrders!StatusId
@@ -1717,13 +1717,13 @@ tbReadyDate.SelLength = 2
 End Sub
 
 Private Sub tbReadyDate_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim s As Single, I As Integer
+Dim s As Double, I As Integer
 If KeyCode = vbKeyReturn Then
 
 If tbDateRS.Enabled Then
   If isDateTbox(tbReadyDate, "fri") Then
-    s = Round(CSng(tbWorkTime.Text), 1)
-    I = -(Int((CSng(s) - 0.05) / 3) + 1 + 2) ' + 2 - дата выд от посл. куска
+    s = Round(CDbl(tbWorkTime.Text), 1)
+    I = -(Int((CDbl(s) - 0.05) / 3) + 1 + 2) ' + 2 - дата выд от посл. куска
     getWorkDay I, tbReadyDate.Text ' дает tmpDate
     If tmpDate < curDate Then tmpDate = curDate
     tbDateRS.Text = Format(tmpDate, "dd.mm.yy")
@@ -1746,15 +1746,15 @@ End If
 End Sub
 
 Private Sub tbWorkTime_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim s As Single, I As Integer
+Dim s As Double, I As Integer
 
 If KeyCode = vbKeyReturn Then
 
   If isNumericTbox(tbWorkTime, 0, 2000) Then
      If cbStatus.Text = "в работе" Then
-        s = Round(CSng(tbWorkTime.Text), 1)
+        s = Round(CDbl(tbWorkTime.Text), 1)
         tbWorkTime.Text = s
-        I = Int((CSng(s) - 0.05) / 3)
+        I = Int((CDbl(s) - 0.05) / 3)
         getWorkDay 3 + I ' дает tmpDate
         tbReadyDate.Text = Format(tmpDate, "dd.mm.yy")
      Else

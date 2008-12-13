@@ -110,11 +110,11 @@ Option Explicit
 Public Regim As String
 'Public Regim As String
 Dim oldHeight As Integer, oldWidth As Integer ' нач размер формы
-Dim zakazano As Single, Oplacheno As Single, Otgrugeno As Single
+Dim zakazano As Double, Oplacheno As Double, Otgrugeno As Double
 Public nCols As Integer ' общее кол-во колонок
 Public mousRow As Long
 Public mousCol As Long
-Dim workSum As Single, paidSum As Single, quantity As Long
+Dim workSum As Double, paidSum As Double, quantity As Long
 'константы для firmOrders
 Const rpNomZak = 1
 Const rpM = 2
@@ -201,8 +201,8 @@ End Sub
 'str As String,
 Sub virabotka(Optional direct As String = "")
 Static prevDay As String, nextDay As String, str As String
-Dim curDay As String, resurs As Single, live As Single, sum As Single
-Dim kpd_ As Single, res As Single, I As Integer
+Dim curDay As String, resurs As Double, live As Double, sum As Double
+Dim kpd_ As Double, res As Double, I As Integer
 Const crNomZak = 1
 Const crM = 2
 Const crStatus = 3
@@ -712,7 +712,7 @@ Me.Width = delta + 700
 End Sub
 
 Function numericToReport(row As Long, col As Integer, value As Variant) _
-As Single
+As Double
     If Not IsNumeric(value) Then
         numericToReport = 0
     Else
@@ -772,7 +772,7 @@ End Sub
 #If Not COMTEC = 1 Then '----------------------------------------------------
 
 Sub whoRezerved()
-Dim v, s As Single, ed2 As String, per As Single, sum As Single
+Dim v, s As Double, ed2 As String, per As Double, sum As Double
 sql = "SELECT  ed_Izmer2, perList From sGuideNomenk WHERE (((nomNom)='" & gNomNom & "'));"
 'MsgBox sql
 If Not byErrSqlGetValues("##349", sql, ed2, per) Then Exit Sub
@@ -909,8 +909,8 @@ Me.MousePointer = flexDefault
 
 End Sub
 
-Function getOrdered(numZak As String) As Single
-Dim s As Single
+Function getOrdered(numZak As String) As Double
+Dim s As Double
 
 getOrdered = -1
 

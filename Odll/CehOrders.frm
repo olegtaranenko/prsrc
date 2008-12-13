@@ -180,7 +180,7 @@ Attribute VB_Exposed = False
 Option Explicit
 
 Dim cehRows As Long, cehRowsOld As Long
-Dim sum As Single
+Dim sum As Double
 Dim marker As String ' символ в 0 колонке определяет тип lb, выз-го по muose
 Dim oldHeight As Integer, oldWidth As Integer ' нач размер формы
 Dim colWdth(20) As Integer
@@ -916,7 +916,7 @@ End Sub
 '$odbc14$
 'Для образца, кот. Утвержден возвращает Null
 Function makeProcReady(stat As String, Optional obraz As String = "") As Variant
-Dim s As Single, t As Single, n As Single, virabotka As Single, str As String
+Dim s As Double, t As Double, n As Double, virabotka As Double, str As String
 Dim statO As String
 
 makeProcReady = False

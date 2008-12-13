@@ -1,19 +1,19 @@
 VERSION 5.00
-Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "mscomctl.ocx"
+Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCTL.OCX"
 Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form sProducts 
    BackColor       =   &H8000000A&
    BorderStyle     =   1  'Fixed Single
    Caption         =   "Формирование накладной"
-   ClientHeight    =   6390
-   ClientLeft      =   45
-   ClientTop       =   1725
+   ClientHeight    =   6384
+   ClientLeft      =   48
+   ClientTop       =   1728
    ClientWidth     =   11880
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    LockControls    =   -1  'True
    MinButton       =   0   'False
-   ScaleHeight     =   6390
+   ScaleHeight     =   6384
    ScaleWidth      =   11880
    StartUpPosition =   1  'CenterOwner
    Begin VB.ComboBox cbInside 
@@ -81,8 +81,8 @@ Begin VB.Form sProducts
          Top             =   300
          Visible         =   0   'False
          Width           =   7215
-         _ExtentX        =   12726
-         _ExtentY        =   2566
+         _ExtentX        =   12721
+         _ExtentY        =   2561
          _Version        =   393216
          AllowBigSelection=   0   'False
          AllowUserResizing=   1
@@ -93,7 +93,7 @@ Begin VB.Form sProducts
          Caption         =   "laGrid4"
          BeginProperty Font 
             Name            =   "MS Sans Serif"
-            Size            =   8.25
+            Size            =   7.8
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -142,8 +142,8 @@ Begin VB.Form sProducts
       Top             =   3000
       Visible         =   0   'False
       Width           =   4695
-      _ExtentX        =   8281
-      _ExtentY        =   5001
+      _ExtentX        =   8276
+      _ExtentY        =   4995
       _Version        =   393216
       AllowBigSelection=   0   'False
       AllowUserResizing=   1
@@ -155,8 +155,8 @@ Begin VB.Form sProducts
       Top             =   300
       Visible         =   0   'False
       Width           =   4695
-      _ExtentX        =   8281
-      _ExtentY        =   4366
+      _ExtentX        =   8276
+      _ExtentY        =   4360
       _Version        =   393216
       AllowBigSelection=   0   'False
       AllowUserResizing=   1
@@ -217,7 +217,7 @@ Begin VB.Form sProducts
       TabIndex        =   22
       Top             =   840
       Width           =   2175
-      _ExtentX        =   3836
+      _ExtentX        =   3831
       _ExtentY        =   8784
       _Version        =   393217
       HideSelection   =   0   'False
@@ -233,8 +233,8 @@ Begin VB.Form sProducts
       TabIndex        =   24
       Top             =   2940
       Width           =   4635
-      _ExtentX        =   8176
-      _ExtentY        =   5106
+      _ExtentX        =   8170
+      _ExtentY        =   5101
       _Version        =   393216
       AllowBigSelection=   0   'False
       HighLight       =   0
@@ -246,8 +246,8 @@ Begin VB.Form sProducts
       TabIndex        =   20
       Top             =   300
       Width           =   4635
-      _ExtentX        =   8176
-      _ExtentY        =   4260
+      _ExtentX        =   8170
+      _ExtentY        =   4255
       _Version        =   393216
       AllowBigSelection=   0   'False
       MergeCells      =   2
@@ -343,8 +343,8 @@ Public mousCol2 As Long
 Public mousRow2 As Long
 Public mousCol3 As Long
 Public mousRow3 As Long
-Public zakazano As Single
-Public FO As Single ' ФО
+Public zakazano As Double
+Public FO As Double ' ФО
 
 Private selectNomenkFlag As Boolean
 Private isCtrlDown As Boolean
@@ -362,7 +362,7 @@ Public mousRow5 As Long
 Dim quantity  As Long, quantity2 As Long, quantity3 As Long
 Public quantity5 As Long
 Dim oldHeight As Integer, oldWidth As Integer ' нач размер формы
-Dim tvVes As Single, gridVes As Single, grid2Ves As Single 'веса горизонт. размеров
+Dim tvVes As Double, gridVes As Double, grid2Ves As Double 'веса горизонт. размеров
 
 Dim tbKlass As Recordset
 Dim typeId As Integer
@@ -430,7 +430,7 @@ End Sub
 
 Private Sub cmSel_Click() '<Добавить>
 Dim befColor As Long, il As Long, nl As Long, n As Integer, str As String
-Dim per As Single
+Dim per As Double
 
 sql = "SELECT perList From sGuideNomenk " & _
 "WHERE (((nomNom)='" & gNomNom & "'));"
@@ -514,7 +514,7 @@ Dim I As Integer
 End Sub
 
 Private Sub Form_Load()
-Dim str As String, I As Integer, delta As Single
+Dim str As String, I As Integer, delta As Double
 ReDim selectedItems(0)
 
 If Regim = "fromDocs" And sDocs.Regim = "fromCeh" And skladId = -1002 Then _
@@ -729,7 +729,7 @@ End Sub
 
 
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer, hh As Single, ww As Single
+Dim h As Integer, w As Integer, hh As Double, ww As Double
 
 If Not isLoad Then Exit Sub
 If Me.WindowState = vbMinimized Then Exit Sub
@@ -806,7 +806,7 @@ End If
 End Sub
 
 Sub dostupOstatkiToGrid(Optional reg As String)
-Dim s As Single, sum As Single, rr As Long, il As Long
+Dim s As Double, sum As Double, rr As Long, il As Long
 
 Me.MousePointer = flexHourglass
 If numExt = 254 Or (Regim = "fromDocs" And sDocs.Regim = "fromCeh") Then
@@ -846,8 +846,8 @@ gridFrame.ZOrder
 End Sub
 'ед.измер зависит от складов
 'заголововок Grid4 формируется в dostupOstatkiToGrid
-Public Function nomencOstatkiToGrid(row As Long) As Single
-Dim s As Single, str As String, str2 As String, str3 As String, z As Single
+Public Function nomencOstatkiToGrid(row As Long) As Double
+Dim s As Double, str As String, str2 As String, str3 As String, z As Double
 
 'Ф.остатки
 sql = "SELECT  nomName, Ed_Izmer, Ed_Izmer2, perList From sGuideNomenk " & _
@@ -923,7 +923,7 @@ End If
 End Sub
 
 Private Sub Grid_EnterCell()
-Dim f As String, d As Single
+Dim f As String, d As Double
 
 If quantity = 0 Or Grid.col = nkQuant Then Exit Sub
 mousRow = Grid.row
@@ -1191,7 +1191,7 @@ Static prevRow As Long, prevCol As Long
     
 End Sub
 '$odbc14$
-Sub productNomenkToGrid2(quant As Single)
+Sub productNomenkToGrid2(quant As Double)
 Dim il As Long, str As String, str2 As String, str3 As String, str4 As String
 
 If quantity5 = 0 Then Exit Sub
@@ -1441,7 +1441,7 @@ Private Sub Grid5_MouseUp(Button As Integer, Shift As Integer, x As Single, y As
 
 End Sub
 
-Sub nomenkToNNQQ(pQuant As Single, eQuant As Single, prQuant As Single)
+Sub nomenkToNNQQ(pQuant As Double, eQuant As Double, prQuant As Double)
 Dim j As Integer, leng As Integer
 
 leng = UBound(NN)
@@ -1518,8 +1518,8 @@ zakazNomenkToNNQQ = True
 End Function
 
 'перед исп-ем надо ReDim NN(0): ReDim QQ(0): ReDim QQ2(0) : ReDim QQ3(0):QQ2(0)=0 - не б.этапа
-Function productNomenkToNNQQ(pQuant As Single, eQuant As Single, _
-                                               prQuant As Single) As Boolean
+Function productNomenkToNNQQ(pQuant As Double, eQuant As Double, _
+                                               prQuant As Double) As Boolean
 Dim I As Integer, gr() As String
 
 productNomenkToNNQQ = False
@@ -1564,7 +1564,7 @@ End Function
 
 '$odbc15$
 Public Sub mnDel_Click()
-Dim pQuant As Single, I As Integer, str  As String, str2 As String
+Dim pQuant As Double, I As Integer, str  As String, str2 As String
 Dim comma As String
 Dim hasEtap As Boolean
 Dim gIndex As Integer
@@ -1585,7 +1585,7 @@ If hasSelection(Grid5) Then
         comma = ", "
         str = Grid5.TextMatrix(CInt(selectedItems(I)), prEQuant)
         If IsNumeric(str) Then
-            If CSng(str) > 0 Then _
+            If CDbl(str) > 0 Then _
                 hasEtap = True
         End If
     Next I
@@ -1640,7 +1640,7 @@ End Sub
 
 Private Sub deleteSelected()
 Dim I As Integer, j As Integer
-Dim pQuant As Single
+Dim pQuant As Double
 
     For j = 1 To UBound(selectedItems)
         mousRow5 = CInt(selectedItems(j))
@@ -1706,7 +1706,7 @@ End Sub
 
 '$odbc15$
 Private Sub mnDel2_Click()
-Dim s As Single, str As String
+Dim s As Double, str As String
  
 If Not (Regim = "fromDocs" And sDocs.Regim = "fromCeh") Then _
     If beNaklads() Then Exit Sub
@@ -1870,8 +1870,8 @@ End If
 
 End Sub
 '$odbc15$
-Function nomenkToDMC(delta As Single, Optional noLock As String = "") As Boolean
-Dim s As Single, I As Integer
+Function nomenkToDMC(delta As Double, Optional noLock As String = "") As Boolean
+Dim s As Double, I As Integer
 
 nomenkToDMC = False
 
@@ -1918,7 +1918,7 @@ If noLock = "" Then lockSklad "un"
 End Function
 
 Sub nomenkToPredmeti()
-Dim delta As Single, s As Single, quant As Single
+Dim delta As Double, s As Double, quant As Double
 
   If Not lockSklad Then Exit Sub
   
@@ -1977,7 +1977,7 @@ End Sub
 
 '$odbc15$
 Public Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim c As Single, s As Single, str As String
+Dim c As Double, s As Double, str As String
 
 If KeyCode = vbKeyReturn Then
     getIdFromGrid5Row Me
@@ -2058,11 +2058,11 @@ AA:         tbProduct!eQuant = s
     
         If mousCol5 = prSumm Then
             s = tbMobile.Text
-            c = s / CSng(Grid5.TextMatrix(mousRow5, prQuant)) 'не округлять
+            c = s / CDbl(Grid5.TextMatrix(mousRow5, prQuant)) 'не округлять
             GoTo BB
         Else
             c = tbMobile.Text
-            s = c * CSng(Grid5.TextMatrix(mousRow5, prQuant))
+            s = c * CDbl(Grid5.TextMatrix(mousRow5, prQuant))
 BB:         If str = "изделие" Then
                 sql = "UPDATE xPredmetyByIzdelia SET cenaEd = " & c & _
                 "  WHERE (((numOrder)=" & gNzak & ") AND ((prId)=" & gProductId & _
@@ -2102,8 +2102,8 @@ End Sub
 
 'ед.измер delta и Дефицита зависит от наличия в накладной целых складов
 'т.о. значение для delta может напрямую браться из tbQuant
-Function deficitAndNoIgnore(delta As Single) As Boolean
-Dim s As Single, il As Long
+Function deficitAndNoIgnore(delta As Double) As Boolean
+Dim s As Double, il As Long
 
 
 deficitAndNoIgnore = False
@@ -2123,7 +2123,7 @@ End Function
 
 '$odbc15$
 Private Sub tbQuant_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim rr As Long, il As Long, pQuant As Single, s As Single, str As String
+Dim rr As Long, il As Long, pQuant As Double, s As Double, str As String
 Dim I As Integer, NN2() As String
 
 If KeyCode = vbKeyReturn Then
@@ -2180,7 +2180,7 @@ Else ' здесь только предметы заказы, поэтому всегда в одной(мелкой) ed.izmer
     If Grid.CellFontBold Then
       il = il + 1
       gNomNom = Grid.TextMatrix(rr, nkNomer)
-      s = CSng(Grid.TextMatrix(rr, nkQuant)) * pQuant
+      s = CDbl(Grid.TextMatrix(rr, nkQuant)) * pQuant
       If deficitAndNoIgnore(s) Then GoTo ER2
     End If
   Next rr
@@ -2204,7 +2204,7 @@ Else ' здесь только предметы заказы, поэтому всегда в одной(мелкой) ed.izmer
 '      If Grid.CellBackColor <> Grid.BackColor Then
         I = I + 1: ReDim Preserve NN(I): NN(I) = gNomNom 'вариантная ном-ра
       End If
-      s = CSng(Grid.TextMatrix(rr, nkQuant)) * pQuant
+      s = CDbl(Grid.TextMatrix(rr, nkQuant)) * pQuant
       If numExt = 254 Then ' номенклатура  накладной
         If Not nomenkToDMC(s, "noLock") Then GoTo ER0 '
       Else '   резервирование заказа либо предметов накладной из для цеха(межскладские здесь невозможны)
@@ -2254,8 +2254,8 @@ End If
 End Sub
 '$odbc15$
 'при delta < 0 - возм. удаление
-Function nomenkToDMCrez(ByVal delta As Single, Optional mov As String = "") As Boolean
-Dim s As Single, I As Integer
+Function nomenkToDMCrez(ByVal delta As Double, Optional mov As String = "") As Boolean
+Dim s As Double, I As Integer
 
 nomenkToDMCrez = False
 '    If mov = "mov" Then ' выписанные межскладские не резервируем
@@ -2320,7 +2320,7 @@ End Function
 'lastExt=0 - если у изделия вообще нет вариантов поставки(или оно не вариантно)
 'если вариант поставки, заданный в NN() есть, то дает номер его расширения
 'иначе возвращает отриц.  макс.номер варианта поставки
-Function addToPredmetiTable(pQuant As Single, lastExt As Integer) As Boolean
+Function addToPredmetiTable(pQuant As Double, lastExt As Integer) As Boolean
 Dim I As Integer
 
 addToPredmetiTable = False
@@ -2391,7 +2391,7 @@ End Function
 
 'обновляет поле ordered в Orders
 Function saveOrdered(Optional update As Boolean = True) As Variant
-Dim s As Single, s1 As Single
+Dim s As Double, s1 As Double
 
 saveOrdered = Null
 sql = "SELECT Sum([quant]*[cenaEd]) From xPredmetyByIzdelia GROUP BY numOrder " & _
@@ -2518,7 +2518,7 @@ ERR2: bilo = True: Resume NXT
 End Sub
 
 Sub loadProductNomenk(ByVal v_productId As Integer)
-Dim s As Single, grBef As String
+Dim s As Double, grBef As String
 
 Me.MousePointer = flexHourglass
 
@@ -2589,8 +2589,8 @@ Me.MousePointer = flexDefault
 End Sub
 
 Sub loadKlassNomenk()
-Dim il As Long, s As Single, strWhere As String
-Dim beg As Single, prih As Single, rash As Single, oldNow As Single
+Dim il As Long, s As Double, strWhere As String
+Dim beg As Double, prih As Double, rash As Double, oldNow As Double
 
 
 

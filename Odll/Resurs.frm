@@ -91,7 +91,7 @@ cmChan_Click
 End Sub
 
 Private Sub cmChan_Click()
-Dim s As Single, i As Integer, j As Integer
+Dim s As Double, i As Integer, j As Integer
 
     s = Zagruz.lv.SelectedItem.SubItems(zgNomRes)
     If isNumericTbox(tb, 0, 22 - s) Then
@@ -132,7 +132,7 @@ For i = line To maxDay
     cb.AddItem str
 Next
 
-If CSng(Zagruz.lv.ListItems(key).SubItems(zgDopRes)) = 0 Then
+If CDbl(Zagruz.lv.ListItems(key).SubItems(zgDopRes)) = 0 Then
     cmChan.Enabled = False
     cmDel.Enabled = False
     cb.ListIndex = 0

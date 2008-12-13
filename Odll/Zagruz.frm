@@ -320,7 +320,7 @@ isZagruz = True
 End Sub
 
 Sub ZagruzLoad() ' бывшая begZagruz
- Dim I As Integer, key As String, tekDate As String, s As Single
+ Dim I As Integer, key As String, tekDate As String, s As Double
 
 maxDay = 0
 zagruzFromCeh ' в delta
@@ -496,7 +496,7 @@ End Sub
 
 '$odbc14$
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim s As Single, dayMax As Integer, str As String, I As Integer
+Dim s As Double, dayMax As Integer, str As String, I As Integer
 
 If KeyCode = vbKeyReturn Then
   If isNumericTbox(tbMobile, 0, 22) Then

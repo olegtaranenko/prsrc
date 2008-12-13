@@ -198,7 +198,7 @@ noClick = False
 End Sub
 
 Sub loadUslug()
-Dim s As Single
+Dim s As Double
 
 sql = "SELECT ordered From Orders WHERE (((Orders.numOrder)=" & gNzak & "));"
 If byErrSqlGetValues("##227", sql, s) Then _
@@ -267,7 +267,7 @@ outDate(outLen) = Now()
 End Function
 
 Sub getOtgrugeno(row As Long, Optional byNomenk As String = "")
-Dim s As Single, str  As String
+Dim s As Double, str  As String
 strWhere = "'" & Format(lbDate.Text, "yyyy-mm-dd hh:nn:ss") & "'"
 
 'отпущено до даты
@@ -323,7 +323,7 @@ End Sub
 
 'обновляет поле shipped в Orders
 Function saveShipped() As Variant
-Dim s As Single, s1 As Single
+Dim s As Double, s1 As Double
 
 saveShipped = Null
 If Regim = "" Then
@@ -437,7 +437,7 @@ If Grid5.MouseRow = 0 And Shift = 2 Then _
 End Sub
 
 Sub OutNowSummToGrid5()
-Dim il As Long, sum As Single, sum2 As Single
+Dim il As Long, sum As Double, sum2 As Double
 sum = 0: sum2 = 0
 For il = 2 To Grid5.Rows - 2
     sum = sum + Grid5.TextMatrix(il, prOutSum)
@@ -476,7 +476,7 @@ lbHide5
 End Sub
 '$odbc15$
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim pQuant As Single, s As Single, maxQ As Single
+Dim pQuant As Double, s As Double, maxQ As Double
 
 If KeyCode = vbKeyReturn Then
   If Regim = "uslug" Then
