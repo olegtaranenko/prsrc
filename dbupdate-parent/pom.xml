@@ -64,6 +64,7 @@
 						<password>${syb.password}</password>
 						<logLevel>FINE</logLevel>
 						<contexts>${changelog.context}</contexts>
+						<defaultSchemaName>dba</defaultSchemaName>
 					</configuration>
 					<executions>
 						<execution>

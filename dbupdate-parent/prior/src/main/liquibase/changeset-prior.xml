@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="CP1251"?>
  
 <databaseChangeLog
-  xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.8"
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.8
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd"
   logicalFilePath="changeset-prior.xml"
 >
  
-	<include file="../../../../src/main/liquibase/changeset-common.xml" isRelativePath="true"/>
+	<include file="../../../../src/main/liquibase/changeset-common.xml" relative="true"/>
 <!--
 	<changeSet id="ddl" author="mantis-7" context="does-not-work">
 		<comment>Prepare for repare table xPredmetyByNomenkOut from the backup</comment>
