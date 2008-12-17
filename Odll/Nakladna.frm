@@ -943,7 +943,7 @@ For I = 1 To UBound(NN)
               "WHERE (((numDoc)=" & gNzak & ") AND ((nomNom)='" & NN(I) & "'));"
               byErrSqlGetValues "##362", sql, s, s2
               If s > 0 Then _
-                Grid2(ind).TextMatrix(quantity2, nkQuant) = s
+                Grid2(ind).TextMatrix(quantity2, nkQuant) = Round(s, 2)
               If s2 > 0 Then _
                 Grid2(ind).TextMatrix(quantity2, nkIntQuant) = s2
             End If

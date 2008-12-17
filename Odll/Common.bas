@@ -830,7 +830,11 @@ Function LoadNumeric(Grid As MSFlexGrid, row As Long, col As Integer, _
     If myErr <> "" Then msgOfZakaz (myErr)
  Else
     LoadNumeric = Round(val, 2)
-    Grid.TextMatrix(row, col) = LoadNumeric
+    If Round(val, 2) <> Round(val, 0) Then
+        Grid.TextMatrix(row, col) = Format(LoadNumeric, "####.00")
+    Else
+        Grid.TextMatrix(row, col) = LoadNumeric
+    End If
  End If
 End Function
 
