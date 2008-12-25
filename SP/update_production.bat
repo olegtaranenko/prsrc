@@ -2,9 +2,14 @@
 ::echo on
 
 setlocal
+echo *
+echo * DO YOU REALLY WANT TO UPDATE PRODUCTION?
+echo *
+pause
 
-::set REP_LOCATION=\\Dima\d\devNext\sql\transdata
-::set REP_LOCATION=F:\sql\transdata
+set PRIOR_DEVELOPMENT_MODE=PRODUCTION
+
+set REP_LOCATION=..\sql\transdata
 
 if (%1) == () goto usage
 set patch=%1
@@ -69,8 +74,8 @@ if exist %patch%\server_comtex.sql	call ../sql/transdata/isql.bat %patch%\server
 
 if exist %patch%\servertables_prior.sql	call ../sql/transdata/isql.bat %patch%\servertables_prior.sql	prior
 
-if exist %patch%\codebase_prior.sql	call ../sql/transdata/isql.bat %patch%\codebase_prior.sql	prior
 if exist %patch%\prior_views.sql	call ../sql/transdata/isql.bat %patch%\prior_views.sql	prior
+if exist %patch%\codebase_prior.sql	call ../sql/transdata/isql.bat %patch%\codebase_prior.sql	prior
 if exist %patch%\codebase_comtex.sql	call ../sql/transdata/isql.bat %patch%\codebase_comtex.sql	stime
 if exist %patch%\codebase_comtex.sql	call ../sql/transdata/isql.bat %patch%\codebase_comtex.sql	pm
 if exist %patch%\codebase_comtex.sql	call ../sql/transdata/isql.bat %patch%\codebase_comtex.sql	mm
@@ -78,7 +83,7 @@ if exist %patch%\codebase_stime.sql	call ../sql/transdata/isql.bat %patch%\codeb
 
 if exist %patch%\runonce_after_prior.sql	call ../sql/transdata/isql.bat %patch%\runonce_after_prior.sql	prior
 if exist %patch%\runonce_after_mm.sql	call ../sql/transdata/isql.bat %patch%\runonce_after_mm.sql	mm
-::xcopy  %patch%\*.sql %REP_LOCATION% /Y
+xcopy  %patch%\*.sql %REP_LOCATION% /Y
 
 if exist %patch%\runonce_after.bat	call %patch%\runonce_after.bat
 
@@ -108,13 +113,18 @@ goto next_done
 :next_done
 set next_step=%1
 shift
-if (%next_step%) == () goto done
+if (%next_step%) == () goto copy_exe
 goto loop
 
 :missed_warn
 if /i not (%next_step%) == (all) echo file %patch%\%missed_file% does not exists
 goto loop
 
+
+:copy_exe
+xcopy %patch%\*.exe c:\prior /y
+xcopy %patch%\*.exe d:\!prior /y
+goto done
 
 :usage
 echo Usage %~nx0 patch_name {options}
