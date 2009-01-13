@@ -192,6 +192,10 @@ end;
 	</changeSet>
 -->
 
+	<changeSet id="mantis-33" author="ddl" runOnChange="true">
+		<comment>Курс УЕ для каждого заказа (ДДЛ)</comment>
+		<sql>select 1</sql>
+	</changeSet>
 
 </databaseChangeLog>
 
