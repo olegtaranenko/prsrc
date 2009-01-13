@@ -823,7 +823,7 @@ Dim I As Integer
 End Sub
 
 Function LoadNumeric(Grid As MSFlexGrid, row As Long, col As Integer, _
-        val As Variant, Optional myErr As String = "") As Double
+        val As Variant, Optional myErr As String = "", Optional fmt As String) As Double
  If IsNull(val) Then
     Grid.TextMatrix(row, col) = ""
     LoadNumeric = 0 ' для log файла
@@ -831,7 +831,11 @@ Function LoadNumeric(Grid As MSFlexGrid, row As Long, col As Integer, _
  Else
     LoadNumeric = Round(val, 2)
     If Round(val, 2) <> Round(val, 0) Then
-        Grid.TextMatrix(row, col) = Format(LoadNumeric, "####.00")
+        If IsMissing(fmt) Then
+            Grid.TextMatrix(row, col) = Format(LoadNumeric, "####.00")
+        Else
+            Grid.TextMatrix(row, col) = Format(LoadNumeric, fmt)
+        End If
     Else
         Grid.TextMatrix(row, col) = LoadNumeric
     End If
@@ -1634,7 +1638,7 @@ Dim s As Double, log As String, str As String
  str = LoadDate(Orders.Grid, row, orVrVid, tqOrders!outDateTime, "hh")
  If str <> "" Then log = log & "_" & str
  
- str = LoadNumeric(Orders.Grid, row, orVrVip, tqOrders!workTime)
+ str = LoadNumeric(Orders.Grid, row, orVrVip, tqOrders!workTime, , "#0.0")
  log = log & " Вр.вып=" & str
  
  Orders.Grid.TextMatrix(row, orProblem) = tqOrders!problem
@@ -2601,7 +2605,7 @@ End Function
 #End If
 
 Sub loadSeria(ByRef p_tv As TreeView)
-Dim key As String, pKey As String, k() As String, pK()  As String
+Dim Key As String, pKey As String, k() As String, pK()  As String
 Dim I As Integer, iErr As Integer
 bilo = False
 sql = "SELECT sGuideSeries.*  From sGuideSeries ORDER BY sGuideSeries.seriaId;"
@@ -2615,10 +2619,10 @@ If Not tbSeries.BOF Then
  ReDim k(0): ReDim pK(0): ReDim NN(0): iErr = 0
  While Not tbSeries.EOF
     If tbSeries!seriaId = 0 Then GoTo NXT1
-    key = "k" & tbSeries!seriaId
+    Key = "k" & tbSeries!seriaId
     pKey = "k" & tbSeries!parentSeriaId
     On Error GoTo ERR1 ' назначить второй проход
-    Set Node = p_tv.Nodes.Add(pKey, tvwChild, key, tbSeries!seriaName)
+    Set Node = p_tv.Nodes.Add(pKey, tvwChild, Key, tbSeries!seriaName)
     On Error GoTo 0
     Node.Sorted = True
 NXT1:
@@ -2645,7 +2649,7 @@ Exit Sub
 ERR1:
  iErr = iErr + 1: bilo = True
  ReDim Preserve k(iErr): ReDim Preserve pK(iErr): ReDim Preserve NN(iErr)
- k(iErr) = key: pK(iErr) = pKey: NN(iErr) = tbSeries!seriaName
+ k(iErr) = Key: pK(iErr) = pKey: NN(iErr) = tbSeries!seriaName
  Resume Next
 
 ERR2: bilo = True: Resume NXT
