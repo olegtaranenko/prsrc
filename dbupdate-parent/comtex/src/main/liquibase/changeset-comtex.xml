@@ -8,7 +8,7 @@
   logicalFilePath="changeset-comtex.xml"
 >
          
-    <include file="../../../../src/main/liquibase/changeset-common.xml" relative="true"/>
+    <include file="../../../../src/main/liquibase/changeset-common.xml" relativeToChangelogFile="true"/>
 
     <changeSet id="1" author="comtex" context="development">
     	<comment>Disable all scheduled backups and other events.</comment>

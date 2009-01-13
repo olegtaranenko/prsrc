@@ -8,7 +8,7 @@
   logicalFilePath="changeset-prior.xml"
 >
  
-	<include file="../../../../src/main/liquibase/changeset-common.xml" relative="true"/>
+	<include file="../../../../src/main/liquibase/changeset-common.xml" relativeToChangelogFile="true"/>
 <!--
 	<changeSet id="ddl" author="mantis-7" context="does-not-work">
 		<comment>Prepare for repare table xPredmetyByNomenkOut from the backup</comment>
@@ -164,8 +164,24 @@ end;
 		<sqlFile path="src/main/liquibase/nomnom-firma-dml.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 	</changeSet>
 
--->
+	<changeSet id="bay-analys" author="dml">
+		<comment>Пропущенные при дизайне ЕР-схемы ключи ссылок</comment>
+		<addForeignKeyConstraint constraintName="f_fk_row_col" baseTableName="nFilter" baseColumnNames="byrowid, bycolumnid"
+    	referencedTableName="nAnalys" referencedColumnNames="byrow, bycolumn"
+    	onDelete="CASCADE" onUpdate="CASCADE"
+    	/>
 
+		<addForeignKeyConstraint baseTableName="nAnalysBooting" constraintName="nab_param" baseColumnNames="paramId"
+    	referencedTableName="nAnalysBootingParam" referencedColumnNames="id"
+    	onDelete="CASCADE" onUpdate="CASCADE"
+    	/>
+
+		<addForeignKeyConstraint baseTableName="nHeaderColumSelected" constraintName="nhcs_manag" baseColumnNames="managerId"
+    	referencedTableName="GuideManag" referencedColumnNames="managId"
+    	onDelete="SET NULL" onUpdate="CASCADE"
+    	/>
+	</changeSet>
+-->
 
 <!--
 !!! почему-то не работает из-под ликвибейза. Возможно неправильно настрое автокоммит?? хорошо бы разобраться...
@@ -175,6 +191,7 @@ end;
 		<sqlFile path="src/main/liquibase/sync_guidefirms.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 	</changeSet>
 -->
+
 
 </databaseChangeLog>
 
