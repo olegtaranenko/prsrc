@@ -354,11 +354,11 @@ If i > 0 Then
         MsgBox "Образец не определен"
         GoTo AA
     End If
-    tbDocs.Index = "Key"
+    tbDocs.index = "Key"
     tbDocs.Seek "=", Grid.TextMatrix(mousRow, jnDate)
     If tbDocs.NoMatch Then
         MsgBox "Образец не найден в базе", , ""
-AA:     cmAdd.Caption = Left$(cmAdd.Caption, i - 2)
+AA:     cmAdd.Caption = left$(cmAdd.Caption, i - 2)
         tbDocs.Close
         Exit Sub
     End If
@@ -417,7 +417,7 @@ If i > 0 Then
     Grid.TextMatrix(Grid.row, jnPurpose) = Grid.TextMatrix(mousRow, jnPurpose)
     Grid.TextMatrix(Grid.row, jnDetail) = Grid.TextMatrix(mousRow, jnDetail)
     Grid.TextMatrix(Grid.row, jnVenture) = Grid.TextMatrix(mousRow, jnVenture)
-    cmAdd.Caption = Left$(cmAdd.Caption, i - 2)
+    cmAdd.Caption = left$(cmAdd.Caption, i - 2)
 End If
 mousRow = Grid.Rows - 1
 mousCol = jnRub
@@ -472,15 +472,15 @@ End Sub
 Sub loadLbFromDebKreditor()
 Dim i As Long
 
-Set Table = myOpenRecordSet("##353", "select * from yDebKreditor order by Name", dbOpenTable)
-If Table Is Nothing Then myBase.Close: End
+Set table = myOpenRecordSet("##353", "select * from yDebKreditor order by Name", dbOpenTable)
+If table Is Nothing Then myBase.Close: End
 lbDebKreditor.Clear
 'Table.Index = "Name"
-While Not Table.EOF
-    lbDebKreditor.AddItem Table!name
-    Table.MoveNext
+While Not table.EOF
+    lbDebKreditor.AddItem table!name
+    table.MoveNext
 Wend
-Table.Close
+table.Close
 'i = 195 * lbDebKreditor.ListCount + 100
 'If i > Grid.Height - 1000 Then i = Grid.Height - 1000
 'If i > 2000 Then i = 2000
@@ -492,7 +492,7 @@ End Sub
 
 Sub loadLbFromSchets(lb As ListBox, Optional selNumStr As String = "-1", _
 Optional selSubNumStr As String = "-1")
-Dim str As String, Table As Recordset, heig As Integer
+Dim str As String, table As Recordset, heig As Integer
 Dim selNum As Integer, selSubNum As Integer
 
 selNum = CInt(selNumStr)
@@ -501,32 +501,32 @@ selSubNum = CInt(selSubNumStr)
 
 If selNum = -2 Then ' без суб.счетов
     sql = "SELECT number From yGuideSchets GROUP BY number ORDER BY number;"
-    Set Table = myOpenRecordSet("##325", sql, dbOpenForwardOnly)
+    Set table = myOpenRecordSet("##325", sql, dbOpenForwardOnly)
 '    If Table Is Nothing Then Exit Sub
 Else
 '    Set Table = myOpenRecordSet("##325", "yGuideSchets", dbOpenTable)
     sql = "SELECT * FROM yGuideSchets order by number + subnumber;"
-    Set Table = myOpenRecordSet("##325", sql, dbOpenForwardOnly)
+    Set table = myOpenRecordSet("##325", sql, dbOpenForwardOnly)
 '    If Table Is Nothing Then Exit Sub
 '    Table.Index = "Key"
 End If
 lb.Clear
-While Not Table.EOF
-  If Table!number < 255 Then
+While Not table.EOF
+  If table!number < 255 Then
     'str = Format(Table!number, "00")
-    str = Table!number
+    str = table!number
     If selNum <> -2 Then
-      If Table!subNumber > 0 Then str = str & " " & Table!subNumber
+      If table!subNumber > 0 Then str = str & " " & table!subNumber
     End If
     lb.AddItem str
     If selNum <> -2 Then
-        If selNum = Table!number And selSubNum = Table!subNumber _
+        If selNum = table!number And selSubNum = table!subNumber _
             Then lb.ListIndex = lb.ListCount - 1
     End If
   End If
-  Table.MoveNext
+  table.MoveNext
 Wend
-Table.Close
+table.Close
 
 End Sub
 
@@ -568,7 +568,7 @@ Dim i As Integer
 
 If KeyCode = vbKeyMenu Then
     i = InStr(cmAdd.Caption, "+")
-    If i > 0 Then cmAdd.Caption = Left$(cmAdd.Caption, i - 2)
+    If i > 0 Then cmAdd.Caption = left$(cmAdd.Caption, i - 2)
 End If
 
 
@@ -596,19 +596,20 @@ End If
 
 sql = "SELECT Kurs FROM System;"
 If byErrSqlGetValues("##321", sql, s) Then
-    If s > 0.01 Then tbKurs.Text = s ' с "-" - это вчерашний курс
+    tbKurs.Text = Abs(s)
+    'If s > 0.01 Then tbKurs.Text = s ' с "-" - это вчерашний курс
 End If
 
 Grid.FormatString = "|<Дата|М|Рубли|Валюта|Дб|Сс|Кр|Сс|<Заказчик(временная)" & _
 "|<Кредитор\Дебитор|<Договор|<Примечание|<Назначение|<Уточнение|<Предприятие|<Шифр затрат"
-Grid.ColWidth(0) = 0
-Grid.ColWidth(jnDate) = 780
-Grid.ColWidth(jnDebKreditor) = 2580
-Grid.ColWidth(jnOrdersNum) = 1200
-Grid.ColWidth(jnFirm) = 1395
-Grid.ColWidth(jnDetail) = 1500
-Grid.ColWidth(jnVenture) = 1300
-Grid.ColWidth(jnVenture) = 1600
+Grid.colWidth(0) = 0
+Grid.colWidth(jnDate) = 780
+Grid.colWidth(jnDebKreditor) = 2580
+Grid.colWidth(jnOrdersNum) = 1200
+Grid.colWidth(jnFirm) = 1395
+Grid.colWidth(jnDetail) = 1500
+Grid.colWidth(jnVenture) = 1300
+Grid.colWidth(jnVenture) = 1600
 'jnNote
 
 
@@ -750,7 +751,7 @@ End If
 
 str = Grid.TextMatrix(mousRow, jnDate)
 strWhere = " WHERE xDate = '20" & Mid$(str, 7, 2) & "-" & Mid$(str, 4, 2) & _
-"-" & Left$(str, 2) & Mid$(str, 9) & "'"
+"-" & left$(str, 2) & Mid$(str, 9) & "'"
 If field = "delete" Then
     sql = "DELETE FROM yBook " & strWhere
     GoTo AA
@@ -827,8 +828,8 @@ oldWidth = Me.Width
 Grid.Height = Grid.Height + h
 Grid.Width = Grid.Width + w
 
-laKurs.Left = laKurs.Left + w
-tbKurs.Left = tbKurs.Left + w
+laKurs.left = laKurs.left + w
+tbKurs.left = tbKurs.left + w
 cmLoad.Top = cmLoad.Top + h
 cmAdd.Top = cmAdd.Top + h
 cmDel.Top = cmDel.Top + h
@@ -912,7 +913,7 @@ Or mousCol = jnDebit Or mousCol = jnKredit Or mousCol = jnPurpose Then
 '    jGuidePurpose.detail = Grid.TextMatrix(mousRow, jnDetail)
     jGuidePurpose.Show vbModal
 ElseIf mousCol = jnDate Then
-    textBoxInGridCell tbMobile, Grid, Left$(Grid.TextMatrix(mousRow, mousCol), 8)
+    textBoxInGridCell tbMobile, Grid, left$(Grid.TextMatrix(mousRow, mousCol), 8)
 ElseIf mousCol = jnDebKreditor Then
     listBoxInGridCell lbGuids, Grid, "select" 'lbDebKreditor
 ElseIf mousCol = jnRub Then
@@ -984,7 +985,7 @@ End Sub
 Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
 
 If Grid.MouseRow = 0 And Shift = 2 Then
-        MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
+        MsgBox "ColWidth = " & Grid.colWidth(Grid.MouseCol)
 'ElseIf quantity > 0 And Grid.row <> Grid.RowSel Then
 ElseIf mousCol = jnRub Or mousCol = jnVal Then
     laSum.Caption = Round(sumInGridCol(Grid, mousCol), 2)
@@ -1110,14 +1111,14 @@ getFreeDate = Null
 
 sql = "SELECT xDate from yBook Where (((xDate) Like '" & dayDate & "%')) ORDER BY xDate;"
 'MsgBox sql
-Set Table = myOpenRecordSet("##374", sql, dbOpenForwardOnly)
-If Table Is Nothing Then Exit Function
+Set table = myOpenRecordSet("##374", sql, dbOpenForwardOnly)
+If table Is Nothing Then Exit Function
 sek = 0
-While Not Table.EOF
+While Not table.EOF
 '  If Table!xDate <> DateAdd("s", sek, dayDate) Then
-  If DateDiff("s", dayDate, Table!xDate) <> sek Then GoTo EN1
+  If DateDiff("s", dayDate, table!xDate) <> sek Then GoTo EN1
   sek = sek + 1
-  Table.MoveNext
+  table.MoveNext
 Wend
 
 EN1:
@@ -1125,17 +1126,17 @@ EN1:
 If sek < 86400 Then 'число секунд в сутках
     getFreeDate = DateAdd("s", sek, dayDate)
 End If
-Table.Close
+table.Close
 
 
 End Function
 
-Function getIdFromTableByLb(Table As String, lbText As String) As String
+Function getIdFromTableByLb(table As String, lbText As String) As String
 Dim id As Integer
 
 getIdFromTableByLb = ""
 
-sql = "SELECT id From " & Table & "  WHERE (((Name)='" & lbText & "'));"
+sql = "SELECT id From " & table & "  WHERE (((Name)='" & lbText & "'));"
 'MsgBox sql
 If Not byErrSqlGetValues("##330", sql, id) Then Exit Function
 
