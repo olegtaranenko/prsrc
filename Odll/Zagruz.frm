@@ -160,9 +160,9 @@ Begin VB.Form Zagruz
       EndProperty
    End
    Begin VB.Label laVirab 
-      Alignment       =   1  'Правая привязка
+      Alignment       =   1  'Right Justify
       BackColor       =   &H8000000E&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Height          =   285
       Left            =   3660
       TabIndex        =   19
@@ -170,9 +170,9 @@ Begin VB.Form Zagruz
       Width           =   660
    End
    Begin VB.Label laUsed 
-      Alignment       =   1  'Правая привязка
+      Alignment       =   1  'Right Justify
       BackColor       =   &H8000000E&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Height          =   285
       Left            =   3660
       TabIndex        =   18
@@ -196,9 +196,9 @@ Begin VB.Form Zagruz
       Width           =   915
    End
    Begin VB.Label laZagLive 
-      Alignment       =   1  'Правая привязка
+      Alignment       =   1  'Right Justify
       BackColor       =   &H8000000E&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Height          =   255
       Left            =   6360
       TabIndex        =   14
@@ -206,9 +206,9 @@ Begin VB.Form Zagruz
       Width           =   825
    End
    Begin VB.Label laZagAll 
-      Alignment       =   1  'Правая привязка
+      Alignment       =   1  'Right Justify
       BackColor       =   &H8000000E&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Height          =   255
       Left            =   4610
       TabIndex        =   13
@@ -225,7 +225,7 @@ Begin VB.Form Zagruz
    End
    Begin VB.Label laZapas 
       BackColor       =   &H8000000E&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Height          =   255
       Left            =   6000
       TabIndex        =   11
@@ -320,7 +320,7 @@ isZagruz = True
 End Sub
 
 Sub ZagruzLoad() ' бывшая begZagruz
- Dim I As Integer, key As String, tekDate As String, s As Double
+ Dim I As Integer, Key As String, tekDate As String, s As Double
 
 maxDay = 0
 zagruzFromCeh ' в delta
@@ -336,31 +336,31 @@ Zakaz.newZagruz "fromCehZagruz"
 
 For I = 1 To maxDay
     tekDate = Format(DateAdd("d", I - 1, curDate), "dd/mm/yy")
-    key = "k" & I
-    lv.ListItems.Add , key, tekDate
+    Key = "k" & I
+    lv.ListItems.Add , Key, tekDate
 
     day = Weekday(DateAdd("d", I - 1, curDate))
     If day = vbSunday Or day = vbSaturday Then
-        lv.ListItems(key).ForeColor = &HFF&
+        lv.ListItems(Key).ForeColor = &HFF&
     End If
   
     If I = stDay Then
-        lv.ListItems(key).ForeColor = &HBB00&
-        lv.ListItems(key).Bold = True
+        lv.ListItems(Key).ForeColor = &HBB00&
+        lv.ListItems(Key).Bold = True
     End If
     
-    lv.ListItems(key).SubItems(zgPrinato) = Round(getNevip(I), 1)
+    lv.ListItems(Key).SubItems(zgPrinato) = Round(getNevip(I), 1)
 
-    lv.ListItems(key).SubItems(zgNomRes) = nomRes(I)
+    lv.ListItems(Key).SubItems(zgNomRes) = nomRes(I)
     
     s = Round(nomRes(I) * kpd * Nstan, 1)
-    lv.ListItems(key).SubItems(zgResurs) = s
-    lv.ListItems(key).SubItems(zgZagruz) = Round(s - ost(I), 1)
-    lv.ListItems(key).SubItems(zgOstatki) = ost(I)
-    lv.ListItems(key).SubItems(zgLive) = Round(s - befOst(I), 1)
+    lv.ListItems(Key).SubItems(zgResurs) = s
+    lv.ListItems(Key).SubItems(zgZagruz) = Round(s - ost(I), 1)
+    lv.ListItems(Key).SubItems(zgOstatki) = Round(ost(I), 1)
+    lv.ListItems(Key).SubItems(zgLive) = Round(s - befOst(I), 1)
     If ost(I) < 0 Then
-        lv.ListItems(key).ListSubItems(zgOstatki).Bold = True
-        lv.ListItems(key).ListSubItems(zgOstatki).ForeColor = 200
+        lv.ListItems(Key).ListSubItems(zgOstatki).Bold = True
+        lv.ListItems(Key).ListSubItems(zgOstatki).ForeColor = 200
     End If
 Next I
 
@@ -377,9 +377,9 @@ laZapas.Caption = Round(nomRes(I) * kpd * Nstan + ost(1), 1)
 zagAll = 0
 zagLive = 0
 For I = 1 To maxDay
-    key = "k" & I
-    zagAll = zagAll + lv.ListItems(key).SubItems(zgZagruz)
-    zagLive = zagLive + lv.ListItems(key).SubItems(zgLive)
+    Key = "k" & I
+    zagAll = zagAll + lv.ListItems(Key).SubItems(zgZagruz)
+    zagLive = zagLive + lv.ListItems(Key).SubItems(zgLive)
 Next I
 
 laZagAll.Caption = Round(zagAll, 1) & "  "
@@ -444,10 +444,10 @@ If ClickItem Is Nothing Then Exit Sub
     
     If Not flClickDouble Then Exit Sub
 
-    If x < (lv.ColumnHeaders("nomRes").Left + lv.ColumnHeaders("nomRes").Width) _
-    And x > lv.ColumnHeaders("nomRes").Left Then
+    If x < (lv.ColumnHeaders("nomRes").left + lv.ColumnHeaders("nomRes").Width) _
+    And x > lv.ColumnHeaders("nomRes").left Then
 
-    tbMobile.Left = lv.ColumnHeaders("nomRes").Left + lv.Left + 20
+    tbMobile.left = lv.ColumnHeaders("nomRes").left + lv.left + 20
     tbMobile.Top = ClickItem.Top + lv.Top + 50
     tbMobile.Visible = True
     tbMobile.Text = ClickItem.SubItems(zgNomRes)
@@ -481,7 +481,7 @@ If tbSystem Is Nothing Then myBase.Close: End
     tbSystem!NstanSUB = tbStanki.Text   '
     tbSystem!newResSUB = tbNomRes.Text  '
  End If
-tbSystem.Update
+tbSystem.update
 tbSystem.Close
 ZagruzLoad
 End Sub
@@ -502,7 +502,7 @@ If KeyCode = vbKeyReturn Then
   If isNumericTbox(tbMobile, 0, 22) Then
         
     
-    day = Mid$(Zagruz.lv.SelectedItem.key, 2)
+    day = Mid$(Zagruz.lv.SelectedItem.Key, 2)
     nomRes(day) = tbMobile.Text
     
     ' макс дата в таблице ресурса
