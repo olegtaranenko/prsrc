@@ -3,14 +3,14 @@ Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form CehOrders 
    BackColor       =   &H8000000A&
    Caption         =   " "
-   ClientHeight    =   5724
+   ClientHeight    =   5730
    ClientLeft      =   60
-   ClientTop       =   348
+   ClientTop       =   345
    ClientWidth     =   11880
    Icon            =   "CehOrders.frx":0000
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
-   ScaleHeight     =   5724
+   ScaleHeight     =   5730
    ScaleWidth      =   11880
    StartUpPosition =   2  'CenterScreen
    Begin VB.CommandButton cmNaklad 
@@ -97,7 +97,7 @@ Begin VB.Form CehOrders
       Width           =   1575
    End
    Begin VB.ListBox lbProblem 
-      Height          =   1392
+      Height          =   1230
       Left            =   3300
       TabIndex        =   5
       Top             =   3240
@@ -113,34 +113,34 @@ Begin VB.Form CehOrders
       Width           =   915
    End
    Begin VB.ListBox lbStatus 
-      Height          =   1776
+      Height          =   1815
       ItemData        =   "CehOrders.frx":030A
       Left            =   540
       List            =   "CehOrders.frx":0329
       TabIndex        =   3
-      Top             =   2820
+      Top             =   3120
       Visible         =   0   'False
-      Width           =   795
+      Width           =   1035
    End
    Begin VB.ListBox lbObrazec 
-      Height          =   432
+      Height          =   450
       ItemData        =   "CehOrders.frx":0361
       Left            =   1560
       List            =   "CehOrders.frx":036B
       TabIndex        =   2
       Top             =   4140
       Visible         =   0   'False
-      Width           =   615
+      Width           =   855
    End
    Begin VB.ListBox lbMaket 
-      Height          =   432
+      Height          =   450
       ItemData        =   "CehOrders.frx":0378
       Left            =   2460
       List            =   "CehOrders.frx":0382
       TabIndex        =   1
       Top             =   4140
       Visible         =   0   'False
-      Width           =   615
+      Width           =   735
    End
    Begin MSFlexGridLib.MSFlexGrid Grid 
       Height          =   4935
@@ -148,8 +148,8 @@ Begin VB.Form CehOrders
       TabIndex        =   0
       Top             =   360
       Width           =   11655
-      _ExtentX        =   20553
-      _ExtentY        =   8700
+      _ExtentX        =   20558
+      _ExtentY        =   8705
       _Version        =   393216
       AllowUserResizing=   1
    End
@@ -324,7 +324,7 @@ If Not tbCeh.BOF Then
   
   tbCeh.MoveFirst
   While Not tbCeh.EOF
-    gNzak = tbCeh!numOrder
+    gNzak = tbCeh!numorder
     
     If chSingl.value = 1 And gNzak <> tbNomZak.Text Then GoTo NXT
 'If gNzak = 3103125 Then
@@ -988,7 +988,7 @@ AA:
     If tbOrders.BOF Then
         tbOrders.AddNew
         tbOrders!xDate = str
-        tbOrders!numOrder = gNzak
+        tbOrders!numorder = gNzak
         tbOrders!obrazec = obraz
     Else
         virabotka = virabotka + tbOrders!virabotka
