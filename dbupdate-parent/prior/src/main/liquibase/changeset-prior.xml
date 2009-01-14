@@ -237,6 +237,8 @@ end;
 	<changeSet id="code-1" author="mantis-33" runOnChange="true">
 		<comment>Курс заказа: триггеры для orders</comment>
 		<sqlFile path="src/main/liquibase/mantis-33.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+
+		<rollback/>
 	</changeSet>
 
 </databaseChangeLog>

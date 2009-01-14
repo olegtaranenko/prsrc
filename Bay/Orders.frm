@@ -466,7 +466,15 @@ wrkDefault.BeginTrans 'lock01
 sql = "update system set resursLock = resursLock" 'lock02
 myBase.Execute (sql) 'lock03
 
+Dim rate As Double
+str = getSystemField("Kurs")
+rate = Abs(CDbl(str))
+
+
 str = getSystemField("lastPrivatNum")
+
+
+
 DateFromNum = left$(str, 5)
 intNum = right$(str, Len(str) - 5)
 
@@ -487,14 +495,15 @@ Dim isBaseOrder As Boolean
 Dim baseFirmId As Integer, baseFirm As String
 Dim baseProblemId As Integer, baseProblem As String, begPubNum As Long
 
+
 gNzak = Grid.TextMatrix(Orders.mousRow, orNomZak)
 If InStr(Orders.cmAdd.Caption, "+") > 0 Then
-  sql = "SELECT BayOrders.CehId, BayOrders.ProblemId, BayOrders.FirmId, " & _
-        "GuideCeh.Ceh, GuideProblem.Problem, BayGuideFirms.Name " & _
-        "FROM GuideProblem INNER JOIN (BayGuideFirms INNER JOIN " & _
-        "(GuideCeh INNER JOIN BayOrders ON GuideCeh.CehId = BayOrders.CehId) " & _
-        "ON BayGuideFirms.FirmId = BayOrders.FirmId) ON GuideProblem.ProblemId " & _
-        "= BayOrders.ProblemId WHERE (((BayOrders.numOrder)=" & gNzak & "));"
+  sql = " SELECT BayOrders.ProblemId, BayOrders.FirmId, " & _
+        " GuideProblem.Problem, BayGuideFirms.Name " & _
+        " FROM bayorders INNER JOIN BayGuideFirms " & _
+        " ON BayGuideFirms.FirmId = BayOrders.FirmId " & _
+        " join GuideProblem ON GuideProblem.ProblemId = BayOrders.ProblemId " & _
+        " WHERE BayOrders.numOrder = " & gNzak
 '  On Error GoTo NXT1
   Set tbOrders = myBase.OpenRecordset(sql, dbOpenForwardOnly)
   
@@ -526,6 +535,7 @@ End If
 
 'On Error GoTo ERR1
 tbOrders.AddNew
+tbOrders!rate = rate
 tbOrders!StatusId = 0
 tbOrders!numorder = l
 tbOrders!inDate = Now
@@ -545,6 +555,7 @@ Grid.TextMatrix(zakazNum, orNomZak) = l
 Grid.TextMatrix(zakazNum, orData) = Format(Now, "dd.mm.yy")
 Grid.TextMatrix(zakazNum, orMen) = Orders.cbM.Text
 Grid.TextMatrix(zakazNum, orStatus) = status(0)
+Grid.TextMatrix(zakazNum, orRate) = rate
 If isBaseOrder Then
   Grid.TextMatrix(zakazNum, orProblem) = baseProblem
   Grid.TextMatrix(zakazNum, orFirma) = baseFirm
@@ -756,6 +767,7 @@ initOrCol orVrVid, "Вр.выдачи", 645
 initOrCol orVes, "Вес", 630
 initOrCol orSize, "Размер", 830
 initOrCol orPlaces, "Мест", 600
+initOrCol orRate, "Курс", 660 ', "nBayOrders.rate" $$6
 initOrCol orZakazano, "заказано", 660 ', "nBayOrders.ordered" $$6
 initOrCol orOplacheno, "согласовано", 645, "nBayOrders.paid"
 initOrCol orOtgrugeno, "отгружено", 645 ', "nBayOrders.shipped"$$6
@@ -948,7 +960,7 @@ mousRow = Grid.MouseRow
 If mousRow = 0 Then
     Grid.CellBackColor = Grid.BackColor
     If mousCol = 0 Then Exit Sub
-    If mousCol = orNomZak Or mousCol = orZakazano Or mousCol = orOplacheno _
+    If mousCol = orNomZak Or mousCol = orZakazano Or mousCol = orRate Or mousCol = orOplacheno _
     Or mousCol = orOtgrugeno Then
         SortCol Grid, mousCol, "numeric"
     ElseIf mousCol = orData Or mousCol = orDataVid Then
@@ -1110,7 +1122,7 @@ ElseIf mousCol = orFirma Then
     End If
     Me.PopupMenu mnContext
 ElseIf mousCol = orZakazano Then
-    sql = "SELECT nomNom From sDMCrez WHERE (((sDMCrez.numDoc)='" & gNzak & "'));"
+    sql = "SELECT nomNom From sDMCrez WHERE sDMCrez.numDoc = '" & gNzak
     byErrSqlGetValues "W##362", sql, str
     If str = "" Then
         MsgBox "У  заказа № " & gNzak & " нет пердметов!", , ""
@@ -1556,6 +1568,7 @@ On Error Resume Next ' в некот.ситуациях один из Open logFile дает Err: файл уже
 Open logFile For Append As #2
 Print #2, DNM & " проблема=" & lbProblem.Text & _
 "   зак=" & Grid.TextMatrix(mousRow, orZakazano) & _
+"   курс=" & Grid.TextMatrix(mousRow, orRate) & _
 " опл=" & Grid.TextMatrix(mousRow, orOplacheno) & _
 " отг=" & Grid.TextMatrix(mousRow, orOtgrugeno)
 Close #2
@@ -1815,8 +1828,8 @@ BB:     tmpDate = Grid.TextMatrix(mousRow, orDataVid)
         If str <> "" Then str = " " & str & ":00:00"
         str = "'" & Format(tmpDate, "yyyy-mm-dd") & str & "'"
         ValueToTableField "##24", str, "BayOrders", "outDateTime"
-'    ElseIf mousCol = orZakazano Then
-'        If Not isFloatFromMobile("ordered") Then Exit Sub
+    ElseIf mousCol = orRate Then
+        If Not isFloatFromMobile("rate") Then Exit Sub
     ElseIf mousCol = orOplacheno Then
         If Not isFloatFromMobile("paid") Then Exit Sub
 '    ElseIf mousCol = orOtgrugeno Then
@@ -2064,11 +2077,14 @@ Dim str  As String
  gNzak = tqOrders!numorder
  
  
- 'LoadNumeric Grid, row, orZakazano, tqOrders!ordered
+ LoadNumeric Grid, row, orRate, tqOrders!rate
+ Grid.TextMatrix(row, orRate) = tqOrders!rate
+ 
  Grid.TextMatrix(row, orZakazano) = getOrdered(gNzak)
  LoadNumeric Grid, row, orOplacheno, tqOrders!paid
  'LoadNumeric Grid, row, orOtgrugeno, tqOrders!shipped
  Grid.TextMatrix(row, orOtgrugeno) = getShipped(gNzak)
+ LoadNumeric Grid, row, orRate, tqOrders!rate
  
  Grid.TextMatrix(row, orVes) = tqOrders!VES
  Grid.TextMatrix(row, orSize) = tqOrders!Size
