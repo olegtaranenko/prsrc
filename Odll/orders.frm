@@ -5,19 +5,19 @@ Begin VB.Form Orders
    Appearance      =   0  'Flat
    BackColor       =   &H8000000A&
    Caption         =   "Предварительная обработка заказов"
-   ClientHeight    =   6216
+   ClientHeight    =   6225
    ClientLeft      =   60
-   ClientTop       =   636
+   ClientTop       =   630
    ClientWidth     =   11880
    Icon            =   "Orders.frx":0000
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
-   ScaleHeight     =   6216
+   ScaleHeight     =   6225
    ScaleWidth      =   11880
    StartUpPosition =   2  'CenterScreen
    Begin VB.ListBox lbVenture 
       Appearance      =   0  'Flat
-      Height          =   600
+      Height          =   615
       Left            =   5500
       TabIndex        =   41
       Top             =   1000
@@ -40,7 +40,7 @@ Begin VB.Form Orders
       Width           =   495
    End
    Begin VB.ListBox lbAnnul 
-      Height          =   816
+      Height          =   840
       ItemData        =   "Orders.frx":030A
       Left            =   240
       List            =   "Orders.frx":031A
@@ -67,7 +67,7 @@ Begin VB.Form Orders
    Begin VB.TextBox tbInform 
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   9.6
+         Size            =   9.75
          Charset         =   204
          Weight          =   400
          Underline       =   0   'False
@@ -82,7 +82,7 @@ Begin VB.Form Orders
       Width           =   9015
    End
    Begin VB.ListBox lbClose 
-      Height          =   432
+      Height          =   450
       ItemData        =   "Orders.frx":0342
       Left            =   240
       List            =   "Orders.frx":034C
@@ -92,7 +92,7 @@ Begin VB.Form Orders
       Width           =   1095
    End
    Begin VB.ListBox lbTema 
-      Height          =   2352
+      Height          =   2400
       Left            =   3720
       TabIndex        =   34
       Top             =   1020
@@ -204,7 +204,7 @@ Begin VB.Form Orders
          Caption         =   "Включен фильтр !"
          BeginProperty Font 
             Name            =   "MS Sans Serif"
-            Size            =   7.8
+            Size            =   8.25
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -221,7 +221,7 @@ Begin VB.Form Orders
       End
    End
    Begin VB.ListBox lbType 
-      Height          =   1008
+      Height          =   1035
       ItemData        =   "Orders.frx":0369
       Left            =   1560
       List            =   "Orders.frx":037C
@@ -231,7 +231,7 @@ Begin VB.Form Orders
       Width           =   375
    End
    Begin VB.ListBox lbDel 
-      Height          =   432
+      Height          =   450
       ItemData        =   "Orders.frx":0391
       Left            =   240
       List            =   "Orders.frx":039B
@@ -249,7 +249,7 @@ Begin VB.Form Orders
       Width           =   1515
    End
    Begin VB.ListBox lbM 
-      Height          =   240
+      Height          =   255
       Left            =   1500
       TabIndex        =   27
       Top             =   1020
@@ -300,7 +300,7 @@ Begin VB.Form Orders
       Width           =   495
    End
    Begin VB.ListBox lbStat 
-      Height          =   624
+      Height          =   645
       ItemData        =   "Orders.frx":03B5
       Left            =   240
       List            =   "Orders.frx":03C2
@@ -319,7 +319,7 @@ Begin VB.Form Orders
       Width           =   975
    End
    Begin VB.ListBox lbProblem 
-      Height          =   2544
+      Height          =   2595
       Left            =   2460
       TabIndex        =   22
       Top             =   1020
@@ -327,7 +327,7 @@ Begin VB.Form Orders
       Width           =   1095
    End
    Begin VB.ListBox lbCeh 
-      Height          =   624
+      Height          =   645
       ItemData        =   "Orders.frx":03DD
       Left            =   2100
       List            =   "Orders.frx":03EA
@@ -342,8 +342,8 @@ Begin VB.Form Orders
       TabIndex        =   2
       Top             =   780
       Width           =   11895
-      _ExtentX        =   20976
-      _ExtentY        =   7853
+      _ExtentX        =   20981
+      _ExtentY        =   7858
       _Version        =   393216
       BackColor       =   16777215
       ForeColorFixed  =   0
@@ -354,7 +354,7 @@ Begin VB.Form Orders
       FormatString    =   $"Orders.frx":03FD
       BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
          Name            =   "MS Sans Serif"
-         Size            =   9.6
+         Size            =   9.75
          Charset         =   204
          Weight          =   400
          Underline       =   0   'False
@@ -380,14 +380,14 @@ Begin VB.Form Orders
    End
    Begin MSComctlLib.Toolbar Toolbar1 
       Align           =   1  'Align Top
-      Height          =   612
+      Height          =   630
       Left            =   0
       TabIndex        =   38
       Top             =   0
       Width           =   11880
       _ExtentX        =   20955
-      _ExtentY        =   1080
-      ButtonWidth     =   614
+      _ExtentY        =   1111
+      ButtonWidth     =   609
       ButtonHeight    =   953
       Appearance      =   1
       _Version        =   393216
