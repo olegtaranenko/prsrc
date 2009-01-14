@@ -500,7 +500,7 @@ End Function
 
 Function getSystemField(field As String) As Variant
 getSystemField = Null
-sql = "SELECT " & field & " From System;"
+sql = "SELECT " & field & " From System"
 Set tbSystem = myOpenRecordSet("##147", sql, dbOpenForwardOnly)
 'If tbSystem Is Nothing Then myBase.Close: End
 getSystemField = tbSystem.fields(field)

@@ -750,6 +750,12 @@ tbOrders!StatusId = 0
 tbOrders!numorder = l
 tbOrders!inDate = Now
 tbOrders!ManagId = manId(Orders.cbM.ListIndex)
+str = getSystemField("Kurs")
+
+Dim rate As Double
+rate = Abs(CDbl(str))
+tbOrders!rate = rate
+
 If isBaseOrder Then
   tbOrders!cehId = baseCehId
   tbOrders!firmId = baseFirmId
@@ -765,6 +771,7 @@ Grid.TextMatrix(zakazNum, orNomZak) = l
 Grid.TextMatrix(zakazNum, orData) = Format(Now, "dd.mm.yy")
 Grid.TextMatrix(zakazNum, orMen) = Orders.cbM.Text
 Grid.TextMatrix(zakazNum, orStatus) = status(0)
+Grid.TextMatrix(zakazNum, orRate) = rate
 If isBaseOrder Then
   Grid.TextMatrix(zakazNum, orCeh) = baseCeh
   Grid.TextMatrix(zakazNum, orProblem) = baseProblem
@@ -3259,7 +3266,7 @@ Sub copyRowToGrid(row As Long)
  LoadNumeric Grid, row, orOplacheno, tqOrders!paid, , "###0.00"
  LoadNumeric Grid, row, orZalog, tqOrders!zalog, , "###0.00"
  LoadNumeric Grid, row, orNal, tqOrders!nal, , "###0.00"
- LoadNumeric Grid, row, orRate, tqOrders!Rate, , "###0.00"
+ LoadNumeric Grid, row, orRate, tqOrders!rate, , "###0.00"
  LoadNumeric Grid, row, orOtgrugeno, tqOrders!shipped, , "###0.00"
  If Not IsNull(tqOrders!lastManag) Then _
     Grid.TextMatrix(row, orLastMen) = tqOrders!lastManag
