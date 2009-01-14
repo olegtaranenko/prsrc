@@ -192,9 +192,51 @@ end;
 	</changeSet>
 -->
 
-	<changeSet id="mantis-33" author="ddl" runOnChange="true">
+	<changeSet id="ddl-1" author="mantis-33">
 		<comment>Курс УЕ для каждого заказа (ДДЛ)</comment>
-		<sql>select 1</sql>
+		<addColumn tableName="orders">
+			<column name="rate" type="float">
+				<constraints nullable="true"/>
+			</column>
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="ddl-2" author="mantis-33">
+		<comment>Курс УЕ для каждого заказа (ДДЛ)</comment>
+		<addColumn tableName="bayOrders">
+			<column name="rate" type="float">
+				<constraints nullable="true"/>
+			</column>
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="dml-1" author="mantis-33">
+		<comment>Установка Курса по умолчанию</comment>
+		<update tableName="orders">
+			<column name="rate" valueNumeric="30"/>
+			<where><![CDATA[indate  between '20040101' and '20090112']]></where>
+		</update>
+		<update tableName="orders">
+			<column name="rate" valueNumeric="35"/>
+			<where><![CDATA[indate  >= '20090112']]></where>
+		</update>
+
+		<update tableName="bayOrders">
+			<column name="rate" valueNumeric="30"/>
+			<where><![CDATA[indate  between '20040101' and '20090112']]></where>
+		</update>
+		<update tableName="bayOrders">
+			<column name="rate" valueNumeric="35"/>
+			<where><![CDATA[indate  >= '20090112']]></where>
+		</update>
+		
+		<rollback/>
+	</changeSet>
+
+
+	<changeSet id="code-1" author="mantis-33" runOnChange="true">
+		<comment>Курс заказа: триггеры для orders</comment>
+		<sqlFile path="src/main/liquibase/mantis-33.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 	</changeSet>
 
 </databaseChangeLog>

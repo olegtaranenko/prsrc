@@ -1,23 +1,23 @@
 VERSION 5.00
-Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "mscomctl.ocx"
+Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCTL.OCX"
 Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Orders 
    Appearance      =   0  'Flat
    BackColor       =   &H8000000A&
    Caption         =   "Предварительная обработка заказов"
-   ClientHeight    =   6225
+   ClientHeight    =   6216
    ClientLeft      =   60
-   ClientTop       =   630
+   ClientTop       =   636
    ClientWidth     =   11880
    Icon            =   "Orders.frx":0000
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
-   ScaleHeight     =   6225
+   ScaleHeight     =   6216
    ScaleWidth      =   11880
    StartUpPosition =   2  'CenterScreen
    Begin VB.ListBox lbVenture 
       Appearance      =   0  'Flat
-      Height          =   615
+      Height          =   600
       Left            =   5500
       TabIndex        =   41
       Top             =   1000
@@ -40,7 +40,7 @@ Begin VB.Form Orders
       Width           =   495
    End
    Begin VB.ListBox lbAnnul 
-      Height          =   840
+      Height          =   816
       ItemData        =   "Orders.frx":030A
       Left            =   240
       List            =   "Orders.frx":031A
@@ -67,7 +67,7 @@ Begin VB.Form Orders
    Begin VB.TextBox tbInform 
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   9.75
+         Size            =   9.6
          Charset         =   204
          Weight          =   400
          Underline       =   0   'False
@@ -82,7 +82,7 @@ Begin VB.Form Orders
       Width           =   9015
    End
    Begin VB.ListBox lbClose 
-      Height          =   450
+      Height          =   432
       ItemData        =   "Orders.frx":0342
       Left            =   240
       List            =   "Orders.frx":034C
@@ -92,7 +92,7 @@ Begin VB.Form Orders
       Width           =   1095
    End
    Begin VB.ListBox lbTema 
-      Height          =   2400
+      Height          =   2352
       Left            =   3720
       TabIndex        =   34
       Top             =   1020
@@ -204,7 +204,7 @@ Begin VB.Form Orders
          Caption         =   "Включен фильтр !"
          BeginProperty Font 
             Name            =   "MS Sans Serif"
-            Size            =   8.25
+            Size            =   7.8
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -221,7 +221,7 @@ Begin VB.Form Orders
       End
    End
    Begin VB.ListBox lbType 
-      Height          =   1035
+      Height          =   1008
       ItemData        =   "Orders.frx":0369
       Left            =   1560
       List            =   "Orders.frx":037C
@@ -231,7 +231,7 @@ Begin VB.Form Orders
       Width           =   375
    End
    Begin VB.ListBox lbDel 
-      Height          =   450
+      Height          =   432
       ItemData        =   "Orders.frx":0391
       Left            =   240
       List            =   "Orders.frx":039B
@@ -249,7 +249,7 @@ Begin VB.Form Orders
       Width           =   1515
    End
    Begin VB.ListBox lbM 
-      Height          =   255
+      Height          =   240
       Left            =   1500
       TabIndex        =   27
       Top             =   1020
@@ -300,7 +300,7 @@ Begin VB.Form Orders
       Width           =   495
    End
    Begin VB.ListBox lbStat 
-      Height          =   645
+      Height          =   624
       ItemData        =   "Orders.frx":03B5
       Left            =   240
       List            =   "Orders.frx":03C2
@@ -319,7 +319,7 @@ Begin VB.Form Orders
       Width           =   975
    End
    Begin VB.ListBox lbProblem 
-      Height          =   2595
+      Height          =   2544
       Left            =   2460
       TabIndex        =   22
       Top             =   1020
@@ -327,7 +327,7 @@ Begin VB.Form Orders
       Width           =   1095
    End
    Begin VB.ListBox lbCeh 
-      Height          =   645
+      Height          =   624
       ItemData        =   "Orders.frx":03DD
       Left            =   2100
       List            =   "Orders.frx":03EA
@@ -342,8 +342,8 @@ Begin VB.Form Orders
       TabIndex        =   2
       Top             =   780
       Width           =   11895
-      _ExtentX        =   20981
-      _ExtentY        =   7858
+      _ExtentX        =   20976
+      _ExtentY        =   7853
       _Version        =   393216
       BackColor       =   16777215
       ForeColorFixed  =   0
@@ -354,7 +354,7 @@ Begin VB.Form Orders
       FormatString    =   $"Orders.frx":03FD
       BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
          Name            =   "MS Sans Serif"
-         Size            =   9.75
+         Size            =   9.6
          Charset         =   204
          Weight          =   400
          Underline       =   0   'False
@@ -380,14 +380,14 @@ Begin VB.Form Orders
    End
    Begin MSComctlLib.Toolbar Toolbar1 
       Align           =   1  'Align Top
-      Height          =   630
+      Height          =   612
       Left            =   0
       TabIndex        =   38
       Top             =   0
       Width           =   11880
       _ExtentX        =   20955
-      _ExtentY        =   1111
-      ButtonWidth     =   609
+      _ExtentY        =   1080
+      ButtonWidth     =   614
       ButtonHeight    =   953
       Appearance      =   1
       _Version        =   393216
@@ -580,7 +580,7 @@ Const rowFromOrdersSQL = "select " & _
 "   ,id_bill" & _
 "   ,GuideFirms.id_voc_names as id_voc_names" & _
 "   ,guideventure.sysname as servername" & _
-"   ,Orders.zalog, Orders.nal" & _
+"   ,Orders.zalog, Orders.nal, Orders.rate" & _
 " from orders " & _
 " JOIN GuideStatus ON GuideStatus.StatusId = Orders.StatusId " & _
 " JOIN GuideProblem ON GuideProblem.ProblemId = Orders.ProblemId " & _
@@ -661,7 +661,7 @@ End If
 End Sub
 
 Private Sub cmAdd_Click() ' см также nextDayDetect()
-Dim str As String, intNum As Integer, l As Long, numOrder As String
+Dim str As String, intNum As Integer, l As Long, numorder As String
 Dim strNow As String, DateFromNum As String, dNow As Date
  
  strNow = Format(Now, "dd.mm.yyyy")
@@ -747,7 +747,7 @@ End If
 On Error GoTo ERR1
 tbOrders.AddNew
 tbOrders!StatusId = 0
-tbOrders!numOrder = l
+tbOrders!numorder = l
 tbOrders!inDate = Now
 tbOrders!ManagId = manId(Orders.cbM.ListIndex)
 If isBaseOrder Then
@@ -1004,7 +1004,7 @@ If Not tqOrders.BOF Then
       End If
     strToWeb = ""
     valToWeb tqOrders!xLogin
-    valToWeb tqOrders!numOrder
+    valToWeb tqOrders!numorder
     valToWeb status(tqOrders!StatusId)
     valToWeb tqOrders!outDateTime, "dd.mm.yy"
     valToWeb tqOrders!outDateTime, "hh"
@@ -1316,6 +1316,7 @@ initOrCol orType, "sOrders.Type"
 initOrCol orTema, "nOrders.temaId"
 initOrCol orZalog, "nOrders.zalog"
 initOrCol orNal, "nOrders.nal"
+initOrCol orRate, "nOrders.rate"
 initOrCol orZakazano, "nOrders.ordered"
 initOrCol orOplacheno, "nOrders.paid"
 initOrCol orOtgrugeno, "nOrders.shipped"
@@ -1339,7 +1340,7 @@ tbEndDate.Text = Format(curDate, "dd/mm/yy")
 Grid.FormatString = "|>№ заказа|>№ счета|<Предпр| Цех |^Дата |^ М|<Статус |<Проблемы|" & _
 "<ДатаРС|<Название Фирмы|<Дата выдачи|Вр.выдачи|Вр.выполнения|Макет|Образец|" & _
 "<дата выдачи MO|<вр.выдачи MO|O в.выполнения|<Лого|<Изделия|" & _
-"Категория|<Тема|Залог|Нал.опл.|заказано|согласовано|отгружено|^ M"
+"Категория|<Тема|Залог|Нал.опл.|Курс|заказано|согласовано|отгружено|^ M"
 Grid.Cols = Grid.Cols + 4 ' lastModified, id_bill, id_voc_names, servername
 Grid.ColWidth(0) = 0
 Grid.ColWidth(orData) = 840
@@ -1352,6 +1353,7 @@ Grid.ColWidth(orMOVrVid) = 570 + 50
 Grid.ColWidth(orOVrVip) = 810
 Grid.ColWidth(orZalog) = 540
 Grid.ColWidth(orNal) = 540
+Grid.ColWidth(orRate) = 540
 Grid.ColWidth(orZakazano) = 540
 Grid.ColWidth(orOplacheno) = 540
 Grid.ColWidth(orOtgrugeno) = 615
@@ -1583,7 +1585,7 @@ If mousRow = 0 Then
     If mousCol = 0 Then Exit Sub
     If mousCol = orNomZak Or mousCol = orZakazano Or mousCol = orOplacheno _
     Or mousCol = orOtgrugeno Or mousCol = orVrVip Or mousCol = orOVrVip _
-    Or mousCol = orZalog Or mousCol = orNal Then
+    Or mousCol = orZalog Or mousCol = orNal Or mousCol = orRate Then
         SortCol Grid, mousCol, "numeric"
     ElseIf mousCol = orData Or mousCol = orDataRS Or mousCol = orDataVid Then
         SortCol Grid, mousCol, "date"
@@ -2032,8 +2034,7 @@ ElseIf mousCol = orTema Then
 ElseIf mousCol = orVrVid Or mousCol = orMOVrVid Or mousCol = orLogo _
 Or mousCol = orIzdelia Or mousCol = orType Or mousCol = orInvoice Then
     textBoxInGridCell tbMobile, Grid
-#If Not COMTEC = 1 Then '----------------------------------------------------
-ElseIf mousCol = orOplacheno Or mousCol = orZalog Or mousCol = orNal Then
+ElseIf mousCol = orOplacheno Or mousCol = orZalog Or mousCol = orNal Or mousCol = orRate Then
     textBoxInGridCell tbMobile, Grid
 ElseIf mousCol = orZakazano Then
   If havePredmetiNew Then
@@ -2061,7 +2062,6 @@ ElseIf mousCol = orOtgrugeno Then
             MsgBox "Еще неготовый Цеховой заказ нельзя отгружать без счета", , "Ошибка"
         End If
     End If
-#End If '-------------------------------------------------------------------
 End If
 
 
@@ -2096,7 +2096,7 @@ If zakazNum = 0 Then Exit Sub
 beClick = True
 tbInform.Text = Grid.TextMatrix(mousRow, mousCol)
 
-bilo = (mousCol = orZakazano Or mousCol = orOplacheno Or mousCol = orOtgrugeno Or mousCol = orZalog Or mousCol = orNal)
+bilo = (mousCol = orZakazano Or mousCol = orOplacheno Or mousCol = orOtgrugeno Or mousCol = orZalog Or mousCol = orNal Or mousCol = orRate)
 If (dostup = "a" Or Grid.TextMatrix(mousRow, orStatus) <> "закрыт") _
    And ( _
        mousCol = orFirma _
@@ -2376,6 +2376,7 @@ Print #2, DNM & " проблема=" & lbProblem.Text & _
 "   зак=" & Grid.TextMatrix(mousRow, orZakazano) & _
 " залог=" & Grid.TextMatrix(mousRow, orZalog) & _
 " нал=" & Grid.TextMatrix(mousRow, orNal) & _
+" курс=" & Grid.TextMatrix(mousRow, orRate) & _
 " опл=" & Grid.TextMatrix(mousRow, orOplacheno) & _
 " отг=" & Grid.TextMatrix(mousRow, orOtgrugeno)
 Close #2
@@ -2902,14 +2903,37 @@ DNM = Format(Now(), "dd.mm.yy hh:nn") & vbTab & cbM.Text & " " & gNzak ' именно 
         If Not isFloatFromMobile("zalog") Then Exit Sub
     ElseIf mousCol = orNal Then
         If Not isFloatFromMobile("nal") Then Exit Sub
+    ElseIf mousCol = orRate Then
+        If Not isFloatFromMobile("rate") Then
+            Exit Sub
+        End If
+        
+        ' исправить также курсы заказов, имеющих тот же самый счет в бухгалтерии
+        sql = "select n.numorder from orders o join orders n on n.id_jscet = o.id_jscet where n.numorder != o.numorder and o.numorder = " & gNzak
+        Set tbOrders = myOpenRecordSet("##27.1", sql, dbOpenForwardOnly)
+        Dim anotherNumorder As String, irow As Long
+        
+        If Not tbOrders Is Nothing Then
+            If Not tbOrders.BOF Then
+                While Not tbOrders.EOF
+                   anotherNumorder = tbOrders!numorder
+                   sql = "update orders set rate = " & tbMobile.Text & " where numorder = " & anotherNumorder
+                   myExecute "##27.2", sql
+                   ' поправить на экране тоже
+                   irow = searchZakRow(Grid, anotherNumorder)
+                   Grid.TextMatrix(irow, orRate) = tbMobile.Text
+                   tbOrders.MoveNext
+                Wend
+            End If
+            tbOrders.Close
+        End If
+        
     ElseIf mousCol = orOtgrugeno Then
         If Not isFloatFromMobile("shipped") Then Exit Sub
         s = Round(tbMobile.Text, 2)
         If s = 0 Then
-#If Not COMTEC = 1 Then '---------------------------------------------------
             orderUpdate "##78", "Null", "Orders", "shipped"
             Grid.TextMatrix(mousRow, orOtgrugeno) = ""
-#End If '-------------------------------------------------------------------
         ElseIf flDelRowInMobile Then
             flDelRowInMobile = False
             delZakazFromGrid
@@ -3024,7 +3048,7 @@ If tqOrders Is Nothing Then myBase.Close: End
 If Not tqOrders.BOF Then
 While Not tqOrders.EOF
  
- numZak = tqOrders!numOrder
+ numZak = tqOrders!numorder
   
  If chConflict.value = 1 Then If Not isConflict() Then GoTo NXT
  
@@ -3035,13 +3059,12 @@ While Not tqOrders.EOF
  
  Grid.TextMatrix(zakazNum, orNomZak) = numZak
  noClick = True
-    If Not IsNull(tqOrders!id_bill) Then 'срочный
+    If Not IsNull(tqOrders!id_bill) Then
          Grid.col = orFirma
          Grid.row = zakazNum
          Grid.CellForeColor = vbRed
     End If
  If tqOrders!StatusId < 6 Then '***************
-#If Not COMTEC = 1 Then '----------------------------------------------------
    For I = 1 To UBound(tmpL)
      If tmpL(I) = numZak Then
         Grid.col = orNomZak
@@ -3055,13 +3078,11 @@ While Not tqOrders.EOF
         Exit For
      End If
    Next I
-#End If '--------------------------------------------------------------
    If tqOrders!urgent = "y" Then 'срочный
         Grid.col = orCeh
         Grid.row = zakazNum
         Grid.CellForeColor = 200
    End If
-#If Not COMTEC = 1 Then '----------------------------------------------------
  ElseIf tqOrders!StatusId = 6 Then
     sql = "SELECT xPredmetyByIzdelia.numOrder from xPredmetyByIzdelia " & _
     "Where (((xPredmetyByIzdelia.numOrder) = " & numZak & ")) " & _
@@ -3074,7 +3095,6 @@ While Not tqOrders.EOF
         Grid.row = zakazNum
         Grid.CellForeColor = &H8800& ' т.зел.
     End If
-#End If '--------------------------------------------------------------
  End If '*************************************
  noClick = False
  
@@ -3235,11 +3255,12 @@ Sub copyRowToGrid(row As Long)
     Grid.TextMatrix(row, orType) = tqOrders!Type
  If Not IsNull(tqOrders!temaId) Then _
     Grid.TextMatrix(row, orTema) = lbTema.List(tqOrders!temaId)
- LoadNumeric Grid, row, orZakazano, tqOrders!ordered
- LoadNumeric Grid, row, orOplacheno, tqOrders!paid
- LoadNumeric Grid, row, orZalog, tqOrders!zalog
- LoadNumeric Grid, row, orNal, tqOrders!nal
- LoadNumeric Grid, row, orOtgrugeno, tqOrders!shipped
+ LoadNumeric Grid, row, orZakazano, tqOrders!ordered, , "###0.00"
+ LoadNumeric Grid, row, orOplacheno, tqOrders!paid, , "###0.00"
+ LoadNumeric Grid, row, orZalog, tqOrders!zalog, , "###0.00"
+ LoadNumeric Grid, row, orNal, tqOrders!nal, , "###0.00"
+ LoadNumeric Grid, row, orRate, tqOrders!Rate, , "###0.00"
+ LoadNumeric Grid, row, orOtgrugeno, tqOrders!shipped, , "###0.00"
  If Not IsNull(tqOrders!lastManag) Then _
     Grid.TextMatrix(row, orLastMen) = tqOrders!lastManag
  If Not IsNull(tqOrders!Venture) Then _
@@ -4017,7 +4038,7 @@ If tbProduct.BOF Then 'т.е. отгрузка началась по старому и не закончилась
         tbProduct.AddNew
         tmpDate = "31.08.2003 10:00:00"
         tbProduct!outDate = tmpDate
-        tbProduct!numOrder = gNzak
+        tbProduct!numorder = gNzak
         tbProduct!quant = s
         tbProduct.update
     End If

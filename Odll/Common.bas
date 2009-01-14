@@ -123,7 +123,7 @@ Public orVrVid As Integer, orVrVip As Integer, orM As Integer, orO As Integer
 Public orType As Integer, orInvoice As Integer
 Public orMOData As Integer, orMOVrVid As Integer, orOVrVip As Integer
 Public orLogo As Integer, orIzdelia As Integer, orZakazano As Integer
-Public orZalog As Integer, orNal As Integer
+Public orZalog As Integer, orNal As Integer, orRate As Integer
 Public orOplacheno As Integer, orOtgrugeno As Integer, orLastMen As Integer
 Public orVenture As Integer
 Public orlastModified As Integer
@@ -427,9 +427,9 @@ If isOrders Then Unload Orders
 If isCehOrders Then Unload CehOrders
 If isZagruz Then Unload Zagruz
 If isFindFirm Then Unload FindFirm
-#If Not COMTEC = 1 Then '----------------------------------------------------
+
 If sDocs.isLoad Then Unload sDocs
-#End If '--------------------------------------------------------------
+
 If cfg.isLoad Then Unload cfg '$$2
 'If isZagruzM Then Unload ZagruzM
 'myBase.Close
@@ -1646,7 +1646,7 @@ Dim s As Double, log As String, str As String
  str = LoadDate(Orders.Grid, row, orDataRS, tqOrders!dateRS, "dd.mm.yy")
  If str <> "" Then log = log & " РС=" & str
  
- gNzak = tqOrders!numOrder
+ gNzak = tqOrders!numorder
  If IsNull(tqOrders!DateTimeMO) Then
     Orders.Grid.TextMatrix(row, orMOData) = ""
     Orders.Grid.TextMatrix(row, orMOVrVid) = ""
@@ -1871,7 +1871,7 @@ While Not tbFirms.EOF '                         *******************
     If Not tbOrders.BOF Then
 '      tbOrders.MoveFirst
       While Not tbOrders.EOF '$$3
-            str = tbOrders!numOrder
+            str = tbOrders!numorder
           If year <> "" Then
             If iYear = lastYear - 3 Then
                 year01 = year01 + 1 'не исп-ся
@@ -2061,7 +2061,7 @@ End Function
 'не записыват неуникальное значение, для полей, где такие
 'значения запрещены. А  генерит при этом error?
 Function ValueToTableField(myErrCod As String, value As String, table As String, _
-field As String, Optional by As String = "") As Integer
+field As String, Optional by As String = "", Optional numorder As Variant) As Integer
 Dim sql As String, byStr As String  ', numOrd As String
 
 
@@ -2069,7 +2069,14 @@ ValueToTableField = False
 'If value = "" Then value = Chr(34) & Chr(34)
 If value = "" Then value = "''"
 If by = "" Then
-    byStr = ".numOrder)= " & gNzak
+    Dim nzak As String
+    If IsMissing(numorder) Then
+        nzak = gNzak
+    Else
+        nzak = numorder
+    End If
+        
+    byStr = ".numOrder)= " & nzak
 ElseIf by = "byFirmId" Then
     byStr = ".FirmId)= " & gFirmId
 ElseIf by = "byKlassId" Then
@@ -2231,7 +2238,6 @@ End If
 tbCeh.Close
 End Sub
 
-#If Not COMTEC = 1 Then
 
 Function beNaklads(Optional reg As String = "") As Boolean
 beNaklads = True
@@ -2584,25 +2590,44 @@ lockSklad = True
 End Function
     
 Function orderUpdate(myErrCod As String, value As String, table As String, _
-field As String, Optional by As String = "") As Integer
-
-        orderUpdate = ValueToTableField(myErrCod, value, table, field, by)
-        If table = "Orders" Then
-            refreshTimestamp (gNzak)
-        End If
+field As String, Optional by As String = "", Optional numorder As Variant) As Integer
+Dim nzak As String
+    If IsMissing(numorder) Then
+        nzak = gNzak
+    Else
+        nzak = numorder
+    End If
+    orderUpdate = ValueToTableField(myErrCod, value, table, field, by, nzak)
+    If table = "Orders" Then
+        refreshTimestamp (nzak)
+    End If
 End Function
 
-Function refreshTimestamp(gNzak)
+Function refreshTimestamp(nzak As String)
     Dim orderTimestamp As Date
+    Dim zakRow As Long
     
     sql = "SELECT O.lastModified From Orders o " _
-        & " WHERE (((O.numOrder)=" & gNzak & "));"
+        & " WHERE O.numOrder = " & nzak
     If Not byErrSqlGetValues("##174.2", sql, orderTimestamp) Then Exit Function
+    
+    zakRow = searchZakRow(Orders.Grid, nzak)
 
-    Orders.Grid.TextMatrix(Orders.mousRow, orlastModified) = orderTimestamp
+    Orders.Grid.TextMatrix(zakRow, orlastModified) = orderTimestamp
 End Function
 
-#End If
+Function searchZakRow(ByRef Grid As MSFlexGrid, nzak As String) As Long
+Dim irow As Long
+
+    searchZakRow = -1
+    For irow = 1 To Grid.rows - 1
+        If Grid.TextMatrix(irow, orNomZak) = nzak Then
+            searchZakRow = irow
+            Exit Function
+        End If
+    Next irow
+
+End Function
 
 Sub loadSeria(ByRef p_tv As TreeView)
 Dim Key As String, pKey As String, k() As String, pK()  As String
