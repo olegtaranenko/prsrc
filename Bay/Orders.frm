@@ -2078,7 +2078,9 @@ Dim str  As String
  
  
  LoadNumeric Grid, row, orRate, tqOrders!rate
- Grid.TextMatrix(row, orRate) = tqOrders!rate
+ If Not IsNull(tqOrders!rate) Then
+    Grid.TextMatrix(row, orRate) = tqOrders!rate
+ End If
  
  Grid.TextMatrix(row, orZakazano) = getOrdered(gNzak)
  LoadNumeric Grid, row, orOplacheno, tqOrders!paid
