@@ -934,7 +934,7 @@ begin
 		+ ', rem'
 		+ ', id_s'
 		+ ', dat' 
---		+ ', datv' 
+		+ ', datv' 
 		+ ', state'
 		+ ', real_days'
 		+ ', id_curr'
@@ -952,7 +952,7 @@ begin
 		+ ', ' + convert(varchar(20), p_numOrder)
 		+ ', -1'
 		+ ', ''''' + convert(varchar(20), v_order_date, 112) + ''''''
---		+ ', ''''' + v_datev + ''''''
+		+ ', ''''' + v_datev + ''''''
 		+ ', 1'
 		+ ', 3'
 		+ ', ' + convert(varchar(20), v_id_cur)
