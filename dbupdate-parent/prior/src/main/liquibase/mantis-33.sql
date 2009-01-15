@@ -913,7 +913,7 @@ begin
 	declare v_id_schef integer;
 	declare v_id_bux integer;
 	declare v_id_bank integer;
---	declare v_datev varchar(20);
+	declare v_datev varchar(20);
 	declare v_id_cur integer;
 --	declare v_currency_rate float;
 	declare v_order_date varchar(20);
@@ -930,7 +930,7 @@ begin
 	set r_id = r_id + 1;
 	set v_order_date = convert(varchar(20), now());
 	set v_id_cur = system_currency();
---	execute immediate 'call slave_currency_rate_' + remoteServerNew + '(v_datev, v_currency_rate, v_order_date, v_id_cur )';
+	execute immediate 'call slave_currency_rate_' + remoteServerNew + '(v_datev, v_currency_rate, v_order_date, v_id_cur )';
 	
 	set v_fields =
 		 'nu'
