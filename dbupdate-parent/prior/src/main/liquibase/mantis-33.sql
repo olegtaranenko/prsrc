@@ -40,6 +40,7 @@ begin
 
 	select sysname, invCode into remoteServerOld, v_invcode from GuideVenture where ventureId = old_name.ventureId;
 	set v_currency_rate = new_name.rate;
+	select id_cur into v_id_cur from system;
 
 	if update(invoice) and remoteServerOld is not null then
 		call update_remote(remoteServerOld, 'jscet', 'nu'
@@ -97,6 +98,7 @@ begin
 
 			if update(rate) then
 				call update_remote(remoteServerOld, 'jscet', 'curr', convert(varchar(20), v_currency_rate ), 'id = ' + convert(varchar(20), old_name.id_jscet));
+				call update_remote(remoteServerOld, 'jscet', 'id_curr', convert(varchar(20), v_id_cur ), 'id = ' + convert(varchar(20), old_name.id_jscet));
 			end if;
 
 			
@@ -755,7 +757,9 @@ begin
 
 	if update(rate) then
 		if remoteServerOld is not null then
+			select id_cur into v_id_cur from system;
 			call update_remote(remoteServerOld, 'jscet', 'curr', convert(varchar(20), new_name.rate ), 'id = ' + convert(varchar(20), old_name.id_jscet));
+			call update_remote(remoteServerOld, 'jscet', 'id_curr', convert(varchar(20), v_id_cur ), 'id = ' + convert(varchar(20), old_name.id_jscet));
 			for x as xxc dynamic scroll cursor for
 				select r.id_scet as r_id_scet
 					, r.intQuant / n.perList as r_cenaEd
