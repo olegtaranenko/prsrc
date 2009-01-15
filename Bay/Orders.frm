@@ -1122,7 +1122,8 @@ ElseIf mousCol = orFirma Then
     End If
     Me.PopupMenu mnContext
 ElseIf mousCol = orZakazano Then
-    sql = "SELECT nomNom From sDMCrez WHERE sDMCrez.numDoc = '" & gNzak
+    
+    sql = "SELECT nomNom From sDMCrez WHERE sDMCrez.numDoc = " & gNzak
     byErrSqlGetValues "W##362", sql, str
     If str = "" Then
         MsgBox "У  заказа № " & gNzak & " нет пердметов!", , ""
