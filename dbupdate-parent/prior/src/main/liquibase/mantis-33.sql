@@ -489,7 +489,7 @@ begin
 				, p_id_jscet
 				, v_id_inv
 				, r_quant / v_perList
-				, r_cenaEd
+				, r_cenaEd * v_perList
 				, p_date
 				, p_rate
 			);
@@ -578,9 +578,10 @@ begin
 	declare v_fields varchar(255);
 	declare v_values varchar(2000);
 	declare v_date date;
+	declare v_rate float;
  
-	select id_jscet, inDate, sysname, invCode 
-	into v_id_jscet, v_date, remoteServerNew, v_invcode  
+	select id_jscet, inDate, sysname, invCode, o.rate
+	into v_id_jscet, v_date, remoteServerNew, v_invcode, v_rate
 		from orders o
 		join GuideVenture v on o.ventureId = v.ventureId and v.standalone = 0
 		where numOrder = new_name.numOrder;
@@ -597,6 +598,7 @@ begin
 				, new_name.quant
 				, new_name.cenaEd
 				, v_date
+				, v_rate
 			);
 		set new_name.id_scet = v_id_scet;
 		set new_name.id_inv = v_id_inv;
@@ -645,7 +647,7 @@ begin
 
 
 	set v_cenaEd = new_name.intQuant;
-	set v_quantity = new_name.quantity/v_perList;
+	set v_quantity = new_name.quantity / v_perList;
 
 --	select id_inv into v_id_inv from sGuideNomenk where nomNom = new_name.nomNom;
 
@@ -755,8 +757,11 @@ begin
 		if remoteServerOld is not null then
 			call update_remote(remoteServerOld, 'jscet', 'curr', convert(varchar(20), new_name.rate ), 'id = ' + convert(varchar(20), old_name.id_jscet));
 			for x as xxc dynamic scroll cursor for
-				select id_scet as r_id_scet, intQuant as r_cenaEd, quantity as r_quant
+				select r.id_scet as r_id_scet
+					, r.intQuant / n.perList as r_cenaEd
+					, r.quantity as r_quant
 				from sdmcrez r 
+				join sGuideNomenk n on n.nomnom = r.nomnom
 				where numdoc = old_name.numorder
 			do
 				set v_updated = wf_scet_price_changed(remoteServerOld, r_quant, r_cenaEd, r_id_scet, new_name.rate);
@@ -806,7 +811,7 @@ begin
 
 		select 
 			n.id_inv
-			, r_quantity/n.perList
+			, r_quantity / n.perList
 		into 
 			v_id_inv
 			, v_quant
@@ -866,7 +871,7 @@ begin
 	  -- Заказ, который имеет ссылки в бух.базах интеграции
 	  -- т.е. уже назначен той, иди другой фирме
 		set new_name.id_scet = 
-			wf_insert_scet(
+			wf_insert_scet (
 				remoteServerNew
 				, v_id_jscet
 				, v_id_inv
@@ -904,7 +909,7 @@ begin
 	declare v_id_schef integer;
 	declare v_id_bux integer;
 	declare v_id_bank integer;
-	declare v_datev varchar(20);
+--	declare v_datev varchar(20);
 	declare v_id_cur integer;
 --	declare v_currency_rate float;
 	declare v_order_date varchar(20);
@@ -921,7 +926,7 @@ begin
 	set r_id = r_id + 1;
 	set v_order_date = convert(varchar(20), now());
 	set v_id_cur = system_currency();
-	execute immediate 'call slave_currency_rate_' + remoteServerNew + '(v_datev, v_currency_rate, v_order_date, v_id_cur )';
+--	execute immediate 'call slave_currency_rate_' + remoteServerNew + '(v_datev, v_currency_rate, v_order_date, v_id_cur )';
 	
 	set v_fields =
 		 'nu'

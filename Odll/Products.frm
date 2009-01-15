@@ -1950,7 +1950,7 @@ On Error GoTo errr
     If Not nomenkToDMCrez(quant) Then GoTo ER1
     
     tbNomenk.AddNew
-    tbNomenk!numOrder = numDoc
+    tbNomenk!numorder = numDoc
     tbNomenk!nomNom = gNomNom
     tbNomenk!quant = quant
     tbNomenk.update
@@ -2035,7 +2035,7 @@ If KeyCode = vbKeyReturn Then
             End If
         ElseIf s > 0.005 Then
             tbProduct.AddNew
-            tbProduct!numOrder = gNzak
+            tbProduct!numorder = gNzak
             If str = "изделие" Then
                 tbProduct!prId = gProductId
                 tbProduct!prExt = prExt
@@ -2350,7 +2350,7 @@ wrkDefault.BeginTrans
 If tbProduct.BOF Then
     If lastExt > 0 Then msgOfEnd "##317", "lastExt=" & lastExt
     tbProduct.AddNew
-    tbProduct!numOrder = numDoc
+    tbProduct!numorder = numDoc
     tbProduct!prId = gProductId
     tbProduct!prExt = prExt
     tbProduct!quant = pQuant
@@ -2362,7 +2362,7 @@ If tbProduct.BOF Then
 
     For I = 1 To UBound(NN)
         tbNomenk.AddNew
-        tbNomenk!numOrder = numDoc
+        tbNomenk!numorder = numDoc
         tbNomenk!prId = gProductId
         tbNomenk!prExt = prExt
         tbNomenk!nomNom = NN(I)
@@ -2459,12 +2459,12 @@ Timer1.Enabled = False
 End Sub
 
 Private Sub tv_AfterLabelEdit(Cancel As Integer, NewString As String)
-gSeriaId = Mid$(tv.SelectedItem.key, 2)
+gSeriaId = Mid$(tv.SelectedItem.Key, 2)
 ValueToTableField "##115", "'" & NewString & "'", "sGuideSeries", "seriaName", "bySeriaId"
 End Sub
 
 Sub loadKlass()
-Dim key As String, pKey As String, k() As String, pK()  As String
+Dim Key As String, pKey As String, k() As String, pK()  As String
 Dim I As Integer, iErr As Integer
 bilo = False
 sql = "SELECT sGuideKlass.*  From sGuideKlass ORDER BY sGuideKlass.parentKlassId;"
@@ -2479,10 +2479,10 @@ If Not tbKlass.BOF Then
  ReDim k(0): ReDim pK(0): ReDim NN(0): iErr = 0
  While Not tbKlass.EOF
     If tbKlass!klassId = 0 Then GoTo NXT1
-    key = "k" & tbKlass!klassId
+    Key = "k" & tbKlass!klassId
     pKey = "k" & tbKlass!parentKlassId
     On Error GoTo ERR1 ' назначить второй проход
-    Set Node = tv.Nodes.Add(pKey, tvwChild, key, tbKlass!klassName)
+    Set Node = tv.Nodes.Add(pKey, tvwChild, Key, tbKlass!klassName)
     On Error GoTo 0
     Node.Sorted = True
 NXT1:
@@ -2510,7 +2510,7 @@ Exit Sub
 ERR1:
  iErr = iErr + 1: bilo = True
  ReDim Preserve k(iErr): ReDim Preserve pK(iErr): ReDim Preserve NN(iErr)
- k(iErr) = key: pK(iErr) = pKey: NN(iErr) = tbKlass!klassName
+ k(iErr) = Key: pK(iErr) = pKey: NN(iErr) = tbKlass!klassName
  Resume Next
 
 ERR2: bilo = True: Resume NXT
@@ -2594,7 +2594,7 @@ Dim beg As Double, prih As Double, rash As Double, oldNow As Double
 
 
 
-If tv.SelectedItem.key = "all" Then
+If tv.SelectedItem.Key = "all" Then
     strWhere = ""
     quantity = 0
 Else
@@ -2667,7 +2667,7 @@ End Sub
 Sub loadSeriaProduct()
 Dim il As Long, strWhere As String
 
-If tv.SelectedItem.key = "k0" Then
+If tv.SelectedItem.Key = "k0" Then
     gSeriaId = 0
     Grid3.Visible = False
     Exit Sub
@@ -2728,7 +2728,7 @@ End Sub
 
 Private Sub tv_NodeClick(ByVal Node As MSComctlLib.Node)
 
-If tv.SelectedItem.key = "k0" Then
+If tv.SelectedItem.Key = "k0" Then
     controlEnable False
     quantity = 0
     laGrid.Caption = ""
@@ -2738,7 +2738,7 @@ End If
 tbQuant.Enabled = False
 laQuant.Enabled = False
 If opProduct.value Then
-    gSeriaId = Mid$(tv.SelectedItem.key, 2)
+    gSeriaId = Mid$(tv.SelectedItem.Key, 2)
     loadSeriaProduct
     Grid3.Visible = True
     Grid.Visible = False
@@ -2747,7 +2747,7 @@ If opProduct.value Then
     gridOrGrid3Hide "grid"
 Else
     controlEnable True
-    gKlassId = Mid$(tv.SelectedItem.key, 2)
+    gKlassId = Mid$(tv.SelectedItem.Key, 2)
     loadKlassNomenk
 '    Grid.Visible = True
 End If
