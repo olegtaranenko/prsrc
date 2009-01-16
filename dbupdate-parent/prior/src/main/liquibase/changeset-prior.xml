@@ -241,5 +241,84 @@ end;
 		<rollback/>
 	</changeSet>
 
+	<changeSet id="ddl-3" author="mantis-33">
+		<comment>Колонка курс в таблице проводок.</comment>
+		<addColumn tableName="yBook">
+			<column name="rate" type="float">
+				<constraints nullable="true"/>
+			</column>
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="dml-2" author="mantis-33" runOnChange="true">
+		<comment>Update колонки курс в таблице проводок.</comment>
+		<update tableName="yBook">
+			<column name="rate" valueNumeric="30"/>
+		</update>
+
+		<sql splitStatements="false" stripComments="false"><![CDATA[
+select 1			
+		]]></sql>
+
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="ddl-4" author="mantis-33">
+		<comment>Столбец id в таблице проводок, для создания первичного ключа</comment>
+		<addColumn tableName="yBook">
+			<column name="id" type="int">
+				<constraints nullable="true"/>
+			</column>
+		</addColumn>
+	</changeSet>
+<!--
+	<changeSet id="dml-3" author="mantis-33">
+		<comment>Проинициализировать id в таблице проводок</comment>
+		<sqlFile splitStatements="false" stripComments="false" path="src/main/liquibase/mantis-33-dml-3.sql" encoding="cp1251"/>
+	</changeSet>
+-->
+	<changeSet id="ddl-5" author="mantis-33">
+		<comment>Создать столбец id автоинкрементным</comment>
+		<sql><![CDATA[
+alter table ybook modify id not null default autoincrement
+		]]></sql>
+	</changeSet>
+
+	<changeSet id="ddl-6" author="mantis-33">
+		<comment>Создать первичный ключ для таблицы проводок</comment>
+		<addPrimaryKey tableName="yBook" constraintName="pk_ybook" columnNames="id"/>
+	</changeSet>
+
+	<changeSet id="code-2" author="mantis-33" runOnChange="true">
+		<sql splitStatements="false" stripComments="false">
+
+if exists (select 1 from sysprocedure where proc_name = 'retrieve_xoz_rub') then
+	drop function retrieve_xoz_rub;
+end if;
+
+create 
+	function retrieve_xoz_rub
+	(
+		p_id   integer
+	)
+returns float
+begin
+	declare v_server    varchar(50);
+	declare v_id_xoz   integer;
+
+	select v.sysname, b.id_xoz
+	into v_server, v_id_xoz
+	from ybook b
+	join guideVenture v on v.ventureid = b.ventureid
+	where b.id = p_id;
+
+	set retrieve_xoz_rub = select_remote(v_server, 'xoz', 'sum', 'id = ' + convert(varchar(20), v_id_xoz));
+	
+end;
+
+
+		</sql>
+	</changeSet>
+
 </databaseChangeLog>
 

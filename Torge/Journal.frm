@@ -78,7 +78,6 @@ Begin VB.Form Journal
       Left            =   3180
       TabIndex        =   9
       Top             =   5760
-      Visible         =   0   'False
       Width           =   975
    End
    Begin VB.CommandButton cmLoad 
@@ -263,7 +262,7 @@ Const cNewLbLine = "-new-"
 
 Const jnDate = 1
 Const jnM = 2
-Const jnRub = 3
+Const jnRate = 3
 Const jnVal = 4
 Const jnDebit = 5
 Const jnSubDebit = 6
@@ -277,6 +276,7 @@ Const jnPurpose = 13
 Const jnDetail = 14
 Const jnVenture = 15
 Const jnShiz = 16
+Const jnId = 17
 
 
 Private Sub mnAreport_Click()
@@ -340,11 +340,16 @@ End Sub
 Private Sub cmAdd_Click()
 Dim i As Integer
 Dim str As String
+Dim rate As Variant
 
 cmAdd.Enabled = False 'нельзя жать чаще 1с, т.к. дата это ключ
 'frmMode = "sourceAdd"
 
 On Error GoTo adderr
+sql = "SELECT Kurs FROM System"
+If byErrSqlGetValues("##321", sql, str) Then
+    rate = Abs(CDbl(str))
+End If
 
 Set tbDocs = myOpenRecordSet("##324", "yBook", dbOpenTable) 'dbOpenForwardOnly)
 If tbDocs Is Nothing Then Exit Sub
@@ -366,11 +371,16 @@ AA:     cmAdd.Caption = left$(cmAdd.Caption, i - 2)
 '    detailId = tbDocs!detailId
     KredDebitor = tbDocs!KredDebitor
 End If
+
+
+
 tbDocs.AddNew
 tmpDate = Format(Now(), "dd/mm/yy hh:nn:ss")
 tbDocs!xDate = tmpDate
 
 tbDocs!m = AUTO.cbM.Text
+
+
 If i > 0 Then
     tbDocs!debit = Grid.TextMatrix(mousRow, jnDebit)
     str = Grid.TextMatrix(mousRow, jnSubDebit)
@@ -386,6 +396,8 @@ If i > 0 Then
 '    tbDocs!detailId = detailId
     tbDocs!KredDebitor = KredDebitor
 End If
+If Not IsNull(rate) Then _
+    tbDocs!rate = rate
 
 tbDocs.Update
 tbDocs.Close
@@ -401,11 +413,13 @@ If quantity > 0 Then Grid.AddItem ("")
 quantity = quantity + 1
 noClick = True
 Grid.row = Grid.Rows - 1
-Grid.col = jnRub
+Grid.col = jnRate
 noClick = False
 
 Grid.TextMatrix(Grid.row, jnDate) = Format(tmpDate, "dd/mm/yy hh:nn:ss")
 Grid.TextMatrix(Grid.row, jnM) = AUTO.cbM.Text
+If Not IsNull(rate) Then _
+    Grid.TextMatrix(Grid.row, jnRate) = rate
 If i > 0 Then
     Grid.TextMatrix(Grid.row, jnDebit) = Grid.TextMatrix(mousRow, jnDebit)
     Grid.TextMatrix(Grid.row, jnSubDebit) = Grid.TextMatrix(mousRow, jnSubDebit)
@@ -420,7 +434,7 @@ If i > 0 Then
     cmAdd.Caption = left$(cmAdd.Caption, i - 2)
 End If
 mousRow = Grid.Rows - 1
-mousCol = jnRub
+mousCol = jnRate
 rowViem quantity, Grid
 On Error Resume Next
 Grid.SetFocus
@@ -600,16 +614,16 @@ If byErrSqlGetValues("##321", sql, s) Then
     'If s > 0.01 Then tbKurs.Text = s ' с "-" - это вчерашний курс
 End If
 
-Grid.FormatString = "|<Дата|М|Рубли|Валюта|Дб|Сс|Кр|Сс|<Заказчик(временная)" & _
-"|<Кредитор\Дебитор|<Договор|<Примечание|<Назначение|<Уточнение|<Предприятие|<Шифр затрат"
+Grid.FormatString = "|<Дата|М|Курс|Валюта|Дб|Сс|Кр|Сс|<Заказчик(временная)" & _
+"|<Кредитор\Дебитор|<Договор|<Примечание|<Назначение|<Уточнение|<Предприятие|<Шифр затрат|id_xoz"
 Grid.colWidth(0) = 0
 Grid.colWidth(jnDate) = 780
 Grid.colWidth(jnDebKreditor) = 2580
 Grid.colWidth(jnOrdersNum) = 1200
 Grid.colWidth(jnFirm) = 1395
 Grid.colWidth(jnDetail) = 1500
-Grid.colWidth(jnVenture) = 1300
 Grid.colWidth(jnVenture) = 1600
+Grid.colWidth(jnId) = 0
 'jnNote
 
 
@@ -634,7 +648,7 @@ End If
  
 sql = "SELECT yBook.xDate , yBook.UEsumm , yBook.Debit , yBook.subDebit , yBook.Kredit , yBook.subKredit , yBook.KredDebitor " & _
 ", isnull(yBook.ordersNum, '') as ordersNum , isnull(yBook.Note, '') Note , isnull(yGuidePurpose.pDescript, '') pDescript, isnull(yBook.descript, '') descript, yBook.M , yBook.firm , isnull(v.ventureName, '') as ventureName" & _
-", s.nm as shiz_text " & _
+", s.nm as shiz_text, ybook.rate, ybook.id " & _
 " from ybook " & _
 " left join yGuidePurpose " & _
 "   ON (yGuidePurpose.pId = yBook.purposeId)  " & _
@@ -658,7 +672,9 @@ If Not tbDocs.BOF Then
     i = tbDocs!KredDebitor
     Grid.TextMatrix(quantity, 0) = i
     Grid.TextMatrix(quantity, jnDate) = Format(tbDocs!xDate, "dd/mm/yy hh:nn:ss")
-'    Grid.TextMatrix(quantity, jnRub) =
+    If Not IsNull(tbDocs!rate) Then
+        Grid.TextMatrix(quantity, jnRate) = Round(tbDocs!rate, 2)
+    End If
     Grid.TextMatrix(quantity, jnVal) = Round(tbDocs!uesumm, 2)
     Grid.TextMatrix(quantity, jnDebit) = schType(tbDocs!debit, 255)
     Grid.TextMatrix(quantity, jnSubDebit) = schType(tbDocs!subDebit)
@@ -684,6 +700,8 @@ AA:     If byErrSqlGetValues("W##428", sql, str) Then _
     Grid.TextMatrix(quantity, jnM) = tbDocs!m
     If Not IsNull(tbDocs!shiz_text) Then _
         Grid.TextMatrix(quantity, jnShiz) = tbDocs!shiz_text
+    If Not IsNull(tbDocs!id) Then _
+        Grid.TextMatrix(quantity, jnId) = tbDocs!id
     Grid.AddItem ""
     tbDocs.MoveNext
  Wend
@@ -732,88 +750,37 @@ End Sub
 Function valueToBookField(myErrCod As String, value As String, field As String) As Boolean
 Dim pId As Integer, dId As Integer, str As String
 
-valueToBookField = False
-
-wrkDefault.BeginTrans 'lock01
-sql = "update system set resursLock = resursLock" 'lock02
-myBase.Execute (sql) 'lock03
-
-
-If field = "schets" Then
-    pId = getPurposeIdByDescript(jGuidePurpose.lbPurpose.Text)
-'    dId = getDetailIdByDescript(pId, jGuidePurpose.lbDetail.Text)
-'    If pId < 0 Then
-'        wrkDefault.Rollback
-'        MsgBox "Непонятное дейсвие", , "Error-453"
-'        Exit Function
-'    End If
-End If
-
-str = Grid.TextMatrix(mousRow, jnDate)
-strWhere = " WHERE xDate = '20" & Mid$(str, 7, 2) & "-" & Mid$(str, 4, 2) & _
-"-" & left$(str, 2) & Mid$(str, 9) & "'"
-If field = "delete" Then
-    sql = "DELETE FROM yBook " & strWhere
-    GoTo AA
-ElseIf field = "schets" Then
-    sql = "UPDATE yBook set debit = '" & debit & "', subDebit = '" & subDebit & _
-    "', kredit = '" & kredit & "', subKredit = '" & subKredit & "', purposeId = " & _
-    pId & strWhere
-    GoTo AA
-Else
-    sql = "UPDATE yBook set " & field & " = " & value & strWhere
-AA: 'MsgBox sql
-    'Debug.Print sql
-    If myExecute(myErrCod, sql) <> 0 Then Exit Function
-    'Debug.Print sql
+    valueToBookField = False
     
-End If
-
-wrkDefault.CommitTrans
-
-'Set tbDocs = myOpenRecordSet(myErrCod, "yBook", dbOpenTable) 'dbOpenForwardOnly)
-'If tbDocs Is Nothing Then Exit Function
-
-'tmpDate = Grid.TextMatrix(mousRow, jnDate)
-'bDocs.Index = "Key"
-'tbDocs.Seek "=", tmpDate
-'If tbDocs.NoMatch Then
-'    MsgBox "Запись не обнаружена по Дате! Сообщите администратору.", , "Err = " & myErrCod
-'    tbDocs.Close
-'    Exit Function
-'Else
-'    If field = "delete" Then
-'        tbDocs.Delete
-'        GoTo EN1
-'    End If
-'    tbDocs.Edit
-'    If field = "schets" Then
-'        jGuidePurpose.getSchetsFromLb
-'        tbDocs!debit = debit
-'        tbDocs!subDebit = subDebit
-'        tbDocs!kredit = kredit
-'        tbDocs!subKredit = subKredit
-'        tbDocs!purposeId = pId
-'        tbDocs!detailId = dId
-'    Else
-'        tbDocs.fields(field) = value
-'    End If
-'    On Error GoTo ERR1
-'    tbDocs.Update
-'End If
+    wrkDefault.BeginTrans 'lock01
+    sql = "update system set resursLock = resursLock" 'lock02
+    myBase.Execute (sql) 'lock03
+    
+    
+    strWhere = " WHERE id = " & Grid.TextMatrix(mousRow, jnId)
+    
+    If field = "delete" Then
+        sql = "DELETE FROM yBook " & strWhere
+        GoTo AA
+    ElseIf field = "schets" Then
+        pId = getPurposeIdByDescript(jGuidePurpose.lbPurpose.Text)
+        
+        sql = "UPDATE yBook set debit = '" & debit & "', subDebit = '" & subDebit & _
+        "', kredit = '" & kredit & "', subKredit = '" & subKredit & "', purposeId = " & _
+        pId & strWhere
+        GoTo AA
+    Else
+        sql = "UPDATE yBook set " & field & " = " & value & strWhere
+AA:
+        If myExecute(myErrCod, sql) <> 0 Then Exit Function
+        'Debug.Print sql
+        
+    End If
+    
+    wrkDefault.CommitTrans
+    
 EN1:
-'tbDocs.Close
-valueToBookField = True
-'Exit Function
-'
-'ERR1:
-'If Err = 3201 Then
-'
-'Else
-'    MsgBox Error, , "Ошибка 345-" & Err & ":  " '##345
-'End If
-'On Error Resume Next
-'tbDocs.Close
+    valueToBookField = True
 End Function
 
 
@@ -916,7 +883,7 @@ ElseIf mousCol = jnDate Then
     textBoxInGridCell tbMobile, Grid, left$(Grid.TextMatrix(mousRow, mousCol), 8)
 ElseIf mousCol = jnDebKreditor Then
     listBoxInGridCell lbGuids, Grid, "select" 'lbDebKreditor
-ElseIf mousCol = jnRub Then
+ElseIf mousCol = jnRate Then
     If Not IsNumeric(tbKurs.Text) Then GoTo EE
     If CSng(tbKurs.Text) < 0.01 Then
 EE:     tbKurs.SelStart = 0: tbKurs.SelLength = Len(tbKurs.Text)
@@ -936,9 +903,14 @@ If quantity = 0 Then Exit Sub
 mousRow = Grid.row
 mousCol = Grid.col
 tbInform.Text = Grid.TextMatrix(mousRow, jnOrdersNum)
-
-If mousCol <> jnM And mousCol <> jnVenture _
-  And (Grid.TextMatrix(mousRow, jnVenture) = "") _
+If Grid.TextMatrix(mousRow, jnVenture) <> "" Then
+    cmDel.Enabled = False
+Else
+    cmDel.Enabled = True
+End If
+If (mousCol <> jnM And mousCol <> jnVenture _
+  And (Grid.TextMatrix(mousRow, jnVenture) = "")) _
+  Or (mousCol = jnRate And dostup = "a") _
 Then  ' чтобы м.б. копировать из jnFirm
 'If mousCol > 2 Then  ' чтобы м.б. копировать из jnFirm
    Grid.CellBackColor = &H88FF88
@@ -987,7 +959,7 @@ Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As 
 If Grid.MouseRow = 0 And Shift = 2 Then
         MsgBox "ColWidth = " & Grid.colWidth(Grid.MouseCol)
 'ElseIf quantity > 0 And Grid.row <> Grid.RowSel Then
-ElseIf mousCol = jnRub Or mousCol = jnVal Then
+ElseIf mousCol = jnVal Then
     laSum.Caption = Round(sumInGridCol(Grid, mousCol), 2)
 End If
 End Sub
@@ -1072,7 +1044,7 @@ If quantity > 0 Then Grid.AddItem ("")
 quantity = quantity + 1
 noClick = True
 Grid.row = Grid.Rows - 1
-Grid.col = jnRub
+Grid.col = jnRate
 noClick = False
 Grid.TextMatrix(Grid.row, jnDate) = tmpStr
 Grid.TextMatrix(Grid.row, jnVal) = sum
@@ -1205,15 +1177,21 @@ If KeyCode = vbKeyReturn Then
      If valueToBookField("##375", str, "xDate") Then _
         Grid.TextMatrix(mousRow, mousCol) = Format(tmpDate, "dd.mm.yy hh:nn:ss")
      GoTo EN1
-  ElseIf mousCol = jnRub Then
+  ElseIf mousCol = jnRate Then
     If Not isNumericTbox(tbMobile, 0.1) Then Exit Sub
-    str = Round(CSng(tbMobile.Text) / CSng(tbKurs.Text), 2)
-    If Not valueToBookField("##326", str, "UEsumm") Then GoTo EN1
-    Grid.TextMatrix(mousRow, jnVal) = str
+    
+    Grid.TextMatrix(mousRow, jnRate) = tbMobile.Text
+    If Not valueToBookField("##375.0", tbMobile.Text, "rate") Then GoTo EN1
+    If Grid.TextMatrix(mousRow, jnVenture) <> "" Then
+        sql = "select retrieve_xoz_rub ( " & Grid.TextMatrix(mousRow, jnId) & ")"
+        If Not byErrSqlGetValues("##330", sql, str) Then Exit Sub
+        str = Round(CSng(str) / CSng(tbMobile.Text), 2)
+        If Not valueToBookField("##375.1", str, "UEsumm") Then GoTo EN1
+        Grid.TextMatrix(mousRow, jnVal) = str
+    End If
   ElseIf mousCol = jnVal Then
     If Not isNumericTbox(tbMobile, 0.1) Then Exit Sub
     If Not valueToBookField("##326", tbMobile.Text, "UEsumm") Then GoTo EN1
-    Grid.TextMatrix(mousRow, jnRub) = ""
   ElseIf mousCol = jnOrdersNum Then
     If Not valueToBookField("##326", "'" & tbMobile.Text & "'", "ordersNum") Then GoTo EN1
   ElseIf mousCol = jnNote Then

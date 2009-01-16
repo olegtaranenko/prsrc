@@ -16,7 +16,7 @@ Public ProductsPath As String
 
 
 Public tbSystem As Recordset
-Public Table As Recordset
+Public table As Recordset
 Public tbNomenk As Recordset
 Public tbProduct As Recordset
 Public tbDocs As Recordset
@@ -249,7 +249,7 @@ End Sub
 Sub GridToExcel(Grid As MSFlexGrid, Optional title As String = "")
 
 Dim objExel As Excel.Application, c As Long, r As Long
-Dim I As Integer, strA() As String, begRow As Integer, str As String
+Dim i As Integer, strA() As String, begRow As Integer, str As String
 
 
 begRow = 3
@@ -429,8 +429,13 @@ findExValInCol = -1
 End Function
 
 Sub listBoxInGridCell(lb As ListBox, Grid As MSFlexGrid, Optional sel As String = "")
-Dim I As Integer, l As Long
-    l = 195 * lb.ListCount + 100 ' Для больших списков
+Dim i As Integer, l As Long
+    If lb.ListCount < 200 Then
+        l = 195 * lb.ListCount + 100 ' Для больших списков
+    Else
+        l = Grid.Height / 2 + 500
+    End If
+        
     If l > Grid.Height / 2 + 500 Then l = Grid.Height / 2 + 500
     lb.Height = l
     
@@ -442,14 +447,14 @@ Dim I As Integer, l As Long
     lb.left = Grid.CellLeft + Grid.left
     lb.ListIndex = 0
     If sel <> "" Then
-        For I = 0 To lb.ListCount - 1 '
-            If Grid.Text = lb.List(I) Then
+        For i = 0 To lb.ListCount - 1 '
+            If Grid.Text = lb.List(i) Then
 '                noClick = True
-                lb.ListIndex = I 'вызывает ложное onClick
+                lb.ListIndex = i 'вызывает ложное onClick
 '                noClick = False
                 Exit For
             End If
-        Next I
+        Next i
     End If
 
     lb.Visible = True
@@ -479,7 +484,7 @@ End Function
 
 
 Sub Main()
-Dim str As String, I As Integer
+Dim str As String, i As Integer
 
 If App.PrevInstance = True Then
     MsgBox "Программа уже запущена", , "Error"
@@ -584,7 +589,7 @@ End Function
 
 Function ValueToGuideSourceField(myErrCod As String, value As String, _
 field As String, Optional passErr As Integer = -11111) As Integer
-Dim I As Integer
+Dim i As Integer
 
 ValueToGuideSourceField = False
 sql = "UPDATE sGuideSource SET [" & field & _
@@ -696,12 +701,12 @@ If noOpen = "" Then tbNomenk.Close
 End Function
 
 Sub rowViem(numRow As Long, Grid As MSFlexGrid)
-Dim I As Integer
+Dim i As Integer
 
-I = Grid.Height \ Grid.RowHeight(1) - 1 ' столько умещается строк
-I = numRow - I \ 2 ' в центр
-If I < 1 Then I = 1
-Grid.TopRow = I
+i = Grid.Height \ Grid.RowHeight(1) - 1 ' столько умещается строк
+i = numRow - i \ 2 ' в центр
+If i < 1 Then i = 1
+Grid.TopRow = i
 
 End Sub
 
@@ -734,14 +739,14 @@ End Sub
 
 
 Sub backNomenk()
-Dim q As Single, I As Integer, str As String, n As Integer, rr As Integer
+Dim q As Single, i As Integer, str As String, n As Integer, rr As Integer
 
 wrkDefault.BeginTrans
 
 For rr = 1 To UBound(QQ)
   Set tbDMC = myOpenRecordSet("##157", "sDMC", dbOpenTable)
   If tbDMC Is Nothing Then GoTo EN1
-  tbDMC.Index = "nomDoc"
+  tbDMC.index = "nomDoc"
   tbDMC.Seek "=", numDoc, numExt, NN(rr)
   If tbDMC.NoMatch Then
       tbDMC.Close
@@ -759,7 +764,7 @@ For rr = 1 To UBound(QQ)
   
     Set tbNomenk = myOpenRecordSet("##156", "sGuideNomenk", dbOpenTable)
     If tbNomenk Is Nothing Then GoTo EN1
-    tbNomenk.Index = "PrimaryKey"
+    tbNomenk.index = "PrimaryKey"
     tbNomenk.Seek "=", NN(rr)
     If tbNomenk.NoMatch Then
         tbNomenk.Close
@@ -780,17 +785,17 @@ ReDim QQ(0)
 End Sub
 
 Sub getDocExtNomFromStr(nom As String)
-Dim I As Integer
-I = InStr(nom, "/")
-If I = 0 Then
+Dim i As Integer
+i = InStr(nom, "/")
+If i = 0 Then
     numDoc = nom
     numExt = 254
 'ElseIf i = Len(nom) Then
 '    numDoc = Left$(nom, i - 1)
 '    numExt = 0
 Else
-    numDoc = left$(nom, I - 1)
-    numExt = Mid$(nom, I + 1)
+    numDoc = left$(nom, i - 1)
+    numExt = Mid$(nom, i + 1)
 End If
 End Sub
 
@@ -944,7 +949,7 @@ End Sub
 'м. задать константу "1" и принять ее в i. Тогда если i=0 то была Err Where
 '$odbc15$
 Function byErrSqlGetValues(ParamArray val() As Variant) As Boolean
-Dim tabl As Recordset, I As Integer, maxi As Integer, str As String, c As String
+Dim tabl As Recordset, i As Integer, maxi As Integer, str As String, c As String
 
 byErrSqlGetValues = False
 maxi = UBound(val())
@@ -959,7 +964,7 @@ Set tabl = myOpenRecordSet(str, CStr(val(1)), dbOpenForwardOnly) 'dbOpenDynaset)
 'If tabl Is Nothing Then Exit Function
 If tabl.BOF Then
     If c = "W" Then
-        For I = 2 To maxi: val(I) = 0: Next I
+        For i = 2 To maxi: val(i) = 0: Next i
         GoTo EN1
     Else
 '        msgOfEnd CStr(val(0)), "Нет записей удовлетворяющих Where."
@@ -969,17 +974,17 @@ If tabl.BOF Then
     End If
 End If
 'tabl.MoveFirst $#$
-For I = 2 To maxi
-    str = TypeName(val(I))
+For i = 2 To maxi
+    str = TypeName(val(i))
     If (str = "Single" Or str = "Integer" Or str = "Long" Or str = "Double") _
-    And IsNull(tabl.fields(I - 2)) Then
-        val(I) = 0
-    ElseIf str = "String" And IsNull(tabl.fields(I - 2)) Then
-        val(I) = ""
+    And IsNull(tabl.fields(i - 2)) Then
+        val(i) = 0
+    ElseIf str = "String" And IsNull(tabl.fields(i - 2)) Then
+        val(i) = ""
     Else
-        val(I) = tabl.fields(I - 2)
+        val(i) = tabl.fields(i - 2)
     End If
-Next I
+Next i
 EN1:
 byErrSqlGetValues = True
 EN2:
@@ -996,7 +1001,7 @@ Set tbDocs = myOpenRecordSet("##158", "sDocs", dbOpenTable) 'dbOpenForwardOnly)
 If tbDocs Is Nothing Then Exit Function
 
 docLock = False
-tbDocs.Index = "PrimaryKey"
+tbDocs.index = "PrimaryKey"
 tbDocs.Seek "=", numDoc, nnExt
 If tbDocs.NoMatch Then
     MsgBox "Похоже документ уже удалили", , "Error - 166"
@@ -1024,11 +1029,11 @@ End Function
 
 
 Function sumInGridCol(Grid As MSFlexGrid, col As Long) As Single
-Dim v, I As Integer
+Dim v, i As Integer
     
     sumInGridCol = 0
-    For I = Grid.row To Grid.RowSel
-        v = Grid.TextMatrix(I, col)
+    For i = Grid.row To Grid.RowSel
+        v = Grid.TextMatrix(i, col)
         If Not IsNumeric(v) Then
             v = 0
         Else
@@ -1037,13 +1042,13 @@ Dim v, I As Integer
             End If
         End If
         
-    Next I
+    Next i
 End Function
 
 
 Public Sub quickSort(varArray As Variant, _
  Optional lngLeft As Long = dhcMissing, Optional lngRight As Long = dhcMissing)
-Dim I As Long, j As Long, varTestVal As Variant, lngMid As Long
+Dim i As Long, j As Long, varTestVal As Variant, lngMid As Long
 
     If lngLeft = dhcMissing Then lngLeft = LBound(varArray)
     If lngRight = dhcMissing Then lngRight = UBound(varArray)
@@ -1051,28 +1056,28 @@ Dim I As Long, j As Long, varTestVal As Variant, lngMid As Long
     If lngLeft < lngRight Then
         lngMid = (lngLeft + lngRight) \ 2
         varTestVal = varArray(lngMid)
-        I = lngLeft
+        i = lngLeft
         j = lngRight
         Do
-            Do While varArray(I) < varTestVal
-                I = I + 1
+            Do While varArray(i) < varTestVal
+                i = i + 1
             Loop
             Do While varArray(j) > varTestVal
                 j = j - 1
             Loop
-            If I <= j Then
-                Call SwapElements(varArray, I, j)
-                I = I + 1
+            If i <= j Then
+                Call SwapElements(varArray, i, j)
+                i = i + 1
                 j = j - 1
             End If
-        Loop Until I > j
+        Loop Until i > j
         ' To optimize the sort, always sort the
         ' smallest segment first.
         If j <= lngMid Then
             Call quickSort(varArray, lngLeft, j)
-            Call quickSort(varArray, I, lngRight)
+            Call quickSort(varArray, i, lngRight)
         Else
-            Call quickSort(varArray, I, lngRight)
+            Call quickSort(varArray, i, lngRight)
             Call quickSort(varArray, lngLeft, j)
         End If
     End If
@@ -1108,7 +1113,7 @@ End Sub
 
 'не записыват неуникальное значение, для полей, где такие
 'значения запрещены. А  генерит при этом error?
-Function ValueToTableField(myErrCod As String, value As String, Table As String, _
+Function ValueToTableField(myErrCod As String, value As String, table As String, _
 field As String, Optional by As String = "") As Boolean
 Dim sql As String, byStr As String  ', numOrd As String
 
@@ -1129,16 +1134,16 @@ ElseIf by = "byProductId" Then
 'ElseIf by = "bySourceId" Then
 '    byStr = ".sourceId)= " & gSourceId
 ElseIf by = "byNumDoc" Then
-    sql = "UPDATE " & Table & " SET " & Table & "." & field & "=" & value _
-        & " WHERE (((" & Table & ".numDoc)=" & numDoc & " AND (" & Table & _
+    sql = "UPDATE " & table & " SET " & table & "." & field & "=" & value _
+        & " WHERE (((" & table & ".numDoc)=" & numDoc & " AND (" & table & _
         ".numExt)=" & numExt & " ));"
     GoTo AA
 Else
     byStr = "." & by
     'Exit Function
 End If
-sql = "UPDATE " & Table & " SET " & Table & "." & field & _
-" = " & value & " WHERE (((" & Table & byStr & " ));"
+sql = "UPDATE " & table & " SET " & table & "." & field & _
+" = " & value & " WHERE (((" & table & byStr & " ));"
 AA:
 'MsgBox "sql = " & sql
 'Debug.Print sql
@@ -1156,14 +1161,14 @@ Public Function vo_deleteNomnom(nomnom As String, numDoc As String) As Boolean
 End Function
 
 Function getValueFromTable(tabl As String, field As String, where As String) As Variant
-Dim Table As Recordset
+Dim table As Recordset
 
 getValueFromTable = Null
 sql = "SELECT " & field & " as fff  From " & tabl & _
       " WHERE " & where & ";"
-Set Table = myOpenRecordSet("##59.1", sql, dbOpenForwardOnly)
-If Table Is Nothing Then Exit Function
-If Not Table.BOF Then getValueFromTable = Table!fff
-Table.Close
+Set table = myOpenRecordSet("##59.1", sql, dbOpenForwardOnly)
+If table Is Nothing Then Exit Function
+If Not table.BOF Then getValueFromTable = table!fff
+table.Close
 End Function
 
