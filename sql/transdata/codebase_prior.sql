@@ -6089,12 +6089,13 @@ begin
 	declare old_invCode varchar(20);
 	declare old_server varchar(20);
 	declare old_firmId integer;
+	declare old_rate float;
 
 
 	set wf_check_jscet_merge = 0;
 
-	select invoice, id_jscet, o.ventureId, v.invCode, v.sysname, o.firmId
-	into old_invoice, old_id_jscet, old_ventureId, old_invCode, old_server, old_firmId
+	select invoice, id_jscet, o.ventureId, v.invCode, v.sysname, o.firmId, o.rate
+	into old_invoice, old_id_jscet, old_ventureId, old_invCode, old_server, old_firmId, old_rate
 	from orders o
 		join guideventure v on v.ventureId = o.ventureId
 	where numorder = p_numorder;
@@ -6108,6 +6109,7 @@ begin
 			and o.ventureId = old_ventureId
 			and o.id_jscet is not null and o.id_jscet > 0
 			and o.firmId <> old_firmId
+--			and abs(round(o.rate - old_rate, 2)) > 0
 			-- только для этого года
             and substring(o.numorder,0,1) = substring(p_numorder, 0, 1)
 		;
@@ -6131,6 +6133,7 @@ begin
 			and o.ventureId = old_ventureId
 			and o.id_jscet is not null and o.id_jscet > 0
 			and o.firmId = old_firmId
+--			and abs(round(o.rate - old_rate, 2)) = 0
 			-- только для этого года
             and substring(o.numorder,0,1) = substring(p_numorder, 0, 1)
 	do

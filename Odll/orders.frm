@@ -1633,7 +1633,7 @@ Dim ret As Integer
 On Error GoTo sqle
     byErrSqlGetValues "##100.2", sql, checkInvoiceMerge
     If checkInvoiceMerge < 0 Then
-        MsgBox "Для объединения заказов в один счет требуется, чтобы фирма-заказчик и предприятие были одинаковые" _
+        MsgBox "Для объединения заказов в один счет требуется, чтобы фирма-заказчик и предприятие (а так же курс) были одинаковые" _
         & vbCr & "Исправьте эти поля и попробуйте еще раз", , "Нельзя присоединить заказ"
         wrkDefault.rollback
     End If
