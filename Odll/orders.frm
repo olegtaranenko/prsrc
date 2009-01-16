@@ -221,14 +221,14 @@ Begin VB.Form Orders
       End
    End
    Begin VB.ListBox lbType 
-      Height          =   1008
+      Height          =   1200
       ItemData        =   "Orders.frx":0369
       Left            =   1560
       List            =   "Orders.frx":037C
       TabIndex        =   29
-      Top             =   4080
+      Top             =   3840
       Visible         =   0   'False
-      Width           =   375
+      Width           =   372
    End
    Begin VB.ListBox lbDel 
       Height          =   432
@@ -387,7 +387,7 @@ Begin VB.Form Orders
       Width           =   11880
       _ExtentX        =   20955
       _ExtentY        =   1080
-      ButtonWidth     =   609
+      ButtonWidth     =   614
       ButtonHeight    =   953
       Appearance      =   1
       _Version        =   393216
