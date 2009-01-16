@@ -271,12 +271,12 @@ select 1
 			</column>
 		</addColumn>
 	</changeSet>
-
+<!--
 	<changeSet id="dml-3" author="mantis-33">
 		<comment>Проинициализировать id в таблице проводок</comment>
 		<sqlFile splitStatements="false" stripComments="false" path="src/main/liquibase/mantis-33-dml-3.sql" encoding="cp1251"/>
 	</changeSet>
-
+-->
 	<changeSet id="ddl-5" author="mantis-33">
 		<comment>Создать столбец id автоинкрементным</comment>
 		<sql><![CDATA[
