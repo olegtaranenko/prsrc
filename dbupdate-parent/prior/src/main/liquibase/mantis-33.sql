@@ -788,7 +788,26 @@ begin
 
 
 	set c_status_close_id = 6;  -- закрыт
-	select sysname into remoteServerOld from GuideVenture where ventureId = old_name.ventureId;
+	select sysname, invCode into remoteServerOld, v_invcode from GuideVenture where ventureId = old_name.ventureId;
+
+	if update(invoice) and remoteServerOld is not null then begin
+
+		set v_nu_jscet = extract_invoice_number(new_name.invoice, v_invCode);
+		set v_id_jdog = select_remote(remoteServerOld, 'jscet', 'id_jdog', 'id = ' + convert(varchar(20), old_name.id_jscet));
+		set v_nu_jdog = wf_make_jdog_nu(v_nu_jscet, old_name.inDate);
+
+		call block_remote(remoteServerOld, get_server_name(), 'jscet');
+
+
+		call update_remote(remoteServerOld, 'jdog', 'nu',  '''''' + v_nu_jdog  + '''''', 'id = ' + convert(varchar(20), v_id_jdog));
+		call unblock_remote(remoteServerOld, get_server_name(), 'jscet');
+
+		call update_remote(remoteServerOld, 'jscet', 'nu'
+				, convert(varchar(20), v_nu_jscet)
+				, 'id = ' + convert(varchar(20), old_name.id_jscet)
+		);
+
+	end; end if;
 
 	if update(ventureId) then
 		if new_name.ventureId = 0 then
