@@ -8462,25 +8462,6 @@ begin
 end;
 
 
-if exists (select 1 from systriggers where trigname = 'wf_delete_orders' and tname = 'BayOrders') then 
-	drop trigger BayOrders.wf_delete_orders;
-end if;
-
-create TRIGGER wf_delete_orders before delete on
-BayOrders
-referencing old as old_name
-for each row
-begin
-	declare remoteServer varchar(32);
-	select sysname into remoteServer from guideventure where ventureId = old_name.ventureId;
-	if remoteServer is not null then
-		call delete_remote(remoteServer, 'jscet', 'id = ' + convert(varchar(20), old_name.id_jscet));
-	end if;
---  delete from inv where id = old_name.id_inv;
-end;
-
-
-
 
 -------------------------------------------------------------------------
 -------------------             sDmcRez          ------------------------

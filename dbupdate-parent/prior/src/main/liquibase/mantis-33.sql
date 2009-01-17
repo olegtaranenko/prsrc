@@ -715,9 +715,6 @@ begin
 	set v_cenaEd = new_name.intQuant;
 	set v_quantity = new_name.quantity / v_perList;
 
---	select id_inv into v_id_inv from sGuideNomenk where nomNom = new_name.nomNom;
-
---	select sysname, invCode into remoteServerNew, v_invcode from GuideVenture where ventureId = v_ventureId;
 
 	if remoteServerNew is not null and v_id_jscet is not null then
 	  -- Заказ, который имеет ссылки в бух.базах интеграции
@@ -734,6 +731,24 @@ begin
 			);
 	end if;
 	  
+end;
+
+
+
+if exists (select 1 from systriggers where trigname = 'wf_delete_orders' and tname = 'BayOrders') then 
+	drop trigger BayOrders.wf_delete_orders;
+end if;
+
+create TRIGGER wf_delete_orders before delete on
+BayOrders
+referencing old as old_name
+for each row
+begin
+	declare remoteServer varchar(32);
+	select sysname into remoteServer from guideventure where ventureId = old_name.ventureId;
+	if remoteServer is not null then
+		call purge_jscet(remoteServer, old_name.id_jscet);
+	end if;
 end;
 
 
@@ -768,6 +783,9 @@ begin
 	declare c_status_close_id integer;
 	declare v_ivo_procent float;
 	declare v_updated integer;
+	declare v_nu_jdog varchar(17);
+	declare v_id_jdog integer;
+
 
 	set c_status_close_id = 6;  -- закрыт
 	select sysname into remoteServerOld from GuideVenture where ventureId = old_name.ventureId;
@@ -778,9 +796,9 @@ begin
 		end if;
 		if isnull(old_name.ventureId, 0) != isnull(new_name.ventureId, 0) then
 			if remoteServerOld is not null then
-				call delete_remote(remoteServerOld, 'jscet', 'id = ' + convert(varchar(20), old_name.id_jscet));
-				call delete_remote(remoteServerOld, 'scet', 'id_jmat = ' + convert(varchar(20), old_name.id_jscet));
+				call purge_jscet(remoteServerOld, old_name.id_jscet);
 				set new_name.invoice = 'счет ?';
+				set new_name.id_bill = null;
 			end if;
 
 			select sysname, invCode into remoteServerNew, v_invcode from GuideVenture where ventureId = new_name.ventureId;
