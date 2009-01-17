@@ -320,5 +320,18 @@ end;
 		</sql>
 	</changeSet>
 
+	<changeSet id="dml-4" author="mantis-33" runOnChange="true">
+		<comment>Заставить просмотреть курсы всех проводок начиная с 12 января</comment>
+		<update tableName="yBook">
+			<column name="rate" valueNumeric="0"/>
+			<where><![CDATA[xdate >= '20090112']]></where>
+		</update>
+
+
+		<rollback/>
+	</changeSet>
+
+
+
 </databaseChangeLog>
 

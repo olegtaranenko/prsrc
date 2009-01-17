@@ -1,3 +1,42 @@
+
+if exists (select '*' from sysprocedure where proc_name like 'purge_jscet') then  
+	drop procedure purge_jscet;
+end if;
+
+create procedure purge_jscet (
+		p_server varchar(32)
+		, in p_id_jscet integer
+)
+begin
+	call delete_remote(p_server, 'jdog d', 'd.id != 0 and d.id = s.id_jdog and s.id = ' + convert(varchar(20), p_id_jscet), 'jscet s');
+	call delete_remote(p_server, 'jscet', 'id = ' + convert(varchar(20), p_id_jscet));
+	call delete_remote(p_server, 'scet', 'id_jmat = ' + convert(varchar(20), p_id_jscet));
+end;
+
+
+
+if exists (select 1 from systriggers where trigname = 'wf_delete_orders' and tname = 'Orders') then 
+	drop trigger Orders.wf_delete_orders;
+end if;
+
+create TRIGGER wf_delete_orders before delete on
+Orders
+referencing old as old_name
+for each row
+begin
+	declare remoteServer varchar(32);
+	declare deleted integer;
+	select sysname into remoteServer from guideventure where ventureId = old_name.ventureId;
+	if remoteServer is not null then
+		-- в комтехе констрейнт не каскадный - жалко
+		-- удаляем договор явно
+		call purge_jscet(remoteServer, old_name.id_jscet);
+	end if;
+--  delete from inv where id = old_name.id_inv;
+end;
+
+
+
 if exists (select 1 from systriggers where trigname = 'wf_update_orders' and tname = 'Orders') then 
 	drop trigger Orders.wf_update_orders;
 end if;
@@ -41,13 +80,28 @@ begin
 	select sysname, invCode into remoteServerOld, v_invcode from GuideVenture where ventureId = old_name.ventureId;
 	set v_currency_rate = new_name.rate;
 	select id_cur into v_id_cur from system;
+	select sysname into remoteServerOld from GuideVenture where ventureId = old_name.ventureId;
 
-	if update(invoice) and remoteServerOld is not null then
+	if update(invoice) and remoteServerOld is not null then begin
+		declare v_nu_jdog varchar(17);
+		declare v_id_jdog integer;
+
+		set v_nu_jscet = extract_invoice_number(new_name.invoice, v_invCode);
+		set v_id_jdog = select_remote(remoteServerOld, 'jscet', 'id_jdog', 'id = ' + convert(varchar(20), old_name.id_jscet));
+		set v_nu_jdog = wf_make_jdog_nu(v_nu_jscet, old_name.inDate);
+
+		call block_remote(remoteServerOld, get_server_name(), 'jscet');
+
+
+		call update_remote(remoteServerOld, 'jdog', 'nu',  '''''' + v_nu_jdog  + '''''', 'id = ' + convert(varchar(20), v_id_jdog));
+		call unblock_remote(remoteServerOld, get_server_name(), 'jscet');
+
 		call update_remote(remoteServerOld, 'jscet', 'nu'
-				, convert(varchar(20), extract_invoice_number(new_name.invoice, v_invCode))
+				, convert(varchar(20), v_nu_jscet)
 				, 'id = ' + convert(varchar(20), old_name.id_jscet)
 		);
-	end if;
+
+	end; end if;
 
 
 	if update(ventureId) then
@@ -56,8 +110,7 @@ begin
 		end if;
 		if isnull(old_name.ventureId, 0) != isnull(new_name.ventureId, 0) then
 			if remoteServerOld is not null then
-				call delete_remote(remoteServerOld, 'jscet', 'id = ' + convert(varchar(20), old_name.id_jscet));
-				call delete_remote(remoteServerOld, 'scet', 'id_jmat = ' + convert(varchar(20), old_name.id_jscet));
+				call purge_jscet(remoteServerOld, old_name.id_jscet);
 				set new_name.invoice = 'счет ?';
 				set new_name.id_bill = null;
 			end if;
@@ -172,15 +225,8 @@ begin
 	end if;
 	
 	
-	
-	
-	
-	
-	
-	
 	if update (firmId) and (old_name.id_bill is null or old_name.id_bill = 0) then
 		
-		select sysname into remoteServerOld from GuideVenture where ventureId = old_name.ventureId;
 		if remoteServerOld is not null then
 			select id_voc_names into v_id_dest from guideFirms where firmId = new_name.firmId;
 			call block_remote(remoteServerOld, get_server_name(), 'jscet');
@@ -189,6 +235,8 @@ begin
 			call unblock_remote(remoteServerOld, get_server_name(), 'jscet');
 		end if;
 	end if;
+
+
 	if 	update (statusId)
 		and new_name.statusId = c_status_close_id
 --		and wf_order_closed_comtex(old_name.numorder, remoteServerOld) = 1 
@@ -199,7 +247,23 @@ begin
 		call ivo_generate_numdoc(old_name.numorder, v_ivo_procent);
 
 	end if;
+/*
+	if update (id_bill)  then
+		begin
+			declare v_nu_jdog varchar(17);
+			declare v_id_jdog integer;
 
+			set v_nu_jscet = select_remote(remoteServerOld, 'jscet', 'nu', 'id = ' + convert(varchar(20), old_name.id_jscet));
+			call block_remote(remoteServerOld, get_server_name(), 'jscet');
+
+			set v_nu_jdog = wf_make_jdog_nu(v_nu_jscet, old_name.inDate);
+			set v_id_jdog = select_remote(remoteServerOld, 'jdog', 'id', 'nu = ''''' + convert(varchar(20), v_nu_jdog) + '''''');
+
+			call update_remote(remoteServerOld, 'jscet', 'id_jdog', convert(varchar(20), v_id_jdog ), 'id = ' + convert(varchar(20), old_name.id_jscet));
+			call unblock_remote(remoteServerOld, get_server_name(), 'jscet');
+		end;
+	end if;
+*/
 end;
 
 
@@ -889,6 +953,60 @@ begin
 end;
 
 
+if exists (select '*' from sysprocedure where proc_name like 'wf_make_jdog_nu') then  
+	drop function wf_make_jdog_nu;
+end if;
+
+
+create 
+	function wf_make_jdog_nu (
+	  p_jscet_nu varchar(20)
+	, p_jscet_dat date
+) returns varchar(17)
+begin
+	set wf_make_jdog_nu = convert(varchar(4), p_jscet_dat, 112) + '/' + p_jscet_nu;
+	message 'wf_make_jdog_nu = ', wf_make_jdog_nu to client;
+end;
+
+
+if exists (select '*' from sysprocedure where proc_name like 'put_jdog') then  
+	drop procedure put_jdog;
+end if;
+
+create procedure put_jdog (
+	  out o_id_jdog  integer
+	, out o_nu_jdog  varchar(50)
+	, in p_server    varchar(20)
+	, in p_nu_jscet  varchar(50)
+	, in p_id_post   integer
+	, in p_dat       date
+)
+begin
+	declare v_fields varchar(255);
+	declare v_values varchar(2000);
+
+	set o_nu_jdog = wf_make_jdog_nu(p_nu_jscet, now());
+
+
+	set v_fields =
+		'nu, id_post, dat, dat_end, dat_workbeg, dat_workend' -- , rem, nm
+		;
+
+	
+	set v_values = 
+			'''''' + o_nu_jdog + ''''''
+		+ ', ' + convert(varchar(20), p_id_post)
+		+ ', ''''' + convert(varchar(20), p_dat, 112) + ''''''
+		+ ', ''''' + convert(varchar(20), p_dat, 112) + ''''''
+		+ ', ''''' + convert(varchar(20), p_dat, 112) + ''''''
+		+ ', ''''' + convert(varchar(20), p_dat, 112) + ''''''
+	;
+
+	set o_id_jdog = insert_count_remote(p_server, 'jdog', v_fields, v_values);
+
+end;
+
+
 
 if exists (select '*' from sysprocedure where proc_name like 'put_jscet') then  
 	drop procedure put_jscet;
@@ -921,9 +1039,13 @@ begin
 	declare v_id_jscet integer;
 	declare v_intInvoice integer;
 
+	declare v_id_jdog integer;
+	declare v_jdog_nu varchar(17);
+
 
 	select invCode into v_invCode
 	from guideVenture where sysname = remoteServerNew;
+
 
 	set v_nu_jscet = nextnu_remote(remoteServerNew, 'jscet', p_nu_old);
 
@@ -931,6 +1053,11 @@ begin
 	set v_order_date = convert(varchar(20), now());
 	set v_id_cur = system_currency();
 	execute immediate 'call slave_currency_rate_' + remoteServerNew + '(v_datev, v_currency_rate, v_order_date, v_id_cur )';
+
+	-- теперь автоматом генерится договор для данного счета
+	-- номер договора имеет шаблоy уууу/ннн, где уууу год, ннн - номер только что добавленного счета
+
+	call put_jdog(v_id_jdog, v_jdog_nu, remoteServerNew, v_nu_jscet, p_id_dest, now());
 	
 	set v_fields =
 		 'nu'
@@ -943,12 +1070,11 @@ begin
 		+ ', real_days'
 		+ ', id_curr'
 		+ ', curr'
-//		+ ', id_kad1'
+		+ ', id_jdog'
 //		+ ', id_kad_bux'
 //		+ ', id_s_bank'
 		;
 
-	--message 'v_fields  = ', v_fields to client;
 	
 	set v_values = 
 		convert(varchar(20), v_nu_jscet)
@@ -961,10 +1087,9 @@ begin
 		+ ', 3'
 		+ ', ' + convert(varchar(20), v_id_cur)
 		+ ', ' + convert(varchar(20), p_rate)
-		
+		+ ', ' + convert(varchar(20), v_id_jdog)
 	;
 
-	--message 'v_values  = ', v_values to client;
 
 	if p_id_dest is not null then
 		set v_fields = v_fields
@@ -978,6 +1103,8 @@ begin
 	end if;
 
 	set r_id = insert_count_remote(remoteServerNew, 'jscet', v_fields, v_values);
+
+
 end;
 
 
@@ -1050,7 +1177,7 @@ end;
 
 
 if exists (select 1 from sysprocedure where proc_name = 'slave_bind_zakaz') then
-	drop function slave_bind_zakaz;
+	drop procedure slave_bind_zakaz;
 end if;
 
 create 
