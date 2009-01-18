@@ -24,6 +24,25 @@ call build_host_procedure (
 );
 
 
+call build_host_procedure (
+	  'put_xoz', 
+	  '  p_server      char(50)'
+	+ ', p_id_xoz	   integer'
+	+ ', inout p_debit_sc   char(26)'
+	+ ', inout p_debit_sub  char(10)'
+	+ ', inout p_credit_sc  char(26)'
+	+ ', inout p_credit_sub char(10)'
+	+ ', p_dat         char(20)'
+	+ ', p_sum         real'
+	+ ', p_sumv        real'
+	+ ', p_id_curr     integer'
+	+ ', p_detail      char(99)'
+	+ ', p_id_jscet    integer'
+	+ ', p_purposeId   integer'
+	+ ', p_kredDebitor integer'
+	+ ', p_note        char(10)'
+	+ ', p_bind_zakaz  integer'
+);
 
 call build_host_procedure (
 		  'set_purpose', 
