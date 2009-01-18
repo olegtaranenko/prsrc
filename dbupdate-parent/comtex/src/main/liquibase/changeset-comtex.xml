@@ -526,11 +526,10 @@ end;
 
 		]]></sql>
 	</changeSet>
-
+<!--
 	<changeSet id="code-4" author="mantis-33" runOnChange="true">
 		<comment>Вызов процедуры put_xoz</comment>
-		<sql splitStatements="false" stripComments="false"><![CDATA[
-begin
+		<createProcedure><![CDATA[
 	call build_host_procedure (
 		  'put_xoz', 
 		  '  p_server      char(50)'
@@ -549,12 +548,10 @@ begin
 		+ ', p_kredDebitor integer'
 		+ ', p_note        char(10)'
 		+ ', p_bind_zakaz  integer'
-);
-end;
-
-		]]></sql>
+ 	);
+		]]></createProcedure>
 	</changeSet>
-
+-->
 </databaseChangeLog>
 
 
