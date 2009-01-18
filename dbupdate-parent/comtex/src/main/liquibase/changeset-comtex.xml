@@ -28,6 +28,7 @@ end;
     </changeSet>
 
 	<changeSet id="code-1" author="mantis-33" runOnChange="true">
+		<comment>Триггер таблицы jscet. При смене заказчика передавать договор новому (забрав соответственно его у старого клиента)</comment>
 		<sql splitStatements="false" stripComments="false">
 
 
@@ -109,4 +110,451 @@ end;
 	</changeSet>
 
 
+	<changeSet id="code-2" author="mantis-33" runOnChange="true">
+		<comment>Триггер таблицы xoz. Учитывать курс рубля, если это приход по заказу.</comment>
+		<sql splitStatements="false" stripComments="false"><![CDATA[
+
+
+
+if exists (select 1 from systriggers where trigname = 'wf_xoz_insert' and tname = 'xoz' and event='INSERT') then 
+	drop trigger xoz.wf_xoz_insert;
+end if;
+
+
+create TRIGGER wf_xoz_insert before insert order 211 on
+xoz
+referencing new as new_name
+for each row
+when (new_name.ost != 'Y')
+begin
+
+	call admin.wf_submit_xoz(
+		  new_name.id_accd
+		, new_name.id_accc
+		, new_name.id_m_xoz
+		, new_name.id_deb
+		, new_name.id_jdog
+		, new_name.id
+		, new_name.dat
+		, new_name.sum
+		, new_name.sumv
+		, new_name.id_curr
+		, new_name.rem
+		, 1                   -- искать привязку к заказу
+	)                       
+end;
+
+
+
+
+
+if exists (select 1 from systriggers where trigname = 'wf_xoz_update' and tname = 'xoz') then 
+	drop trigger xoz.wf_xoz_update;
+end if;
+
+create TRIGGER wf_xoz_update before update order 211 on
+xoz
+referencing old as old_name new as new_name
+for each row
+begin
+	declare v_debit_sc varchar(26);
+	declare v_debit_sub varchar(10);
+	declare v_credit_sc varchar(26);
+	declare v_credit_sub varchar(10);
+	declare v_nm varchar(98);
+	declare v_rem varchar(98);
+	declare f_account_exists integer;
+	declare v_currency_rate varchar(20);
+	declare v_currency float;
+	declare v_m_xoz varchar(100);
+	declare v_kredDebitor integer;
+--	declare varchar_id varchar(20);
+	declare v_values varchar(1024);
+	declare v_ventureid char(20);
+
+	declare v_note varchar(10);
+	declare v_zakaz varchar(150);
+	declare s_id_shiz varchar(20);
+	declare v_id_m_xoz integer;
+	declare m_xoz_updated integer;
+
+	set m_xoz_updated = 0;
+
+	set v_ventureid = admin.select_remote('prior', 'guideventure', 'ventureid', 'sysname = ''''' + admin.get_server_name() + '''''');
+
+	if update(dat) then
+		call admin.update_remote('prior', 'ybook', 'xDate', '''''' + convert(varchar(20), new_name.dat, 115) + ''''''
+			, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
+		);
+    		
+	end if;
+
+
+	if update(id_jdog) then
+
+		select nu into v_note from jdog where id = new_name.id_jdog;
+
+		if char_length(v_note) > 0 then
+		
+			call admin.update_remote('prior', 'ybook', 'note', '''''' + v_note + ''''''
+				, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
+			);
+    		
+			select c.sc
+			into v_credit_sc
+			from account c 
+			where c.id = new_name.id_accc;
+
+			call admin.slave_bind_zakaz_prior (
+				v_zakaz
+				, admin.get_server_name()
+				, v_note
+				, old_name.sum
+				, v_credit_sc
+				, old_name.id
+			);
+		end if;
+
+	end if;
+
+	if update(id_deb) then
+		set v_kredDebitor = admin.wf_kreditor_debitor(new_name.id_deb);
+
+		call admin.update_remote('prior', 'ybook', 'KredDebitor', convert(varchar(20), v_kredDebitor)
+			, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
+		);
+    end if;
+
+	if update(id_accd) and isnull(new_name.id_accd, 0) != 0 then
+		    
+		select d.sc, d.sub_sc, d.nm, d.rem
+		into v_debit_sc, v_debit_sub, v_nm, v_rem
+		from account d 
+		where d.id = new_name.id_accd;
+
+	    
+		call admin.slave_put_account_prior(
+			f_account_exists
+			, v_debit_sc
+			, v_debit_sub
+			, v_nm, v_rem
+		);
+
+		call admin.update_remote(
+			'prior'
+			, 'ybook'
+			, 'purposeId'
+			, 'null'
+			, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
+		);
+
+		call admin.update_remote(
+			'prior'
+			, 'ybook'
+			, 'Debit'
+			, '''''' + v_debit_sc + ''''''
+			, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
+		);
+
+		call admin.update_remote(
+			'prior'
+			, 'ybook'
+			, 'subDebit'
+			, '''''' + v_debit_sub + ''''''
+			, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
+		);
+    
+		set m_xoz_updated = 1;
+	end if;
+
+	if update(id_accc) and isnull(new_name.id_accc, 0) != 0  then
+
+		select c.sc, c.sub_sc, c.nm, c.rem
+		into v_credit_sc, v_credit_sub, v_nm, v_rem
+		from account c 
+		where c.id = new_name.id_accc;
+	    
+		call admin.slave_put_account_prior(
+			f_account_exists
+			, v_credit_sc
+			, v_credit_sub
+			, v_nm, v_rem
+		);
+
+		call admin.update_remote(
+			'prior'
+			, 'ybook'
+			, 'purposeId'
+			, 'null'
+			, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
+		);
+
+		call admin.update_remote(
+			'prior'
+			, 'ybook'
+			, 'Kredit'
+			, ''''''+v_credit_sc+''''''
+			, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
+		);
+
+		call admin.update_remote(
+			'prior'
+			, 'ybook'
+			, 'subKredit'
+			, ''''''+v_credit_sub+''''''
+			, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
+		);
+		set m_xoz_updated = 1;
+
+	end if;
+
+	if update(sum) then begin
+		declare v_nu_jdog varchar(17);
+		declare v_id_jdog integer;
+		declare v_rate float;
+		declare v_id_jscet integer;
+
+		set v_id_jdog = old_name.id_jdog;
+
+		if isnull(v_id_jdog, 0) <> 0 then
+			select nu into v_nu_jdog from jdog where id = v_id_jdog;
+			select id into v_id_jscet from jscet where id_jdog = v_id_jdog;
+			set v_rate = admin.select_remote('prior', 'orders', 'rate', 'id_jscet = ' + convert(varchar(20), v_id_jscet ) + ' and ventureId = ' + v_ventureId);
+			if isnull(v_rate, 0) = 0 then
+				set v_rate = admin.select_remote('prior', 'bayorders', 'rate', 'id_jscet = ' + convert(varchar(20), v_id_jscet ) + ' and ventureId = ' + v_ventureId);
+			end if;
+	    
+			if isnull(v_rate, 0) = 0 then
+				set v_rate = admin.select_remote('prior', 'system', 'abs(kurs)', '1 = 1');
+			end if;
+
+	    
+			set v_currency = new_name.sum / v_rate;
+	    
+			call admin.update_remote(
+				'prior'
+				, 'ybook'
+				, 'UEsumm'
+				, v_currency
+				, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
+			);
+
+			call admin.update_remote(
+				'prior'
+				, 'ybook'
+				, 'rate'
+				, v_rate
+				, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
+			);
+		end if;
+
+	end; end if;
+
+
+	if (update(id_m_xoz) or isnull(new_name.id_m_xoz, 0) != 0) 
+			or m_xoz_updated = 1 
+	then
+
+		select d.sc, d.sub_sc, d.nm, d.rem
+		into v_debit_sc, v_debit_sub, v_nm, v_rem
+		from account d 
+		where d.id = new_name.id_accd;
+	    
+		select c.sc, c.sub_sc, c.nm, c.rem
+		into v_credit_sc, v_credit_sub, v_nm, v_rem
+		from account c 
+		where c.id = new_name.id_accc;
+
+		call admin.wf_purpose_sync (
+			old_name.id
+			, v_ventureid
+			, new_name.id_m_xoz
+			, v_debit_sc
+			, v_debit_sub
+			, v_credit_sc
+			, v_credit_sub
+		);
+		    
+
+	end if;
+
+
+	if update(rem) then
+
+		call admin.update_remote(
+			'prior'
+			, 'ybook'
+			, 'descript'
+			, ''''''+new_name.rem+''''''
+			, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
+		);
+
+	end if;
+
+	if update(id_sh_zatrat) then
+		if isnull(new_name.id_sh_zatrat, 0) = 0 then 
+			set s_id_shiz = 'null';
+		else 
+			set s_id_shiz = convert(varchar(20), new_name.id_sh_zatrat);
+		end if;
+
+		call admin.update_remote(
+			'prior'
+			, 'ybook'
+			, 'id_shiz'
+			, s_id_shiz
+			, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
+		);
+	end if;
+
+end;
+
+		]]></sql>
+	</changeSet>
+
+
+
+	<changeSet id="code-3" author="mantis-33" runOnChange="true">
+		<comment>Процедура выставления хоз.операции в базе приора по данным из базы Комтеха</comment>
+		<sql splitStatements="false" stripComments="false"><![CDATA[
+
+
+if exists (select '*' from sysprocedure where proc_name like 'wf_submit_xoz') then  
+	drop procedure wf_submit_xoz;
+end if;
+
+create procedure wf_submit_xoz (
+	  in p_id_accd integer
+	, in p_id_accc integer
+	, in p_id_m_xoz integer
+	, in p_id_deb integer
+	, in p_id_jdog integer
+	, in p_id      integer
+	, in p_dat     date
+	, in p_sum     float
+	, in p_sumv    float
+	, in p_id_curr integer
+	, in p_rem    varchar(99)
+	, in p_bind_zakaz integer
+) 
+begin
+	declare v_debit_sc varchar(26);
+	declare v_debit_sub varchar(10);
+	declare v_credit_sc varchar(26);
+	declare v_credit_sub varchar(10);
+	declare f_account_exists integer;
+	declare v_nm varchar(98);
+	declare v_rem varchar(98);
+	declare v_purpose_id integer;
+	declare v_detail_id integer;
+	declare v_purpose varchar(99);
+	declare v_kredDebitor integer;
+	declare v_note varchar(50);
+	declare v_id_jscet integer;
+
+	select d.sc, d.sub_sc, d.nm, isnull(d.rem, '')
+	into v_debit_sc, v_debit_sub, v_nm, v_rem
+	from account d 
+	where d.id = p_id_accd;
+
+
+	call admin.slave_put_account_prior(
+		f_account_exists
+		, v_debit_sc
+		, v_debit_sub
+		, v_nm
+		, v_rem
+	);
+	if f_account_exists = 0 then
+		--return;
+	end if;
+
+	select c.sc, c.sub_sc, c.nm, c.rem
+	into v_credit_sc, v_credit_sub, v_nm, v_rem
+	from account c 
+	where c.id = p_id_accc;
+
+
+	call admin.slave_put_account_prior(
+		f_account_exists
+		, v_credit_sc
+		, v_credit_sub
+		, v_nm, v_rem
+	);
+	if f_account_exists = 0 then
+		--return;
+	end if;
+
+	if (p_id_m_xoz is not null or p_id_m_xoz != 0) then
+		select nm
+		into v_purpose
+		from m_xoz m
+		where m.id = p_id_m_xoz;
+
+		call admin.slave_set_purpose_prior (
+	    	  v_purpose
+	    	, v_debit_sc, v_debit_sub, v_credit_sc, v_credit_sub 
+	    	, v_purpose_id
+		);
+	end if;
+
+	set v_kredDebitor = admin.wf_kreditor_debitor(p_id_deb);
+
+	select id into v_id_jscet 
+	from jscet 
+	where id_jdog = p_id_jdog and isnull(id_jdog, 0) != 0;
+
+
+	call admin.slave_put_xoz_prior (
+		  admin.get_server_name() 
+		, p_id
+		, v_debit_sc, v_debit_sub, v_credit_sc, v_credit_sub
+		, convert(varchar(20), p_dat, 115)
+		, p_sum
+		, p_sumv
+		, p_id_curr
+		, p_rem
+		, v_id_jscet
+		, v_purpose_id
+		, v_kredDebitor
+		, v_note
+		, p_bind_zakaz
+	);
+
+end;
+		
+
+		]]></sql>
+	</changeSet>
+
+	<changeSet id="code-4" author="mantis-33" runOnChange="true">
+		<comment>Вызов процедуры put_xoz</comment>
+		<sql splitStatements="false" stripComments="false"><![CDATA[
+begin
+	call build_host_procedure (
+		  'put_xoz', 
+		  '  p_server      char(50)'
+		+ ', p_id_xoz	   integer'
+		+ ', inout p_debit_sc   char(26)'
+		+ ', inout p_debit_sub  char(10)'
+		+ ', inout p_credit_sc  char(26)'
+		+ ', inout p_credit_sub char(10)'
+		+ ', p_dat         char(20)'
+		+ ', p_sum         real'
+		+ ', p_sumv        real'
+		+ ', p_id_curr     integer'
+		+ ', p_detail      char(99)'
+		+ ', p_id_jscet    integer'
+		+ ', p_purposeId   integer'
+		+ ', p_kredDebitor integer'
+		+ ', p_note        char(10)'
+		+ ', p_bind_zakaz  integer'
+);
+end;
+
+		]]></sql>
+	</changeSet>
+
 </databaseChangeLog>
+
+

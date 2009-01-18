@@ -1222,22 +1222,23 @@ create
 	(
 		  out v_orderNum varchar(150)
 		, p_server     varchar(50)              // от какого сервера
-		, p_invoice    varchar(10)              // номер счета, к которому нужно найти все заказы
+		, p_invoice    varchar(17)              // номер счета, к которому нужно найти все заказы
 		, in p_summa      float                 // сумма в рублях
 		, in p_sc_credit  varchar(10)
 		, in p_id_xoz     integer default null  // можно ли делать сразу update?
 	)
 begin
     declare v_sep            char(1)    ;
-    declare v_order_ordered  real      ;
-    declare v_order_paid     real      ;
+    declare v_order_ordered  real       ;
+    declare v_order_paid     real       ;
     declare v_balans_ok      integer    ;
-	declare v_ordered        real      ;
+	declare v_ordered        real       ;
     declare v_order_count    integer    ;
 	declare v_invCode        varchar(10);
 	declare v_ventureId      integer    ;
-	declare v_summav         real      ;
-	declare v_rate           real      ;
+	declare v_summav         real       ;
+	declare v_rate           real       ;
+	declare v_invoice        varchar(17);
 
     set v_balans_ok = 0;
     set v_sep = '';
@@ -1248,9 +1249,11 @@ begin
     from guideventure 
     where sysname = p_server;
 
+    set v_invoice = wf_nu_jdog_peeling(p_invoice);
+
     message 'in slave_bind_zakaz_', get_server_name() to client;
 
-	if v_invCode is not null and char_length(p_invoice) > 0 then
+	if v_invCode is not null and char_length(v_invoice) > 0 then
 		set v_order_count = 0;
 		set v_orderNum = '';
 		set v_order_ordered = 0.0;
@@ -1267,7 +1270,7 @@ begin
 				, isnull(paid, 0) as paid 
 				, isnull(rate, 0) as r_rate
 			from orders 
-			where invoice = v_invCode + p_invoice 
+			where invoice = v_invCode + v_invoice 
 				and isnull(ordered, 0) != isnull(paid, 0)
 			order by invoice desc
 		do
@@ -1301,7 +1304,7 @@ begin
 		if v_balans_ok = 1 then
 			for v_server_name as aa dynamic scroll cursor for
 				select paid from orders 
-				where invoice like v_invCode + p_invoice 
+				where invoice like v_invCode + v_invoice 
 					and isnull(ordered, 0) != isnull(paid, 0)
 				for update
 			do
@@ -1319,7 +1322,7 @@ begin
 					, isnull(paid,0) as paid 
 					, isnull(rate, 0) as r_rate
 				from bayorders 
-				where invoice like v_invCode + p_invoice 
+				where invoice like v_invCode + v_invoice 
 				order by invoice desc
 			do
 				-- в bayorders поле ordered не заполняется,
@@ -1363,7 +1366,7 @@ begin
 				for v_server_name as bu dynamic scroll cursor for
 					select numorder, paid 
 					from bayorders 
-					where invoice = v_invCode + p_invoice 
+					where invoice = v_invCode + v_invoice 
 					for update
 				do
 	    
@@ -1393,6 +1396,130 @@ begin
 		;
 	end if;
 	
+end;
+
+
+if exists (select 1 from sysprocedure where proc_name = 'wf_nu_jdog_peeling') then
+	drop function wf_nu_jdog_peeling;
+end if;
+
+
+CREATE function wf_nu_jdog_peeling (
+	  p_nu_jdog    varchar(17)
+) returns varchar(17)
+begin
+	declare p integer;
+	if isnull(p_nu_jdog, '') = '' then
+		return null;
+	end if;
+
+	set p = charindex('/', p_nu_jdog);
+	if p = 0 then
+		set wf_nu_jdog_peeling = p_nu_jdog;
+	else
+		set wf_nu_jdog_peeling = substring(p_nu_jdog, p + 1);
+	end if;
+end;
+
+
+
+if exists (select 1 from sysprocedure where proc_name = 'slave_put_xoz') then
+	drop procedure slave_put_xoz;
+end if;
+
+create 
+	procedure slave_put_xoz
+	(
+		  p_server     varchar(50)
+		, p_id_xoz	   integer
+		, inout p_debit_sc   varchar(26)
+		, inout p_debit_sub  varchar(10)
+		, inout p_credit_sc  varchar(26)
+		, inout p_credit_sub varchar(10)
+		, p_dat        varchar(20)
+		, p_sum        float
+		, p_sumv       float
+		, p_id_curr    integer
+		, p_detail     varchar(99)
+		, p_id_jscet   integer
+		, p_purposeId  integer
+		, p_kredDebitor integer
+		, p_invoice     varchar(10)
+		, p_bind_zakaz     integer -- признак делать привязку в приоре к закау или нет. 1 - делать, 0 - нет.
+	)
+begin
+    declare v_ventureid integer;
+    declare v_currency_rate float;
+    declare v_currency float;
+    declare v_date datetime;
+    declare v_orderNum       varchar(150);
+
+    if p_dat is not null and char_length(p_dat) > 0 then
+	    set v_date = convert(datetime, p_dat);
+	else
+		set v_date = now();
+	end if;
+
+    select ventureid
+    into v_ventureid
+    from guideventure 
+    where sysname = p_server;
+
+
+
+	set v_currency_rate = 0;
+	select max(rate) into v_currency_rate from orders where id_jscet = p_id_jscet and ventureId = v_ventureId;
+	if isnull(v_currency_rate, 0) = 0 then
+		select max(rate) into v_currency_rate from bayorders where id_jscet = p_id_jscet and ventureId = v_ventureId;
+	end if;
+	    
+	if isnull(v_currency_rate, 0) = 0 then
+		set v_currency_rate = system_currency_rate();
+	end if;
+
+	set v_currency = p_sum / v_currency_rate;
+
+
+	set p_debit_sc    = cast_acc (p_debit_sc   );
+	set p_debit_sub   = cast_acc (p_debit_sub  );
+	set p_credit_sc   = cast_acc (p_credit_sc  );
+	set p_credit_sub  = cast_acc (p_credit_sub );
+
+	if p_bind_zakaz = 1 then
+		call slave_bind_zakaz (v_orderNum, p_server, p_invoice, p_sum, p_credit_sc);
+	end if;
+
+	insert into yBook(
+		  ventureid
+		, id_xoz
+		, xDate
+		, UEsumm
+		, rate
+		, Debit
+		, subDebit
+		, Kredit
+		, subKredit
+		, kredDebitor
+		, ordersNum
+		, purposeId
+		, descript
+		, Note
+	) values (
+		  v_ventureid
+		, p_id_xoz
+		, v_date
+		, v_currency
+		, v_currency_rate
+		, p_debit_sc
+		, p_debit_sub
+		, p_credit_sc
+		, p_credit_sub
+		, p_kredDebitor
+		, v_orderNum
+		, p_purposeId
+		, p_detail
+		, p_invoice
+	);
 end;
 
 
