@@ -503,7 +503,8 @@ begin
 	select id into v_id_jscet 
 	from jscet 
 	where id_jdog = p_id_jdog and isnull(id_jdog, 0) != 0;
-
+--	
+	select nu into v_note from jdog where id = p_id_jdog;
 
 	call admin.slave_put_xoz_prior (
 		  admin.get_server_name() 
@@ -553,5 +554,4 @@ end;
 	</changeSet>
 -->
 </databaseChangeLog>
-
 
