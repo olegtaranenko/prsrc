@@ -1213,18 +1213,89 @@ end;
 
 
 
+
+
+if exists (select 1 from sysprocedure where proc_name = 'bind_zakaz_results') then
+	drop procedure bind_zakaz_results;
+end if;
+
+create 
+	procedure bind_zakaz_results
+	( 
+		  inout o_orderNum   varchar(200)
+	    , inout o_balans_ok  integer
+		, in p_order_ordered float
+		, in p_order_paid    float
+		, in p_summa         float                 // сумма в рублях
+		, in p_rate          float
+		, in p_sc_credit     varchar(10)
+	)
+begin
+	declare v_summav    float;
+
+	set o_balans_ok = 0;
+
+	set v_summav = round(p_summa / p_rate, 2);
+
+	if round(p_order_ordered, 2) = round((p_order_paid + v_summav), 2) then
+		set o_balans_ok = 1;
+	else
+		set o_orderNum = 'Заказ(ы): ' + o_orderNum + '. Ошибка при контроле суммы. '
+			+ ' зак-но всего='+convert(varchar(20), round(p_order_ordered, 2))
+			+ ';опл-но раньше='+convert(varchar(20), round(p_order_paid, 2))
+			+ ';тек.оплата='+convert(varchar(20), round(v_summav, 2))
+			+ ';по курсу='+convert(varchar(20), round(p_rate, 2))
+		;
+	end if;
+	if p_sc_credit != '62' and o_balans_ok = 1 then
+		set o_orderNum = 'Заказ(ы): ' + o_orderNum +'. Сумма совпадает, но счет Неправильный (дол.б. 62)';
+		set o_balans_ok = 0;
+	end if;
+
+end;
+
+
+
+if exists (select 1 from sysprocedure where proc_name = 'bind_zakaz_helper') then
+	drop procedure bind_zakaz_helper;
+end if;
+
+create 
+	procedure bind_zakaz_helper
+	( 
+	 inout o_order_count integer
+	,inout o_orderNum varchar(100)
+	,inout o_order_ordered float
+	,inout o_order_paid  float
+	,inout o_rate float
+	,inout o_sep char(1)
+	,in    p_orderNum integer
+	,in    p_ordered float
+	,in    p_paid  float
+	,in    p_rate float
+	)
+begin
+	set o_order_count = 1;
+	set o_orderNum = o_orderNum + o_sep + convert(varchar(20), p_orderNum);
+	set o_order_ordered = o_order_ordered + p_ordered;
+	set o_order_paid  = o_order_paid + p_paid;
+	set o_rate = p_rate;
+	set o_sep = '/';
+end;
+
+
 if exists (select 1 from sysprocedure where proc_name = 'slave_bind_zakaz') then
 	drop procedure slave_bind_zakaz;
 end if;
 
 create 
-	procedure slave_bind_zakaz
-	(
+	procedure slave_bind_zakaz (
 		  out v_orderNum varchar(150)
 		, p_server     varchar(50)              // от какого сервера
 		, p_invoice    varchar(17)              // номер счета, к которому нужно найти все заказы
 		, in p_summa      float                 // сумма в рублях
 		, in p_sc_credit  varchar(10)
+		, in p_id_jscet   integer               // есть уже выбранный
 		, in p_id_xoz     integer default null  // можно ли делать сразу update?
 	)
 begin
@@ -1239,10 +1310,13 @@ begin
 	declare v_summav         real       ;
 	declare v_rate           real       ;
 	declare v_invoice        varchar(17);
+	declare v_by_id_jscet    integer;
+	declare v_numOrder       integer;
 
     set v_balans_ok = 0;
     set v_sep = '';
     set v_orderNum = '';
+    set v_by_id_jscet = 0;
 
     select invCode, ventureId
     into v_invCode, v_ventureId
@@ -1251,139 +1325,134 @@ begin
 
     set v_invoice = wf_nu_jdog_peeling(p_invoice);
 
-    message 'in slave_bind_zakaz_', get_server_name() to client;
+--    message 'in slave_bind_zakaz_', get_server_name() to client;
 
-	if v_invCode is not null and char_length(v_invoice) > 0 then
+	if v_invCode is not null then
 		set v_order_count = 0;
 		set v_orderNum = '';
 		set v_order_ordered = 0.0;
 		set v_order_paid = 0.0;
 
-
-
 		set v_rate = 1;
 
-		-- посчитать общую сумму по всем заказам, входящих в счет.
-		for v_server_name as a dynamic scroll cursor for
-			select numOrder
-				, isnull(ordered,0) as ordered
-				, isnull(paid, 0) as paid 
-				, isnull(rate, 0) as r_rate
-			from orders 
-			where invoice = v_invCode + v_invoice 
-				and isnull(ordered, 0) != isnull(paid, 0)
-			order by invoice desc
-		do
-			set v_order_count = v_order_count + 1;
-			set v_orderNum = v_orderNum + v_sep + convert(varchar(20), numOrder);
-			set v_order_ordered = v_order_ordered + ordered;
-			set v_order_paid  = v_order_paid + paid;
-			set v_rate = r_rate;
-			set v_sep = '/';
-		end for;
+
+		if isnull(p_id_jscet, 0) != 0 then
+			for c_ord_id as oi dynamic scroll cursor for
+				select numOrder as r_numOrder
+					, isnull(ordered,0) as r_ordered
+					, isnull(paid, 0) as r_paid 
+					, isnull(rate, 0) as r_rate
+				from orders 
+				where id_jscet = p_id_jscet and ventureId = v_ventureId
+					and isnull(ordered, 0) != isnull(paid, 0)
+			do
+				call bind_zakaz_helper(
+					v_order_count, v_orderNum, v_order_ordered, v_order_paid, v_rate, v_sep 
+					, r_numOrder, r_ordered, r_paid, r_rate
+				);
+				
+			end for;
+		end if;
+		
 
 
 		if v_order_count > 0 then
-			set v_summav = round(p_summa / v_rate, 2);
-
-			if round(v_order_ordered, 2) = round((v_order_paid + v_summav), 2) then
-				set v_balans_ok = 1;
-			else
-				set v_orderNum = 'Заказ(ы): ' + v_orderNum + '. Ошибка при контроле суммы. '
-					+ ' зак-но всего='+convert(varchar(20), round(v_order_ordered, 2))
-					+ ';опл-но раньше='+convert(varchar(20), round(v_order_paid, 2))
-					+ ';сумма тек.оплаты='+convert(varchar(20), round(v_summav, 2))
-				;
+			call bind_zakaz_results (v_orderNum, v_balans_ok
+				, v_order_ordered, v_order_paid, p_summa, v_rate          
+				, p_sc_credit     
+			);
+	
+			if v_balans_ok = 1 then
+				UPDATE orders set paid = ordered WHERE id_jscet = p_id_jscet and ventureId = v_ventureId;
 			end if;
-			if p_sc_credit != '62' and v_balans_ok = 1 then
-				set v_orderNum = 'Заказ(ы): ' + v_orderNum +'. Сумма совпадает, но счет Неправильный (дб. 62).';
-				set v_balans_ok = 0;
-			end if;
-		end if;
-
-		if v_balans_ok = 1 then
-			for v_server_name as aa dynamic scroll cursor for
-				select paid from orders 
-				where invoice like v_invCode + v_invoice 
-					and isnull(ordered, 0) != isnull(paid, 0)
-				for update
-			do
-
-				UPDATE orders set paid = ordered WHERE CURRENT OF aa;
-
-			end for;
-		end if;
-
-	-- Теперь все то же самое проверяем в продажах
-		if v_order_count = 0 then
-
-			for v_server_name as b dynamic scroll cursor for
-				select numOrder
-					, isnull(paid,0) as paid 
+		else
+			-- посчитать общую сумму по всем заказам, входящих в счет.
+			for v_ord_inv as ov dynamic scroll cursor for
+				select numOrder as r_numorder
+					, isnull(ordered,0) as r_ordered
+					, isnull(paid, 0) as r_paid 
 					, isnull(rate, 0) as r_rate
-				from bayorders 
-				where invoice like v_invCode + v_invoice 
+				from orders 
+				where invoice = v_invCode + v_invoice 
+					and isnull(ordered, 0) != isnull(paid, 0)
 				order by invoice desc
 			do
-				-- в bayorders поле ordered не заполняется,
-				-- а высчитывается динамически :-(
-				select sum (d.quantity / n.perlist * d.intquant) 
-				into v_ordered
-				from sdmcrez d
-				join sguidenomenk n on d.nomnom = n.nomnom
-				where numdoc = numOrder;
-				    
-				if isnull(v_ordered, 0) != isnull(paid, 0) then 
-					set v_order_count = v_order_count + 1;
-					set v_orderNum = v_orderNum + v_sep + convert(varchar(20), numOrder);
-					set v_order_ordered = v_order_ordered + v_ordered;
-					set v_order_paid  = v_order_paid + paid;
-					set v_sep = '/';
-					set v_rate = r_rate;
-				end if;
+				call bind_zakaz_helper(
+					v_order_count, v_orderNum, v_order_ordered, v_order_paid, v_rate, v_sep 
+					, r_numOrder, r_ordered, r_paid, r_rate
+				);
 			end for;
 
-		 
-	    
+			-- по ид счета не нашли - искать по номеру
 			if v_order_count > 0 then
-				set v_summav = round(p_summa / v_rate, 2);
-				if round(v_order_ordered, 2) = round(v_order_paid + v_summav, 2) then
-					set v_balans_ok = 1;
-				else
-					set v_orderNum = 'Заказ(ы): ' + v_orderNum + ' Ошибка при контроле суммы. '
-						+ ' зак-но всего='+convert(varchar(20), round(v_order_ordered, 2))
-						+ ';опл-но раньше='+convert(varchar(20), round(v_order_paid, 2))
-						+ ';сумма тек.оплаты='+convert(varchar(20), round(v_summav, 2))
-					;
-				end if;
-				if p_sc_credit != '62' then
-					set v_orderNum = 'Заказ(ы): ' + v_orderNum +'. Ошибка при контроле номера счета (' + p_sc_credit + ')';
-					set v_balans_ok = 0;
+				call bind_zakaz_results (v_orderNum, v_balans_ok
+					, v_order_ordered, v_order_paid, p_summa, v_rate          
+					, p_sc_credit     
+				);
+	
+	    
+				if v_balans_ok = 1 then
+					for v_server_name as aa dynamic scroll cursor for
+						select paid from orders 
+						where invoice like v_invCode + v_invoice 
+							and isnull(ordered, 0) != isnull(paid, 0)
+						for update
+					do
+						UPDATE orders set paid = ordered WHERE CURRENT OF aa;
+					end for;
 				end if;
 			end if;
-	    
-			if v_balans_ok = 1 then
-				for v_server_name as bu dynamic scroll cursor for
-					select numorder, paid 
-					from bayorders 
-					where invoice = v_invCode + v_invoice 
-					for update
-				do
-	    
-					select sum (d.quantity / n.perlist * d.intquant) 
-					into v_ordered
-					from sdmcrez d
-					join sguidenomenk n on d.nomnom = n.nomnom
-					where numdoc = numOrder;
-	            
-					if isnull(v_ordered, 0) != isnull(paid, 0) then 
-						UPDATE bayorders set paid = v_ordered WHERE CURRENT OF bu;
-					end if;
-	    
-				end for;
+		end if;
+
+
+
+	-- Теперь все то же самое проверяем в продажах, если ничего в заказах не найдено
+	-- учесть что в продажах не может быть несколько заказов на одном счете.
+	-- кроме этого вяжем продаже только по id;
+
+		if v_order_count = 0 then
+
+			select numOrder 
+				, isnull(paid, 0) 
+				, isnull(rate, 0) 
+				, 1
+			into
+				v_numOrder, v_order_paid, v_rate, v_order_count
+			from bayorders
+			where id_jscet = p_id_jscet and ventureId = v_ventureId
+			order by numOrder;
+			if v_order_count > 0 then
+				set v_by_id_jscet = 1;
 			end if;
 
+
+			if isnull(v_order_count, 0) > 0 then
+				-- в bayorders поле ordered не заполняется,
+				-- а высчитывается динамически :-(
+				select sum (d.quantity / n.perlist * d.intquant)
+				into v_order_ordered
+				from sdmcrez d
+				join sguidenomenk n on d.nomnom = n.nomnom
+				where numdoc = v_numOrder;
+				    
+	    
+				call bind_zakaz_results (v_orderNum, v_balans_ok
+					, v_order_ordered, v_order_paid, p_summa, v_rate
+					, p_sc_credit
+				);
+		
+				if v_balans_ok = 1 then
+					set v_orderNum = convert(varchar(20), v_numOrder);
+					UPDATE bayorders set paid = v_order_ordered WHERE id_jscet = p_id_jscet and ventureId = v_ventureId;
+				end if;
+	    
+	    
+			end if;
+		 
 		end if;
+
+	    
+
 	end if;
 
 	if p_id_xoz is not null and char_length(v_orderNum) > 0 then
@@ -1486,7 +1555,7 @@ begin
 	set p_credit_sub  = cast_acc (p_credit_sub );
 
 	if p_bind_zakaz = 1 then
-		call slave_bind_zakaz (v_orderNum, p_server, p_invoice, p_sum, p_credit_sc);
+		call slave_bind_zakaz (v_orderNum, p_server, p_invoice, p_sum, p_credit_sc, p_id_jscet);
 	end if;
 
 	insert into yBook(

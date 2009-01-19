@@ -20,6 +20,7 @@ call build_host_procedure (
 		+ ', p_invoice	  char(10)'
 		+ ', in p_sum        real'
 		+ ', in p_sc_credit char(10)'
+		+ ', p_id_jscet    integer'
 		+ ', in p_id_xoz  integer default null'
 );
 

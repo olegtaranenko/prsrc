@@ -205,12 +205,15 @@ begin
 			from account c 
 			where c.id = new_name.id_accc;
 
+			select id into v_id_jscet from jscet where id_jdog = new_name.id_jdog;
+
 			call admin.slave_bind_zakaz_prior (
 				v_zakaz
 				, admin.get_server_name()
 				, v_note
 				, old_name.sum
 				, v_credit_sc
+				, v_id_jscet
 				, old_name.id
 			);
 		end if;
