@@ -331,6 +331,10 @@ end;
 		<rollback/>
 	</changeSet>
 
+	<changeSet id="rollback-1" author="mantis-12" runOnChange="true">
+		<comment>Отчет для продаж - ВСЕ материалы купленные фирмой(ами)  ROLLBACK</comment>
+		<sqlFile path="src/main/liquibase/report-nomnom-byfirma-rollback.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+	</changeSet>
 
 
 </databaseChangeLog>
