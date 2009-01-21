@@ -318,6 +318,7 @@ begin
 		declare v_id_jscet integer;
 
 		set v_id_jdog = old_name.id_jdog;
+		set v_rate = 0;
 
 		if isnull(v_id_jdog, 0) <> 0 then
 			select nu into v_nu_jdog from jdog where id = v_id_jdog;
@@ -327,29 +328,30 @@ begin
 				set v_rate = admin.select_remote('prior', 'bayorders', 'rate', 'id_jscet = ' + convert(varchar(20), v_id_jscet ) + ' and ventureId = ' + v_ventureId);
 			end if;
 	    
-			if isnull(v_rate, 0) = 0 then
-				set v_rate = admin.select_remote('prior', 'system', 'abs(kurs)', '1 = 1');
-			end if;
-
-	    
-			set v_currency = new_name.sum / v_rate;
-	    
-			call admin.update_remote(
-				'prior'
-				, 'ybook'
-				, 'UEsumm'
-				, v_currency
-				, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
-			);
-
-			call admin.update_remote(
-				'prior'
-				, 'ybook'
-				, 'rate'
-				, v_rate
-				, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
-			);
 		end if;
+
+    
+		if isnull(v_rate, 0) = 0 then
+			set v_rate = admin.select_remote('prior', 'system', 'abs(kurs)', '1 = 1');
+		end if;
+
+		set v_currency = new_name.sum / v_rate;
+    
+		call admin.update_remote(
+			'prior'
+			, 'ybook'
+			, 'UEsumm'
+			, v_currency
+			, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
+		);
+
+		call admin.update_remote(
+			'prior'
+			, 'ybook'
+			, 'rate'
+			, v_rate
+			, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
+		);
 
 	end; end if;
 

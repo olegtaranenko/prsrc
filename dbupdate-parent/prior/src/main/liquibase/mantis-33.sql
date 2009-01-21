@@ -1367,21 +1367,23 @@ begin
 			end if;
 		else
 			-- посчитать общую сумму по всем заказам, входящих в счет.
-			for v_ord_inv as ov dynamic scroll cursor for
-				select numOrder as r_numorder
-					, isnull(ordered,0) as r_ordered
-					, isnull(paid, 0) as r_paid 
-					, isnull(rate, 0) as r_rate
-				from orders 
-				where invoice = v_invCode + v_invoice 
-					and isnull(ordered, 0) != isnull(paid, 0)
-				order by invoice desc
-			do
-				call bind_zakaz_helper(
-					v_order_count, v_orderNum, v_order_ordered, v_order_paid, v_rate, v_sep 
-					, r_numOrder, r_ordered, r_paid, r_rate
-				);
-			end for;
+			if isnull(v_invoice, '') != '' then
+				for v_ord_inv as ov dynamic scroll cursor for
+					select numOrder as r_numorder
+						, isnull(ordered,0) as r_ordered
+						, isnull(paid, 0) as r_paid 
+						, isnull(rate, 0) as r_rate
+					from orders 
+					where invoice = v_invCode + v_invoice 
+						and isnull(ordered, 0) != isnull(paid, 0)
+					order by invoice desc
+				do
+					call bind_zakaz_helper(
+						v_order_count, v_orderNum, v_order_ordered, v_order_paid, v_rate, v_sep 
+						, r_numOrder, r_ordered, r_paid, r_rate
+					);
+				end for;
+			end if;
 
 			-- по ид счета не нашли - искать по номеру
 			if v_order_count > 0 then
