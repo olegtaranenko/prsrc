@@ -1,15 +1,15 @@
 VERSION 5.00
-Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "msflxgrd.ocx"
+Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Report 
    BackColor       =   &H8000000A&
    Caption         =   "Отчет"
-   ClientHeight    =   8190
+   ClientHeight    =   8184
    ClientLeft      =   60
-   ClientTop       =   345
+   ClientTop       =   348
    ClientWidth     =   11880
    ControlBox      =   0   'False
    LinkTopic       =   "Form1"
-   ScaleHeight     =   8190
+   ScaleHeight     =   8184
    ScaleWidth      =   11880
    Begin VB.CommandButton cmPrev 
       Caption         =   "<"
@@ -59,16 +59,16 @@ Begin VB.Form Report
       TabIndex        =   0
       Top             =   240
       Width           =   11655
-      _ExtentX        =   20558
-      _ExtentY        =   13150
+      _ExtentX        =   20553
+      _ExtentY        =   13145
       _Version        =   393216
       AllowUserResizing=   1
    End
    Begin VB.Label laHeader 
-      Alignment       =   2  'Центровка
+      Alignment       =   2  'Center
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   8.25
+         Size            =   7.8
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -92,7 +92,7 @@ Begin VB.Form Report
    End
    Begin VB.Label laCount 
       BackColor       =   &H8000000E&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Caption         =   " "
       Height          =   255
       Left            =   3840
@@ -234,12 +234,12 @@ Else
 End If
 AA:
 'делаем обычный вид даты
-tmpStr = Right$(curDay, 2)
+tmpStr = right$(curDay, 2)
 tmpStr = tmpStr & Mid$(curDay, 3, 4)
-tmpStr = tmpStr & Left$(curDay, 2)
+tmpStr = tmpStr & left$(curDay, 2)
 laHeader.Caption = "Выработка по цеху " & Ceh(cehId) & " на " & tmpStr
 
-Grid.Rows = 2
+Grid.rows = 2
 Grid.Cols = 13
 Grid.Clear
     Grid.ColWidth(0) = 0
@@ -263,20 +263,20 @@ Set tbOrders = myOpenRecordSet("##377", sql, dbOpenForwardOnly)
 If tbOrders Is Nothing Then Exit Sub
 If tbOrders.BOF Then GoTo EN1
 resurs = -1: live = -1
-If tbOrders!numOrder = 0 Then
+If tbOrders!numorder = 0 Then
     resurs = Round(tbOrders!virabotka, 2)
     tbOrders.MoveNext
 End If
 If tbOrders.EOF Then GoTo EN2
 
 kpd = -1
-If tbOrders!numOrder = 1 Then
+If tbOrders!numorder = 1 Then
     kpd_ = Round(tbOrders!virabotka, 2)
     tbOrders.MoveNext
 End If
 If tbOrders.EOF Then GoTo EN2
 
-If tbOrders!numOrder = 2 Then
+If tbOrders!numorder = 2 Then
     live = Round(tbOrders!virabotka, 2)
     tbOrders.MoveNext
 End If
@@ -285,8 +285,8 @@ ReDim NN(0): ReDim QQ(0): ReDim QQ2(0)
 While Not tbOrders.EOF
     quantity = quantity + 1
     ReDim Preserve NN(quantity): ReDim Preserve QQ(quantity): ReDim Preserve QQ2(quantity)
-    NN(quantity) = tbOrders!numOrder
-If tbOrders!numOrder = 4080201 Then
+    NN(quantity) = tbOrders!numorder
+If tbOrders!numorder = 4080201 Then
     I = I
 End If
     QQ2(quantity) = (tbOrders!obrazec = "o") ' = -1 для образца
@@ -330,7 +330,7 @@ For I = 2 To crVirab - 1
 Next I
 Grid.AddItem ""
 Grid.MergeRow(6) = True
-I = Grid.Rows - 1
+I = Grid.rows - 1
 Grid.row = I: Grid.col = 1: Grid.CellFontBold = True
 quantity = I + 1
 For I = 1 To Grid.Cols - 1
@@ -431,7 +431,7 @@ Dim str As String, strFrom As String, strWhere As String
 
 laRecCount.Visible = False
 laCount.Visible = False
-Grid.Rows = 3
+Grid.rows = 3
 Grid.FixedRows = 2
 Grid.MergeRow(0) = True
 str = "|Кол-во фирм по Справочнику"
@@ -528,11 +528,11 @@ End If
 
 str = Reports.tbStartDate2.Text
 'strWhere = Left$(str, 2) & "/1/" & Right$(str, 4)
-strWhere = "'" & Right$(str, 4) & "-" & Left$(str, 2) & "-01'"
+strWhere = "'" & right$(str, 4) & "-" & left$(str, 2) & "-01'"
 str = Reports.tbEndDate2.Text
 ' формируем самое начало след месяца
-I = Left$(str, 2) ' месяц
-j = Right$(str, 4) 'год
+I = left$(str, 2) ' месяц
+j = right$(str, 4) 'год
 I = I + 1:
 If I > 12 Then I = 1: j = j + 1
 'strWhere = strWhere & "# And (Orders.inDate)<#" & i & "/1/" & j
@@ -633,7 +633,7 @@ Otgrugeno = 0
 If tqOrders Is Nothing Then GoTo ENs
 If Not tqOrders.BOF Then
   While Not tqOrders.EOF
-    Grid.TextMatrix(l, rpNomZak) = tqOrders!numOrder
+    Grid.TextMatrix(l, rpNomZak) = tqOrders!numorder
     j = tqOrders!StatusId
     If j = 2 Or j = 3 Or j = 9 Then
         Grid.MergeRow(l) = True
@@ -698,7 +698,7 @@ End Sub
 Sub fitFormToGrid()
 Dim I As Long, delta As Long
 
-I = 350 + (Grid.CellHeight + 17) * Grid.Rows
+I = 350 + (Grid.CellHeight + 17) * Grid.rows
 delta = I - Grid.Height
 If Me.Height + delta > (Screen.Height - 400) Then _
     delta = (Screen.Height - 400) - Me.Height
@@ -718,7 +718,11 @@ As Double
     Else
         numericToReport = value
     End If
-    Grid.TextMatrix(row, col) = numericToReport
+    If Round(numericToReport, 0) = numericToReport Then
+        Grid.TextMatrix(row, col) = numericToReport
+    Else
+        Grid.TextMatrix(row, col) = Format(numericToReport, "###0.00")
+    End If
 
 End Function
 
@@ -740,9 +744,9 @@ laHeader.Width = laHeader.Width + w
 cmExel.Top = cmExel.Top + h
 cmPrint.Top = cmPrint.Top + h
 cmExit.Top = cmExit.Top + h
-cmExit.Left = cmExit.Left + w
-cmPrev.Left = cmPrev.Left + w
-cmNext.Left = cmNext.Left + w
+cmExit.left = cmExit.left + w
+cmPrev.left = cmPrev.left + w
+cmNext.left = cmNext.left + w
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
@@ -814,7 +818,7 @@ If Not tbOrders.BOF Then
     s = Round((tbOrders!quantity - v) / per, 2)
     If s > 0 Then
         quantity = quantity + 1
-        Grid.TextMatrix(quantity, rtNomZak) = tbOrders!numOrder
+        Grid.TextMatrix(quantity, rtNomZak) = tbOrders!numorder
         Grid.TextMatrix(quantity, rtCeh) = tbOrders!Ceh
         LoadDate Grid, quantity, rtData, tbOrders!inDate, "dd.mm.yy"
         Grid.TextMatrix(quantity, rtMen) = tbOrders!Manag
@@ -877,7 +881,7 @@ If Not tbOrders Is Nothing Then
       s = Round((tbOrders!quantity - v) / per, 2)
       If s > 0 Then
         quantity = quantity + 1
-        Grid.TextMatrix(quantity, rtNomZak) = tbOrders!numOrder
+        Grid.TextMatrix(quantity, rtNomZak) = tbOrders!numorder
         Grid.TextMatrix(quantity, rtCeh) = "Продажа"
         LoadDate Grid, quantity, rtData, tbOrders!inDate, "dd.mm.yy"
         Grid.TextMatrix(quantity, rtMen) = Manag(tbOrders!ManagId)
@@ -886,7 +890,7 @@ If Not tbOrders Is Nothing Then
         Grid.TextMatrix(quantity, rtReserv) = s
 '        If Not IsNull(tbOrders!ordered) Then _
             Grid.TextMatrix(quantity, rtZakazano) = tbOrders!ordered
-         Grid.TextMatrix(quantity, rtZakazano) = getOrdered(tbOrders!numOrder)
+         Grid.TextMatrix(quantity, rtZakazano) = getOrdered(tbOrders!numorder)
         
         If Not IsNull(tbOrders!paid) Then _
             Grid.TextMatrix(quantity, rtOplacheno) = tbOrders!paid
@@ -900,7 +904,7 @@ End If
 
 laCount.Caption = Round(sum, 2)
 If quantity > 0 Then
-    Grid.RemoveItem quantity + 1
+    Grid.removeItem quantity + 1
 End If
 trigger = False
 SortCol Grid, rtReserv, "numeric"
@@ -933,7 +937,7 @@ Grid.ColWidth(2) = 5000
 While Not tbProduct.EOF
   Grid.AddItem Chr(9) & tbProduct!prName & Chr(9) & tbProduct!prDescript & _
   Chr(9) & "<--Изделие"
-  Grid.row = Grid.Rows - 1: Grid.col = 1: Grid.CellFontBold = True
+  Grid.row = Grid.rows - 1: Grid.col = 1: Grid.CellFontBold = True
   Grid.col = 2: Grid.CellFontBold = True
   ReDim NN(0): ReDim QQ(0)
   gProductId = tbProduct!prId
@@ -948,10 +952,10 @@ While Not tbProduct.EOF
 NXT:
   tbProduct.MoveNext
 Wend
-Grid.RemoveItem Grid.Rows
-Grid.RemoveItem 1
+Grid.removeItem Grid.rows
+Grid.removeItem 1
 
-I = 350 + (Grid.CellHeight + 17) * Grid.Rows
+I = 350 + (Grid.CellHeight + 17) * Grid.rows
 delta = I - Grid.Height
 If Me.Height + delta > (Screen.Height - 400) Then _
     delta = (Screen.Height - 400) - Me.Height

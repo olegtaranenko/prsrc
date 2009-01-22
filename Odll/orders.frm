@@ -327,14 +327,14 @@ Begin VB.Form Orders
       Width           =   1095
    End
    Begin VB.ListBox lbCeh 
-      Height          =   624
+      Height          =   816
       ItemData        =   "Orders.frx":03DD
       Left            =   2100
       List            =   "Orders.frx":03EA
       TabIndex        =   21
       Top             =   3960
       Visible         =   0   'False
-      Width           =   495
+      Width           =   732
    End
    Begin MSFlexGridLib.MSFlexGrid Grid 
       Height          =   4455
