@@ -1,17 +1,27 @@
 VERSION 5.00
-Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "msflxgrd.ocx"
+Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Otgruz 
    BackColor       =   &H8000000A&
    Caption         =   "Отгрузка"
-   ClientHeight    =   3030
-   ClientLeft      =   165
-   ClientTop       =   450
-   ClientWidth     =   10125
+   ClientHeight    =   3024
+   ClientLeft      =   168
+   ClientTop       =   456
+   ClientWidth     =   10128
    ControlBox      =   0   'False
    LinkTopic       =   "Form1"
-   ScaleHeight     =   3030
-   ScaleWidth      =   10125
+   ScaleHeight     =   3024
+   ScaleWidth      =   10128
    StartUpPosition =   2  'CenterScreen
+   Begin VB.CommandButton cmOtgruzDate 
+      Caption         =   "Сменить дату"
+      Enabled         =   0   'False
+      Height          =   315
+      Left            =   1800
+      TabIndex        =   6
+      Top             =   2640
+      Visible         =   0   'False
+      Width           =   1452
+   End
    Begin VB.CommandButton cmDel 
       Caption         =   "Удалить"
       Enabled         =   0   'False
@@ -40,7 +50,7 @@ Begin VB.Form Otgruz
       Width           =   975
    End
    Begin VB.ListBox lbDate 
-      Height          =   2205
+      Height          =   2160
       Left            =   60
       TabIndex        =   0
       Top             =   300
@@ -52,21 +62,26 @@ Begin VB.Form Otgruz
       TabIndex        =   1
       Top             =   0
       Width           =   8595
-      _ExtentX        =   15161
-      _ExtentY        =   4471
+      _ExtentX        =   15155
+      _ExtentY        =   4466
       _Version        =   393216
       AllowBigSelection=   0   'False
       MergeCells      =   2
       AllowUserResizing=   1
    End
    Begin VB.Label laNomer 
-      Alignment       =   2  'Центровка
+      Alignment       =   2  'Center
       Caption         =   "Даты отгрузки:"
       Height          =   195
       Left            =   120
       TabIndex        =   4
       Top             =   60
       Width           =   1335
+   End
+   Begin VB.Menu mnOtruzDate 
+      Caption         =   "Сменить дату отгрузки"
+      Enabled         =   0   'False
+      Visible         =   0   'False
    End
 End
 Attribute VB_Name = "Otgruz"
@@ -79,6 +94,7 @@ Public quantity5 As Long
 Public mousRow5 As Long, mousCol5 As Long
 Public Regim As String
 Public closeZakaz As Boolean
+Dim doOtgruzDateUpdate As Boolean
 
 Const usSumm = 1
 Const usOutSum = 2
@@ -88,15 +104,14 @@ Dim oldHeight As Integer, oldWidth As Integer ' нач размер формы
 Dim outDate() As Date, outLen As Integer, deltaHeight As Integer
 
 Private Sub cmCancel_Click()
-
-Unload Me
+    Unload Me
 End Sub
 
 Private Sub cmDel_Click()
 Dim I As Integer, j As Integer
 
-strWhere = "WHERE (((outDate)='" & Format(lbDate.Text, "yyyy-mm-dd hh:nn:ss") & _
-"' AND (numOrder)=" & gNzak & "));"
+strWhere = "WHERE outDate ='" & Format(lbDate.Text, "yyyy-mm-dd hh:nn:ss") & _
+"' AND numOrder = " & gNzak
 'MsgBox strWhere
 
 wrkDefault.BeginTrans
@@ -127,8 +142,74 @@ Orders.openOrdersRowToGrid "##218": tqOrders.Close
 lbDate.SetFocus
 Exit Sub
 ER1:
-wrkDefault.Rollback
+wrkDefault.rollback
 MsgBox "Удаление не прошло", , ""
+End Sub
+
+Private Sub updateOtgruzDate()
+Dim strSet As String, I As Integer
+    tbMobile.Visible = False
+    If IsDate(tbMobile.Text) Then
+        Dim newDate As Date, oldDate As Date
+        Dim newDateStr As String
+        newDate = CDate(tbMobile.Text)
+        oldDate = CDate(lbDate.Text)
+        lbDate.List(lbDate.ListIndex) = Format(newDate, "dd.mm.yy hh:mm:ss")
+        newDateStr = "'" & Format(newDate, "yyyymmdd hh:mm:ss") & "'"
+        strSet = " set outDate = "
+        strWhere = " WHERE outDate ='" & Format(Format(oldDate, "yyyymmdd hh:mm:ss")) & "' AND numOrder = " & gNzak
+        
+wrkDefault.BeginTrans
+        If Regim = "uslug" Then
+            sql = sql & "update xUslugOut"
+            I = myExecute("##0.209.1", sql & strSet & newDateStr & strWhere, 0)
+            If I > 0 Then GoTo ER1
+        Else
+            sql = "update xPredmetyByIzdeliaOut"
+            
+            Debug.Print sql & strSet & newDateStr & strWhere
+            I = myExecute("##0.209.2", sql & strSet & newDateStr & strWhere, 0) 'дает -1, если нет таких записей - а это возможно
+            If I > 0 Then GoTo ER1
+            
+            sql = "update xPredmetyByNomenkOut "
+            I = myExecute("##0.209.3", sql & strSet & newDateStr & strWhere, 0)
+            If I > 0 Then GoTo ER1
+        End If
+    Else
+        MsgBox "ВВедена некорректная дата. Попробуйте еще раз", , "Ошибка ввода"
+    End If
+    wrkDefault.CommitTrans
+
+    lbDate.SetFocus
+    Exit Sub
+ER1:
+    wrkDefault.rollback
+    MsgBox "Непредвиденная ошибка при смене даты отгрузки", , "Сообщите администартору"
+    
+End Sub
+
+Private Sub cmOtgruzDate_Click()
+Dim strDate As String
+
+    doOtgruzDateUpdate = tbMobile.Visible = True And tbMobile.Top = cmOtgruzDate.Top
+    If doOtgruzDateUpdate Then
+        updateOtgruzDate
+        Exit Sub
+    End If
+
+    strDate = Format(lbDate.Text, "dd.mm.yy")
+    If tbMobile.Visible = False Then
+        tbMobile.left = cmOtgruzDate.left + cmOtgruzDate.Width + 100
+        tbMobile.Top = cmOtgruzDate.Top
+        tbMobile.Visible = True
+        tbMobile.Text = strDate
+        tbMobile.Width = 800
+        tbMobile.SetFocus
+        tbMobile.SelStart = 0
+        tbMobile.SelLength = 10
+    End If
+    
+    
 End Sub
 
 Private Sub Form_Load()
@@ -139,6 +220,9 @@ oldWidth = Me.Width
 deltaHeight = Me.Height - lbDate.Height
 gridIsLoad = False
 noClick = True
+If dostup = "a" Then
+    cmOtgruzDate.Visible = True
+End If
 If Regim = "uslug" Then
     Me.Caption = "Отгрузка  по заказу № " & gNzak
     Me.Width = Me.Width - 4200
@@ -154,7 +238,7 @@ If Regim = "uslug" Then
     Exit Sub
 End If
 Me.Caption = "Отгрузка изделий по заказу № " & gNzak
-Grid5.Rows = 3
+Grid5.rows = 3
 Grid5.FixedRows = 2
 Grid5.MergeRow(0) = True
 str = "|Надлежит отгрузить"
@@ -168,7 +252,7 @@ Grid5.FormatString = "||<|||" & tmpStr
 Grid5.TextMatrix(1, prType) = "Тип"
 Grid5.TextMatrix(1, prName) = "Номер"
 Grid5.TextMatrix(1, prDescript) = "Описание"
-Grid5.TextMatrix(1, prEdIzm) = "Ед.измерения"
+Grid5.TextMatrix(1, prEdizm) = "Ед.измерения"
 Grid5.TextMatrix(1, prCenaEd) = "Цена за ед."
 str = "Кол-во"
 Grid5.TextMatrix(1, prQuant) = str
@@ -183,7 +267,7 @@ Grid5.ColWidth(prId) = 0
 Grid5.ColWidth(prType) = 0 '380
 Grid5.ColWidth(prName) = 1185
 Grid5.ColWidth(prDescript) = 1270 + 380
-Grid5.ColWidth(prEdIzm) = 420
+Grid5.ColWidth(prEdizm) = 420
 Grid5.ColWidth(prCenaEd) = 495
 Grid5.ColWidth(prQuant) = 630
 Grid5.ColWidth(prSumm) = 1035
@@ -191,6 +275,7 @@ Grid5.ColWidth(prOutQuant) = 630
 Grid5.ColWidth(prOutSum) = 800
 Grid5.ColWidth(prNowQuant) = 630
 Grid5.ColWidth(prNowSum) = 800
+
 
 loadOtgruz
 noClick = False
@@ -374,7 +459,9 @@ Grid5.Width = Grid5.Width + w
 
 cmDel.Top = cmDel.Top + h
 cmCancel.Top = cmCancel.Top + h
-cmCancel.Left = cmCancel.Left + w
+cmCancel.left = cmCancel.left + w
+cmOtgruzDate.Top = cmDel.Top
+cmOtgruzDate.left = cmDel.left + cmDel.Width + 100
 
 End Sub
 
@@ -439,7 +526,7 @@ End Sub
 Sub OutNowSummToGrid5()
 Dim il As Long, sum As Double, sum2 As Double
 sum = 0: sum2 = 0
-For il = 2 To Grid5.Rows - 2
+For il = 2 To Grid5.rows - 2
     sum = sum + Grid5.TextMatrix(il, prOutSum)
     sum2 = sum2 + Grid5.TextMatrix(il, prNowSum)
 Next il
@@ -452,6 +539,7 @@ End Sub
 Private Sub lbDate_Click()
 If noClick Then Exit Sub
 cmDel.Enabled = ((lbDate.ListIndex < outLen) And Not closeZakaz)
+cmOtgruzDate.Enabled = cmDel.Enabled
 
 gridIsLoad = False
 If Regim = "" Then
@@ -478,7 +566,13 @@ End Sub
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
 Dim pQuant As Double, s As Double, maxQ As Double
 
+
 If KeyCode = vbKeyReturn Then
+    doOtgruzDateUpdate = tbMobile.Visible = True And tbMobile.Top = cmOtgruzDate.Top
+    If doOtgruzDateUpdate Then
+        updateOtgruzDate
+        Exit Sub
+    End If
   If Regim = "uslug" Then
     maxQ = Grid5.TextMatrix(1, usSumm)
     maxQ = maxQ - QQ(1) 'на столько можно увеличивать
@@ -498,16 +592,16 @@ If KeyCode = vbKeyReturn Then
         If pQuant > 0 Then
             tbProduct.AddNew
             tbProduct!outDate = outDate(lbDate.ListIndex)
-            tbProduct!numOrder = gNzak
+            tbProduct!numorder = gNzak
             tbProduct!quant = pQuant
-                tbProduct.Update
+                tbProduct.update
         End If
     ElseIf pQuant = 0 Then
         tbProduct.Delete
     Else
         tbProduct.Edit
         tbProduct!quant = pQuant
-        tbProduct.Update
+        tbProduct.update
     End If
     tbProduct.Close
     
@@ -526,10 +620,11 @@ If KeyCode = vbKeyReturn Then
     On Error GoTo ER1
   wrkDefault.BeginTrans
   
+  
   maxQ = Grid5.TextMatrix(mousRow5, prQuant) 'надлежит отгрузить
   maxQ = maxQ - QQ(mousRow5) 'на столько можно увеличивать
   maxQ = Round(maxQ + Grid5.TextMatrix(mousRow5, prNowQuant), 2)
-  If Not isNumericTbox(tbMobile, 0, maxQ) Then wrkDefault.Rollback: Exit Sub
+  If Not isNumericTbox(tbMobile, 0, maxQ) Then wrkDefault.rollback: Exit Sub
   If Grid5.TextMatrix(mousRow5, prType) = "изделие" Then
     pQuant = Round(tbMobile.Text)
     tbMobile.Text = pQuant
@@ -550,18 +645,18 @@ If KeyCode = vbKeyReturn Then
         If pQuant > 0 Then
             tbProduct.AddNew
             tbProduct!outDate = outDate(lbDate.ListIndex)
-            tbProduct!numOrder = gNzak
+            tbProduct!numorder = gNzak
             tbProduct!prId = gProductId
             tbProduct!prExt = prExt
             tbProduct!quant = pQuant
-            tbProduct.Update
+            tbProduct.update
         End If
     ElseIf pQuant = 0 Then
         tbProduct.Delete
     Else
         tbProduct.Edit
         tbProduct!quant = pQuant
-        tbProduct.Update
+        tbProduct.update
     End If
     tbProduct.Close
   Else 'отдельная ном-ра
@@ -581,17 +676,17 @@ If KeyCode = vbKeyReturn Then
         If pQuant > 0 Then
             tbNomenk.AddNew
             tbNomenk!outDate = outDate(lbDate.ListIndex)
-            tbNomenk!numOrder = gNzak
+            tbNomenk!numorder = gNzak
             tbNomenk!nomNom = gNomNom
             tbNomenk!quant = pQuant
-            tbNomenk.Update
+            tbNomenk.update
         End If
     ElseIf pQuant = 0 Then
         tbNomenk.Delete
     Else
         tbNomenk.Edit
         tbNomenk!quant = pQuant
-        tbNomenk.Update
+        tbNomenk.update
     End If
     tbNomenk.Close
     
@@ -621,7 +716,7 @@ End If
 Exit Sub
 ER1:
 errorCodAndMsg ("Отгрузка не прошла")
-wrkDefault.Rollback
+wrkDefault.rollback
 ER2:
 lbHide5
 MsgBox "Отгрузка не прошла", , "Error-" & cErr & " Сообщите администратору"
