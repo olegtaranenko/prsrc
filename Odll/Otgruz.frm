@@ -372,9 +372,9 @@ End If
 'MsgBox sql
 byErrSqlGetValues "W##203", sql, s
 If Regim = "uslug" Then
-    Grid5.TextMatrix(row, usOutSum) = s
+    Grid5.TextMatrix(row, usOutSum) = Round(s, 2)
 Else
-    Grid5.TextMatrix(row, prOutQuant) = s
+    Grid5.TextMatrix(row, prOutQuant) = Round(s, 2)
     If IsNumeric(tbNomenk!cenaEd) Then _
         Grid5.TextMatrix(row, prOutSum) = Round(tbNomenk!cenaEd * s, 2)
 End If
@@ -398,9 +398,9 @@ End If
 byErrSqlGetValues "W##204", sql, s
 
 If Regim = "uslug" Then
-    Grid5.TextMatrix(row, usNowSum) = s
+    Grid5.TextMatrix(row, usNowSum) = Round(s, 2)
 Else
-    Grid5.TextMatrix(row, prNowQuant) = s
+    Grid5.TextMatrix(row, prNowQuant) = Round(s, 2)
     If IsNumeric(tbNomenk!cenaEd) Then _
         Grid5.TextMatrix(row, prNowSum) = Round(tbNomenk!cenaEd * s, 2)
 End If
@@ -539,7 +539,7 @@ End Sub
 Private Sub lbDate_Click()
 If noClick Then Exit Sub
 cmDel.Enabled = ((lbDate.ListIndex < outLen) And Not closeZakaz)
-cmOtgruzDate.Enabled = cmDel.Enabled
+cmOtgruzDate.Enabled = lbDate.ListIndex < outLen
 
 gridIsLoad = False
 If Regim = "" Then

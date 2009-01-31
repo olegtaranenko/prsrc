@@ -2469,7 +2469,7 @@ If Not tbNomenk.BOF Then
         Frm.Grid5.TextMatrix(Frm.quantity5 + I, prSumm) = _
                                 Round(tbNomenk!cenaEd * tbNomenk!quant, 2)
     End If
-    Frm.Grid5.TextMatrix(Frm.quantity5 + I, prQuant) = tbNomenk!quant
+    Frm.Grid5.TextMatrix(Frm.quantity5 + I, prQuant) = Round(tbNomenk!quant, 2)
 ' все изменения проделать и для ном-ры (см. ниже)
     If reg = "fromOtgruz" Then
         Otgruz.getOtgrugeno Frm.quantity5 + I
@@ -2513,12 +2513,12 @@ If Not tbNomenk.BOF Then
                                 Round(tbNomenk!cenaEd * tbNomenk!quant, 2)
     End If
 
-    Frm.Grid5.TextMatrix(Frm.quantity5 + I, prQuant) = tbNomenk!quant
+    Frm.Grid5.TextMatrix(Frm.quantity5 + I, prQuant) = Round(tbNomenk!quant, 2)
 
     If reg = "fromOtgruz" Then
         Otgruz.getOtgrugeno Frm.quantity5 + I, "byNomenk"
     ElseIf Not IsNull(tbNomenk!eQuant) Then
-        Frm.Grid5.TextMatrix(Frm.quantity5 + I, prEtap) = tbNomenk!eQuant
+        Frm.Grid5.TextMatrix(Frm.quantity5 + I, prEtap) = Round(tbNomenk!eQuant, 2)
         Frm.Grid5.TextMatrix(Frm.quantity5 + I, prEQuant) = _
                             Round(tbNomenk!eQuant - tbNomenk!prevQuant, 2)
     End If
