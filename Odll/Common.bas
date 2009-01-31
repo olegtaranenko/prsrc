@@ -2434,7 +2434,7 @@ End Function
 
 'исп-ся при формировании предметов, а также отвечает за часть Надлежит
 'отпустить в Otgruz.frm
-Sub loadPredmeti(Frm As Form, Optional reg As String = "")
+Sub loadPredmeti(Frm As Form, Optional reg As String = "", Optional needToRefresh As Boolean = False)
 Dim I As Integer
 
 Screen.MousePointer = flexHourglass
@@ -2535,7 +2535,7 @@ If Frm.quantity5 > 0 Then
     Frm.Grid5.col = prQuant
     Frm.Grid5.Text = "Итого:"
     Frm.Grid5.col = prSumm
-    Frm.Grid5.Text = sProducts.saveOrdered(False)
+    Frm.Grid5.Text = sProducts.saveOrdered(needToRefresh)
     Frm.Grid5.CellFontBold = True
     If reg = "fromOtgruz" Then
         Frm.Grid5.col = prOutSum

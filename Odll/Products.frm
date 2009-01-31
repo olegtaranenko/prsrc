@@ -1917,53 +1917,54 @@ EN1:
 If noLock = "" Then lockSklad "un"
 End Function
 
-Sub nomenkToPredmeti()
+Sub nomenkToPredmeti(ByRef needToRefresh As Boolean)
 Dim delta As Double, s As Double, quant As Double
 
-  If Not lockSklad Then Exit Sub
-  
-  quant = tbQuant.Text
-    sql = "select * from xPredmetyByNomenk where numOrder = " & numDoc & _
-    " and nomNom = '" & gNomNom & "';"
-    'Debug.Print sql
-    Set tbNomenk = myOpenRecordSet("##117", sql, dbOpenForwardOnly)
-On Error GoTo errr
-    If tbNomenk Is Nothing Then GoTo EN1
-'    tbNomenk.index = "Key"
-'    tbNomenk.Seek "=", numDoc, gNomNom
-'    If Not tbNomenk.NoMatch Then
-    If Not tbNomenk.BOF Then
-        MsgBox "Ќоменклатура '" & gNomNom & "' уже есть в предметах заказа!", , "ѕредупреждение"
-        GoTo EN2
-    End If
-
-    
+    quant = tbQuant.Text
     s = nomencOstatkiToGrid(1) - quant ' одновременно обновл€ем таблицу
+  
     If s < -0.005 Then 'в 2х местах
         If MsgBox("ƒефицит товара '" & gNomNom & "' в доступных остатках " & _
         "составит (" & s & "), продолжить?", vbOKCancel Or vbDefaultButton2, _
-        "ѕодтвердите") = vbCancel Then GoTo EN2
+        "ѕодтвердите") = vbCancel Then
+            Exit Sub
+        End If
     End If
-        
-    wrkDefault.BeginTrans
-        
-    If Not nomenkToDMCrez(quant) Then GoTo ER1
     
-    tbNomenk.AddNew
-    tbNomenk!numorder = numDoc
-    tbNomenk!nomNom = gNomNom
-    tbNomenk!quant = quant
+On Error GoTo errr
+
+    wrkDefault.BeginTrans
+    sql = "select * from xPredmetyByNomenk where numOrder = " & numDoc & _
+            " and nomNom = '" & gNomNom & "';"
+    'Debug.Print sql
+    Set tbNomenk = myOpenRecordSet("##117", sql, dbOpenForwardOnly)
+    If tbNomenk Is Nothing Then End
+    
+    If Not tbNomenk.BOF Then
+        tbNomenk.Edit
+        tbNomenk!quant = tbNomenk!quant + quant
+        needToRefresh = True
+    Else
+        tbNomenk.AddNew
+        tbNomenk!numorder = numDoc
+        tbNomenk!nomNom = gNomNom
+        tbNomenk!quant = quant
+    End If
     tbNomenk.update
-        
+
+    If Not nomenkToDMCrez(quant) Then GoTo ER1
+
     wrkDefault.CommitTrans
   GoTo EN2
 ER1: wrkDefault.rollback
 EN2: tbNomenk.Close
-EN1: lockSklad "un"
+
 Exit Sub
 
 errr:
-Debug.Print sql: errorCodAndMsg ("ƒобавление номенклатуры к заказу")
+
+    tbNomenk.Close
+    errorCodAndMsg ("ƒобавление номенклатуры к заказу")
 End Sub
 
 
@@ -2125,7 +2126,7 @@ End Function
 Private Sub tbQuant_KeyDown(KeyCode As Integer, Shift As Integer)
 Dim rr As Long, il As Long, pQuant As Double, s As Double, str As String
 Dim I As Integer, NN2() As String
-
+Dim needToRefresh As Boolean ' показывает, нужно ли обновить сумму в поле ordered
 If KeyCode = vbKeyReturn Then
    
     
@@ -2139,7 +2140,7 @@ If opNomenk.value Then
     Exit Sub
   End If
   If Regim = "" Then 'предметы к заказу т.е 0<numExt<254
-    nomenkToPredmeti
+    nomenkToPredmeti needToRefresh
   Else
     s = Round(tbQuant.Text, 2)
     If sDocs.isIntMove() Then
@@ -2218,7 +2219,7 @@ If sDocs.Regim <> "fromCeh" Then
 '******** добавл€ем предметы в Cостав по издели€м  *************************
   If numExt <> 254 Then ' этот состав только дл€ заказов
       quickSort NN, 1
-      If Not addToPredmetiTable(pQuant, getPrExtByNomenk()) Then GoTo ER1
+      If Not addToPredmetiTable(pQuant, getPrExtByNomenk(), needToRefresh) Then GoTo ER1
   End If
 '*************************************************************************
 End If
@@ -2227,7 +2228,10 @@ End If
   lockSklad "un"
 End If ' opNomenk.value
   
-If Regim = "" Then loadPredmeti Me ' состав
+If Regim = "" Then
+    loadPredmeti Me, , needToRefresh ' состав
+End If
+    
 loadProducts ' ном-ра заказа
    
 '  Grid2.col = dnQuant
@@ -2320,7 +2324,7 @@ End Function
 'lastExt=0 - если у издели€ вообще нет вариантов поставки(или оно не вариантно)
 'если вариант поставки, заданный в NN() есть, то дает номер его расширени€
 'иначе возвращает отриц.  макс.номер варианта поставки
-Function addToPredmetiTable(pQuant As Double, lastExt As Integer) As Boolean
+Function addToPredmetiTable(pQuant As Double, lastExt As Integer, ByRef needToRefresh As Boolean) As Boolean
 Dim I As Integer
 
 addToPredmetiTable = False
@@ -2338,8 +2342,8 @@ End If
 
 
 sql = "SELECT * from xPredmetyByIzdelia " & _
-"WHERE (((numOrder)=" & numDoc & ") AND ((prId)=" & gProductId & _
-") AND ((prExt)=" & prExt & "));"
+"WHERE numOrder =" & numDoc & " AND prId = " & gProductId & _
+" AND prExt =" & prExt
 'MsgBox sql
 Set tbProduct = myOpenRecordSet("##185", sql, dbOpenForwardOnly)
 On Error GoTo errr
@@ -2377,6 +2381,7 @@ Else
     tbProduct.Edit
     tbProduct!quant = Round(tbProduct!quant + pQuant)
     tbProduct.update
+    needToRefresh = True
 End If
 'EP:
 tbProduct.Close
@@ -2405,8 +2410,8 @@ If Not byErrSqlGetValues("W##210", sql, s1) Then Exit Function
 
 s = Round(s + s1, 2)
 If update Then
-    sql = "UPDATE Orders SET ordered = " & s & " WHERE (((numOrder)=" & gNzak & "));"
-    If myExecute("##211", sql) = 0 Then saveOrdered = s
+    orderUpdate "##211", Round(s, 2), "orders", "ordered"
+    Orders.Grid.TextMatrix(Orders.mousRow, orZakazano) = s
 End If
 saveOrdered = s
 End Function
