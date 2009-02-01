@@ -219,6 +219,13 @@ begin
 			);
 		end if;
 
+		call admin.wf_synchronize_sum(
+			  new_name.id_jdog
+			, old_name.sum
+			, old_name.id
+			, v_ventureId
+		)
+
 	end if;
 
 	if update(id_deb) then
@@ -227,6 +234,7 @@ begin
 		call admin.update_remote('prior', 'ybook', 'KredDebitor', convert(varchar(20), v_kredDebitor)
 			, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
 		);
+
     end if;
 
 	if update(id_accd) and isnull(new_name.id_accd, 0) != 0 then
@@ -313,45 +321,12 @@ begin
 	end if;
 
 	if update(sum) then begin
-		declare v_nu_jdog varchar(17);
-		declare v_id_jdog integer;
-		declare v_rate float;
-
-		set v_id_jdog = old_name.id_jdog;
-		set v_rate = 0;
-
-		if isnull(v_id_jdog, 0) <> 0 then
-			select nu into v_nu_jdog from jdog where id = v_id_jdog;
-			select id into v_id_jscet from jscet where id_jdog = v_id_jdog;
-			set v_rate = admin.select_remote('prior', 'orders', 'rate', 'id_jscet = ' + convert(varchar(20), v_id_jscet ) + ' and ventureId = ' + v_ventureId);
-			if isnull(v_rate, 0) = 0 then
-				set v_rate = admin.select_remote('prior', 'bayorders', 'rate', 'id_jscet = ' + convert(varchar(20), v_id_jscet ) + ' and ventureId = ' + v_ventureId);
-			end if;
-	    
-		end if;
-
-    
-		if isnull(v_rate, 0) = 0 then
-			set v_rate = admin.select_remote('prior', 'system', 'abs(kurs)', '1 = 1');
-		end if;
-
-		set v_currency = new_name.sum / v_rate;
-    
-		call admin.update_remote(
-			'prior'
-			, 'ybook'
-			, 'UEsumm'
-			, v_currency
-			, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
-		);
-
-		call admin.update_remote(
-			'prior'
-			, 'ybook'
-			, 'rate'
-			, v_rate
-			, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
-		);
+		call admin.wf_synchronize_sum(
+			old_name.id_jdog
+			, new_name.sum
+			, old_name.id
+			, v_ventureId
+		)
 
 	end; end if;
 
@@ -411,6 +386,63 @@ begin
 			, 'id_xoz=' + convert(varchar(20), old_name.id ) + ' and ventureid = ' + v_ventureid
 		);
 	end if;
+
+end;
+
+
+if exists (select '*' from sysprocedure where proc_name like 'wf_synchronize_sum') then  
+	drop procedure wf_synchronize_sum;
+end if;
+
+create procedure wf_synchronize_sum (
+	  in p_id_jdog   integer
+	, in p_sum       float
+	, in p_id_xoz    integer
+	, in p_ventureId char(20)
+)
+begin
+	declare v_nu_jdog varchar(17);
+	declare v_id_jdog integer;
+	declare v_rate float;
+	declare v_id_jscet integer;
+	declare v_currency float;
+
+	set v_id_jdog = p_id_jdog;
+	set v_rate = 0;
+
+	if isnull(v_id_jdog, 0) <> 0 then
+		select nu into v_nu_jdog from jdog where id = v_id_jdog;
+		select id into v_id_jscet from jscet where id_jdog = v_id_jdog;
+		set v_rate = admin.select_remote('prior', 'orders', 'rate', 'id_jscet = ' + convert(varchar(20), v_id_jscet ) + ' and ventureId = ' + convert(varchar(20), p_ventureid));
+		if isnull(v_rate, 0) = 0 then
+			set v_rate = admin.select_remote('prior', 'bayorders', 'rate', 'id_jscet = ' + convert(varchar(20), v_id_jscet ) + ' and ventureId = ' + convert(varchar(20), p_ventureid));
+		end if;
+    
+	end if;
+
+
+	if isnull(v_rate, 0) = 0 then
+		set v_rate = admin.select_remote('prior', 'system', 'abs(kurs)', '1 = 1');
+	end if;
+
+	set v_currency = p_sum / v_rate;
+
+
+	call admin.update_remote(
+		'prior'
+		, 'ybook'
+		, 'UEsumm'
+		, convert(varchar(20), v_currency)
+		, 'id_xoz=' + convert(varchar(20), p_id_xoz ) + ' and ventureid = ' + p_ventureid
+	);
+
+	call admin.update_remote(
+		'prior'
+		, 'ybook'
+		, 'rate'
+		, convert(varchar(20), v_rate)
+		, 'id_xoz=' + convert(varchar(20), p_id_xoz ) + ' and ventureid = ' + p_ventureid
+	);
 
 end;
 
