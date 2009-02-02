@@ -424,10 +424,10 @@ begin
 	else 
 		set v_id_jdog = p_id_jdog_old;
 	end if;
-	if isnull(p_id_jdog_old, 0) = 0 then
-		set v_sum = p_sum_new;
-	else 
+	if isnull(p_id_jdog_new, -1) = -1 then
 		set v_sum = p_sum_old;
+	else 
+		set v_sum = p_sum_new;
 	end if;
 
 	set v_rate = 0;
