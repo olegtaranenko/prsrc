@@ -255,38 +255,6 @@ begin
 end;
 
 
-if exists (select 1 from sysprocedure where proc_name = 'slave_date_currency_rate') then
-	drop function slave_date_currency_rate;
-end if;
-
-create function slave_date_currency_rate(
-		in p_date date
-		,in p_id_cur integer
-	)
-	returns float
-begin
-	declare o_date date;
-	declare o_curse float;
-
-	call slave_currency_rate(p_date, p_id_cur, o_curse, o_date);
-	return o_curse;
-end;
-
-
-if exists (select 1 from sysprocedure where proc_name = 'slave_get_currency_rate') then
-	drop function slave_get_currency_rate;
-end if;
-
-create function slave_get_currency_rate(
-		in p_id_cur integer
-	)
-	returns float
-begin
-	return slave_date_currency_rate(now(), p_id_cur);
-end;
-
-
-
 --****************************************************************
 --              INTEGRATION PRIOR/COMTEX
 --****************************************************************

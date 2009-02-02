@@ -177,9 +177,11 @@ begin
 	declare s_id_shiz varchar(20);
 	declare v_id_m_xoz integer;
 	declare m_xoz_updated integer;
+	declare v_already_synced integer;
 	declare v_id_jscet integer;
 
 	set m_xoz_updated = 0;
+	set v_already_synced = 0;
 
 	set v_ventureid = admin.select_remote('prior', 'guideventure', 'ventureid', 'sysname = ''''' + admin.get_server_name() + '''''');
 
@@ -220,11 +222,14 @@ begin
 		end if;
 
 		call admin.wf_synchronize_sum(
-			  new_name.id_jdog
+			old_name.id_jdog
 			, old_name.sum
+			, new_name.id_jdog
+			, new_name.sum
 			, old_name.id
 			, v_ventureId
-		)
+		);
+		set v_already_synced = 1;
 
 	end if;
 
@@ -320,13 +325,15 @@ begin
 
 	end if;
 
-	if update(sum) then begin
+	if update(sum) and v_already_synced = 0 then begin
 		call admin.wf_synchronize_sum(
 			old_name.id_jdog
+			, old_name.sum
+			, new_name.id_jdog
 			, new_name.sum
 			, old_name.id
 			, v_ventureId
-		)
+		);
 
 	end; end if;
 
@@ -395,37 +402,55 @@ if exists (select '*' from sysprocedure where proc_name like 'wf_synchronize_sum
 end if;
 
 create procedure wf_synchronize_sum (
-	  in p_id_jdog   integer
-	, in p_sum       float
-	, in p_id_xoz    integer
-	, in p_ventureId char(20)
+	  in p_id_jdog_old integer
+	, in p_sum_old     float
+	, in p_id_jdog_new integer
+	, in p_sum_new     float
+	, in p_id_xoz      integer
+	, in p_ventureId   char(20)
 )
 begin
 	declare v_nu_jdog varchar(17);
 	declare v_id_jdog integer;
+	declare v_sum     real;
 	declare v_rate float;
 	declare v_id_jscet integer;
 	declare v_currency float;
+	declare v_dat_jdog date;
+	declare v_id_cur   integer;
 
-	set v_id_jdog = p_id_jdog;
+	if isnull(p_id_jdog_old, 0) = 0 then
+		set v_id_jdog = p_id_jdog_new;
+	else 
+		set v_id_jdog = p_id_jdog_old;
+	end if;
+	if isnull(p_id_jdog_old, 0) = 0 then
+		set v_sum = p_sum_new;
+	else 
+		set v_sum = p_sum_old;
+	end if;
+
 	set v_rate = 0;
 
 	if isnull(v_id_jdog, 0) <> 0 then
-		select nu into v_nu_jdog from jdog where id = v_id_jdog;
+		select nu, dat into v_nu_jdog, v_dat_jdog from jdog where id = v_id_jdog;
 		select id into v_id_jscet from jscet where id_jdog = v_id_jdog;
-		set v_rate = admin.select_remote('prior', 'orders', 'rate', 'id_jscet = ' + convert(varchar(20), v_id_jscet ) + ' and ventureId = ' + convert(varchar(20), p_ventureid));
-		if isnull(v_rate, 0) = 0 then
-			set v_rate = admin.select_remote('prior', 'bayorders', 'rate', 'id_jscet = ' + convert(varchar(20), v_id_jscet ) + ' and ventureId = ' + convert(varchar(20), p_ventureid));
+		if isnull(v_id_jscet, 0) = 0 then
+			set v_rate = slave_date_currency_rate(v_dat_jdog, v_id_cur);
+		else
+			set v_rate = admin.select_remote('prior', 'orders', 'rate', 'id_jscet = ' + convert(varchar(20), v_id_jscet ) + ' and ventureId = ' + convert(varchar(20), p_ventureid));
+			if isnull(v_rate, 0) = 0 then
+				set v_rate = admin.select_remote('prior', 'bayorders', 'rate', 'id_jscet = ' + convert(varchar(20), v_id_jscet ) + ' and ventureId = ' + convert(varchar(20), p_ventureid));
+			end if;
 		end if;
     
 	end if;
-
 
 	if isnull(v_rate, 0) = 0 then
 		set v_rate = admin.select_remote('prior', 'system', 'abs(kurs)', '1 = 1');
 	end if;
 
-	set v_currency = p_sum / v_rate;
+	set v_currency = v_sum / v_rate;
 
 
 	call admin.update_remote(
@@ -457,9 +482,9 @@ end;
 
 
 if exists (select '*' from sysprocedure where proc_name like 'wf_submit_xoz') then  
-	drop procedure wf_submit_xoz;
+	drop  procedure wf_submit_xoz;
 end if;
-
+ 
 create procedure wf_submit_xoz (
 	  in p_id_accd integer
 	, in p_id_accc integer
@@ -604,5 +629,51 @@ call build_host_procedure (
 		]]></createProcedure>
 	</changeSet>
 -->
+
+	<changeSet id="code-5" author="mantis-33" runOnChange="true">
+		<comment>CURRENCY AND RATES</comment>
+		<sql splitStatements="false" stripComments="false"><![CDATA[
+
+--****************************************************************
+--                      CURRENCY AND RATES
+--****************************************************************
+
+
+if exists (select 1 from sysprocedure where proc_name = 'slave_date_currency_rate') then
+	drop function slave_date_currency_rate;
+end if;
+
+create function slave_date_currency_rate(
+		 in p_date date
+		,in p_id_cur integer default null
+	)
+	returns float
+begin
+	declare o_date date;
+	declare o_curse float;
+
+	call slave_currency_rate(o_date, o_curse, p_date, p_id_cur);
+	return o_curse;
+end;
+
+
+if exists (select 1 from sysprocedure where proc_name = 'slave_get_currency_rate') then
+	drop function slave_get_currency_rate;
+end if;
+
+create function slave_get_currency_rate(
+		in p_id_cur integer default null
+	)
+	returns float
+begin
+	return slave_date_currency_rate(now(), p_id_cur);
+end;
+
+		]]></sql>
+	</changeSet>
+
+
+
+
 </databaseChangeLog>
 
