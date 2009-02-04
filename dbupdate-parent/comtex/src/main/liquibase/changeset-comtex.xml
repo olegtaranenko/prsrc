@@ -438,9 +438,9 @@ begin
 		if isnull(v_id_jscet, 0) = 0 then
 			set v_rate = slave_date_currency_rate(v_dat_jdog, v_id_cur);
 		else
-			set v_rate = admin.select_remote('prior', 'orders', 'rate', 'id_jscet = ' + convert(varchar(20), v_id_jscet ) + ' and ventureId = ' + convert(varchar(20), p_ventureid));
+			set v_rate = admin.select_remote('prior', 'orders', 'max(rate)', 'id_jscet = ' + convert(varchar(20), v_id_jscet ) + ' and ventureId = ' + convert(varchar(20), p_ventureid));
 			if isnull(v_rate, 0) = 0 then
-				set v_rate = admin.select_remote('prior', 'bayorders', 'rate', 'id_jscet = ' + convert(varchar(20), v_id_jscet ) + ' and ventureId = ' + convert(varchar(20), p_ventureid));
+				set v_rate = admin.select_remote('prior', 'bayorders', 'max(rate)', 'id_jscet = ' + convert(varchar(20), v_id_jscet ) + ' and ventureId = ' + convert(varchar(20), p_ventureid));
 			end if;
 		end if;
     
