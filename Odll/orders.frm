@@ -2103,7 +2103,7 @@ If zakazNum = 0 Then Exit Sub
 beClick = True
 tbInform.Text = Grid.TextMatrix(mousRow, mousCol)
 
-bilo = (mousCol = orZakazano Or mousCol = orOplacheno Or mousCol = orOtgrugeno Or mousCol = orZalog Or mousCol = orNal)
+bilo = (mousCol = orZakazano Or mousCol = orOplacheno Or mousCol = orOtgrugeno Or mousCol = orZalog Or mousCol = orNal or mousCol = orRate)
 If (dostup = "a" Or Grid.TextMatrix(mousRow, orStatus) <> "закрыт") _
    And ( _
        mousCol = orFirma _
@@ -2120,7 +2120,6 @@ If (dostup = "a" Or Grid.TextMatrix(mousRow, orStatus) <> "закрыт") _
        Or (mousCol = orTema And Grid.TextMatrix(mousRow, orType) = "Н") _
        Or (mousCol = orInvoice And (dostup = "b" Or Grid.TextMatrix(mousRow, orVenture) = "" Or Grid.TextMatrix(mousRow, orMen) = cbM.Text)) _
        Or (mousCol = orVenture And isVentureGreen) _
-       Or (mousCol = orRate And dostup = "b") _
    ) _
 Then
         Grid.CellBackColor = &H88FF88
