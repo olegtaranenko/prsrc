@@ -2103,7 +2103,7 @@ If zakazNum = 0 Then Exit Sub
 beClick = True
 tbInform.Text = Grid.TextMatrix(mousRow, mousCol)
 
-bilo = (mousCol = orZakazano Or mousCol = orOplacheno Or mousCol = orOtgrugeno Or mousCol = orZalog Or mousCol = orNal or mousCol = orRate)
+bilo = (mousCol = orZakazano Or mousCol = orOplacheno Or mousCol = orOtgrugeno Or mousCol = orZalog Or mousCol = orNal Or mousCol = orRate)
 If (dostup = "a" Or Grid.TextMatrix(mousRow, orStatus) <> "закрыт") _
    And ( _
        mousCol = orFirma _
@@ -2928,7 +2928,9 @@ DNM = Format(Now(), "dd.mm.yy hh:nn") & vbTab & cbM.Text & " " & gNzak ' именно 
                    myExecute "##27.2", sql
                    ' поправить на экране тоже
                    irow = searchZakRow(Grid, anotherNumorder)
-                   Grid.TextMatrix(irow, orRate) = tbMobile.Text
+                   If irow <> -1 Then
+                      Grid.TextMatrix(irow, orRate) = tbMobile.Text
+                   End If
                    tbOrders.MoveNext
                 Wend
             End If
