@@ -340,16 +340,12 @@ End Sub
 Private Sub cmAdd_Click()
 Dim i As Integer
 Dim str As String
-Dim rate As Variant
 
 cmAdd.Enabled = False 'нельзя жать чаще 1с, т.к. дата это ключ
 'frmMode = "sourceAdd"
 
 On Error GoTo adderr
-sql = "SELECT Kurs FROM System"
-If byErrSqlGetValues("##321", sql, str) Then
-    rate = Abs(CDbl(str))
-End If
+    rate = getCurrentRate
 
 Set tbDocs = myOpenRecordSet("##324", "yBook", dbOpenTable) 'dbOpenForwardOnly)
 If tbDocs Is Nothing Then Exit Sub
@@ -608,11 +604,8 @@ If otlad = "otlaD" Then
     Me.BackColor = otladColor
 End If
 
-sql = "SELECT Kurs FROM System;"
-If byErrSqlGetValues("##321", sql, s) Then
-    tbKurs.Text = Abs(s)
-    'If s > 0.01 Then tbKurs.Text = s ' с "-" - это вчерашний курс
-End If
+rate = getCurrentRate
+tbKurs.Text = rate
 
 Grid.FormatString = "|<Дата|М|Курс|Валюта|Дб|Сс|Кр|Сс|<Заказчик(временная)" & _
 "|<Кредитор\Дебитор|<Договор|<Примечание|<Назначение|<Уточнение|<Предприятие|<Шифр затрат|id_xoz"

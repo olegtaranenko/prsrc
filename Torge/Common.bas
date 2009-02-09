@@ -80,7 +80,19 @@ Public rowFormatting() As String
 Public aRowSortable() As Boolean
 Public arowSubtitle() As Boolean
 Public startDate As String, endDate As String
+Public rate As Variant
 
+
+
+Function getCurrentRate() As Double
+Dim s As String
+
+sql = "SELECT Kurs FROM System;"
+If byErrSqlGetValues("##321", sql, s) Then
+    getCurrentRate = Abs(s)
+End If
+
+End Function
 
 Function dateBasic2Sybase(aDay As String)
 Dim dt_str As String
