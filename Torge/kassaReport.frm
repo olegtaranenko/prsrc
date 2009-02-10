@@ -423,8 +423,8 @@ kreditSql = lbSchetsToSql("Kredit")
 
 
 If ckCurrentRate.value Then
-    dSql = " Sum(IF" & debitSql & " THEN UEsumm * 30 / rate ELSE 0 ENDIF)"
-    kSql = " Sum(IF" & kreditSql & " THEN UEsumm * 30 / rate ELSE 0 ENDIF)"
+    dSql = " Sum(IF" & debitSql & " THEN UEsumm * rate / " & rate & " ELSE 0 ENDIF)"
+    kSql = " Sum(IF" & kreditSql & " THEN UEsumm * rate / " & rate & " ELSE 0 ENDIF)"
 Else
     dSql = " Sum(IF" & debitSql & " THEN UEsumm ELSE 0 ENDIF)"
     kSql = " Sum(IF" & kreditSql & " THEN UEsumm ELSE 0 ENDIF)"
@@ -444,7 +444,7 @@ d = 0: k = 0
 If dateWhereBef <> "" Then
     sql = "SELECT " & dSql & " AS Debit," & kSql & " AS Kredit " & _
     " FROM yBook  WHERE ( " & dateWhereBef & " );"
-
+    'Debug.Print sql
     If Not byErrSqlGetValues("##363", sql, d, k) Then GoTo EN1
 End If
 
