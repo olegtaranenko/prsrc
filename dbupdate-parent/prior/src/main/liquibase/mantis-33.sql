@@ -1,4 +1,5 @@
 
+
 if exists (select '*' from sysprocedure where proc_name like 'purge_jscet') then  
 	drop procedure purge_jscet;
 end if;
