@@ -1,7 +1,7 @@
 if exists (select 1 from sysprocedure where proc_name = 'n_fill_ventures') then
 	drop procedure n_fill_ventures;
 end if;
-
+ 
 CREATE procedure n_fill_ventures (
 	  p_filterId     integer
 	, p_begin         date  default null

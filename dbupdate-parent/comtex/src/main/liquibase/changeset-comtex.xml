@@ -673,6 +673,10 @@ end;
 	</changeSet>
 
 
+	<changeSet id="2" author="mantis-33" runOnChange="true">
+		<comment>CURRENCY AND RATES</comment>
+		<sqlFile path="./src/main/liquibase/procedures/wf_put_xoz.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		</changeSet>
 
 
 </databaseChangeLog>
