@@ -40,14 +40,14 @@ Begin VB.Form Orders
       Width           =   495
    End
    Begin VB.ListBox lbAnnul 
-      Height          =   816
+      Height          =   1008
       ItemData        =   "Orders.frx":030A
       Left            =   240
       List            =   "Orders.frx":031A
       TabIndex        =   37
       Top             =   1980
       Visible         =   0   'False
-      Width           =   1095
+      Width           =   1212
    End
    Begin VB.Timer Timer1 
       Left            =   10560
@@ -319,12 +319,12 @@ Begin VB.Form Orders
       Width           =   975
    End
    Begin VB.ListBox lbProblem 
-      Height          =   2544
+      Height          =   2736
       Left            =   2460
       TabIndex        =   22
       Top             =   1020
       Visible         =   0   'False
-      Width           =   1095
+      Width           =   1332
    End
    Begin VB.ListBox lbCeh 
       Height          =   816
