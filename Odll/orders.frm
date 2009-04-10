@@ -319,12 +319,12 @@ Begin VB.Form Orders
       Width           =   975
    End
    Begin VB.ListBox lbProblem 
-      Height          =   2928
+      Height          =   2736
       Left            =   2460
       TabIndex        =   22
       Top             =   1020
       Visible         =   0   'False
-      Width           =   1572
+      Width           =   1332
    End
    Begin VB.ListBox lbCeh 
       Height          =   816
