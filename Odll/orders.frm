@@ -89,11 +89,11 @@ Begin VB.Form Orders
       TabIndex        =   35
       Top             =   3180
       Visible         =   0   'False
-      Width           =   1095
+      Width           =   1212
    End
    Begin VB.ListBox lbTema 
       Height          =   2352
-      Left            =   3720
+      Left            =   3960
       TabIndex        =   34
       Top             =   1020
       Visible         =   0   'False
@@ -238,7 +238,7 @@ Begin VB.Form Orders
       TabIndex        =   28
       Top             =   3900
       Visible         =   0   'False
-      Width           =   1095
+      Width           =   1212
    End
    Begin VB.CommandButton cmExvel 
       Caption         =   "ѕечать в Excel"
@@ -300,14 +300,14 @@ Begin VB.Form Orders
       Width           =   495
    End
    Begin VB.ListBox lbStat 
-      Height          =   624
+      Height          =   816
       ItemData        =   "Orders.frx":03B5
       Left            =   240
       List            =   "Orders.frx":03C2
       TabIndex        =   24
       Top             =   4440
       Visible         =   0   'False
-      Width           =   675
+      Width           =   1212
    End
    Begin VB.TextBox tbMobile 
       Height          =   315
@@ -319,12 +319,12 @@ Begin VB.Form Orders
       Width           =   975
    End
    Begin VB.ListBox lbProblem 
-      Height          =   2736
+      Height          =   2928
       Left            =   2460
       TabIndex        =   22
       Top             =   1020
       Visible         =   0   'False
-      Width           =   1332
+      Width           =   1572
    End
    Begin VB.ListBox lbCeh 
       Height          =   816
