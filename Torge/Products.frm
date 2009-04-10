@@ -1,10 +1,10 @@
 VERSION 5.00
-Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "mscomctl.ocx"
+Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCTL.OCX"
 Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Products 
    BackColor       =   &H8000000A&
    Caption         =   "Справочник готовых изделий"
-   ClientHeight    =   6390
+   ClientHeight    =   6396
    ClientLeft      =   60
    ClientTop       =   1740
    ClientWidth     =   11880
@@ -13,7 +13,7 @@ Begin VB.Form Products
    LinkTopic       =   "Form1"
    LockControls    =   -1  'True
    MinButton       =   0   'False
-   ScaleHeight     =   6390
+   ScaleHeight     =   6396
    ScaleWidth      =   11880
    WhatsThisHelp   =   -1  'True
    Begin VB.CommandButton cmSostavExcel 
@@ -229,7 +229,7 @@ Begin VB.Form Products
       End
    End
    Begin VB.ListBox lbPrWeb 
-      Height          =   450
+      Height          =   432
       ItemData        =   "Products.frx":0000
       Left            =   3900
       List            =   "Products.frx":000A
@@ -239,7 +239,7 @@ Begin VB.Form Products
       Width           =   435
    End
    Begin VB.ListBox lbWeb 
-      Height          =   450
+      Height          =   432
       ItemData        =   "Products.frx":0015
       Left            =   7560
       List            =   "Products.frx":001F
@@ -649,22 +649,22 @@ Sub controlGridsWidth(Optional reg As String = "")
 Grid.MergeCells = flexMergeNever
 If reg = "left" Then
     Grid2.Visible = False
-    Grid.ColWidth(gpCol1) = 700
-    Grid.ColWidth(gpCol2) = 700
-    Grid.ColWidth(gpCol3) = 700
-    Grid.ColWidth(gpCol4) = 700
-    Grid.ColWidth(gpPage) = 405
-    Grid.ColWidth(gpVremObr) = 630
-    Grid.ColWidth(gpFormulaNom) = 420
+    Grid.colWidth(gpCol1) = 700
+    Grid.colWidth(gpCol2) = 700
+    Grid.colWidth(gpCol3) = 700
+    Grid.colWidth(gpCol4) = 700
+    Grid.colWidth(gpPage) = 405
+    Grid.colWidth(gpVremObr) = 630
+    Grid.colWidth(gpFormulaNom) = 420
 Else
     Grid2.Visible = True
-    Grid.ColWidth(gpCol1) = 0
-    Grid.ColWidth(gpCol2) = 0
-    Grid.ColWidth(gpCol3) = 0
-    Grid.ColWidth(gpCol4) = 0
-    Grid.ColWidth(gpPage) = 0
-    Grid.ColWidth(gpVremObr) = 0
-    Grid.ColWidth(gpFormulaNom) = 0
+    Grid.colWidth(gpCol1) = 0
+    Grid.colWidth(gpCol2) = 0
+    Grid.colWidth(gpCol3) = 0
+    Grid.colWidth(gpCol4) = 0
+    Grid.colWidth(gpPage) = 0
+    Grid.colWidth(gpVremObr) = 0
+    Grid.colWidth(gpFormulaNom) = 0
 End If
 setGridsWidth ' в завис-ти от Grid2.Visible
 End Sub
@@ -768,7 +768,7 @@ While Not tbProduct.EOF
     
     Set tbNomenk = myOpenRecordSet("##150", "sGuideNomenk", dbOpenTable)
     If tbNomenk Is Nothing Then GoTo EN1
-    tbNomenk.Index = "PrimaryKey"
+    tbNomenk.index = "PrimaryKey"
     tbNomenk.Seek "=", tbProduct!nomnom
     If tbNomenk.NoMatch Then
         tbNomenk.Close
@@ -792,7 +792,7 @@ While Not tbProduct.EOF
     
         Set tbDMC = myOpenRecordSet("##152", "sDMC", dbOpenTable)
         If tbDMC Is Nothing Then GoTo EN1
-        tbDMC.Index = "nomDoc"
+        tbDMC.index = "nomDoc"
         tbDMC.Seek "=", numDoc, numExt, tbProduct!nomnom
         If tbDMC.NoMatch Then
             tbDMC.Close
@@ -866,29 +866,29 @@ gSeriaId = 0 'необходим  для добавления класса
     Grid.FormatString = "см.Входящие|id|<Номер|<Код|web|<Описание|<Размер|Время обработки" & _
     "|SumCenaFreight|SumCenaSale|№ формулы|Формула|Цена 3|кол1|кол2|кол3|кол4|Стр." _
     & "|"
-    Grid.ColWidth(gpNomenk) = 0 '300
-    Grid.ColWidth(gpId) = 0
-    Grid.ColWidth(gpUsed) = 0
-    Grid.ColWidth(gpSortNom) = 700
-    Grid.ColWidth(gpName) = 1065
-    Grid.ColWidth(gpDescript) = 3720
-    Grid.ColWidth(gpPrWeb) = 405
-    Grid.ColWidth(gpFormula) = 0
-    Grid.ColWidth(gpSumCenaFreight) = 1275
-    Grid.ColWidth(gpSumCenaSale) = 1275
-    Grid.ColWidth(gpCena3) = 1275
+    Grid.colWidth(gpNomenk) = 0 '300
+    Grid.colWidth(gpId) = 0
+    Grid.colWidth(gpUsed) = 0
+    Grid.colWidth(gpSortNom) = 700
+    Grid.colWidth(gpName) = 1065
+    Grid.colWidth(gpDescript) = 3720
+    Grid.colWidth(gpPrWeb) = 405
+    Grid.colWidth(gpFormula) = 0
+    Grid.colWidth(gpSumCenaFreight) = 1275
+    Grid.colWidth(gpSumCenaSale) = 1275
+    Grid.colWidth(gpCena3) = 1275
     
 
 
 'Grid2.FormatString = "|<Номер|Web|<Название|Ц.доставка|Ц.продажа|Кол-во|<Ед.измерения|<Группа"
 Grid2.FormatString = "|<Номер|Web|<Название|CenaFreight|CenaSale|Кол-во|<Ед.измерения|<Группа"
-Grid2.ColWidth(0) = 0
-Grid2.ColWidth(gpNomNom) = 870
-Grid2.ColWidth(gpNomName) = 4005 '1800 '2370
-Grid2.ColWidth(gpEdIzm) = 435
-Grid2.ColWidth(gpCenaFreight) = 615
-Grid2.ColWidth(gpCENA_W) = 615
-Grid2.ColWidth(gpGroup) = 540
+Grid2.colWidth(0) = 0
+Grid2.colWidth(gpNomNom) = 870
+Grid2.colWidth(gpNomName) = 4005 '1800 '2370
+Grid2.colWidth(gpEdIzm) = 435
+Grid2.colWidth(gpCenaFreight) = 615
+Grid2.colWidth(gpCENA_W) = 615
+Grid2.colWidth(gpGroup) = 540
 
 
 Grid.Visible = False
@@ -921,7 +921,7 @@ gridIsLoad = True
 End Sub
 
 Sub loadSeria()
-Dim key As String, pKey As String, k() As String, pK()  As String
+Dim Key As String, pKey As String, k() As String, pK()  As String
 Dim i As Integer, iErr As Integer
 bilo = False
 sql = "SELECT sGuideSeries.*  From sGuideSeries ORDER BY sGuideSeries.seriaId;"
@@ -937,10 +937,10 @@ If Not tbSeries.BOF Then
  ReDim k(0): ReDim pK(0): ReDim NN(0): iErr = 0
  While Not tbSeries.EOF
     If tbSeries!seriaId = 0 Then GoTo NXT1
-    key = "k" & tbSeries!seriaId
+    Key = "k" & tbSeries!seriaId
     pKey = "k" & tbSeries!parentSeriaId
     On Error GoTo ERR1 ' назначить второй проход
-    Set Node = tv.Nodes.Add(pKey, tvwChild, key, tbSeries!seriaName)
+    Set Node = tv.Nodes.Add(pKey, tvwChild, Key, tbSeries!seriaName)
     On Error GoTo 0
     Node.Sorted = True
 NXT1:
@@ -967,7 +967,7 @@ Exit Sub
 ERR1:
  iErr = iErr + 1: bilo = True
  ReDim Preserve k(iErr): ReDim Preserve pK(iErr): ReDim Preserve NN(iErr)
- k(iErr) = key: pK(iErr) = pKey: NN(iErr) = tbSeries!seriaName
+ k(iErr) = Key: pK(iErr) = pKey: NN(iErr) = tbSeries!seriaName
  Resume Next
 
 ERR2: bilo = True: Resume NXT
@@ -1195,7 +1195,7 @@ Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As 
 Dim i As Integer
 
 If Grid.MouseRow = 0 And Shift = 2 Then _
-        MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
+        MsgBox "ColWidth = " & Grid.colWidth(Grid.MouseCol)
 
 If Regim = "select" Or Grid.MouseRow = 0 Then Exit Sub
 mousCol = Grid.MouseCol
@@ -1330,7 +1330,7 @@ End Function
 
 Private Sub Grid2_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
 If Grid2.MouseRow = 0 And Shift = 2 Then _
-        MsgBox "ColWidth = " & Grid2.ColWidth(Grid2.MouseCol)
+        MsgBox "ColWidth = " & Grid2.colWidth(Grid2.MouseCol)
 If Regim = "select" Then Exit Sub
 
 If Button = 2 And frmMode = "" Then
@@ -1463,7 +1463,7 @@ wrkDefault.CommitTrans
 
 EN1:
 'tbSeries.Close
-Set Node = tv.Nodes.Add(tv.SelectedItem.key, tvwChild, "k" & id, str)
+Set Node = tv.Nodes.Add(tv.SelectedItem.Key, tvwChild, "k" & id, str)
 tv.Nodes("k" & id).EnsureVisible
 tv.Nodes("k" & id).Selected = True
 tv.StartLabelEdit
@@ -1575,10 +1575,14 @@ On Error GoTo ERR2
     objExel.Workbooks.Add
     objExel.ActiveSheet.Cells(1, 2).value = "Прайс-лист на " & Format(Now(), "dd.mm.yy")
     objExel.ActiveSheet.Cells(1, 2).Font.Bold = True
-    exRow = 3
-    objExel.ActiveSheet.Columns(1).ColumnWidth = 10
-    objExel.ActiveSheet.Columns(2).ColumnWidth = 10
-    objExel.ActiveSheet.Columns(3).ColumnWidth = 50
+    
+    exRow = 4
+    objExel.ActiveSheet.Cells(exRow - 1, 4).value = RateAsString
+    objExel.ActiveSheet.Cells(exRow - 1, 7).value = "Цены включают НДС"
+    
+    objExel.ActiveSheet.Columns(1).columnWidth = 10
+    objExel.ActiveSheet.Columns(2).columnWidth = 10
+    objExel.ActiveSheet.Columns(3).columnWidth = 50
     objExel.ActiveSheet.Columns(4).HorizontalAlignment = xlHAlignRight
     objExel.ActiveSheet.Columns(5).HorizontalAlignment = xlHAlignRight
     objExel.ActiveSheet.Columns(6).HorizontalAlignment = xlHAlignRight
@@ -1799,7 +1803,7 @@ vbYesNo Or vbDefaultButton2, "Удалить '" & tv.SelectedItem.Text & _
 sql = "DELETE  From sGuideSeries WHERE (((seriaId)=" & gSeriaId & "));"
 i = myExecute("##107", sql, -198)
 If i = 0 Then
-    tv.Nodes.Remove tv.SelectedItem.key
+    tv.Nodes.Remove tv.SelectedItem.Key
     controlVisible
 ElseIf i = -2 Then
 'Exit Sub
@@ -1903,7 +1907,7 @@ frmMode = ""
 Grid.CellBackColor = Grid.BackColor
     
 Me.MousePointer = flexDefault
-str = Mid$(tv.SelectedItem.key, 2)
+str = Mid$(tv.SelectedItem.Key, 2)
 For i = 1 To UBound(NN)
     gProductId = NN(i)
     ValueToTableField "##112", str, "sGuideProducts", "prSeriaId", "byProductId"
@@ -1922,7 +1926,7 @@ End Sub
 
 Private Sub mnRepl_Click()
 Dim str As String
-str = tv.SelectedItem.key
+str = tv.SelectedItem.Key
 If frmMode = "" Then
     If str = "k0" Then Exit Sub
     frmMode = "seriaReplace"
@@ -1969,13 +1973,13 @@ frmMode = "productReplace"
 
 End Sub
 
-Private Sub tbCol_Change(Index As Integer)
+Private Sub tbCol_Change(index As Integer)
 cmApple.Enabled = True
 cmCancel.Enabled = True
 
 End Sub
 
-Private Sub tbGain_Change(Index As Integer)
+Private Sub tbGain_Change(index As Integer)
 cmApple.Enabled = True
 cmCancel.Enabled = True
 
@@ -2141,7 +2145,7 @@ End Sub
 Private Sub tv_AfterLabelEdit(Cancel As Integer, NewString As String)
 ' If Not flseriaAdd Then
 'ValueToTableField "##115", "'" & NewString & "'", "sProducts", "seriaName", "bySeriaId"
-gSeriaId = Mid$(tv.SelectedItem.key, 2)
+gSeriaId = Mid$(tv.SelectedItem.Key, 2)
 ValueToTableField "##115", "'" & NewString & "'", "sGuideSeries", "seriaName", "bySeriaId"
 End Sub
 
@@ -2287,7 +2291,7 @@ Grid.Visible = False
 Frame1.Visible = False
 gridIsLoad = False
 
-If tv.SelectedItem.key = "k0" And filtr = "" Then
+If tv.SelectedItem.Key = "k0" And filtr = "" Then
     gSeriaId = 0
     Grid.Visible = False
     Frame1.Visible = False
@@ -2433,7 +2437,7 @@ If mousRight = 2 Then
   If frmMode = "productReplace" Then
     Me.PopupMenu mnContext3
   Else
-    str = tv.SelectedItem.key
+    str = tv.SelectedItem.Key
 '    If str = "all" Then Exit Sub
     If str = "k0" Then
         mnRen.Visible = False
@@ -2456,7 +2460,7 @@ End Sub
 
 Private Sub tv_NodeClick(ByVal Node As MSComctlLib.Node)
 
-gSeriaId = Mid$(tv.SelectedItem.key, 2)
+gSeriaId = Mid$(tv.SelectedItem.Key, 2)
 controlGridsWidth "left"
 
 If mousRight = 1 Then

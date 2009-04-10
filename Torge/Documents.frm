@@ -1666,7 +1666,11 @@ Else
     objExel.Workbooks.Add
     objExel.ActiveSheet.Cells(1, 2).value = "Остатки по Складу на " & Format(Now(), "dd.mm.yy")
     objExel.ActiveSheet.Cells(1, 2).Font.Bold = True
-    exRow = 3
+    exRow = 5
+    objExel.ActiveSheet.Cells(exRow - 2, 3).value = RateAsString
+    objExel.ActiveSheet.Cells(exRow - 1, 3).value = "Цены включают НДС"
+
+
     objExel.ActiveSheet.Cells(exRow, 1).value = "Код"
     objExel.ActiveSheet.Cells(exRow, 2).value = "Описание"
     objExel.ActiveSheet.Cells(exRow, 3).value = "Размер"
@@ -1689,7 +1693,7 @@ Else
         .Borders(xlEdgeBottom).Weight = xlMedium ' xlThin
         .Borders(xlEdgeTop).Weight = xlMedium
     End With
-    exRow = 4
+    exRow = exRow + 1
 End If
 '------------------------------------------------------------------------
 

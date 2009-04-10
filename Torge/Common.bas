@@ -83,6 +83,46 @@ Public startDate As String, endDate As String
 Public rate As Variant
 
 
+Function RateAsString() As String
+    Const rubleRoot As String = "рубл"
+    
+    Dim curRate As Double, strRate As String, strRate00 As String
+    Dim rubleSuffix As String
+    
+    curRate = getCurrentRate
+    strRate00 = CDbl(Format(getCurrentRate, "##0.00"))
+    strRate = CDbl(Format(getCurrentRate, "##0"))
+    If CDbl(strRate) <> CDbl(strRate00) Then
+        strRate = strRate00
+        rubleSuffix = "я"
+    Else
+        Dim strLastDigit As String, strLastTwoDigit As String
+        Dim digit As Integer
+        If Len(strRate) >= 2 Then
+            strLastTwoDigit = right(strRate, 2)
+            digit = CInt(strLastTwoDigit)
+            If digit >= 5 And digit <= 20 Then
+                rubleSuffix = "ей"
+            End If
+        End If
+        If rubleSuffix = "" Then
+            strLastDigit = right(strRate, 1)
+            digit = CInt(strLastDigit)
+            If digit = 1 Then
+                rubleSuffix = "ь"
+            ElseIf digit > 1 And digit < 5 Then
+                rubleSuffix = "я"
+            Else
+                rubleSuffix = "ей"
+            End If
+        End If
+
+    End If
+
+  
+    RateAsString = "1 у.е. = " & strRate & " " & rubleRoot & rubleSuffix
+End Function
+
 
 Function getCurrentRate() As Double
 Dim s As String
