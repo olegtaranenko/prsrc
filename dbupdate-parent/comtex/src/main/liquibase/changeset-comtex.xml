@@ -27,7 +27,7 @@ end;
         </createProcedure>
     </changeSet>
 
-	<changeSet id="code-1" author="mantis-33" runOnChange="true">
+	<changeSet id="code-1" author="mantis-33" runOnChange="false">
 		<comment>Триггер таблицы jscet. При смене заказчика передавать договор новому (забрав соответственно его у старого клиента)</comment>
 		<sql splitStatements="false" stripComments="false">
 
@@ -110,7 +110,7 @@ end;
 	</changeSet>
 
 
-	<changeSet id="code-2" author="mantis-33" runOnChange="true">
+	<changeSet id="code-2" author="mantis-33" runOnChange="false">
 		<comment>Триггер таблицы xoz. Учитывать курс рубля, если это приход по заказу.</comment>
 		<sql splitStatements="false" stripComments="false"><![CDATA[
 
@@ -476,7 +476,7 @@ end;
 
 
 
-	<changeSet id="code-3" author="mantis-33" runOnChange="true">
+	<changeSet id="code-3" author="mantis-33" runOnChange="false">
 		<comment>Процедура выставления хоз.операции в базе приора по данным из базы Комтеха</comment>
 		<sql splitStatements="false" stripComments="false"><![CDATA[
 
@@ -590,7 +590,7 @@ end;
 		]]></sql>
 	</changeSet>
 <!--
-	<changeSet id="code-4" author="mantis-33" runOnChange="true">
+	<changeSet id="code-4" author="mantis-33" runOnChange="false">
 		<comment>Вызов процедуры put_xoz</comment>
 		<createProcedure><![CDATA[
 	call build_host_procedure (
@@ -630,7 +630,7 @@ call build_host_procedure (
 	</changeSet>
 -->
 
-	<changeSet id="code-5" author="mantis-33" runOnChange="true">
+	<changeSet id="code-5" author="mantis-33" runOnChange="false">
 		<comment>CURRENCY AND RATES</comment>
 		<sql splitStatements="false" stripComments="false"><![CDATA[
 
@@ -673,11 +673,20 @@ end;
 	</changeSet>
 
 
-	<changeSet id="2" author="mantis-33" runOnChange="true">
+	<changeSet id="2" author="mantis-33" runOnChange="false">
 		<comment>CURRENCY AND RATES</comment>
-		<sqlFile path="./src/main/liquibase/procedures/wf_put_xoz.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
-		</changeSet>
-
+		<sqlFile path="src/main/liquibase/procedures/wf_put_xoz.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+	</changeSet>
+<!--
+	<changeSet id="1" author="mantis" runOnChange="true">
+		<comment>chang</comment>
+		<sqlFile path="./src/main/liquibase/triggers/compl_save_identity.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="./src/main/liquibase/triggers/compl_newid.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback>
+			<sqlFile path="./src/main/liquibase/rollback/compl_save_identity.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		</rollback>
+	</changeSet>
+-->
 
 </databaseChangeLog>
 
