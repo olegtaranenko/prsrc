@@ -42,9 +42,20 @@
 	</profiles>
 
 	<build>
-		<sourceDirectory>src/main/liquibase</sourceDirectory>
+<!--		<sourceDirectory>src/main/liquibase</sourceDirectory> -->
 		<pluginManagement>
 			<plugins>
+				<plugin>
+					<artifactId>maven-resources-plugin</artifactId>
+					<configuration>
+						<encoding>CP1251</encoding>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.liquibase</groupId>
+					<artifactId>liquibase-core</artifactId>
+					<version>${liquibase.version}</version>
+				</plugin>
 				<plugin>
 					<groupId>org.liquibase</groupId>
 					<artifactId>liquibase-plugin</artifactId>
@@ -57,19 +68,20 @@
 						</dependency>
 					</dependencies>
 					<configuration>
+						<verbose>true</verbose>
 						<changeLogFile>${changelog.file}</changeLogFile>
 						<url>jdbc:sybase:Tds:localhost:${syb.server.port}?servicename=${syb.servicename}</url>
 						<driver>${sybase.driver}</driver>
 						<username>${syb.username}</username>
 						<password>${syb.password}</password>
-						<logLevel>FINE</logLevel>
+						<logging>FINE</logging>
 						<contexts>${changelog.context}</contexts>
 						<defaultSchemaName>dba</defaultSchemaName>
 					</configuration>
 					<executions>
 						<execution>
 							<id>generate-sql-for-update</id>
-							<phase>process-resources</phase>
+							<phase>compile</phase>
 							<goals>
 								<goal>updateSQL</goal>
 							</goals>
@@ -95,6 +107,7 @@
 		<sybase.driver>com.sybase.jdbc3.jdbc.SybDriver</sybase.driver>
 		<sybase.artifactId>jconn3</sybase.artifactId>
 		<sybase.driver.version>6.0</sybase.driver.version>
-		<changelog.PATH>src/main/liquibase</changelog.PATH>
+		<changelog.PATH>${project.build.outputDirectory}</changelog.PATH>
+		<changelog.file>${changelog.PATH}/changeset-${artifactId}.xml</changelog.file>
 	</properties>
 </project>

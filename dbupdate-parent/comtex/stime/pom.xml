@@ -8,10 +8,36 @@
   </parent>
   <groupId>ru.petmas</groupId>
   <artifactId>stime</artifactId>
-  <packaging>pom</packaging>
+  <packaging>jar</packaging>
   <name>Update stime</name>
   <description>Update stime database</description>
 	<build>
+		<resources>
+			<resource>
+		        <directory>${basedir}/src/main/liquibase</directory>
+		        <includes>
+		        	<include>**/*.xml</include>
+		        	<include>**/*.sql</include>
+		        	<include>**/*.csv</include>
+		        </includes>
+			</resource>
+			<resource>
+		        <directory>${basedir}/../src/main/liquibase</directory>
+		        <includes>
+		        	<include>**/*.xml</include>
+		        	<include>**/*.sql</include>
+		        	<include>**/*.csv</include>
+		        </includes>
+			</resource>
+			<resource>
+		        <directory>${basedir}/../../src/main/liquibase</directory>
+		        <includes>
+		        	<include>**/*.xml</include>
+		        	<include>**/*.sql</include>
+		        	<include>**/*.csv</include>
+		        </includes>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.liquibase</groupId>
@@ -27,7 +53,6 @@
 	<properties>
 		<syb.server.port>${stime.port}</syb.server.port>
 		<syb.servicename>stime</syb.servicename>
-		<changelog.file>${changelog.PATH}/changeset-${artifactId}.xml</changelog.file>
 	</properties>
 
 </project>

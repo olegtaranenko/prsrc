@@ -8,8 +8,10 @@
   logicalFilePath="changeset-prior.xml"
 >
  
-	<include file="../../../../src/main/liquibase/changeset-common.xml" relativeToChangelogFile="true"/>
+
+	<include file="changeset-common.xml"/>
 <!--
+
 	<changeSet id="ddl" author="mantis-7" context="does-not-work">
 		<comment>Prepare for repare table xPredmetyByNomenkOut from the backup</comment>
 		<sql>
@@ -92,13 +94,13 @@ end;
 	</changeSet>
 
 	<changeSet id="mantis-10" author="correct-ivo" runOnChange="true">
-		<sqlFile path="src/main/liquibase/correct-ivo.sql" splitStatements="false" stripComments="false"/>
+		<sqlFile path="correct-ivo.sql" splitStatements="false" stripComments="false"/>
 	</changeSet>
 -->
 
 	<changeSet id="mantis-10" author="code" runOnChange="true">
 		<comment>Процедуры для анализа продаж</comment>
-		<sqlFile path="src/main/liquibase/sales-analys.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="procedures/sales-analys.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 	</changeSet>
 
 
@@ -106,7 +108,7 @@ end;
 	<changeSet id="mantis-10" author="rowmat-dml" runAlways="true">
 		<comment>Подготовить "Отчет об остатках по материалам по предприятиям"</comment>
 
-		<sqlFile path="src/main/liquibase/sales-analys.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="sales-analys.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 		<sql splitStatements="false" stripComments="false"><![CDATA[
 
 		]]></sql>
@@ -114,7 +116,7 @@ end;
 -->
 	<changeSet id="mantis-10" author="rowmat-dml">
 		<comment>Подготовить "Отчет об остатках по материалам по предприятиям"</comment>
-		<sqlFile path="src/main/liquibase/sales-analys-dml.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="sales-analys-dml.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 	</changeSet>
 
 	<changeSet id="mantis-14" author="prior">
@@ -155,13 +157,13 @@ end;
 <!--
 	<changeSet id="mantis-12" author="code" runOnChange="true">
 		<comment>Отчет для продаж - ВСЕ материалы купленные фирмой(ами)</comment>
-		<sqlFile path="src/main/liquibase/nomnom-firma.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="nomnom-firma.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 	</changeSet>
 
 
 	<changeSet id="mantis-12" author="dml">
 		<comment>Отчет для продаж - ВСЕ материалы купленные фирмой(ами)</comment>
-		<sqlFile path="src/main/liquibase/nomnom-firma-dml.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="nomnom-firma-dml.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 	</changeSet>
 
 	<changeSet id="bay-analys" author="dml">
@@ -188,7 +190,7 @@ end;
 
 	<changeSet id="mantis-23" author="dml">
 		<comment>синхронизировать справочник фирм с бухгалтерскими базами комтеха.</comment>
-		<sqlFile path="src/main/liquibase/sync_guidefirms.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="sync_guidefirms.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 	</changeSet>
 -->
 
@@ -236,7 +238,7 @@ end;
 
 	<changeSet id="code-1" author="mantis-33" runOnChange="true">
 		<comment>Курс заказа: триггеры для orders</comment>
-		<sqlFile path="src/main/liquibase/mantis-33.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="mantis-33.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 
 		<rollback/>
 	</changeSet>
@@ -274,7 +276,7 @@ select 1
 <!--
 	<changeSet id="dml-3" author="mantis-33">
 		<comment>Проинициализировать id в таблице проводок</comment>
-		<sqlFile splitStatements="false" stripComments="false" path="src/main/liquibase/mantis-33-dml-3.sql" encoding="cp1251"/>
+		<sqlFile splitStatements="false" stripComments="false" path="mantis-33-dml-3.sql" encoding="cp1251"/>
 	</changeSet>
 -->
 	<changeSet id="ddl-5" author="mantis-33">
@@ -333,7 +335,7 @@ end;
 
 	<changeSet id="rollback-1" author="mantis-12" runOnChange="true">
 		<comment>Отчет для продаж - ВСЕ материалы купленные фирмой(ами)  ROLLBACK</comment>
-		<sqlFile path="src/main/liquibase/report-nomnom-byfirma-rollback.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="report-nomnom-byfirma-rollback.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 	</changeSet>
 
 

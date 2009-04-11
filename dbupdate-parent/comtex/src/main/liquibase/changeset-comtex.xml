@@ -7,8 +7,9 @@
          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd"
   logicalFilePath="changeset-comtex.xml"
 >
+
          
-    <include file="../../../../src/main/liquibase/changeset-common.xml" relativeToChangelogFile="true"/>
+<!--    <include file="../../../../src/main/liquibase/changeset-common.xml" relativeToChangelogFile="true"/> -->
 
     <changeSet id="1" author="comtex" context="development">
     	<comment>Disable all scheduled backups and other events.</comment>
@@ -673,9 +674,9 @@ end;
 	</changeSet>
 
 
-	<changeSet id="2" author="mantis-33" runOnChange="false">
+	<changeSet id="2" author="mantis-33" runOnChange="true">
 		<comment>CURRENCY AND RATES</comment>
-		<sqlFile path="src/main/liquibase/procedures/wf_put_xoz.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="procedures/wf_put_xoz.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 	</changeSet>
 <!--
 	<changeSet id="1" author="mantis" runOnChange="true">
