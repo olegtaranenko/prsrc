@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "mscomctl.ocx"
+Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCTL.OCX"
 Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Nomenklatura 
    BackColor       =   &H8000000A&
@@ -10,12 +10,20 @@ Begin VB.Form Nomenklatura
    ClientWidth     =   11880
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
-   LockControls    =   -1  'True
    MinButton       =   0   'False
    ScaleHeight     =   6396
    ScaleWidth      =   11880
    StartUpPosition =   1  'CenterOwner
    Visible         =   0   'False
+   Begin VB.TextBox tbPostav 
+      Height          =   285
+      Left            =   8400
+      TabIndex        =   42
+      Text            =   "1"
+      Top             =   0
+      Visible         =   0   'False
+      Width           =   372
+   End
    Begin VB.CommandButton cmExit 
       Caption         =   "Выход"
       Height          =   315
@@ -348,6 +356,15 @@ Begin VB.Form Nomenklatura
       Style           =   7
       Appearance      =   1
    End
+   Begin VB.Label lbPostav 
+      Caption         =   "Ср. пост."
+      Height          =   192
+      Left            =   7200
+      TabIndex        =   43
+      Top             =   60
+      Visible         =   0   'False
+      Width           =   1092
+   End
    Begin VB.Label lbInside 
       Caption         =   "Внут.подразд-е:"
       Height          =   255
@@ -540,6 +557,7 @@ Public FO As Single ' ФО
 Dim dOst As Single
 Dim oldCellColor As Long
 Dim tbmobile_readonly As Boolean
+Dim gSrokPostav As Boolean ' переменная испольуется для определения,нужно ли пересчитывать запасы и к заявке, если срок доставки изменился
 
 'Dim tbDateisVisible As Boolean ' видны ли поля для ввода дат.
 'Dim replNomNom As String ' перемещаемая номенклатура
@@ -588,6 +606,8 @@ Dim nkCena2W As Integer
 Dim nkWebFormula As Integer 'скрыта
 Dim nkYesNo As Integer
 Dim nkMark As Integer
+Dim nkZakupBax As Integer
+Dim nkZakupWeight As Integer
 
 
 Private Sub setMnPriceHistoryStatus()
@@ -668,27 +688,27 @@ Sub gridColControl()
 Dim delta As Integer
 
 delta = 825
-Grid.ColWidth(nkName) = 2085 '2520
+Grid.colWidth(nkName) = 2085 '2520
 If Regim = "asOborot" Or Regim = "sourOborot" Or Regim = "asOstat" Then
     If ckEndDate.value = 1 Or cbInside.ListIndex <> 1 Then
-        Grid.ColWidth(nkDostup) = 0
+        Grid.colWidth(nkDostup) = 0
         If Regim = "asOborot" Or Regim = "sourOborot" Then
-            Grid.ColWidth(nkZapas) = 0
-            Grid.ColWidth(nkZakup) = 0
-            Grid.ColWidth(nkDeficit) = 0
-            Grid.ColWidth(nkMark) = 0
-            Grid.ColWidth(nkName) = 3420
+            Grid.colWidth(nkZapas) = 0
+            Grid.colWidth(nkZakup) = 0
+            Grid.colWidth(nkDeficit) = 0
+            Grid.colWidth(nkMark) = 0
+            Grid.colWidth(nkName) = 3420
         Else
-            Grid.ColWidth(nkName) = Grid.ColWidth(nkName) + delta
+            Grid.colWidth(nkName) = Grid.colWidth(nkName) + delta
         End If
         Grid.TextMatrix(0, nkEndOstat) = "Кон.Остатки"
     Else 'т.е. когда кон.дата не отмечена и установлен Склад1
-        Grid.ColWidth(nkDostup) = delta
+        Grid.colWidth(nkDostup) = delta
         If Regim = "asOborot" Or Regim = "sourOborot" Then
-            Grid.ColWidth(nkZapas) = 645
-            Grid.ColWidth(nkZakup) = 630
-            Grid.ColWidth(nkDeficit) = 780
-            Grid.ColWidth(nkMark) = 705
+            Grid.colWidth(nkZapas) = 645
+            Grid.colWidth(nkZakup) = 630
+            Grid.colWidth(nkDeficit) = 780
+            Grid.colWidth(nkMark) = 705
         End If
         Grid.TextMatrix(0, nkEndOstat) = "Ф.Остатки"
     End If
@@ -823,7 +843,7 @@ Else
     curCol = i
 End If
 
-Grid.ColWidth(i) = colWdth
+Grid.colWidth(i) = colWdth
 If align <> "" Then Grid.ColAlignment(i) = align
 Grid.TextMatrix(0, i) = colName
 End Sub
@@ -959,7 +979,17 @@ ElseIf Regim = "asOborot" Or Regim = "sourOborot" Then
     initCol nkDeficit, "К.заявке", 0 '
     initCol nkSaledProcent, "% Продаж", 500
     initCol nkMark, "Маркер", 0      '
-    If Regim = "asOborot" Then initCol nkWeb, "Web", 450
+    If Regim = "asOborot" Then
+        initCol nkWeb, "Web", 450
+        lbPostav.Visible = True
+        tbPostav.Visible = True
+        initCol nkZakupBax, "Заяв.сумма", 650
+        initCol nkZakupWeight, "Заяв.вес", 650
+    Else
+        lbPostav.Visible = False
+        tbPostav.Visible = False
+    End If
+    
     ckEndDate_Click ' меняет размер кол.nkName
 ElseIf Regim = "asOstat" Then
     cmObrez.Visible = True
@@ -985,7 +1015,7 @@ ElseIf Regim = "checkCurOstat" Then
 Else
     controlGridHight "max" 'равно tv
     cotnrolTopElementsVisible False
-    Grid.ColWidth(nkName) = 3105
+    Grid.colWidth(nkName) = 3105
     'initCol nkSize, "Размер", 675
     initCol nkEdIzm2, "Ед.измерения", 525, flexAlignLeftCenter
     initCol nkPack, "В упаковке", 600, flexAlignLeftCenter
@@ -1099,7 +1129,7 @@ Function ostatCorr(myErr As String, delta As Single) As Boolean
 ostatCorr = False
 Set tbNomenk = myOpenRecordSet(myErr, "sGuideNomenk", dbOpenTable)
 If tbNomenk Is Nothing Then Exit Function
-tbNomenk.Index = "PrimaryKey"
+tbNomenk.index = "PrimaryKey"
 tbNomenk.Seek "=", gNomNom
 If Not tbNomenk.NoMatch Then
     tbNomenk.Edit
@@ -1275,13 +1305,12 @@ For i = 0 To Documents.lbSource.ListCount - 1
 Next i
 'lbSource.Height = 195 * lbSource.ListCount + 100
 
-
 cbInside.ListIndex = 0
 isLoad = True
 End Sub
 
 Sub loadKlass()
-Dim key As String, pKey As String, k() As String, pK()  As String
+Dim Key As String, pKey As String, k() As String, pK()  As String
 Dim i As Integer, iErr As Integer, groupText As String
 
 If Regim = "sourOborot" Then
@@ -1289,19 +1318,19 @@ If Regim = "sourOborot" Then
     tv.Nodes.Clear
     sql = "SELECT sGuideSource.sourceName, sGuideSource.sourceId " & _
     "From sGuideSource WHERE (((sGuideSource.sourceId)>=0));"
-    Set Table = myOpenRecordSet("##144", sql, dbOpenForwardOnly)
-    If Table Is Nothing Then Exit Sub
-    While Not Table.EOF
-        key = "k" & Table!sourceId
-        If Table!sourceId = 0 Then
-            Set Node = tv.Nodes.Add(, , key, "(незаданные)")
+    Set table = myOpenRecordSet("##144", sql, dbOpenForwardOnly)
+    If table Is Nothing Then Exit Sub
+    While Not table.EOF
+        Key = "k" & table!sourceId
+        If table!sourceId = 0 Then
+            Set Node = tv.Nodes.Add(, , Key, "(незаданные)")
         Else
-            Set Node = tv.Nodes.Add(, , key, Table!SourceName)
+            Set Node = tv.Nodes.Add(, , Key, table!SourceName)
         End If
             
-        Table.MoveNext
+        table.MoveNext
     Wend
-    Table.Close
+    table.Close
   Exit Sub
 End If
 
@@ -1320,10 +1349,10 @@ If Not tbKlass.BOF Then
  ReDim k(0): ReDim pK(0): ReDim NN(0): iErr = 0
  While Not tbKlass.EOF
     If tbKlass!klassid = 0 Then GoTo NXT1
-    key = "k" & tbKlass!klassid
+    Key = "k" & tbKlass!klassid
     pKey = "k" & tbKlass!parentKlassId
     On Error GoTo ERR1 ' назначить второй проход
-    Set Node = tv.Nodes.Add(pKey, tvwChild, key, tbKlass!klassName)
+    Set Node = tv.Nodes.Add(pKey, tvwChild, Key, tbKlass!klassName)
     On Error GoTo 0
     Node.Sorted = True
 NXT1:
@@ -1377,7 +1406,7 @@ Exit Sub
 ERR1:
  iErr = iErr + 1: bilo = True
  ReDim Preserve k(iErr): ReDim Preserve pK(iErr): ReDim Preserve NN(iErr)
- k(iErr) = key: pK(iErr) = pKey: NN(iErr) = tbKlass!klassName
+ k(iErr) = Key: pK(iErr) = pKey: NN(iErr) = tbKlass!klassName
  Resume Next
 
 ERR2: bilo = True: Resume NXT
@@ -1683,7 +1712,7 @@ Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As 
 Dim i As Integer
 
 If Grid.MouseRow = 0 And Shift = 2 Then
-        MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
+        MsgBox "ColWidth = " & Grid.colWidth(Grid.MouseCol)
 
 ElseIf frmMode = "nomenkReplace" Then
     Me.PopupMenu mnContext4
@@ -1812,16 +1841,44 @@ End Sub
 Private Sub lbMark_DblClick()
 
 If lbMark.Text = lbMark.List(1) Then
-    If MsgBox("При выборе значения '" & lbMark.List(1) & "' будут затерты " & _
+    'If MsgBox("При выборе значения '" & lbMark.List(1) & "' будут затерты " & _
     "старые значения  колонок 'Мин.' и 'Макс.запас'!", vbYesNo Or _
     vbDefaultButton2, "Продолжить ?") = vbNo Then GoTo EN1
 End If
 If valueToNomencField("##153", lbMark.Text, "mark") Then
     Grid.TextMatrix(mousRow, nkMark) = lbMark.Text
-'    If lbMark.Text = lbMark.List(1) Then
-'        setMinMaxZapas mousRow
+    If Regim = "asOborot" Then
+        If lbMark.Text = lbMark.List(0) Then
+            'used
+            
+            Dim ves As Variant, normZapas As Variant, zakup As Variant
+            sql = "select ves, normZapas, zakup from sguidenomenk where nomnom = '" & Grid.TextMatrix(mousRow, nkNomer) & "'"
+            byErrSqlGetValues "##102.2", sql, ves, normZapas, zakup
+
+            Dim outcome As Single, strOutcome As String
+            strOutcome = Grid.TextMatrix(mousRow, nkAvgOutcome)
+            If right(strOutcome, 1) = "*" Then
+                strOutcome = left(strOutcome, Len(strOutcome) - 1)
+            End If
+            If IsNumeric(strOutcome) Then
+                outcome = CSng(strOutcome)
+            Else
+                outcome = 0
+            End If
+            
+            recaluculateZakup mousRow, outcome, CSng(Grid.TextMatrix(mousRow, nkDostup)) _
+                , CStr(Grid.TextMatrix(mousRow, nkCena)), CVar(lbMark.Text), ves, normZapas, zakup
+            
+        Else
+            Grid.TextMatrix(mousRow, nkZakupBax) = ""
+            Grid.TextMatrix(mousRow, nkZakupWeight) = ""
+            'Grid.TextMatrix(mousRow, nkZakup) = "0"
+            'Grid.TextMatrix(mousRow, nkZapas) = "0"
+            Grid.TextMatrix(mousRow, nkDeficit) = "0"
+        End If
+    Else
         calcZacup mousRow
-'    End If
+    End If
 End If
 EN1:
 lbHide
@@ -1938,7 +1995,7 @@ wrkDefault.CommitTrans
 'tbKlass.Update
 
 'tbKlass.Close
-Set Node = tv.Nodes.Add(tv.SelectedItem.key, tvwChild, "k" & id, str)
+Set Node = tv.Nodes.Add(tv.SelectedItem.Key, tvwChild, "k" & id, str)
 tv.Nodes("k" & id).EnsureVisible
 tv.Nodes("k" & id).Selected = True
 tv.StartLabelEdit
@@ -2060,8 +2117,8 @@ Dim queryTimeout As Variant
     End If
     
     MousePointer = flexHourglass
-    Set tvNode = tv.Nodes(tv.SelectedItem.Index)
-    klassid = Mid(tvNode.key, 2)
+    Set tvNode = tv.Nodes(tv.SelectedItem.index)
+    klassid = Mid(tvNode.Key, 2)
     
     sql = "select wf_cost_bulk_change( " & klassid & ")"
     queryTimeout = myBase.queryTimeout
@@ -2107,7 +2164,7 @@ If i = -2 Then
      "него элементы.", , "Удаление невозможно !"
     tv.SetFocus
 Else
-    tv.Nodes.Remove tv.SelectedItem.key
+    tv.Nodes.Remove tv.SelectedItem.Key
     controlVisible False
 End If
 EN1:
@@ -2171,7 +2228,7 @@ Dim str As String, i As Integer
     Grid.CellBackColor = vbWhite
 '    gNomNom = replNomNom
     Me.MousePointer = flexDefault
-    str = Mid$(tv.SelectedItem.key, 2)
+    str = Mid$(tv.SelectedItem.Key, 2)
 For i = 1 To UBound(NN)
     gNomNom = NN(i)
     ValueToTableField "##112", str, "sGuideNomenk", "klassId", "byNomNom"
@@ -2305,7 +2362,7 @@ End Sub
 
 Private Sub mnRepl_Click()
 Dim str As String
-str = tv.SelectedItem.key
+str = tv.SelectedItem.Key
 If frmMode = "" Then
     If str = "all" Or str = "k0" Then Exit Sub
     frmMode = "klassReplace"
@@ -2492,7 +2549,7 @@ If KeyCode = vbKeyReturn Then
         tbNomenk!Pack = Grid.TextMatrix(mousRow, nkPack)
         tbNomenk!cost = Grid.TextMatrix(mousRow, nkCena)
         tbNomenk!CENA1 = Grid.TextMatrix(mousRow, nkCENA1)
-        tbNomenk!VES = Grid.TextMatrix(mousRow, nkVES)
+        tbNomenk!ves = Grid.TextMatrix(mousRow, nkVES)
         tbNomenk!STAVKA = Grid.TextMatrix(mousRow, nkSTAVKA)
         tbNomenk!FormulaNom = Grid.TextMatrix(mousRow, nkFormulaNom)
 '        tbNomenk! = Grid.TextMatrix(mousRow, nkCenaFreight)
@@ -2609,24 +2666,24 @@ End Sub
 'возвращает True если Regim = "fltOborot" и не надо закупать
 'а при reg <> ""  вычисляет ДО и ФО
 Function calcZacup(row As Long, Optional reg As String = "") As Boolean
-Dim maxZap As Single, minZap As Single, zakup As Single, str As String
+Dim maxZap As Single, minzap As Single, zakup As Single, str As String
      
 calcZacup = False
 If reg = "" Then ' при редактированиии  и только для used
      maxZap = Grid.TextMatrix(row, nkZakup)
-     minZap = Grid.TextMatrix(row, nkZapas)
+     minzap = Grid.TextMatrix(row, nkZapas)
      str = Grid.TextMatrix(row, nkMark)
      gain = 1 ' редактирование запрещено при установленном флаге "в У.Е."
 Else
     maxZap = Round(tbNomenk!zakup * gainC, 2) 'Макс.запас в базе в целых!
-    minZap = Round(tbNomenk!normZapas * gainC, 2) 'maxZap
+    minzap = Round(tbNomenk!normZapas * gainC, 2) 'maxZap
     str = tbNomenk!mark
 End If
 'dOst = Round(nomencDostupOstatki * gain, 2)  'доступные остатки (и FO)
 dOst = Round(nomencDostupOstatki("int"), 2)  'доступные остатки (и FO) в целых
 
 
-If dOst >= minZap Or str = lbMark.List(1) Then  'если ДО достаточны или Unused
+If dOst >= minzap Or str = lbMark.List(1) Then  'если ДО достаточны или Unused
     If Regim = "fltOborot" Then calcZacup = True: Exit Function
     Grid.TextMatrix(row, nkDeficit) = 0 ' к закупке
 Else
@@ -2636,7 +2693,7 @@ End If
 'If reg = "" Then Exit Function
 
 If str = lbMark.List(0) Then 'used
-    Grid.TextMatrix(row, nkZapas) = minZap
+    Grid.TextMatrix(row, nkZapas) = minzap
     Grid.TextMatrix(row, nkZakup) = maxZap
 Else
     Grid.TextMatrix(row, nkZapas) = dOst 'minZap
@@ -2645,6 +2702,29 @@ Else
 End If
 
 End Function
+
+Private Sub tbPostav_GotFocus()
+    If IsNumeric(tbPostav.Text) Then
+        gSrokPostav = CSng(tbPostav.Text)
+    End If
+End Sub
+
+Private Sub tbPostav_KeyDown(KeyCode As Integer, Shift As Integer)
+    If KeyCode = vbKeyReturn Then
+        tbPostav_LostFocus
+    End If
+End Sub
+
+Private Sub tbPostav_LostFocus()
+    If IsNumeric(tbPostav.Text) Then
+        Dim newSrok As Single: newSrok = CSng(tbPostav.Text)
+        
+        If newSrok <> gSrokPostav Then
+            loadKlassNomenk
+        End If
+        gSrokPostav = newSrok
+    End If
+End Sub
 
 Private Sub tbStartDate_Change()
 controlVisible False
@@ -2674,7 +2754,7 @@ End Sub
 Private Sub tv_AfterLabelEdit(Cancel As Integer, NewString As String)
 If Regim = "sourOborot" Then Exit Sub
 ' If Not flKlassAdd Then
-gKlassId = Mid$(tv.SelectedItem.key, 2)
+gKlassId = Mid$(tv.SelectedItem.Key, 2)
 ValueToTableField "##101", "'" & NewString & "'", "sGuideKlass", "klassName", "byKlassId"
 End Sub
 
@@ -2683,6 +2763,7 @@ Function getBaySaledQty(p_nomnom As String, p_startDate As String, p_endDate As 
     sql = "select wf_sale_nomenk_qty ('" & p_nomnom & "', convert(datetime, " & p_startDate & "), convert(datetime, " & p_endDate & "))"
     byErrSqlGetValues "##getBaySaledQty", sql, getBaySaledQty
 End Function
+
 
 Private Sub getAvgOutcome(p_nomnom As String, ByVal p_startDate As String, ByVal p_endDate As String, _
 ByRef avgOutcome As Double, ByRef missedDays As Integer, ByRef saledQty As Double, ByRef incomeQty As Double, ByRef outcomeQty As Double)
@@ -2697,6 +2778,8 @@ Dim csvResult As String
     byErrSqlGetValues "##getAvgOutcome", sql, csvResult
     parseCsvOutcome csvResult, avgOutcome, missedDays, saledQty, incomeQty, outcomeQty
 End Sub
+
+
 Private Sub parseCsvOutcome(ByVal csv As String, ByRef avgOutcome As Double, ByRef missedDays As Integer, ByRef saledQty As Double, ByRef incomeQty As Double, ByRef outcomeQty As Double)
 Dim done As Boolean, sepIndex As Long, token As String
 Dim restCsv As String, currentOrder As Integer
@@ -2798,7 +2881,7 @@ ElseIf filtr <> "" Then
     End If
 ElseIf Regim = "checkCurOstat" Or Regim = "fltOborot" Then
     strWhere = ""
-ElseIf tv.SelectedItem.key = "all" Then
+ElseIf tv.SelectedItem.Key = "all" Then
     If frmMode <> "" Then GoTo EN1
     strWhere = ""
     sql = "SELECT sGuideNomenk.* From sGuideNomenk"
@@ -2859,7 +2942,7 @@ If Not tbNomenk.BOF Then
 '        tbNomenk!nowOstatki =prih
 '        tbNomenk.Update
         Grid.TextMatrix(quantity + 1, nkCheckOst) = prih * gain
-    ElseIf Regim = "asOborot" Or Regim = "sourOborot" Or _
+    ElseIf Regim = "sourOborot" Or _
     Regim = "fltOborot" Or Regim = "asOstat" Or Regim = "" Then
         strWhere = strN
         If Regim = "asOstat" Or Regim = "" Then
@@ -2908,6 +2991,16 @@ If Not tbNomenk.BOF Then
         Grid.TextMatrix(quantity, nkBegOstat) = Round(beg * gain, 2) ' ост на начало
         Grid.TextMatrix(quantity, nkPrihod) = Round(prih, 2)
         Grid.TextMatrix(quantity, nkRashod) = Round(rash, 2)
+        
+        dOst = Round(nomencDostupOstatki("int"), 2)  'доступные остатки (и FO) в целых
+        
+
+        recaluculateZakup quantity, avgOutcome, dOst, cenaFact, _
+                tbNomenk!mark, tbNomenk!ves, tbNomenk!normZapas, tbNomenk!zakup
+                
+        'Dim z As Boolean: z = calcZacup(quantity, "load")
+        Grid.TextMatrix(quantity, nkDostup) = dOst
+        Grid.TextMatrix(quantity, nkCena) = cenaFact
         
         
 '        = getBaySaledQty(tbNomenk!nomnom, startDate, endDate)
@@ -2961,7 +3054,7 @@ If Not tbNomenk.BOF Then
                 Grid.TextMatrix(quantity, nkPrevCost) = "--"
             End If
             Grid.TextMatrix(quantity, nkCENA1) = tbNomenk!CENA1
-            Grid.TextMatrix(quantity, nkVES) = tbNomenk!VES
+            Grid.TextMatrix(quantity, nkVES) = tbNomenk!ves
             Grid.TextMatrix(quantity, nkSTAVKA) = tbNomenk!STAVKA
             Grid.TextMatrix(quantity, 0) = tbNomenk!formula
             Grid.TextMatrix(quantity, nkCenaFreight) = CenaFreight
@@ -3009,6 +3102,47 @@ Else
     Me.MousePointer = flexUpArrow
 End If
 End Sub
+
+
+Private Sub recaluculateZakup(ByVal mousRow As Long, ByVal avgOutcome As Single, ByVal dOst As Single, ByVal cenaFact As String _
+        , ByVal mark As Variant, ByVal ves As Variant, ByVal normZapas As Variant, ByVal zakup As Variant _
+)
+        
+    If avgOutcome > 0 Then
+        ' вычислить мин/макс запасы/к заявке по новой формуле
+        If IsNumeric(tbPostav.Text) Then
+            Dim srokPostav As Single
+            srokPostav = CSng(tbPostav.Text)
+            
+            Dim minzap As Single: minzap = srokPostav * avgOutcome
+            Grid.TextMatrix(mousRow, nkZapas) = Round(minzap, 0)
+            Grid.TextMatrix(mousRow, nkZakup) = Round(minzap * 2, 0)
+            Dim kZajav As Single
+            kZajav = avgOutcome * (srokPostav * 2 + 0.5) - dOst
+            If kZajav < 0 Then
+                kZajav = 0
+            ElseIf dOst >= minzap Then
+                ' доступные остатки больше, чем мин. запас
+                kZajav = 0
+            ElseIf mark = lbMark.List(1) Then
+                'unused
+                kZajav = 0
+            End If
+            Grid.TextMatrix(mousRow, nkDeficit) = Round(kZajav, 0)
+            If kZajav > 0 Then
+                Grid.TextMatrix(mousRow, nkZakupBax) = Round(kZajav * cenaFact, 2)
+                Grid.TextMatrix(mousRow, nkZakupWeight) = Round(kZajav * ves, 1)
+            End If
+        End If
+    Else
+        Grid.TextMatrix(mousRow, nkZapas) = Round(normZapas * gainC, 2) 'maxZap
+        Grid.TextMatrix(mousRow, nkZakup) = Round(zakup * gainC, 2) 'Макс.запас в базе в целых!
+        Grid.TextMatrix(mousRow, nkDeficit) = "0"
+    End If
+
+End Sub
+
+
 
 Public Function nomencDostupOstatki(Optional intQuant As String = "") As Single
 Dim s As Single, z As Single
@@ -3145,7 +3279,7 @@ If mousRight = 2 Then
   If frmMode = "nomenkReplace" Then
     Me.PopupMenu mnContext3
   ElseIf Regim = "" Then
-    str = tv.SelectedItem.key
+    str = tv.SelectedItem.Key
     If str = "all" Then
         mnSep11.Visible = False
         mnCost.Visible = False
@@ -3179,16 +3313,16 @@ End If
 End Sub
 
 Private Sub tv_NodeClick(ByVal Node As MSComctlLib.Node)
-    If Not IsNull(tv.SelectedItem.key) Then
-        gKlassId = Mid$(tv.SelectedItem.key, 2)
-        gKlassType = Mid$(tv.SelectedItem.key, 1, 1)
+    If Not IsNull(tv.SelectedItem.Key) Then
+        gKlassId = Mid$(tv.SelectedItem.Key, 2)
+        gKlassType = Mid$(tv.SelectedItem.Key, 1, 1)
         gSourceId = gKlassId
         If mousRight = 1 Then
             mousRight = 2 ' правый клик был именно из Node
             Exit Sub
         End If
         
-        If Regim <> "sourOborot" And tv.SelectedItem.key = "k0" Then
+        If Regim <> "sourOborot" And tv.SelectedItem.Key = "k0" Then
             If frmMode = "" Then controlVisible False
             quantity = 0
             Exit Sub
