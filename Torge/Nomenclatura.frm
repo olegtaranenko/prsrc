@@ -260,11 +260,11 @@ Begin VB.Form Nomenklatura
    Begin VB.CheckBox chGain 
       Caption         =   "в У.Е."
       Height          =   195
-      Left            =   6480
+      Left            =   6360
       TabIndex        =   16
       Top             =   40
       Visible         =   0   'False
-      Width           =   855
+      Width           =   732
    End
    Begin VB.CommandButton cmKlassLoad 
       Caption         =   "Загрузить"
@@ -357,20 +357,21 @@ Begin VB.Form Nomenklatura
       Appearance      =   1
    End
    Begin VB.Label lbPostav 
-      Caption         =   "Ср. пост."
+      Alignment       =   1  'Right Justify
+      Caption         =   "Срок постав."
       Height          =   192
       Left            =   7200
       TabIndex        =   43
-      Top             =   60
+      Top             =   40
       Visible         =   0   'False
       Width           =   1092
    End
    Begin VB.Label lbInside 
       Caption         =   "Внут.подразд-е:"
       Height          =   255
-      Left            =   9060
+      Left            =   8940
       TabIndex        =   17
-      Top             =   60
+      Top             =   40
       Visible         =   0   'False
       Width           =   1275
    End
@@ -388,7 +389,7 @@ Begin VB.Form Nomenklatura
       Height          =   195
       Left            =   4740
       TabIndex        =   11
-      Top             =   60
+      Top             =   40
       Width           =   255
    End
    Begin VB.Label laPeriod 
@@ -396,7 +397,7 @@ Begin VB.Form Nomenklatura
       Height          =   195
       Left            =   2940
       TabIndex        =   10
-      Top             =   60
+      Top             =   40
       Visible         =   0   'False
       Width           =   735
    End
