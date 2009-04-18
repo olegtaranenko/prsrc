@@ -264,7 +264,7 @@ Begin VB.Form Nomenklatura
       TabIndex        =   16
       Top             =   40
       Visible         =   0   'False
-      Width           =   732
+      Width           =   855
    End
    Begin VB.CommandButton cmKlassLoad 
       Caption         =   "Загрузить"
@@ -362,7 +362,7 @@ Begin VB.Form Nomenklatura
       Height          =   192
       Left            =   7200
       TabIndex        =   43
-      Top             =   40
+      Top             =   60
       Visible         =   0   'False
       Width           =   1092
    End
@@ -371,7 +371,7 @@ Begin VB.Form Nomenklatura
       Height          =   255
       Left            =   8940
       TabIndex        =   17
-      Top             =   40
+      Top             =   60
       Visible         =   0   'False
       Width           =   1275
    End
@@ -389,7 +389,7 @@ Begin VB.Form Nomenklatura
       Height          =   195
       Left            =   4740
       TabIndex        =   11
-      Top             =   40
+      Top             =   60
       Width           =   255
    End
    Begin VB.Label laPeriod 
@@ -397,7 +397,7 @@ Begin VB.Form Nomenklatura
       Height          =   195
       Left            =   2940
       TabIndex        =   10
-      Top             =   40
+      Top             =   60
       Visible         =   0   'False
       Width           =   735
    End
