@@ -174,13 +174,6 @@ begin
 		end if;
 	end if;
 
-	if v_period_outcome is not null and v_period_outcome > 0 then
---		message 'v_period_outcome = ', v_period_outcome to client;
---		message 'v_outcome_quant = ', v_outcome_quant to client;
-		set o_average_outcome = v_outcome_quant / v_full_period_days * 30;
---		message 'o_average_outcome = ', o_average_outcome to client;
-
-	end if;
 
 	if p_start is null and p_end is null then
 		set v_full_period_days = now() - v_first_income_date;
@@ -192,6 +185,7 @@ begin
 		set v_full_period_days = p_end - p_start;
 	end if;
 
+	set o_average_outcome = v_outcome_quant / convert(float, v_full_period_days) * 30;
 
 	set wf_sale_turnover_metrics =
 				convert(varchar(20), o_average_outcome) 
