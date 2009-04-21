@@ -1852,9 +1852,9 @@ If valueToNomencField("##153", lbMark.Text, "mark") Then
         If lbMark.Text = lbMark.List(0) Then
             'used
             
-            Dim ves As Variant, normZapas As Variant, zakup As Variant
-            sql = "select ves, normZapas, zakup from sguidenomenk where nomnom = '" & Grid.TextMatrix(mousRow, nkNomer) & "'"
-            byErrSqlGetValues "##102.2", sql, ves, normZapas, zakup
+            Dim ves As Variant, normZapas As Variant, zakup As Variant, cena1 As Variant
+            sql = "select ves, normZapas, zakup, cena1 from sguidenomenk where nomnom = '" & Grid.TextMatrix(mousRow, nkNomer) & "'"
+            byErrSqlGetValues "##102.2", sql, ves, normZapas, zakup, cena1
 
             Dim outcome As Single, strOutcome As String
             strOutcome = Grid.TextMatrix(mousRow, nkAvgOutcome)
@@ -1868,7 +1868,7 @@ If valueToNomencField("##153", lbMark.Text, "mark") Then
             End If
             
             recaluculateZakup mousRow, outcome, CSng(Grid.TextMatrix(mousRow, nkDostup)) _
-                , CStr(Grid.TextMatrix(mousRow, nkCena)), CVar(lbMark.Text), ves, normZapas, zakup
+                , cena1, CVar(lbMark.Text), ves, normZapas, zakup
             
         Else
             Grid.TextMatrix(mousRow, nkZakupBax) = ""
@@ -2549,7 +2549,7 @@ If KeyCode = vbKeyReturn Then
         tbNomenk!perList = Grid.TextMatrix(mousRow, nkPerList)
         tbNomenk!Pack = Grid.TextMatrix(mousRow, nkPack)
         tbNomenk!cost = Grid.TextMatrix(mousRow, nkCena)
-        tbNomenk!CENA1 = Grid.TextMatrix(mousRow, nkCENA1)
+        tbNomenk!cena1 = Grid.TextMatrix(mousRow, nkCENA1)
         tbNomenk!ves = Grid.TextMatrix(mousRow, nkVES)
         tbNomenk!STAVKA = Grid.TextMatrix(mousRow, nkSTAVKA)
         tbNomenk!FormulaNom = Grid.TextMatrix(mousRow, nkFormulaNom)
@@ -2996,7 +2996,7 @@ If Not tbNomenk.BOF Then
         dOst = Round(nomencDostupOstatki("int"), 2)  'доступные остатки (и FO) в целых
         
 
-        recaluculateZakup quantity, avgOutcome, dOst, cenaFact, _
+        recaluculateZakup quantity, avgOutcome, dOst, tbNomenk!cena1, _
                 tbNomenk!mark, tbNomenk!ves, tbNomenk!normZapas, tbNomenk!zakup
                 
         'Dim z As Boolean: z = calcZacup(quantity, "load")
@@ -3020,7 +3020,6 @@ If Not tbNomenk.BOF Then
             End If
         Else
             Grid.TextMatrix(quantity, nkAvgOutcome) = "-"
-            
         End If
         Grid.TextMatrix(quantity, nkEndOstat) = Round(beg * gain + prih - rash, 2)  ' остаток на конец
         If Regim = "asOborot" Then GoTo BB
@@ -3054,7 +3053,7 @@ If Not tbNomenk.BOF Then
             Else
                 Grid.TextMatrix(quantity, nkPrevCost) = "--"
             End If
-            Grid.TextMatrix(quantity, nkCENA1) = tbNomenk!CENA1
+            Grid.TextMatrix(quantity, nkCENA1) = tbNomenk!cena1
             Grid.TextMatrix(quantity, nkVES) = tbNomenk!ves
             Grid.TextMatrix(quantity, nkSTAVKA) = tbNomenk!STAVKA
             Grid.TextMatrix(quantity, 0) = tbNomenk!formula
@@ -3105,7 +3104,7 @@ End If
 End Sub
 
 
-Private Sub recaluculateZakup(ByVal mousRow As Long, ByVal avgOutcome As Single, ByVal dOst As Single, ByVal cenaFact As String _
+Private Sub recaluculateZakup(ByVal row As Long, ByVal avgOutcome As Single, ByVal dOst As Single, ByVal cenaFact As String _
         , ByVal mark As Variant, ByVal ves As Variant, ByVal normZapas As Variant, ByVal zakup As Variant _
 )
         
@@ -3116,29 +3115,29 @@ Private Sub recaluculateZakup(ByVal mousRow As Long, ByVal avgOutcome As Single,
             srokPostav = CSng(tbPostav.Text)
             
             Dim minzap As Single: minzap = srokPostav * avgOutcome
-            Grid.TextMatrix(mousRow, nkZapas) = Round(minzap, 0)
-            Grid.TextMatrix(mousRow, nkZakup) = Round(minzap * 2, 0)
+            Grid.TextMatrix(row, nkZapas) = Round(minzap, 0)
+            Grid.TextMatrix(row, nkZakup) = Round(minzap * 2, 0)
             Dim kZajav As Single
             kZajav = avgOutcome * (srokPostav * 2 + 0.5) - dOst
             If kZajav < 0 Then
                 kZajav = 0
             ElseIf dOst >= minzap Then
                 ' доступные остатки больше, чем мин. запас
-                kZajav = 0
+                'kZajav = 0
             ElseIf mark = lbMark.List(1) Then
                 'unused
                 kZajav = 0
             End If
-            Grid.TextMatrix(mousRow, nkDeficit) = Round(kZajav, 0)
+            Grid.TextMatrix(row, nkDeficit) = Round(kZajav, 0)
             If kZajav > 0 Then
-                Grid.TextMatrix(mousRow, nkZakupBax) = Round(kZajav * cenaFact, 2)
-                Grid.TextMatrix(mousRow, nkZakupWeight) = Round(kZajav * ves, 1)
+                Grid.TextMatrix(row, nkZakupBax) = Round(kZajav * cenaFact, 2)
+                Grid.TextMatrix(row, nkZakupWeight) = Round(kZajav * ves, 1)
             End If
         End If
     Else
-        Grid.TextMatrix(mousRow, nkZapas) = Round(normZapas * gainC, 2) 'maxZap
-        Grid.TextMatrix(mousRow, nkZakup) = Round(zakup * gainC, 2) 'Макс.запас в базе в целых!
-        Grid.TextMatrix(mousRow, nkDeficit) = "0"
+        Grid.TextMatrix(row, nkZapas) = Round(normZapas * gainC, 2) 'maxZap
+        Grid.TextMatrix(row, nkZakup) = Round(zakup * gainC, 2) 'Макс.запас в базе в целых!
+        Grid.TextMatrix(row, nkDeficit) = "0"
     End If
 
 End Sub
