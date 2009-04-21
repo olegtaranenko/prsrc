@@ -338,6 +338,13 @@ end;
 		<sqlFile path="report-nomnom-byfirma-rollback.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 	</changeSet>
 
+	<changeSet id="1" author="mantis-49" runOnChange="true">
+		<comment>Алгоритм расчета "к заявке": не учитывать пропущенные дни.</comment>
+		<sqlFile path="procedures/wf_sale_turnover_metrics.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback>
+			<sqlFile path="rollback/wf_sale_turnover_metrics.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		</rollback>
+	</changeSet>
 
 </databaseChangeLog>
 
