@@ -3130,6 +3130,7 @@ Private Sub recaluculateZakup(ByVal row As Long, ByVal avgOutcome As Single, ByV
             End If
             Grid.TextMatrix(row, nkDeficit) = Round(kZajav, 0)
             If kZajav > 0 Then
+                kZajav = Round(kZajav, 0)
                 Grid.TextMatrix(row, nkZakupBax) = Round(kZajav * cenaFact, 2)
                 Grid.TextMatrix(row, nkZakupWeight) = Round(kZajav * ves, 1)
             End If
