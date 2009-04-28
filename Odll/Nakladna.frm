@@ -13,6 +13,15 @@ Begin VB.Form Nakladna
    ScaleHeight     =   5532
    ScaleWidth      =   9840
    StartUpPosition =   2  'CenterScreen
+   Begin VB.CommandButton cmCheckout 
+      Caption         =   "Выписать все"
+      Height          =   315
+      Left            =   2760
+      TabIndex        =   31
+      Top             =   5160
+      Visible         =   0   'False
+      Width           =   1452
+   End
    Begin VB.TextBox tbPageSize 
       Height          =   288
       Left            =   8280
@@ -414,6 +423,48 @@ Const nkQuant = 8
 Const nkIntEdIzm = 9
 Const nkIntQuant = 10
 
+Private Sub cmCheckout_Click()
+Dim I As Long
+
+    If MsgBox("Вы действительно хотите выписать все оставшиеся позиции?", _
+        vbOKCancel Or vbDefaultButton2, "Подтвердите") = vbCancel Then
+        Exit Sub
+    End If
+
+    For I = 1 To Grid2(0).rows - 1
+        Dim nomRequest As Double: nomRequest = 0
+        Dim nomCheckouted As Double: nomCheckouted = 0
+        Dim treb As Integer, already As Integer
+        
+        If QQ2(0) = 0 Then 'нет этапа
+            treb = nkTreb
+            already = nkClos
+        Else
+            treb = nkEtap
+            already = nkEClos
+        End If
+        
+        If IsNumeric(Grid2(0).TextMatrix(I, treb)) Then _
+            nomRequest = CDbl(Grid2(0).TextMatrix(I, treb))
+            
+        If IsNumeric(Grid2(0).TextMatrix(I, already)) Then _
+            nomCheckouted = Grid2(0).TextMatrix(I, already)
+            
+        If nomRequest > nomCheckouted Then
+            Dim quant As Double
+            quant = nomRequest - nomCheckouted
+            Grid2(0).TextMatrix(I, nkQuant) = CStr(quant)
+            sql = "UPDATE sDMCrez SET curQuant = " & quant & _
+                " WHERE numDoc = " & numDoc & " AND nomNom = '" & _
+                Grid2(0).TextMatrix(I, nkNomNom) & "'"
+            myExecute "##363.1", sql
+                
+
+            
+        End If
+    Next I
+End Sub
+
 '$odbc15$
 Private Sub cmClose_Click()
 Dim I As Integer, j As Integer, NN2() As String, k As Integer
@@ -706,6 +757,7 @@ If Regim = "" Then ' для распечатки
 ElseIf Regim = "predmeti" Then ' в цеху
     Me.Caption = "Предметы к заказу."
     cmSostav.Visible = True
+    cmCheckout.Visible = True
     GoTo BB
 ElseIf Regim = "toNaklad" Then
     cmClose.Visible = True
@@ -1003,6 +1055,8 @@ Dim h As Integer, w As Integer
     cmSostav.Top = cmSostav.Top + h
     cmClose.Top = cmClose.Top + h
     cmClose.left = cmClose.left + w
+    cmCheckout.Top = cmPrint.Top
+    cmCheckout.left = cmPrint.left + cmPrint.Width + 150
     cmExit.Top = cmExit.Top + h
     cmExit.left = cmExit.left + w
     laDate.left = laDate.left + w
