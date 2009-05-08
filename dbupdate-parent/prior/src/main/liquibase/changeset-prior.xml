@@ -374,5 +374,25 @@ end;
 		<dropColumn tableName="sGuideNomenk" columnName="formulaNomW"/>
 		<rollback/>
 	</changeSet>
+
+	<changeSet id="5" author="mantis-52" runOnChange="false">
+		<comment>Коэффициент деления и к-во колонок</comment>
+		<addColumn tableName="sGuideNomenk">
+			<column name="kodel" type="float"><constraints nullable="true"/></column>
+			<column name="kolonok" type="integer"><constraints nullable="true"/></column>
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="6" author="mantis-52" runOnChange="true">
+		<comment>Коэффициент деления и к-во колонок: значения по умолчанию</comment>
+		<update tableName="sGuideNomenk">
+			<column name="kodel" value="0.5"/>
+		</update>
+		<update tableName="sGuideNomenk">
+			<column name="kolonok" value="4"/>
+		</update>
+		<rollback/>
+
+	</changeSet>
 </databaseChangeLog>
 
