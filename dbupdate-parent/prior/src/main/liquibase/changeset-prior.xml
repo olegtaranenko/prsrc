@@ -329,7 +329,6 @@ end;
 			<where><![CDATA[xdate >= '20090112']]></where>
 		</update>
 
-
 		<rollback/>
 	</changeSet>
 
@@ -346,5 +345,34 @@ end;
 		</rollback>
 	</changeSet>
 
+	<changeSet id="1" author="mantis-52" runOnChange="false">
+		<comment>Добавить столбец "Маржа" к таблице номенклатуры</comment>
+		<addColumn tableName="sGuideNomenk">
+			<column name="margin" type="float"><constraints nullable="true"/></column>
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="2" author="mantis-52" runOnChange="false">
+		<comment>Проставить значения маржи из формулы.</comment>
+		<executeCommand executable="dbisqlc.exe">
+			<arg value="-c"/>
+			<arg value="DSN=prior;UID=dba;PWD=sql"/>
+			<arg value="-q"/>
+			<arg value="C:\dev\prsrc\trunk\dbupdate-parent\prior\target\classes\mainteinance\update_margin_for_sale.sql"/>
+		</executeCommand>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="3" author="mantis-52" runOnChange="false">
+		<comment>Вместо номера формулы - маржа - Сбросить внешний ключ.</comment>
+		<dropForeignKeyConstraint baseTableName="sGuideNomenk" constraintName="sguideformulssguidenomenk1"/>
+		<rollback/>
+	</changeSet>
+	
+	<changeSet id="4" author="mantis-52" runOnChange="false">
+		<comment>Вместо номера формулы - маржа: удалить столбец</comment>
+		<dropColumn tableName="sGuideNomenk" columnName="formulaNomW"/>
+		<rollback/>
+	</changeSet>
 </databaseChangeLog>
 

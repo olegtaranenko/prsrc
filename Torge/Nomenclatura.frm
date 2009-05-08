@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCTL.OCX"
+Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "mscomctl.ocx"
 Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Nomenklatura 
    BackColor       =   &H8000000A&
@@ -601,10 +601,10 @@ Dim nkSize As Integer
 Dim nkPack As Integer
 Dim nkCod As Integer
 'Dim nkObrez As Integer
-Dim nkWebFormulaNom As Integer
+Dim nkMargin As Integer
 Dim nkCena1W As Integer
 Dim nkCena2W As Integer
-Dim nkWebFormula As Integer 'скрыта
+'Dim nkWebFormula As Integer 'скрыта
 Dim nkYesNo As Integer
 Dim nkMark As Integer
 Dim nkZakupBax As Integer
@@ -829,10 +829,9 @@ If curCol = -99 Then
     nkPack = -1
     nkCod = -1
 '    nkObrez = -1
-    nkWebFormulaNom = -1
+    nkMargin = -1
     nkCena1W = -1
     nkCena2W = -1
-    nkWebFormula = -1 'скрыта
     nkYesNo = -1
     nkMark = -1
 
@@ -1033,8 +1032,7 @@ Else
     initCol nkCenaFreight, "Цена с доставкой(CenaFreight)", 792
     initCol nkSource, "Поставшик", 945, flexAlignLeftCenter
     
-    initCol nkWebFormula, "", 0
-    initCol nkWebFormulaNom, "№wФормулы", 540
+    initCol nkMargin, "Маржа", 540
     initCol nkCena1W, "Ц_Продажи", 700
     initCol nkCena2W, "CenaSale", 700
 
@@ -1529,9 +1527,9 @@ If Regim = "" Then
     Frame1.ZOrder
     noClick = False
     lbEdIzm2.SetFocus
- ElseIf mousCol = nkWebFormulaNom Then
-    GuideFormuls.Regim = "fromNomenkW"
-    GoTo BB
+ 'ElseIf mousCol = nkMargin Then
+    'GuideFormuls.Regim = "fromNomenkW"
+ '   GoTo BB
  ElseIf mousCol = nkFormulaNom Then
     GuideFormuls.Regim = "fromNomenk"
 BB: If GuideFormuls.isLoad Then Unload GuideFormuls
@@ -1547,12 +1545,12 @@ BB: If GuideFormuls.isLoad Then Unload GuideFormuls
       End If
     Else
       If valueToNomencField("##410", tmpStr, "formulaNomW") Then
-        Grid.TextMatrix(mousRow, nkWebFormulaNom) = tmpStr
+        Grid.TextMatrix(mousRow, nkMargin) = tmpStr
         CenaFreight = Grid.TextMatrix(mousRow, nkCenaFreight)
 DD:     cenaFact = Grid.TextMatrix(mousRow, nkCena)
         str = nomenkFormula("", "W")
         Grid.TextMatrix(mousRow, nkCena1W) = str
-        Grid.TextMatrix(mousRow, nkWebFormula) = tmpStr 'теперь это сама формула
+'        Grid.TextMatrix(mousRow, nkWebFormula) = tmpStr 'теперь это сама формула
 '        If Not IsNumeric(str) Then MsgBox str, , ""
       End If
     End If
@@ -1610,8 +1608,8 @@ If quantity > 0 And frmMode = "" Then
  If ((chGain.Visible And chGain.value > 0) _
  Or (chPerList.Visible And chPerList.value > 0)) Then Exit Sub
  If (Regim = "" And mousCol = nkCena1W) Then
-    laTitle.Caption = "Ц_Продажа = " & Grid.TextMatrix(mousRow, nkWebFormula) & " "
-    GoTo CC
+    Grid.CellBackColor = vbYellow
+    Exit Sub
  ElseIf (Regim = "" And mousCol = nkCenaFreight) Then
     laTitle.Caption = "CenaFreight = " & Grid.TextMatrix(mousRow, 0) & " "
 CC: frTitle.Top = Grid.CellTop + Grid.CellHeight + 50
@@ -1619,10 +1617,6 @@ CC: frTitle.Top = Grid.CellTop + Grid.CellHeight + 50
     frTitle.ZOrder
     Grid.CellBackColor = vbYellow
     Exit Sub
-' ElseIf Regim = "" And mousCol = nkPerList And _
-' Grid.TextMatrix(mousRow, nkEdIzm) = Grid.TextMatrix(mousRow, nkEdIzm2) Then
-'    Grid.CellBackColor = vbYellow
-'    Exit Sub
 Else
     frTitle.Visible = False
  End If
@@ -1852,9 +1846,9 @@ If valueToNomencField("##153", lbMark.Text, "mark") Then
         If lbMark.Text = lbMark.List(0) Then
             'used
             
-            Dim ves As Variant, normZapas As Variant, zakup As Variant, cena1 As Variant
+            Dim ves As Variant, normZapas As Variant, zakup As Variant, Cena1 As Variant
             sql = "select ves, normZapas, zakup, cena1 from sguidenomenk where nomnom = '" & Grid.TextMatrix(mousRow, nkNomer) & "'"
-            byErrSqlGetValues "##102.2", sql, ves, normZapas, zakup, cena1
+            byErrSqlGetValues "##102.2", sql, ves, normZapas, zakup, Cena1
 
             Dim outcome As Single, strOutcome As String
             strOutcome = Grid.TextMatrix(mousRow, nkAvgOutcome)
@@ -1868,7 +1862,7 @@ If valueToNomencField("##153", lbMark.Text, "mark") Then
             End If
             
             recaluculateZakup mousRow, outcome, CSng(Grid.TextMatrix(mousRow, nkDostup)) _
-                , cena1, CVar(lbMark.Text), ves, normZapas, zakup
+                , Cena1, CVar(lbMark.Text), ves, normZapas, zakup
             
         Else
             Grid.TextMatrix(mousRow, nkZakupBax) = ""
@@ -2046,8 +2040,8 @@ If obraz <> "" Then
     Grid.TextMatrix(mousRow, 0) = Grid.TextMatrix(obrazRow, 0) 'сама формула
     Grid.TextMatrix(mousRow, nkFormulaNom) = Grid.TextMatrix(obrazRow, nkFormulaNom)
     Grid.TextMatrix(mousRow, nkCenaFreight) = Grid.TextMatrix(obrazRow, nkCenaFreight)
-    Grid.TextMatrix(mousRow, nkWebFormula) = Grid.TextMatrix(obrazRow, nkWebFormula)
-    Grid.TextMatrix(mousRow, nkWebFormulaNom) = Grid.TextMatrix(obrazRow, nkWebFormulaNom)
+'    Grid.TextMatrix(mousRow, nkWebFormula) = Grid.TextMatrix(obrazRow, nkWebFormula)
+    Grid.TextMatrix(mousRow, nkMargin) = Grid.TextMatrix(obrazRow, nkMargin)
     Grid.TextMatrix(mousRow, nkCena1W) = Grid.TextMatrix(obrazRow, nkCena1W)
     Grid.TextMatrix(mousRow, nkCena2W) = Grid.TextMatrix(obrazRow, nkCena2W)
     Grid.TextMatrix(mousRow, nkSource) = Grid.TextMatrix(obrazRow, nkSource)
@@ -2549,13 +2543,13 @@ If KeyCode = vbKeyReturn Then
         tbNomenk!perList = Grid.TextMatrix(mousRow, nkPerList)
         tbNomenk!Pack = Grid.TextMatrix(mousRow, nkPack)
         tbNomenk!cost = Grid.TextMatrix(mousRow, nkCena)
-        tbNomenk!cena1 = Grid.TextMatrix(mousRow, nkCENA1)
+        tbNomenk!Cena1 = Grid.TextMatrix(mousRow, nkCENA1)
         tbNomenk!ves = Grid.TextMatrix(mousRow, nkVES)
         tbNomenk!STAVKA = Grid.TextMatrix(mousRow, nkSTAVKA)
-        tbNomenk!FormulaNom = Grid.TextMatrix(mousRow, nkFormulaNom)
+        tbNomenk!formulaNom = Grid.TextMatrix(mousRow, nkFormulaNom)
 '        tbNomenk! = Grid.TextMatrix(mousRow, nkCenaFreight)
 '        tbNomenk! = Grid.TextMatrix(mousRow, nkWebFormula)
-        tbNomenk!formulaNomW = Grid.TextMatrix(mousRow, nkWebFormulaNom)
+        tbNomenk!margin = Grid.TextMatrix(mousRow, nkMargin)
         tbNomenk!CENA_W = Grid.TextMatrix(mousRow, nkCena2W)
         sql = "SELECT sourceId from sGuideSource WHERE (((sourceName)='" & _
         Grid.TextMatrix(mousRow, nkSource) & "'));"
@@ -2635,7 +2629,7 @@ BB: result = nomenkFormula 'tmpStr
 CC: CenaFreight = Grid.TextMatrix(mousRow, nkCenaFreight)
     result = nomenkFormula("", "W") ' ,берем номер WEB формулы из sGuideNomenk
     Grid.TextMatrix(mousRow, nkCena1W) = result
-    Grid.TextMatrix(mousRow, nkWebFormula) = tmpStr 'освежаем формулу
+'    Grid.TextMatrix(mousRow, nkWebFormula) = tmpStr 'освежаем формулу
 '    If Not IsNumeric(result) Then MsgBox result, , "Колонка '" & _
     Grid.TextMatrix(0, nkWebFormulaNom) & "'"
     
@@ -2895,14 +2889,14 @@ ElseIf gKlassType = "p" Then
 Else
     strWhere = "WHERE sGuideNomenk.klassId = " & gKlassId
 End If
-sql = "SELECT ph.prev_cost, sGuideNomenk.*, sGuideFormuls.Formula, " _
-& vbCr & "sGuideSource.sourceName, sGuideFormuls_1.Formula AS formulaW, ph.nomnom as priceChanged " _
-& vbCr & "FROM sGuideFormuls AS sGuideFormuls_1 INNER JOIN sGuideNomenk ON sGuideFormuls_1.nomer = sGuideNomenk.formulaNomW " _
-& vbCr & " INNER JOIN sGuideSource ON sGuideNomenk.sourId = sGuideSource.sourceId " _
-& vbCr & " INNER JOIN sGuideFormuls ON sGuideNomenk.formulaNom = sGuideFormuls.nomer " _
+sql = "SELECT ph.prev_cost, sGuideNomenk.*, f.Formula, " _
+& vbCr & "sGuideSource.sourceName, ph.nomnom as priceChanged " _
+& vbCr & "FROM sGuideNomenk " _
+& vbCr & " JOIN sGuideSource ON sGuideNomenk.sourId = sGuideSource.sourceId " _
+& vbCr & " JOIN sGuideFormuls f ON sGuideNomenk.formulaNom = f.nomer " _
 & vbCr & " left join (select h.cost as prev_cost, h.nomnom from spricehistory h join (select max(change_date) as change_date, nomnom from spricehistory m group by nomnom) mx on mx.nomnom = h.nomnom and mx.change_date = h.change_date ) ph on ph.nomnom = sguidenomenk.nomnom  " _
 & vbCr & strWhere & " ORDER BY sGuideNomenk.nomNom ;"
-'Debug.Print sql;
+'Debug.Print sql
 'MsgBox sql
 Set tbNomenk = myOpenRecordSet("##165", sql, dbOpenForwardOnly) ' dbOpenDynaset)
 If tbNomenk Is Nothing Then GoTo EN1
@@ -2995,8 +2989,10 @@ If Not tbNomenk.BOF Then
         
         dOst = Round(nomencDostupOstatki("int"), 2)  'доступные остатки (и FO) в целых
         
-
-        recaluculateZakup quantity, avgOutcome, dOst, tbNomenk!cena1, _
+        Dim Cena1 As Double: Cena1 = tbNomenk!Cena1
+        
+        
+        recaluculateZakup quantity, avgOutcome, dOst, Cena1, _
                 tbNomenk!mark, tbNomenk!ves, tbNomenk!normZapas, tbNomenk!zakup
                 
         'Dim z As Boolean: z = calcZacup(quantity, "load")
@@ -3053,21 +3049,20 @@ If Not tbNomenk.BOF Then
             Else
                 Grid.TextMatrix(quantity, nkPrevCost) = "--"
             End If
-            Grid.TextMatrix(quantity, nkCENA1) = tbNomenk!cena1
+            Grid.TextMatrix(quantity, nkCENA1) = Cena1
             Grid.TextMatrix(quantity, nkVES) = tbNomenk!ves
             Grid.TextMatrix(quantity, nkSTAVKA) = tbNomenk!STAVKA
             Grid.TextMatrix(quantity, 0) = tbNomenk!formula
             Grid.TextMatrix(quantity, nkCenaFreight) = CenaFreight
-            Grid.TextMatrix(quantity, nkFormulaNom) = tbNomenk!FormulaNom
+            Grid.TextMatrix(quantity, nkFormulaNom) = tbNomenk!formulaNom
             Grid.TextMatrix(quantity, nkYesNo) = tbNomenk!YesNo
             If Not IsNull(tbNomenk!SourceName) Then _
                 Grid.TextMatrix(quantity, nkSource) = tbNomenk!SourceName
             If Not IsNull(tbNomenk!perList) Then _
                 Grid.TextMatrix(quantity, nkPerList) = tbNomenk!perList
 
-            Grid.TextMatrix(quantity, nkWebFormula) = tbNomenk!formulaW
-            Grid.TextMatrix(quantity, nkWebFormulaNom) = tbNomenk!formulaNomW
-            Grid.TextMatrix(quantity, nkCena1W) = Format(nomenkFormula("noOpen", "W"), "0.00")
+            Grid.TextMatrix(quantity, nkMargin) = tbNomenk!margin
+            Grid.TextMatrix(quantity, nkCena1W) = Format(Cena1 * (1 + tbNomenk!margin / 100), "0.00")
             Grid.TextMatrix(quantity, nkCena2W) = Format(tbNomenk!CENA_W, "0.00")
 
 '            Grid.TextMatrix(quantity, nkSize) = tbNomenk!Size

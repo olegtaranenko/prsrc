@@ -718,7 +718,7 @@ If noOpen = "" Then
     If tbNomenk Is Nothing Then Exit Function
     If tbNomenk.BOF Then tbNomenk.Close: Exit Function
 End If
-'tmpStr = tbNomenk!formula
+tmpStr = tbNomenk!formula
 tmpStr = tbNomenk.fields("formula" & web)
 'If tbNomenk!formula = "" Then
 If tmpStr = "" Then
@@ -726,8 +726,8 @@ If tmpStr = "" Then
     Exit Function
 End If
 If web = "" Then
-    str = "CENA1=" & tbNomenk!CENA1 & ": VES=" & _
-    tbNomenk!VES & ": STAVKA=" & tbNomenk!STAVKA
+    str = "CENA1=" & tbNomenk!Cena1 & ": VES=" & _
+    tbNomenk!ves & ": STAVKA=" & tbNomenk!STAVKA
     sc.ExecuteStatement (str)
 Else
     str = "CenaFreight=" & CenaFreight & ": CenaFact=" & cenaFact
