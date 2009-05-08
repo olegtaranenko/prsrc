@@ -60,6 +60,22 @@
 					<groupId>org.liquibase</groupId>
 					<artifactId>liquibase-plugin</artifactId>
 					<version>${liquibase.version}</version>
+<!--
+					<dependencies>
+						<dependency>
+							<groupId>net.sourceforge.jtds</groupId>
+							<artifactId>jtds</artifactId>
+							<version>1.2.2</version>
+						</dependency>
+					</dependencies>
+					<dependencies>
+						<dependency>
+							<groupId>com.ianywhere</groupId>
+							<artifactId>jodbc</artifactId>
+							<version>9.0</version>
+						</dependency>
+					</dependencies>
+-->
 					<dependencies>
 						<dependency>
 							<groupId>com.sybase</groupId>
@@ -67,11 +83,24 @@
 							<version>${sybase.driver.version}</version>
 						</dependency>
 					</dependencies>
+
 					<configuration>
 						<verbose>true</verbose>
 						<changeLogFile>${changelog.file}</changeLogFile>
-						<url>jdbc:sybase:Tds:localhost:${syb.server.port}?servicename=${syb.servicename}</url>
+						<url><![CDATA[jdbc:sybase:Tds:localhost:${syb.server.port}?servicename=${syb.servicename}]]></url>
 						<driver>${sybase.driver}</driver>
+<!-- 
+						<url><![CDATA[jdbc:odbc:dsn=accountn]]></url>
+						<driver>ianywhere.ml.jdbcodbc.IDriver</driver>
+
+						<url><![CDATA[jdbc:sybase:Tds:localhost:${syb.server.port}?servicename=${syb.servicename}&SELECT_OPENS_CURSOR=true]]></url>
+						<driver>${sybase.driver}</driver>
+	SQLINITSTRING=call sp_tsql_environment> 
+-->
+<!--
+						<driver>net.sourceforge.jtds.jdbc.Driver</driver>
+						<url>jdbc:jtds:sybase://OTARANENKO-DELL:${syb.server.port}/prior</url>
+-->
 						<username>${syb.username}</username>
 						<password>${syb.password}</password>
 						<logging>FINE</logging>
@@ -79,6 +108,7 @@
 						<defaultSchemaName>dba</defaultSchemaName>
 					</configuration>
 					<executions>
+<!--
 						<execution>
 							<id>generate-sql-for-update</id>
 							<phase>compile</phase>
@@ -86,6 +116,7 @@
 								<goal>updateSQL</goal>
 							</goals>
 						</execution>
+-->
 						<execution>
 							<id>execute-db-update</id>
 							<phase>process-test-resources</phase>
