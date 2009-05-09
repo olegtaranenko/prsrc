@@ -1667,20 +1667,11 @@ Else
     objExel.Workbooks.Add
     objExel.ActiveSheet.Cells(1, 2).value = "Остатки по Складу на " & Format(Now(), "dd.mm.yy")
     objExel.ActiveSheet.Cells(1, 2).Font.Bold = True
-    exRow = 5
-    objExel.ActiveSheet.Cells(exRow - 2, 3).value = RateAsString
-    objExel.ActiveSheet.Cells(exRow - 1, 3).value = "Цены включают НДС"
+    exRow = 4
+    objExel.ActiveSheet.Cells(exRow - 1, 3).value = RateAsString
+    objExel.ActiveSheet.Cells(exRow - 1, 4).value = "Цены включают НДС"
 
 
-    objExel.ActiveSheet.Cells(exRow, 1).value = "Код"
-    objExel.ActiveSheet.Cells(exRow, 2).value = "Описание"
-    objExel.ActiveSheet.Cells(exRow, 3).value = "Размер"
-    objExel.ActiveSheet.Cells(exRow, 4).value = "Ед.измерения"
-    objExel.ActiveSheet.Cells(exRow, 5).value = "Кол-во"
-    objExel.ActiveSheet.Cells(exRow, 6).value = "Цена УЕ"
-    objExel.ActiveSheet.Cells(exRow, 7).value = "Опт 1"
-    objExel.ActiveSheet.Cells(exRow, 8).value = "Опт 2"
-    objExel.ActiveSheet.Cells(exRow, 9).value = "Опт 3"
     objExel.ActiveSheet.Columns(1).columnWidth = 12.57
     objExel.ActiveSheet.Columns(2).columnWidth = 39.71
     objExel.ActiveSheet.Columns(3).columnWidth = 10
@@ -1691,16 +1682,16 @@ Else
     objExel.ActiveSheet.Columns(8).columnWidth = 7: objExel.ActiveSheet.Columns(8).HorizontalAlignment = xlHAlignRight
     objExel.ActiveSheet.Columns(9).columnWidth = 7: objExel.ActiveSheet.Columns(9).HorizontalAlignment = xlHAlignRight
     
-    cErr = setVertBorders(xlMedium)
+    'cErr = setVertBorders(xlMedium)
 'xlColumnDataType
-    If cErr <> 0 Then GoTo ERR2
+    'If cErr <> 0 Then GoTo ERR2
 'xlDiagonalDown, xlDiagonalUp, xlEdgeBottom, xlEdgeLeft, xlEdgeRight
 'xlEdgeTop, xlInsideHorizontal, or xlInsideVertical.
     With objExel.ActiveSheet.Range("A" & exRow & ":I" & exRow)
-        .Borders(xlEdgeBottom).Weight = xlMedium ' xlThin
-        .Borders(xlEdgeTop).Weight = xlMedium
+        '.Borders(xlEdgeBottom).Weight = xlMedium ' xlThin
+        '.Borders(xlEdgeTop).Weight = xlMedium
     End With
-    exRow = exRow + 1
+    'exRow = exRow + 1
 End If
 '------------------------------------------------------------------------
 
@@ -1743,8 +1734,29 @@ For I = 1 To UBound(NN) ' перебор всех групп
             Else
                 objExel.ActiveSheet.Cells(exRow, 2).value = str
                 objExel.ActiveSheet.Cells(exRow, 2).Font.Bold = True
-                If Not IsNull(tbNomenk!kolon1) Then
-                    objExel.ActiveSheet.Cells(exRow, 6).value = Chr(160) & tbNomenk!kolon1
+                With objExel.ActiveSheet.Range("A" & exRow & ":I" & exRow)
+                    .Borders(xlEdgeTop).Weight = xlMedium
+                    .Borders(xlEdgeBottom).Weight = xlThin
+                    .Borders(xlEdgeRight).Weight = xlMedium
+                End With
+                
+                exRow = exRow + 1
+                cErr = setVertBorders(xlThin)
+                'If cErr <> 0 Then GoTo ERR2
+                
+                objExel.ActiveSheet.Cells(exRow, 1).value = "Код"
+                objExel.ActiveSheet.Cells(exRow, 2).value = "Описание"
+                objExel.ActiveSheet.Cells(exRow, 3).value = "Размер"
+                objExel.ActiveSheet.Cells(exRow, 4).value = "Ед.измерения"
+                objExel.ActiveSheet.Cells(exRow, 5).value = "Кол-во"
+                'objExel.ActiveSheet.Cells(exRow, 6).value = "Цена УЕ"
+                With objExel.ActiveSheet.Range("A" & exRow & ":I" & exRow)
+                    .Borders(xlEdgeBottom).Weight = xlThin
+                    .Font.Italic = True
+                    .HorizontalAlignment = xlHAlignCenter
+                End With
+                If Not IsNull(tbNomenk!Kolon1) Then
+                    objExel.ActiveSheet.Cells(exRow, 6).value = Chr(160) & tbNomenk!Kolon1
                     objExel.ActiveSheet.Cells(exRow, 6).Font.Bold = True
                 End If
                 If Not IsNull(tbNomenk!Kolon2) Then

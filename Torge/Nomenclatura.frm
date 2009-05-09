@@ -1023,6 +1023,7 @@ ElseIf Regim = "checkCurOstat" Then
     initCol nkCheckOst, "Провер.остатки", 660
 Else
     controlGridHight "max" 'равно tv
+    Grid.RowHeight(0) = 320
     cotnrolTopElementsVisible False
     Grid.colWidth(nkName) = 3105
     'initCol nkSize, "Размер", 675
@@ -1041,14 +1042,14 @@ Else
     initCol nkCenaFreight, "Цена с доставкой(CenaFreight)", 792
     initCol nkSource, "Поставшик", 945, flexAlignLeftCenter
     
-    initCol nkMargin, "Маржа", 540
-    initCol nkKodel, "К/Дел", 540
-    initCol nkKolonok, "Колонок", 540
+    initCol nkMargin, "Маржа", 450
+    initCol nkKodel, "К/Дел", 400
+    initCol nkKolonok, "Колонок", 400
     initCol nkCena1W, "Ц_Продажи", 700
     initCol nkCena2W, "CenaSale", 700
-    initCol nkKolon2, "Кол2", 540
-    initCol nkKolon3, "Кол3", 540
-    initCol nkKolon4, "Кол4", 540
+    initCol nkKolon2, "Кол2", 740
+    initCol nkKolon3, "Кол3", 740
+    initCol nkKolon4, "Кол4", 740
 
     initCol nkWeb, "Web", 450
 '    initCol nkObrez, "обрезков учет", 555
@@ -2564,7 +2565,7 @@ If KeyCode = vbKeyReturn Then
         tbNomenk!Cena1 = Grid.TextMatrix(mousRow, nkCENA1)
         tbNomenk!ves = Grid.TextMatrix(mousRow, nkVES)
         tbNomenk!STAVKA = Grid.TextMatrix(mousRow, nkSTAVKA)
-        tbNomenk!formulaNom = Grid.TextMatrix(mousRow, nkFormulaNom)
+        tbNomenk!FormulaNom = Grid.TextMatrix(mousRow, nkFormulaNom)
 '        tbNomenk! = Grid.TextMatrix(mousRow, nkCenaFreight)
 '        tbNomenk! = Grid.TextMatrix(mousRow, nkWebFormula)
         tbNomenk!margin = Grid.TextMatrix(mousRow, nkMargin)
@@ -2940,6 +2941,7 @@ Sub loadKlassNomenk(Optional filtr As String = "")
 Dim il As Long, strWhere As String, befWhere  As String
 Dim insWhere As String, strN As String, I As Integer, s As Single
 Dim beg As Single, prih As Double, rash As Double, oldNow As Single
+Dim Cena1 As Double
 
 '
 ' Regim = "" - справочник по номенклатуре
@@ -3105,8 +3107,7 @@ If Not tbNomenk.BOF Then
         
         dOst = Round(nomencDostupOstatki("int"), 2)  'доступные остатки (и FO) в целых
         
-        Dim Cena1 As Double: Cena1 = tbNomenk!Cena1
-        
+        Cena1 = tbNomenk!Cena1
         
         recaluculateZakup quantity, avgOutcome, dOst, Cena1, _
                 tbNomenk!mark, tbNomenk!ves, tbNomenk!normZapas, tbNomenk!zakup
@@ -3166,12 +3167,13 @@ If Not tbNomenk.BOF Then
                 Grid.TextMatrix(quantity, nkPrevCost) = "--"
             End If
             adjustKolonHeaders (gKlassId)
+            Cena1 = tbNomenk!Cena1
             Grid.TextMatrix(quantity, nkCENA1) = Cena1
             Grid.TextMatrix(quantity, nkVES) = tbNomenk!ves
             Grid.TextMatrix(quantity, nkSTAVKA) = tbNomenk!STAVKA
             Grid.TextMatrix(quantity, 0) = tbNomenk!formula
             Grid.TextMatrix(quantity, nkCenaFreight) = cenaFreight
-            Grid.TextMatrix(quantity, nkFormulaNom) = tbNomenk!formulaNom
+            Grid.TextMatrix(quantity, nkFormulaNom) = tbNomenk!FormulaNom
             Grid.TextMatrix(quantity, nkYesNo) = tbNomenk!YesNo
             If Not IsNull(tbNomenk!SourceName) Then _
                 Grid.TextMatrix(quantity, nkSource) = tbNomenk!SourceName
