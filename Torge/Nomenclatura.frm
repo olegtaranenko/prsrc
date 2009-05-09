@@ -3236,9 +3236,9 @@ Dim Kolon4 As String
     sql = "SELECT kolon1, kolon2, kolon3, kolon4 from sGuideKlass where klassId = " & KlassId
     byErrSqlGetValues "##ACH", sql, Kolon1, Kolon2, Kolon3, Kolon4
     If "" <> IIf(IsNull(Kolon1), "", Kolon1) Then
-        Grid.TextMatrix(0, nkKolon1) = Kolon1
+        Grid.TextMatrix(0, nkCena2W) = Kolon1
     Else
-        Grid.TextMatrix(0, nkKolon1) = ""
+        Grid.TextMatrix(0, nkCena2W) = ""
     End If
     
     If "" <> IIf(IsNull(Kolon2), "", Kolon2) Then
