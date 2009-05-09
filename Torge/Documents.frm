@@ -475,7 +475,7 @@ Const dnEdIzm = 6
 
 'reg ="","single","add"
 Sub loadDocs(Optional reg As String = "")
-Dim strWhere As String, i As Integer, str As String
+Dim strWhere As String, I As Integer, str As String
  prevRow = -1
  Grid.Visible = False
  numExt = 255 'приходные накладные
@@ -879,19 +879,19 @@ Grid2.colWidth(dnQuant2) = 660
 End Sub
 
 Sub loadLbInside()
-Dim i As Integer
+Dim I As Integer
 
 sql = "SELECT sGuideSource.sourceId, sGuideSource.sourceName From sGuideSource " & _
 "WHERE (((sGuideSource.sourceId)<-1000)) ORDER BY sGuideSource.sourceId DESC;"
 Set table = myOpenRecordSet("##95", sql, dbOpenDynaset)
 If table Is Nothing Then myBase.Close: End
-ReDim insideId(0): i = 0: ' ReDim statiaId(0): j = 0
+ReDim insideId(0): I = 0: ' ReDim statiaId(0): j = 0
 lbInside.Clear
 While Not table.EOF
     lbInside.AddItem table!SourceName
-    ReDim Preserve insideId(i)
-    insideId(i) = table!sourceId
-    i = i + 1
+    ReDim Preserve insideId(I)
+    insideId(I) = table!sourceId
+    I = I + 1
     table.MoveNext
 Wend
 table.Close
@@ -971,7 +971,7 @@ End If
 End Sub
 
 Function loadDocNomenk(Optional reg As String = "") As Boolean
-Dim il As Long, str As String, s As Single, i As Integer ', str2 As String
+Dim il As Long, str As String, s As Single, I As Integer ', str2 As String
 Dim msgOst As String, r As Single, o As Single
 
 loadDocNomenk = True ' не надо отката - пока
@@ -1201,13 +1201,13 @@ If Grid2.MouseRow = 0 And Shift = 2 Then _
 End Sub
 
 Private Sub lbBad_DblClick()
-Dim i As Integer
-i = InStr(lbBad.Text, "  ")
-gNomNom = left$(lbBad.Text, i - 1)
+Dim I As Integer
+I = InStr(lbBad.Text, "  ")
+gNomNom = left$(lbBad.Text, I - 1)
 ReDim DMCnomNom(1)
 DMCnomNom(1) = gNomNom
 KartaDMC.Grid.Visible = False
-KartaDMC.nomenkName = Mid$(lbBad.Text, i + 2)
+KartaDMC.nomenkName = Mid$(lbBad.Text, I + 2)
 KartaDMC.Show
 'frBad.Visible = False
 End Sub
@@ -1407,7 +1407,7 @@ Dim n1 As Nomenklatura
 End Sub
 'проверка на отрицат.остатки
 Private Sub mnOstat_Click()
-Dim ost As Single, bef As Integer, i As Integer
+Dim ost As Single, bef As Integer, I As Integer
 
 frBad.Visible = False
 Me.MousePointer = flexHourglass
@@ -1439,9 +1439,9 @@ While Not tbNomenk.EOF
   bef = 0
 
   While Not tbDMC.EOF
-    i = DateDiff("d", begDate, tbDMC!xDate)
-    If ost <= -0.01 And i <> bef Then GoTo NXT2
-    bef = i
+    I = DateDiff("d", begDate, tbDMC!xDate)
+    If ost <= -0.01 And I <> bef Then GoTo NXT2
+    bef = I
     If tbDMC!sourId < -1000 Then _
         ost = ost - tbDMC!quant
     If tbDMC!destId < -1000 Then _
@@ -1537,9 +1537,7 @@ GuideStatia.Show vbModal
 End Sub
 
 Private Sub mnToExcel_Click()
-
-ostatToWeb "toExcel"
-
+    ostatToWeb "toExcel"
 End Sub
 
 Private Sub mnVentureOrder_Click()
@@ -1591,7 +1589,10 @@ objExel.ActiveSheet.Cells(exRow, 2).Borders(xlEdgeRight).Weight = lineWeight
 objExel.ActiveSheet.Cells(exRow, 3).Borders(xlEdgeRight).Weight = lineWeight
 objExel.ActiveSheet.Cells(exRow, 4).Borders(xlEdgeRight).Weight = lineWeight
 objExel.ActiveSheet.Cells(exRow, 5).Borders(xlEdgeRight).Weight = lineWeight
-objExel.ActiveSheet.Cells(exRow, 6).Borders(xlEdgeRight).Weight = xlMedium
+objExel.ActiveSheet.Cells(exRow, 6).Borders(xlEdgeRight).Weight = lineWeight
+objExel.ActiveSheet.Cells(exRow, 7).Borders(xlEdgeRight).Weight = lineWeight
+objExel.ActiveSheet.Cells(exRow, 8).Borders(xlEdgeRight).Weight = lineWeight
+objExel.ActiveSheet.Cells(exRow, 9).Borders(xlEdgeRight).Weight = xlMedium
 Exit Function
 
 ERR1:
@@ -1611,7 +1612,7 @@ End Function
 'Их и их поля klassId parentKlassId и klassName надо заменить аналогами из
 'базы Comtec(недостающие колонки можно добавить) $comtec$
 Sub ostatToWeb(Optional toExel As String = "")
-Dim tmpFile As String, i As Integer, findId As Integer, str As String
+Dim tmpFile As String, I As Integer, findId As Integer, str As String
 Dim minusQuant   As Integer
 minusQuant = 0
 
@@ -1626,20 +1627,20 @@ If tbNomenk Is Nothing Then Exit Sub
 'If tbGuide Is Nothing Then Exit Sub
 'tbGuide.index = "PrimaryKey"
 
-ReDim NN(0): i = 0
+ReDim NN(0): I = 0
 While Not tbNomenk.EOF
-    i = i + 1
-    ReDim Preserve NN(i): NN(i) = Format(tbNomenk!klassid, "0000")
-    findId = tbNomenk!klassid
+    I = I + 1
+    ReDim Preserve NN(I): NN(I) = Format(tbNomenk!KlassId, "0000")
+    findId = tbNomenk!KlassId
 
 AA: 'tbGuide.Seek "=", findId
 '    If tbGuide.NoMatch Then msgOfEnd ("##409")
-    sql = "SELECT klassName, parentKlassId from sGuideKlass " & _
+    sql = "SELECT klassName, parentKlassId, kolon1, kolon2, kolon3, kolon4 from sGuideKlass " & _
     "WHERE (((klassId)=" & findId & "));"
     If Not byErrSqlGetValues("##417", sql, str, findId) Then tbNomenk.Close: Exit Sub
             
 '    NN(i) = tbGuide!klassName & " / " & NN(i) ' к имени добавляем Id
-    NN(i) = str & " / " & NN(i) ' к имени добавляем Id
+    NN(I) = str & " / " & NN(I) ' к имени добавляем Id
 '    findId = tbGuide!parentKlassId
   
     If findId > 0 Then GoTo AA 'к имени текущей группы спереди приклеиваются
@@ -1676,20 +1677,26 @@ Else
     objExel.ActiveSheet.Cells(exRow, 3).value = "Размер"
     objExel.ActiveSheet.Cells(exRow, 4).value = "Ед.измерения"
     objExel.ActiveSheet.Cells(exRow, 5).value = "Кол-во"
-    objExel.ActiveSheet.Cells(exRow, 6).value = "Цена"
+    objExel.ActiveSheet.Cells(exRow, 6).value = "Цена УЕ"
+    objExel.ActiveSheet.Cells(exRow, 7).value = "Опт 1"
+    objExel.ActiveSheet.Cells(exRow, 8).value = "Опт 2"
+    objExel.ActiveSheet.Cells(exRow, 9).value = "Опт 3"
     objExel.ActiveSheet.Columns(1).columnWidth = 12.57
     objExel.ActiveSheet.Columns(2).columnWidth = 39.71
     objExel.ActiveSheet.Columns(3).columnWidth = 10
     objExel.ActiveSheet.Columns(4).columnWidth = 6.2
     objExel.ActiveSheet.Columns(5).columnWidth = 6.2
-    objExel.ActiveSheet.Columns(6).columnWidth = 6
-    objExel.ActiveSheet.Columns(6).HorizontalAlignment = xlHAlignRight
+    objExel.ActiveSheet.Columns(6).columnWidth = 7: objExel.ActiveSheet.Columns(6).HorizontalAlignment = xlHAlignRight
+    objExel.ActiveSheet.Columns(7).columnWidth = 7: objExel.ActiveSheet.Columns(7).HorizontalAlignment = xlHAlignRight
+    objExel.ActiveSheet.Columns(8).columnWidth = 7: objExel.ActiveSheet.Columns(8).HorizontalAlignment = xlHAlignRight
+    objExel.ActiveSheet.Columns(9).columnWidth = 7: objExel.ActiveSheet.Columns(9).HorizontalAlignment = xlHAlignRight
+    
     cErr = setVertBorders(xlMedium)
 'xlColumnDataType
     If cErr <> 0 Then GoTo ERR2
 'xlDiagonalDown, xlDiagonalUp, xlEdgeBottom, xlEdgeLeft, xlEdgeRight
 'xlEdgeTop, xlInsideHorizontal, or xlInsideVertical.
-    With objExel.ActiveSheet.Range("A" & exRow & ":F" & exRow)
+    With objExel.ActiveSheet.Range("A" & exRow & ":I" & exRow)
         .Borders(xlEdgeBottom).Weight = xlMedium ' xlThin
         .Borders(xlEdgeTop).Weight = xlMedium
     End With
@@ -1698,8 +1705,8 @@ End If
 '------------------------------------------------------------------------
 
 
-For i = 1 To UBound(NN) ' перебор всех групп
-  str = NN(i)
+For I = 1 To UBound(NN) ' перебор всех групп
+  str = NN(I)
   findId = right$(str, 4) ' извлекаем из имен группы id группы
   
 '$comtec$  Далее ссылки на табл.sGuideNomenk и на ее поля надо заменить на
@@ -1707,9 +1714,13 @@ For i = 1 To UBound(NN) ' перебор всех групп
 'Справочника номенклатур из программы stime:
 'Номер  Код  Описание Размер  Ед.измерения  Коэф.производства  CenaSale web
 'nomNom cod  nomName  Size    ed_Izmer2     perList            CENA_W   Web
-  sql = "SELECT nomNom, nomName, ed_Izmer2, CENA_W, perList, " & _
-  "cod, Size From sGuideNomenk " & _
-  "Where (((web) = 'web' ) AND ((klassId)=" & findId & ")) ORDER BY nomNom;"
+  sql = "SELECT n.nomNom, n.nomName, n.ed_Izmer2, n.CENA_W, n.perList" _
+  & ", n.cod, n.Size, n.kodel, n.margin, n.kolonok" _
+  & ", k.kolon1, k.kolon2, k.kolon3, k.kolon4" _
+  & " From sGuideNomenk n " _
+  & " join sguideklass k on k.klassId = n.klassId" _
+  & " Where n.web = 'web'  AND n.klassId=" & findId _
+  & " ORDER BY n.nomNom"
 
   Set tbNomenk = myOpenRecordSet("##331", sql, dbOpenDynaset)
   If tbNomenk Is Nothing Then GoTo EN1
@@ -1732,6 +1743,23 @@ For i = 1 To UBound(NN) ' перебор всех групп
             Else
                 objExel.ActiveSheet.Cells(exRow, 2).value = str
                 objExel.ActiveSheet.Cells(exRow, 2).Font.Bold = True
+                If Not IsNull(tbNomenk!kolon1) Then
+                    objExel.ActiveSheet.Cells(exRow, 6).value = Chr(160) & tbNomenk!kolon1
+                    objExel.ActiveSheet.Cells(exRow, 6).Font.Bold = True
+                End If
+                If Not IsNull(tbNomenk!Kolon2) Then
+                    objExel.ActiveSheet.Cells(exRow, 7).value = Chr(160) & tbNomenk!Kolon2
+                    objExel.ActiveSheet.Cells(exRow, 7).Font.Bold = True
+                End If
+                If Not IsNull(tbNomenk!Kolon3) Then
+                    objExel.ActiveSheet.Cells(exRow, 8).value = Chr(160) & tbNomenk!Kolon3
+                    objExel.ActiveSheet.Cells(exRow, 8).Font.Bold = True
+                End If
+                If Not IsNull(tbNomenk!Kolon4) Then
+                    objExel.ActiveSheet.Cells(exRow, 9).value = Chr(160) & tbNomenk!Kolon4
+                    objExel.ActiveSheet.Cells(exRow, 9).Font.Bold = True
+                End If
+                    
                 cErr = setVertBorders(xlThin)
                 If cErr <> 0 Then GoTo ERR2
                 exRow = exRow + 1
@@ -1744,11 +1772,11 @@ For i = 1 To UBound(NN) ' перебор всех групп
 '            tmpSng = tmpSng / tbNomenk!perList
 '        End If
         tmpSng = Round(tmpSng - 0.4999, 0)
-        Dim cena2w As String
-        cena2w = Chr(160) & Format(tbNomenk!CENA_W, "0.00") ' выводим как текст, т.к. "3.00" все равностанет "3"
+        Dim cena2W As String
+        cena2W = Chr(160) & Format(tbNomenk!CENA_W, "0.00") ' выводим как текст, т.к. "3.00" все равностанет "3"
         If toExel = "" Then
             Print #1, tbNomenk!nomnom & vbTab & tbNomenk!nomName & vbTab & _
-            str & vbTab & Round(tmpSng, 2) & vbTab & cena2w & _
+            str & vbTab & Round(tmpSng, 2) & vbTab & cena2W & _
             vbTab & tbNomenk!cod & vbTab & tbNomenk!Size
         Else
 If tmpSng < -0.01 Then
@@ -1759,7 +1787,19 @@ End If
             objExel.ActiveSheet.Cells(exRow, 3).value = tbNomenk!Size
             objExel.ActiveSheet.Cells(exRow, 4).value = str
             objExel.ActiveSheet.Cells(exRow, 5).value = Round(tmpSng, 2)
-            objExel.ActiveSheet.Cells(exRow, 6).value = cena2w 'Round(tbNomenk!CENA_W, 2)
+            objExel.ActiveSheet.Cells(exRow, 6).value = cena2W 'Round(tbNomenk!CENA_W, 2)
+            'if not isnull
+            
+            Dim kolonok As Integer, optBasePrice As Double, margin As Double, iKolon As Integer
+            kolonok = tbNomenk!kolonok
+            margin = tbNomenk!margin
+            optBasePrice = cena2W * (1 - margin / 100)
+            
+            For iKolon = 2 To kolonok
+                objExel.ActiveSheet.Cells(exRow, 5 + iKolon).value = _
+                    Chr(160) & Format(calcKolonValue(optBasePrice, margin, tbNomenk!kodel, kolonok, iKolon), "0.00")
+            Next iKolon
+            
             cErr = setVertBorders(xlThin)
             If cErr <> 0 Then GoTo ERR2
             exRow = exRow + 1:
@@ -1770,14 +1810,14 @@ End If
   End If
     tbNomenk.Close
 '  End If
-Next i
+Next I
 EN1:
 If toExel = "" Then
     Close #1
     Kill webNomenks
     Name tmpFile As webNomenks
 Else
-    With objExel.ActiveSheet.Range("A" & exRow & ":F" & exRow)
+    With objExel.ActiveSheet.Range("A" & exRow & ":I" & exRow)
         .Borders(xlEdgeTop).Weight = xlMedium
     End With
     Set objExel = Nothing
@@ -1809,7 +1849,7 @@ End If
 End Sub
 
 Private Sub mnWebs_Click()
-Dim str As String, ch As String, slen As Integer, oper As String, i As Integer
+Dim str As String, ch As String, slen As Integer, oper As String, I As Integer
 Dim tmpFile As String ', filtrList As String
 
 If MsgBox("По кнопке 'ДА' будет перезаписаны файлы для WEB: файл складcких " & _
@@ -1892,7 +1932,7 @@ lbHide
 End Sub
 
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim str As String, i As Integer
+Dim str As String, I As Integer
 
 If KeyCode = vbKeyReturn Then
  
@@ -1941,7 +1981,7 @@ End Sub
 
 Private Sub tbMobile2_KeyDown(KeyCode As Integer, Shift As Integer)
 Dim nowOst As Single, rezerv As Single, quant As Single, delta As Single
-Dim i As Integer, j As Integer, tmp As Long
+Dim I As Integer, j As Integer, tmp As Long
 
 If KeyCode = vbKeyReturn Then
     If Not isNumericTbox(tbMobile2, 0) Then Exit Sub
@@ -1998,13 +2038,13 @@ If KeyCode = vbKeyReturn Then
  'возможно, если в loadDocNomenk был откат то след-го If Else не надо
   If laFiltr.Visible Then   ' если вызов из карты
 '    If KartaDMC.DMCnomNomCur = gNomNom Then
-    For i = 1 To UBound(DMCnomNom)
-        If DMCnomNom(i) = gNomNom Then  ' и если редактировалась ном-ра
+    For I = 1 To UBound(DMCnomNom)
+        If DMCnomNom(I) = gNomNom Then  ' и если редактировалась ном-ра
             Timer1.Interval = 10        ' из карты
             Timer1.Enabled = True       ' то перерасчет карты
             Exit For
         End If
-    Next i
+    Next I
   Else 'если это не вызов из карты то ее выгружаем  чтобы там не оставалась
     If KartaDMC.isLoad Then Unload KartaDMC '      необновленная информация
   End If ' хотя можно проверить и если ном-ры нет в карте то и не надо выгружать
@@ -2021,14 +2061,14 @@ End If
 End Sub
 
 Private Sub Timer1_Timer()
-Dim i As Integer
+Dim I As Integer
     Timer1.Enabled = False
     Me.MousePointer = flexHourglass
 '    KartaDMC.Grid.Visible = False
     KartaDMC.quantity = 0
-    For i = 1 To UBound(DMCnomNom)
-        KartaDMC.getKartaDMC DMCnomNom(i)
-    Next i
+    For I = 1 To UBound(DMCnomNom)
+        KartaDMC.getKartaDMC DMCnomNom(I)
+    Next I
 '    KartaDMC.Grid.Visible = True
     KartaDMC.ZOrder
     Me.MousePointer = flexDefault

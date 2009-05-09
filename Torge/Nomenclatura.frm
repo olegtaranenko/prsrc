@@ -614,9 +614,6 @@ Dim nkMark As Integer
 Dim nkZakupBax As Integer
 Dim nkZakupWeight As Integer
 
-Dim Kolon2 As String
-Dim Kolon3 As String
-Dim Kolon4 As String
 
 Private Sub setMnPriceHistoryStatus()
 Dim cnt As String
@@ -2727,21 +2724,6 @@ tbMobile.SetFocus
 End Sub
 
 
-Function calcKolonValue(ByVal freight As Double, ByVal marginProc As Double, ByVal kodel As Double, ByVal kolonok As Double, ByVal curentKolon As Integer)
-    Dim marginRate As Double, MarginValue As Double, maxUstupka As Double, stepUstupka As Double
-    
-    marginRate = marginProc / 100
-    MarginValue = freight * marginRate / (1 - marginRate)
-    maxUstupka = MarginValue * (1 - kodel)
-    If kolonok > 1 Then
-        stepUstupka = maxUstupka / (kolonok - 1)
-    Else
-        stepUstupka = 0
-    End If
-    
-    calcKolonValue = freight + MarginValue - stepUstupka * (curentKolon - 1)
-    
-End Function
 
 Function getChangedField(iCol As Long) As String
     If iCol = nkMargin Then
@@ -3183,7 +3165,7 @@ If Not tbNomenk.BOF Then
             Else
                 Grid.TextMatrix(quantity, nkPrevCost) = "--"
             End If
-            adjustColumnHeaders (gKlassId)
+            adjustKolonHeaders (gKlassId)
             Grid.TextMatrix(quantity, nkCENA1) = Cena1
             Grid.TextMatrix(quantity, nkVES) = tbNomenk!ves
             Grid.TextMatrix(quantity, nkSTAVKA) = tbNomenk!STAVKA
@@ -3246,25 +3228,35 @@ Else
 End If
 End Sub
 
-Private Sub adjustColumnHeaders(ByVal KlassId As Integer)
-    sql = "SELECT kolon2, kolon3, kolon4 from sGuideKlass where klassId = " & KlassId
-    byErrSqlGetValues "##ACH", sql, Kolon2, Kolon3, Kolon4
+Sub adjustKolonHeaders(ByVal KlassId As Integer)
+Dim Kolon1 As String
+Dim Kolon2 As String
+Dim Kolon3 As String
+Dim Kolon4 As String
+    sql = "SELECT kolon1, kolon2, kolon3, kolon4 from sGuideKlass where klassId = " & KlassId
+    byErrSqlGetValues "##ACH", sql, Kolon1, Kolon2, Kolon3, Kolon4
+    If "" <> IIf(IsNull(Kolon1), "", Kolon1) Then
+        Grid.TextMatrix(0, nkKolon1) = Kolon1
+    Else
+        Grid.TextMatrix(0, nkKolon1) = ""
+    End If
+    
     If "" <> IIf(IsNull(Kolon2), "", Kolon2) Then
         Grid.TextMatrix(0, nkKolon2) = Kolon2
     Else
-        Grid.TextMatrix(0, nkKolon2) = "Кол2"
+        Grid.TextMatrix(0, nkKolon2) = ""
     End If
     
     If "" <> IIf(IsNull(Kolon3), "", Kolon3) Then
         Grid.TextMatrix(0, nkKolon3) = Kolon3
     Else
-        Grid.TextMatrix(0, nkKolon3) = "Кол3"
+        Grid.TextMatrix(0, nkKolon3) = ""
     End If
     
     If "" <> IIf(IsNull(Kolon4), "", Kolon4) Then
         Grid.TextMatrix(0, nkKolon4) = Kolon4
     Else
-        Grid.TextMatrix(0, nkKolon4) = "Кол4"
+        Grid.TextMatrix(0, nkKolon4) = ""
     End If
 End Sub
 
