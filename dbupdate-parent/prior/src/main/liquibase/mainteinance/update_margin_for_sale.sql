@@ -42,5 +42,5 @@ do
 //	message r_formula, ' - ', cNumber, ', ', r_note to client;
 //	message sign, ', ', signIndex, ', ', v_margin to client;
 	update sGuideNomenk set margin = round(v_margin, 1) where current of cx;
-	commit;
 end for;
+end;
