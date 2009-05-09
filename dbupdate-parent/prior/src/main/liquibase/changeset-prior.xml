@@ -394,5 +394,16 @@ end;
 		<rollback/>
 
 	</changeSet>
+
+	<changeSet id="7" author="mantis-52" runOnChange="false">
+		<comment>Коэффициент деления и к-во колонок</comment>
+		<addColumn tableName="sGuideKlass">
+			<column name="kolon1" type="varchar(64)"><constraints nullable="true"/></column>
+			<column name="kolon2" type="varchar(64)"><constraints nullable="true"/></column>
+			<column name="kolon3" type="varchar(64)"><constraints nullable="true"/></column>
+			<column name="kolon4" type="varchar(64)"><constraints nullable="true"/></column>
+		</addColumn>
+	</changeSet>
+
 </databaseChangeLog>
 
