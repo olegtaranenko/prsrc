@@ -1635,7 +1635,7 @@ While Not tbNomenk.EOF
 
 AA: 'tbGuide.Seek "=", findId
 '    If tbGuide.NoMatch Then msgOfEnd ("##409")
-    sql = "SELECT klassName, parentKlassId, kolon1, kolon2, kolon3, kolon4 from sGuideKlass " & _
+    sql = "SELECT klassName, parentKlassId from sGuideKlass " & _
     "WHERE (((klassId)=" & findId & "));"
     If Not byErrSqlGetValues("##417", sql, str, findId) Then tbNomenk.Close: Exit Sub
             
@@ -1669,7 +1669,7 @@ Else
     objExel.ActiveSheet.Cells(1, 2).Font.Bold = True
     exRow = 4
     objExel.ActiveSheet.Cells(exRow - 1, 3).value = RateAsString
-    objExel.ActiveSheet.Cells(exRow - 1, 4).value = "Цены включают НДС"
+    objExel.ActiveSheet.Cells(exRow - 1, 5).value = "Цены включают НДС"
 
 
     objExel.ActiveSheet.Columns(1).columnWidth = 12.57
@@ -1707,6 +1707,7 @@ For I = 1 To UBound(NN) ' перебор всех групп
 'nomNom cod  nomName  Size    ed_Izmer2     perList            CENA_W   Web
   sql = "SELECT n.nomNom, n.nomName, n.ed_Izmer2, n.CENA_W, n.perList" _
   & ", n.cod, n.Size, n.kodel, n.margin, n.kolonok" _
+  & ", n.cenaOpt2, n.cenaOpt3, n.cenaOpt4" _
   & ", k.kolon1, k.kolon2, k.kolon3, k.kolon4" _
   & " From sGuideNomenk n " _
   & " join sguideklass k on k.klassId = n.klassId" _
@@ -1747,7 +1748,7 @@ For I = 1 To UBound(NN) ' перебор всех групп
                 objExel.ActiveSheet.Cells(exRow, 1).value = "Код"
                 objExel.ActiveSheet.Cells(exRow, 2).value = "Описание"
                 objExel.ActiveSheet.Cells(exRow, 3).value = "Размер"
-                objExel.ActiveSheet.Cells(exRow, 4).value = "Ед.измерения"
+                objExel.ActiveSheet.Cells(exRow, 4).value = "Ед.изм."
                 objExel.ActiveSheet.Cells(exRow, 5).value = "Кол-во"
                 'objExel.ActiveSheet.Cells(exRow, 6).value = "Цена УЕ"
                 With objExel.ActiveSheet.Range("A" & exRow & ":I" & exRow)
@@ -1802,14 +1803,25 @@ End If
             objExel.ActiveSheet.Cells(exRow, 6).value = cena2W 'Round(tbNomenk!CENA_W, 2)
             'if not isnull
             
-            Dim kolonok As Integer, optBasePrice As Double, margin As Double, iKolon As Integer
+            Dim kolonok As Integer, optBasePrice As Double, margin As Double, iKolon As Integer, manualOpt As Boolean
             kolonok = tbNomenk!kolonok
             margin = tbNomenk!margin
             optBasePrice = cena2W * (1 - margin / 100)
             
-            For iKolon = 2 To kolonok
-                objExel.ActiveSheet.Cells(exRow, 5 + iKolon).value = _
-                    Chr(160) & Format(calcKolonValue(optBasePrice, margin, tbNomenk!kodel, kolonok, iKolon), "0.00")
+            If kolonok > 0 Then
+                manualOpt = False
+            Else
+                manualOpt = True
+            End If
+            
+            For iKolon = 2 To Abs(kolonok)
+                If manualOpt Then
+                    objExel.ActiveSheet.Cells(exRow, 5 + iKolon).value = _
+                        Chr(160) & Format(tbNomenk("CenaOpt" & CStr(iKolon)), "0.00")
+                Else
+                    objExel.ActiveSheet.Cells(exRow, 5 + iKolon).value = _
+                        Chr(160) & Format(calcKolonValue(optBasePrice, margin, tbNomenk!kodel, Abs(kolonok), iKolon), "0.00")
+                End If
             Next iKolon
             
             cErr = setVertBorders(xlThin)

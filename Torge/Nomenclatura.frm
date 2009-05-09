@@ -2653,7 +2653,7 @@ CC: cenaFreight = Grid.TextMatrix(mousRow, nkCenaFreight)
     ValueToTableField "##mr0", "'" & str & "'", "sGuideKlass", "kolon" & CStr(iKolon), "byKlassId"
  
  ElseIf mousCol = nkMargin Or mousCol = nkKodel Or mousCol = nkKolonok Or mousCol = nkCena2W Then
-    If Not isNumericTbox(tbMobile, 0) Then Exit Sub
+    If Not isNumericTbox(tbMobile) Then Exit Sub
     If Not valueToNomencField("##104", CSng(str), getChangedField(mousCol)) Then GoTo EN1
     If Not checkNumeric(str, getMinValue(mousCol), getMaxValue(mousCol)) Then
         GoTo EN1
@@ -2662,7 +2662,7 @@ CC: cenaFreight = Grid.TextMatrix(mousRow, nkCenaFreight)
     Dim refreshGridCell As Long
     refreshGridCell = getRefreshIndex(mousCol)
     
-    Dim margin As Double, baseCena As Double, cena2W As Double
+    Dim margin As Double, baseCena As Double, cena2W As Double, manualOpt As Boolean
     If mousCol = nkCena2W Then
         cena2W = CDbl(str)
     Else
@@ -2685,6 +2685,12 @@ CC: cenaFreight = Grid.TextMatrix(mousRow, nkCenaFreight)
     Else
         kolonok = CInt(Grid.TextMatrix(mousRow, nkKolonok))
     End If
+    If kolonok > 0 Then
+        manualOpt = False
+    Else
+        manualOpt = True
+    End If
+    kolonok = Abs(kolonok)
     If mousCol = nkKodel Then
         kodel = CDbl(str)
     Else
@@ -2692,12 +2698,26 @@ CC: cenaFreight = Grid.TextMatrix(mousRow, nkCenaFreight)
     End If
     
     baseCena = cena2W * (1 - margin / 100)
+    Dim cenaOpt(3) As Double
+    If manualOpt Then
+        sql = "select cenaOpt2, cenaOpt3, cenaOpt4 from sguidenomenk where nomnom = '" & gNomNom & "'"
+        byErrSqlGetValues "##438", sql, cenaOpt(1), cenaOpt(2), cenaOpt(3)
+    End If
+    
     For I = 1 To 3
         Grid.TextMatrix(mousRow, nkKolon2 + I - 1) = ""
         If kolonok > I Then
-            Grid.TextMatrix(mousRow, nkKolon2 + I - 1) = Format(calcKolonValue(baseCena, margin, kodel, kolonok, I + 1), "0.00")
+            If manualOpt Then
+                Grid.TextMatrix(mousRow, nkKolon2 + I - 1) = Format(cenaOpt(I), "0.00")
+            Else
+                Grid.TextMatrix(mousRow, nkKolon2 + I - 1) = Format(calcKolonValue(baseCena, margin, kodel, kolonok, I + 1), "0.00")
+            End If
         End If
     Next I
+ ElseIf mousCol >= nkKolon2 And mousCol <= nkKolon4 Then
+    Dim Nkol As Integer:
+    Nkol = mousCol - nkKolon2 + 2
+    If Not valueToNomencField("##104", CSng(str), "CenaOpt" & Nkol) Then GoTo EN1
     
  End If
  Grid.TextMatrix(mousRow, mousCol) = str
@@ -2745,7 +2765,7 @@ Function getMinValue(iCol As Long) As Double
     ElseIf iCol = nkKodel Then
         getMinValue = 0
     ElseIf iCol = nkKolonok Then
-        getMinValue = 1
+        getMinValue = -4
     ElseIf iCol = nkCena2W Then
         getMinValue = 0
     End If
@@ -3187,14 +3207,22 @@ If Not tbNomenk.BOF Then
             Grid.TextMatrix(quantity, nkMargin) = tbNomenk!margin
             Grid.TextMatrix(quantity, nkKodel) = Format(tbNomenk!kodel, "0.0#")
             Grid.TextMatrix(quantity, nkKolonok) = tbNomenk!kolonok
-            Dim kolonok As Integer
+            Dim kolonok As Integer, manualOpt As Boolean
             kolonok = tbNomenk!kolonok
-    For I = 1 To kolonok
-        Grid.TextMatrix(quantity, nkKolon2 + I - 1) = ""
-        If kolonok > I Then
-            Grid.TextMatrix(quantity, nkKolon2 + I - 1) = Format(calcKolonValue(optBasePrice, tbNomenk!margin, tbNomenk!kodel, kolonok, I + 1), "0.00")
-        End If
-    Next I
+            If kolonok > 0 Then
+                manualOpt = False
+            Else
+                manualOpt = True
+            End If
+            
+            For I = 2 To Abs(kolonok)
+                Grid.TextMatrix(quantity, nkKolon2 + I - 2) = ""
+                If manualOpt Then
+                    Grid.TextMatrix(quantity, nkKolon2 + I - 2) = Format(tbNomenk("CenaOpt" & CStr(I)), "0.00")
+                Else
+                    Grid.TextMatrix(quantity, nkKolon2 + I - 2) = Format(calcKolonValue(optBasePrice, tbNomenk!margin, tbNomenk!kodel, Abs(kolonok), I + 1), "0.00")
+                End If
+            Next I
             
 
 '            Grid.TextMatrix(quantity, nkSize) = tbNomenk!Size
