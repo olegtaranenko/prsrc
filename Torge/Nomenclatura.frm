@@ -780,12 +780,12 @@ Unload Me
 End Sub
 
 Private Sub cmHide_Click()
-Dim I As Integer
+Dim i As Integer
 
-For I = Grid.row To Grid.RowSel
+For i = Grid.row To Grid.RowSel
     Grid.RemoveItem Grid.row
     quantity = quantity - 1
-Next I
+Next i
 
 End Sub
 
@@ -801,7 +801,7 @@ End Sub
 
 Sub initCol(curCol As Integer, colName As String, colWdth As Integer, _
 Optional align As String = "")
-Static I As Integer
+Static i As Integer
 
 If curCol = -99 Then
     nkNomer = -1
@@ -845,16 +845,16 @@ If curCol = -99 Then
     nkMark = -1
 
     Grid.Cols = 2
-    I = 0
+    i = 0
 Else
-    I = I + 1
-    If I > 1 Then Grid.Cols = Grid.Cols + 1
-    curCol = I
+    i = i + 1
+    If i > 1 Then Grid.Cols = Grid.Cols + 1
+    curCol = i
 End If
 
-Grid.colWidth(I) = colWdth
-If align <> "" Then Grid.ColAlignment(I) = align
-Grid.TextMatrix(0, I) = colName
+Grid.colWidth(i) = colWdth
+If align <> "" Then Grid.ColAlignment(i) = align
+Grid.TextMatrix(0, i) = colName
 End Sub
 
 Sub controlGridHight(Optional max As String = "")
@@ -931,7 +931,7 @@ tbNomenk.Close
 End Function
 
 Sub setRegim()
-Dim delta As Integer, str As String, str2 As String, I As Integer, j As Integer
+Dim delta As Integer, str As String, str2 As String, i As Integer, j As Integer
 frmMode = ""
 flKlassAdd = False
 gKlassId = 0 'необходим  для добавления класса
@@ -1007,10 +1007,10 @@ ElseIf Regim = "asOstat" Then
     initCol nkPerList, "Коэф.производства", 735
     initCol nkCena, "Цена факт.", 660
     initCol nkBegOstat, "Нач.остатки", 0
-    For I = 0 To Documents.lbInside.ListCount - 1
-        initCol nkSkladOst, Documents.lbInside.List(I), 750
-    Next I
-    nkSkladOst = nkSkladOst - I + 1
+    For i = 0 To Documents.lbInside.ListCount - 1
+        initCol nkSkladOst, Documents.lbInside.List(i), 750
+    Next i
+    nkSkladOst = nkSkladOst - i + 1
     initCol nkEndOstat, "Ф.остатки", 870      'парам-ры уст-ся в ckEndDate_Click
     initCol nkDostup, "Д.остатки", 0 '
     initCol nkMark, "Маркер", 0      'только для подсветки
@@ -1302,7 +1302,7 @@ End If
 End Sub
 
 Private Sub Form_Load()
-Dim I As Integer
+Dim i As Integer
 
 oldHeight = Me.Height
 oldWidth = Me.Width
@@ -1310,13 +1310,13 @@ isRegimLoad = False
 oldRegim = "##undef##"
 quantity = 0
 cbInside.AddItem "все"
-For I = 0 To Documents.lbInside.ListCount - 1
-    cbInside.AddItem Documents.lbInside.List(I)
-Next I
+For i = 0 To Documents.lbInside.ListCount - 1
+    cbInside.AddItem Documents.lbInside.List(i)
+Next i
 
-For I = 0 To Documents.lbSource.ListCount - 1
-    lbSource.AddItem Documents.lbSource.List(I)
-Next I
+For i = 0 To Documents.lbSource.ListCount - 1
+    lbSource.AddItem Documents.lbSource.List(i)
+Next i
 'lbSource.Height = 195 * lbSource.ListCount + 100
 
 cbInside.ListIndex = 0
@@ -1325,7 +1325,7 @@ End Sub
 
 Sub loadKlass()
 Dim Key As String, pKey As String, k() As String, pK()  As String
-Dim I As Integer, iErr As Integer, groupText As String
+Dim i As Integer, iErr As Integer, groupText As String
 
 If Regim = "sourOborot" Then
 '    i = i
@@ -1378,16 +1378,16 @@ tbKlass.Close
 
 While bilo ' необходимы еще проходы
   bilo = False
-  For I = 1 To UBound(k())
-    If k(I) <> "" Then
+  For i = 1 To UBound(k())
+    If k(i) <> "" Then
         On Error GoTo ERR2 ' назначить еще проход
-        Set Node = tv.Nodes.Add(pK(I), tvwChild, k(I), NN(I))
+        Set Node = tv.Nodes.Add(pK(i), tvwChild, k(i), NN(i))
         On Error GoTo 0
-        k(I) = ""
+        k(i) = ""
         Node.Sorted = True
     End If
 NXT:
-  Next I
+  Next i
 Wend
 tv.Nodes.Item("k0").Expanded = True
 
@@ -1514,7 +1514,7 @@ End Sub
 
 
 Private Sub Grid_DblClick()
-Dim str As String, I As Integer
+Dim str As String, i As Integer
 
 If Grid.CellBackColor <> &H88FF88 _
  And Not (Regim = "" And mousRow = 0 And mousCol >= nkCena2W And mousCol <= nkKolon4) _
@@ -1538,15 +1538,15 @@ If Regim = "" Then
         tbPerList.Text = Grid.TextMatrix(mousRow, nkPerList)
         If Not IsNumeric(tbPerList.Text) Then tbPerList.Text = 1
         lbEdIzm2.ListIndex = 0
-        For I = 1 To lbEdIzm2.ListCount - 1
-            If lbEdIzm2.List(I) = Grid.TextMatrix(mousRow, nkEdIzm2) Then _
-                lbEdIzm2.ListIndex = I
-        Next I
+        For i = 1 To lbEdIzm2.ListCount - 1
+            If lbEdIzm2.List(i) = Grid.TextMatrix(mousRow, nkEdIzm2) Then _
+                lbEdIzm2.ListIndex = i
+        Next i
         lbEdIzm.ListIndex = 0
-        For I = 1 To lbEdIzm.ListCount - 1
-            If lbEdIzm.List(I) = Grid.TextMatrix(mousRow, nkEdIzm) Then _
-                lbEdIzm.ListIndex = I
-        Next I
+        For i = 1 To lbEdIzm.ListCount - 1
+            If lbEdIzm.List(i) = Grid.TextMatrix(mousRow, nkEdIzm) Then _
+                lbEdIzm.ListIndex = i
+        Next i
         Frame1.Visible = True
         Frame1.ZOrder
         noClick = False
@@ -1718,7 +1718,7 @@ End If
 End Sub
 
 Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
-Dim I As Integer
+Dim i As Integer
 
 If Grid.MouseRow = 0 And Shift = 2 Then
         MsgBox "ColWidth = " & Grid.colWidth(Grid.MouseCol)
@@ -1734,9 +1734,9 @@ ElseIf Button = 2 And frmMode = "" Then
     End If
     If quantity > 0 And Grid.row <> Grid.RowSel Then
         ReDim NN(Abs(Grid.RowSel - Grid.row) + 1)
-        For I = Grid.row To Grid.RowSel
-            NN(I - Grid.row + 1) = Grid.TextMatrix(I, nkNomer) 'только для перемещения
-        Next I
+        For i = Grid.row To Grid.RowSel
+            NN(i - Grid.row + 1) = Grid.TextMatrix(i, nkNomer) 'только для перемещения
+        Next i
 '        mnKarta.Visible = False
 '        mnKartaAdd.Visible = False
         mnAdd2.Visible = False
@@ -1965,11 +1965,11 @@ End Sub
 
 
 Private Sub mnAdd_Click()
-Static I As Integer
+Static i As Integer
 Dim str  As String, id As Integer
 controlVisible False
-I = I + 1
-str = "новый " & I
+i = i + 1
+str = "новый " & i
 'cmClassAdd.Enabled = False
 'flKlassAdd = True
 
@@ -2164,7 +2164,7 @@ Dim queryTimeout As Variant
 End Sub
 
 Private Sub mnDel_Click()
-Dim I As Integer
+Dim i As Integer
 If MsgBox("Для удаления класса  нажмите <Да>." & Chr(13) & Chr(13) & _
 "Удаление возможно, если класс не содержит элементов и других подклассов", _
 vbYesNo Or vbDefaultButton2, "Удалить '" & tv.SelectedItem.Text & _
@@ -2172,8 +2172,8 @@ vbYesNo Or vbDefaultButton2, "Удалить '" & tv.SelectedItem.Text & _
 
 sql = "DELETE from sGuideKlass " & _
       "WHERE (((sGuideKlass.klassId)=" & gKlassId & "));"
-I = myExecute("##114", sql, -198)
-If I = -2 Then
+i = myExecute("##114", sql, -198)
+If i = -2 Then
      MsgBox "Нельзя удалять непустой класс, сначала удалите входящие в " & _
      "него элементы.", , "Удаление невозможно !"
     tv.SetFocus
@@ -2235,7 +2235,7 @@ Unload Me
 End Sub
 
 Private Sub mnInsert_Click()
-Dim str As String, I As Integer
+Dim str As String, i As Integer
     
     frmMode = ""
     Grid.CellForeColor = vbBlack
@@ -2243,10 +2243,10 @@ Dim str As String, I As Integer
 '    gNomNom = replNomNom
     Me.MousePointer = flexDefault
     str = Mid$(tv.SelectedItem.Key, 2)
-For I = 1 To UBound(NN)
-    gNomNom = NN(I)
+For i = 1 To UBound(NN)
+    gNomNom = NN(i)
     ValueToTableField "##112", str, "sGuideNomenk", "klassId", "byNomNom"
-Next I
+Next i
     tv_NodeClick tv.SelectedItem
     On Error Resume Next
     tv.SetFocus
@@ -2254,7 +2254,7 @@ Next I
 End Sub
 
 Private Sub mnKarta_Click()
-Dim I As Integer, lenght As Integer
+Dim i As Integer, lenght As Integer
 
 Grid.CellBackColor = vbWhite
 KartaDMC.Grid.Visible = False
@@ -2268,16 +2268,16 @@ Else
     KartaDMC.controlVisible False
 End If
 ReDim DMCnomNom(lenght)
-For I = 1 To lenght
-    DMCnomNom(I) = Grid.TextMatrix(Grid.row + I - 1, nkNomer)
-Next I
-I = UBound(DMCnomNom)
+For i = 1 To lenght
+    DMCnomNom(i) = Grid.TextMatrix(Grid.row + i - 1, nkNomer)
+Next i
+i = UBound(DMCnomNom)
 
 KartaDMC.Show
 End Sub
 
 Private Sub mnKartaAdd_Click()
-Dim I As Integer, str As String, lenght As Integer, newLen As Integer
+Dim i As Integer, str As String, lenght As Integer, newLen As Integer
 Dim j As Integer, l As Long
 Grid.CellBackColor = vbWhite
 If KartaDMC.cmCheck.Visible Then KartaDMC.removeHead
@@ -2288,8 +2288,8 @@ lenght = UBound(DMCnomNom)
 newLen = lenght
 Me.MousePointer = flexHourglass
 'KartaDMC.Grid.Visible = False
-For I = Grid.row To Grid.RowSel
-    str = Grid.TextMatrix(I, nkNomer)
+For i = Grid.row To Grid.RowSel
+    str = Grid.TextMatrix(i, nkNomer)
     For j = 1 To lenght ' может этот эл-т был уже добавлен
         If DMCnomNom(j) = str Then GoTo NXT
     Next j
@@ -2298,7 +2298,7 @@ For I = Grid.row To Grid.RowSel
     DMCnomNom(newLen) = str ' чтобы корректно работал перерасчет Карты после правки в документе
     KartaDMC.getKartaDMC str
 NXT:
-Next I
+Next i
 KartaDMC.Show
 'KartaDMC.Grid.Visible = True
 Me.MousePointer = flexDefault
@@ -2306,7 +2306,7 @@ End Sub
 
 Private Sub mnKartaVenture_Click()
 Dim selectedRows As Integer
-Dim I As Integer
+Dim i As Integer
 Dim curRow As Integer, startRow As Integer, stopRow As Integer
     
     selectedRows = Abs(Grid.row - Grid.RowSel) + 1
@@ -2320,11 +2320,11 @@ Dim curRow As Integer, startRow As Integer, stopRow As Integer
         stopRow = Grid.RowSel
     End If
     
-    I = 0
+    i = 0
     curRow = Grid.row
     For curRow = startRow To stopRow
-        DMCnomNom(I + 1) = Grid.TextMatrix(curRow, nkNomer)
-        I = I + 1
+        DMCnomNom(i + 1) = Grid.TextMatrix(curRow, nkNomer)
+        i = i + 1
     Next curRow
     
     Me.MousePointer = flexHourglass
@@ -2339,7 +2339,7 @@ Dim curRow As Integer, startRow As Integer, stopRow As Integer
 End Sub
 
 Private Sub mnPriceHistory_Click()
-Dim stRow As Long, enRow As Long, I As Integer
+Dim stRow As Long, enRow As Long, i As Integer
 Dim lNomnom As String, oldPrevCost As String, newPrevCost As Variant
     If mousCol <> nkPrevCost Then
     ' История изменения цены
@@ -2353,9 +2353,9 @@ Dim lNomnom As String, oldPrevCost As String, newPrevCost As Variant
             enRow = Grid.RowSel
         End If
         If MsgBox("Вы уверены, что хотите вернуть предыдущую цену?", vbYesNo Or vbDefaultButton2, "Подтверждение") <> vbYes Then Exit Sub
-        For I = stRow To enRow
-            lNomnom = Grid.TextMatrix(I, nkNomer)
-            oldPrevCost = Grid.TextMatrix(I, nkPrevCost)
+        For i = stRow To enRow
+            lNomnom = Grid.TextMatrix(i, nkNomer)
+            oldPrevCost = Grid.TextMatrix(i, nkPrevCost)
             newPrevCost = Null
             If oldPrevCost <> "--" Then
                 sql = "select wf_price_revert ( '" & lNomnom & "', " & oldPrevCost & ")"
@@ -2363,10 +2363,10 @@ Dim lNomnom As String, oldPrevCost As String, newPrevCost As Variant
                 If IsNull(newPrevCost) Then
                     newPrevCost = "--"
                 End If
-                Grid.TextMatrix(I, nkCena) = oldPrevCost
-                Grid.TextMatrix(I, nkPrevCost) = newPrevCost
+                Grid.TextMatrix(i, nkCena) = oldPrevCost
+                Grid.TextMatrix(i, nkPrevCost) = newPrevCost
             End If
-        Next I
+        Next i
     End If
 End Sub
 
@@ -2526,7 +2526,7 @@ lbHide
 End Sub
 
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim str As String, I As Integer, old As String, row As Long, col As Integer, newPrevCost As String
+Dim str As String, i As Integer, old As String, row As Long, col As Integer, newPrevCost As String
 Dim s As Single, result As String 'field() As Variant
 
 
@@ -2575,7 +2575,7 @@ If KeyCode = vbKeyReturn Then
         tbNomenk!CENA_W = Grid.TextMatrix(mousRow, nkCena2W)
         sql = "SELECT sourceId from sGuideSource WHERE (((sourceName)='" & _
         Grid.TextMatrix(mousRow, nkSource) & "'));"
-        If byErrSqlGetValues("##438", sql, I) Then tbNomenk!sourId = I
+        If byErrSqlGetValues("##438", sql, i) Then tbNomenk!sourId = i
         tbNomenk!Size = Grid.TextMatrix(mousRow, nkSize)
     ElseIf frmMode = "nomenkAdd" Then
         tbNomenk.AddNew
@@ -2704,16 +2704,16 @@ CC: cenaFreight = Grid.TextMatrix(mousRow, nkCenaFreight)
         byErrSqlGetValues "##438", sql, cenaOpt(1), cenaOpt(2), cenaOpt(3)
     End If
     
-    For I = 1 To 3
-        Grid.TextMatrix(mousRow, nkKolon2 + I - 1) = ""
-        If kolonok > I Then
+    For i = 1 To 3
+        Grid.TextMatrix(mousRow, nkKolon2 + i - 1) = ""
+        If kolonok > i Then
             If manualOpt Then
-                Grid.TextMatrix(mousRow, nkKolon2 + I - 1) = Format(cenaOpt(I), "0.00")
+                Grid.TextMatrix(mousRow, nkKolon2 + i - 1) = Format(cenaOpt(i), "0.00")
             Else
-                Grid.TextMatrix(mousRow, nkKolon2 + I - 1) = Format(calcKolonValue(baseCena, margin, kodel, kolonok, I + 1), "0.00")
+                Grid.TextMatrix(mousRow, nkKolon2 + i - 1) = Format(calcKolonValue(baseCena, margin, kodel, kolonok, i + 1), "0.00")
             End If
         End If
-    Next I
+    Next i
  ElseIf mousCol >= nkKolon2 And mousCol <= nkKolon4 Then
     Dim Nkol As Integer:
     Nkol = mousCol - nkKolon2 + 2
@@ -2959,7 +2959,7 @@ End Sub
 
 Sub loadKlassNomenk(Optional filtr As String = "")
 Dim il As Long, strWhere As String, befWhere  As String
-Dim insWhere As String, strN As String, I As Integer, s As Single
+Dim insWhere As String, strN As String, i As Integer, s As Single
 Dim beg As Single, prih As Double, rash As Double, oldNow As Single
 Dim Cena1 As Double
 
@@ -3161,14 +3161,14 @@ If Not tbNomenk.BOF Then
         Grid.TextMatrix(quantity, nkPerList) = tbNomenk!perList      '
  '       beg = beg * gain:
 '        rash = 0 ' это б. сумма по всем складам
-        For I = 1 To Documents.lbInside.ListCount
-          prih = PrihodRashod2("+", strWhere, I) - PrihodRashod2("-", strWhere, I)
+        For i = 1 To Documents.lbInside.ListCount
+          prih = PrihodRashod2("+", strWhere, i) - PrihodRashod2("-", strWhere, i)
 '          prih = beg + gain * prih
           prih = gain * prih
 '          rash = rash + prih
-          Grid.TextMatrix(quantity, nkSkladOst + I - 1) = Round(prih, 2)
+          Grid.TextMatrix(quantity, nkSkladOst + i - 1) = Round(prih, 2)
 '          beg = 0 ' на остальных складах
-        Next I
+        Next i
 '        Grid.TextMatrix(quantity, nkEndOstat) = Round(rash, 2)
         Grid.TextMatrix(quantity, nkEndOstat) = Round(gain * FO, 2) ' строка д.б после вызова nomencDostupOstatki
     Else
@@ -3188,11 +3188,11 @@ If Not tbNomenk.BOF Then
             End If
             adjustKolonHeaders (gKlassId)
             Cena1 = tbNomenk!Cena1
-            Grid.TextMatrix(quantity, nkCENA1) = Cena1
+            Grid.TextMatrix(quantity, nkCENA1) = Format(Cena1, "0.00")
             Grid.TextMatrix(quantity, nkVES) = tbNomenk!ves
             Grid.TextMatrix(quantity, nkSTAVKA) = tbNomenk!STAVKA
             Grid.TextMatrix(quantity, 0) = tbNomenk!formula
-            Grid.TextMatrix(quantity, nkCenaFreight) = cenaFreight
+            Grid.TextMatrix(quantity, nkCenaFreight) = Format(cenaFreight, "0.00")
             Grid.TextMatrix(quantity, nkFormulaNom) = tbNomenk!FormulaNom
             Grid.TextMatrix(quantity, nkYesNo) = tbNomenk!YesNo
             If Not IsNull(tbNomenk!SourceName) Then _
@@ -3215,14 +3215,14 @@ If Not tbNomenk.BOF Then
                 manualOpt = True
             End If
             
-            For I = 2 To Abs(kolonok)
-                Grid.TextMatrix(quantity, nkKolon2 + I - 2) = ""
+            For i = 2 To Abs(kolonok)
+                Grid.TextMatrix(quantity, nkKolon2 + i - 2) = ""
                 If manualOpt Then
-                    Grid.TextMatrix(quantity, nkKolon2 + I - 2) = Format(tbNomenk("CenaOpt" & CStr(I)), "0.00")
+                    Grid.TextMatrix(quantity, nkKolon2 + i - 2) = Format(tbNomenk("CenaOpt" & CStr(i)), "0.00")
                 Else
-                    Grid.TextMatrix(quantity, nkKolon2 + I - 2) = Format(calcKolonValue(optBasePrice, tbNomenk!margin, tbNomenk!kodel, Abs(kolonok), I + 1), "0.00")
+                    Grid.TextMatrix(quantity, nkKolon2 + i - 2) = Format(calcKolonValue(optBasePrice, tbNomenk!margin, tbNomenk!kodel, Abs(kolonok), i + 1), "0.00")
                 End If
-            Next I
+            Next i
             
 
 '            Grid.TextMatrix(quantity, nkSize) = tbNomenk!Size
@@ -3436,7 +3436,7 @@ End Sub
 
 
 Private Sub tv_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim I As Integer, str As String
+Dim i As Integer, str As String
     If Regim = "sourOborot" Then Exit Sub
     
     'If KeyCode = vbKeyReturn Or KeyCode = vbKeyEscape Then
