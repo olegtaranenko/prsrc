@@ -2060,8 +2060,8 @@ End Function
 
 'не записыват неуникальное значение, дл€ полей, где такие
 'значени€ запрещены. ј  генерит при этом error?
-Function ValueToTableField(myErrCod As String, value As String, table As String, _
-field As String, Optional by As String = "", Optional numorder As Variant) As Integer
+Function ValueToTableField(myErrCod As String, ByVal value As String, ByVal table As String, _
+ByVal field As String, Optional by As String = "", Optional numorder As Variant) As Integer
 Dim sql As String, byStr As String  ', numOrd As String
 
 

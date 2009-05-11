@@ -499,6 +499,9 @@ Begin VB.Form Orders
       Begin VB.Menu mnNoArhivFiltr 
          Caption         =   "Фильтр ""Заказы в обработке"""
       End
+      Begin VB.Menu mnRemoveFirma 
+         Caption         =   "Обнулить поле"
+      End
       Begin VB.Menu mnSep2 
          Caption         =   "-"
          Visible         =   0   'False
@@ -1862,10 +1865,24 @@ If mousCol = orVenture Then
     End If
      listBoxInGridCell lbVenture, Grid, Grid.TextMatrix(mousRow, orVenture)
 ElseIf mousCol = orFirma Then
-    
-    If Grid.TextMatrix(mousRow, orVenture) <> "" Then
-        ' Проверить, если заказ входит в счет вместе с другим, то не позволить даже поднять меню
+    If Grid.TextMatrix(mousRow, orFirma) = "" Or Grid.TextMatrix(mousRow, orVenture) = "" Then
+        mnRemoveFirma.Visible = False
+        If Grid.TextMatrix(mousRow, orVenture) = "" And Grid.TextMatrix(mousRow, orFirma) <> "" Then
+            mnRemoveFirma.Visible = True
+        End If
+        mnBillFirma.Visible = False
+        mnQuickBill(0).Visible = False
+        For I = mnQuickBill.UBound To 1 Step -1
+            Unload mnQuickBill(I)
+        Next I
+    Else
+        mnRemoveFirma.Visible = True
+        If Grid.TextMatrix(mousRow, orVenture) <> "" Then
+            mnRemoveFirma.Visible = False
+        End If
         
+            ' Проверить, если заказ входит в счет вместе с другим, то не позволить даже поднять меню
+            
         billCompany = "Установить"
     
         If Grid.CellForeColor = vbRed Then
@@ -1923,16 +1940,11 @@ ElseIf mousCol = orFirma Then
         If I = 0 Then
             mnQuickBill(0).Visible = False
         End If
-        
+    
 '        success = byErrSqlGetValues("##102.2", sql, lastBillCompany)
-        
-    Else
-        mnBillFirma.Visible = False
-        mnQuickBill(0).Visible = False
-        For I = mnQuickBill.UBound To 1 Step -1
-            Unload mnQuickBill(I)
-        Next I
     End If
+    
+        
     
     Me.PopupMenu mnContext
 ElseIf mousCol = orCeh Then
@@ -2736,6 +2748,24 @@ End Sub
 Private Sub mnQuickBill_Click(Index As Integer)
     If Index = 0 Then Exit Sub
     FirmComtex.makeBillChoice mnQuickBill(Index).Tag, Grid.TextMatrix(mousRow, orServername)
+End Sub
+
+Private Sub mnRemoveFirma_Click()
+Dim ret As Boolean, fldName As String
+    If Grid.TextMatrix(mousRow, orVenture) <> "" Then
+        MsgBox "Невозможно обнулить поле, пока заказ проходит через предприятие." _
+        & vbCr & "Сначала нужно обнулить поле предприятия." _
+        , vbExclamation Or vbOKOnly, "Исправить и продолжить"
+        Exit Sub
+    End If
+
+    ret = orderUpdate("##firm2null", 0, "orders", "firmId")
+    If Not ret Then
+        Dim str As String
+        str = manId(cbM.ListIndex)
+        orderUpdate "##firm2null", str, "Orders", "lastManagId"
+        Grid.TextMatrix(mousRow, orFirma) = ""
+    End If
 End Sub
 
 Private Sub mnReports_Click()
