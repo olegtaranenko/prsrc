@@ -351,7 +351,7 @@ end;
 			<column name="margin" type="float"><constraints nullable="true"/></column>
 		</addColumn>
 	</changeSet>
-
+<!--
 	<changeSet id="2" author="mantis-52" runOnChange="false">
 		<comment>Проставить значения маржи из формулы.</comment>
 		<executeCommand executable="dbisqlc.exe">
@@ -362,7 +362,7 @@ end;
 		</executeCommand>
 		<rollback/>
 	</changeSet>
-
+-->
 	<changeSet id="3" author="mantis-52" runOnChange="false">
 		<comment>Вместо номера формулы - маржа - Сбросить внешний ключ.</comment>
 		<dropForeignKeyConstraint baseTableName="sGuideNomenk" constraintName="sguideformulssguidenomenk1"/>
@@ -383,7 +383,7 @@ end;
 		</addColumn>
 	</changeSet>
 
-	<changeSet id="6" author="mantis-52" runOnChange="true">
+	<changeSet id="6" author="mantis-52" runOnChange="false">
 		<comment>Коэффициент деления и к-во колонок: значения по умолчанию</comment>
 		<update tableName="sGuideNomenk">
 			<column name="kodel" value="0.5"/>
@@ -412,6 +412,24 @@ end;
 			<column name="CenaOpt3" type="float"><constraints nullable="true"/></column>
 			<column name="CenaOpt4" type="float"><constraints nullable="true"/></column>
 		</addColumn>
+	</changeSet>
+
+	<changeSet id="1" author="mantis-55" runOnChange="false">
+		<comment>Изменить название фирмы в комтехе при редактировании имени в справочнике фирм в приоре и продажах.</comment>
+		<sqlFile path="triggers/wf_update_firm.guidefirms.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="triggers/wf_update_firm.bayguidefirms.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="2" author="mantis-55" runOnChange="false">
+		<comment>Ошибка при заведении заказа для фирмы Фараон</comment>
+		<executeCommand executable="dbisqlc.exe">
+			<arg value="-c"/>
+			<arg value="DSN=prior;UID=dba;PWD=sql"/>
+			<arg value="-q"/>
+			<arg value="\dev\prsrc\trunk\dbupdate-parent\prior\target\classes\mainteinance\mantis-55.sql"/>
+		</executeCommand>
+		<rollback/>
 	</changeSet>
 
 </databaseChangeLog>
