@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCTL.OCX"
+Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "mscomctl.ocx"
 Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Products 
    BackColor       =   &H8000000A&
@@ -1524,9 +1524,9 @@ If noOpen = "" Then tbProduct.Close
 End Function
 
 
-Sub PriceToExcel()
+Sub PriceToExcel(Optional Rub As String = "")
 Dim i As Integer, findId As Integer, str As String
-
+Dim rate As Double, curRate As Double
 
 'Из Спарвочника Готовых изделий получаем Список Id всех групп(серий),
 'в которых есть хотя бы одно изделие.
@@ -1548,7 +1548,7 @@ While Not tbProduct.EOF
 AA: ' tbGuide.Seek "=", findId
 '    If tbGuide.NoMatch Then msgOfEnd ("##414")
     sql = "SELECT seriaName, parentSeriaId from sGuideSeries " & _
-    "WHERE (((seriaId)=" & findId & "));"
+    "WHERE seriaId = " & findId
     If Not byErrSqlGetValues("##414", sql, str, findId) Then tbProduct.Close: Exit Sub
     
 '    NN(i) = tbGuide!seriaName & " / " & NN(i) ' к имени добавляем Id
@@ -1576,9 +1576,15 @@ On Error GoTo ERR2
     objExel.ActiveSheet.Cells(1, 2).value = "Прайс-лист на " & Format(Now(), "dd.mm.yy")
     objExel.ActiveSheet.Cells(1, 2).Font.Bold = True
     
-    exRow = 4
-    objExel.ActiveSheet.Cells(exRow - 1, 4).value = RateAsString
-    objExel.ActiveSheet.Cells(exRow - 1, 7).value = "Цены включают НДС"
+    curRate = getCurrentRate
+    If Rub = "" Then
+        exRow = 4
+        objExel.ActiveSheet.Cells(exRow - 1, 4).value = RateAsString(curRate)
+        objExel.ActiveSheet.Cells(exRow - 1, 7).value = "Цены включают НДС"
+        curRate = 1
+    Else
+        exRow = 3
+    End If
     
     objExel.ActiveSheet.Columns(1).columnWidth = 10
     objExel.ActiveSheet.Columns(2).columnWidth = 10
@@ -1599,9 +1605,9 @@ For i = 1 To UBound(NN) ' перебор всех групп
 'Справ-ка Готовых изделий из программы stime:
 '"Номер"    "Код"   "web"   "Описание"    Размер   "1-5"   "Стр."
 'SortNom   prName    web    prDescript    prSize   Cena4    page
-  
+
   sql = "SELECT prName, prDescript, prSize, Cena4, page From sGuideProducts " & _
-  "Where (((prSeriaId)=" & findId & " AND ((web) = 'web'))) ORDER BY SortNom;" 'prName;"
+  "Where prSeriaId = " & findId & " AND web = 'web' ORDER BY SortNom"
 
   Set tbProduct = myOpenRecordSet("##415", sql, dbOpenDynaset)
   If Not tbProduct Is Nothing Then
@@ -1651,11 +1657,11 @@ For i = 1 To UBound(NN) ' перебор всех групп
         objExel.ActiveSheet.Cells(exRow, 1).value = tbProduct!prName
         objExel.ActiveSheet.Cells(exRow, 2).value = tbProduct!prSize
         objExel.ActiveSheet.Cells(exRow, 3).value = tbProduct!prDescript
-        objExel.ActiveSheet.Cells(exRow, 4).value = Chr(160) & Format(tbProduct!Cena4, "0.00")
+        objExel.ActiveSheet.Cells(exRow, 4).value = Chr(160) & Format(tbProduct!Cena4 * curRate, "0.00")
         If gain2 > 0 Then
-            objExel.ActiveSheet.Cells(exRow, 5).value = Chr(160) & Format(Round(tbProduct!Cena4 * gain2, 1), "0.00")
-            objExel.ActiveSheet.Cells(exRow, 6).value = Chr(160) & Format(Round(tbProduct!Cena4 * gain3, 1), "0.00")
-            objExel.ActiveSheet.Cells(exRow, 7).value = Chr(160) & Format(Round(tbProduct!Cena4 * gain4, 1), "0.00")
+            objExel.ActiveSheet.Cells(exRow, 5).value = Chr(160) & Format(Round(tbProduct!Cena4 * curRate * gain2, 1), "0.00")
+            objExel.ActiveSheet.Cells(exRow, 6).value = Chr(160) & Format(Round(tbProduct!Cena4 * curRate * gain3, 1), "0.00")
+            objExel.ActiveSheet.Cells(exRow, 7).value = Chr(160) & Format(Round(tbProduct!Cena4 * curRate * gain4, 1), "0.00")
         End If
         objExel.ActiveSheet.Cells(exRow, 8).value = " " & tbProduct!Page
         cErr = setVertBorders(xlThin)
