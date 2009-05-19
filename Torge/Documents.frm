@@ -396,9 +396,6 @@ Begin VB.Form Documents
       Begin VB.Menu mnPriceToExcel 
          Caption         =   "Web прайс в Excel"
       End
-      Begin VB.Menu mnPriceToExcelRub 
-         Caption         =   "Web прайс в Excel (Рубли)"
-      End
       Begin VB.Menu mnFilters 
          Caption         =   "WEB фильтры"
          Visible         =   0   'False

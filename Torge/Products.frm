@@ -1657,11 +1657,11 @@ For i = 1 To UBound(NN) ' перебор всех групп
         objExel.ActiveSheet.Cells(exRow, 1).value = tbProduct!prName
         objExel.ActiveSheet.Cells(exRow, 2).value = tbProduct!prSize
         objExel.ActiveSheet.Cells(exRow, 3).value = tbProduct!prDescript
-        objExel.ActiveSheet.Cells(exRow, 4).value = Chr(160) & Format(tbProduct!Cena4 * curRate, "0.00")
+        objExel.ActiveSheet.Cells(exRow, 4).value = Format(tbProduct!Cena4 * curRate, "0.00")
         If gain2 > 0 Then
-            objExel.ActiveSheet.Cells(exRow, 5).value = Chr(160) & Format(Round(tbProduct!Cena4 * curRate * gain2, 1), "0.00")
-            objExel.ActiveSheet.Cells(exRow, 6).value = Chr(160) & Format(Round(tbProduct!Cena4 * curRate * gain3, 1), "0.00")
-            objExel.ActiveSheet.Cells(exRow, 7).value = Chr(160) & Format(Round(tbProduct!Cena4 * curRate * gain4, 1), "0.00")
+            objExel.ActiveSheet.Cells(exRow, 5).value = Format(Round(tbProduct!Cena4 * curRate * gain2, 1), "0.00")
+            objExel.ActiveSheet.Cells(exRow, 6).value = Format(Round(tbProduct!Cena4 * curRate * gain3, 1), "0.00")
+            objExel.ActiveSheet.Cells(exRow, 7).value = Format(Round(tbProduct!Cena4 * curRate * gain4, 1), "0.00")
         End If
         objExel.ActiveSheet.Cells(exRow, 8).value = " " & tbProduct!Page
         cErr = setVertBorders(xlThin)
