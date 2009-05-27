@@ -3027,6 +3027,12 @@ ElseIf gKlassType = "p" Then
 Else
     strWhere = "WHERE sGuideNomenk.klassId = " & gKlassId
 End If
+
+If IsNumeric(gKlassId) Then
+    adjustKolonHeaders gKlassId, gKlassType
+End If
+
+
 sql = "SELECT ph.prev_cost, sGuideNomenk.*, f.Formula, " _
 & vbCr & "sGuideSource.sourceName, ph.nomnom as priceChanged " _
 & vbCr & "FROM sGuideNomenk " _
@@ -3034,7 +3040,7 @@ sql = "SELECT ph.prev_cost, sGuideNomenk.*, f.Formula, " _
 & vbCr & " JOIN sGuideFormuls f ON sGuideNomenk.formulaNom = f.nomer " _
 & vbCr & " left join (select h.cost as prev_cost, h.nomnom from spricehistory h join (select max(change_date) as change_date, nomnom from spricehistory m group by nomnom) mx on mx.nomnom = h.nomnom and mx.change_date = h.change_date ) ph on ph.nomnom = sguidenomenk.nomnom  " _
 & vbCr & strWhere & " ORDER BY sGuideNomenk.nomNom ;"
-'Debug.Print sql
+Debug.Print sql
 'MsgBox sql
 Set tbNomenk = myOpenRecordSet("##165", sql, dbOpenForwardOnly) ' dbOpenDynaset)
 If tbNomenk Is Nothing Then GoTo EN1
@@ -3186,7 +3192,6 @@ If Not tbNomenk.BOF Then
             Else
                 Grid.TextMatrix(quantity, nkPrevCost) = "--"
             End If
-            adjustKolonHeaders (gKlassId)
             Cena1 = tbNomenk!Cena1
             Grid.TextMatrix(quantity, nkCENA1) = Format(Cena1, "0.00")
             Grid.TextMatrix(quantity, nkVES) = tbNomenk!ves
@@ -3200,7 +3205,10 @@ If Not tbNomenk.BOF Then
             If Not IsNull(tbNomenk!perList) Then _
                 Grid.TextMatrix(quantity, nkPerList) = tbNomenk!perList
 
-            Grid.TextMatrix(quantity, nkCena1W) = Format(cenaFreight / (1 - tbNomenk!margin / 100), "0.00")
+            If IsNumeric(cenaFreight) Then
+                Grid.TextMatrix(quantity, nkCena1W) = Format(cenaFreight / (1 - tbNomenk!margin / 100), "0.00")
+            End If
+            
             Grid.TextMatrix(quantity, nkCena2W) = Format(tbNomenk!CENA_W, "0.00")
             Dim optBasePrice As Double
             optBasePrice = tbNomenk!CENA_W * (1 - tbNomenk!margin / 100)
@@ -3258,34 +3266,42 @@ Else
 End If
 End Sub
 
-Sub adjustKolonHeaders(ByVal KlassId As Integer)
+Sub adjustKolonHeaders(ByVal KlassId As Integer, ByVal KlassType)
 Dim Kolon1 As String
 Dim Kolon2 As String
 Dim Kolon3 As String
 Dim Kolon4 As String
-    sql = "SELECT kolon1, kolon2, kolon3, kolon4 from sGuideKlass where klassId = " & KlassId
-    byErrSqlGetValues "##ACH", sql, Kolon1, Kolon2, Kolon3, Kolon4
-    If "" <> IIf(IsNull(Kolon1), "", Kolon1) Then
-        Grid.TextMatrix(0, nkCena2W) = Kolon1
+
+    If KlassType <> "p" Then
+        sql = "SELECT kolon1, kolon2, kolon3, kolon4 from sGuideKlass where klassId = " & KlassId
+        byErrSqlGetValues "##ACH", sql, Kolon1, Kolon2, Kolon3, Kolon4
+        If "" <> IIf(IsNull(Kolon1), "", Kolon1) Then
+            Grid.TextMatrix(0, nkCena2W) = Kolon1
+        Else
+            Grid.TextMatrix(0, nkCena2W) = ""
+        End If
+        
+        If "" <> IIf(IsNull(Kolon2), "", Kolon2) Then
+            Grid.TextMatrix(0, nkKolon2) = Kolon2
+        Else
+            Grid.TextMatrix(0, nkKolon2) = ""
+        End If
+        
+        If "" <> IIf(IsNull(Kolon3), "", Kolon3) Then
+            Grid.TextMatrix(0, nkKolon3) = Kolon3
+        Else
+            Grid.TextMatrix(0, nkKolon3) = ""
+        End If
+        
+        If "" <> IIf(IsNull(Kolon4), "", Kolon4) Then
+            Grid.TextMatrix(0, nkKolon4) = Kolon4
+        Else
+            Grid.TextMatrix(0, nkKolon4) = ""
+        End If
     Else
-        Grid.TextMatrix(0, nkCena2W) = ""
-    End If
-    
-    If "" <> IIf(IsNull(Kolon2), "", Kolon2) Then
-        Grid.TextMatrix(0, nkKolon2) = Kolon2
-    Else
+        Grid.TextMatrix(0, nkCena2W) = "CenaSale"
         Grid.TextMatrix(0, nkKolon2) = ""
-    End If
-    
-    If "" <> IIf(IsNull(Kolon3), "", Kolon3) Then
-        Grid.TextMatrix(0, nkKolon3) = Kolon3
-    Else
         Grid.TextMatrix(0, nkKolon3) = ""
-    End If
-    
-    If "" <> IIf(IsNull(Kolon4), "", Kolon4) Then
-        Grid.TextMatrix(0, nkKolon4) = Kolon4
-    Else
         Grid.TextMatrix(0, nkKolon4) = ""
     End If
 End Sub
