@@ -3032,7 +3032,7 @@ Else
     strWhere = "WHERE sGuideNomenk.klassId = " & gKlassId
 End If
 
-If IsNumeric(gKlassId) Then
+If IsNumeric(gKlassId) And Regim = "" Then
     adjustKolonHeaders gKlassId, gKlassType
 End If
 
