@@ -22,7 +22,7 @@ begin
 	--execute immediate 'drop variable @adec_Ost21';
 
 	-- flag shows whether the item has movement or not
-	select count(*) into out_has_naklad from scet where id_inv = p_id_inv;
+	select count(*) into out_has_naklad from mat where id_inv = p_id_inv;
 end;
 
 
