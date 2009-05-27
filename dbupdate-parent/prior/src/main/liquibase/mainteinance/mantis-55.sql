@@ -1,3 +1,5 @@
+exit;
+
 --Удалить заказ связанный с "Бюро рекламы"
 update bayorders set firmId = f.firmId
 from bayguidefirms f where f.name = 'бюро рекламы'

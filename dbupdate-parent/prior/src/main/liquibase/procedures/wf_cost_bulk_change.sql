@@ -2,7 +2,7 @@
  * Процедуры для получения себестоимости из комтеха
  * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-if exists (select '*' from sysprocedure where proc_name like 'wf_cost_bulk_change') then  
+if exists (select '*' from sysprocedure where proc_name like 'wf_cost_bulk_change') then
 	drop function wf_cost_bulk_change;
 end if;
 
@@ -19,6 +19,10 @@ begin
 	declare v_comtex_cost float;
 	declare v_timestamp datetime;
 	declare v_cur_rate float;
+	-- показывает, было ли у позиции движение.
+	declare v_has_naklad integer;
+	-- кол-во позиций, по которым движения не было.
+	declare v_reseted_nomnom integer;
 
 	create table #tmp_klass(lvl integer, id integer);
 
@@ -49,6 +53,7 @@ begin
 	else
 		set v_cur_rate = system_currency_rate();
 	end if;
+	set v_reseted_nomnom = 0;
 
 	for v_table as b1 dynamic scroll cursor for
 		select nomnom as r_nomnom, id_inv as r_id_inv
@@ -57,28 +62,45 @@ begin
 		join #tmp_klass t on n.klassid = t.id
 		where id_inv is not null
 	do 
-		call wf_calc_cost_stime(v_comtex_cost, r_id_inv);
-		if v_comtex_cost > 0 then
-			set v_comtex_cost = v_comtex_cost / v_cur_rate;
+		call wf_calc_cost_stime(v_comtex_cost, v_has_naklad, r_id_inv);
+		message 'Nomnom =', r_nomnom, ', v_comtex_cost = ', v_comtex_cost, ', v_has_naklad = ',v_has_naklad to client;
+		if v_comtex_cost > 0 or v_has_naklad = 0 then
+			if v_has_naklad = 0 then
+				set v_comtex_cost = 0;
+			else 
+				set v_comtex_cost = v_comtex_cost / v_cur_rate;
+			end if;
 			if abs(round((v_comtex_cost - r_prior_cost), 2) ) > 0.01 then
-				if v_price_bulk_Id is null then
-					insert into sPriceBulkChange (guide_klass_id) values (p_klassid);
-					set v_price_bulk_Id = @@identity;
+	    
+				-- триггером в этот момент добавляется запись в sPriceHistory
+				update sguidenomenk set cost = round(v_comtex_cost, 2) where nomnom = r_nomnom;
+				if v_has_naklad > 0 then
+					if v_price_bulk_Id is null then
+						insert into sPriceBulkChange (guide_klass_id) values (p_klassid);
+						set v_price_bulk_Id = @@identity;
+					end if;
+					-- обновляем вновь добавленную запись
+					select max(change_date) into v_timestamp from sPriceHistory where nomnom = r_nomnom;
+					update sPriceHistory set bulk_id = v_price_bulk_id where change_date = v_timestamp and nomnom = r_nomnom;
+				else
+					set v_reseted_nomnom = v_reseted_nomnom + 1;
 				end if;
 	    
-				update sguidenomenk set cost = round(v_comtex_cost, 2) where nomnom = r_nomnom;
-				-- триггером в этот момент добавляется запись в sPriceHistory
-				select max(change_date) into v_timestamp from sPriceHistory where nomnom = r_nomnom;
-				
-				update sPriceHistory set bulk_id = v_price_bulk_id where change_date = v_timestamp and nomnom = r_nomnom;
-	    
+			end if;
+			if v_has_naklad = 0 then
+				-- по требованию руководства - удалить историю, еслп не было движения по позиции.
+				delete from sPriceHistory where nomnom = r_nomnom;
 			end if;
 		end if;
 	end for;
 
 	drop table #tmp_klass;
 
-	return v_price_bulk_id;
+	if isnull(v_price_bulk_id, 0) = 0 then
+		return -v_reseted_nomnom;
+	else
+		return v_price_bulk_id;
+	end if;
 
 end;
 

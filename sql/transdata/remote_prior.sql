@@ -109,14 +109,6 @@ call build_rp_procedure (
 );
 
 
--- получить текущую себестоимость ненклатуры из базы комтеха
-call build_rp_procedure (
-	  'stime'
-	, 'wf_calc_cost'
-	,   'out out_ret float'
-	  + ', p_id_inv integer'
-);
-
 -- получить себестоимость ненклатуры на заданную дату из базы комтеха
 call build_rp_procedure (
 	  'stime'

@@ -2140,7 +2140,7 @@ Dim queryTimeout As Variant
     
     byErrSqlGetValues "##nomenklatura.1", sql, newKey
     myBase.queryTimeout = queryTimeout
-    If newKey <> "" Then
+    If newKey > 0 Then
         sql = "select xDate from sPriceBulkChange where id = " & newKey
         byErrSqlGetValues "##nomenklatura.3", sql, xDate
         If KlassId <> "0" Then
@@ -2151,13 +2151,17 @@ Dim queryTimeout As Variant
         Set tvNode = tv.Nodes.Add("p0", tvwChild, "p" + newKey, CStr(xDate) + groupText)
         
         MsgBox "Себестоимоть номенклатуры по категории '" & tvNode.Text & "' успешно пересчитана." _
-            , vbOKOnly, "Предупреждение"
+            , vbOKOnly, "Сообщение"
         tvNode.EnsureVisible
         tv.SelectedItem = tvNode
         tv_NodeClick tvNode
+    ElseIf newKey < 0 Then
+        MsgBox "Цена фактическая (и история) по некоторым или всем позициям " & _
+        vbCr & "в категории '" & tvNode.Text & "' обнулились из-за отсутсвия движения." _
+            , vbOKOnly, "Предупреждение"
     Else
         MsgBox "Себестоимость номенклатуры по категории '" & tvNode.Text & "' не изменилась." _
-            , vbOKOnly, "Предупреждение"
+            , vbOKOnly, "Сообщение"
     End If
     
     MousePointer = flexDefault
@@ -3040,7 +3044,7 @@ sql = "SELECT ph.prev_cost, sGuideNomenk.*, f.Formula, " _
 & vbCr & " JOIN sGuideFormuls f ON sGuideNomenk.formulaNom = f.nomer " _
 & vbCr & " left join (select h.cost as prev_cost, h.nomnom from spricehistory h join (select max(change_date) as change_date, nomnom from spricehistory m group by nomnom) mx on mx.nomnom = h.nomnom and mx.change_date = h.change_date ) ph on ph.nomnom = sguidenomenk.nomnom  " _
 & vbCr & strWhere & " ORDER BY sGuideNomenk.nomNom ;"
-Debug.Print sql
+'Debug.Print sql
 'MsgBox sql
 Set tbNomenk = myOpenRecordSet("##165", sql, dbOpenForwardOnly) ' dbOpenDynaset)
 If tbNomenk Is Nothing Then GoTo EN1

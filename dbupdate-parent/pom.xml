@@ -130,11 +130,11 @@
 		</pluginManagement>
 	</build>
 	<modules>
-		<module>prior</module>
 		<module>comtex</module>
+		<module>prior</module>
 	</modules>
 	<properties>
-		<liquibase.version>1.9.2.0-SNAPSHOT</liquibase.version>
+		<liquibase.version>1.9.3.0-SNAPSHOT</liquibase.version>
 		<sybase.driver>com.sybase.jdbc3.jdbc.SybDriver</sybase.driver>
 		<sybase.artifactId>jconn3</sybase.artifactId>
 		<sybase.driver.version>6.0</sybase.driver.version>

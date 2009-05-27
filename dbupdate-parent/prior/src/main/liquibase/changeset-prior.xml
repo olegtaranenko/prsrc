@@ -421,13 +421,29 @@ end;
 		<rollback/>
 	</changeSet>
 
-	<changeSet id="2" author="mantis-55" runOnChange="false">
+	<changeSet id="2" author="mantis-55" runOnChange="true">
 		<comment>Ошибка при заведении заказа для фирмы Фараон</comment>
 		<executeCommand executable="dbisqlc.exe">
 			<arg value="-c"/>
 			<arg value="DSN=prior;UID=dba;PWD=sql"/>
 			<arg value="-q"/>
 			<arg value="\dev\prsrc\trunk\dbupdate-parent\prior\target\classes\mainteinance\mantis-55.sql"/>
+		</executeCommand>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="1" author="mantis-58" runOnChange="true">
+		<comment>Изменить алгоритм взятия цены из Комтеха</comment>
+		<sqlFile path="procedures/wf_cost_bulk_change.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+	</changeSet>
+
+	<changeSet id="2" author="mantis-58" runOnChange="true">
+		<comment>Изменить алгоритм взятия цены из Комтеха - remote procedure recompile</comment>
+		<executeCommand executable="dbisqlc.exe">
+			<arg value="-c"/>
+			<arg value="DSN=prior;UID=dba;PWD=sql"/>
+			<arg value="-q"/>
+			<arg value="\dev\prsrc\trunk\dbupdate-parent\prior\target\classes\mainteinance\rp_wf_calc_cost.sql"/>
 		</executeCommand>
 		<rollback/>
 	</changeSet>

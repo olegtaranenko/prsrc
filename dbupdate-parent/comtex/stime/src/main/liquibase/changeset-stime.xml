@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="CP1251"?>
  
 <databaseChangeLog
   xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
@@ -9,6 +9,11 @@
 >
  
     <include file="changeset-comtex.xml"/>
+
+	<changeSet id="1" author="mantis-58" runOnChange="true">
+		<comment>Изменить алгоритм взятия цены из Комтеха</comment>
+		<sqlFile path="procedures/wf_calc_cost.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+	</changeSet>
  
 
 </databaseChangeLog>
