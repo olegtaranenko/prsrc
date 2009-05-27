@@ -2124,7 +2124,7 @@ Dim newKey As String, xDate As String, groupText As String
 Dim queryTimeout As Variant
 
 
-    msgOk = MsgBox("¬ы уверены, что хотите пересчитать себестоимоть?" _
+    msgOk = MsgBox("¬ы уверены, что хотите пересчитать себестоимость?" _
         , vbOKCancel, "ѕредупреждение")
     If msgOk <> vbOK Then
         Exit Sub
