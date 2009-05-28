@@ -62,35 +62,34 @@ begin
 		join #tmp_klass t on n.klassid = t.id
 		where id_inv is not null
 	do 
+		set v_comtex_cost = 0; set v_has_naklad = 0;
 		call wf_calc_cost_stime(v_comtex_cost, v_has_naklad, r_id_inv);
 		message 'Nomnom =', r_nomnom, ', v_comtex_cost = ', v_comtex_cost, ', v_has_naklad = ',v_has_naklad to client;
-		if v_comtex_cost > 0 or v_has_naklad = 0 then
-			if v_has_naklad = 0 then
-				set v_comtex_cost = 0;
-			else 
-				set v_comtex_cost = v_comtex_cost / v_cur_rate;
-			end if;
-			if abs(round((v_comtex_cost - r_prior_cost), 2) ) > 0.01 then
-	    
-				-- триггером в этот момент добавляется запись в sPriceHistory
-				update sguidenomenk set cost = round(v_comtex_cost, 2) where nomnom = r_nomnom;
-				if v_has_naklad > 0 then
-					if v_price_bulk_Id is null then
-						insert into sPriceBulkChange (guide_klass_id) values (p_klassid);
-						set v_price_bulk_Id = @@identity;
-					end if;
-					-- обновляем вновь добавленную запись
-					select max(change_date) into v_timestamp from sPriceHistory where nomnom = r_nomnom;
-					update sPriceHistory set bulk_id = v_price_bulk_id where change_date = v_timestamp and nomnom = r_nomnom;
-				else
-					set v_reseted_nomnom = v_reseted_nomnom + 1;
+		if v_has_naklad = 0 then
+			set v_comtex_cost = 0;
+		else 
+			set v_comtex_cost = v_comtex_cost / v_cur_rate;
+		end if;
+		if abs(round((v_comtex_cost - r_prior_cost), 2) ) > 0.01 then
+    
+			-- триггером в этот момент добавляется запись в sPriceHistory
+			update sguidenomenk set cost = round(v_comtex_cost, 2) where nomnom = r_nomnom;
+			if v_has_naklad > 0 and v_comtex_cost > 0 then
+				if v_price_bulk_Id is null then
+					insert into sPriceBulkChange (guide_klass_id) values (p_klassid);
+					set v_price_bulk_Id = @@identity;
 				end if;
-	    
+				-- обновляем вновь добавленную запись
+				select max(change_date) into v_timestamp from sPriceHistory where nomnom = r_nomnom;
+				update sPriceHistory set bulk_id = v_price_bulk_id where change_date = v_timestamp and nomnom = r_nomnom;
+			else
+				set v_reseted_nomnom = v_reseted_nomnom + 1;
 			end if;
-			if v_has_naklad = 0 then
-				-- по требованию руководства - удалить историю, еслп не было движения по позиции.
-				delete from sPriceHistory where nomnom = r_nomnom;
-			end if;
+    
+		end if;
+		if v_has_naklad = 0 or v_comtex_cost = 0 then
+			-- по требованию руководства - удалить историю, еслп не было движения по позиции.
+			delete from sPriceHistory where nomnom = r_nomnom;
 		end if;
 	end for;
 
