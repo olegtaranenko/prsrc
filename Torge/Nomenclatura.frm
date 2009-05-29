@@ -3227,12 +3227,12 @@ If Not tbNomenk.BOF Then
                 manualOpt = True
             End If
             
-            For i = 2 To Abs(kolonok)
-                Grid.TextMatrix(quantity, nkKolon2 + i - 2) = ""
+            For i = 1 To Abs(kolonok) - 1
+                Grid.TextMatrix(quantity, nkKolon2 + i - 1) = ""
                 If manualOpt Then
-                    Grid.TextMatrix(quantity, nkKolon2 + i - 2) = Format(tbNomenk("CenaOpt" & CStr(i)), "0.00")
+                    Grid.TextMatrix(quantity, nkKolon2 + i - 1) = Format(tbNomenk("CenaOpt" & CStr(i)), "0.00")
                 Else
-                    Grid.TextMatrix(quantity, nkKolon2 + i - 2) = Format(calcKolonValue(optBasePrice, tbNomenk!margin, tbNomenk!kodel, Abs(kolonok), i + 1), "0.00")
+                    Grid.TextMatrix(quantity, nkKolon2 + i - 1) = Format(calcKolonValue(optBasePrice, tbNomenk!margin, tbNomenk!kodel, Abs(kolonok), i + 1), "0.00")
                 End If
             Next i
             
