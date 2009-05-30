@@ -1607,6 +1607,26 @@ AA:
 End If
 End Sub
 
+
+Private Function inKolonYellow() As Boolean
+    Dim kolonok As Integer
+    kolonok = CInt(Grid.TextMatrix(mousRow, nkKolonok))
+    inKolonYellow = False
+    If kolonok > 0 Then
+        Dim greenKolon As Integer
+        greenKolon = nkKolon2 + kolonok - 2
+        If greenKolon <> mousCol Then
+            inKolonYellow = True
+        End If
+    Else
+        'ручной ввод оптовых цен
+        If mousCol - nkKolon2 >= Abs(kolonok) - 1 Then
+            inKolonYellow = True
+        End If
+    End If
+End Function
+
+
 Private Sub Grid_EnterCell()
 'If quantity = 0 Or Not cmAdd.Visible Or frmMode <> "" Then Exit Sub
 
@@ -1621,9 +1641,13 @@ If quantity > 0 And frmMode = "" Then
  
  If ((chGain.Visible And chGain.value > 0) _
  Or (chPerList.Visible And chPerList.value > 0)) Then Exit Sub
- If (Regim = "" And mousCol = nkCena1W) Then
-    Grid.CellBackColor = vbYellow
-    Exit Sub
+ If Regim = "" Then
+    If mousCol = nkPrevCost Or mousCol = nkCena1W _
+        Or (mousCol >= nkKolon2 And mousCol <= nkKolon4 And inKolonYellow) _
+    Then
+        Grid.CellBackColor = vbYellow
+        Exit Sub
+    End If
  ElseIf (Regim = "" And mousCol = nkCenaFreight) Then
     laTitle.Caption = "CenaFreight = " & Grid.TextMatrix(mousRow, 0) & " "
 CC: frTitle.Top = Grid.CellTop + Grid.CellHeight + 50
@@ -1640,9 +1664,6 @@ Else
     Exit Sub
  ElseIf Regim = "" Then
     Grid.CellBackColor = &H88FF88
-    If mousCol = nkPrevCost Then
-        Grid.CellBackColor = vbYellow
-    End If
     GoTo BB
  ElseIf Regim = "asOstat" Or Regim = "fltOborot" Or Regim = "checkCurOstat" Then
     Exit Sub
@@ -2651,14 +2672,13 @@ CC: cenaFreight = Grid.TextMatrix(mousRow, nkCenaFreight)
 '    Grid.TextMatrix(mousRow, nkWebFormula) = tmpStr 'освежаем формулу
 '    If Not IsNumeric(result) Then MsgBox result, , "Колонка '" & _
     Grid.TextMatrix(0, nkWebFormulaNom) & "'"
- ElseIf mousRow = 0 Then
+ ElseIf Regim = "" And mousRow = 0 Then
     Dim iKolon As Integer
     iKolon = mousCol - nkKolon2 + 2
     ValueToTableField "##mr0", "'" & str & "'", "sGuideKlass", "kolon" & CStr(iKolon), "byKlassId"
  
- ElseIf mousCol = nkMargin Or mousCol = nkKodel Or mousCol = nkKolonok Or mousCol = nkCena2W Then
+ ElseIf Regim = "" And (mousCol >= nkMargin And mousCol <= nkKolon4) Then
     If Not isNumericTbox(tbMobile) Then Exit Sub
-    If Not valueToNomencField("##104", CSng(str), getChangedField(mousCol)) Then GoTo EN1
     If Not checkNumeric(str, getMinValue(mousCol), getMaxValue(mousCol)) Then
         GoTo EN1
     End If
@@ -2694,6 +2714,7 @@ CC: cenaFreight = Grid.TextMatrix(mousRow, nkCenaFreight)
     Else
         manualOpt = True
     End If
+    
     kolonok = Abs(kolonok)
     If mousCol = nkKodel Then
         kodel = CDbl(str)
@@ -2702,6 +2723,36 @@ CC: cenaFreight = Grid.TextMatrix(mousRow, nkCenaFreight)
     End If
     
     baseCena = cena2W * (1 - margin / 100)
+    
+    If mousCol >= nkKolon2 And mousCol <= nkKolon4 Then
+        If manualOpt Then
+            If Not checkNumeric(str, 0, cena2W) Then
+                Exit Sub
+            End If
+            Dim Nkol As Integer
+            Nkol = mousCol - nkKolon2 + 2
+            If Not valueToNomencField("##104", CSng(str), "CenaOpt" & Nkol) Then
+                GoTo EN1
+            End If
+            GoTo EN2
+        Else
+            If Not checkNumeric(str, baseCena, cena2W) Then
+                Exit Sub
+            End If
+            Dim kolonVal As Double
+            kolonVal = CDbl(str)
+            kodel = (kolonVal - baseCena) / (cena2W - baseCena)
+            If Not valueToNomencField("##kodel", kodel, "kodel") Then
+                GoTo EN1
+            Else
+                Grid.TextMatrix(mousRow, nkKodel) = Format(kodel, "0.0#")
+            End If
+        End If
+        
+    Else
+        If Not valueToNomencField("##104", CSng(str), getChangedField(mousCol)) Then GoTo EN1
+    End If
+    
     Dim cenaOpt(3) As Double
     If manualOpt Then
         sql = "select cenaOpt2, cenaOpt3, cenaOpt4 from sguidenomenk where nomnom = '" & gNomNom & "'"
@@ -2718,12 +2769,8 @@ CC: cenaFreight = Grid.TextMatrix(mousRow, nkCenaFreight)
             End If
         End If
     Next i
- ElseIf mousCol >= nkKolon2 And mousCol <= nkKolon4 Then
-    Dim Nkol As Integer:
-    Nkol = mousCol - nkKolon2 + 2
-    If Not valueToNomencField("##104", CSng(str), "CenaOpt" & Nkol) Then GoTo EN1
-    
  End If
+EN2:
  Grid.TextMatrix(mousRow, mousCol) = str
 EN1:
  frmMode = ""
@@ -2772,6 +2819,8 @@ Function getMinValue(iCol As Long) As Double
         getMinValue = -4
     ElseIf iCol = nkCena2W Then
         getMinValue = 0
+    ElseIf iCol >= nkKolon2 And iCol <= nkKolon4 Then
+        getMinValue = 0
     End If
     
 End Function
@@ -2784,6 +2833,8 @@ Function getMaxValue(iCol As Long) As Double
     ElseIf iCol = nkKolonok Then
         getMaxValue = 4
     ElseIf iCol = nkCena2W Then
+        getMaxValue = 1000000
+    ElseIf iCol >= nkKolon2 And iCol <= nkKolon4 Then
         getMaxValue = 1000000
     End If
 End Function
@@ -3230,7 +3281,7 @@ If Not tbNomenk.BOF Then
             For i = 1 To Abs(kolonok) - 1
                 Grid.TextMatrix(quantity, nkKolon2 + i - 1) = ""
                 If manualOpt Then
-                    Grid.TextMatrix(quantity, nkKolon2 + i - 1) = Format(tbNomenk("CenaOpt" & CStr(i)), "0.00")
+                    Grid.TextMatrix(quantity, nkKolon2 + i - 1) = Format(tbNomenk("CenaOpt" & CStr(i + 1)), "0.00")
                 Else
                     Grid.TextMatrix(quantity, nkKolon2 + i - 1) = Format(calcKolonValue(optBasePrice, tbNomenk!margin, tbNomenk!kodel, Abs(kolonok), i + 1), "0.00")
                 End If
