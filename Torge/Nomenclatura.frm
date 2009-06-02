@@ -1640,25 +1640,30 @@ If quantity > 0 And frmMode = "" Then
  oldCellColor = Grid.CellBackColor
  
  If ((chGain.Visible And chGain.value > 0) _
- Or (chPerList.Visible And chPerList.value > 0)) Then Exit Sub
+ Or (chPerList.Visible And chPerList.value > 0)) Then
+    Exit Sub
+ End If
  If Regim = "" Then
     If mousCol = nkPrevCost Or mousCol = nkCena1W _
         Or (mousCol >= nkKolon2 And mousCol <= nkKolon4 And inKolonYellow) _
     Then
         Grid.CellBackColor = vbYellow
+        frTitle.Visible = False
         Exit Sub
+    Else
+        If mousCol = nkCenaFreight Then
+            laTitle.Caption = "CenaFreight = " & Grid.TextMatrix(mousRow, 0) & " "
+            frTitle.Top = Grid.CellTop + Grid.CellHeight + 50
+            frTitle.Visible = True
+            frTitle.ZOrder
+            Grid.CellBackColor = vbYellow
+            Exit Sub
+        Else
+            frTitle.Visible = False
+        End If
     End If
- ElseIf (Regim = "" And mousCol = nkCenaFreight) Then
-    laTitle.Caption = "CenaFreight = " & Grid.TextMatrix(mousRow, 0) & " "
-CC: frTitle.Top = Grid.CellTop + Grid.CellHeight + 50
-    frTitle.Visible = True
-    frTitle.ZOrder
-    Grid.CellBackColor = vbYellow
-    Exit Sub
-Else
-    frTitle.Visible = False
  End If
-' If Regim <> "" Or (Products.cmNomenk.Visible And mousCol <> nkEdIzm) Then
+ 
  If Regim = "forKartaDMC" Or Regim = "nomenkSelect" Or Regim = "singleSelect" Or Regim = "fromDocuments" Then
     Grid.CellBackColor = vbButtonFace
     Exit Sub
@@ -1683,9 +1688,7 @@ BB:
     tbMobile.MaxLength = 10
  End If
 ' tbInform.MaxLength =tbMobile.MaxLength
-
 End If
-
 End Sub
 
 Private Sub Grid_GotFocus()
