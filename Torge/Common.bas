@@ -575,6 +575,18 @@ CheckIntegration
     sql = "create variable @manager varchar(20)"
     If myExecute("##0.2", sql, 0) = 0 Then End
 
+    ' init the Global constants to use its in formulas
+    sql = "select * from GuideConstants"
+    Set tbGuide = myOpenRecordSet("##0.3", sql, dbOpenForwardOnly)
+    If tbGuide Is Nothing Then Exit Sub
+    While Not tbGuide.EOF
+        Dim initStr As String
+        initStr = tbGuide!Constants & "=" & CDbl(tbGuide!value)
+        sc.ExecuteStatement (initStr)
+        tbGuide.MoveNext
+    Wend
+    tbGuide.Close
+
 AUTO.Show
 
 End Sub

@@ -10,6 +10,7 @@ Begin VB.Form GuideManag
    LinkTopic       =   "Form1"
    ScaleHeight     =   5145
    ScaleWidth      =   6750
+   StartUpPosition =   1  'CenterOwner
    Begin VB.CommandButton cmRepl 
       Caption         =   "--->"
       Enabled         =   0   'False

@@ -421,7 +421,7 @@ end;
 		<rollback/>
 	</changeSet>
 
-	<changeSet id="2" author="mantis-55" runOnChange="true">
+	<changeSet id="2" author="mantis-55" runOnChange="false">
 		<comment>Ошибка при заведении заказа для фирмы Фараон</comment>
 		<executeCommand executable="dbisqlc.exe">
 			<arg value="-c"/>
@@ -432,12 +432,12 @@ end;
 		<rollback/>
 	</changeSet>
 
-	<changeSet id="1" author="mantis-58" runOnChange="true">
+	<changeSet id="1" author="mantis-58" runOnChange="false">
 		<comment>Изменить алгоритм взятия цены из Комтеха</comment>
 		<sqlFile path="procedures/wf_cost_bulk_change.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 	</changeSet>
 
-	<changeSet id="2" author="mantis-58" runOnChange="true">
+	<changeSet id="2" author="mantis-58" runOnChange="false">
 		<comment>Изменить алгоритм взятия цены из Комтеха - remote procedure recompile</comment>
 		<executeCommand executable="dbisqlc.exe">
 			<arg value="-c"/>
@@ -448,5 +448,30 @@ end;
 		<rollback/>
 	</changeSet>
 
+	<changeSet id="1" author="mantis-62" runOnChange="false">
+		<comment>Таблицу констант для расчета формул</comment>
+		<createTable tableName="GuideConstants">
+			<column name="constantsId" type="integer" autoIncrement="true">
+				<constraints primaryKey="true" primaryKeyName="pk_constant"/>
+			</column>
+			<column name="constants" type="varchar(64)" >
+				<constraints nullable="false"/>
+			</column>
+			<column name="value" type="float" defaultValueNumeric="0.0">
+				<constraints nullable="false"/>
+			</column>
+			<column name="Note" type="varchar(256)"/>
+		</createTable>
+	</changeSet>
+
+<!--
+	<changeSet id="2" author="mantis-62" runOnChange="true">
+		<insert tableName="GuideConstants">
+			<column name="constants" value="EUR"/>
+			<column name="value" value="1.045"/>
+		</insert>
+		<rollback><delete tableName="GuideConstants"></delete></rollback>
+	</changeSet>
+-->
 </databaseChangeLog>
 

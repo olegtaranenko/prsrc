@@ -421,6 +421,9 @@ Begin VB.Form Documents
       Begin VB.Menu mnGuideFormuls 
          Caption         =   "Формулы для прайса"
       End
+      Begin VB.Menu mnConstants 
+         Caption         =   "Константы для формул"
+      End
       Begin VB.Menu mnManag 
          Caption         =   "Менеджеры"
       End
@@ -1339,6 +1342,10 @@ Private Sub lbVenture_KeyDown(KeyCode As Integer, Shift As Integer)
     ElseIf KeyCode = vbKeyEscape Then
         lbHide
     End If
+End Sub
+
+Private Sub mnConstants_Click()
+    GuideConstants.Show
 End Sub
 
 Private Sub mnCurOstat_Click()

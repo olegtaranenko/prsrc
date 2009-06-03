@@ -232,11 +232,11 @@ oldHeight = Me.Height
 oldWidth = Me.Width
 
 Grid.FormatString = "|№|<Принадлежность|<Формула|<Примечание"
-Grid.ColWidth(0) = 0
-Grid.ColWidth(gfNomer) = 450
-Grid.ColWidth(gfFormula) = 6120
-Grid.ColWidth(gfForWho) = 1395
-Grid.ColWidth(gfNote) = 1980
+Grid.colWidth(0) = 0
+Grid.colWidth(gfNomer) = 450
+Grid.colWidth(gfFormula) = 6120
+Grid.colWidth(gfForWho) = 1395
+Grid.colWidth(gfNote) = 1980
 sql = "SELECT sGuideFormuls.Formula, sGuideFormuls.Note, " & _
 "sGuideFormuls.forWho, sGuideFormuls.nomer " & _
 "From sGuideFormuls  ORDER BY sGuideFormuls.nomer;"
@@ -262,6 +262,23 @@ NXT1:
     tbGuide.MoveNext
 Wend
 tbGuide.Close
+
+    ' init the Global constants to use its in formulas
+    sql = "select * from GuideConstants"
+    Set tbGuide = myOpenRecordSet("##0.3", sql, dbOpenForwardOnly)
+    If tbGuide Is Nothing Then Exit Sub
+    While Not tbGuide.EOF
+        Dim initStr As String, paramListsNo As Integer
+        For paramListsNo = 0 To 2
+            Dim lb As ListBox
+            Set lb = Me.lbPrams(paramListsNo)
+            lb.AddItem tbGuide!Constants
+        Next paramListsNo
+        tbGuide.MoveNext
+    Wend
+    tbGuide.Close
+
+
 If quantity > 0 Then Grid.RemoveItem quantity + 1
 If Regim = "" Then Grid.TabIndex = 0: Grid_EnterCell
     
@@ -287,7 +304,7 @@ Grid.Width = Grid.Width + w
 cmAdd.Top = cmAdd.Top + h
 cmDel.Top = cmDel.Top + h
 cmExit.Top = cmExit.Top + h
-cmExit.Left = cmExit.Left + w
+cmExit.left = cmExit.left + w
 
 End Sub
 
@@ -375,7 +392,7 @@ End Sub
 
 Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then _
-        MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
+        MsgBox "ColWidth = " & Grid.colWidth(Grid.MouseCol)
 
 End Sub
 
@@ -403,47 +420,57 @@ End If
 
 End Sub
 
-Private Sub lbPrams_DblClick(Index As Integer)
+Private Sub lbPrams_DblClick(index As Integer)
 Dim str As String, i As Integer '
 
-str = Left$(tbMobile.Text, tbMobile.SelStart)
-str = str & lbPrams(Index).Text
+str = left$(tbMobile.Text, tbMobile.SelStart)
+str = str & lbPrams(index).Text
 i = Len(str)
 str = str & Mid$(tbMobile.Text, tbMobile.SelStart + 1)
 tbMobile.Text = str
 tbMobile.SelStart = i
 
 tbMobile.SetFocus
-lbPrams(Index).Visible = False
+lbPrams(index).Visible = False
 
 End Sub
 
-'Private Sub lbPrams_DblClick()
-'End Sub
 
-'Private Sub lbPrams_KeyDown(KeyCode As Integer, Shift As Integer)
-'End Sub
+' возвращает 0 если не было ошибок. если ошибка имела место быть, то тогда
+' возвращаем id формулы с ошибкой. -1 если ошибка для текущей формулы.
 
 Function checkFormul(formula As String) As Boolean
-Dim sc, scode As String
+Dim sclocal, scode As String
+Dim dimStr As String, assignStr As String
 
 checkFormul = False
-Set sc = CreateObject("ScriptControl")
-sc.Language = "VBScript"
+Set sclocal = CreateObject("ScriptControl")
+sclocal.Language = "VBScript"
+
+    sql = "select * from GuideConstants"
+    Set tbGuide = myOpenRecordSet("##0.3", sql, dbOpenForwardOnly)
+    If tbGuide Is Nothing Then Exit Function
+    While Not tbGuide.EOF
+        dimStr = dimStr & ", " & tbGuide!Constants
+        assignStr = assignStr & ": " & tbGuide!Constants & "=1"
+        tbGuide.MoveNext
+    Wend
+    tbGuide.Close
+
 
 scode = "Option Explicit" & vbCrLf & _
 "Private Function Calc()" & vbCrLf & _
-"Dim CENA1, VES, STAVKA, SumCenaFreight, VremObr, CenaFreight, cenaFact, SumCenaSale " & _
-vbCrLf & "CENA1=1: VES=1: STAVKA=1: SumCenaFreight=1: " & vbCrLf & _
-"VremObr=1: CenaFreight=1: CenaFact=1: SumCenaSale=1:" & vbCrLf & _
-"Calc = " & formula & vbCrLf & _
+"Dim CENA1, VES, STAVKA, SumCenaFreight, VremObr, CenaFreight, cenaFact, SumCenaSale " & dimStr
+scode = scode & vbCrLf & "CENA1=1: VES=1: STAVKA=1: SumCenaFreight=1: " & vbCrLf & _
+"VremObr=1: CenaFreight=1: CenaFact=1: SumCenaSale=1" & assignStr
+scode = scode & vbCrLf & "Calc = " & formula & vbCrLf & _
 "End Function" & vbCrLf
 
 On Error GoTo ERR1
-sc.AddCode scode 'проверяется синтаксис
-sc.Eval "Calc()" 'проверяются переменные
+sclocal.AddCode scode 'проверяется синтаксис
+sclocal.Eval "Calc()" 'проверяются переменные
 
-Set sc = Nothing
+Set sclocal = Nothing
 checkFormul = True
 Exit Function
 
@@ -453,13 +480,10 @@ If Err <> 11 Then ' пропускаем деление на 0 - нам нужен только синтаксис
 End If
 End Function
 
-Private Sub List1_Click()
 
-End Sub
-
-Private Sub lbPrams_KeyDown(Index As Integer, KeyCode As Integer, Shift As Integer)
+Private Sub lbPrams_KeyDown(index As Integer, KeyCode As Integer, Shift As Integer)
 If KeyCode = vbKeyReturn Then
-    lbPrams_DblClick Index
+    lbPrams_DblClick index
 ElseIf KeyCode = vbKeyEscape Then
     lbHide
 End If
