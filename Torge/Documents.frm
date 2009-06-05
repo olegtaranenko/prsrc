@@ -1678,8 +1678,15 @@ Else
     objExel.ActiveSheet.Cells(1, 2).value = "Остатки по Складу на " & Format(Now(), "dd.mm.yy")
     objExel.ActiveSheet.Cells(1, 2).Font.Bold = True
     exRow = 4
-    objExel.ActiveSheet.Cells(exRow - 1, 3).value = RateAsString(getCurrentRate)
-    objExel.ActiveSheet.Cells(exRow - 1, 5).value = "Цены включают НДС"
+    With objExel.ActiveSheet.Cells(exRow - 1, 2)
+        .value = "Цены указаны в USD и исчисляются по курсу ЦБ +2%"
+        .Font.color = vbRed
+        .Font.Bold = True
+        .Font.Size = 11
+    End With
+    
+    'objExel.ActiveSheet.Cells(exRow - 1, 3).value = RateAsString(getCurrentRate)
+    objExel.ActiveSheet.Cells(exRow - 1, 7).value = "Цены включают НДС"
 
 
     objExel.ActiveSheet.Columns(1).columnWidth = 12.57
