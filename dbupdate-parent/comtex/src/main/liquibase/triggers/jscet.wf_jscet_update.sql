@@ -5,6 +5,9 @@ end if;
 create TRIGGER wf_jscet_update before update order 211 on
 /*
 	Выставляет плательщика в базе Prior
+	передает договор от одного клиента к другому, если у заказа(счета) меняется дебитор.
+	Заботится о том, чтобы один и тот же договор не был присвоен больше, чем одному счету.
+	Если же вдруг пользователь пытается это сделать, то просто это поле обнуляется.
 */
 jscet
 referencing old as old_name new as new_name
@@ -13,6 +16,7 @@ begin
 	declare no_echo integer;
 	declare v_is_orders varchar(10);
 	declare v_id_jdog integer;
+	declare v_check_uniqueness integer;
 	
 	set no_echo = 0;
 
@@ -68,6 +72,12 @@ begin
 
 	end if;
 
-end;
+	if update(id_jdog) and new_name.id_jdog > 0 then
+		select count(*) into v_check_uniqueness from jscet s where s.id_jdog = new_name.id_jdog;
+		if v_check_uniqueness >= 1 then
+			set new_name.id_jdog = 0;
+		end if;
+	end if;
 
+end;
 

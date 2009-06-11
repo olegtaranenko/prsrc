@@ -421,7 +421,7 @@ end;
 		<rollback/>
 	</changeSet>
 
-	<changeSet id="2" author="mantis-55" runOnChange="false">
+	<changeSet id="2" author="mantis-55" runOnChange="true">
 		<comment>Ошибка при заведении заказа для фирмы Фараон</comment>
 		<executeCommand executable="dbisqlc.exe">
 			<arg value="-c"/>

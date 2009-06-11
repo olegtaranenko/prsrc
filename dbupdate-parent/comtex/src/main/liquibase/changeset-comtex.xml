@@ -9,8 +9,6 @@
 >
 
          
-<!--    <include file="../../../../src/main/liquibase/changeset-common.xml" relativeToChangelogFile="true"/> -->
-
     <changeSet id="1" author="comtex" context="development">
     	<comment>Disable all scheduled backups and other events.</comment>
         <createProcedure>
@@ -688,6 +686,12 @@ end;
 		</rollback>
 	</changeSet>
 -->
+
+
+	<changeSet id="1" author="mantis-64" runOnChange="true">
+		<comment>Запретить назначать один и тот же договор разным счетам</comment>
+		<sqlFile path="triggers/jscet.wf_jscet_update.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+	</changeSet>
 
 </databaseChangeLog>
 
