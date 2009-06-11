@@ -17,6 +17,7 @@ Form=Otgruz.frm
 Form=Nakladna.frm
 Module=CmdUtils; ..\include\CmdUtils.bas
 Module=CommonUtils; ..\include\CommonUtils.bas
+Module=AppUtils; ..\include\AppUtils.bas
 Module=DbUtils; ..\include\DbUbils.bas
 Form=..\include\forms\Analityc.frm
 Object={86CF1D34-0C5F-11D2-A9FC-0000F8754DA1}#2.0#0; MSCOMCT2.OCX

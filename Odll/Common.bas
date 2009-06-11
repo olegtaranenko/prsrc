@@ -859,36 +859,10 @@ Dim str As String
     Grid.TextMatrix(row, col) = LoadDate
  End If
 End Function
+
+
+
 '$NOodbc$
-Sub GridToExcel(Grid As MSFlexGrid, Optional title As String = "")
-
-Dim objExel As Excel.Application, c As Long, r As Long
-Dim I As Integer, strA() As String, begRow As Integer, str As String
-
-begRow = 3
-If title = "" Then begRow = 1
-
-Set objExel = New Excel.Application
-objExel.Visible = True
-objExel.SheetsInNewWorkbook = 1
-objExel.Workbooks.Add
-With objExel.ActiveSheet
-.Cells(1, 2).value = title
-ReDim Preserve strA(Grid.Cols + 1)
-For r = 0 To Grid.rows - 1
-    For c = 1 To Grid.Cols - 1
-        str = Grid.TextMatrix(r, c) '=' - наверно зарезервирован для ввода формул
-        If left$(str, 1) = "=" Then str = "." & str
-        strA(c - 1) = str
-    Next c
-   .Range(.Cells(begRow + r, 1), .Cells(begRow + r, Grid.Cols)).FormulaArray = strA
-Next r
-
-End With
-Set objExel = Nothing
-End Sub
-
-
 Sub initOrCol(colNum As Integer, Optional field As String = "")
 orColNumber = orColNumber + 1
 colNum = orColNumber

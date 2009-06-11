@@ -298,39 +298,6 @@ Dim il As Long
 End Sub
 
 
-Sub GridToExcel(Grid As MSFlexGrid, Optional title As String = "")
-
-Dim objExel As Excel.Application, c As Long, r As Long
-Dim i As Integer, strA() As String, begRow As Integer, str As String
-
-
-begRow = 3
-If title = "" Then begRow = 1
-
-Set objExel = New Excel.Application
-objExel.Visible = True
-objExel.SheetsInNewWorkbook = 1
-objExel.Workbooks.Add
-With objExel.ActiveSheet
-.Cells(1, 2).value = title
-
-ReDim Preserve strA(Grid.Cols + 1)
-For r = 0 To Grid.Rows - 1
-    For c = 1 To Grid.Cols - 1
-        str = Grid.TextMatrix(r, c) '=' - наверно зарезервирован для ввода формул
-        If left$(str, 1) = "=" Then str = ":" & str
-        strA(c - 1) = str
-    Next c
-   .Range(.Cells(begRow + r, 1), .Cells(begRow + r, Grid.Cols)).FormulaArray = strA
-Next r
-
-'objExel.ActiveSheet.Range("A" & begRow & ":U" & Grid.Rows + begRow).FormulaArray = strA
-'.Range(.Cells(begRow, 1), .Cells(Grid.Rows + begRow, Grid.Rows)).FormulaArray = strA
-End With
-Set objExel = Nothing
-End Sub
-
-
 Function myIsDate(ByVal dt As String) As Variant
 Dim dotPos As Integer
 Dim v_dd As Integer
