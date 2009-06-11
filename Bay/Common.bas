@@ -526,15 +526,24 @@ With objExel.ActiveSheet
 .Cells(1, 2).value = title
 ReDim Preserve strA(Grid.Cols + 1)
 For r = 0 To Grid.Rows - 1
+    Dim curColumn As Integer
+    curColumn = 1
     For c = 1 To Grid.Cols - 1
-        str = Grid.TextMatrix(r, c) '=' - наверно зарезервирован для ввода формул
-        If left$(str, 1) = "=" Then str = "." & str
+        If Grid.colWidth(c) > 0 Then
+            str = Grid.TextMatrix(r, c) '=' - наверно зарезервирован для ввода формул
+            If left$(str, 1) = "=" Then str = "." & str
 'иногда символы Cr и Lf (поле MEMO в базе) дают Err в Excel, поэтому из поля
-        i = InStr(str, vbCr) 'MEMO берем только первую строчку
-        If i > 0 Then str = left$(str, i - 1)
-        i = InStr(str, vbLf) 'MEMO берем только первую строчку
-        If i > 0 Then str = left$(str, i - 1)
-        strA(c - 1) = str
+            i = InStr(str, vbCr) 'MEMO берем только первую строчку
+            If i > 0 Then str = left$(str, i - 1)
+            i = InStr(str, vbLf) 'MEMO берем только первую строчку
+            If i > 0 Then str = left$(str, i - 1)
+            If IsNumeric(str) And r > 0 Then
+                strA(curColumn - 1) = CStr(CDbl(str))
+            Else
+                strA(curColumn - 1) = str
+            End If
+            curColumn = curColumn + 1
+        End If
     Next c
 '    On Error Resume Next
    .Range(.Cells(begRow + r, 1), .Cells(begRow + r, Grid.Cols)).FormulaArray = strA
