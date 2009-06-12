@@ -264,10 +264,10 @@ AA:
 End Sub
 
 Sub fitFormToGrid()
-Dim i As Long, delta As Long
+Dim I As Long, delta As Long
 
-    i = 350 + (Grid.CellHeight + 17) * Grid.Rows
-    delta = i - Grid.Height
+    I = 350 + (Grid.CellHeight + 17) * Grid.Rows
+    delta = I - Grid.Height
     
     If Me.Height + delta > (Screen.Height - 900) Then _
         delta = (Screen.Height - 900) - Me.Height
@@ -275,9 +275,9 @@ Dim i As Long, delta As Long
     
     'Grid.Height = i
     delta = 0
-    For i = 0 To Grid.Cols - 1
-        delta = delta + Grid.ColWidth(i)
-    Next i
+    For I = 0 To Grid.Cols - 1
+        delta = delta + Grid.colWidth(I)
+    Next I
     Me.Width = delta + 700
 
 End Sub
@@ -347,15 +347,15 @@ Dim p_rowid As Integer
 End Sub
 
 Public Sub removeSubtitles(aGrid As MSFlexGrid)
-Dim i As Integer, maxrows As Integer
+Dim I As Integer, maxrows As Integer
  
-    i = aGrid.Rows - 1
+    I = aGrid.Rows - 1
     Do
-        If aGrid.TextMatrix(i, emptyColIndex) = "" And Not (aGrid.Rows <= 2 And i = 1) Then
-            aGrid.RemoveItem (i)
+        If aGrid.TextMatrix(I, emptyColIndex) = "" And Not (aGrid.Rows <= 2 And I = 1) Then
+            aGrid.RemoveItem (I)
         End If
-        i = i - 1
-    Loop While (i > 0)
+        I = I - 1
+    Loop While (I > 0)
     
 End Sub
 
@@ -489,18 +489,19 @@ End Sub
 Sub byNomenk(saled As String)
 Dim restrictDate As Variant
 Dim historyStart As Variant
-Dim groupklassid As Integer
+Dim groupklassid As Integer, headerRowIndex As Long
+Dim groupQty As Single, groupSum As Single, groupSumRealiz As Single
 
     
 'select trim(n.cod + ' ' + nomname + ' ' + n.size) as name, s.quant, s.sm, s.nomnom, o.ord, k.klassname, k.klassid, n.cost, n.ed_izmer2
     Grid.FormatString = "|<Номер ном.|<Название|Ед изм.|>К-во|>Цена|>Цена реал.|>Сумма|>Сумма реал."
-    Grid.ColWidth(0) = 0
-    Grid.ColWidth(sbnNomnom) = 1000
-    Grid.ColWidth(sbnNomnam) = 4000
-    Grid.ColWidth(sbnEdizm) = 600
-    Grid.ColWidth(sbnPrice) = 700
-    Grid.ColWidth(sbnSaled) = 1000
-    Grid.ColWidth(sbnSumma) = 1000
+    Grid.colWidth(0) = 0
+    Grid.colWidth(sbnNomnom) = 1000
+    Grid.colWidth(sbnNomnam) = 4000
+    Grid.colWidth(sbnEdizm) = 600
+    Grid.colWidth(sbnPrice) = 700
+    Grid.colWidth(sbnSaled) = 1000
+    Grid.colWidth(sbnSumma) = 1000
     'Grid.ColWidth() =
 
     sql = "call wf_nomenk_" & saled & "(convert(datetime, " & startDate & "), convert(datetime, " & endDate & "))"
@@ -513,17 +514,32 @@ Dim groupklassid As Integer
     If Not tbOrders.BOF Then
         While Not tbOrders.EOF
             quantity = quantity + 1
-            If groupklassid <> tbOrders!klassid Then
+            If groupklassid <> tbOrders!KlassId Then
                 Grid.AddItem ""
                 Grid.AddItem Chr(9) & tbOrders!outtype & Chr(9) & tbOrders!klassName
                 quantity = quantity + 2
                 Grid.row = Grid.Rows - 1
-                'quantity = quantity + 1
-                Grid.col = sbnNomnom
-                Grid.CellFontBold = True
-                Grid.col = sbnNomnam
-                Grid.CellFontBold = True
-                groupklassid = tbOrders!klassid
+                Dim I As Integer
+                For I = sbnNomnom To Grid.Cols - 1
+                    Grid.col = I
+                    Grid.CellFontBold = True
+                Next I
+                headerRowIndex = Grid.Rows - 1
+                
+                groupQty = 0: groupSum = 0: groupSumRealiz = 0
+                groupklassid = tbOrders!KlassId
+                
+            End If
+            
+            
+            groupQty = groupQty + tbOrders!quant
+            groupSum = groupSum + tbOrders!quant * tbOrders!cost
+            groupSumRealiz = groupSumRealiz + tbOrders!CenaTotal
+            
+            If headerRowIndex > 1 Then
+                Grid.TextMatrix(headerRowIndex, 4) = Format(groupQty, "## ##0.00")
+                Grid.TextMatrix(headerRowIndex, 7) = Format(groupSum, "## ##0.00")
+                Grid.TextMatrix(headerRowIndex, 8) = Format(groupSumRealiz, "## ##0.00")
             End If
             
             Grid.AddItem Chr(9) & tbOrders!nomnom _
@@ -531,10 +547,10 @@ Dim groupklassid As Integer
             & Chr(9) & tbOrders!ed_Izmer2 _
             & Chr(9) & Format(tbOrders!quant, "## ##0.00") _
             & Chr(9) & Format(tbOrders!cost, "## ##0.00") _
-            & Chr(9) & Format(tbOrders!cenaTotal / tbOrders!quant, "## ##0.00") _
+            & Chr(9) & Format(tbOrders!CenaTotal / tbOrders!quant, "## ##0.00") _
  _
             & Chr(9) & Format(tbOrders!cost * tbOrders!quant, "## ##0.00") _
-            & Chr(9) & Format(tbOrders!cenaTotal, "## ##0.00")
+            & Chr(9) & Format(tbOrders!CenaTotal, "## ##0.00")
             
             tbOrders.MoveNext
         Wend
@@ -561,15 +577,15 @@ Dim header As String
     End If
     
     Grid.FormatString = header
-    Grid.ColWidth(0) = 0
-    Grid.ColWidth(zdDate) = 850
-    Grid.ColWidth(zdSumm) = 1000
-    Grid.ColWidth(zdProvodka) = 1200
-    Grid.ColWidth(zdAgent) = 2300
-    Grid.ColWidth(zdNazn) = 3000
-    Grid.ColWidth(zdUtochn) = 3000
+    Grid.colWidth(0) = 0
+    Grid.colWidth(zdDate) = 850
+    Grid.colWidth(zdSumm) = 1000
+    Grid.colWidth(zdProvodka) = 1200
+    Grid.colWidth(zdAgent) = 2300
+    Grid.colWidth(zdNazn) = 3000
+    Grid.colWidth(zdUtochn) = 3000
     If ventureId = 0 Then
-        Grid.ColWidth(zdVenture) = 800
+        Grid.colWidth(zdVenture) = 800
     End If
     
     sql = "select xdate, uesumm, b.debit + '-' + b.subdebit + ' => ' + b.kredit + '-' + b.subkredit as provodka" _
@@ -629,10 +645,10 @@ Sub ventureZatrat(ventureId As Integer)
 Dim sum As Single
 
     Grid.FormatString = "|Наименование|>Осн.Затраты|>Вспом.Затраты|>Оборот.ср-ва"
-    Grid.ColWidth(0) = 0
-    Grid.ColWidth(rzZatratName) = 3600
-    Grid.ColWidth(rzMainCosts) = 1500
-    Grid.ColWidth(rzAddCosts) = 1500
+    Grid.colWidth(0) = 0
+    Grid.colWidth(rzZatratName) = 3600
+    Grid.colWidth(rzMainCosts) = 1500
+    Grid.colWidth(rzAddCosts) = 1500
     
     sql = "select sum(uesumm) as sm, is_main_costs, s.nm as nm, b.id_shiz"
     If ventureId <> 0 Then
@@ -698,13 +714,13 @@ Dim whereToken As String
 
 
     Grid.FormatString = "|Заказ|<Дата|<Фирма|<Комментарий|>Затраты|>Реализация"
-    Grid.ColWidth(0) = 250
-    Grid.ColWidth(rrNumOrder) = 885
-    Grid.ColWidth(rrDate) = 765
-    Grid.ColWidth(rrFirm) = 3855
-    Grid.ColWidth(rrProduct) = 0
-    Grid.ColWidth(rrMater) = 1005
-    Grid.ColWidth(rrReliz) = 1005
+    Grid.colWidth(0) = 250
+    Grid.colWidth(rrNumOrder) = 885
+    Grid.colWidth(rrDate) = 765
+    Grid.colWidth(rrFirm) = 3855
+    Grid.colWidth(rrProduct) = 0
+    Grid.colWidth(rrMater) = 1005
+    Grid.colWidth(rrReliz) = 1005
     
     whereToken = " where"
     If ventureId <> 0 Then
@@ -745,7 +761,7 @@ Dim whereToken As String
             End If
             
             Grid.TextMatrix(quantity, rrMater) = Format(tbOrders!costTotal, "## ##0.00")
-            Grid.TextMatrix(quantity, rrReliz) = Format(tbOrders!cenaTotal, "## ##0.00")
+            Grid.TextMatrix(quantity, rrReliz) = Format(tbOrders!CenaTotal, "## ##0.00")
             Grid.AddItem ""
             tbOrders.MoveNext
         Wend
@@ -791,7 +807,7 @@ Dim p_days_start As Integer, p_days_end As Integer
     If Not tbOrders.BOF Then
         While Not tbOrders.EOF
             quantity = quantity + 1
-            If groupklassid <> tbOrders!klassid Then
+            If groupklassid <> tbOrders!KlassId Then
                 Grid.AddItem tbOrders!ord
                 Grid.AddItem tbOrders!ord & Chr(9) & Chr(9) & tbOrders!klassName
                 quantity = quantity + 2
@@ -801,7 +817,7 @@ Dim p_days_start As Integer, p_days_end As Integer
                 Grid.CellFontBold = True
                 Grid.col = sbnNomnam
                 Grid.CellFontBold = True
-                groupklassid = tbOrders!klassid
+                groupklassid = tbOrders!KlassId
             End If
             rowStr = tbOrders!ord _
                 & Chr(9) & tbOrders!nomnom _
@@ -831,17 +847,17 @@ Dim p_days_start As Integer, p_days_end As Integer
     
     Grid.FormatString = "|<№ заказа|>кол-во|^Цех |^Дата |^ М|Статус" & _
     "|<Название Фирмы|<Изделия|>Заказано|>Согласовано"
-    Grid.ColWidth(0) = 0
+    Grid.colWidth(0) = 0
     'Grid.ColWidth(rtNomZak) =
-    Grid.ColWidth(rtReserv) = 765
-    Grid.ColWidth(rtCeh) = 765
-    Grid.ColWidth(rtData) = 1600
+    Grid.colWidth(rtReserv) = 765
+    Grid.colWidth(rtCeh) = 765
+    Grid.colWidth(rtData) = 1600
     'Grid.ColWidth(rtMen) =
-    Grid.ColWidth(rtStatus) = 930
-    Grid.ColWidth(rtFirma) = 3270
-    Grid.ColWidth(rtProduct) = 1950
+    Grid.colWidth(rtStatus) = 930
+    Grid.colWidth(rtFirma) = 3270
+    Grid.colWidth(rtProduct) = 1950
     'Grid.ColWidth(rtZakazano) =
-    Grid.ColWidth(rtOplacheno) = 810
+    Grid.colWidth(rtOplacheno) = 810
 
     If p_term_index = 0 Then
         p_days_start = 10000
@@ -914,45 +930,45 @@ Me.MousePointer = flexDefault
 End Sub
 
 Sub gridAutoWidth(pGrid As MSFlexGrid)
-Dim i As Integer
+Dim I As Integer
 Dim colHeaderText As String
 
-    For i = 0 To pGrid.Cols - 1
-        colHeaderText = pGrid.TextMatrix(0, i)
+    For I = 0 To pGrid.Cols - 1
+        colHeaderText = pGrid.TextMatrix(0, I)
         If colHeaderText = "" Then
-            pGrid.ColWidth(i) = 0
+            pGrid.colWidth(I) = 0
         ElseIf InStr(1, colHeaderText, "Номер ном.") Then
-            pGrid.ColWidth(i) = 1200
+            pGrid.colWidth(I) = 1200
         ElseIf InStr(1, colHeaderText, "Название", vbTextCompare) Then
-            pGrid.ColWidth(i) = 3500
+            pGrid.colWidth(I) = 3500
         ElseIf InStr(1, colHeaderText, "изм", vbTextCompare) Then
-            pGrid.ColWidth(i) = 500
+            pGrid.colWidth(I) = 500
         ElseIf InStr(1, colHeaderText, "Цена", vbTextCompare) Then
-            pGrid.ColWidth(i) = 600
+            pGrid.colWidth(I) = 600
         ElseIf InStr(1, colHeaderText, "К-во", vbTextCompare) Then
-            pGrid.ColWidth(i) = 1000
+            pGrid.colWidth(I) = 1000
         ElseIf InStr(1, colHeaderText, "Сумма", vbTextCompare) Then
-            pGrid.ColWidth(i) = 1150
+            pGrid.colWidth(I) = 1150
         ElseIf InStr(1, colHeaderText, "Проводка", vbTextCompare) Then
-            pGrid.ColWidth(i) = 1300
+            pGrid.colWidth(I) = 1300
         ElseIf InStr(1, colHeaderText, "Дата", vbTextCompare) Then
-            pGrid.ColWidth(i) = 900
+            pGrid.colWidth(I) = 900
         ElseIf InStr(1, colHeaderText, "Время", vbTextCompare) Then
-            pGrid.ColWidth(i) = 1200
+            pGrid.colWidth(I) = 1200
         ElseIf InStr(1, colHeaderText, "Кредит", vbTextCompare) Then
-            pGrid.ColWidth(i) = 1000
+            pGrid.colWidth(I) = 1000
         ElseIf InStr(1, colHeaderText, "Дебит", vbTextCompare) Then
-            pGrid.ColWidth(i) = 1000
+            pGrid.colWidth(I) = 1000
         ElseIf InStr(1, colHeaderText, "Мен.", vbTextCompare) Then
-            pGrid.ColWidth(i) = 230
+            pGrid.colWidth(I) = 230
         ElseIf InStr(1, colHeaderText, "Цех", vbTextCompare) Then
-            pGrid.ColWidth(i) = 430
+            pGrid.colWidth(I) = 430
         ElseIf InStr(1, colHeaderText, "-", vbTextCompare) Then
-            pGrid.ColWidth(i) = 0
+            pGrid.colWidth(I) = 0
         ElseIf InStr(1, colHeaderText, "#", vbTextCompare) Then
-            pGrid.ColWidth(i) = 300
+            pGrid.colWidth(I) = 300
         End If
-    Next i
+    Next I
     
 
 End Sub
@@ -964,9 +980,9 @@ Dim rowStr As String
     
     gridAutoWidth Grid
     
-    Grid.ColWidth(5) = 1500
-    Grid.ColWidth(6) = 800
-    Grid.ColWidth(13) = 1000
+    Grid.colWidth(5) = 1500
+    Grid.colWidth(6) = 800
+    Grid.colWidth(13) = 1000
     
     
     Sortable = False
@@ -995,7 +1011,7 @@ Dim rowStr As String
                 rowStr = rowStr _
                 & Chr(9) & tbOrders!nu _
                 & Chr(9) & tbOrders!iso _
-                & Chr(9) & Format(tbOrders!Rate, "#0.####") _
+                & Chr(9) & Format(tbOrders!rate, "#0.####") _
                 & Chr(9) & Format(tbOrders!sm_rur, "## ##0.00") _
                 & Chr(9) & Format(tbOrders!sm_currency, "## ##0.00") _
                 & Chr(9) & Format(tbOrders!kt_qty, "## ##0.00") _
@@ -1034,19 +1050,19 @@ If p_rowid = 1 Then
         Dim groupklassid  As Integer, headerRowIndex As Long
         Dim groupQtyFact As Single, groupQtyMax As Single
         Dim groupFact As Single, groupMax As Single
-            If groupklassid <> tbOrders!klassid Then
+            If groupklassid <> tbOrders!KlassId Then
                 Grid.AddItem tbOrders!klassOrdered
                 Grid.AddItem tbOrders!klassOrdered & Chr(9) & Chr(9) & tbOrders!klassName
 
                 quantity = quantity + 2
                 Grid.row = Grid.Rows - 1
                 'quantity = quantity + 1
-                Dim i As Integer
-                For i = sbnNomnom To 8
-                    Grid.col = i
+                Dim I As Integer
+                For I = sbnNomnom To 8
+                    Grid.col = I
                     Grid.CellFontBold = True
-                Next i
-                groupklassid = tbOrders!klassid
+                Next I
+                groupklassid = tbOrders!KlassId
                 groupQtyFact = 0: groupQtyMax = 0
                 groupFact = 0: groupMax = 0
                 headerRowIndex = Grid.Rows - 1
@@ -1144,18 +1160,18 @@ End Sub
 
 
 Sub subDetail()
-Dim str As String, i As Integer, delta As Integer, ed_izm As String
+Dim str As String, I As Integer, delta As Integer, ed_izm As String
 Dim str2 As String, str3 As String
 
 Grid.FormatString = "|<Номер|<Описание|>кол-во в одном |>кол-во общее|" & _
 "<Ед.измерения|>Цена|>Сумма|>Реализация"
-Grid.ColWidth(0) = 0
-Grid.ColWidth(1) = 1500
-Grid.ColWidth(2) = 3840
-Grid.ColWidth(3) = 765
-Grid.ColWidth(4) = 720
-Grid.ColWidth(5) = 420
-Grid.ColWidth(6) = 1080
+Grid.colWidth(0) = 0
+Grid.colWidth(1) = 1500
+Grid.colWidth(2) = 3840
+Grid.colWidth(3) = 765
+Grid.colWidth(4) = 720
+Grid.colWidth(5) = 420
+Grid.colWidth(6) = 1080
 
 strWhere = "20" & Mid$(param2, 7, 2) & "-" & Mid$(param2, 4, 2) & "-" & _
 left$(param2, 2) & Mid$(param2, 9)
@@ -1189,18 +1205,18 @@ If param1 = "p" Or param1 = "w" Then 'есть  гот.изделия
     gProductId = tbProduct!prId
     prExt = tbProduct!prExt
     If Not productNomenkToNNQQ(1, tbProduct!quant) Then GoTo NXT
-    For i = 1 To UBound(NN)
-      sql = "SELECT nomName, ed_izmer, Size, cod From sGuideNomenk WHERE nomNom='" & NN(i) & "'"
+    For I = 1 To UBound(NN)
+      sql = "SELECT nomName, ed_izmer, Size, cod From sGuideNomenk WHERE nomNom='" & NN(I) & "'"
       byErrSqlGetValues "##333", sql, str, ed_izm, str2, str3
       Grid.AddItem _
-        Chr(9) & Format(NN(i), "## ##0.00") _
+        Chr(9) & Format(NN(I), "## ##0.00") _
       & Chr(9) & str3 & " " & str & " " & str2 _
-      & Chr(9) & Format(QQ(i), "## ##0.00") _
-      & Chr(9) & Format(QQ2(i), "## ##0.00") _
+      & Chr(9) & Format(QQ(I), "## ##0.00") _
+      & Chr(9) & Format(QQ2(I), "## ##0.00") _
       & Chr(9) & ed_izm _
-      & Chr(9) & Format(Cena(i), "## ##0.00") _
-      & Chr(9) & Format(QQ3(i), "## ##0.00")
-    Next i
+      & Chr(9) & Format(Cena(I), "## ##0.00") _
+      & Chr(9) & Format(QQ3(I), "## ##0.00")
+    Next I
     Grid.AddItem ""
 NXT:
     tbProduct.MoveNext
@@ -1238,7 +1254,7 @@ If param1 = "n" Or param1 = "w" Then
 End If
 
 If param1 = "b" Then
-  Grid.ColWidth(3) = 0
+  Grid.colWidth(3) = 0
 '  sql = "SELECT sGuideNomenk.nomNom, sGuideNomenk.nomName, sGuideNomenk.cost, " & _
   "sGuideNomenk.ed_izmer2, sGuideNomenk.Size, sGuideNomenk.cod, " & _
   "sGuideNomenk.perList, sDMC.quant, sDMCrez.intQuant,  sDMCrez.numDoc " & _
@@ -1274,8 +1290,8 @@ sql = "select po.outDate, o.numOrder, po.nomnom, r.intQuant AS cenaed, po.quant,
 End If
 
 If param1 = "m" Then
-  Grid.ColWidth(3) = 0
-  Grid.ColWidth(8) = 0
+  Grid.colWidth(3) = 0
+  Grid.colWidth(8) = 0
   sql = "SELECT sGuideNomenk.nomNom, sGuideNomenk.cod, sGuideNomenk.nomName, " & _
   "sGuideNomenk.Size, sDMC.quant, sGuideNomenk.cost, sGuideNomenk.perList, " & _
   "sGuideNomenk.ed_Izmer2 " & _
@@ -1329,7 +1345,7 @@ leng = UBound(NN)
 End Sub
 'сумма( по себест-ти) уже отгруженной номенклатуры(незакрытые заказы)
 Function otgruzNomenk() As Single
-Dim i As Integer
+Dim I As Integer
 otgruzNomenk = 0
 
 ReDim NN(0): ReDim QQ(0): ReDim QQ2(0): QQ2(0) = 0: ReDim QQ3(0)
@@ -1365,16 +1381,16 @@ Wend
 tbNomenk.Close
 
 otgruzNomenk = 0
-For i = 1 To UBound(NN)
-    otgruzNomenk = otgruzNomenk + QQ3(i)
-Next i
+For I = 1 To UBound(NN)
+    otgruzNomenk = otgruzNomenk + QQ3(I)
+Next I
 
 End Function
 
 'в QQ3 накапливается суммарная себест-ть ном-ры в пересчете на цел.ед.изм!!!
 'перед исп-ем надо ReDim NN(0): ReDim QQ(0): ReDim QQ2(0) : ReDim QQ3(0):QQ2(0)=0 - не б.этапа
 Function productNomenkToNNQQ(pQuant As Single, eQuant As Single) As Boolean
-Dim i As Integer, gr() As String
+Dim I As Integer, gr() As String
 
 productNomenkToNNQQ = False
 'ReDim NN(0): ReDim QQ(0)
@@ -1388,11 +1404,11 @@ sql = "SELECT sProducts.nomNom, sProducts.quantity, sProducts.xgroup, " & _
 'MsgBox sql
 Set tbNomenk = myOpenRecordSet("##192", sql, dbOpenDynaset)
 If tbNomenk Is Nothing Then Exit Function
-ReDim gr(0): i = 0
+ReDim gr(0): I = 0
 While Not tbNomenk.EOF
     nomenkToNNQQ pQuant, eQuant, eQuant * tbNomenk!cost / tbNomenk!perList '!!!
-    i = i + 1
-    ReDim Preserve gr(i): gr(i) = tbNomenk!xgroup
+    I = I + 1
+    ReDim Preserve gr(I): gr(I) = tbNomenk!xgroup
     tbNomenk.MoveNext
 Wend
 tbNomenk.Close
@@ -1408,9 +1424,9 @@ sql = "SELECT sProducts.nomNom, sProducts.quantity, sProducts.xgroup, " & _
 Set tbNomenk = myOpenRecordSet("##177", sql, dbOpenDynaset)
 If tbNomenk Is Nothing Then Exit Function
 While Not tbNomenk.EOF
-    For i = 1 To UBound(gr) ' если группа состоит из одной ном-ры, то она
-        If gr(i) = tbNomenk!xgroup Then GoTo NXT ' НЕвариантна, т.к. не
-    Next i                                      ' не попала в xVariantNomenc
+    For I = 1 To UBound(gr) ' если группа состоит из одной ном-ры, то она
+        If gr(I) = tbNomenk!xgroup Then GoTo NXT ' НЕвариантна, т.к. не
+    Next I                                      ' не попала в xVariantNomenc
     nomenkToNNQQ pQuant, eQuant, eQuant * tbNomenk!cost / tbNomenk!perList '!!!
 NXT: tbNomenk.MoveNext
 Wend
@@ -1432,13 +1448,13 @@ sql = "SELECT sDocs.numDoc, sDocs.xDate, sGuideSource.sourceName, " & _
 Set tbProduct = myOpenRecordSet("##434", sql, dbOpenForwardOnly)
 If tbProduct Is Nothing Then Exit Sub
 Grid.FormatString = "|<Накладная №|<Дата|<Откуда|<Куда|<Примечание|<Материалы"
-Grid.ColWidth(0) = 0
-Grid.ColWidth(rrNumOrder) = 930
-Grid.ColWidth(rrDate) = 765
-Grid.ColWidth(rrFirm) = 1300
-Grid.ColWidth(rrProduct) = 1300
-Grid.ColWidth(rrMater) = 1035
-Grid.ColWidth(rrReliz) = 1035
+Grid.colWidth(0) = 0
+Grid.colWidth(rrNumOrder) = 930
+Grid.colWidth(rrDate) = 765
+Grid.colWidth(rrFirm) = 1300
+Grid.colWidth(rrProduct) = 1300
+Grid.colWidth(rrMater) = 1035
+Grid.colWidth(rrReliz) = 1035
 quantity = 0
 While Not tbProduct.EOF
     quantity = quantity + 1
@@ -1485,17 +1501,17 @@ Set tbProduct = myOpenRecordSet("##433", sql, dbOpenForwardOnly)
 If tbProduct Is Nothing Then Exit Sub
 If statistic = "" Then
     Grid.FormatString = "|<Заказ|<Дата|<Фирма||>Материалы|>Реализация"
-    Grid.ColWidth(rrDate) = 765
+    Grid.colWidth(rrDate) = 765
 Else
     Grid.FormatString = "|<Закаpов||<Фирма||>Материалы|>Реализация"
-    Grid.ColWidth(rrDate) = 0
+    Grid.colWidth(rrDate) = 0
 End If
-Grid.ColWidth(0) = 0
-Grid.ColWidth(rrNumOrder) = 885
-Grid.ColWidth(rrFirm) = 3855
-Grid.ColWidth(rrProduct) = 0
-Grid.ColWidth(rrReliz) = 1005
-Grid.ColWidth(rrMater) = 1005
+Grid.colWidth(0) = 0
+Grid.colWidth(rrNumOrder) = 885
+Grid.colWidth(rrFirm) = 3855
+Grid.colWidth(rrProduct) = 0
+Grid.colWidth(rrReliz) = 1005
+Grid.colWidth(rrMater) = 1005
 
 quantity = 0
 While Not tbProduct.EOF
@@ -1506,7 +1522,7 @@ While Not tbProduct.EOF
     & Chr(9) & tbProduct!name _
     & Chr(9) _
     & Chr(9) & Format(tbProduct!costTotal, "## ##0.00") _
-    & Chr(9) & Format(tbProduct!cenaTotal, "## ##0.00") _
+    & Chr(9) & Format(tbProduct!CenaTotal, "## ##0.00") _
   
   quantity = quantity + 1
   If statistic = "" Then
@@ -1542,18 +1558,18 @@ Set tbProduct = myOpenRecordSet("##383", sql, dbOpenForwardOnly)
 If tbProduct Is Nothing Then Exit Sub
 If statistic = "" Then
     Grid.FormatString = "|Заказ|<Дата|<Фирма|<Изделия||>Реализация"
-    Grid.ColWidth(rrDate) = 765
-    Grid.ColWidth(rrProduct) = 2400
+    Grid.colWidth(rrDate) = 765
+    Grid.colWidth(rrProduct) = 2400
 Else
     Grid.FormatString = "|Заказов||<Фирма|||>Реализация"
-    Grid.ColWidth(rrDate) = 0
-    Grid.ColWidth(rrProduct) = 0
+    Grid.colWidth(rrDate) = 0
+    Grid.colWidth(rrProduct) = 0
 End If
-Grid.ColWidth(0) = 0
-Grid.ColWidth(rrNumOrder) = 885
-Grid.ColWidth(rrFirm) = 3855
-Grid.ColWidth(rrReliz) = 1005
-Grid.ColWidth(rrMater) = 0 '1005
+Grid.colWidth(0) = 0
+Grid.colWidth(rrNumOrder) = 885
+Grid.colWidth(rrFirm) = 3855
+Grid.colWidth(rrReliz) = 1005
+Grid.colWidth(rrMater) = 0 '1005
 
 'prevDate = 0: prevNom = 0: quantity = 0: prevReliz = 0: prevMater = 0
 quantity = 0: prevName = "$$$$#####@@@@"
@@ -1618,19 +1634,19 @@ If tbProduct Is Nothing Then Exit Sub
 Grid.FormatString = "|Заказ|<Дата|<Фирма|<Изделия|>Материалы|>Реализация"
 If statistic = "" Then
     Grid.FormatString = "|Заказ|<Дата|<Фирма|<Изделия|>Материалы|>Реализация"
-    Grid.ColWidth(0) = 300
-    Grid.ColWidth(rrDate) = 765
-    Grid.ColWidth(rrProduct) = 2400
+    Grid.colWidth(0) = 300
+    Grid.colWidth(rrDate) = 765
+    Grid.colWidth(rrProduct) = 2400
 Else
     Grid.FormatString = "|Заказов||<Фирма||>Материалы|>Реализация"
-    Grid.ColWidth(0) = 0
-    Grid.ColWidth(rrDate) = 0
-    Grid.ColWidth(rrProduct) = 0
+    Grid.colWidth(0) = 0
+    Grid.colWidth(rrDate) = 0
+    Grid.colWidth(rrProduct) = 0
 End If
-Grid.ColWidth(rrNumOrder) = 885
-Grid.ColWidth(rrFirm) = 3855
-Grid.ColWidth(rrReliz) = 1005
-Grid.ColWidth(rrMater) = 1005
+Grid.colWidth(rrNumOrder) = 885
+Grid.colWidth(rrFirm) = 3855
+Grid.colWidth(rrReliz) = 1005
+Grid.colWidth(rrMater) = 1005
 
 prevDate = 0: prevNom = 0: quantity = 0: prevReliz = 0: prevMater = 0
 While Not tbProduct.EOF
@@ -2087,7 +2103,7 @@ End Sub
 
 Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then
-        MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
+        MsgBox "ColWidth = " & Grid.colWidth(Grid.MouseCol)
 Else
 'ElseIf Grid.col = rrReliz Or Grid.col = rrMater Then
     laControl "col"
