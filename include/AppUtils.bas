@@ -1,6 +1,8 @@
 Attribute VB_Name = "AppUtils"
 Option Explicit
 
+' Этот файл разделяется между prior, stime и rowmat.
+' не использовать в cfg
 
 Sub GridToExcel(Grid As MSFlexGrid, Optional title As String = "")
 
@@ -17,11 +19,11 @@ objExel.Workbooks.Add
 With objExel.ActiveSheet
 .Cells(1, 2).value = title
 ReDim Preserve strA(Grid.Cols + 1)
-For r = 0 To Grid.Rows - 1
+For r = 0 To Grid.rows - 1
     Dim curColumn As Integer
     curColumn = 1
     For c = 1 To Grid.Cols - 1
-        If Grid.colWidth(c) > 0 Then
+        If Grid.ColWidth(c) > 0 Then
             str = Grid.TextMatrix(r, c) '=' - наверно зарезервирован для ввода формул
             If left$(str, 1) = "=" Then str = "." & str
 'иногда символы Cr и Lf (поле MEMO в базе) дают Err в Excel, поэтому из поля

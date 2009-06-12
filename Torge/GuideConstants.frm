@@ -85,6 +85,8 @@ Grid.row = Grid.Rows - 1
 mousRow = Grid.Rows - 1
 Grid.col = gmConstants
 mousCol = gmConstants
+cmAdd.Enabled = False
+cmDel.Enabled = False
 On Error Resume Next
 Grid.SetFocus
 textBoxInGridCell tbMobile, Grid
@@ -92,17 +94,17 @@ textBoxInGridCell tbMobile, Grid
 End Sub
 
 Private Sub cmDel_Click()
-Dim i As Integer
+Dim I As Integer
 sql = "DELETE  From GuideConstants WHERE (((ConstantsId)=" & gConstantsId & "));"
-i = myExecute("##440", sql, -198)
-If i = 0 Then
+I = myExecute("##440", sql, -198)
+If I = 0 Then
     quantity = quantity - 1
     If quantity > 0 Then
         Grid.RemoveItem mousRow
     Else
         clearGridRow Grid, 1
     End If
-ElseIf i = -2 Then
+ElseIf I = -2 Then
     MsgBox "У этого Менеджера есть заказы либо он задействовон в справочниках " & _
     "Фирм.", , "Удаление невозможно!"
 End If
@@ -222,6 +224,8 @@ End Sub
 
 Sub lbHide()
 tbMobile.Visible = False
+cmAdd.Enabled = True
+cmDel.Enabled = True
 
 Grid.Enabled = True
 On Error Resume Next
@@ -240,8 +244,29 @@ If Grid.MouseRow = 0 And Shift = 2 Then _
 
 End Sub
 
+Private Function validateConstant(name As String, Optional ByVal value As String = "0") As Boolean
+Dim initStr As String
+    validateConstant = True
+    If Not IsNumeric(value) Then
+        MsgBox "Неверное значение константы", vbOKOnly Or vbCritical, "Повторите ввод"
+        GoTo er
+    Else
+        value = CStr(CDbl(value))
+    End If
+    
+    On Error GoTo invalid
+    
+    initStr = name & "=" & value
+    sc.ExecuteStatement (initStr)
+    Exit Function
+invalid:
+    MsgBox "Неверное значение или синтаксис константы", vbOKOnly Or vbCritical, "Повторите ввод"
+er:
+    validateConstant = False
+End Function
+
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim str As String, i As Integer
+Dim str As String, I As Integer
 Dim initStr As String
 
 If KeyCode = vbKeyReturn Then
@@ -252,27 +277,27 @@ If KeyCode = vbKeyReturn Then
   End If
   If mousCol = gmConstants Then
     If frmMode = "sourceAdd" Then
-      sql = "INSERT INTO GuideConstants (Constants) VALUES ( '" & str & "')"
-      If myExecute("##465", sql) <> 0 Then GoTo EN1
-      
-      sql = "select constantsID from GuideConstants where Constants = '" & str & "'"
-      byErrSqlGetValues "##465.2", sql, gConstantsId
-      
-      Grid.TextMatrix(mousRow, gmConstantsId) = gConstantsId
-      quantity = quantity + 1
-      
-        initStr = str & "=0"
-        sc.ExecuteStatement (initStr)
+        If Not validateConstant(str) Then GoTo CNC
+        sql = "INSERT INTO GuideConstants (Constants) VALUES ( '" & str & "')"
+        If myExecute("##465", sql) <> 0 Then GoTo EN1
+        
+        sql = "select constantsID from GuideConstants where Constants = '" & str & "'"
+        byErrSqlGetValues "##465.2", sql, gConstantsId
+        
+        Grid.TextMatrix(mousRow, gmConstantsId) = gConstantsId
+        quantity = quantity + 1
       
     Else
+       If Not validateConstant(str, Grid.TextMatrix(mousRow, gmValue)) Then GoTo CNC
        If ValueToGuideConstantsField("##443", str, "Constants") <> 0 Then GoTo EN1
     End If
   ElseIf mousCol = gmValue Then
-    If ValueToGuideConstantsField("##443", str, "Value") <> 0 Then
-        GoTo EN1
+    If validateConstant(Grid.TextMatrix(mousRow, gmConstants), str) Then
+        If ValueToGuideConstantsField("##443", str, "Value") <> 0 Then
+            GoTo EN1
+        End If
     Else
-        initStr = Grid.TextMatrix(mousRow, gmConstants) & "=" & CDbl(str)
-        sc.ExecuteStatement (initStr)
+        Exit Sub
     End If
   ElseIf mousCol = gmNote Then
        If ValueToGuideConstantsField("##443", str, "Note") <> 0 Then GoTo EN1
@@ -284,26 +309,13 @@ ElseIf KeyCode = vbKeyEscape Then
 CNC:
  If mousCol = gmConstants And frmMode = "sourceAdd" Then
     If quantity > 0 Then
-                Grid.RemoveItem quantity + 1 ' ту, которую зря добавили
+        Grid.RemoveItem quantity + 1 ' ту, которую зря добавили
     End If
  End If
 EN1:
  frmMode = ""
  lbHide
 End If
-'Exit Sub'
-
-'ERR1:
-'tbGuide.Close
-'errorCodAndMsg "##444"
-'If Err = 3022 Then
-'    MsgBox "Это название уже есть", , "Ошибка!"
-'    MsgBox "Это название уже есть.", , "Ошибка"'
-'    GoTo CNC
-'Else
-'    MsgBox Error, , "Ошибка 444-" & Err & ":  " '##444
-'    End
-'End If
 
 End Sub
 
