@@ -473,5 +473,13 @@ end;
 		<rollback><delete tableName="GuideConstants"></delete></rollback>
 	</changeSet>
 -->
+
+	<changeSet id="1" author="mantis-44" runOnChange="true">
+		<comment></comment>
+		<sqlFile path="triggers/sDmcRez.wf_update_nomenk.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback/>
+	</changeSet>
+
+
 </databaseChangeLog>
 

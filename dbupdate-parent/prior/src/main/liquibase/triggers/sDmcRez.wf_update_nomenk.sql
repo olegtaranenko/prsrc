@@ -19,8 +19,10 @@ begin
 	  
 	select v.sysname
 		, n.perList 
+		, rate
 	into remoteServerNew
 		, v_perList 
+		, v_currency_rate
 	from BayOrders o
 	join GuideVenture v on o.ventureId = v.ventureId and v.standalone = 0
 	join sGuideNomenk n on n.nomNom = old_name.nomNom
@@ -29,7 +31,6 @@ begin
 
 	if remoteServerNew is not null then
 		if update(quantity) or update(intQuant) then
-			set v_currency_rate = system_currency_rate();
 			set v_quantity = round(new_name.quantity/v_perList, 2);
 			call update_remote(remoteServerNew, 'scet', 'summa_sale'
 				, convert(varchar(20), v_currency_rate * v_quantity * new_name.intQuant)
