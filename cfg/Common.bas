@@ -19,6 +19,11 @@ Dim success As Boolean
     ElseIf getCurrentSetting("deploy", argumentSettings) <> "" Then
         localExe = getFullExeName(getCurrentSetting("deploy", argumentSettings))
         success = exeDeploy(localExe)
+        If success Then
+            MsgBox "Файл " & localExe & " успешно выложен в репозиторий.", vbInformation, "Сообщение"
+        Else
+            MsgBox "Ошибка при попытке выложить файл " & localExe & " в репозиторий.", vbCritical, "Ошибка"
+        End If
     End If
     
     If Not success Then
@@ -263,13 +268,13 @@ Function getExeName(alias As String) As String
 Dim I As Integer
 Dim hasExt As Boolean
 Dim appAliases(3) As MapEntry
-    appAliases(1).key = "prior": appAliases(1).value = "PriorN.exe"
-    appAliases(2).key = "stime": appAliases(2).value = "stimeN.exe"
-    appAliases(3).key = "rowmat": appAliases(3).value = "Rowmat_N.exe"
+    appAliases(1).Key = "prior": appAliases(1).value = "PriorN.exe"
+    appAliases(2).Key = "stime": appAliases(2).value = "stimeN.exe"
+    appAliases(3).Key = "rowmat": appAliases(3).value = "Rowmat_N.exe"
     
     getExeName = alias
     For I = 1 To UBound(appAliases)
-        If getExeName = appAliases(I).key Then
+        If getExeName = appAliases(I).Key Then
             getExeName = appAliases(I).value
             Exit Function
         End If
