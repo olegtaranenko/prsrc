@@ -20,9 +20,9 @@ Dim success As Boolean
         localExe = getFullExeName(getCurrentSetting("deploy", argumentSettings))
         success = exeDeploy(localExe)
         If success Then
-            MsgBox "Файл " & localExe & " успешно выложен в репозиторий.", vbInformation, "Сообщение"
+            MsgBox "Файл " & localExe & vbCr & " успешно выложен в репозиторий.", vbInformation
         Else
-            MsgBox "Ошибка при попытке выложить файл " & localExe & " в репозиторий.", vbCritical, "Ошибка"
+            MsgBox "Ошибка при попытке выложить файл " & localExe & " в репозиторий.", vbCritical
         End If
     End If
     
@@ -31,6 +31,22 @@ Dim success As Boolean
     End If
 End Sub
 
+Private Function isReporsitoryExists() As String
+
+    isReporsitoryExists = getEffectiveSetting("repositoryPath")
+    If isReporsitoryExists <> "" Then
+        On Error GoTo failed
+        If ((GetAttr(isReporsitoryExists) And vbDirectory) = vbDirectory) Then
+            'ok
+            Exit Function
+        End If
+    End If
+    
+failed:
+    isReporsitoryExists = ""
+    info "Wrong repository path: " & isReporsitoryExists _
+            & "Check network access or/and correct program settings"
+End Function
 
 ' returns true if succes false otherwise
 Private Function exeDeploy(localExe As String) As Boolean
@@ -52,7 +68,7 @@ End Function
 ' returns true if succes false otherwise
 Private Function exeStart(localExe As String) As Boolean
 
-Dim existsFile As String
+Dim existsFile As String, repositoryPath  As String
 Dim failed As Boolean
 Dim CmdLine As String, path As String, exe As String
 Dim exeHandle As Double
@@ -70,19 +86,24 @@ Dim exeHandle As Double
         & vbCr & "Необходимо исправить конфигурацию запуска приложения cfg.exe"
     End If
     
-    failed = checkSelfVersion(localExe)
-    If failed Then
-        fatalError "Oшибка при проверке версии управляющей программы."
+    
+    repositoryPath = isReporsitoryExists
+    If repositoryPath <> "" Then
+        ' проверяем сами себя. Если вдруг обнаружена более свежая версия
+        ' то тогда через клиентскую программу обновляем cfg.exe
+        failed = checkSelfVersion(localExe, repositoryPath)
+        If failed Then
+            fatalError "Oшибка при проверке версии управляющей программы cfg.exe"
+        End If
+        failed = checkVersionExe(localExe, repositoryPath)
+        If failed Then
+            fatalError "Oшибка при проверке версии программы " & localExe & "."
+        End If
+    Else
+        MsgBox "Не обнаружен (или ошибочно задан) репозиторий обновлений программ" _
+        & vbCr & "Работа будет продолжена с текущей версией без возможности обновления на новые версии", vbCritical, "Обратитесь к администратору"
     End If
     
-    ' проверяем сами себя. Если вдруг обнаружена более свежая версия
-    ' то тогда через клиентскую программу обновляем cfg.exe
-    failed = checkVersionExe(localExe)
-    
-    If failed Then
-        fatalError "Oшибка при проверке версии программы " & localExe & "."
-    End If
-
     CmdLine = localExe & getAppArguments
     
     exeHandle = Shell(CmdLine, vbNormalFocus)
@@ -94,9 +115,8 @@ failed:
 End Function
 
 
-Function checkSelfVersion(ByVal localExe As String) As Boolean
+Function checkSelfVersion(ByVal localExe As String, repositoryPath As String) As Boolean
 Dim myInfo As VersionInfo, repositoryInfo As VersionInfo
-Dim repositoryPath As String
 Dim repositoryExe As String, appExe As String
 
     trace "checkSelfVersion() start..."
@@ -192,16 +212,15 @@ archivePart = getEffectiveSetting("archive", "archive")
     getArchevePath = path & "\" & archivePart
 End Function
 
-Function checkVersionExe(localExe As String) As Boolean
+Function checkVersionExe(localExe As String, repositoryPath As String) As Boolean
 Dim myInfo As VersionInfo, repositoryInfo As VersionInfo
 Dim m As Variant
 Dim nameWithoutPath As String
-Dim repositoryExe As String, repositoryPath As String
+Dim repositoryExe As String
 Dim check As Integer
 Dim doCopy As Boolean
 
 On Error GoTo EN1
-    repositoryPath = getEffectiveSetting("repositoryPath")
     nameWithoutPath = stripPath(localExe)
     repositoryExe = repositoryPath & "\" & nameWithoutPath
 
