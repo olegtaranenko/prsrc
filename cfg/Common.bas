@@ -1,5 +1,8 @@
 Attribute VB_Name = "Common"
 Option Explicit
+Dim ErrNumber As Integer, ErrDescription As String
+
+
 
 '-- Main application entry point.
 Sub Main()
@@ -97,7 +100,14 @@ Dim exeHandle As Double
         End If
         failed = checkVersionExe(localExe, repositoryPath)
         If failed Then
-            fatalError "Oшибка при проверке версии программы " & localExe & "."
+            If ErrNumber = 70 Then
+                fatalError "Oшибка при копировании новой версии файла " & localExe _
+                & vbCr & "Возможно нужно просто выгрузить из памяти уже запущенную версию программы" _
+                & vbCr & "Если ошибка не уйдет -> "
+            Else
+                fatalError "Oшибка при проверке версии программы " & localExe _
+                & vbCr & "Номер ошибки: " & ErrNumber & " - " & ErrDescription
+            End If
         End If
     Else
         MsgBox "Не обнаружен (или ошибочно задан) репозиторий обновлений программ" _
@@ -258,6 +268,8 @@ On Error GoTo EN1
     End If
     Exit Function
 EN1:
+    ErrNumber = Err.Number
+    ErrDescription = Err.Description
     checkVersionExe = True
 End Function
 
