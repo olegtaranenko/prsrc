@@ -1,5 +1,6 @@
 VERSION 5.00
-Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCTL.OCX"
+Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "mscomctl.ocx"
+Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Object = "{86CF1D34-0C5F-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCT2.OCX"
 Begin VB.Form Analityc 
    Caption         =   "Параметры запроса"
@@ -188,7 +189,7 @@ Begin VB.Form Analityc
          _ExtentX        =   2138
          _ExtentY        =   508
          _Version        =   393216
-         Format          =   16515073
+         Format          =   16580609
          CurrentDate     =   39599
       End
       Begin MSComCtl2.DTPicker tbEndDate 
@@ -200,7 +201,7 @@ Begin VB.Form Analityc
          _ExtentX        =   2138
          _ExtentY        =   508
          _Version        =   393216
-         Format          =   16515073
+         Format          =   16580609
          CurrentDate     =   39599
       End
       Begin VB.Label Label5 
@@ -231,12 +232,34 @@ Begin VB.Form Analityc
          Width           =   624
       End
    End
-   Begin VB.Frame Frame1 
-      Caption         =   "Дополнительные условия"
+   Begin VB.Frame climat 
+      Caption         =   "Выберите название фирмы"
       Height          =   4572
       Left            =   240
       TabIndex        =   0
       Top             =   3120
+      Visible         =   0   'False
+      Width           =   4932
+      Begin MSFlexGridLib.MSFlexGrid clientId 
+         Height          =   4200
+         Left            =   120
+         TabIndex        =   40
+         Top             =   240
+         Width           =   4764
+         _ExtentX        =   8403
+         _ExtentY        =   7408
+         _Version        =   393216
+         MergeCells      =   2
+         AllowUserResizing=   1
+      End
+   End
+   Begin VB.Frame default 
+      Caption         =   "Дополнительные условия"
+      Height          =   4572
+      Left            =   240
+      TabIndex        =   39
+      Top             =   3120
+      Visible         =   0   'False
       Width           =   4932
       Begin VB.CheckBox ckKriteriumFirms 
          Caption         =   "Выбор фирм(ы)"
@@ -435,6 +458,7 @@ Private Sub cbGroupByRow_Change()
     If cbGroupByColumn.ListCount > 0 Then
         cbGroupByColumn.ListIndex = 0
     End If
+    tuneParameterFrame cbGroupByRow.ItemData(cbGroupByRow.ListIndex), cbGroupByColumn.ItemData(cbGroupByColumn.ListIndex)
     checkDirtyFilterCommads
 End Sub
 
@@ -534,6 +558,7 @@ Private Sub checkUpDown()
         cbDateShift.Enabled = False
     End If
 End Sub
+
 Private Sub cmApply_Click()
 Dim filterId As Integer
 
@@ -679,6 +704,25 @@ Private Sub cleanFilterWindows()
     cleanOborud
 End Sub
 
+Private Sub tuneParameterFrame(byRowId As Integer, byColumnId As Integer)
+    Dim analysId As Integer, analysValue As String
+    sql = "select n_get_analysid (" & byRowId & ", " & byColumnId & ")"
+    byErrSqlGetValues "W#tuneParam.1", sql, analysId
+    
+    sql = "select n_analys_value(" & analysId & ", 'parametersFrame')"
+    byErrSqlGetValues "W#tuneParam.1", sql, analysValue
+    
+    default.Visible = False
+    climat.Visible = False
+    If analysValue = "default" Then
+        default.Visible = True
+    End If
+    If analysValue = "climat" Then
+        climat.Visible = True
+    End If
+    
+End Sub
+
 
 Sub initFilter(filterName As String, personal As Integer)
 
@@ -703,6 +747,8 @@ Dim filterId As Integer, byRowId As Integer, byColumnId As Integer
         setListIndexByItemDataValue cbGroupByColumn, byColumnId
     End If
     
+    tuneParameterFrame byRowId, byColumnId
+
     
     sql = " select " _
         & " i.id as itemId, p.id as paramId, isActive as isActive, itemType, paramType, paramClass, intValue, charValue" _
@@ -852,9 +898,10 @@ Dim itemId As Integer
 Dim filterId As Integer
 Dim personal As Integer
 
+    
     ' проверяем группы материалов
     hasCheckedMat = getCheckedInTree(tvMat)
-    If Not hasCheckedMat And ckKriteriumMat.value = 1 Then
+    If Not hasCheckedMat And ckKriteriumMat.Visible And ckKriteriumMat.value = 1 Then
         MsgBox "Не выбрано ни одной группы материалов. " _
         & vbCr & "Нужно выбрать хотя бы одну или отключить критерий по материалом", vbExclamation, "Неправильный выбор параметров"
         Exit Function
@@ -862,7 +909,7 @@ Dim personal As Integer
     
     ' проверяем регионы
     hasCheckedReg = getCheckedInTree(tvRegion)
-    If Not hasCheckedReg And ckKriteriumRegion.value = 1 Then
+    If Not hasCheckedReg And ckKriteriumRegion.Visible And ckKriteriumRegion.value = 1 Then
         MsgBox "Не выбрано ни одного региона. " _
         & vbCr & "Нужно выбрать хотя бы один или отключить критерий по регионам", vbExclamation, "Неправильный выбор параметров"
         Exit Function
@@ -870,7 +917,7 @@ Dim personal As Integer
 
     hasOborud = getOborudItems
     
-    If Not hasOborud And ckKriteriumOborud.value = 1 Then
+    If Not hasOborud And ckKriteriumOborud.Visible And ckKriteriumOborud.value = 1 Then
         MsgBox "Не выбрано никакого типа оборудования. " _
         & vbCr & "Нужно выбрать хотя бы один или отключить критерий по оборудования", vbExclamation, "Неправильный выбор параметров"
         Exit Function
@@ -895,7 +942,16 @@ Dim personal As Integer
         indexColumn = 0
     End If
     
+    Dim selectedClientId As String
+    If clientId.Visible Then
+        selectedClientId = clientId.TextMatrix(clientId.row, 0)
+    End If
+    
     filterId = prepareFilter(filterName, personal, cbGroupByRow.ItemData(indexRow), cbGroupByColumn.ItemData(indexColumn))
+    
+    If selectedClientId <> "" Then
+        itemId = saveFilterItem(filterId, "client", selectedClientId)
+    End If
     
     If hasCheckedMat Then
         itemId = saveFilterItem(filterId, "materials", ckKriteriumMat.value)
@@ -916,7 +972,7 @@ Dim personal As Integer
         Next i
     End If
     
-    If ckKriteriumNoOborud.value = 1 Then
+    If ckKriteriumNoOborud.Visible And ckKriteriumNoOborud.value = 1 Then
         itemId = saveFilterItem(filterId, "noOboruds", 1)
     End If
     
@@ -1051,6 +1107,10 @@ Dim i As Integer
     'проинициализировать листбокс группировки по горизонтали
     initByRowList
     
+    'проинициализировать таблицу с фирмами - клиентами, закупающими материалы
+    
+    initClientGrid
+    
     Dim currentFilterId As Integer, filterName As String, personal As Integer
     currentFilterId = getEffectiveSetting("CurrentFilter", 0)
     
@@ -1114,9 +1174,27 @@ Private Sub initByRowList()
     End If
     
     populateAxeList table, cbGroupByRow
-
+    
 End Sub
 
+Private Sub initClientGrid()
+    sql = "select * from bayGuideFirms where firmId > 0 order by name "
+    
+    Set table = myOpenRecordSet("W#initByRowList", sql, dbOpenForwardOnly)
+    If table Is Nothing Then
+        myBase.Close: End
+    End If
+    
+    clientId.FormatString = "|<Название фирмы"
+    clientId.colWidth(0) = 0
+    clientId.colWidth(1) = clientId.Width
+    
+    While Not table.EOF
+        clientId.AddItem table!firmId & vbTab & table!Name
+        table.MoveNext
+    Wend
+    clientId.RemoveItem (1)
+End Sub
 
 
 Private Sub tvMat_NodeCheck(ByVal Node As MSComctlLib.Node)
@@ -1130,6 +1208,9 @@ End Sub
 Private Function getOborudItems() As Boolean
 Dim i As Integer
 
+    getOborudItems = False
+    If Not cbOborud(1).Visible Then Exit Function
+    
     For i = 1 To 3
         If cbOborud(i).value = 1 Then
             getOborudItems = True
@@ -1145,6 +1226,10 @@ Dim currentNode As Node
 Dim i As Integer
 
     getCheckedInTree = False
+    If Not tView.Visible Then
+        Exit Function
+    End If
+    
     For i = 1 To tView.Nodes.Count
         Set currentNode = tView.Nodes(i)
         If currentNode.checked Then

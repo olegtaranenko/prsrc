@@ -12,9 +12,6 @@ CREATE procedure n_list_climat_by_periods (
 )
 begin
 	declare v_region_flag integer;
-	declare v_material_flag integer;
-	declare v_oborud_flag integer;
-	declare v_no_oborud_flag integer;
 
 	declare v_detail      integer;
 	declare v_detail_fine integer;
@@ -22,9 +19,7 @@ begin
 	declare v_begin       date;
 	declare v_end         date;
 
-	declare v_firmId      integer;
-
-	set v_firmId = p_rowId;
+	declare v_clientId      integer;
 
 	set v_detail      = 0;
 	set v_detail_fine = 0;
@@ -35,13 +30,7 @@ begin
 		end if;
 	end if;
 
-	select count(*) into v_region_flag   	from #regions   where isActive = 1;
-	select count(*) into v_material_flag 	from #materials where isActive = 1;
-	select count(*) into v_no_oborud_flag   from #noOboruds;
-	set v_oborud_flag = 0;
-	if v_no_oborud_flag = 0 then
-		select count(*) into v_oborud_flag   from #oborudItems where isActive = 1;
-	end if;
+	select clientId into v_clientId from #client;
 
 
 	call n_fill_periods(p_begin, p_end, p_period_type, p_columnId);
@@ -55,164 +44,86 @@ begin
 	end if;
 
 	
-	create table #sale_isum(
-		  numorder   integer
-		, orderPaid       float
-		, orderOrdered    float
-		, indate     date
-		, periodid   integer
-		, firmId     integer
+	create table #sale_item (
+		  numorder integer
+		, nomnom   varchar(20)
+		, indate   date
+		, quant    float
+		, cenaEd   float
+		, periodid integer        null
+		, nomname  varchar(128)
 	);
 
 
-	insert into #sale_isum (
-		numorder, indate, firmId, orderPaid, orderOrdered
+	insert into #sale_item (
+		numorder, nomnom, indate, quant, cenaEd, nomname
 	)
-	select o.numorder, o.indate, o.firmId, o.paid, s.cena
+	select 
+		o.numorder, s.nomnom, o.indate
+		, s.quant / n.perlist, s.cenaEd
+		, trim(n.cod + ' ' + n.nomname + ' ' + n.size)
 	from 
 		bayorders o
-	join orderSellOrde s on s.numorder = o.numorder
+	join itemSellOrde s on s.numorder = o.numorder
+	join sguidenomenk n on s.nomnom = n.nomnom
 	where 
 			o.indate >= isnull(v_begin, o.inDate) and (v_end is null or o.inDate < v_end)
-		and (v_region_flag = 0 or exists (select 1 from #regions r, bayguidefirms f where f.firmid = o.firmid and r.regionid = f.regionid))
-		and (v_detail = 0 or o.firmId = v_firmId)
-		and (v_oborud_flag = 0 
-			or exists (
-				select 1 from oborudKomplekt ok 
-				, #oborudItems oi, bayGuideFirms f
-				where ok.oborudId = f.oborudId and ok.oborudItemId = oi.oborudItemId and f.firmId = o.firmId
-			)
-		)
-		and (v_no_oborud_flag = 0 
-			or exists (
-				select 1 from bayGuideFirms f
-				where f.firmId = o.firmId and f.oborudId is null
-			)
-		)
+		and o.firmId = v_clientId
 	;
 
 
-	update #sale_isum s set s.periodId = p.periodId
+	update #sale_item s set s.periodId = p.periodId
 	from #periods p 
 	where 
 		s.indate >= p.st and s.inDate < p.en
 	;
 
 	
-	create table #sale_item (
-		 numorder    integer
-		,nomnom      varchar(20)
-		,materialQty         float
-		,sm          float
-		,inDate      date
-		,firmId      integer
-		,klassid     integer
-		,periodid    integer
+	create table #sale_isum (
+		  nomnom      varchar(20)
+		, nomname  varchar(128)
+		, materialQty float
+		, materialSm  float
+		, periodid    integer  null
 	);
 
 
-	insert into #sale_item (
-		 numorder
-		,nomnom
-		,materialQty
-		,sm
-		,inDate
-		,firmId      
-		,klassid
-		,periodId
-	)
-	select
-		  o.numorder as numorder
-		, i.nomnom
-		, i.quant / n.perlist as materialQty
-		, (i.quant / n.perlist) * i.cenaEd as sm
-		, o.inDate
-		, o.firmId
-		, n.klassid
-		, si.periodId
-	from itemSellOrde i
-	join bayorders o on o.numorder = i.numorder 
-	join sguidenomenk n on i.nomnom = n.nomnom
-	join #sale_isum si on si.numorder = i.numorder
-	where 
-			o.indate >= v_begin and o.inDate < v_end 
-		and (v_material_flag = 0 or exists (select 1 from #materials m where n.klassid = m.klassid))
-	;
-
-
+	insert into #sale_isum (
+		  nomnom
+		, nomname
+		, materialQty
+		, materialSm
+		, periodId
+	) select
+		  i.nomnom
+		, i.nomname
+		, sum(i.quant)
+		, sum(i.quant * i.cenaEd)
+		, i.periodId
+	from  #sale_item i
+	group by i.periodId, i.nomnom, i.nomname;
 
 	if v_detail = 0 then
 		insert into #results (
 			  label
 			, year
-			, orderQty
-			, orderPaid
-			, orderOrdered
 			, materialQty
 			, materialSaled
-			, firm
-			, region
-			, regionid
-			, periodid
-			, firmId
-			, oborud
+			, nomnom
+			, nomname
+			, periodId
 		)
 		select 
 			  p.label
 			, p.year
-			, o.orderQty            -- число заказов за период
-			, o.orderPaid           -- общий объем заказов (уе)
-			, o.orderOrdered        -- общая сумма по заказам
 			, i.materialQty         -- к-во проданных единиц по выбранным материалам (шт, листов и т.д.)
-			, i.materialSaled    	-- сумма по выбраннм материалам
-			, f.name                -- фирма
-			, r.region
-			, r.regionid
-			, p.periodid
-			, o.firmId
-			, ob.oborud
-		from #periods p 
-		join (
-			select sum(sm) as materialSaled, sum(materialQty) as materialQty, firmid, periodId
-			from #sale_item
-			group by firmid, periodId
-		) i on 
-			i.periodid = p.periodId
-		join (
-			select sum(isnull(orderPaid, 0)) as orderPaid, count(*) as orderQty, firmId, periodId, sum(orderOrdered) as orderOrdered
-			from #sale_isum
-			group by firmId, periodId
-		) o on 
-			o.firmId = i.firmId and o.periodId = i.periodId
-		join bayguidefirms f on f.firmid = i.firmid
-		join bayregion r on r.regionid = f.regionid
-		left join guideOborud ob on ob.oborudId = f.oborudId
+			, i.materialSm    	-- сумма по выбраннм материалам
+			, i.nomnom              -- номер номенклатуры
+			, i.nomname             -- название
+			, i.periodid
+		from #sale_isum i 
+		join #periods   p on i.periodid = p.periodId
 		;
-	elseif v_detail = 1 then
-		insert into #results (
-			  orderPaid
-			, orderOrdered
-			, materialQty
-			, materialSaled
-			, indate
-			, numorder
-		)
-		select 
-			  s.orderPaid
-			, s.orderOrdered
-			, i.materialQty
-			, i.materialSaled
-			, s.indate
-			, s.numorder
-		from #sale_isum s 
-		join (
-			select sum(sm) as materialSaled, sum(materialQty) as materialQty, numorder
-			from #sale_item
-			group by numorder
-		) i on 
-			i.numorder = s.numorder
-		;
-
 	end if;
-	
+
 end;

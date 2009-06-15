@@ -271,8 +271,8 @@ Private Sub Grid_Click()
         mousCol = Grid.MouseCol
         colType = determineColType(mousCol)
         Grid.Sort = 9
+        trigger = Not trigger
     End If
-    trigger = Not trigger
 End Sub
 
 
@@ -444,7 +444,7 @@ Dim periodIndex As Integer
     
     If checkResult <> "ok" Then
         MsgBox "При проверке фильтра возника ошибка: " _
-        & vbCr & "'" & checkResult & "'" _
+        & " '" & checkResult & "'." _
         & vbCr & "Исправьте и попробуйте снова." _
         , vbExclamation, "Ошибка"
         Unload Me
@@ -463,8 +463,8 @@ Dim periodIndex As Integer
     sql = "call n_exec_filter( " & filterId & ")"
     Set table = myOpenRecordSet("##Results.1", sql, dbOpenDynaset)
     If table Is Nothing Then
-        table.Close
         MsgBox "Ошибка при загрузки данных из базы", vbCritical
+        Unload Me
         Exit Sub
     End If
     If table.BOF Then
@@ -679,7 +679,7 @@ Dim periodColumnName As String
         colInfo.label = table("label")
         If Not IsNull(table!year) Then colInfo.year = table!year
         If Not IsNull(table!st) Then colInfo.stDate = table!st
-        If Not IsNull(table!en) Then colInfo.enDate = table!en
+        If Not IsNull(table!EN) Then colInfo.enDate = table!EN
         colInfo.periodId = table(periodColumnName)
         colInfo.index = index
         colInfo.colWidth = getColumnWidth(index, table!label)
@@ -728,12 +728,12 @@ End Function
 Private Sub setFilterParams()
 Dim entry As MapEntry
 
-    Grid.FormatString = "|Фирма|Регион"
+'    Grid.FormatString = "|Фирма|Регион"
     sql = "call n_boot_filter(" & filterId & ", '" & managId & "')"
     
     Set table = myOpenRecordSet("##Results.3", sql, dbOpenDynaset)
     While Not table.EOF
-        entry.key = table!paramName
+        entry.Key = table!paramName
         entry.value = table!paramValue
         append filterSettings, entry
         table.MoveNext

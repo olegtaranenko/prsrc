@@ -474,11 +474,31 @@ end;
 	</changeSet>
 -->
 
-	<changeSet id="1" author="mantis-44" runOnChange="true">
+	<changeSet id="1" author="mantis-44" runOnChange="false">
 		<comment></comment>
 		<sqlFile path="triggers/sDmcRez.wf_update_nomenk.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<rollback/>
 	</changeSet>
+	
+	<changeSet id="0" author="mantis-12" runOnChange="true">
+		<comment>Процедуры для нового отчета</comment>
+		<dropUniqueConstraint tableName="nResultColumns" uniqueColumns="headerId, columnId" constraintName="dummy"/>
+	</changeSet>
+
+	<changeSet id="1" author="mantis-12" runOnChange="true">
+		<comment>Отчет "Все купленный фирмой материалы</comment>
+		<sqlFile path="mainteinance/climat-analys.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+	</changeSet>
+
+	<changeSet id="2" author="mantis-12" runOnChange="true">
+		<comment>Процедуры для нового отчета</comment>
+		<sqlFile path="procedures/n_analys_value.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="procedures/n_get_analysid.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="procedures/n_exec_header.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="procedures/n_exec_filter.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="procedures/n_list_climat_by_periods.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+	</changeSet>
+
 
 
 </databaseChangeLog>
