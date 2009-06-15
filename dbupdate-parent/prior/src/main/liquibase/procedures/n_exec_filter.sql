@@ -52,6 +52,7 @@ begin
 	create table #materials (klassId integer, isActive integer null);
 	create table #oborudItems (oborudItemId integer, isActive integer null);
 	create table #noOboruds (noOborud integer, isActive integer null);
+	create table #client      (clientId integer, isActive integer null);
 	
 	for x as xc dynamic scroll cursor for
 		call n_filter_params(p_filterid)
