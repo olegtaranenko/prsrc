@@ -189,7 +189,7 @@ Begin VB.Form Analityc
          _ExtentX        =   2138
          _ExtentY        =   508
          _Version        =   393216
-         Format          =   16580609
+         Format          =   16515073
          CurrentDate     =   39599
       End
       Begin MSComCtl2.DTPicker tbEndDate 
@@ -201,7 +201,7 @@ Begin VB.Form Analityc
          _ExtentX        =   2138
          _ExtentY        =   508
          _Version        =   393216
-         Format          =   16580609
+         Format          =   16515073
          CurrentDate     =   39599
       End
       Begin VB.Label Label5 
@@ -249,6 +249,8 @@ Begin VB.Form Analityc
          _ExtentX        =   8403
          _ExtentY        =   7408
          _Version        =   393216
+         FocusRect       =   2
+         SelectionMode   =   1
          MergeCells      =   2
          AllowUserResizing=   1
       End
@@ -444,6 +446,8 @@ Public applicationType As String
 Dim tbKlass As Recordset
 Dim Node As Node
 Dim columnsVisible As Boolean
+Dim gClientId As Integer
+Public clientName As String
 
 Dim flagInitFilter As Boolean
 
@@ -523,20 +527,20 @@ End Sub
 
 
 Private Sub ckKriteriumOborud_Click()
-Dim i As Integer
+Dim I As Integer
 
     checkDirtyFilterCommads
     If ckKriteriumOborud.value = 1 Then
         If ckKriteriumNoOborud.value = 1 Then
             ckKriteriumNoOborud.value = 0
         End If
-        For i = 1 To 3
-            cbOborud(i).Enabled = True
-        Next i
+        For I = 1 To 3
+            cbOborud(I).Enabled = True
+        Next I
     Else
-        For i = 1 To 3
-            cbOborud(i).Enabled = False
-        Next i
+        For I = 1 To 3
+            cbOborud(I).Enabled = False
+        Next I
     End If
 End Sub
 
@@ -556,6 +560,22 @@ Private Sub checkUpDown()
     Else
         UpDown1.Enabled = False
         cbDateShift.Enabled = False
+    End If
+End Sub
+
+Private Sub clientId_EnterCell()
+    If clientId.row > 0 Then
+        gClientId = clientId.TextMatrix(clientId.row, 0)
+        clientName = clientId.TextMatrix(clientId.row, 1)
+        clientId.CellBackColor = vbBlue
+        clientId.CellForeColor = vbWhite
+    End If
+End Sub
+
+Private Sub clientId_LeaveCell()
+    If clientId.row > 0 Then
+        clientId.CellBackColor = clientId.BackColor
+        clientId.CellForeColor = clientId.ForeColor
     End If
 End Sub
 
@@ -664,33 +684,33 @@ End Sub
 
 Private Sub cleanTree(ByRef tView As TreeView)
 Dim currentNode As Node
-Dim i As Integer, nCount As Integer
+Dim I As Integer, nCount As Integer
 Dim enabledFlag As Boolean
 
     enabledFlag = tView.Enabled
     tView.Enabled = True
     
     nCount = tView.Nodes.Count
-    For i = 1 To nCount
-        Set currentNode = tView.Nodes(i)
+    For I = 1 To nCount
+        Set currentNode = tView.Nodes(I)
         If currentNode.checked Then
             currentNode.checked = False
             currentNode.Expanded = False
         End If
-    Next i
+    Next I
 
     tView.Enabled = enabledFlag
 End Sub
 
 Private Sub cleanOborud()
 Dim currentOborud As CheckBox
-Dim i As Integer, nCount As Integer
+Dim I As Integer, nCount As Integer
 
     'nCount = UBound(cbOborud)
-    For i = 1 To 3
-        Set currentOborud = cbOborud(i)
+    For I = 1 To 3
+        Set currentOborud = cbOborud(I)
         currentOborud.value = 0
-    Next i
+    Next I
 End Sub
 
 Private Sub cleanFilterWindows()
@@ -816,6 +836,24 @@ Dim filterId As Integer, byRowId As Integer, byColumnId As Integer
                 ckEndDate.value = 1
                 tbEndDate.value = table!charValue
                 tbStartDate.Enabled = True
+            End If
+        End If
+        
+        
+        If table!itemType = "client" Then
+            gClientId = table!isActive
+            If gClientId > 0 Then
+                Dim I As Integer
+                For I = 1 To clientId.Rows - 1
+                    If clientId.TextMatrix(I, 0) = gClientId Then
+                        clientId.row = I
+                        clientName = clientId.TextMatrix(I, 1)
+                        If Not clientId.RowIsVisible(I) Then
+                            clientId.TopRow = I
+                        End If
+                        Exit For
+                    End If
+                Next I
             End If
         End If
         
@@ -964,12 +1002,12 @@ Dim personal As Integer
 
     If hasOborud Then
         itemId = saveFilterItem(filterId, "oborudItems", ckKriteriumOborud.value)
-        Dim i As Integer
-        For i = 1 To 3
-            If cbOborud(i).value Then
-                saveFilterParam itemId, "oborudItemId", i
+        Dim I As Integer
+        For I = 1 To 3
+            If cbOborud(I).value Then
+                saveFilterParam itemId, "oborudItemId", I
             End If
-        Next i
+        Next I
     End If
     
     If ckKriteriumNoOborud.Visible And ckKriteriumNoOborud.value = 1 Then
@@ -1023,19 +1061,19 @@ End Sub
 
 
 Private Sub initColumnTree(ByRef headerList() As columnDef)
-Dim i As Integer, anySaved As Boolean, aNode As Node
+Dim I As Integer, anySaved As Boolean, aNode As Node
 
 
     tvColumns.Nodes.Clear
     
-    For i = 0 To UBound(headerList)
-        If headerList(i).hidden <> 1 Then
-            Set aNode = tvColumns.Nodes.Add(, , "c" & headerList(i).columnId, headerList(i).nameRu)
-            If headerList(i).saved Then
+    For I = 0 To UBound(headerList)
+        If headerList(I).hidden <> 1 Then
+            Set aNode = tvColumns.Nodes.Add(, , "c" & headerList(I).columnId, headerList(I).nameRu)
+            If headerList(I).saved Then
                 aNode.checked = True
             End If
         End If
-    Next i
+    Next I
     
 End Sub
 
@@ -1084,11 +1122,11 @@ End Sub
 
 
 Private Sub Form_Load()
-Dim i As Integer
+Dim I As Integer
 
-    For i = 1 To cbDateShift.ListCount - 1
-        cbDateShift.ItemData(i) = i
-    Next i
+    For I = 1 To cbDateShift.ListCount - 1
+        cbDateShift.ItemData(I) = I
+    Next I
     
     loadKlass
     loadRegions
@@ -1138,12 +1176,12 @@ Private Sub populateAxeList(ByRef table As Recordset, cb As ComboBox)
     End If
     
     cb.Clear
-    Dim i As Integer
-    i = 0
+    Dim I As Integer
+    I = 0
     While Not table.EOF
         cb.AddItem table!Name_ru
-        cb.ItemData(i) = table!id
-        i = i + 1
+        cb.ItemData(I) = table!id
+        I = I + 1
         table.MoveNext
     Wend
     table.Close
@@ -1206,52 +1244,52 @@ End Sub
 
 
 Private Function getOborudItems() As Boolean
-Dim i As Integer
+Dim I As Integer
 
     getOborudItems = False
     If Not cbOborud(1).Visible Then Exit Function
     
-    For i = 1 To 3
-        If cbOborud(i).value = 1 Then
+    For I = 1 To 3
+        If cbOborud(I).value = 1 Then
             getOborudItems = True
             Exit Function
         End If
-    Next i
+    Next I
 
 End Function
 
 
 Private Function getCheckedInTree(tView As TreeView) As Boolean
 Dim currentNode As Node
-Dim i As Integer
+Dim I As Integer
 
     getCheckedInTree = False
     If Not tView.Visible Then
         Exit Function
     End If
     
-    For i = 1 To tView.Nodes.Count
-        Set currentNode = tView.Nodes(i)
+    For I = 1 To tView.Nodes.Count
+        Set currentNode = tView.Nodes(I)
         If currentNode.checked Then
             getCheckedInTree = True
             Exit Function
         End If
-    Next i
+    Next I
     
 End Function
 
 
 Private Sub saveParamsOfTree(tView As TreeView, itemId As Integer, paramName As String)
 Dim currentNode As Node
-Dim i As Integer, nCount As Integer
+Dim I As Integer, nCount As Integer
 
     nCount = tView.Nodes.Count
-    For i = 1 To nCount
-        Set currentNode = tView.Nodes(i)
+    For I = 1 To nCount
+        Set currentNode = tView.Nodes(I)
         If currentNode.checked Then
             saveFilterParam itemId, paramName, CInt(Mid(currentNode.Key, 2))
         End If
-    Next i
+    Next I
     
 End Sub
 
@@ -1301,15 +1339,15 @@ End Sub
 
 Private Function setListIndexByItemDataValue(ByRef cb As ComboBox, ByVal itemDataValue As Integer) As Boolean
 
-Dim i As Integer
+Dim I As Integer
 
     setListIndexByItemDataValue = True
-    For i = 0 To cb.ListCount - 1
-        If cb.ItemData(i) = itemDataValue Then
-            cb.ListIndex = i
+    For I = 0 To cb.ListCount - 1
+        If cb.ItemData(I) = itemDataValue Then
+            cb.ListIndex = I
             Exit Function
         End If
-    Next i
+    Next I
     setListIndexByItemDataValue = False
 End Function
 

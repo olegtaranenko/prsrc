@@ -7,11 +7,17 @@ begin
 	create variable @ByRowId integer;
 	create variable @ParamFrameId integer;
 	create variable @itemTypeId integer;
-	
+	create variable @resultTitleParamId integer;
+
+
 
 
 	insert into nAnalysBootingParam(name, description) values ('parametersFrame', 'Имя фрейма с параметрами в окне диалога.');
 	set @ParamFrameId = @@identity;
+
+	insert into nAnalysBootingParam(name, description) values ('resultTitle', 'Строка форматирования заголовка результата. Пример: Материалы купленные фирмой ${clientId} за период с ${startDate} по ${endDate}');
+	set @resultTitleParamId = @@identity;
+
 
 	-- frame с параметрами для всех прочих отчетов
 	insert into nAnalysBooting (templateId, paramValue, paramId)
@@ -21,6 +27,8 @@ begin
 
 	insert into nResultHeader (name) select 'climat';
 	set @resultHeaderId = @@identity;
+
+
 	
 	insert into nResultColumns (headerId, columnId, sort, hidden)
 	select @resultHeaderId, rcd.id, 0, 1
@@ -39,6 +47,10 @@ begin
 	from nResultColumnDef rcd where rcd.name = 'edizm';
 
 	insert into nResultColumns (headerId, columnId, sort, hidden)
+	select @resultHeaderId, rcd.id, 35, 0
+	from nResultColumnDef rcd where rcd.name = 'cena';
+
+	insert into nResultColumns (headerId, columnId, sort, hidden)
 	select @resultHeaderId, rcd.id, 40, 0
 	from nResultColumnDef rcd where rcd.name = 'materialQty';
 
@@ -54,6 +66,21 @@ begin
 
 	insert into nAnalysTemplate (sqlFunction, headerId, sqlHeader) values ('n_list_climat_by_periods', @resultHeaderId, 'call n_fill_periods(v_begin, v_end, v_sub_token)');
 	set @analysTemplateId = @@identity;
+
+	insert into nAnalysBooting (templateId, paramValue, paramId)
+	select @analysTemplateId, 1, p.id
+	from nAnalysBootingParam p 
+	where p.name = 'noRowDetail';
+
+	insert into nAnalysBooting (templateId, paramValue, paramId)
+	select @analysTemplateId, 'поз. номенклатуры', p.id
+	from nAnalysBootingParam p 
+	where p.name = 'totalQtyLabel';
+
+	
+
+	insert into nAnalysBooting (templateId, paramValue, paramId)
+	select @analysTemplateId, 'Материалы купленные фирмой "${clientName}"', @resultTitleParamId;
 
 	insert into nAnalysCategory(name, name_ru, parentId, byrow_flag, bycolumn_flag) values ('climat','Все материалы клиента',null, 1, 0);
 	set @ByRowId = @@identity;

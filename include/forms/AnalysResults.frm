@@ -438,6 +438,8 @@ Dim periodIndex As Integer
 
 
     cleanTable
+    Grid.Visible = False
+    Me.MousePointer = flexArrowHourGlass
     
     sql = "select n_check_filter( " & filterId & ", '" & managId & "')"
     byErrSqlGetValues "##loadTable.1", sql, checkResult
@@ -447,8 +449,8 @@ Dim periodIndex As Integer
         & " '" & checkResult & "'." _
         & vbCr & "Исправьте и попробуйте снова." _
         , vbExclamation, "Ошибка"
-        Unload Me
-        Exit Sub
+        
+        GoTo finally
     End If
     
     setFilterParams
@@ -456,22 +458,24 @@ Dim periodIndex As Integer
     groupSelectorColumn = getCurrentSetting("groupSelectorColumn", filterSettings)
     If Not setGridHeaders(filterId) Then
         MsgBox "Отчет не содержит данных", vbExclamation
-        Unload Me
+        Me.Caption = "Отчет не содержит данных"
+        Grid.Visible = False
         Exit Sub
     End If
     
     sql = "call n_exec_filter( " & filterId & ")"
     Set table = myOpenRecordSet("##Results.1", sql, dbOpenDynaset)
     If table Is Nothing Then
-        MsgBox "Ошибка при загрузки данных из базы", vbCritical
+        MsgBox "Ошибка при загрузке данных из базы", vbCritical
         Unload Me
         Exit Sub
     End If
     If table.BOF Then
         table.Close
         MsgBox "Отчет не содержит данных", vbExclamation
-        Unload Me
-        Exit Sub
+        Grid.Visible = False
+        Me.Caption = "нет данных"
+        GoTo finally
     End If
     
     table.MoveFirst
@@ -505,7 +509,11 @@ Dim periodIndex As Integer
         For columnIndex = 0 To UBound(GridHeaderHeadDef)
             val = table(GridHeaderHeadDef(columnIndex).columnName)
             If Not IsNull(val) Then
-                Grid.TextMatrix(rownum, columnBaseIndex + columnIndex) = val
+                If GridHeaderHeadDef(columnIndex).columnFormat <> "" Then
+                    Grid.TextMatrix(rownum, columnBaseIndex + columnIndex) = Format(val, GridHeaderHeadDef(columnIndex).columnFormat)
+                Else
+                    Grid.TextMatrix(rownum, columnBaseIndex + columnIndex) = val
+                End If
             End If
         Next columnIndex
         
@@ -559,6 +567,13 @@ Dim periodIndex As Integer
     cmFind.left = lbTotalQty.left + lbTotalQty.Width + 100
     
     activateTab 1
+    
+    Grid.Visible = True
+finally:
+
+    Me.MousePointer = flexDefault
+    
+    
 End Sub
 
 
@@ -602,7 +617,7 @@ Dim colInfo As PeriodDef
 Dim colIndex As Integer, i As Integer
 Dim GridHeaderHead As String
 Dim GridHeaderTail As String
-Dim titleStartStr As String, titleEndStr As String
+Dim titleStartStr As String, titleEndStr As String, ResultTitle As String
 Dim headerList() As columnDef
 Dim headerColumn As columnDef
 Dim delim As String, delimHead As Integer, delimTail As Integer
@@ -628,33 +643,38 @@ Dim periodColumnName As String
     PostHeaderCount = UBound(GridHeaderTailDef) + 1
     multiplyCols = parseTabStrip(GridHeaderTail, TabStrip1)
 
-    If startDate > "2000-01-01" Then
-        titleStartStr = Format(startDate, "dd.mm.yyyy")
-    End If
-    
-    If endDate > "2000-01-01" Then
-        titleEndStr = Format(endDate, "dd.mm.yyyy")
-    End If
-    
-    
-    Me.Caption = "Продажи: "
-    If titleStartStr = "" And titleEndStr = "" Then
-        Me.Caption = "весь учет"
-    Else
-        If titleStartStr <> "" Then
-            Me.Caption = Me.Caption & "с " & titleStartStr & " "
-        Else
-            Me.Caption = Me.Caption & "от начала учета "
-        End If
-        If titleEndStr <> "" Then
-            Me.Caption = Me.Caption & "по " & titleEndStr & " "
-        Else
-            Me.Caption = Me.Caption & "до окончания учета"
+    ResultTitle = getCurrentSetting("resultTitle", filterSettings)
+    If ResultTitle = "" Then
+        If startDate > "2000-01-01" Then
+            titleStartStr = Format(startDate, "dd.mm.yyyy")
         End If
         
-        If titleStartStr <> "" And titleEndStr <> "" Then
-            Me.Caption = Me.Caption & "включительно"
+        If endDate > "2000-01-01" Then
+            titleEndStr = Format(endDate, "dd.mm.yyyy")
         End If
+        
+        
+        Me.Caption = "Продажи: "
+        If titleStartStr = "" And titleEndStr = "" Then
+            Me.Caption = "весь учет"
+        Else
+            If titleStartStr <> "" Then
+                Me.Caption = Me.Caption & "с " & titleStartStr & " "
+            Else
+                Me.Caption = Me.Caption & "от начала учета "
+            End If
+            If titleEndStr <> "" Then
+                Me.Caption = Me.Caption & "по " & titleEndStr & " "
+            Else
+                Me.Caption = Me.Caption & "до окончания учета"
+            End If
+            
+            If titleStartStr <> "" And titleEndStr <> "" Then
+                Me.Caption = Me.Caption & "включительно"
+            End If
+        End If
+    Else
+        Me.Caption = ELExpressionCheck(ResultTitle)
     End If
     
     
@@ -715,6 +735,33 @@ Dim periodColumnName As String
     Next index
     
 End Function
+
+Function ELExpressionCheck(msg As String) As String
+    Dim curCheck As String
+    curCheck = msg
+    Do While InStr(curCheck, "${") > 0
+        Dim dollarPos As Integer, closedPos As Integer
+        Dim leftStr As String, rightStr As String, varName As String
+        
+        dollarPos = InStr(curCheck, "${")
+        closedPos = InStr(curCheck, "}")
+        leftStr = Mid(curCheck, 1, dollarPos - 1)
+        varName = Mid(curCheck, dollarPos + 2, closedPos - dollarPos - 2)
+        rightStr = Mid(curCheck, closedPos + 1, Len(curCheck))
+        curCheck = leftStr & resolveEL(varName) & rightStr
+        
+    Loop
+    ELExpressionCheck = curCheck
+        
+End Function
+
+Function resolveEL(varName As String) As String
+    resolveEL = varName
+    If varName = "clientName" Then
+        resolveEL = Analityc.clientName
+    End If
+End Function
+
 
 Function getPeriodNoByColumn(columnNo As Long) As Integer
     getPeriodNoByColumn = (columnNo - PreHeaderCount) \ multiplyCols
@@ -808,19 +855,19 @@ End Function
 
 
 Private Sub activateTab(tabNumber As Integer)
-Dim i As Integer, j As Integer, colIndex As Integer
+Dim i As Integer, J As Integer, colIndex As Integer
 
     activeTab = tabNumber
 
     For i = 0 To periodCount - 1
-        For j = 0 To multiplyCols - 1
-            colIndex = PreHeaderCount + (i * multiplyCols) + j
-            If j + 1 = tabNumber Then
+        For J = 0 To multiplyCols - 1
+            colIndex = PreHeaderCount + (i * multiplyCols) + J
+            If J + 1 = tabNumber Then
                 Grid.colWidth(colIndex) = periods(i).colWidth
             Else
                 Grid.colWidth(colIndex) = 0
             End If
-        Next j
+        Next J
     Next i
 End Sub
 

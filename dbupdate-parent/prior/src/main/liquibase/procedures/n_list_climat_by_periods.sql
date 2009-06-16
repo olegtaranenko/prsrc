@@ -51,17 +51,16 @@ begin
 		, quant    float
 		, cenaEd   float
 		, periodid integer        null
-		, nomname  varchar(128)
 	);
 
 
 	insert into #sale_item (
-		numorder, nomnom, indate, quant, cenaEd, nomname
+		numorder, nomnom, indate
+		, quant, cenaEd
 	)
 	select 
 		o.numorder, s.nomnom, o.indate
 		, s.quant / n.perlist, s.cenaEd
-		, trim(n.cod + ' ' + n.nomname + ' ' + n.size)
 	from 
 		bayorders o
 	join itemSellOrde s on s.numorder = o.numorder
@@ -81,7 +80,6 @@ begin
 	
 	create table #sale_isum (
 		  nomnom      varchar(20)
-		, nomname  varchar(128)
 		, materialQty float
 		, materialSm  float
 		, periodid    integer  null
@@ -90,18 +88,16 @@ begin
 
 	insert into #sale_isum (
 		  nomnom
-		, nomname
 		, materialQty
 		, materialSm
 		, periodId
 	) select
 		  i.nomnom
-		, i.nomname
 		, sum(i.quant)
 		, sum(i.quant * i.cenaEd)
 		, i.periodId
 	from  #sale_item i
-	group by i.periodId, i.nomnom, i.nomname;
+	group by i.periodId, i.nomnom;
 
 	if v_detail = 0 then
 		insert into #results (
@@ -111,6 +107,8 @@ begin
 			, materialSaled
 			, nomnom
 			, nomname
+			, edizm
+			, cena
 			, periodId
 		)
 		select 
@@ -119,10 +117,13 @@ begin
 			, i.materialQty         -- к-во проданных единиц по выбранным материалам (шт, листов и т.д.)
 			, i.materialSm    	-- сумма по выбраннм материалам
 			, i.nomnom              -- номер номенклатуры
-			, i.nomname             -- название
+			, trim(n.cod + ' ' + n.nomname + ' ' + n.size)             -- название
+			, n.ed_izmer2
+			, n.cena_W
 			, i.periodid
 		from #sale_isum i 
 		join #periods   p on i.periodid = p.periodId
+		join sguidenomenk n on i.nomnom = n.nomnom
 		;
 	end if;
 
