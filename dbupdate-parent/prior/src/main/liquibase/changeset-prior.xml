@@ -28,7 +28,7 @@ drop server priord;
 		</rollback>
 	</changeSet>
 
-	<changeSet id="dml" author="mantis-7" runOnChange="true" context="does-not-work">
+	<changeSet id="dml" author="mantis-7" runOnChange="false" context="does-not-work">
 		<comment>Correct broken table xPredmetyByNomenkOut from the backup</comment>
 		<createProcedure>
 begin
@@ -70,7 +70,7 @@ end;
 	
 
 <!--
-	<changeSet id="mantis-11" author="test-exception" runOnChange="true">
+	<changeSet id="mantis-11" author="test-exception" runOnChange="false">
 		<sql splitStatements="true" stripComments="true" endDelimiter=";">
 
 	truncate table sdmcventure;
@@ -93,12 +93,12 @@ end;
 		</sql>
 	</changeSet>
 
-	<changeSet id="mantis-10" author="correct-ivo" runOnChange="true">
+	<changeSet id="mantis-10" author="correct-ivo" runOnChange="false">
 		<sqlFile path="correct-ivo.sql" splitStatements="false" stripComments="false"/>
 	</changeSet>
 -->
 
-	<changeSet id="mantis-10" author="code" runOnChange="true">
+	<changeSet id="mantis-10" author="code" runOnChange="false">
 		<comment>Процедуры для анализа продаж</comment>
 		<sqlFile path="procedures/sales-analys.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 	</changeSet>
@@ -155,7 +155,7 @@ end;
 	</changeSet>
 
 <!--
-	<changeSet id="mantis-12" author="code" runOnChange="true">
+	<changeSet id="mantis-12" author="code" runOnChange="false">
 		<comment>Отчет для продаж - ВСЕ материалы купленные фирмой(ами)</comment>
 		<sqlFile path="nomnom-firma.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 	</changeSet>
@@ -236,7 +236,7 @@ end;
 	</changeSet>
 
 
-	<changeSet id="code-1" author="mantis-33" runOnChange="true">
+	<changeSet id="code-1" author="mantis-33" runOnChange="false">
 		<comment>Курс заказа: триггеры для orders</comment>
 		<sqlFile path="mantis-33.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 
@@ -252,7 +252,7 @@ end;
 		</addColumn>
 	</changeSet>
 
-	<changeSet id="dml-2" author="mantis-33" runOnChange="true">
+	<changeSet id="dml-2" author="mantis-33" runOnChange="false">
 		<comment>Update колонки курс в таблице проводок.</comment>
 		<update tableName="yBook">
 			<column name="rate" valueNumeric="30"/>
@@ -291,7 +291,7 @@ alter table ybook modify id not null default autoincrement
 		<addPrimaryKey tableName="yBook" constraintName="pk_ybook" columnNames="id"/>
 	</changeSet>
 
-	<changeSet id="code-2" author="mantis-33" runOnChange="true">
+	<changeSet id="code-2" author="mantis-33" runOnChange="false">
 		<sql splitStatements="false" stripComments="false">
 
 if exists (select 1 from sysprocedure where proc_name = 'retrieve_xoz_rub') then
@@ -322,7 +322,7 @@ end;
 		</sql>
 	</changeSet>
 
-	<changeSet id="dml-4" author="mantis-33" runOnChange="true">
+	<changeSet id="dml-4" author="mantis-33" runOnChange="false">
 		<comment>Заставить просмотреть курсы всех проводок начиная с 12 января</comment>
 		<update tableName="yBook">
 			<column name="rate" valueNumeric="0"/>
@@ -332,12 +332,12 @@ end;
 		<rollback/>
 	</changeSet>
 
-	<changeSet id="rollback-1" author="mantis-12" runOnChange="true">
+	<changeSet id="rollback-1" author="mantis-12" runOnChange="false">
 		<comment>Отчет для продаж - ВСЕ материалы купленные фирмой(ами)  ROLLBACK</comment>
 		<sqlFile path="report-nomnom-byfirma-rollback.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 	</changeSet>
 
-	<changeSet id="1" author="mantis-49" runOnChange="true">
+	<changeSet id="1" author="mantis-49" runOnChange="false">
 		<comment>Алгоритм расчета "к заявке": не учитывать пропущенные дни.</comment>
 		<sqlFile path="procedures/wf_sale_turnover_metrics.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<rollback>
@@ -421,7 +421,7 @@ end;
 		<rollback/>
 	</changeSet>
 
-	<changeSet id="2" author="mantis-55" runOnChange="true">
+	<changeSet id="2" author="mantis-55" runOnChange="false">
 		<comment>Ошибка при заведении заказа для фирмы Фараон</comment>
 		<executeCommand executable="dbisqlc.exe">
 			<arg value="-c"/>
@@ -465,7 +465,7 @@ end;
 	</changeSet>
 
 <!--
-	<changeSet id="2" author="mantis-62" runOnChange="true">
+	<changeSet id="2" author="mantis-62" runOnChange="false">
 		<insert tableName="GuideConstants">
 			<column name="constants" value="EUR"/>
 			<column name="value" value="1.045"/>
@@ -480,7 +480,7 @@ end;
 		<rollback/>
 	</changeSet>
 	
-	<changeSet id="0" author="mantis-12" runOnChange="true">
+	<changeSet id="0" author="mantis-12" runOnChange="false">
 		<comment>Процедуры для нового отчета</comment>
 		<dropUniqueConstraint tableName="nResultColumns" uniqueColumns="headerId, columnId" constraintName="dummy"/>
 	</changeSet>
@@ -490,7 +490,7 @@ end;
 		<sqlFile path="mainteinance/climat-analys.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 	</changeSet>
 
-	<changeSet id="2" author="mantis-12" runOnChange="true">
+	<changeSet id="2" author="mantis-12" runOnChange="false">
 		<comment>Процедуры для нового отчета</comment>
 		<sqlFile path="procedures/n_analys_value.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 		<sqlFile path="procedures/n_get_analysid.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>

@@ -108,7 +108,6 @@
 						<defaultSchemaName>dba</defaultSchemaName>
 					</configuration>
 					<executions>
-<!--
 						<execution>
 							<id>generate-sql-for-update</id>
 							<phase>compile</phase>
@@ -116,7 +115,6 @@
 								<goal>updateSQL</goal>
 							</goals>
 						</execution>
--->
 						<execution>
 							<id>execute-db-update</id>
 							<phase>process-test-resources</phase>
