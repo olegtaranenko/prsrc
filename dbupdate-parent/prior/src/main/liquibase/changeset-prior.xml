@@ -499,6 +499,17 @@ end;
 		<sqlFile path="procedures/n_list_climat_by_periods.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 	</changeSet>
 
+	<changeSet id="1" author="mantis-20" runOnChange="true">
+		<comment>Отчет "Все купленный фирмой материалы</comment>
+		<sqlFile path="mainteinance/climat-analys.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+	</changeSet>
+
+
+	<changeSet id="1" author="mantis-71" runOnChange="true">
+		<comment>при смене курса не пересчитывается рубли в комтехе</comment>
+		<sqlFile path="triggers/Orders.wf_update_orders.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+	</changeSet>
+
 
 
 </databaseChangeLog>
