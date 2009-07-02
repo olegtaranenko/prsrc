@@ -916,6 +916,10 @@ And dostup <> "s" Then '$$$ceh
 End If
 
 baseOpen
+    
+    ' Используется при определении того, произошло ли на сервере возникновение Бизнес Проблемы или нет.
+    sql = "create variable @issueMarker varchar(32)"
+    If myExecute("##issueMarker", sql, 0) = 0 Then End
 
 mainTitle = getMainTitle
 
@@ -1200,6 +1204,52 @@ Sub msgOfEnd(myErrCod As String, Optional msg As String = "")
     MsgBox msg & " Сообщите администратору!", , "Ошибка " & myErrCod
     End
 End Sub
+
+' Возвращает issueId нового BusinessIssue если добавление действительно произошло
+' иначе - возвращаем 0 - если нормальное завершение
+' или -1 если произошла другая ошибка и было выдан диалог с описанием ошибки
+' Если произошла ошибка на этапе добавления нового ишью, то выдаем наружу значение myExecute
+Function myExecuteWithIssue(ByVal pSql As String, ByVal passErr As Integer, ByRef issueId As Integer) As Integer
+On Error GoTo viewAtTheErrorNumber
+    wrkDefault.BeginTrans
+    myBase.Execute pSql ', dbFailOnError  ' выдавать Err если все или часть записей заблокировано
+    wrkDefault.CommitTrans
+    Exit Function
+
+viewAtTheErrorNumber:
+    On Error GoTo 0
+    Dim strMsg As String, strSource As String, issued As Boolean
+    Dim errLoop
+       
+    issued = False
+    For Each errLoop In Errors
+       With errLoop
+          If .Number = passErr Then
+             wrkDefault.CommitTrans
+             issued = True
+             strMsg = .Description
+             strSource = .Source
+             Exit For
+          End If
+       End With
+    Next
+    
+    If issued Then
+        sql = "select wi_file_new_issue (" & passErr & ", '" & strMsg & "')"
+        byErrSqlGetValues "##", sql, issueId
+        myExecuteWithIssue = 1
+        wrkDefault.CommitTrans
+    Else
+        If errorCodAndMsg(cErr, passErr) Then
+            myExecuteWithIssue = -2
+        Else
+            myExecuteWithIssue = 1
+        End If
+        wrkDefault.rollback
+    End If
+
+End Function
+
 
 ' если passErr=-11111 или не указано то выдаются все сообщения
 ' если passErr=0  - подавляем сообщение "...WHERE..."
@@ -2077,6 +2127,13 @@ AA:
 If left$(myErrCod, 1) = "W" Then
     myErrCod = Mid$(myErrCod, 2)
     ValueToTableField = myExecute(myErrCod, sql, 0) 'не сообщать если не WHERE
+ElseIf left$(myErrCod, 1) = "L" Then
+    ' Ожидаем, что выполненную операцию нужно записать в серверный журнал (lBusinessIssues).
+    ' пример формата строки ошибки - "L-17002"
+    myErrCod = Mid$(myErrCod, 2)
+    Dim issueId As Integer
+    ValueToTableField = myExecuteWithIssue(sql, CInt(myErrCod), issueId)
+    ValueToTableField = issueId
 Else
     ValueToTableField = myExecute(myErrCod, sql)
 End If
@@ -2563,7 +2620,30 @@ tbSystem.Close
 lockSklad = True
 End Function
     
-Function orderUpdate(myErrCod As String, value As String, table As String, _
+Function orderUpdateWithIssue(ByVal issueMarker As String, value As String, table As String, _
+field As String, Optional by As String = "", Optional numorder As Variant) As Integer
+Dim nzak As String
+Dim issueId As Variant
+    If IsMissing(numorder) Then
+        nzak = gNzak
+    Else
+        nzak = numorder
+    End If
+    orderUpdateWithIssue = ValueToTableField("##orderUpdateWithIssue", value, table, field, by, nzak)
+    
+    sql = "select wi_check_business_issue(' " & issueMarker & "')"
+    byErrSqlGetValues "##check_issue", sql, issueId
+    If Not IsNull(issueId) And issueId <> 0 Then
+        orderUpdateWithIssue = CInt(issueId)
+    End If
+    
+    If table = "Orders" Then
+        refreshTimestamp (nzak)
+    End If
+End Function
+    
+    
+Function orderUpdate(ByVal myErrCod As String, value As String, table As String, _
 field As String, Optional by As String = "", Optional numorder As Variant) As Integer
 Dim nzak As String
     If IsMissing(numorder) Then

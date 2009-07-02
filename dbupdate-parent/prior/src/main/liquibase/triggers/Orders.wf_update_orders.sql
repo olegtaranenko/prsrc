@@ -31,6 +31,10 @@ begin
 	declare v_id_inv integer;
 	declare v_numorder integer;
 	declare v_updated integer;
+
+	declare v_issue_id integer;
+	declare v_msgCode integer;
+
 --	declare v_total_account_date datetime;
 	declare sync char(1);
 	declare c_status_close_id integer;
@@ -123,26 +127,72 @@ begin
 			-- сначала проверяем, что он действительно без них
 			set v_check_count = 0;
 			for x as xc dynamic scroll cursor for
-				select id_scet as r_id_scet, cenaEd as r_cenaEd, quant as r_quant
-				from xpredmetybynomenk 
+				select n.id_scet as r_id_scet, n.cenaEd as r_cenaEd, n.quant as r_quant, n.nomnom as r_nomnom
+					, k.ed_izmer as r_edizm, trim(k.cod + ' ' + k.nomname + ' ' + k.size) as r_nomenk
+				from xpredmetybynomenk n
+				join sguidenomenk k on k.nomnom = n.nomnom
 				where numorder = old_name.numorder
 			do
 				set v_check_count = 1;
 				set v_updated = wf_scet_price_changed(remoteServerOld, r_quant, r_cenaEd, r_id_scet, v_currency_rate);
+				if v_updated = 0 then
+					-- Этой позиции нет в комтехе. Вероятно бухгалтер изменил номенклатуру
+					if v_issue_id is null then
+						set v_issue_id = wi_check_business_issue(@issueMarker);
+						if v_issue_id is null then
+							set v_issue_id = wi_post_new_issue('ref-nomenk-missed', 'prior');
+						end if;
+						call wi_add_issue_attribute(v_issue_id, 'Номер заказа', old_name.numorder);
+						call wi_add_issue_attribute(v_issue_id, 'Номер счета', old_name.invoice);
+						call wi_add_issue_attribute(v_issue_id, 'Курс заказа', old_name.rate);
+						call wi_add_issue_attribute(v_issue_id, 'Новый курс', new_name.rate);
+					end if;
+					call wi_add_issue_attribute(v_issue_id, 'Номенклатура', r_nomenk);
+					call wi_add_issue_attribute(v_issue_id, 'Номер номенклатуры', r_nomnom);
+					call wi_add_issue_attribute(v_issue_id, 'Количество', r_quant);
+					call wi_add_issue_attribute(v_issue_id, 'Единица измерения', r_edizm);
+					call wi_add_issue_attribute(v_issue_id, 'Цена за единицу', r_cenaEd);
+				end if;
 			end for;
 
 			for y as yc dynamic scroll cursor for
-				select id_scet as r_id_scet, cenaEd as r_cenaEd, quant as r_quant
-				from xpredmetybyizdelia
+				select i.id_scet as r_id_scet, i.cenaEd as r_cenaEd, i.quant as r_quant, i.prId as r_prId
+					, trim (p.prName + ' ' + p.prDescript + ' ' + p.prSize) as r_productDescript
+				from xpredmetybyizdelia i
+				join sguideProducts p on p.prId = i.prId
 				where numorder = old_name.numorder
 			do
 				set v_check_count = 1;
 				set v_updated = wf_scet_price_changed(remoteServerOld, r_quant, r_cenaEd, r_id_scet, v_currency_rate);
+				if v_updated = 0 then
+					-- Этой позиции нет в комтехе. Вероятно бухгалтер изменил номенклатуру
+					if v_issue_id is null then
+						set v_issue_id = wi_check_business_issue(@issueMarker);
+						if v_issue_id is null then
+							set v_issue_id = wi_post_new_issue('ref-nomenk-missed', 'prior');
+						end if;
+						call wi_add_issue_attribute(v_issue_id, 'Номер заказа', old_name.numorder);
+						call wi_add_issue_attribute(v_issue_id, 'Номер счета', old_name.invoice);
+						call wi_add_issue_attribute(v_issue_id, 'Курс заказа', old_name.rate);
+						call wi_add_issue_attribute(v_issue_id, 'Новый курс', new_name.rate);
+					end if;
+					call wi_add_issue_attribute(v_issue_id, 'Изделие', r_productDesc);
+					call wi_add_issue_attribute(v_issue_id, 'ID изделия', r_prID);
+					call wi_add_issue_attribute(v_issue_id, 'Индекс изделия в заказе', r_prExt);
+					call wi_add_issue_attribute(v_issue_id, 'Количество', r_quant);
+					call wi_add_issue_attribute(v_issue_id, 'Цена за единицу', r_cenaEd);
+				end if;
 			end for;
 
 	    
 			if v_check_count > 0 then
 				-- заказ с предметами
+				if v_issue_id is not null then
+					-- номенклатура в бухгалтерии не соответствует в приоре.
+					set v_msgCode = wi_get_msgcode(v_issue_id);
+					--raiserror v_msgCode '{{{' + convert(varchar(20), v_issue_id) + '}}}';
+				end if;
+
 				return;
 			end if;
 	    
@@ -198,7 +248,7 @@ begin
 	end if;
 
 
-	if 	update (statusId)
+	if update (statusId)
 		and new_name.statusId = c_status_close_id
 --		and wf_order_closed_comtex(old_name.numorder, remoteServerOld) = 1 
 	then

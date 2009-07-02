@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCTL.OCX"
+Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "mscomctl.ocx"
 Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Orders 
    Appearance      =   0  'Flat
@@ -2859,17 +2859,42 @@ End If
 
 End Function
 
-Function isFloatFromMobile(field As String) As Boolean
+' -1 - ошибка ввода (не числовое значение
+' 0  - нормальное завершение issue не произошло
+' >0 - нормальное завершение, было issue, возвращаем его id.
 
-        If checkNumeric(tbMobile.Text, 0) Then
-            orderUpdate "##23", tbMobile.Text, "Orders", field
-            Grid.TextMatrix(mousRow, mousCol) = tbMobile.Text
-            isFloatFromMobile = True
-        Else
-            tbMobile.SelStart = 0
-            tbMobile.SelLength = Len(tbMobile.Text)
-            isFloatFromMobile = False
+Function isFloatFromMobileWithIssue(field As String, issueMarker As String) As Integer
+    If checkNumeric(tbMobile.Text, 0) Then
+        Dim issueId As Variant
+        isFloatFromMobileWithIssue = orderUpdateWithIssue(issueMarker, tbMobile.Text, "Orders", field)
+        sql = "select wi_check_business_issue('" & issueMarker & "')"
+        byErrSqlGetValues "##check_issue", sql, issueId
+        If issueId <> 0 Then
+            isFloatFromMobileWithIssue = CInt(issueId)
         End If
+        
+    Else
+        isFloatFromMobileWithIssue = -1
+        tbMobile.SelStart = 0
+        tbMobile.SelLength = Len(tbMobile.Text)
+    End If
+End Function
+
+Function isFloatFromMobile(field As String, Optional errorCode As String = "##23") As Boolean
+Dim isIssue As Integer
+
+    If checkNumeric(tbMobile.Text, 0) Then
+        isIssue = orderUpdate(errorCode, tbMobile.Text, "Orders", field)
+        If isIssue > 0 Then
+            
+        End If
+        Grid.TextMatrix(mousRow, mousCol) = tbMobile.Text
+        isFloatFromMobile = True
+    Else
+        tbMobile.SelStart = 0
+        tbMobile.SelLength = Len(tbMobile.Text)
+        isFloatFromMobile = False
+    End If
 End Function
 
 Private Sub tbInform_GotFocus()
@@ -2941,11 +2966,23 @@ DNM = Format(Now(), "dd.mm.yy hh:nn") & vbTab & cbM.Text & " " & gNzak ' именно 
     ElseIf mousCol = orNal Then
         If Not isFloatFromMobile("nal") Then Exit Sub
     ElseIf mousCol = orRate Then
-        If Not isFloatFromMobile("rate") Then
-            Exit Sub
-        End If
+        Dim issueId As Integer
+        Dim issueMarker As String
+        sql = "select wi_gen_issue_marker('" & cbM.Text & "')"
+        byErrSqlGetValues "##genIssueMarker", sql, issueMarker
         
-        ' исправить также курсы заказов, имеющих тот же самый счет в бухгалтерии
+        issueId = isFloatFromMobileWithIssue("rate", issueMarker)
+        If issueId < 0 Then
+            ' ошибка ввода
+            Exit Sub
+        ElseIf issueId > 0 Then
+            ' дополнительная информация в issue
+            postInconsistentNomenk (issueId)
+            
+        End If
+        Grid.TextMatrix(mousRow, mousCol) = tbMobile.Text
+        
+        ' исправить также курсы заказов, привязанных к одному и тому же счету в бухгалтерии
         sql = "select n.numorder from orders o join orders n on n.id_jscet = o.id_jscet where n.numorder != o.numorder and o.numorder = " & gNzak
         Set tbOrders = myOpenRecordSet("##27.1", sql, dbOpenForwardOnly)
         Dim anotherNumorder As String, irow As Long
@@ -2953,19 +2990,25 @@ DNM = Format(Now(), "dd.mm.yy hh:nn") & vbTab & cbM.Text & " " & gNzak ' именно 
         If Not tbOrders Is Nothing Then
             If Not tbOrders.BOF Then
                 While Not tbOrders.EOF
-                   anotherNumorder = tbOrders!numorder
-                   sql = "update orders set rate = " & tbMobile.Text & " where numorder = " & anotherNumorder
-                   myExecute "##27.2", sql
-                   ' поправить на экране тоже
-                   irow = searchZakRow(Grid, anotherNumorder)
-                   If irow <> -1 Then
-                      Grid.TextMatrix(irow, orRate) = tbMobile.Text
-                   End If
-                   tbOrders.MoveNext
+                    anotherNumorder = tbOrders!numorder
+                    sql = "update orders set rate = " & tbMobile.Text & " where numorder = " & anotherNumorder
+                    issueId = orderUpdateWithIssue(issueMarker, tbMobile.Text, "Orders", "rate")
+                    If issueId > 0 Then
+                        ' дополнительная информация в issue
+                        postInconsistentNomenk (issueId)
+                    End If
+                    ' поправить на экране тоже
+                    irow = searchZakRow(Grid, anotherNumorder)
+                    If irow <> -1 Then
+                        Grid.TextMatrix(irow, orRate) = tbMobile.Text
+                    End If
+                    tbOrders.MoveNext
                 Wend
             End If
             tbOrders.Close
         End If
+        sql = "call wi_reset_issue_marker"
+        myExecute "W#resetIssueMarker", sql, -1
         
     ElseIf mousCol = orOtgrugeno Then
         If Not isFloatFromMobile("shipped") Then Exit Sub
@@ -3047,6 +3090,48 @@ AA:
 lbHide
 End If
 
+End Sub
+
+Private Sub postInconsistentNomenk(ByVal issueId As Integer)
+Dim action As String, numOrders As String, invoice As String
+Dim issueRS As Recordset
+
+    sql = "update iBusinessIssue set managId = " & manId(Orders.cbM.ListIndex) & " where issueId = " & CStr(issueId)
+    myExecute "##postInconsistentNomenk", sql
+    
+    Dim firstPass As Boolean
+    firstPass = True
+    sql = "call wi_check_issue_action(" & issueId & ")"
+    Set issueRS = myOpenRecordSet("##postInconsistentNomenk.1", sql, dbOpenForwardOnly)
+    If Not issueRS Is Nothing Then
+        If Not issueRS.BOF Then
+            While Not issueRS.EOF
+                If firstPass Then
+                    firstPass = False
+                    action = action & issueRS!Description & vbCr
+                    action = action & "Что делать:" & vbCr & issueRS!action & vbCr
+                End If
+                If issueRS!issueDetail = "Номер заказа" Then
+                    numOrders = numOrders & IIf(Len(numOrders) > 0, ", ", "") & issueRS!detailValue
+                End If
+                If issueRS!issueDetail = "Номер счета" Then
+                    invoice = issueRS!detailValue
+                End If
+                If issueRS!issueDetail = "Номенклатура" Or "Изделие" = issueRS!issueDetail Then
+                    action = action & vbCr & issueRS!issueDetail & ": " & issueRS!detailValue
+                End If
+                issueRS.MoveNext
+            Wend
+        End If
+        issueRS.Close
+    End If
+    
+    If action <> "" Then
+        If invoice <> "" Then
+            action = action & vbCr & "Номер счета в бухгалтерии: " & invoice
+        End If
+        MsgBox action, , "Внимание по заказу № " & numOrders
+    End If
 End Sub
 
 Private Sub tbStartDate_Change()
@@ -3279,8 +3364,8 @@ End Sub
 
 Sub copyRowToGrid(row As Long)
 
- If Not IsNull(tqOrders!Invoice) Then _
-     Grid.TextMatrix(row, orInvoice) = tqOrders!Invoice
+ If Not IsNull(tqOrders!invoice) Then _
+     Grid.TextMatrix(row, orInvoice) = tqOrders!invoice
  Grid.TextMatrix(row, orCeh) = tqOrders!Ceh
  Grid.TextMatrix(row, orMen) = tqOrders!Manag
  Grid.TextMatrix(row, orFirma) = tqOrders!name

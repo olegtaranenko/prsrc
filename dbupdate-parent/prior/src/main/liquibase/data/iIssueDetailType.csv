@@ -1,0 +1,11 @@
+issueDetailTypeId,sysname,issueTypeId,issueClass
+1,Номер заказа,1,showMsgBox
+2,Номер счета,1,showMsgBox
+3,Курс заказа,1,
+4,Новый курс,1,
+5,Номенклатура,1,showMsgBox
+6,Номер номенклатуры,1,
+7,Количество,1,
+8,Единица измерения,1,
+9,Цена за единицу,1,
+10,Изделие,1,showMsgBox

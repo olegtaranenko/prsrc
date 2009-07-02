@@ -4,7 +4,7 @@
   xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
-         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd"
+		 http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd"
   logicalFilePath="changeset-prior.xml"
 >
  
@@ -421,7 +421,7 @@ end;
 		<rollback/>
 	</changeSet>
 
-	<changeSet id="2" author="mantis-55" runOnChange="false">
+	<changeSet id="2" author="mantis-55" runOnChange="true">
 		<comment>Ошибка при заведении заказа для фирмы Фараон</comment>
 		<executeCommand executable="dbisqlc.exe">
 			<arg value="-c"/>
@@ -499,17 +499,166 @@ end;
 		<sqlFile path="procedures/n_list_climat_by_periods.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 	</changeSet>
 
+<!--
 	<changeSet id="1" author="mantis-20" runOnChange="true">
 		<comment>Отчет "Все купленный фирмой материалы</comment>
 		<sqlFile path="mainteinance/climat-analys.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 	</changeSet>
-
+-->
 
 	<changeSet id="1" author="mantis-71" runOnChange="true">
 		<comment>при смене курса не пересчитывается рубли в комтехе</comment>
 		<sqlFile path="triggers/Orders.wf_update_orders.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 	</changeSet>
 
+	<changeSet id="2" author="mantis-71" runOnChange="false">
+		<comment>Таблица для хранения Типов Бизнес-Проблем</comment>
+		<createTable tableName="iIssueType">
+			<column name="issueTypeId" type="int" autoIncrement="true">
+				<constraints primaryKey="true" primaryKeyName="IIT_PK"/>
+			</column>
+			<column name="sysname" type="varchar(63)">
+				<constraints nullable="false"/>
+			</column>
+			<column name="msgCode" type="int">
+				<constraints nullable="false"/>
+			</column>
+			<column name="description" type="long varchar">
+				<constraints nullable="true"/>
+			</column>
+			<column name="action" type="long varchar">
+				<constraints nullable="true"/>
+			</column>
+		</createTable>
+	</changeSet>
+
+	<changeSet id="3" author="mantis-71" runOnChange="false">
+		<comment>Таблица для хранения Типов Деталировки Бизнес-Проблем</comment>
+		<createTable tableName="iIssueDetailType">
+			<column name="issueDetailTypeId" type="int" autoIncrement="true">
+				<constraints primaryKey="true" primaryKeyName="IDT_PK"/>
+			</column>
+			<column name="sysname" type="varchar(63)">
+				<constraints nullable="false"/>
+			</column>
+			<column name="issueTypeId" type="int">
+				<constraints nullable="false"/>
+			</column>
+			<column name="issueClass" type="varchar(16)">
+				<constraints nullable="true"/>
+			</column>
+		</createTable>
+	</changeSet>
+
+	<changeSet id="4" author="mantis-71" runOnChange="false">
+		<comment>Таблица для хранения Бизнес-Проблем</comment>
+		<createTable tableName="iBusinessIssue">
+			<column name="issueId" type="int" autoIncrement="true">
+				<constraints primaryKey="true" primaryKeyName="IBI_PK"/>
+			</column>
+			<column name="issueTypeId" type="int">
+				<constraints nullable="false"/>
+			</column>
+			<column name="issueMarker" type="varchar(32)">
+				<constraints nullable="true"/>
+			</column>
+			<column name="occuredTime" type="datetime" defaultValueDate="now()">
+				<constraints nullable="false"/>
+			</column>
+			<column name="ManagId" type="tinyint" >
+				<constraints nullable="true"/>
+			</column>
+			<column name="msg" type="long varchar">
+				<constraints nullable="true"/>
+			</column>
+			<column name="application" type="varchar(15)">
+				<constraints nullable="false"/>
+			</column>
+		</createTable>
+	</changeSet>
+
+
+	<changeSet id="5" author="mantis-71" runOnChange="false">
+		<comment>Таблица для хранения Детализации Бизнес-Проблем</comment>
+		<createTable tableName="iIssueDetail">
+			<column name="issueDetailId" type="int" autoIncrement="true">
+				<constraints primaryKey="true" primaryKeyName="IID_PK"/>
+			</column>
+			<column name="issueId" type="int">
+				<constraints nullable="false"/>
+			</column>
+			<column name="issueDetailTypeId" type="int">
+				<constraints nullable="false"/>
+			</column>
+			<column name="value" type="varchar(63)">
+				<constraints nullable="false"/>
+			</column>
+			<column name="seqOrder" type="tinyint">
+				<constraints nullable="true"/>
+			</column>
+		</createTable>
+	</changeSet>
+
+	<changeSet id="6" author="mantis-71" runOnChange="false">
+		<addForeignKeyConstraint baseTableName="iIssueDetail" constraintName="IID_IssueId" baseColumnNames="issueId"
+			referencedTableName="iBusinessIssue" referencedColumnNames="issueId"
+			onDelete="CASCADE" onUpdate="CASCADE"
+		/>
+	</changeSet>
+
+	<changeSet id="7" author="mantis-71" runOnChange="false">
+		<addForeignKeyConstraint baseTableName="iIssueDetail" constraintName="IID_IssueDetailTypeId" baseColumnNames="issueDetailTypeId"
+			referencedTableName="iIssueDetailType" referencedColumnNames="issueDetailTypeId"
+			onDelete="CASCADE" onUpdate="CASCADE"
+		/>
+	</changeSet>
+
+	<changeSet id="8" author="mantis-71" runOnChange="false">
+		<addForeignKeyConstraint baseTableName="iBusinessIssue" constraintName="IBI_IssueTypeId" baseColumnNames="issueTypeId"
+			referencedTableName="iIssueType" referencedColumnNames="issueTypeId"
+			onDelete="CASCADE" onUpdate="CASCADE"
+		/>
+	</changeSet>
+
+	<changeSet id="9" author="mantis-71" runOnChange="false">
+		<addForeignKeyConstraint baseTableName="iIssueDetailType" constraintName="IDI_IssueTypeId" baseColumnNames="issueTypeId"
+			referencedTableName="iIssueType" referencedColumnNames="issueTypeId"
+			onDelete="CASCADE" onUpdate="CASCADE"
+		/>
+	</changeSet>
+
+
+	<changeSet id="10" author="mantis-71" runOnChange="true">
+		<comment>Добавить типов Бизнес-Проблем</comment>
+		<insert tableName="iIssueType">
+			<column name="sysname" value="ref-nomenk-missed"/>
+			<column name="msgCode" value="17002"/>
+			<column name="description" value="У заказа отсутствуют ссылки одной или нескольких позиций материала или изделия в бухгалтерии"/>
+			<column name="action" value="Необходимо связаться с бухгалтерией по поводу заказа и предупредить их о необходимости ручной корректировки рублевой стоимости"/>
+		</insert>
+		<rollback><delete tableName="GuideConstants"></delete></rollback>
+	</changeSet>
+
+	<changeSet id="11" author="mantis-71" runOnChange="true">
+		<comment>процедура взятия слудующего элемента для Бизнес-Проблемы</comment>
+		<sqlFile path="procedures/wi_post_new_issue.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="procedures/wi_add_issue_attribute.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="procedures/wi_get_msgcode.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="procedures/wi_gen_issue_marker.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="procedures/wi_reset_issue_marker.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="procedures/wi_check_business_issue.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="procedures/wi_check_issue_action.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<rollback/>
+	</changeSet>
+	<changeSet id="12" author="mantis-71" runOnChange="true">
+		<comment>заполнить таблицу Типов Деталировки Issue</comment>
+		<loadData tableName="iIssueDetailType" file="data/iIssueDetailType.csv">
+			<column header="issueDetailTypeId" type="NUMERIC" />
+			<column header="sysname" type="STRING" />
+			<column header="issueTypeId" type="NUMERIC" />
+			<column header="issueClass" type="STRING" />
+		</loadData>
+	</changeSet>
 
 
 </databaseChangeLog>
