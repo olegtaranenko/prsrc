@@ -111,6 +111,7 @@ begin
 		, matOutTurn    float        null
 		, matOutQty     float        null
 		, sumOut        float        null
+		, orderMatQty   float        null
 	);
 
 	create table #periods (

@@ -3,7 +3,7 @@ if exists (select 1 from sysprocedure where proc_name = 'n_list_firm_by_periods'
 end if;
 
 
-CREATE procedure n_list_firm_by_periods (
+CREATE PROCEDURE n_list_firm_by_periods (
 	  p_begin         date
 	, p_end           date
 	, p_period_type   varchar(20) -- p_sub_token
@@ -57,12 +57,13 @@ begin
 
 	
 	create table #sale_isum(
-		  numorder   integer
-		, orderPaid       float
-		, orderOrdered    float
+		  numorder   integer primary key
+		, orderPaid       float	null
+		, orderOrdered    float null
 		, indate     date
-		, periodid   integer
+		, periodid   integer	null
 		, firmId     integer
+		, hasMaterial	integer	not null default 1
 	);
 
 
@@ -92,7 +93,6 @@ begin
 		)
 	;
 
-
 	update #sale_isum s set s.periodId = p.periodId
 	from #periods p 
 	where 
@@ -103,7 +103,7 @@ begin
 	create table #sale_item (
 		 numorder    integer
 		,nomnom      varchar(20)
-		,materialQty         float
+		,materialQty         float null
 		,sm          float
 		,inDate      date
 		,firmId      integer
@@ -140,6 +140,30 @@ begin
 		and (v_material_flag = 0 or exists (select 1 from #materials m where n.klassid = m.klassid))
 	;
 
+	create table #firm_has_mat (
+		firmId      integer primary key
+	);
+
+
+
+	if v_material_flag > 0 then
+		update #sale_isum s set s.hasMaterial = 0
+		where 
+			not exists (select 1 from #sale_item i where i.numorder = s.numorder)
+		;
+
+		insert into #firm_has_mat
+		select distinct firmId 
+		from #sale_isum s
+		where s.hasMaterial = 1
+		;
+	else
+		insert into #firm_has_mat
+		select distinct firmId 
+		from #sale_isum s
+		;
+	end if;
+
 
 
 	if v_detail = 0 then
@@ -149,7 +173,7 @@ begin
 			, orderQty
 			, orderPaid
 			, orderOrdered
-			, materialQty
+			, orderMatQty
 			, materialSaled
 			, firm
 			, region
@@ -164,8 +188,8 @@ begin
 			, o.orderQty            -- число заказов за период
 			, o.orderPaid           -- общий объем заказов (уе)
 			, o.orderOrdered        -- общая сумма по заказам
-			, i.materialQty         -- к-во проданных единиц по выбранным материалам (шт, листов и т.д.)
-			, i.materialSaled    	-- сумма по выбраннм материалам
+			, o.orderMatQty         -- к-во заказов, в которых присутствовали выбранные материалы
+			, i.materialSaled    	-- сумма по выбранным материалам (если нет фильтрации - совпадает общим количеством)
 			, f.name                -- фирма
 			, r.region
 			, r.regionid
@@ -174,20 +198,24 @@ begin
 			, ob.oborud
 		from #periods p 
 		join (
-			select sum(sm) as materialSaled, sum(materialQty) as materialQty, firmid, periodId
-			from #sale_item
-			group by firmid, periodId
-		) i on 
-			i.periodid = p.periodId
-		join (
-			select sum(isnull(orderPaid, 0)) as orderPaid, count(*) as orderQty, firmId, periodId, sum(orderOrdered) as orderOrdered
+			select sum(isnull(orderPaid, 0)) as orderPaid
+				, count(*) as orderQty, firmId, periodId
+				, sum(orderOrdered) as orderOrdered
+				, sum(hasMaterial) as orderMatQty
 			from #sale_isum
 			group by firmId, periodId
 		) o on 
-			o.firmId = i.firmId and o.periodId = i.periodId
-		join bayguidefirms f on f.firmid = i.firmid
-		join bayregion r on r.regionid = f.regionid
+			o.periodid = p.periodId
+		join #firm_has_mat fm on fm.firmid  = o.firmid
+		join bayguidefirms f  on f.firmid   = o.firmid
+		join bayregion     r  on r.regionid = f.regionid
 		left join guideOborud ob on ob.oborudId = f.oborudId
+		left join (
+			select sum(sm) as materialSaled, firmid, periodId
+			from #sale_item
+			group by firmid, periodId
+		) i on 
+			o.firmId = i.firmId and o.periodId = i.periodId
 		;
 	elseif v_detail = 1 then
 		insert into #results (
@@ -205,7 +233,7 @@ begin
 			, i.materialSaled
 			, s.indate
 			, s.numorder
-		from #sale_isum s 
+		from #sale_isum s
 		join (
 			select sum(sm) as materialSaled, sum(materialQty) as materialQty, numorder
 			from #sale_item

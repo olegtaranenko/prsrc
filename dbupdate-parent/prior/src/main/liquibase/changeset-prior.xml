@@ -489,7 +489,7 @@ end;
 		<comment>Отчет "Все купленный фирмой материалы</comment>
 		<sqlFile path="mainteinance/climat-analys.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 	</changeSet>
-
+<!--
 	<changeSet id="2" author="mantis-12" runOnChange="false">
 		<comment>Процедуры для нового отчета</comment>
 		<sqlFile path="procedures/n_analys_value.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
@@ -498,6 +498,7 @@ end;
 		<sqlFile path="procedures/n_exec_filter.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 		<sqlFile path="procedures/n_list_climat_by_periods.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 	</changeSet>
+-->
 
 <!--
 	<changeSet id="1" author="mantis-20" runOnChange="true">
@@ -506,7 +507,7 @@ end;
 	</changeSet>
 -->
 
-	<changeSet id="1" author="mantis-71" runOnChange="true">
+	<changeSet id="1" author="mantis-71" runOnChange="false">
 		<comment>при смене курса не пересчитывается рубли в комтехе</comment>
 		<sqlFile path="triggers/Orders.wf_update_orders.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 	</changeSet>
@@ -628,7 +629,7 @@ end;
 	</changeSet>
 
 
-	<changeSet id="10" author="mantis-71" runOnChange="true">
+	<changeSet id="10" author="mantis-71" runOnChange="false">
 		<comment>Добавить типов Бизнес-Проблем</comment>
 		<insert tableName="iIssueType">
 			<column name="sysname" value="ref-nomenk-missed"/>
@@ -650,7 +651,7 @@ end;
 		<sqlFile path="procedures/wi_check_issue_action.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 		<rollback/>
 	</changeSet>
-	<changeSet id="12" author="mantis-71" runOnChange="true">
+	<changeSet id="12" author="mantis-71" runOnChange="false">
 		<comment>заполнить таблицу Типов Деталировки Issue</comment>
 		<loadData tableName="iIssueDetailType" file="data/iIssueDetailType.csv">
 			<column header="issueDetailTypeId" type="NUMERIC" />
@@ -661,5 +662,71 @@ end;
 	</changeSet>
 
 
+
+
+	<changeSet id="0.1" author="mantis-72" runOnChange="false">
+		<insert tableName="nResultColumnDef">
+			<column name="name"    value="orderMatQty"/>
+			<column name="name_ru" value="Зак.с мат."/>
+			<column name="headType"    valueNumeric="2"/>
+			<column name="sort"    valueNumeric="550"/>
+		</insert>
+	</changeSet>
+
+
+	<changeSet id="0.2" author="mantis-72" runOnChange="false">
+		<insert tableName="nResultColumns">
+			<column name="headerId" valueNumeric="1"/>
+			<column name="columnId" valueNumeric="20"/>
+		</insert>
+	</changeSet>
+
+
+	<changeSet id="0.3" author="mantis-72" runOnChange="false">
+		<delete tableName="nResultColumns">
+			<where>headerid = 1 and columnId = 8</where>
+		</delete>
+	</changeSet>
+
+
+	<changeSet id="1" author="mantis-72" runOnChange="true">
+		<comment>Исправить заголовки для Отчета</comment>
+		<update tableName="nResultColumnDef">
+			<column name="name_ru" value="Зак.всего"/>
+			<column name="sort" valueNumeric="1100"/>
+			<where>id = 6</where>
+		</update>
+		<update tableName="nResultColumns">
+			<column name="sort" valueNumeric="1100"/>
+			<where>headerid = 1 and columnId = 6</where>
+		</update>
+
+		<update tableName="nResultColumnDef">
+			<column name="name_ru" value="Зак.всего УЕ"/>
+			<column name="sort" valueNumeric="1200"/>
+			<where>id = 7</where>
+		</update>
+		<update tableName="nResultColumns">
+			<column name="sort" valueNumeric="1200"/>
+			<where>headerid = 1 and columnId = 7</where>
+		</update>
+
+		<update tableName="nResultColumnDef">
+			<column name="name_ru" value="Зак.с мат."/>
+			<column name="sort" valueNumeric="600"/>
+			<where>id = 8</where>
+		</update>
+		<update tableName="nResultColumns">
+			<column name="sort" valueNumeric="600"/>
+			<where>headerid = 1 and columnId = 8</where>
+		</update>
+	</changeSet>
+
+	<changeSet id="2" author="mantis-72" runOnChange="true">
+		<comment>Исправить оснвную процедуру отчета Анализ продаж по фирмы/года-месяцы-...</comment>
+		<sqlFile path="procedures/n_list_firm_by_periods.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="procedures/n_exec_filter.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<rollback/>
+	</changeSet>
 </databaseChangeLog>
 
