@@ -88,6 +88,16 @@ Begin VB.Form Results
          Strikethrough   =   0   'False
       EndProperty
    End
+   Begin VB.Label Label1 
+      AutoSize        =   -1  'True
+      Caption         =   "Label1"
+      Height          =   192
+      Left            =   480
+      TabIndex        =   8
+      Top             =   5880
+      Visible         =   0   'False
+      Width           =   492
+   End
    Begin VB.Label lbTotalQty 
       AutoSize        =   -1  'True
       Caption         =   "25 фирм"
@@ -126,22 +136,6 @@ Dim activeTab As Integer
 Dim mousCol As Integer
 Dim searchValue As String, searchPos As Long, searchAgain As Boolean
 
-
-Dim GridHeaderHeadDef() As columnDef
-Dim GridHeaderTailDef() As columnDef
-
-Private Type PeriodDef
-    periodId As Integer
-    label As String
-    year As Integer
-    index As Integer
-    colWidth As Integer
-    stDate As Date
-    enDate As Date
-End Type
-
-
-Dim periods() As PeriodDef
 
 
 ' переменные используемые в сортировке таблицы
@@ -241,24 +235,24 @@ End Sub
 
 Private Sub Form_Resize()
     Grid.left = 100
-    Grid.Width = Me.Width - 300
+    Grid.width = Me.width - 300
     TabStrip1.Top = 100
-    TabStrip1.Width = Grid.Width
+    TabStrip1.width = Grid.width
     TabStrip1.left = Grid.left
     Grid.Top = TabStrip1.Top + TabStrip1.Height
     Grid.Height = Me.Height - Grid.Top - 1200
-    cmExit.left = Grid.left + Grid.Width - cmExit.Width
+    cmExit.left = Grid.left + Grid.width - cmExit.width
     cmExit.Top = Grid.Top + Grid.Height + 50
     cmExel.Top = cmExit.Top
     cmPrint.Top = cmExit.Top
     cmExel.left = 500
-    cmPrint.left = cmExel.left + cmExel.Width + 300
+    cmPrint.left = cmExel.left + cmExel.width + 300
     cmExit.Visible = True
-    lbTotal.left = cmPrint.left + cmPrint.Width + 300
+    lbTotal.left = cmPrint.left + cmPrint.width + 300
     lbTotal.Top = cmExit.Top + 50
     lbTotalQty.Top = lbTotal.Top
-    lbTotalQty.left = lbTotal.left + lbTotal.Width + 50
-    cmFind.left = lbTotalQty.left + lbTotalQty.Width + 300
+    lbTotalQty.left = lbTotal.left + lbTotal.width + 50
+    cmFind.left = lbTotalQty.left + lbTotalQty.width + 300
     cmFind.Top = cmExit.Top
     Grid.Visible = True
 
@@ -424,7 +418,7 @@ Private Sub LoadTable()
 Dim rownum As Integer
 Dim groupSelectorColumn As String, prevSelector As Variant
 Dim checkResult As String
-Dim i As Integer ' номер столбца
+Dim I As Integer ' номер столбца
 Dim columnBaseIndex As Integer, periodCount As Integer
 Dim orderQty As Integer, orderOrdered As Single, materialQty As Single, materialSaled As Single
 Dim rowTotals() As Double
@@ -450,32 +444,30 @@ Dim periodIndex As Integer
         & vbCr & "Исправьте и попробуйте снова." _
         , vbExclamation, "Ошибка"
         
-        GoTo finally
+        GoTo cleanup
     End If
     
     setFilterParams
     
     groupSelectorColumn = getCurrentSetting("groupSelectorColumn", filterSettings)
     If Not setGridHeaders(filterId) Then
-        MsgBox "Отчет не содержит данных", vbExclamation
+        'MsgBox "Отчет не содержит данных", vbExclamation
         Me.Caption = "Отчет не содержит данных"
-        Grid.Visible = False
-        Exit Sub
+        GoTo cleanup
     End If
     
     sql = "call n_exec_filter( " & filterId & ")"
     Set table = myOpenRecordSet("##Results.1", sql, dbOpenDynaset)
     If table Is Nothing Then
-        MsgBox "Ошибка при загрузке данных из базы", vbCritical
-        Unload Me
-        Exit Sub
+        Me.Caption = "Ошибка при загрузке данных из базы"
+        GoTo cleanup
     End If
+    
     If table.BOF Then
         table.Close
-        MsgBox "Отчет не содержит данных", vbExclamation
-        Grid.Visible = False
-        Me.Caption = "нет данных"
-        GoTo finally
+        'MsgBox "Отчет не содержит данных", vbExclamation
+        Me.Caption = "Отчет не содержит данных"
+        GoTo cleanup
     End If
     
     table.MoveFirst
@@ -493,7 +485,7 @@ Dim periodIndex As Integer
 
         If prevSelector <> table(groupSelectorColumn) Or IsNull(prevSelector) Then
             'totalBaseIndex = getPeriodShift(table("periodId")) * periodCount
-            i = PreHeaderCount + multiplyCols * periodCount
+            I = PreHeaderCount + multiplyCols * periodCount
             If rownum > 0 Then
                 For columnIndex = 0 To UBound(GridHeaderTailDef)
                     'columnTotals(totalBaseIndex + columnIndex) = columnTotals(totalBaseIndex + columnIndex) + rowTotals(columnIndex)
@@ -552,19 +544,21 @@ Dim periodIndex As Integer
             Grid.col = columnBaseIndex + columnIndex
             Grid.CellFontBold = True
             curValue = columnTotals(periodIndex * multiplyCols + columnIndex)
-            Grid.Text = Format(curValue, GridHeaderTailDef(columnIndex).columnFormat)
+            If curValue > 0 Then
+                Grid.Text = Format(curValue, GridHeaderTailDef(columnIndex).columnFormat)
+            End If
 
             If periodIndex <> periodCount Then
                 columnTotals(totalBaseIndex + columnIndex) = columnTotals(totalBaseIndex + columnIndex) + curValue
             End If
         Next columnIndex
-        i = i
+        I = I
     Next periodIndex
     
-    
+    AjustColumnWidths Me.Grid, Label1
     totalQtyLabel = getCurrentSetting("totalQtyLabel", filterSettings)
     lbTotalQty.Caption = CStr(rownum) & " " & totalQtyLabel
-    cmFind.left = lbTotalQty.left + lbTotalQty.Width + 100
+    cmFind.left = lbTotalQty.left + lbTotalQty.width + 100
     
     activateTab 1
     
@@ -572,6 +566,12 @@ Dim periodIndex As Integer
 finally:
 
     Me.MousePointer = flexDefault
+    Exit Sub
+    
+cleanup:
+    Grid.Visible = False
+    Me.MousePointer = flexDefault
+    Exit Sub
     
     
 End Sub
@@ -579,15 +579,15 @@ End Sub
 
 
 Private Function getPeriodShift(periodId As Integer) As Integer
-Dim i As Integer
+Dim I As Integer
 Dim ln As Integer
     ln = UBound(periods)
-    For i = 0 To ln
-        If periods(i).periodId = periodId Then
-            getPeriodShift = periods(i).index
+    For I = 0 To ln
+        If periods(I).periodId = periodId Then
+            getPeriodShift = periods(I).index
             Exit Function
         End If
-    Next i
+    Next I
 End Function
 
 Private Sub appendToHeader(GridHeaderHead As String, ByRef headerColumn As columnDef, ByRef delimCount As Integer)
@@ -614,7 +614,7 @@ Private Function setGridHeaders(filterId As Integer) As Boolean
 Dim periodType As Variant
 Dim index As Integer
 Dim colInfo As PeriodDef
-Dim colIndex As Integer, i As Integer
+Dim colIndex As Integer, I As Integer
 Dim GridHeaderHead As String
 Dim GridHeaderTail As String
 Dim titleStartStr As String, titleEndStr As String, ResultTitle As String
@@ -717,11 +717,11 @@ Dim periodColumnName As String
     Grid.row = 0
     
     
-    For i = 0 To periodCount - 1
+    For I = 0 To periodCount - 1
         For colIndex = 0 To multiplyCols - 1
-            GridHeaderHead = GridHeaderHead & "|" & GridHeaderTailDef(colIndex).align & periods(i).label
+            GridHeaderHead = GridHeaderHead & "|" & GridHeaderTailDef(colIndex).align & periods(I).label
         Next colIndex
-    Next i
+    Next I
     If GridHeaderTail <> "" Then
         GridHeaderHead = GridHeaderHead & "|" & GridHeaderTail
     End If
@@ -767,8 +767,8 @@ Function getPeriodNoByColumn(columnNo As Long) As Integer
     getPeriodNoByColumn = (columnNo - PreHeaderCount) \ multiplyCols
 End Function
 
-Private Function getColumnWidth(i As Integer, label As String)
-    getColumnWidth = 500
+Private Function getColumnWidth(I As Integer, label As String)
+    getColumnWidth = 200
 End Function
 
 
@@ -800,7 +800,7 @@ End Sub
 
 
 Private Function parseHeaderMetrics(header As String) As Integer
-Dim i As Integer, ln As Integer
+Dim I As Integer, ln As Integer
 
     ln = Len(header)
     If ln > 0 Then
@@ -810,21 +810,21 @@ Dim i As Integer, ln As Integer
         Exit Function
     End If
 
-    For i = 1 To ln
-        If Mid(header, i, 1) = "|" Then
+    For I = 1 To ln
+        If Mid(header, I, 1) = "|" Then
             parseHeaderMetrics = parseHeaderMetrics + 1
         End If
-    Next i
+    Next I
 End Function
 
 Private Function parseTabStrip(formatStr As String, tabStrip As tabStrip) As Integer
-Dim i As Integer
+Dim I As Integer
 Dim loopDone As Boolean, delimitorPos As Long
 Dim headerRest As String, headerRestLn As Long, tabName As String
 
     headerRest = formatStr
     loopDone = False
-    i = 1
+    I = 1
     While Not loopDone
         headerRestLn = Len(headerRest)
         If headerRestLn > 0 Then
@@ -843,9 +843,9 @@ Dim headerRest As String, headerRestLn As Long, tabName As String
                 If InStr(1, "^<>", controlChar, vbBinaryCompare) > 0 Then
                     tabName = Mid(tabName, 2)
                 End If
-                tabStrip.Tabs.Add , "tab" & CStr(i), tabName
+                tabStrip.Tabs.Add , "tab" & CStr(I), tabName
             End If
-            i = i + 1
+            I = I + 1
         Else
             loopDone = True
         End If
@@ -855,31 +855,31 @@ End Function
 
 
 Private Sub activateTab(tabNumber As Integer)
-Dim i As Integer, J As Integer, colIndex As Integer
+Dim I As Integer, J As Integer, colIndex As Integer
 
     activeTab = tabNumber
 
-    For i = 0 To periodCount - 1
+    For I = 0 To periodCount - 1
         For J = 0 To multiplyCols - 1
-            colIndex = PreHeaderCount + (i * multiplyCols) + J
+            colIndex = PreHeaderCount + (I * multiplyCols) + J
             If J + 1 = tabNumber Then
-                Grid.colWidth(colIndex) = periods(i).colWidth
+                Grid.colWidth(colIndex) = periods(I).colWidth
             Else
                 Grid.colWidth(colIndex) = 0
             End If
         Next J
-    Next i
+    Next I
 End Sub
 
 
 Sub saveGridColWidth()
-Dim i As Integer, colIndex As Integer
+Dim I As Integer, colIndex As Integer
 Dim ln As Integer
 
-    For i = 0 To periodCount - 1
-        colIndex = PreHeaderCount + (i * multiplyCols) + activeTab - 1
-        periods(i).colWidth = Grid.colWidth(colIndex)
-    Next i
+    For I = 0 To periodCount - 1
+        colIndex = PreHeaderCount + (I * multiplyCols) + activeTab - 1
+        periods(I).colWidth = Grid.colWidth(colIndex)
+    Next I
     
 End Sub
 
