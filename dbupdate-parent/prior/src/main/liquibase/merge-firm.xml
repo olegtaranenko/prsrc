@@ -8,9 +8,14 @@
   logicalFilePath="merge-firm-bay.xml"
 >
 
-	<changeSet id="1" author="mantis-74" runAlways="true">
+	<changeSet id="1" author="mantis-74" runAlways="true" runOnChange="true">
 		<comment>Объединение двух фирм в одну</comment>
-		<sqlFile path="mainteinance\merge-firm.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<executeCommand executable="dbisqlc.exe">
+			<arg value="-c"/>
+			<arg value="DSN=prior;UID=dba;PWD=sql"/>
+			<arg value="-q"/>
+			<arg value="\dev\prsrc\trunk\dbupdate-parent\prior\target\classes\mainteinance\merge-firm.sql"/>
+		</executeCommand>
 		<rollback/>
 	</changeSet>
 
