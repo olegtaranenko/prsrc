@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="CP1251"?>
+ 
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
+		 http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd"
+  logicalFilePath="merge-firm-bay.xml"
+>
+
+	<changeSet id="1" author="mantis-74" runAlways="true">
+		<comment>Объединение двух фирм в одну</comment>
+		<sqlFile path="mainteinance\merge-firm.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<rollback/>
+	</changeSet>
+
+</databaseChangeLog>
+
