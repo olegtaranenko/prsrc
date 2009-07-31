@@ -388,6 +388,126 @@ Const frNomName = 2
 Const frEdIzm = 3
 Const frOstat = 4
 
+Sub nomenkToNNQQ(pQuant As Double, eQuant As Double, prQuant As Double)
+Dim j As Integer, leng As Integer
+
+leng = UBound(NN)
+
+    For j = 1 To leng
+        If NN(j) = tbNomenk!nomNom Then
+            QQ(j) = QQ(j) + pQuant * tbNomenk!quantity
+            If eQuant > 0 Then _
+                QQ2(j) = QQ2(j) + eQuant * tbNomenk!quantity
+            If prQuant > 0 Then _
+                QQ3(j) = QQ3(j) + prQuant * tbNomenk!quantity
+            Exit Sub
+        End If
+    Next j
+    leng = leng + 1
+    ReDim Preserve NN(leng): NN(leng) = tbNomenk!nomNom
+    ReDim Preserve QQ(leng): QQ(leng) = Round(pQuant * tbNomenk!quantity, 2)
+    ReDim Preserve QQ2(leng): QQ2(leng) = Round(eQuant * tbNomenk!quantity, 2)
+    ReDim Preserve QQ3(leng): QQ3(leng) = Round(prQuant * tbNomenk!quantity, 2)
+    
+
+End Sub
+
+Function zakazNomenkToNNQQ() As Boolean
+zakazNomenkToNNQQ = False
+
+ReDim NN(0): ReDim QQ(0): ReDim QQ2(0): QQ2(0) = 0: ReDim QQ3(0)
+
+'ном-ра вход€щих изделий
+sql = "SELECT xPredmetyByIzdelia.prId, " & _
+"xPredmetyByIzdelia.prExt, " & _
+"xPredmetyByIzdelia.quant, " & _
+"xEtapByIzdelia.eQuant, " & _
+"xEtapByIzdelia.prevQuant, " & _
+"xEtapByIzdelia.prevQuant " & _
+"FROM xPredmetyByIzdelia " & _
+"LEFT JOIN xEtapByIzdelia ON (xPredmetyByIzdelia.prExt = xEtapByIzdelia.prExt) AND (xPredmetyByIzdelia.prId = xEtapByIzdelia.prId) AND (xPredmetyByIzdelia.numOrder = xEtapByIzdelia.numOrder)" & _
+"WHERE (((xPredmetyByIzdelia.numOrder)=" & gNzak & "));"
+
+Set tbProduct = myOpenRecordSet("##319", sql, dbOpenForwardOnly)
+If tbProduct Is Nothing Then Exit Function
+
+While Not tbProduct.EOF
+  gProductId = tbProduct!prId
+  prExt = tbProduct!prExt
+  If IsNull(tbProduct!eQuant) Then
+    productNomenkToNNQQ tbProduct!quant, 0, 0
+  Else
+    productNomenkToNNQQ tbProduct!quant, tbProduct!eQuant, tbProduct!prevQuant
+    QQ2(0) = 1 ' есть этап
+  End If
+  tbProduct.MoveNext
+Wend
+tbProduct.Close
+
+'отдельна€ ном-ра
+sql = "SELECT xPredmetyByNomenk.nomNom, xPredmetyByNomenk.quant as quantity, " & _
+"xEtapByNomenk.eQuant, xEtapByNomenk.prevQuant FROM xPredmetyByNomenk " & _
+"LEFT JOIN xEtapByNomenk ON (xPredmetyByNomenk.nomNom = xEtapByNomenk.nomNom) AND (xPredmetyByNomenk.numOrder = xEtapByNomenk.numOrder) " & _
+"WHERE (((xPredmetyByNomenk.numOrder)=" & gNzak & "));"
+Set tbNomenk = myOpenRecordSet("##320", sql, dbOpenDynaset)
+If tbNomenk Is Nothing Then Exit Function
+While Not tbNomenk.EOF
+  If IsNull(tbNomenk!eQuant) Then
+    nomenkToNNQQ 1, 0, 0
+  Else
+    nomenkToNNQQ 1, (tbNomenk!eQuant / tbNomenk!quantity), (tbNomenk!prevQuant / tbNomenk!quantity)
+    QQ2(0) = 1 ' есть этап
+  End If
+  tbNomenk.MoveNext
+Wend
+tbNomenk.Close
+zakazNomenkToNNQQ = True
+End Function
+
+'перед исп-ем надо ReDim NN(0): ReDim QQ(0): ReDim QQ2(0) : ReDim QQ3(0):QQ2(0)=0 - не б.этапа
+Function productNomenkToNNQQ(pQuant As Double, eQuant As Double, _
+                                               prQuant As Double) As Boolean
+Dim I As Integer, gr() As String
+
+productNomenkToNNQQ = False
+
+'вариантна€ ном-ра издели€
+sql = "SELECT sProducts.nomNom, sProducts.quantity, sProducts.xGroup " & _
+"FROM sProducts " & _
+"INNER JOIN xVariantNomenc ON (sProducts.nomNom = xVariantNomenc.nomNom) AND (sProducts.ProductId = xVariantNomenc.prId) " & _
+"WHERE (((xVariantNomenc.numOrder)=" & gNzak & ") AND (" & _
+"(xVariantNomenc.prId)=" & gProductId & ") AND ((xVariantNomenc.prExt)=" & prExt & "));"
+'Debug.Print sql
+Set tbNomenk = myOpenRecordSet("##192", sql, dbOpenDynaset)
+If tbNomenk Is Nothing Then Exit Function
+ReDim gr(0): I = 0
+While Not tbNomenk.EOF
+    nomenkToNNQQ pQuant, eQuant, prQuant
+    I = I + 1
+    ReDim Preserve gr(I): gr(I) = tbNomenk!xGroup
+    tbNomenk.MoveNext
+Wend
+tbNomenk.Close
+    
+'Ќ≈вариантна€ ном-ра издели€
+sql = "SELECT sProducts.nomNom, sProducts.quantity, sProducts.xGroup " & _
+"From sProducts WHERE (((sProducts.ProductId)=" & gProductId & "));"
+
+'MsgBox sql
+Set tbNomenk = myOpenRecordSet("##177", sql, dbOpenDynaset)
+If tbNomenk Is Nothing Then Exit Function
+While Not tbNomenk.EOF
+    For I = 1 To UBound(gr) ' если группа состоит из одной ном-ры, то она
+        If gr(I) = tbNomenk!xGroup Then GoTo NXT ' Ќ≈вариантна, т.к. не
+    Next I                                      ' не попала в xVariantNomenc
+    nomenkToNNQQ pQuant, eQuant, prQuant
+NXT: tbNomenk.MoveNext
+Wend
+tbNomenk.Close
+
+productNomenkToNNQQ = True
+End Function
+
 Public convertToIzdelie As Boolean
 
 
@@ -1441,125 +1561,6 @@ Private Sub Grid5_MouseUp(Button As Integer, Shift As Integer, x As Single, y As
 
 End Sub
 
-Sub nomenkToNNQQ(pQuant As Double, eQuant As Double, prQuant As Double)
-Dim j As Integer, leng As Integer
-
-leng = UBound(NN)
-
-    For j = 1 To leng
-        If NN(j) = tbNomenk!nomNom Then
-            QQ(j) = QQ(j) + pQuant * tbNomenk!quantity
-            If eQuant > 0 Then _
-                QQ2(j) = QQ2(j) + eQuant * tbNomenk!quantity
-            If prQuant > 0 Then _
-                QQ3(j) = QQ3(j) + prQuant * tbNomenk!quantity
-            Exit Sub
-        End If
-    Next j
-    leng = leng + 1
-    ReDim Preserve NN(leng): NN(leng) = tbNomenk!nomNom
-    ReDim Preserve QQ(leng): QQ(leng) = Round(pQuant * tbNomenk!quantity, 2)
-    ReDim Preserve QQ2(leng): QQ2(leng) = Round(eQuant * tbNomenk!quantity, 2)
-    ReDim Preserve QQ3(leng): QQ3(leng) = Round(prQuant * tbNomenk!quantity, 2)
-    
-
-End Sub
-
-Function zakazNomenkToNNQQ() As Boolean
-zakazNomenkToNNQQ = False
-
-ReDim NN(0): ReDim QQ(0): ReDim QQ2(0): QQ2(0) = 0: ReDim QQ3(0)
-
-'ном-ра вход€щих изделий
-sql = "SELECT xPredmetyByIzdelia.prId, " & _
-"xPredmetyByIzdelia.prExt, " & _
-"xPredmetyByIzdelia.quant, " & _
-"xEtapByIzdelia.eQuant, " & _
-"xEtapByIzdelia.prevQuant, " & _
-"xEtapByIzdelia.prevQuant " & _
-"FROM xPredmetyByIzdelia " & _
-"LEFT JOIN xEtapByIzdelia ON (xPredmetyByIzdelia.prExt = xEtapByIzdelia.prExt) AND (xPredmetyByIzdelia.prId = xEtapByIzdelia.prId) AND (xPredmetyByIzdelia.numOrder = xEtapByIzdelia.numOrder)" & _
-"WHERE (((xPredmetyByIzdelia.numOrder)=" & gNzak & "));"
-
-Set tbProduct = myOpenRecordSet("##319", sql, dbOpenForwardOnly)
-If tbProduct Is Nothing Then Exit Function
-
-While Not tbProduct.EOF
-  gProductId = tbProduct!prId
-  prExt = tbProduct!prExt
-  If IsNull(tbProduct!eQuant) Then
-    productNomenkToNNQQ tbProduct!quant, 0, 0
-  Else
-    productNomenkToNNQQ tbProduct!quant, tbProduct!eQuant, tbProduct!prevQuant
-    QQ2(0) = 1 ' есть этап
-  End If
-  tbProduct.MoveNext
-Wend
-tbProduct.Close
-
-'отдельна€ ном-ра
-sql = "SELECT xPredmetyByNomenk.nomNom, xPredmetyByNomenk.quant as quantity, " & _
-"xEtapByNomenk.eQuant, xEtapByNomenk.prevQuant FROM xPredmetyByNomenk " & _
-"LEFT JOIN xEtapByNomenk ON (xPredmetyByNomenk.nomNom = xEtapByNomenk.nomNom) AND (xPredmetyByNomenk.numOrder = xEtapByNomenk.numOrder) " & _
-"WHERE (((xPredmetyByNomenk.numOrder)=" & gNzak & "));"
-Set tbNomenk = myOpenRecordSet("##320", sql, dbOpenDynaset)
-If tbNomenk Is Nothing Then Exit Function
-While Not tbNomenk.EOF
-  If IsNull(tbNomenk!eQuant) Then
-    nomenkToNNQQ 1, 0, 0
-  Else
-    nomenkToNNQQ 1, (tbNomenk!eQuant / tbNomenk!quantity), (tbNomenk!prevQuant / tbNomenk!quantity)
-    QQ2(0) = 1 ' есть этап
-  End If
-  tbNomenk.MoveNext
-Wend
-tbNomenk.Close
-zakazNomenkToNNQQ = True
-End Function
-
-'перед исп-ем надо ReDim NN(0): ReDim QQ(0): ReDim QQ2(0) : ReDim QQ3(0):QQ2(0)=0 - не б.этапа
-Function productNomenkToNNQQ(pQuant As Double, eQuant As Double, _
-                                               prQuant As Double) As Boolean
-Dim I As Integer, gr() As String
-
-productNomenkToNNQQ = False
-
-'вариантна€ ном-ра издели€
-sql = "SELECT sProducts.nomNom, sProducts.quantity, sProducts.xGroup " & _
-"FROM sProducts " & _
-"INNER JOIN xVariantNomenc ON (sProducts.nomNom = xVariantNomenc.nomNom) AND (sProducts.ProductId = xVariantNomenc.prId) " & _
-"WHERE (((xVariantNomenc.numOrder)=" & gNzak & ") AND (" & _
-"(xVariantNomenc.prId)=" & gProductId & ") AND ((xVariantNomenc.prExt)=" & prExt & "));"
-'Debug.Print sql
-Set tbNomenk = myOpenRecordSet("##192", sql, dbOpenDynaset)
-If tbNomenk Is Nothing Then Exit Function
-ReDim gr(0): I = 0
-While Not tbNomenk.EOF
-    nomenkToNNQQ pQuant, eQuant, prQuant
-    I = I + 1
-    ReDim Preserve gr(I): gr(I) = tbNomenk!xGroup
-    tbNomenk.MoveNext
-Wend
-tbNomenk.Close
-    
-'Ќ≈вариантна€ ном-ра издели€
-sql = "SELECT sProducts.nomNom, sProducts.quantity, sProducts.xGroup " & _
-"From sProducts WHERE (((sProducts.ProductId)=" & gProductId & "));"
-
-'MsgBox sql
-Set tbNomenk = myOpenRecordSet("##177", sql, dbOpenDynaset)
-If tbNomenk Is Nothing Then Exit Function
-While Not tbNomenk.EOF
-    For I = 1 To UBound(gr) ' если группа состоит из одной ном-ры, то она
-        If gr(I) = tbNomenk!xGroup Then GoTo NXT ' Ќ≈вариантна, т.к. не
-    Next I                                      ' не попала в xVariantNomenc
-    nomenkToNNQQ pQuant, eQuant, prQuant
-NXT: tbNomenk.MoveNext
-Wend
-tbNomenk.Close
-
-productNomenkToNNQQ = True
-End Function
 
 
 '$odbc15$

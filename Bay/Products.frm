@@ -295,6 +295,31 @@ Const nkEdIzm = 3
 Const nkCurOstat = 4
 Const nkDostup = 5
 
+Sub nomenkToNNQQ(pQuant As Single, eQuant As Single, prQuant As Single)
+Dim j As Integer, leng As Integer
+
+leng = UBound(NN)
+
+    For j = 1 To leng
+        If NN(j) = tbNomenk!nomNom Then
+            QQ(j) = QQ(j) + pQuant * tbNomenk!quantity
+            If eQuant > 0 Then _
+                QQ2(j) = QQ2(j) + eQuant * tbNomenk!quantity
+            If prQuant > 0 Then _
+                QQ3(j) = QQ3(j) + prQuant * tbNomenk!quantity
+            Exit Sub
+        End If
+    Next j
+    leng = leng + 1
+    ReDim Preserve NN(leng): NN(leng) = tbNomenk!nomNom
+    ReDim Preserve QQ(leng): QQ(leng) = pQuant * tbNomenk!quantity
+    ReDim Preserve QQ2(leng): QQ2(leng) = eQuant * tbNomenk!quantity
+'    QQ2(leng) = 0: If eQuant > 0 Then QQ2(leng) = eQuant * tbNomenk!quantity
+    ReDim Preserve QQ3(leng): QQ3(leng) = prQuant * tbNomenk!quantity
+    
+
+End Sub
+
 Private Sub cmExel_Click()
 '    GridToExcel Grid, laGrid1.Caption
     GridToExcel Grid, laGrid.Caption
@@ -341,6 +366,116 @@ laQuant.Enabled = True
   tbQuant.SetFocus
   cmSel.Enabled = False
 End Sub
+
+
+
+Sub loadSeria()
+Dim key As String, pKey As String, K() As String, pK()  As String
+Dim I As Integer, iErr As Integer
+bilo = False
+sql = "SELECT sGuideSeries.*  From sGuideSeries ORDER BY sGuideSeries.seriaId;"
+Set tbSeries = myOpenRecordSet("##110", sql, dbOpenForwardOnly)
+If tbSeries Is Nothing Then myBase.Close: End
+If Not tbSeries.BOF Then
+ 'Dim i As Integer
+ 'i = tbSeries.Fields("seriaName").Size
+ tv.Nodes.Clear
+ Set Node = tv.Nodes.Add(, , "k0", "Справочник по сериям")
+ 
+ ReDim K(0): ReDim pK(0): ReDim NN(0): iErr = 0
+ While Not tbSeries.EOF
+    If tbSeries!seriaId = 0 Then GoTo NXT1
+    key = "k" & tbSeries!seriaId
+    pKey = "k" & tbSeries!parentSeriaId
+    On Error GoTo ERR1 ' назначить второй проход
+    Set Node = tv.Nodes.Add(pKey, tvwChild, key, tbSeries!seriaName)
+    On Error GoTo 0
+NXT1:
+    tbSeries.MoveNext
+ Wend
+End If
+tbSeries.Close
+
+While bilo ' необходимы еще проходы
+  bilo = False
+  For I = 1 To UBound(K())
+    If K(I) <> "" Then
+        On Error GoTo ERR2 ' назначить еще проход
+        Set Node = tv.Nodes.Add(pK(I), tvwChild, K(I), NN(I))
+        On Error GoTo 0
+        K(I) = ""
+        Node.Sorted = True
+    End If
+NXT:
+  Next I
+Wend
+tv.Nodes.Item("k0").Expanded = True
+Exit Sub
+ERR1:
+ iErr = iErr + 1: bilo = True
+ ReDim Preserve K(iErr): ReDim Preserve pK(iErr): ReDim Preserve NN(iErr)
+ K(iErr) = key: pK(iErr) = pKey: NN(iErr) = tbSeries!seriaName
+ Resume Next
+
+ERR2: bilo = True: Resume NXT
+
+End Sub
+
+Sub dostupOstatkiToGrid(Optional reg As String)
+Dim s As Single, sum As Single, rr As Long, il As Long
+
+Me.MousePointer = flexHourglass
+'If numExt = 254 Then
+laGrid4.Caption = "Доступные остатки"
+
+clearGrid Grid4
+Grid4.FormatString = "|<Номер|<Описание|<Ед.измерения|Oстатки"
+Grid4.ColWidth(0) = 0
+Grid4.ColWidth(frNomNom) = 870
+Grid4.ColWidth(frNomName) = 4485
+Grid4.ColWidth(frEdIzm) = 645
+Grid4.ColWidth(frOstat) = 885
+
+nomencOstatkiToGrid 1
+
+Grid4.Visible = True
+EN1:
+Me.MousePointer = flexDefault
+gridFrame.Visible = True
+gridFrame.ZOrder
+
+End Sub
+
+Public Function nomencOstatkiToGrid(row As Long) As Single
+Dim s As Single, str As String, z As Single, str2 As String
+
+'Ф.остатки
+sql = "SELECT nomName, Ed_Izmer2, perList From sGuideNomenk " & _
+"WHERE (((nomNom)='" & gNomNom & "'));"
+'MsgBox sql
+byErrSqlGetValues "##144", sql, str, str2, tmpSng
+If row > 0 Then
+    Grid4.TextMatrix(row, frNomNom) = gNomNom
+    Grid4.TextMatrix(row, frNomName) = str
+    Grid4.TextMatrix(row, frEdIzm) = str2
+End If
+
+
+'AA: вычисляем доступные остатки
+FO = PrihodRashod("+", -1001) - PrihodRashod("-", -1001)
+    
+sql = "SELECT Sum(quantity) AS Sum_quantity, " & _
+"Sum(Sum_quant) AS Sum_Sum_quant From wCloseNomenk" & _
+" WHERE (((nomNom)='" & gNomNom & "'));"
+If Not byErrSqlGetValues("##145", sql, z, s) Then myBase.Close: End
+nomencOstatkiToGrid = FO - (z - s) ' минус, что несписано
+
+nomencOstatkiToGrid = nomencOstatkiToGrid / tmpSng
+
+If row > 0 Then _
+    Grid4.TextMatrix(row, frOstat) = Round(nomencOstatkiToGrid, 2)
+
+End Function
 
 Private Sub Form_Load()
 Dim str As String, I As Integer, delta As Single
@@ -509,59 +644,6 @@ MousePointer = flexDefault
 
 End Sub
 
-
-Sub loadSeria()
-Dim key As String, pKey As String, K() As String, pK()  As String
-Dim I As Integer, iErr As Integer
-bilo = False
-sql = "SELECT sGuideSeries.*  From sGuideSeries ORDER BY sGuideSeries.seriaId;"
-Set tbSeries = myOpenRecordSet("##110", sql, dbOpenForwardOnly)
-If tbSeries Is Nothing Then myBase.Close: End
-If Not tbSeries.BOF Then
- 'Dim i As Integer
- 'i = tbSeries.Fields("seriaName").Size
- tv.Nodes.Clear
- Set Node = tv.Nodes.Add(, , "k0", "Справочник по сериям")
- 
- ReDim K(0): ReDim pK(0): ReDim NN(0): iErr = 0
- While Not tbSeries.EOF
-    If tbSeries!seriaId = 0 Then GoTo NXT1
-    key = "k" & tbSeries!seriaId
-    pKey = "k" & tbSeries!parentSeriaId
-    On Error GoTo ERR1 ' назначить второй проход
-    Set Node = tv.Nodes.Add(pKey, tvwChild, key, tbSeries!seriaName)
-    On Error GoTo 0
-NXT1:
-    tbSeries.MoveNext
- Wend
-End If
-tbSeries.Close
-
-While bilo ' необходимы еще проходы
-  bilo = False
-  For I = 1 To UBound(K())
-    If K(I) <> "" Then
-        On Error GoTo ERR2 ' назначить еще проход
-        Set Node = tv.Nodes.Add(pK(I), tvwChild, K(I), NN(I))
-        On Error GoTo 0
-        K(I) = ""
-        Node.Sorted = True
-    End If
-NXT:
-  Next I
-Wend
-tv.Nodes.Item("k0").Expanded = True
-Exit Sub
-ERR1:
- iErr = iErr + 1: bilo = True
- ReDim Preserve K(iErr): ReDim Preserve pK(iErr): ReDim Preserve NN(iErr)
- K(iErr) = key: pK(iErr) = pKey: NN(iErr) = tbSeries!seriaName
- Resume Next
-
-ERR2: bilo = True: Resume NXT
-
-End Sub
-
 Private Sub Form_Resize()
 Dim h As Integer, w As Integer
 
@@ -620,61 +702,7 @@ If Regim = "" Then 'предметы заказа
 End If
 End Sub
 
-Sub dostupOstatkiToGrid(Optional reg As String)
-Dim s As Single, sum As Single, rr As Long, il As Long
 
-Me.MousePointer = flexHourglass
-'If numExt = 254 Then
-laGrid4.Caption = "Доступные остатки"
-
-clearGrid Grid4
-Grid4.FormatString = "|<Номер|<Описание|<Ед.измерения|Oстатки"
-Grid4.ColWidth(0) = 0
-Grid4.ColWidth(frNomNom) = 870
-Grid4.ColWidth(frNomName) = 4485
-Grid4.ColWidth(frEdIzm) = 645
-Grid4.ColWidth(frOstat) = 885
-
-nomencOstatkiToGrid 1
-
-Grid4.Visible = True
-EN1:
-Me.MousePointer = flexDefault
-gridFrame.Visible = True
-gridFrame.ZOrder
-
-End Sub
-
-Public Function nomencOstatkiToGrid(row As Long) As Single
-Dim s As Single, str As String, z As Single, str2 As String
-
-'Ф.остатки
-sql = "SELECT nomName, Ed_Izmer2, perList From sGuideNomenk " & _
-"WHERE (((nomNom)='" & gNomNom & "'));"
-'MsgBox sql
-byErrSqlGetValues "##144", sql, str, str2, tmpSng
-If row > 0 Then
-    Grid4.TextMatrix(row, frNomNom) = gNomNom
-    Grid4.TextMatrix(row, frNomName) = str
-    Grid4.TextMatrix(row, frEdIzm) = str2
-End If
-
-
-'AA: вычисляем доступные остатки
-FO = PrihodRashod("+", -1001) - PrihodRashod("-", -1001)
-    
-sql = "SELECT Sum(quantity) AS Sum_quantity, " & _
-"Sum(Sum_quant) AS Sum_Sum_quant From wCloseNomenk" & _
-" WHERE (((nomNom)='" & gNomNom & "'));"
-If Not byErrSqlGetValues("##145", sql, z, s) Then myBase.Close: End
-nomencOstatkiToGrid = FO - (z - s) ' минус, что несписано
-
-nomencOstatkiToGrid = nomencOstatkiToGrid / tmpSng
-
-If row > 0 Then _
-    Grid4.TextMatrix(row, frOstat) = Round(nomencOstatkiToGrid, 2)
-
-End Function
 
 Private Sub Grid_Click()
 mousCol = Grid.MouseCol
@@ -768,6 +796,19 @@ End If
 
 End Sub
 
+Private Sub Grid2_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+If Grid2.MouseRow = 0 Then
+    If Shift = 2 Then MsgBox "ColWidth = " & Grid2.ColWidth(Grid2.MouseCol)
+ElseIf Button = 2 And quantity2 <> 0 Then
+    Grid2.row = Grid2.MouseRow
+    Grid2.col = dnNomNom
+    gNomNom = Grid2.Text
+    Grid2.SetFocus
+    Grid2.CellBackColor = vbButtonFace
+    Me.PopupMenu mnContext
+'    noClick = True
+End If
+End Sub
 
 Private Sub Grid2_Compare(ByVal Row1 As Long, ByVal Row2 As Long, Cmp As Integer)
     If Row1 = Grid2.Rows - 1 Then
@@ -815,19 +856,6 @@ If Grid2.col <> 0 Then Grid2.CellBackColor = Grid2.BackColor
 
 End Sub
 
-Private Sub Grid2_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
-If Grid2.MouseRow = 0 Then
-    If Shift = 2 Then MsgBox "ColWidth = " & Grid2.ColWidth(Grid2.MouseCol)
-ElseIf Button = 2 And quantity2 <> 0 Then
-    Grid2.row = Grid2.MouseRow
-    Grid2.col = dnNomNom
-    gNomNom = Grid2.Text
-    Grid2.SetFocus
-    Grid2.CellBackColor = vbButtonFace
-    Me.PopupMenu mnContext
-'    noClick = True
-End If
-End Sub
 
 
 Private Sub Grid4_GotFocus()
@@ -840,30 +868,7 @@ If Grid4.MouseRow = 0 And Shift = 2 Then _
 
 End Sub
 
-Sub nomenkToNNQQ(pQuant As Single, eQuant As Single, prQuant As Single)
-Dim j As Integer, leng As Integer
 
-leng = UBound(NN)
-
-    For j = 1 To leng
-        If NN(j) = tbNomenk!nomNom Then
-            QQ(j) = QQ(j) + pQuant * tbNomenk!quantity
-            If eQuant > 0 Then _
-                QQ2(j) = QQ2(j) + eQuant * tbNomenk!quantity
-            If prQuant > 0 Then _
-                QQ3(j) = QQ3(j) + prQuant * tbNomenk!quantity
-            Exit Sub
-        End If
-    Next j
-    leng = leng + 1
-    ReDim Preserve NN(leng): NN(leng) = tbNomenk!nomNom
-    ReDim Preserve QQ(leng): QQ(leng) = pQuant * tbNomenk!quantity
-    ReDim Preserve QQ2(leng): QQ2(leng) = eQuant * tbNomenk!quantity
-'    QQ2(leng) = 0: If eQuant > 0 Then QQ2(leng) = eQuant * tbNomenk!quantity
-    ReDim Preserve QQ3(leng): QQ3(leng) = prQuant * tbNomenk!quantity
-    
-
-End Sub
 
 
 
