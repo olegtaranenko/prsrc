@@ -795,6 +795,7 @@ Dim filterId As Integer, byRowId As Integer, byColumnId As Integer
                 ckKriteriumMat.value = 0
             End If
             If Not IsNull(table!intValue) Then
+                On Error Resume Next
                 Set Node = tvMat.Nodes("k" & table!intValue)
                 expandParents Node
                 Node.checked = True
