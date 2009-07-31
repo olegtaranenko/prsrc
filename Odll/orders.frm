@@ -1733,7 +1733,9 @@ Dim exists As Integer
         & " where statusid < 6 " _
         & " and v.venturename = '" & Grid.TextMatrix(mousRow, orVenture) & "'" _
         & " and invoice = '" & Grid.TextMatrix(mousRow, orInvoice) & "'" _
+        & " and datepart(yy, indate) = 20" & right(Grid.TextMatrix(mousRow, orData), 2) _
         & " and numorder != " & Grid.TextMatrix(mousRow, orNomZak)
+
 '        Debug.Print sql
         
     byErrSqlGetValues "##OrderIsMerged", sql, exists
