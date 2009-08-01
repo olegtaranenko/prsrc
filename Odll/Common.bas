@@ -2424,7 +2424,7 @@ End If
 sql = "SELECT Sum(sDMC.quant) AS Sum_quantity FROM sDocs INNER JOIN " & _
 "sDMC ON (sDocs.numExt = sDMC.numExt) AND (sDocs.numDoc = sDMC.numDoc) " & _
 "WHERE (((sDMC.nomNom) = '" & gNomNom & "' " & qWhere & ");"
-Debug.Print sql
+'Debug.Print sql
 byErrSqlGetValues "##157", sql, PrihodRashod
 
 End Function
