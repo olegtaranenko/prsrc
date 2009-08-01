@@ -5,8 +5,8 @@ Begin VB.Form sProducts
    BackColor       =   &H8000000A&
    Caption         =   "Формирование накладной"
    ClientHeight    =   6384
-   ClientLeft      =   48
-   ClientTop       =   1728
+   ClientLeft      =   60
+   ClientTop       =   1740
    ClientWidth     =   11880
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
@@ -97,14 +97,14 @@ Begin VB.Form sProducts
       End
    End
    Begin MSFlexGridLib.MSFlexGrid Grid 
-      Height          =   5595
+      Height          =   2472
       Left            =   2400
       TabIndex        =   0
       Top             =   240
       Visible         =   0   'False
-      Width           =   4695
+      Width           =   4692
       _ExtentX        =   8276
-      _ExtentY        =   9864
+      _ExtentY        =   4360
       _Version        =   393216
       AllowBigSelection=   0   'False
       AllowUserResizing=   1
@@ -188,6 +188,19 @@ Begin VB.Form sProducts
       HighLight       =   0
       AllowUserResizing=   1
    End
+   Begin MSFlexGridLib.MSFlexGrid Grid3 
+      Height          =   3072
+      Left            =   2400
+      TabIndex        =   20
+      Top             =   240
+      Visible         =   0   'False
+      Width           =   4692
+      _ExtentX        =   8276
+      _ExtentY        =   5419
+      _Version        =   393216
+      AllowBigSelection=   0   'False
+      AllowUserResizing=   1
+   End
    Begin VB.Label laGrid1 
       Height          =   195
       Left            =   2760
@@ -249,7 +262,10 @@ Public zakazano As Single
 Public FO As Single ' ФО
 
 Dim mousCol4 As Long, mousRow4 As Long
-Dim msgBilo As Boolean
+Dim msgBilo As Boolean, biloG3Enter_Cell As Boolean
+Const groupColor1 = &HBBFFBB ' только не vbBottonFace
+Const groupColor2 = &HBBBBFF '
+
 Dim grColor As Long
 Dim flag As Integer
 'Dim maxNumExt As Integer, minNumExt As Integer
@@ -275,6 +291,13 @@ Const frNomName = 2
 Const frEdIzm = 3
 Const frOstat = 4
 
+'список изделий или номенклатур(Grid3)
+Const gpNN = 0
+Const gpName = 1
+Const gpSize = 2
+Const gpDescript = 3
+Const gpId = 4 ' спрятан
+
 'Grid2
 Const dnNomNom = 1
 Const dnNomName = 2
@@ -289,9 +312,10 @@ Const dnVes = 8
 Const nkNomer = 1
 Const nkName = 2
 Const nkEdIzm = 3
-'Const nkQuant = 5
 Const nkCurOstat = 4
 Const nkDostup = 5
+Const nkQuant = 6
+
 
 Sub nomenkToNNQQ(pQuant As Single, eQuant As Single, prQuant As Single)
 Dim J As Integer, leng As Integer
@@ -338,14 +362,14 @@ Private Sub cmExit_Click()
 End Sub
 
 Private Sub cmHide_Click()
-Dim i As Integer
+Dim I As Integer
 If quantity = 0 Then Exit Sub
-For i = Grid.row To Grid.RowSel
+For I = Grid.row To Grid.RowSel
     If Grid.Rows > 2 Then
         Grid.RemoveItem Grid.row
         quantity = quantity - 1
     End If
-Next i
+Next I
 Grid.SetFocus
 Grid_EnterCell
 End Sub
@@ -368,58 +392,6 @@ laQuant.Enabled = True
 End Sub
 
 
-
-Sub loadSeria()
-Dim Key As String, pKey As String, k() As String, pK()  As String
-Dim i As Integer, iErr As Integer
-bilo = False
-sql = "SELECT sGuideSeries.*  From sGuideSeries ORDER BY sGuideSeries.seriaId;"
-Set tbSeries = myOpenRecordSet("##110", sql, dbOpenForwardOnly)
-If tbSeries Is Nothing Then myBase.Close: End
-If Not tbSeries.BOF Then
- 'Dim i As Integer
- 'i = tbSeries.Fields("seriaName").Size
- tv.Nodes.Clear
- Set Node = tv.Nodes.Add(, , "k0", "Справочник по сериям")
- 
- ReDim k(0): ReDim pK(0): ReDim NN(0): iErr = 0
- While Not tbSeries.EOF
-    If tbSeries!seriaId = 0 Then GoTo NXT1
-    Key = "k" & tbSeries!seriaId
-    pKey = "k" & tbSeries!parentSeriaId
-    On Error GoTo ERR1 ' назначить второй проход
-    Set Node = tv.Nodes.Add(pKey, tvwChild, Key, tbSeries!seriaName)
-    On Error GoTo 0
-NXT1:
-    tbSeries.MoveNext
- Wend
-End If
-tbSeries.Close
-
-While bilo ' необходимы еще проходы
-  bilo = False
-  For i = 1 To UBound(k())
-    If k(i) <> "" Then
-        On Error GoTo ERR2 ' назначить еще проход
-        Set Node = tv.Nodes.Add(pK(i), tvwChild, k(i), NN(i))
-        On Error GoTo 0
-        k(i) = ""
-        Node.Sorted = True
-    End If
-NXT:
-  Next i
-Wend
-tv.Nodes.Item("k0").Expanded = True
-Exit Sub
-ERR1:
- iErr = iErr + 1: bilo = True
- ReDim Preserve k(iErr): ReDim Preserve pK(iErr): ReDim Preserve NN(iErr)
- k(iErr) = Key: pK(iErr) = pKey: NN(iErr) = tbSeries!seriaName
- Resume Next
-
-ERR2: bilo = True: Resume NXT
-
-End Sub
 
 Sub dostupOstatkiToGrid(Optional reg As String)
 Dim s As Single, sum As Single, rr As Long, il As Long
@@ -478,10 +450,8 @@ If row > 0 Then _
 End Function
 
 Private Sub Form_Load()
-Dim str As String, i As Integer, delta As Single
+Dim str As String, I As Integer, delta As Single
 
-'oldHeight = Me.Height
-'oldWidth = Me.Width
 
 controlEnable False
 laQuant.Visible = False
@@ -489,35 +459,42 @@ laQuant.Caption = "лист"
 
 Frame.Visible = False
     
-laBegin = "В классификаторе выберите (кликом Mouse) группу, при этом " & _
-"откроется таблица, где будет представлена вся номенклатура этой группы." & _
-vbCrLf & "      Выберите в этой таблице требуемую позицию и нажмите <Добавить>." & _
-vbCrLf & vbCrLf & "При необходимости повторите эти действия для " & _
-"других позиций."
 
-loadKlass
+If Regim = "products" Then
+    loadSeria
+    laBegin = "В классификаторе выберите (кликом Mouse) серию готовых изделий"
+    Grid3.FormatString = "|<Номер|<Размер|<Описание|id"
+Else
+    laBegin = "В классификаторе выберите (кликом Mouse) группу, при этом " & _
+    "откроется таблица, где будет представлена вся номенклатура этой группы." & _
+    vbCrLf & "      Выберите в этой таблице требуемую позицию и нажмите <Добавить>." & _
+    vbCrLf & vbCrLf & "При необходимости повторите эти действия для " & _
+    "других позиций."
+    loadKlass
+End If
+
 
 noClick = False
 msgBilo = False
-Grid.FormatString = "|<Номер|<Описание|<Ед.изм|Ф.остатки|Д.остатки"
-'Grid2.FormatString = "|<Номер|<Описание|<Ед.измерения|Цена за ед.|кол-во|Сумма"Grid.FormatString = "|<Номер|<Описание|<Ед.изм|Ф.остатки|Д.остатки"
+Grid.FormatString = "|<Номер|<Описание|<Ед.изм|Ф.остатки|Д.остатки|Кол-во"
 Grid2.FormatString = "|<Номер|<Описание|<Ед.измерения|вес.ед|Цена за ед.|" & _
                      "кол-во|Сумма|вес"
 Grid.colWidth(0) = 0
 Grid.colWidth(nkNomer) = 900
-'Grid.ColWidth(nkName) = 2820 в Resize
 Grid.colWidth(nkEdIzm) = 630 'ostat
-'Grid.ColWidth(nkQuant) = 0
 Grid.colWidth(nkCurOstat) = 0
 Grid.colWidth(nkDostup) = 0
+Grid.colWidth(nkQuant) = 0
 cmExel.Visible = False
 
-If Regim = "ostat" Then
+If Regim = "ostat" Or Regim = "products" Then
     Me.Caption = "Ведомость остатков"
+    If Regim = "products" Then
+        Me.Caption = Me.Caption & " по готовым изделиям"
+    End If
     cmExel.Visible = True
     cmHide.Visible = True
     Grid.colWidth(nkName) = 3510
-'    Grid.ColWidth(nkQuant) = 0
     Grid.colWidth(nkCurOstat) = 810
     Grid.colWidth(nkDostup) = 800
     cmSel.Visible = False
@@ -558,12 +535,9 @@ Me.Caption = str & " предметов к заказу № " & numDoc
 If Regim = "closeZakaz" Then
     Me.Caption = "Предметы к заказу № " & numDoc
     laBegin.Caption = "Это закрытый заказ. Редактирование предметов невозможно."
-'    opNomenk.Enabled = False
-'    opProduct.Enabled = False
     tv.Enabled = False
     cmSel.Enabled = False
     laGrid2.Enabled = False
-'   Grid2.Enabled = False
     cmExel2.Visible = False
 End If
 EN1:
@@ -575,7 +549,7 @@ grid2Ves = Grid2.Width / (tv.Width + Grid.Width + Grid2.Width)
 isLoad = True
 End Sub
 
-Sub loadPredmeti() '
+Sub loadPredmeti()
 
 Dim s As Single, sum As Single, sumVes As Single, quant As Single
 
@@ -644,6 +618,7 @@ MousePointer = flexDefault
 
 End Sub
 
+
 Private Sub Form_Resize()
 Dim h As Integer, w As Integer
 
@@ -663,6 +638,10 @@ w = Me.Width - oldWidth
 oldWidth = Me.Width
 tv.Height = tv.Height + h
 tv.Width = tv.Width + w * tvVes
+
+If Regim <> "products" Then
+    Grid.Height = tv.Height
+End If
 
 Grid.left = Grid.left + w * tvVes
 laGrid1.left = Grid.left
@@ -687,6 +666,8 @@ cmExel2.Top = cmExel2.Top + h
 cmExel2.left = cmExel2.left + w
 cmExel.Top = cmExel.Top + h
 cmHide.Top = cmHide.Top + h
+Grid3.left = Grid.left
+Grid3.Width = Grid.Width
 
 End Sub
 
@@ -858,6 +839,16 @@ End Sub
 
 
 
+Private Sub Grid3_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+    If Grid3.MouseRow = 0 And Shift = 2 Then MsgBox "ColWidth = " & Grid3.colWidth(Grid3.MouseCol)
+    
+    'On Error Resume Next ' когда снова по tv_click
+    Grid3.row = Grid3.MouseRow 'чтобы снять выделение неск.строк возник по gridOrGrid3Hide
+    Grid3.RowSel = Grid3.MouseRow '
+    biloG3Enter_Cell = False
+    newProductRow Grid3.MouseRow
+End Sub
+
 Private Sub Grid4_GotFocus()
 tbQuant.SetFocus
 End Sub
@@ -874,7 +865,7 @@ End Sub
 
 
 Private Sub mnDel_Click()
-Dim pQuant As Single, i As Integer ', str  As String
+Dim pQuant As Single, I As Integer ', str  As String
 
 If beNaklads() Then Exit Sub
 
@@ -1052,7 +1043,7 @@ End If
 End Sub
 'при delta < 0 - возм. удаление
 Function nomenkToDMCrez(delta As Single, Optional mov As String = "") As Boolean
-Dim s As Single, i As Integer
+Dim s As Single, I As Integer
 
 nomenkToDMCrez = False
 
@@ -1098,9 +1089,62 @@ gSeriaId = Mid$(tv.SelectedItem.Key, 2)
 ValueToTableField "##115", "'" & NewString & "'", "sGuideSeries", "seriaName", "bySeriaId"
 End Sub
 
+Sub gridOrGrid3Hide(Optional purpose As String)
+Dim I As Integer, maxHeight As Integer
+
+maxHeight = tv.Top + tv.Height - Grid3.Top + 30
+If purpose = "grid3" Then ' есть
+    Grid.Top = Grid3.Top
+    Grid.Height = maxHeight
+    Grid.ZOrder
+ElseIf purpose = "grid" Then ' есть только одна Grid3
+    Grid3.Height = maxHeight
+    Grid3.ZOrder
+Else '                обе присутствуют
+    I = Grid.CellHeight * max(3, (quantity + 3))  'новый размер Grid
+
+    If I > maxHeight / 2 Then I = maxHeight / 2
+    Grid.Height = I
+    Grid.Top = tv.Top + tv.Height - I + 30
+    laGrid.Top = Grid.Top - laGrid.Height  '+90
+    Grid3.Height = laGrid.Top - Grid3.Top
+    If Not Grid3.RowIsVisible(mousRow3) Then rowViem mousRow3, Grid3
+End If
+
+End Sub
+
+
+Sub newProductRow(row As Long)
+    
+    gProductId = Grid3.TextMatrix(row, gpId)
+    gProduct = Grid3.TextMatrix(row, gpName)
+    laGrid.Visible = True
+    laGrid.Caption = "Список номенклатуры по изделию '" & gProduct & "'"
+    loadProductNomenk gProductId
+    controlEnable True
+    gridOrGrid3Hide ""
+    Grid.TopRow = 1
+    
+End Sub
+
+
+Sub setNameColWidth()
+    If Me.WindowState = vbMaximized And Me.Width > cDELLwidth Then 'экран DELL
+        Grid3.colWidth(gpDescript) = 5055
+        Grid.colWidth(nkName) = 4350 + 900
+    ElseIf Regim = "ostat" Then
+        Grid3.colWidth(gpDescript) = 3495
+    Else
+        Grid.colWidth(nkName) = 2100 + 900
+        Grid3.colWidth(gpDescript) = 2200
+    End If
+
+End Sub
+
+
 Sub loadKlass()
 Dim Key As String, pKey As String, k() As String, pK()  As String
-Dim i As Integer, iErr As Integer
+Dim I As Integer, iErr As Integer
 bilo = False
 sql = "SELECT sGuideKlass.*  From sGuideKlass ORDER BY sGuideKlass.parentKlassId;"
 Set tbKlass = myOpenRecordSet("##102", sql, dbOpenForwardOnly)
@@ -1129,16 +1173,16 @@ tbKlass.Close
 
 While bilo ' необходимы еще проходы
   bilo = False
-  For i = 1 To UBound(k())
-    If k(i) <> "" Then
+  For I = 1 To UBound(k())
+    If k(I) <> "" Then
         On Error GoTo ERR2 ' назначить еще проход
-        Set Node = tv.Nodes.Add(pK(i), tvwChild, k(i), NN(i))
+        Set Node = tv.Nodes.Add(pK(I), tvwChild, k(I), NN(I))
         On Error GoTo 0
-        k(i) = ""
+        k(I) = ""
         Node.Sorted = True
     End If
 NXT:
-  Next i
+  Next I
 Wend
 tv.Nodes.Item("k0").Expanded = True
 Exit Sub
@@ -1149,6 +1193,130 @@ ERR1:
  Resume Next
 
 ERR2: bilo = True: Resume NXT
+
+End Sub
+
+Sub loadSeria()
+Dim Key As String, pKey As String, k() As String, pK()  As String
+Dim I As Integer, iErr As Integer
+bilo = False
+sql = "SELECT sGuideSeries.*  From sGuideSeries ORDER BY sGuideSeries.seriaId;"
+Set tbSeries = myOpenRecordSet("##110", sql, dbOpenForwardOnly)
+If tbSeries Is Nothing Then myBase.Close: End
+If Not tbSeries.BOF Then
+ tv.Nodes.Clear
+ Set Node = tv.Nodes.Add(, , "k0", "Справочник по сериям")
+ Node.Sorted = True
+ 
+ ReDim k(0): ReDim pK(0): ReDim NN(0): iErr = 0
+ While Not tbSeries.EOF
+    If tbSeries!seriaId = 0 Then GoTo NXT1
+    Key = "k" & tbSeries!seriaId
+    pKey = "k" & tbSeries!parentSeriaId
+    On Error GoTo ERR1 ' назначить второй проход
+    Set Node = tv.Nodes.Add(pKey, tvwChild, Key, tbSeries!seriaName)
+    On Error GoTo 0
+    Node.Sorted = True
+NXT1:
+    tbSeries.MoveNext
+ Wend
+End If
+tbSeries.Close
+
+While bilo ' необходимы еще проходы
+  bilo = False
+  For I = 1 To UBound(k())
+    If k(I) <> "" Then
+        On Error GoTo ERR2 ' назначить еще проход
+        Set Node = tv.Nodes.Add(pK(I), tvwChild, k(I), NN(I))
+        On Error GoTo 0
+        k(I) = ""
+        Node.Sorted = True
+    End If
+NXT:
+  Next I
+Wend
+tv.Nodes.Item("k0").Expanded = True
+Exit Sub
+ERR1:
+ iErr = iErr + 1: bilo = True
+ ReDim Preserve k(iErr): ReDim Preserve pK(iErr): ReDim Preserve NN(iErr)
+ k(iErr) = Key: pK(iErr) = pKey: NN(iErr) = tbSeries!seriaName
+ Resume Next
+
+ERR2: bilo = True: Resume NXT
+
+End Sub
+
+
+Sub loadProductNomenk(ByVal v_productId As Integer)
+Dim s As Double, grBef As String
+
+Me.MousePointer = flexHourglass
+
+quantity = 0
+Grid.Visible = False
+clearGrid Grid
+
+sql = "SELECT sProducts.nomNom, sProducts.quantity, sProducts.xGroup, " & _
+"sGuideNomenk.Size, sGuideNomenk.cod, " & _
+" sGuideNomenk.nomName, sGuideNomenk.ed_Izmer  " & _
+"FROM sGuideNomenk INNER JOIN sProducts ON sGuideNomenk.nomNom = sProducts.nomNom " & _
+"WHERE (((sProducts.ProductId)=" & v_productId & ")) ORDER BY sProducts.xGroup DESC;"
+'MsgBox sql
+Set tbNomenk = myOpenRecordSet("##108", sql, dbOpenForwardOnly)
+If tbNomenk Is Nothing Then Exit Sub
+If Not tbNomenk.BOF Then
+  Grid.col = nkQuant
+  grBef = ""
+  While Not tbNomenk.EOF
+  
+    Grid.row = quantity 'возможно пред. строку н.б. окрасить
+    Dim str As String: str = Grid.Text
+    quantity = quantity + 1
+    If grBef = tbNomenk!xGroup And grBef <> "" Then
+        Grid.CellBackColor = grColor ' предыдущая
+        Grid.CellFontBold = False
+        Grid.row = quantity
+        Grid.CellBackColor = grColor ' текущая
+        Grid.CellFontBold = False
+        bilo = False ' не было переключение цвета
+    Else
+        Grid.row = quantity
+        Grid.CellFontBold = True
+        If Not bilo Then '
+            If grColor = groupColor1 Then
+                grColor = groupColor2
+            Else
+                grColor = groupColor1
+            End If
+            bilo = True
+        End If
+    End If
+    grBef = tbNomenk!xGroup
+        
+    gNomNom = tbNomenk!nomNom
+    Grid.TextMatrix(quantity, nkNomer) = gNomNom
+    Grid.TextMatrix(quantity, nkName) = tbNomenk!cod & " " & _
+        tbNomenk!nomName & " " & tbNomenk!Size
+    Grid.TextMatrix(quantity, nkEdIzm) = tbNomenk!ed_Izmer
+'    ReDim Preserve QP(quantity): QP(quantity) = tbNomenk!quantity
+        Grid.TextMatrix(quantity, nkQuant) = tbNomenk!quantity
+    'доступные остатки:
+    Grid.TextMatrix(quantity, nkDostup) = Round(nomencOstatkiToGrid(-1), 2)
+    If Regim = "ostat" Then
+        Grid.TextMatrix(quantity, nkCurOstat) = Round(FO, 2)
+    End If
+    
+    Grid.AddItem ""
+    tbNomenk.MoveNext
+  Wend
+  Grid.RemoveItem quantity + 1
+End If
+tbNomenk.Close
+Grid.Visible = True
+Grid.ZOrder
+Me.MousePointer = flexDefault
 
 End Sub
 
@@ -1214,7 +1382,7 @@ End Sub
 
     
 Private Sub tv_KeyUp(KeyCode As Integer, Shift As Integer)
-Dim i As Integer, str As String
+Dim I As Integer, str As String
 If KeyCode = vbKeyReturn Or KeyCode = vbKeyEscape Then
 '    tv_NodeClick tv.SelectedItem
 End If
@@ -1240,7 +1408,17 @@ tbQuant.Enabled = False
 laQuant.Enabled = False
 controlEnable True
 gKlassId = Mid$(tv.SelectedItem.Key, 2)
-loadKlassNomenk
+If Regim = "products" Then
+    gSeriaId = Mid$(tv.SelectedItem.Key, 2)
+    loadSeriaProduct
+    Grid3.Visible = True
+    Grid.Visible = False
+    laGrid.Visible = False
+    cmSel.Enabled = False
+    'gridOrGrid3Hide "grid"
+Else
+    loadKlassNomenk
+End If
 '    Grid.Visible = True
 Grid_EnterCell
 On Error Resume Next
@@ -1250,4 +1428,51 @@ Grid.SetFocus
 
 End Sub
 
+Sub loadSeriaProduct()
+Dim il As Long, strWhere As String
+
+If tv.SelectedItem.Key = "k0" Then
+    gSeriaId = 0
+    Grid3.Visible = False
+    Exit Sub
+End If
+
+Me.MousePointer = flexHourglass
+laGrid1.Caption = "Список готовых изделий по серии '" & tv.SelectedItem.Text & "'"
+
+quantity3 = 0
+Grid3.Visible = False
+clearGrid Grid3
+il = 0
+
+strWhere = " WHERE sGuideProducts.prSeriaId = " & gSeriaId _
+    & " and exists (select 1 from sproducts where sproducts.productid = sGuideProducts.prId)"
+
+sql = "SELECT sGuideProducts.prDescript, sGuideProducts.prName, " & _
+"sGuideProducts.prId, sGuideProducts.prSize From sGuideProducts " & strWhere & _
+"ORDER BY sGuideProducts.SortNom;"
+Set tbProduct = myOpenRecordSet("##104", sql, dbOpenForwardOnly)
+If tbProduct Is Nothing Then GoTo EN1
+If Not tbProduct.BOF Then
+ While Not tbProduct.EOF
+    quantity3 = quantity3 + 1
+    
+    Grid3.TextMatrix(quantity3, gpNN) = quantity3
+    Grid3.TextMatrix(quantity3, gpId) = tbProduct!prId
+'    If Not IsNull(tbProduct!prName) Then
+    Grid3.TextMatrix(quantity3, gpName) = tbProduct!prName
+    Grid3.TextMatrix(quantity3, gpSize) = tbProduct!prSize
+    Grid3.TextMatrix(quantity3, gpDescript) = tbProduct!prDescript
+
+    Grid3.AddItem ""
+    tbProduct.MoveNext
+ Wend
+ Grid3.RemoveItem quantity3 + 1
+End If
+tbProduct.Close
+Grid3.Visible = True
+EN1:
+Me.MousePointer = flexDefault
+
+End Sub
 
