@@ -17,7 +17,7 @@ Begin VB.Form sProducts
       Caption         =   "Печать в Exel"
       Height          =   315
       Left            =   8640
-      TabIndex        =   18
+      TabIndex        =   17
       Top             =   5940
       Visible         =   0   'False
       Width           =   1215
@@ -29,7 +29,7 @@ Begin VB.Form sProducts
    Begin VB.TextBox tbMobile 
       Height          =   315
       Left            =   9900
-      TabIndex        =   16
+      TabIndex        =   15
       Text            =   "tbMobile"
       Top             =   3000
       Visible         =   0   'False
@@ -39,7 +39,7 @@ Begin VB.Form sProducts
       Caption         =   "Печать в Exel"
       Height          =   315
       Left            =   2340
-      TabIndex        =   14
+      TabIndex        =   13
       Top             =   5940
       Visible         =   0   'False
       Width           =   1215
@@ -49,14 +49,14 @@ Begin VB.Form sProducts
       BorderStyle     =   0  'None
       Height          =   2055
       Left            =   3180
-      TabIndex        =   10
+      TabIndex        =   9
       Top             =   3420
       Visible         =   0   'False
       Width           =   7335
       Begin MSFlexGridLib.MSFlexGrid Grid4 
          Height          =   1455
          Left            =   60
-         TabIndex        =   11
+         TabIndex        =   10
          Top             =   300
          Visible         =   0   'False
          Width           =   7215
@@ -80,18 +80,18 @@ Begin VB.Form sProducts
             Strikethrough   =   0   'False
          EndProperty
          ForeColor       =   &H00FFFFFF&
-         Height          =   255
+         Height          =   252
          Left            =   60
-         TabIndex        =   13
-         Top             =   60
-         Width           =   7215
+         TabIndex        =   12
+         Top             =   0
+         Width           =   7212
       End
       Begin VB.Label Label2 
          Alignment       =   2  'Center
          Caption         =   "Если остатки позволяют, введите треб. кол-во изделий и нажмите <Enter>, иначе - <ESC>.."
          Height          =   255
          Left            =   60
-         TabIndex        =   12
+         TabIndex        =   11
          Top             =   1740
          Width           =   7215
       End
@@ -112,19 +112,11 @@ Begin VB.Form sProducts
    Begin VB.Frame Frame 
       BorderStyle     =   0  'None
       Height          =   255
-      Left            =   60
+      Left            =   0
       TabIndex        =   8
       Top             =   0
       Visible         =   0   'False
       Width           =   2295
-      Begin VB.Label laGrid 
-         Caption         =   "Label1"
-         Height          =   195
-         Left            =   0
-         TabIndex        =   9
-         Top             =   -15
-         Width           =   3495
-      End
    End
    Begin VB.CommandButton cmHide 
       Caption         =   "Скрыть выд."
@@ -163,7 +155,7 @@ Begin VB.Form sProducts
    Begin MSComctlLib.TreeView tv 
       Height          =   5580
       Left            =   120
-      TabIndex        =   15
+      TabIndex        =   14
       Top             =   240
       Width           =   2175
       _ExtentX        =   3831
@@ -178,7 +170,7 @@ Begin VB.Form sProducts
    Begin MSFlexGridLib.MSFlexGrid Grid2 
       Height          =   5595
       Left            =   7200
-      TabIndex        =   17
+      TabIndex        =   16
       Top             =   240
       Width           =   4635
       _ExtentX        =   8170
@@ -191,7 +183,7 @@ Begin VB.Form sProducts
    Begin MSFlexGridLib.MSFlexGrid Grid3 
       Height          =   3072
       Left            =   2400
-      TabIndex        =   20
+      TabIndex        =   19
       Top             =   240
       Visible         =   0   'False
       Width           =   4692
@@ -201,12 +193,22 @@ Begin VB.Form sProducts
       AllowBigSelection=   0   'False
       AllowUserResizing=   1
    End
+   Begin VB.Label laGrid 
+      AutoSize        =   -1  'True
+      Caption         =   "Label1"
+      Height          =   192
+      Left            =   2400
+      TabIndex        =   20
+      Top             =   3360
+      Width           =   492
+   End
    Begin VB.Label laGrid1 
-      Height          =   195
+      AutoSize        =   -1  'True
+      Height          =   192
       Left            =   2760
-      TabIndex        =   19
+      TabIndex        =   18
       Top             =   0
-      Width           =   3855
+      Width           =   36
    End
    Begin VB.Label laBegin 
       Caption         =   "Label2"
@@ -292,11 +294,11 @@ Const frEdIzm = 3
 Const frOstat = 4
 
 'список изделий или номенклатур(Grid3)
-Const gpNN = 0
+'Const gpNN = 0
 Const gpName = 1
 Const gpSize = 2
 Const gpDescript = 3
-Const gpId = 4 ' спрятан
+Const gpId = 0 ' спрятан
 
 'Grid2
 Const dnNomNom = 1
@@ -315,6 +317,8 @@ Const nkEdIzm = 3
 Const nkCurOstat = 4
 Const nkDostup = 5
 Const nkQuant = 6
+
+Dim buntColumn As Integer
 
 
 Sub nomenkToNNQQ(pQuant As Single, eQuant As Single, prQuant As Single)
@@ -378,7 +382,7 @@ Private Sub cmSel_Click() '<Добавить>
 'Dim befColor As Long, il As Long, nl As Long, n As Integer, str As String
 
 'laQuant.Visible = False
-If Regim = "ostat" Then Exit Sub
+If Regim = "ostat" Or Regim = "products" Then Exit Sub
 If beNaklads() Then Exit Sub
 
 dostupOstatkiToGrid
@@ -463,7 +467,13 @@ Frame.Visible = False
 If Regim = "products" Then
     loadSeria
     laBegin = "В классификаторе выберите (кликом Mouse) серию готовых изделий"
-    Grid3.FormatString = "|<Номер|<Размер|<Описание|id"
+    Grid3.FormatString = "|<Номер|<Размер|<Описание"
+    Grid3.colWidth(gpId) = 0
+    Grid3.colWidth(gpName) = 1300
+    Grid3.colWidth(gpSize) = 1080
+    Grid3.colWidth(gpDescript) = 4085
+    laGrid.left = Grid3.left
+
 Else
     laBegin = "В классификаторе выберите (кликом Mouse) группу, при этом " & _
     "откроется таблица, где будет представлена вся номенклатура этой группы." & _
@@ -483,15 +493,21 @@ Grid.colWidth(0) = 0
 Grid.colWidth(nkNomer) = 900
 Grid.colWidth(nkEdIzm) = 630 'ostat
 Grid.colWidth(nkCurOstat) = 0
-Grid.colWidth(nkDostup) = 0
+Grid.colWidth(nkDostup) = 700
 Grid.colWidth(nkQuant) = 0
 cmExel.Visible = False
+laBegin.Visible = True
 
 If Regim = "ostat" Or Regim = "products" Then
     Me.Caption = "Ведомость остатков"
     If Regim = "products" Then
         Me.Caption = Me.Caption & " по готовым изделиям"
+        Grid.colWidth(nkQuant) = 700
     End If
+    If Regim = "ostat" Then
+        Grid.colWidth(nkQuant) = 0
+    End If
+    
     cmExel.Visible = True
     cmHide.Visible = True
     Grid.colWidth(nkName) = 3510
@@ -502,9 +518,9 @@ If Regim = "ostat" Or Regim = "products" Then
     laQuant.Visible = False
     laGrid2.Visible = False
     Grid2.Visible = False
+    laGrid.Visible = False
     Grid.Width = 7000 '6230
     Me.Width = Grid.Width + 2527
-    Frame.Width = Grid.Width
     cmExit.left = Me.Width - cmExit.Width - 200
     Grid2.Width = 0 'для Resize
     GoTo EN1
@@ -638,14 +654,15 @@ w = Me.Width - oldWidth
 oldWidth = Me.Width
 tv.Height = tv.Height + h
 tv.Width = tv.Width + w * tvVes
-
 If Regim <> "products" Then
     Grid.Height = tv.Height
 End If
 
 Grid.left = Grid.left + w * tvVes
 laGrid1.left = Grid.left
-laBegin.left = Grid.left
+laBegin.left = tv.left + tv.Width + 100
+laBegin.Top = tv.Top
+
 Grid.Height = Grid.Height + h
 Grid.Width = Grid.Width + w * gridVes
 
@@ -668,6 +685,7 @@ cmExel.Top = cmExel.Top + h
 cmHide.Top = cmHide.Top + h
 Grid3.left = Grid.left
 Grid3.Width = Grid.Width
+laGrid.left = Grid3.left
 
 End Sub
 
@@ -710,9 +728,9 @@ End If
 End Sub
 
 Private Sub Grid_EnterCell()
-Dim f As String, d As Single
+Dim f As String, d As String
 
-If quantity = 0 Then Exit Sub
+If quantity = 0 Or Grid.col = buntColumn Then Exit Sub
 mousRow = Grid.row
 mousCol = Grid.col
 
@@ -750,7 +768,7 @@ If KeyCode = vbKeyEscape Then Grid_EnterCell
 End Sub
 
 Private Sub Grid_LeaveCell()
-If Grid.col <> 0 Then Grid.CellBackColor = Grid.BackColor
+    If Grid.col <> 0 And Grid.col <> buntColumn Then Grid.CellBackColor = Grid.BackColor
 End Sub
 
 
@@ -858,10 +876,6 @@ If Grid4.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid4.colWidth(Grid4.MouseCol)
 
 End Sub
-
-
-
-
 
 
 Private Sub mnDel_Click()
@@ -1090,25 +1104,65 @@ ValueToTableField "##115", "'" & NewString & "'", "sGuideSeries", "seriaName", "
 End Sub
 
 Sub gridOrGrid3Hide(Optional purpose As String)
-Dim I As Integer, maxHeight As Integer
+Dim formHeight As Double
 
-maxHeight = tv.Top + tv.Height - Grid3.Top + 30
+formHeight = tv.Top + tv.Height - Grid3.Top
 If purpose = "grid3" Then ' есть
     Grid.Top = Grid3.Top
-    Grid.Height = maxHeight
+    Grid.Height = formHeight
     Grid.ZOrder
 ElseIf purpose = "grid" Then ' есть только одна Grid3
-    Grid3.Height = maxHeight
+    Grid3.Height = formHeight
     Grid3.ZOrder
 Else '                обе присутствуют
-    I = Grid.CellHeight * max(3, (quantity + 3))  'новый размер Grid
-
-    If I > maxHeight / 2 Then I = maxHeight / 2
-    Grid.Height = I
-    Grid.Top = tv.Top + tv.Height - I + 30
-    laGrid.Top = Grid.Top - laGrid.Height  '+90
-    Grid3.Height = laGrid.Top - Grid3.Top
-    If Not Grid3.RowIsVisible(mousRow3) Then rowViem mousRow3, Grid3
+    Dim gHeightMax As Double, g3HeightMax As Double
+    Dim fullHeight As Double
+    
+    gHeightMax = Grid.Rows * (Grid.CellHeight + 12) + 80
+    g3HeightMax = Grid3.Rows * (Grid3.CellHeight + 12) + 80
+    fullHeight = gHeightMax + g3HeightMax + laGrid.Height
+    
+    If fullHeight > formHeight Then
+        Dim normalGrid As Single, normalGird3 As Single
+        Dim baseIsGrid As Boolean, baseIsGrid3 As Boolean
+        
+        If gHeightMax < formHeight * 2 / 3 Then
+            baseIsGrid = True
+        ElseIf g3HeightMax < formHeight * 2 / 3 Then
+            baseIsGrid3 = True
+        End If
+        
+        If Not baseIsGrid And Not baseIsGrid3 Then
+            normalGrid = gHeightMax / fullHeight
+            normalGird3 = g3HeightMax / fullHeight
+            gHeightMax = CInt(normalGrid * formHeight)
+            baseIsGrid = True
+        End If
+        
+        If baseIsGrid Then
+            Grid.Height = gHeightMax
+            Grid.Top = tv.Top + tv.Height - Grid.Height
+            laGrid.Top = Grid.Top - laGrid.Height  '+90
+            Grid3.Height = laGrid.Top - Grid3.Top
+        Else
+            Grid3.Height = g3HeightMax
+            laGrid.Top = Grid3.Top + Grid3.Height
+            Grid.Top = laGrid.Top + laGrid.Height
+            Grid.Height = tv.Top + tv.Height - Grid.Top
+        End If
+        
+        
+    Else
+        Grid3.Height = g3HeightMax
+        laGrid.Top = Grid3.Top + g3HeightMax
+        Grid.Height = gHeightMax
+        Grid.Top = laGrid.Top + laGrid.Height
+        Grid.Height = tv.Top + tv.Height - Grid.Top
+    End If
+    If mousRow3 < Grid3.Rows Then
+        If Not Grid3.RowIsVisible(mousRow3) Then rowViem mousRow3, Grid3
+    End If
+    
 End If
 
 End Sub
@@ -1117,13 +1171,15 @@ End Sub
 Sub newProductRow(row As Long)
     
     gProductId = Grid3.TextMatrix(row, gpId)
-    gProduct = Grid3.TextMatrix(row, gpName)
-    laGrid.Visible = True
-    laGrid.Caption = "Список номенклатуры по изделию '" & gProduct & "'"
-    loadProductNomenk gProductId
-    controlEnable True
-    gridOrGrid3Hide ""
-    Grid.TopRow = 1
+    If IsNumeric(gProductId) Then
+        gProduct = Grid3.TextMatrix(row, gpName)
+        laGrid.Visible = True
+        laGrid.Caption = "Список номенклатуры по изделию '" & gProduct & "'"
+        loadProductNomenk gProductId
+        controlEnable True
+        gridOrGrid3Hide ""
+        Grid.TopRow = 1
+    End If
     
 End Sub
 
@@ -1253,6 +1309,7 @@ Sub loadProductNomenk(ByVal v_productId As Integer)
 Dim s As Double, grBef As String
 
 Me.MousePointer = flexHourglass
+buntColumn = nkQuant
 
 quantity = 0
 Grid.Visible = False
@@ -1267,7 +1324,7 @@ sql = "SELECT sProducts.nomNom, sProducts.quantity, sProducts.xGroup, " & _
 Set tbNomenk = myOpenRecordSet("##108", sql, dbOpenForwardOnly)
 If tbNomenk Is Nothing Then Exit Sub
 If Not tbNomenk.BOF Then
-  Grid.col = nkQuant
+  Grid.col = buntColumn
   grBef = ""
   While Not tbNomenk.EOF
   
@@ -1363,7 +1420,7 @@ If Not tbNomenk.BOF Then
         tbNomenk!nomName & " " & tbNomenk!Size
     Grid.TextMatrix(quantity, nkEdIzm) = tbNomenk!ed_Izmer2
     
-    If Regim = "ostat" Then
+    If Regim = "ostat" Or Regim = "" Then
         'доступные остатки без дробной части (nomencOstatkiToGrid выдает perList в tmpSng):
         Grid.TextMatrix(quantity, nkDostup) = Round(nomencOstatkiToGrid(-1) - 0.4999, 0)
         Grid.TextMatrix(quantity, nkCurOstat) = Round(FO / tmpSng, 2) 'FO из nomencOstatkiToGrid
@@ -1406,6 +1463,7 @@ End If
 
 tbQuant.Enabled = False
 laQuant.Enabled = False
+laBegin.Visible = False
 controlEnable True
 gKlassId = Mid$(tv.SelectedItem.Key, 2)
 If Regim = "products" Then
@@ -1413,9 +1471,10 @@ If Regim = "products" Then
     loadSeriaProduct
     Grid3.Visible = True
     Grid.Visible = False
-    laGrid.Visible = False
+    'laGrid.Visible = True
     cmSel.Enabled = False
-    'gridOrGrid3Hide "grid"
+    gridOrGrid3Hide "grid"
+    Grid.colWidth(nkCurOstat) = 0
 Else
     loadKlassNomenk
 End If
@@ -1457,7 +1516,7 @@ If Not tbProduct.BOF Then
  While Not tbProduct.EOF
     quantity3 = quantity3 + 1
     
-    Grid3.TextMatrix(quantity3, gpNN) = quantity3
+    'Grid3.TextMatrix(quantity3, gpNN) = quantity3
     Grid3.TextMatrix(quantity3, gpId) = tbProduct!prId
 '    If Not IsNull(tbProduct!prName) Then
     Grid3.TextMatrix(quantity3, gpName) = tbProduct!prName
