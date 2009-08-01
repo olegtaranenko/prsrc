@@ -498,9 +498,6 @@ Attribute VB_Exposed = False
 Option Explicit
 'Const OTLADproduct = "" '"Шарики" ' отладка Прайса
 Const msgQuant = 10 ' мах число Err сообщений, после кот. программа выходит
-Dim objExel As Excel.Application, exRow As Long
-Dim head1 As String, head2 As String, head3 As String, head4 As String
-Public gain2 As Single, gain3 As Single, gain4 As Single
 
 
 Public isLoad As Boolean
@@ -696,7 +693,7 @@ If tbNomenk Is Nothing Then
 End If
 If tbNomenk.BOF Then
     getSumCena = "Error: Не обнаружены комплектующие"
-    GoTo ER
+    GoTo er
 End If
 'If tbProduct!prName = "S202M" Then
 '    max = max
@@ -710,7 +707,7 @@ While Not tbNomenk.EOF
     If reg = "" Then
         If tbNomenk!formula = "" Then
             getSumCena = "Error: Не определена формула для номенклатуры '" & tbNomenk!nomnom & "'"
-            GoTo ER
+            GoTo er
         End If
         v = nomenkFormula("noOpen") 'Цена2
     Else
@@ -731,7 +728,7 @@ While Not tbNomenk.EOF
         End If
     Else
         getSumCena = v & " в формуле для  '" & tbNomenk!nomnom & "'"
-        GoTo ER
+        GoTo er
     End If
 
     tbNomenk.MoveNext
@@ -741,12 +738,12 @@ If max = -1 Then '  - не было групп
 Else
     getSumCena = sum + max
 End If
-ER:
+er:
 tbNomenk.Close
 End Function
 
 Private Sub cmSel_Click()
-Dim q As Single, i As Integer, str As String, n As Integer, rr As Integer
+Dim q As Single, I As Integer, str As String, n As Integer, rr As Integer
 
 If Not isNumericTbox(tbQuant, 1) Then Exit Sub
 
@@ -787,8 +784,8 @@ While Not tbProduct.EOF
     tbProduct!nomnom & "', -" & q & ", " & numDoc & ", " & numExt & ", '" & _
     AUTO.cbM.Text & "' " & " From System;"
     'MsgBox sql
-    i = myExecute("##151", sql, -196)
-    If i = -2 Then 'если эта позиция уже есть, то обновляем сущ.запись
+    I = myExecute("##151", sql, -196)
+    If I = -2 Then 'если эта позиция уже есть, то обновляем сущ.запись
     
         Set tbDMC = myOpenRecordSet("##152", "sDMC", dbOpenTable)
         If tbDMC Is Nothing Then GoTo EN1
@@ -805,7 +802,7 @@ While Not tbProduct.EOF
         tbDMC.Update
         tbDMC.Close
     
-    ElseIf i <> 0 Then
+    ElseIf I <> 0 Then
 EN1:    wrkDefault.Rollback
         ReDim QQ(0)
         GoTo EN2
@@ -922,7 +919,7 @@ End Sub
 
 Sub loadSeria()
 Dim Key As String, pKey As String, k() As String, pK()  As String
-Dim i As Integer, iErr As Integer
+Dim I As Integer, iErr As Integer
 bilo = False
 sql = "SELECT sGuideSeries.*  From sGuideSeries ORDER BY sGuideSeries.seriaId;"
 Set tbSeries = myOpenRecordSet("##110", sql, dbOpenForwardOnly)
@@ -951,16 +948,16 @@ tbSeries.Close
 
 While bilo ' необходимы еще проходы
   bilo = False
-  For i = 1 To UBound(k())
-    If k(i) <> "" Then
+  For I = 1 To UBound(k())
+    If k(I) <> "" Then
         On Error GoTo ERR2 ' назначить еще проход
-        Set Node = tv.Nodes.Add(pK(i), tvwChild, k(i), NN(i))
+        Set Node = tv.Nodes.Add(pK(I), tvwChild, k(I), NN(I))
         On Error GoTo 0
-        k(i) = ""
+        k(I) = ""
         Node.Sorted = True
     End If
 NXT:
-  Next i
+  Next I
 Wend
 tv.Nodes.Item("k0").Expanded = True
 Exit Sub
@@ -1192,7 +1189,7 @@ End Sub
 
 
 Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
-Dim i As Integer
+Dim I As Integer
 
 If Grid.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid.colWidth(Grid.MouseCol)
@@ -1204,9 +1201,9 @@ If Button = 2 And frmMode = "" And mousCol > 0 Then
 '    If quantity > 0 And Grid.row <> Grid.RowSel Then !!!Зачем, это не дает переместить одно изделие
     If quantity > 0 Then
         ReDim NN(Grid.RowSel - Grid.row + 1)
-        For i = Grid.row To Grid.RowSel
-            NN(i - Grid.row + 1) = Grid.TextMatrix(i, gpId) 'только для перемещения
-        Next i
+        For I = Grid.row To Grid.RowSel
+            NN(I - Grid.row + 1) = Grid.TextMatrix(I, gpId) 'только для перемещения
+        Next I
     End If
 
     Grid.col = mousCol
@@ -1424,12 +1421,12 @@ End If
 End Sub
 
 Private Sub mnAdd_Click()
-Static i As Integer
+Static I As Integer
 Dim str  As String, id As Integer
 controlVisible
 
-i = i + 1
-str = "новый " & i
+I = I + 1
+str = "новый " & I
 'cmClassAdd.Enabled = False
 wrkDefault.BeginTrans
 sql = "UPDATE sGuideSeries SET seriaId = seriaId WHERE seriaId=0"
@@ -1524,172 +1521,6 @@ If noOpen = "" Then tbProduct.Close
 End Function
 
 
-Sub PriceToExcel(Optional Rub As String = "")
-Dim i As Integer, findId As Integer, str As String
-Dim rate As Double, curRate As Double
-
-'Из Спарвочника Готовых изделий получаем Список Id всех групп(серий),
-'в которых есть хотя бы одно изделие.
-sql = "SELECT prSeriaId from sGuideProducts Where(((web) = 'web')) GROUP BY prSeriaId;"
-Set tbProduct = myOpenRecordSet("##412", sql, dbOpenDynaset)
-If tbProduct Is Nothing Then Exit Sub
-
-'В этом блоке получаем имена всех групп Списка(по Id)====================
-'Set tbGuide = myOpenRecordSet("##413", "select * from sGuideSeries", dbOpenForwardOnly)
-'If tbGuide Is Nothing Then Exit Sub
-'tbGuide.index = "PrimaryKey"
-
-ReDim NN(0): i = 0
-While Not tbProduct.EOF
-    i = i + 1
-    ReDim Preserve NN(i): NN(i) = Format(tbProduct!prSeriaId, "0000")
-    findId = tbProduct!prSeriaId
-
-AA: ' tbGuide.Seek "=", findId
-'    If tbGuide.NoMatch Then msgOfEnd ("##414")
-    sql = "SELECT seriaName, parentSeriaId from sGuideSeries " & _
-    "WHERE seriaId = " & findId
-    If Not byErrSqlGetValues("##414", sql, str, findId) Then tbProduct.Close: Exit Sub
-    
-'    NN(i) = tbGuide!seriaName & " / " & NN(i) ' к имени добавляем Id
-    NN(i) = str & " / " & NN(i) ' к имени добавляем Id
-'    findId = tbGuide!parentSeriaId
-    If findId > 0 Then GoTo AA 'к имени текущей группы спереди приклеиваются
-                               'имена всех групп дерева, в которые она входит
-    tbProduct.MoveNext
-Wend
-'tbGuide.Close
-tbProduct.Close
-'=========================================================================
-
-
-'Этот блок не требует изменения -------------------------------------------
-
-quickSort NN, 1
-
-On Error GoTo ERR2
-
-    Set objExel = New Excel.Application
-    objExel.Visible = True
-    objExel.SheetsInNewWorkbook = 1
-    objExel.Workbooks.Add
-    objExel.ActiveSheet.Cells(1, 2).value = "Прайс-лист на " & Format(Now(), "dd.mm.yy")
-    objExel.ActiveSheet.Cells(1, 2).Font.Bold = True
-    
-    curRate = getCurrentRate
-    If Rub = "" Then
-        exRow = 4
-        objExel.ActiveSheet.Cells(exRow - 1, 4).value = RateAsString(curRate)
-        objExel.ActiveSheet.Cells(exRow - 1, 7).value = "Цены включают НДС"
-        curRate = 1
-    Else
-        exRow = 3
-    End If
-    
-    objExel.ActiveSheet.Columns(1).columnWidth = 10
-    objExel.ActiveSheet.Columns(2).columnWidth = 10
-    objExel.ActiveSheet.Columns(3).columnWidth = 50
-    objExel.ActiveSheet.Columns(4).HorizontalAlignment = xlHAlignRight
-    objExel.ActiveSheet.Columns(5).HorizontalAlignment = xlHAlignRight
-    objExel.ActiveSheet.Columns(6).HorizontalAlignment = xlHAlignRight
-    objExel.ActiveSheet.Columns(7).HorizontalAlignment = xlHAlignRight
-
-'------------------------------------------------------------------------
-
-For i = 1 To UBound(NN) ' перебор всех групп
-  str = NN(i)
-  findId = right$(str, 4) ' извлекаем из имен группы id группы
-
-'$comtec$  Далее ссылки на табл.sGuideProducts и на ее поля надо заменить на
-'эквиваленты из базы Comtec исходя из след.соответствия с колонками
-'Справ-ка Готовых изделий из программы stime:
-'"Номер"    "Код"   "web"   "Описание"    Размер   "1-5"   "Стр."
-'SortNom   prName    web    prDescript    prSize   Cena4    page
-
-  sql = "SELECT prName, prDescript, prSize, Cena4, page From sGuideProducts " & _
-  "Where prSeriaId = " & findId & " AND web = 'web' ORDER BY SortNom"
-
-  Set tbProduct = myOpenRecordSet("##415", sql, dbOpenDynaset)
-  If Not tbProduct Is Nothing Then
-    If Not tbProduct.BOF Then
-      bilo = False
-      While Not tbProduct.EOF
-
-'Этот блок не требует изменения (здесь выдаются заголовки групп)------------
-        If Not bilo Then
-            bilo = True
-            
-            With objExel.ActiveSheet.Range("A" & exRow & ":H" & exRow)
-                .Borders(xlEdgeTop).Weight = xlMedium
-                .Borders(xlEdgeBottom).Weight = xlThin
-            End With
-            
-            str = left$(str, Len(str) - 6)
-            objExel.ActiveSheet.Cells(exRow, 2).value = str
-            objExel.ActiveSheet.Cells(exRow, 2).Font.Bold = True
-            objExel.ActiveSheet.Cells(exRow, 8).Borders(xlEdgeRight). _
-            Weight = xlMedium
-            
-            exRow = exRow + 1
-            objExel.ActiveSheet.Range("A" & exRow & ":H" & exRow). _
-            Borders(xlEdgeBottom).Weight = xlThin
-            
-            objExel.ActiveSheet.Cells(exRow, 1).value = "Код"
-            objExel.ActiveSheet.Cells(exRow, 2).value = "Размер[см]"
-            objExel.ActiveSheet.Cells(exRow, 3).value = "Описание"
-            
-            gain2 = 0
-            gSeriaId = findId
-            If getGainAndHead Then
-                objExel.ActiveSheet.Cells(exRow, 4).value = " " & head1
-                objExel.ActiveSheet.Cells(exRow, 5).value = " " & head2
-                objExel.ActiveSheet.Cells(exRow, 6).value = " " & head3
-                objExel.ActiveSheet.Cells(exRow, 7).value = " " & head4
-                objExel.ActiveSheet.Cells(exRow, 8).value = "    стр."
-            End If
-            cErr = setVertBorders(xlThin)
-            If cErr <> 0 Then GoTo ERR2
-            exRow = exRow + 1
-        End If
-'---------------------------------------------------------------------------
-'Далее выдаются параметры по каждому изделию группы
-        
-        objExel.ActiveSheet.Cells(exRow, 1).value = tbProduct!prName
-        objExel.ActiveSheet.Cells(exRow, 2).value = tbProduct!prSize
-        objExel.ActiveSheet.Cells(exRow, 3).value = tbProduct!prDescript
-        objExel.ActiveSheet.Cells(exRow, 4).value = Format(tbProduct!Cena4 * curRate, "0.00")
-        If gain2 > 0 Then
-            objExel.ActiveSheet.Cells(exRow, 5).value = Format(Round(tbProduct!Cena4 * curRate * gain2, 1), "0.00")
-            objExel.ActiveSheet.Cells(exRow, 6).value = Format(Round(tbProduct!Cena4 * curRate * gain3, 1), "0.00")
-            objExel.ActiveSheet.Cells(exRow, 7).value = Format(Round(tbProduct!Cena4 * curRate * gain4, 1), "0.00")
-        End If
-        objExel.ActiveSheet.Cells(exRow, 8).value = " " & tbProduct!Page
-        cErr = setVertBorders(xlThin)
-        If cErr <> 0 Then GoTo ERR2
-        exRow = exRow + 1:
-
-        tbProduct.MoveNext
-      Wend
-    End If
-    tbProduct.Close
-  End If
-Next i
-With objExel.ActiveSheet.Range("A" & exRow & ":H" & exRow)
-    .Borders(xlEdgeTop).Weight = xlMedium
-End With
-
-Set objExel = Nothing
-Exit Sub
-
-ERR2:
-If cErr <> 424 And Err <> 424 Then  ' 424 - не дождались конца вывода закрыли док-т
-    MsgBox Error, , "Ошибка 421-" & cErr '##421
-End If
-Set objExel = Nothing
-
-
-
-End Sub
 
 Sub productAdd(Optional obraz As String = "")
 Dim str As String
@@ -1791,7 +1622,7 @@ productAdd "obraz"
 End Sub
 
 Private Sub mnDel_Click()
-Dim i As Integer
+Dim I As Integer
 
 If MsgBox("Для удаления класса  нажмите <Да>." & Chr(13) & Chr(13) & _
 "Удаление возможно, если класс не содержит элементов и других подклассов", _
@@ -1807,11 +1638,11 @@ vbYesNo Or vbDefaultButton2, "Удалить '" & tv.SelectedItem.Text & _
 'tbSeries.Close
 
 sql = "DELETE  From sGuideSeries WHERE (((seriaId)=" & gSeriaId & "));"
-i = myExecute("##107", sql, -198)
-If i = 0 Then
+I = myExecute("##107", sql, -198)
+If I = 0 Then
     tv.Nodes.Remove tv.SelectedItem.Key
     controlVisible
-ElseIf i = -2 Then
+ElseIf I = -2 Then
 'Exit Sub
 
 'ERR1:
@@ -1828,7 +1659,7 @@ tv.SetFocus
 End Sub
 
 Private Sub mnDel2_Click()
-Dim i As Integer
+Dim I As Integer
 If frmMode = "productReplace" Then
     On Error Resume Next
     tv.SetFocus
@@ -1840,15 +1671,15 @@ ElseIf frmMode = "" Then
     sql = "DELETE From sGuideProducts " & _
     "WHERE (((sGuideProducts.prId)=" & gProductId & "));"
 '    MsgBox sql
-    i = myExecute("##114", sql, -198)
-    If i = 0 Then
+    I = myExecute("##114", sql, -198)
+    If I = 0 Then
         quantity = quantity - 1
         If quantity = 0 Then
             clearGridRow Grid, mousRow
         Else
             Grid.RemoveItem mousRow
         End If
-    ElseIf i = -2 Then
+    ElseIf I = -2 Then
         MsgBox "Нельзя удалять непустое изделие, сначала удалите входящие " & _
         "в него элементы.", , "Удаление невозможно !"
     End If
@@ -1907,17 +1738,17 @@ Timer2.Enabled = True
 End Sub
 
 Private Sub mnInsert_Click()
-Dim str As String, i As Integer
+Dim str As String, I As Integer
 
 frmMode = ""
 Grid.CellBackColor = Grid.BackColor
     
 Me.MousePointer = flexDefault
 str = Mid$(tv.SelectedItem.Key, 2)
-For i = 1 To UBound(NN)
-    gProductId = NN(i)
+For I = 1 To UBound(NN)
+    gProductId = NN(I)
     ValueToTableField "##112", str, "sGuideProducts", "prSeriaId", "byProductId"
-Next i
+Next I
 tv_NodeClick tv.SelectedItem
 On Error Resume Next
 tv.SetFocus
@@ -1996,7 +1827,7 @@ lbHide
 End Sub
 
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim str As String, i As Integer ', str2 As String
+Dim str As String, I As Integer ', str2 As String
 
 If KeyCode = vbKeyReturn Then
  
@@ -2022,11 +1853,11 @@ If KeyCode = vbKeyReturn Then
 
 
     sql = "SELECT max(prId) From sGuideProducts"
-    If Not byErrSqlGetValues("##463", sql, i) Then Exit Sub
-    i = i + 1
+    If Not byErrSqlGetValues("##463", sql, I) Then Exit Sub
+    I = I + 1
     Dim flds As String, vals As String
     flds = "prId, prName, prSeriaId"
-    vals = i & ", '" & str & "', " & gSeriaId
+    vals = I & ", '" & str & "', " & gSeriaId
     If frmMode = "productCopy" Then
         On Error GoTo Rollback ' т.к. исходная м.б. почти пустая
         str = Grid.TextMatrix(mousRow, gpSortNom)
@@ -2052,12 +1883,12 @@ If KeyCode = vbKeyReturn Then
     wrkDefault.CommitTrans
     
     Grid.TextMatrix(mousRow, gpName) = tmpStr
-    Grid.TextMatrix(mousRow, gpId) = i
+    Grid.TextMatrix(mousRow, gpId) = I
     quantity = quantity + 1
     Grid.TextMatrix(mousRow, gpNomenk) = quantity
     If frmMode = "productCopy" Then
         sql = "INSERT INTO sProducts ( ProductId, nomNom, quantity, xGroup ) " & _
-        "SELECT " & i & ", sProducts.nomNom, sProducts.quantity, sProducts.xGroup " & _
+        "SELECT " & I & ", sProducts.nomNom, sProducts.quantity, sProducts.xGroup " & _
         "From sProducts WHERE (((sProducts.ProductId)=" & gProductId & "));"
         myExecute "##155", sql, 0 'предметов м. и не быть
     End If
@@ -2242,23 +2073,6 @@ Grid2.Visible = True
 gridIsLoad = True
 Me.MousePointer = flexDefault
 End Sub
-Function setVertBorders(lineWeight As Long) As Integer
-On Error GoTo ERR1
-
-objExel.ActiveSheet.Cells(exRow, 1).Borders(xlEdgeRight).Weight = lineWeight
-objExel.ActiveSheet.Cells(exRow, 2).Borders(xlEdgeRight).Weight = lineWeight
-objExel.ActiveSheet.Cells(exRow, 3).Borders(xlEdgeRight).Weight = lineWeight
-objExel.ActiveSheet.Cells(exRow, 4).Borders(xlEdgeRight).Weight = lineWeight
-objExel.ActiveSheet.Cells(exRow, 5).Borders(xlEdgeRight).Weight = lineWeight
-objExel.ActiveSheet.Cells(exRow, 6).Borders(xlEdgeRight).Weight = lineWeight
-objExel.ActiveSheet.Cells(exRow, 7).Borders(xlEdgeRight).Weight = lineWeight
-objExel.ActiveSheet.Cells(exRow, 8).Borders(xlEdgeRight).Weight = xlMedium
-Exit Function
-
-ERR1:
-setVertBorders = Err
-
-End Function
 
 
 'Function speChaRemov(str As String) As String
@@ -2281,14 +2095,6 @@ End Function
 'Next i
 'End Function
 
-Function getGainAndHead() As Boolean
-getGainAndHead = False
-sql = "SELECT head1, head2, head3, head4, gain2, gain3, gain4 " & _
-"from sGuideSeries WHERE (((sGuideSeries.seriaId)=" & gSeriaId & "));"
-If Not byErrSqlGetValues("##416", sql, head1, head2, head3, head4, gain2, _
-gain3, gain4) Then Exit Function
-getGainAndHead = True
-End Function
 
 Sub loadSeriaProduct(Optional filtr As String = "")
 Dim il As Long, strWhere As String, str  As String
@@ -2421,7 +2227,7 @@ gridIsLoad = True
 End Sub
     
 Private Sub tv_KeyUp(KeyCode As Integer, Shift As Integer)
-Dim i As Integer, str As String
+Dim I As Integer, str As String
 If KeyCode = vbKeyReturn Or KeyCode = vbKeyEscape Then
     tv_NodeClick tv.SelectedItem
 End If

@@ -2,6 +2,9 @@ Attribute VB_Name = "Common"
 Option Explicit
 
 Private Const dhcMissing = -2 'нужна для quickSort
+Dim objExel As Excel.Application, exRow As Long
+Public gain2 As Single, gain3 As Single, gain4 As Single
+Public head1 As String, head2 As String, head3 As String, head4 As String
 
 
 Public sql As String, strWhere As String
@@ -1240,5 +1243,230 @@ Function calcKolonValue(ByVal freight As Double, ByVal marginProc As Double, ByV
     
     calcKolonValue = freight + MarginValue - stepUstupka * (curentKolon - 1)
     
+End Function
+
+
+Public Sub excelStdSchapka(ByRef objExel, ByVal RubRate As Double, ByVal mainTitle As String, ByVal leftBound As String)
+    With objExel.ActiveSheet.Cells(1, 1)
+        .value = Format(Now(), "dd.mm.yyyy")
+        .HorizontalAlignment = xlHAlignCenter
+    End With
+    
+    With objExel.ActiveSheet.Range("E1:" & leftBound & "1")
+        .Merge (True)
+        .value = "ПЕТРОВСКИЕ МАСТЕРСКИЕ"
+        .HorizontalAlignment = xlHAlignCenter
+    End With
+    
+    With objExel.ActiveSheet.Range("A2:" & leftBound & "2")
+        .Merge (True)
+        .value = mainTitle
+        .Font.Bold = True
+        .HorizontalAlignment = xlHAlignCenter
+    End With
+    With objExel.ActiveSheet.Range("A3:" & leftBound & "3")
+        .Merge (True)
+        .value = "www.petmas.ru, e-mail: petmas@dol.ru"
+        .HorizontalAlignment = xlHAlignCenter
+    End With
+    With objExel.ActiveSheet.Range("A4:" & leftBound & "4")
+        .Merge (True)
+        .value = "тел.: (495) 333-02-78, (499) 743-00-70, (499) 788-73-64; Факс: (495) 720-54-56"
+        .HorizontalAlignment = xlHAlignCenter
+    End With
+    With objExel.ActiveSheet.Range("A5:" & leftBound & "5")
+        .Merge (True)
+        If RubRate = 1 Then
+            .value = "Цены указаны в у.е., исчисляются в USD по курсу ЦБ и включают НДС"
+        Else
+            .value = "Цены указаны рублях и включают НДС"
+        End If
+        .HorizontalAlignment = xlHAlignRight
+        .Font.Bold = True
+    End With
+End Sub
+
+Sub PriceToExcel(curRate As Integer)
+Dim I As Integer, findId As Integer, str As String
+
+'Из Спарвочника Готовых изделий получаем Список Id всех групп(серий),
+'в которых есть хотя бы одно изделие.
+sql = "SELECT prSeriaId from sGuideProducts Where(((web) = 'web')) GROUP BY prSeriaId;"
+Set tbProduct = myOpenRecordSet("##412", sql, dbOpenDynaset)
+If tbProduct Is Nothing Then Exit Sub
+
+'В этом блоке получаем имена всех групп Списка(по Id)====================
+'Set tbGuide = myOpenRecordSet("##413", "select * from sGuideSeries", dbOpenForwardOnly)
+'If tbGuide Is Nothing Then Exit Sub
+'tbGuide.index = "PrimaryKey"
+
+ReDim NN(0): I = 0
+While Not tbProduct.EOF
+    I = I + 1
+    ReDim Preserve NN(I): NN(I) = Format(tbProduct!prSeriaId, "0000")
+    findId = tbProduct!prSeriaId
+
+AA: ' tbGuide.Seek "=", findId
+'    If tbGuide.NoMatch Then msgOfEnd ("##414")
+    sql = "SELECT seriaName, parentSeriaId from sGuideSeries " & _
+    "WHERE seriaId = " & findId
+    If Not byErrSqlGetValues("##414", sql, str, findId) Then tbProduct.Close: Exit Sub
+    
+'    NN(i) = tbGuide!seriaName & " / " & NN(i) ' к имени добавляем Id
+    NN(I) = str & " / " & NN(I) ' к имени добавляем Id
+'    findId = tbGuide!parentSeriaId
+    If findId > 0 Then GoTo AA 'к имени текущей группы спереди приклеиваются
+                               'имена всех групп дерева, в которые она входит
+    tbProduct.MoveNext
+Wend
+
+tbProduct.Close
+
+
+'Этот блок не требует изменения -------------------------------------------
+
+quickSort NN, 1
+
+On Error GoTo ERR2
+
+    Set objExel = New Excel.Application
+    objExel.Visible = True
+    objExel.SheetsInNewWorkbook = 1
+    objExel.Workbooks.Add
+    objExel.ActiveSheet.Cells.Font.Size = 8
+    
+    ' печать стандартной шапки
+    excelStdSchapka objExel, curRate, "КОРПОРАТИВНЫЕ ПРИЗЫ И НАГРАДЫ (Каталог 2008-2009 Выпуск 5)", "H"
+    
+    exRow = 6
+    objExel.ActiveSheet.Columns(1).columnWidth = 10
+    objExel.ActiveSheet.Columns(2).columnWidth = 10
+    objExel.ActiveSheet.Columns(3).columnWidth = 50
+    objExel.ActiveSheet.Columns(4).HorizontalAlignment = xlHAlignRight
+    objExel.ActiveSheet.Columns(5).HorizontalAlignment = xlHAlignRight
+    objExel.ActiveSheet.Columns(6).HorizontalAlignment = xlHAlignRight
+    objExel.ActiveSheet.Columns(7).HorizontalAlignment = xlHAlignRight
+
+'------------------------------------------------------------------------
+
+For I = 1 To UBound(NN) ' перебор всех групп
+  str = NN(I)
+  findId = right$(str, 4) ' извлекаем из имен группы id группы
+
+'$comtec$  Далее ссылки на табл.sGuideProducts и на ее поля надо заменить на
+'эквиваленты из базы Comtec исходя из след.соответствия с колонками
+'Справ-ка Готовых изделий из программы stime:
+'"Номер"    "Код"   "web"   "Описание"    Размер   "1-5"   "Стр."
+'SortNom   prName    web    prDescript    prSize   Cena4    page
+
+  sql = "SELECT prName, prDescript, prSize, Cena4, page From sGuideProducts " & _
+  "Where prSeriaId = " & findId & " AND web = 'web' ORDER BY SortNom"
+
+  Set tbProduct = myOpenRecordSet("##415", sql, dbOpenDynaset)
+  If Not tbProduct Is Nothing Then
+    If Not tbProduct.BOF Then
+      bilo = False
+      While Not tbProduct.EOF
+
+'Этот блок не требует изменения (здесь выдаются заголовки групп)------------
+        If Not bilo Then
+            bilo = True
+            
+            With objExel.ActiveSheet.Range("A" & exRow & ":H" & exRow)
+                .Borders(xlEdgeTop).Weight = xlMedium
+                .Borders(xlEdgeBottom).Weight = xlThin
+            End With
+            
+            str = left$(str, Len(str) - 6)
+            objExel.ActiveSheet.Cells(exRow, 2).value = str
+            objExel.ActiveSheet.Cells(exRow, 2).Font.Bold = True
+            objExel.ActiveSheet.Cells(exRow, 8).Borders(xlEdgeRight). _
+            Weight = xlMedium
+            
+            exRow = exRow + 1
+            objExel.ActiveSheet.Range("A" & exRow & ":H" & exRow). _
+            Borders(xlEdgeBottom).Weight = xlThin
+            
+            objExel.ActiveSheet.Cells(exRow, 1).value = "Код"
+            objExel.ActiveSheet.Cells(exRow, 2).value = "Размер[см]"
+            objExel.ActiveSheet.Cells(exRow, 3).value = "Описание"
+            
+            gain2 = 0
+            gSeriaId = findId
+            If getGainAndHead Then
+                objExel.ActiveSheet.Cells(exRow, 4).value = " " & head1
+                objExel.ActiveSheet.Cells(exRow, 5).value = " " & head2
+                objExel.ActiveSheet.Cells(exRow, 6).value = " " & head3
+                objExel.ActiveSheet.Cells(exRow, 7).value = " " & head4
+                objExel.ActiveSheet.Cells(exRow, 8).value = "    стр."
+            End If
+            cErr = setVertBorders(objExel, xlThin)
+            If cErr <> 0 Then GoTo ERR2
+            exRow = exRow + 1
+        End If
+'---------------------------------------------------------------------------
+'Далее выдаются параметры по каждому изделию группы
+        
+        objExel.ActiveSheet.Cells(exRow, 1).value = tbProduct!prName
+        objExel.ActiveSheet.Cells(exRow, 2).value = tbProduct!prSize
+        objExel.ActiveSheet.Cells(exRow, 3).value = tbProduct!prDescript
+        objExel.ActiveSheet.Cells(exRow, 4).value = Format(tbProduct!Cena4 * curRate, "0.00")
+        If gain2 > 0 Then
+            objExel.ActiveSheet.Cells(exRow, 5).value = Format(Round(tbProduct!Cena4 * curRate * gain2, 1), "0.00")
+            objExel.ActiveSheet.Cells(exRow, 6).value = Format(Round(tbProduct!Cena4 * curRate * gain3, 1), "0.00")
+            objExel.ActiveSheet.Cells(exRow, 7).value = Format(Round(tbProduct!Cena4 * curRate * gain4, 1), "0.00")
+        End If
+        objExel.ActiveSheet.Cells(exRow, 8).value = " " & tbProduct!Page
+        cErr = setVertBorders(objExel, xlThin)
+        If cErr <> 0 Then GoTo ERR2
+        exRow = exRow + 1:
+
+        tbProduct.MoveNext
+      Wend
+    End If
+    tbProduct.Close
+  End If
+Next I
+With objExel.ActiveSheet.Range("A" & exRow & ":H" & exRow)
+    .Borders(xlEdgeTop).Weight = xlMedium
+End With
+
+Set objExel = Nothing
+Exit Sub
+
+ERR2:
+If cErr <> 424 And Err <> 424 Then  ' 424 - не дождались конца вывода закрыли док-т
+    MsgBox Error, , "Ошибка 421-" & cErr '##421
+End If
+Set objExel = Nothing
+
+End Sub
+
+Function getGainAndHead() As Boolean
+getGainAndHead = False
+sql = "SELECT head1, head2, head3, head4, gain2, gain3, gain4 " & _
+"from sGuideSeries WHERE (((sGuideSeries.seriaId)=" & gSeriaId & "));"
+If Not byErrSqlGetValues("##416", sql, head1, head2, head3, head4, gain2, _
+gain3, gain4) Then Exit Function
+getGainAndHead = True
+End Function
+
+
+Function setVertBorders(ByRef objExel, lineWeight As Long) As Integer
+On Error GoTo ERR1
+
+objExel.ActiveSheet.Cells(exRow, 1).Borders(xlEdgeRight).Weight = lineWeight
+objExel.ActiveSheet.Cells(exRow, 2).Borders(xlEdgeRight).Weight = lineWeight
+objExel.ActiveSheet.Cells(exRow, 3).Borders(xlEdgeRight).Weight = lineWeight
+objExel.ActiveSheet.Cells(exRow, 4).Borders(xlEdgeRight).Weight = lineWeight
+objExel.ActiveSheet.Cells(exRow, 5).Borders(xlEdgeRight).Weight = lineWeight
+objExel.ActiveSheet.Cells(exRow, 6).Borders(xlEdgeRight).Weight = lineWeight
+objExel.ActiveSheet.Cells(exRow, 7).Borders(xlEdgeRight).Weight = lineWeight
+objExel.ActiveSheet.Cells(exRow, 8).Borders(xlEdgeRight).Weight = xlMedium
+Exit Function
+
+ERR1:
+setVertBorders = Err
+
 End Function
 
