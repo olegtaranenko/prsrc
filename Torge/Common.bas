@@ -2,7 +2,7 @@ Attribute VB_Name = "Common"
 Option Explicit
 
 Private Const dhcMissing = -2 'нужна для quickSort
-Dim objExel As Excel.Application, exRow As Long
+Public objExel As Excel.Application, exRow As Long
 Public gain2 As Single, gain3 As Single, gain4 As Single
 Public head1 As String, head2 As String, head3 As String, head4 As String
 Public rabbatProcent As Double
@@ -1095,7 +1095,7 @@ End Function
 
 Public Sub quickSort(varArray As Variant, _
  Optional lngLeft As Long = dhcMissing, Optional lngRight As Long = dhcMissing)
-Dim I As Long, j As Long, varTestVal As Variant, lngMid As Long
+Dim I As Long, J As Long, varTestVal As Variant, lngMid As Long
 
     If lngLeft = dhcMissing Then lngLeft = LBound(varArray)
     If lngRight = dhcMissing Then lngRight = UBound(varArray)
@@ -1104,28 +1104,28 @@ Dim I As Long, j As Long, varTestVal As Variant, lngMid As Long
         lngMid = (lngLeft + lngRight) \ 2
         varTestVal = varArray(lngMid)
         I = lngLeft
-        j = lngRight
+        J = lngRight
         Do
             Do While varArray(I) < varTestVal
                 I = I + 1
             Loop
-            Do While varArray(j) > varTestVal
-                j = j - 1
+            Do While varArray(J) > varTestVal
+                J = J - 1
             Loop
-            If I <= j Then
-                Call SwapElements(varArray, I, j)
+            If I <= J Then
+                Call SwapElements(varArray, I, J)
                 I = I + 1
-                j = j - 1
+                J = J - 1
             End If
-        Loop Until I > j
+        Loop Until I > J
         ' To optimize the sort, always sort the
         ' smallest segment first.
-        If j <= lngMid Then
-            Call quickSort(varArray, lngLeft, j)
+        If J <= lngMid Then
+            Call quickSort(varArray, lngLeft, J)
             Call quickSort(varArray, I, lngRight)
         Else
             Call quickSort(varArray, I, lngRight)
-            Call quickSort(varArray, lngLeft, j)
+            Call quickSort(varArray, lngLeft, J)
         End If
     End If
 End Sub
@@ -1494,12 +1494,13 @@ For I = 1 To UBound(NN) ' перебор всех групп
                     objExel.ActiveSheet.Cells(exRow, 7).value = " " & head4
                 End If
             ElseIf Regim = "combi" Then
-                For I = 0 To 2
-                    With objExel.ActiveSheet.Cells(exRow, 1 + I)
-                        .value = ChrB(Asc("A") + I)
+                Dim J As Integer
+                For J = 0 To 2
+                    With objExel.ActiveSheet.Cells(exRow, 1 + J)
+                        .value = ChrB(Asc("A") + J)
                         .Font.Bold = True
                     End With
-                Next I
+                Next J
             End If
             
             objExel.ActiveSheet.Cells(exRow, lastColInt).value = "    стр."
@@ -1520,8 +1521,8 @@ For I = 1 To UBound(NN) ' перебор всех групп
                 objExel.ActiveSheet.Cells(exRow, 7).value = Format(Round(tbProduct!Cena4 * curRate * gain4, 1), "0.00")
             End If
         ElseIf Regim = "combi" Then
-            gain2 = getRabbat(tbProduct!Cena4)
-            gain3 = getCenaSale(tbProduct!prId)
+            'gain2 = getRabbat(tbProduct!Cena4)
+            'gain3 = getCenaSale(tbProduct!prId)
         End If
         
         If gain2 > 0 Then
@@ -1577,4 +1578,80 @@ Dim I As Integer
         End If
     Next I
 End Function
+
+'reg = "" => SumCenaFreight
+'reg <> "" => SumCenaSale
+Function getSumCena(Optional reg As String = "") As String
+Dim sum As Single, v, s As Single, prevGroup As String, max As Single
+
+sum = 0
+
+sql = "SELECT sProducts.nomNom, sProducts.quantity, sProducts.xgroup, sGuideNomenk.perList, " & _
+"sGuideNomenk.CENA1, sGuideNomenk.VES, sGuideNomenk.STAVKA, sGuideFormuls.Formula, " & _
+"sGuideNomenk.CENA_W " & _
+"FROM (sGuideFormuls INNER JOIN sGuideNomenk ON sGuideFormuls.nomer = " & _
+"sGuideNomenk.formulaNom) INNER JOIN sProducts ON sGuideNomenk.nomNom " & _
+"= sProducts.nomNom WHERE (((sProducts.ProductId)=" & tbProduct!prId & "))" & _
+"ORDER BY sProducts.xgroup;"
+Set tbNomenk = myOpenRecordSet("##313", sql, dbOpenForwardOnly)
+If tbNomenk Is Nothing Then
+    tbProduct.Close
+    If reg = "" Then
+        getSumCena = "Error ##31 в SumCenaFreight"
+    Else
+        getSumCena = "Error ##313 в SumCenaSale"
+    End If
+    Exit Function
+End If
+If tbNomenk.BOF Then
+    getSumCena = "Error: Не обнаружены комплектующие"
+    GoTo er
+End If
+'If tbProduct!prName = "S202M" Then
+'    max = max
+'End If
+max = -1
+While Not tbNomenk.EOF
+'    If tbNomenk!formula = "" Then
+'        getSumCena = "Error: Не определена формула для номенклатуры '" & tbNomenk!nomNom & "'"
+'        GoTo ER
+'    End If
+    If reg = "" Then
+        If tbNomenk!formula = "" Then
+            getSumCena = "Error: Не определена формула для номенклатуры '" & tbNomenk!nomnom & "'"
+            GoTo er
+        End If
+        v = nomenkFormula("noOpen") 'Цена2
+    Else
+        v = tbNomenk!CENA_W
+    End If
+        
+    If IsNumeric(v) Then
+        s = v * tbNomenk!quantity / tbNomenk!perList
+        If tbNomenk!xgroup = "" Then
+            sum = sum + s
+            prevGroup = tbNomenk!xgroup
+        ElseIf prevGroup = tbNomenk!xgroup Then
+            If max < s Then max = s
+        Else
+            If prevGroup <> "" Then sum = sum + max
+            max = s
+            prevGroup = tbNomenk!xgroup
+        End If
+    Else
+        getSumCena = v & " в формуле для  '" & tbNomenk!nomnom & "'"
+        GoTo er
+    End If
+
+    tbNomenk.MoveNext
+Wend
+If max = -1 Then '  - не было групп
+    getSumCena = sum
+Else
+    getSumCena = sum + max
+End If
+er:
+tbNomenk.Close
+End Function
+
 
