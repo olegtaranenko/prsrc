@@ -1498,7 +1498,6 @@ For I = 1 To UBound(NN) ' перебор всех групп
                 For J = 0 To 2
                     With objExel.ActiveSheet.Cells(exRow, 4 + J)
                         .value = ChrB(Asc("A") + J)
-                        .Font.Bold = True
                     End With
                 Next J
             End If
@@ -1526,7 +1525,7 @@ For I = 1 To UBound(NN) ' перебор всех групп
             gain2 = getRabbat(tbProduct!Cena4)
             objExel.ActiveSheet.Cells(exRow, 5).value = Format(Round(curRate * gain2, 1), "0.00")
             gain3 = getCenaSale(tbProduct!prId)
-            objExel.ActiveSheet.Cells(exRow, 5).value = Format(Round(curRate * gain3, 1), "0.00")
+            objExel.ActiveSheet.Cells(exRow, 6).value = Format(Round(curRate * gain3, 1), "0.00")
         End If
         
         
@@ -1565,8 +1564,9 @@ Function getCenaSale(productId As Integer) As Double
     ret = getSumCena(productId, "sale")
     If IsNumeric(ret) Then
         getCenaSale = CDbl(ret)
+    Else
+        getCenaSale = 0
     End If
-    getCenaSale = 0
 End Function
 
 Function getGainAndHead() As Boolean
