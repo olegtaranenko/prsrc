@@ -2167,7 +2167,7 @@ sql = "SELECT p.prId, p.prName, p.prSize, p.SortNom, p.VremObr, p.FormulaNom, p.
     & " GROUP BY p.prId, p.prName, p.prSize, p.SortNom, p.VremObr, p.FormulaNom, p.prDescript, p.cena4, p.page, p.web, f.Formula " _
     & " ORDER BY p.SortNom"
 
-Debug.Print sql
+'Debug.Print sql
 
 
 Set tbProduct = myOpenRecordSet("##103", sql, dbOpenForwardOnly)

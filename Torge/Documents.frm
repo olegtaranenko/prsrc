@@ -449,7 +449,6 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
 Public isLoad As Boolean
-Dim objExel As Excel.Application, exRow As Long
 
 
 Dim quantity  As Long
@@ -1348,15 +1347,19 @@ Private Sub lbVenture_KeyDown(KeyCode As Integer, Shift As Integer)
 End Sub
 
 Private Sub mnCombiPrice_Click()
+    ExcelParamDialog.mainReportTitle = "КОРПОРАТИВНЫЕ ПРИЗЫ И НАГРАДЫ (Каталог 2008-2009 Выпуск 5)"
+    ExcelParamDialog.kegl = 9
     ExcelParamDialog.Show vbModal, Me
     If ExcelParamDialog.exitCode = vbCancel Then
         Exit Sub
     End If
+    Dim reportRate As Double
     If ExcelParamDialog.outputUE Then
-        ostatToWeb 1, "toExcel"
+        reportRate = 1
     Else
-        ostatToWeb ExcelParamDialog.RubRate, "toExcel"
+        reportRate = ExcelParamDialog.RubRate
     End If
+    PriceToExcel "combi", reportRate, ExcelParamDialog.mainReportTitle, ExcelParamDialog.kegl
 
 End Sub
 
@@ -1503,17 +1506,22 @@ Dim n1 As Nomenklatura
 End Sub
 
 Private Sub mnPriceToExcel_Click()
-    
+
+    ExcelParamDialog.mainReportTitle = "КОРПОРАТИВНЫЕ ПРИЗЫ И НАГРАДЫ (Каталог 2008-2009 Выпуск 5)"
+    ExcelParamDialog.kegl = 9
     ExcelParamDialog.Show vbModal, Me
     If ExcelParamDialog.exitCode = vbCancel Then
         Exit Sub
     End If
+
+    Dim reportRate As Double
     If ExcelParamDialog.outputUE Then
-        PriceToExcel 1
+        reportRate = 1
     Else
-        PriceToExcel ExcelParamDialog.RubRate
+        reportRate = ExcelParamDialog.RubRate
     End If
-    
+    PriceToExcel "default", reportRate, ExcelParamDialog.mainReportTitle, ExcelParamDialog.kegl
+
 End Sub
 
 
@@ -1570,14 +1578,16 @@ GuideStatia.Show vbModal
 End Sub
 
 Private Sub mnToExcel_Click()
+    ExcelParamDialog.mainReportTitle = "ОСТАТКИ ПО СКЛАДУ РАСХОДНЫХ МАТЕРИАЛОВ И КОМПЛЕКТУЮЩИХ"
+    ExcelParamDialog.kegl = 8
     ExcelParamDialog.Show vbModal, Me
     If ExcelParamDialog.exitCode = vbCancel Then
         Exit Sub
     End If
     If ExcelParamDialog.outputUE Then
-        ostatToWeb 1, "toExcel"
+        ostatToWeb "toExcel", , ExcelParamDialog.mainReportTitle, ExcelParamDialog.kegl
     Else
-        ostatToWeb ExcelParamDialog.RubRate, "toExcel"
+        ostatToWeb "toExcel", ExcelParamDialog.RubRate, ExcelParamDialog.mainReportTitle, ExcelParamDialog.kegl
     End If
 End Sub
 
@@ -1618,7 +1628,7 @@ Me.MousePointer = flexHourglass
 If MsgBox("По кнопке 'ДА' будет перезаписан файл складcких остатков для WEB." _
 , vbDefaultButton2 Or vbYesNo, "Подтвердите запись") = vbNo Then Exit Sub
 
-ostatToWeb 1
+ostatToWeb
 
 Me.MousePointer = flexDefault
 End Sub
@@ -1635,7 +1645,7 @@ End Sub
 'Классификатор реализован на табл. sGuideKlass а Справочник на sGuideNomenk.
 'Их и их поля klassId parentKlassId и klassName надо заменить аналогами из
 'базы Comtec(недостающие колонки можно добавить) $comtec$
-Sub ostatToWeb(RubRate As Double, Optional toExel As String = "")
+Sub ostatToWeb(Optional toExel As String = "", Optional RubRate As Double = 1, Optional mainReportTitle As String, Optional reportKegl As Integer = 10)
 Dim tmpFile As String, I As Integer, findId As Integer, str As String
 Dim minusQuant   As Integer
 minusQuant = 0
@@ -1692,7 +1702,7 @@ Else
     objExel.ActiveSheet.Cells.Font.Size = 8
 
     ' печать стандартной шапки
-    excelStdSchapka objExel, RubRate, "ОСТАТКИ ПО СКЛАДУ РАСХОДНЫХ МАТЕРИАЛОВ И КОМПЛЕКТУЮЩИХ", "I"
+    excelStdSchapka objExel, RubRate, mainReportTitle, "I"
 
     exRow = 6
 
@@ -1944,7 +1954,7 @@ If Not tbProduct Is Nothing Then
   tbProduct.Close
 End If
 
-Documents.ostatToWeb 1 'именно в конце
+Documents.ostatToWeb 'именно в конце
     
 GoTo EN2
 ERR1:
@@ -2029,7 +2039,7 @@ End Sub
 
 Private Sub tbMobile2_KeyDown(KeyCode As Integer, Shift As Integer)
 Dim nowOst As Single, rezerv As Single, quant As Single, delta As Single
-Dim I As Integer, j As Integer, tmp As Long
+Dim I As Integer, J As Integer, tmp As Long
 
 If KeyCode = vbKeyReturn Then
     If Not isNumericTbox(tbMobile2, 0) Then Exit Sub

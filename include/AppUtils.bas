@@ -7,7 +7,7 @@ Option Explicit
 Sub GridToExcel(Grid As MSFlexGrid, Optional title As String = "")
 
 Dim objExel As Excel.Application, c As Long, r As Long
-Dim i As Integer, strA() As String, begRow As Integer, str As String
+Dim I As Integer, strA() As String, begRow As Integer, str As String
 
 begRow = 3
 If title = "" Then begRow = 1
@@ -19,18 +19,18 @@ objExel.Workbooks.Add
 With objExel.ActiveSheet
 .Cells(1, 2).value = title
 ReDim Preserve strA(Grid.Cols + 1)
-For r = 0 To Grid.rows - 1
+For r = 0 To Grid.Rows - 1
     Dim curColumn As Integer
     curColumn = 1
     For c = 1 To Grid.Cols - 1
-        If Grid.ColWidth(c) > 0 Then
+        If Grid.colWidth(c) > 0 Then
             str = Grid.TextMatrix(r, c) '=' - наверно зарезервирован для ввода формул
             If left$(str, 1) = "=" Then str = "." & str
 'иногда символы Cr и Lf (поле MEMO в базе) дают Err в Excel, поэтому из поля
-            i = InStr(str, vbCr) 'MEMO берем только первую строчку
-            If i > 0 Then str = left$(str, i - 1)
-            i = InStr(str, vbLf) 'MEMO берем только первую строчку
-            If i > 0 Then str = left$(str, i - 1)
+            I = InStr(str, vbCr) 'MEMO берем только первую строчку
+            If I > 0 Then str = left$(str, I - 1)
+            I = InStr(str, vbLf) 'MEMO берем только первую строчку
+            If I > 0 Then str = left$(str, I - 1)
             If IsNumeric(str) And r > 0 Then
                 strA(curColumn - 1) = CStr(CDbl(str))
             Else

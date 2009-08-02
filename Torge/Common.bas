@@ -5,7 +5,7 @@ Private Const dhcMissing = -2 'нужна для quickSort
 Dim objExel As Excel.Application, exRow As Long
 Public gain2 As Single, gain3 As Single, gain4 As Single
 Public head1 As String, head2 As String, head3 As String, head4 As String
-
+Public rabbatProcent As Double
 
 Public sql As String, strWhere As String
 Public webProducts As String
@@ -1245,8 +1245,89 @@ Function calcKolonValue(ByVal freight As Double, ByVal marginProc As Double, ByV
     
 End Function
 
+Function excelCombiSchapka(ByRef objExel, ByVal RubRate As Double, ByVal mainTitle As String, ByVal leftBound As String) As Integer
+    Dim I As Integer
+    Const ret As Integer = 16
+    excelCombiSchapka = ret
+    With objExel.ActiveSheet.Cells(1, 1)
+        .value = Format(Now(), "dd.mm.yyyy")
+        .HorizontalAlignment = xlHAlignCenter
+        .Font.Bold = True
+    End With
+    
+    With objExel.ActiveSheet.Range("D1:" & leftBound & "1")
+        .Merge (True)
+        .value = "ПЕТРОВСКИЕ МАСТЕРСКИЕ"
+        .HorizontalAlignment = xlHAlignCenter
+    End With
+    
+    With objExel.ActiveSheet.Range("A2:" & leftBound & "2")
+        .Merge (True)
+        .value = "www.petmas.ru, e-mail: petmas@dol.ru"
+        .HorizontalAlignment = xlHAlignCenter
+    End With
+    With objExel.ActiveSheet.Range("A3:" & leftBound & "3")
+        .Merge (True)
+        .value = "тел.: (495) 333-02-78, (499) 743-00-70, (499) 788-73-64; Факс: (495) 720-54-56"
+        .HorizontalAlignment = xlHAlignCenter
+    End With
+    
+    With objExel.ActiveSheet.Range("A5:" & leftBound & "5")
+        .Merge (True)
+        .value = "ОБЗОРНЫЙ ПРАЙС-ЛИСТ ДЛЯ РАБОТЫ  ПО КАТАЛОГУ ""ПЕТРОВСКИХ МАСТЕРСКИХ"""
+        .Font.Bold = True
+        .HorizontalAlignment = xlHAlignCenter
+        .Borders(xlEdgeRight).Weight = xlMedium
+        .Borders(xlEdgeBottom).Weight = xlMedium
+        .Borders(xlEdgeLeft).Weight = xlMedium
+        .Borders(xlEdgeTop).Weight = xlMedium
+    End With
+    
+    With objExel.ActiveSheet.Range("A7:" & leftBound & "7")
+        .Merge (True)
+        .value = mainTitle
+        .Font.Bold = True
+        .HorizontalAlignment = xlHAlignCenter
+    End With
 
-Public Sub excelStdSchapka(ByRef objExel, ByVal RubRate As Double, ByVal mainTitle As String, ByVal leftBound As String)
+    For I = 0 To 2
+        With objExel.ActiveSheet.Cells(9 + I, 1)
+            .value = "Колонка"
+        End With
+        With objExel.ActiveSheet.Cells(9 + I, 2)
+            .value = ChrB(Asc("A") + I)
+            .Font.Bold = True
+        End With
+        With objExel.ActiveSheet.Cells(9 + I, 3)
+            .value = Choose(I + 1, _
+                "Цена готового изделия с нанесением, в Москве - для конечного клиента", _
+                "Цена готового изделия с нанесением - для РА", _
+                "Суммарная цена комплектующих")
+        End With
+    Next I
+    
+    With objExel.ActiveSheet.Range("A13:" & leftBound & "13")
+        .Merge (True)
+        .value = "Для запроса по наличию комплектующих достаточно указать код изделия и количество"
+        .Font.Bold = True
+        .HorizontalAlignment = xlHAlignCenter
+    End With
+    
+    With objExel.ActiveSheet.Range("A" & CStr(ret - 1) & ":" & leftBound & CStr(ret - 1))
+        .Merge (True)
+        If RubRate = 1 Then
+            .value = "Цены указаны в у.е., исчисляются в USD по курсу ЦБ и включают НДС"
+        Else
+            .value = "Цены указаны рублях и включают НДС"
+        End If
+        .HorizontalAlignment = xlHAlignRight
+    End With
+    
+End Function
+
+Function excelStdSchapka(ByRef objExel, ByVal RubRate As Double, ByVal mainTitle As String, ByVal leftBound As String) As Integer
+
+    excelStdSchapka = 6
     With objExel.ActiveSheet.Cells(1, 1)
         .value = Format(Now(), "dd.mm.yyyy")
         .HorizontalAlignment = xlHAlignCenter
@@ -1284,10 +1365,13 @@ Public Sub excelStdSchapka(ByRef objExel, ByVal RubRate As Double, ByVal mainTit
         .HorizontalAlignment = xlHAlignRight
         .Font.Bold = True
     End With
-End Sub
+End Function
 
-Sub PriceToExcel(curRate As Integer)
+Sub PriceToExcel(Regim As String, curRate As Double, mainReportTitle As String, kegl As Integer)
 Dim I As Integer, findId As Integer, str As String
+
+' столбец - последний. В зависимости от режима - разный
+Dim lastCol As String, lastColInt As Integer
 
 'Из Спарвочника Готовых изделий получаем Список Id всех групп(серий),
 'в которых есть хотя бы одно изделие.
@@ -1333,12 +1417,19 @@ On Error GoTo ERR2
     objExel.Visible = True
     objExel.SheetsInNewWorkbook = 1
     objExel.Workbooks.Add
-    objExel.ActiveSheet.Cells.Font.Size = 8
+    objExel.ActiveSheet.Cells.Font.Size = kegl
     
-    ' печать стандартной шапки
-    excelStdSchapka objExel, curRate, "КОРПОРАТИВНЫЕ ПРИЗЫ И НАГРАДЫ (Каталог 2008-2009 Выпуск 5)", "H"
+    If Regim = "default" Then
+        lastCol = "H"
+        ' печать стандартной шапки
+        exRow = excelStdSchapka(objExel, curRate, mainReportTitle, lastCol)
+    ElseIf Regim = "combi" Then
+        lastCol = "G"
+        exRow = excelCombiSchapka(objExel, curRate, mainReportTitle, lastCol)
+    End If
     
-    exRow = 6
+    lastColInt = Asc(lastCol) - Asc("A") + 1
+    
     objExel.ActiveSheet.Columns(1).columnWidth = 10
     objExel.ActiveSheet.Columns(2).columnWidth = 10
     objExel.ActiveSheet.Columns(3).columnWidth = 50
@@ -1372,19 +1463,20 @@ For I = 1 To UBound(NN) ' перебор всех групп
         If Not bilo Then
             bilo = True
             
-            With objExel.ActiveSheet.Range("A" & exRow & ":H" & exRow)
+            With objExel.ActiveSheet.Range("A" & exRow & ":" & lastCol & exRow)
                 .Borders(xlEdgeTop).Weight = xlMedium
                 .Borders(xlEdgeBottom).Weight = xlThin
             End With
             
             str = left$(str, Len(str) - 6)
-            objExel.ActiveSheet.Cells(exRow, 2).value = str
-            objExel.ActiveSheet.Cells(exRow, 2).Font.Bold = True
-            objExel.ActiveSheet.Cells(exRow, 8).Borders(xlEdgeRight). _
-            Weight = xlMedium
+            With objExel.ActiveSheet.Cells(exRow, 2)
+                .value = str
+                .Font.Bold = True
+            End With
+            objExel.ActiveSheet.Cells(exRow, lastColInt).Borders(xlEdgeRight).Weight = xlMedium
             
             exRow = exRow + 1
-            objExel.ActiveSheet.Range("A" & exRow & ":H" & exRow). _
+            objExel.ActiveSheet.Range("A" & exRow & ":" & lastCol & exRow). _
             Borders(xlEdgeBottom).Weight = xlThin
             
             objExel.ActiveSheet.Cells(exRow, 1).value = "Код"
@@ -1393,17 +1485,28 @@ For I = 1 To UBound(NN) ' перебор всех групп
             
             gain2 = 0
             gSeriaId = findId
-            If getGainAndHead Then
-                objExel.ActiveSheet.Cells(exRow, 4).value = " " & head1
-                objExel.ActiveSheet.Cells(exRow, 5).value = " " & head2
-                objExel.ActiveSheet.Cells(exRow, 6).value = " " & head3
-                objExel.ActiveSheet.Cells(exRow, 7).value = " " & head4
-                objExel.ActiveSheet.Cells(exRow, 8).value = "    стр."
+            
+            If Regim = "default" Then
+                If getGainAndHead Then
+                    objExel.ActiveSheet.Cells(exRow, 4).value = " " & head1
+                    objExel.ActiveSheet.Cells(exRow, 5).value = " " & head2
+                    objExel.ActiveSheet.Cells(exRow, 6).value = " " & head3
+                    objExel.ActiveSheet.Cells(exRow, 7).value = " " & head4
+                End If
+            ElseIf Regim = "combi" Then
+                For I = 0 To 2
+                    With objExel.ActiveSheet.Cells(exRow, 1 + I)
+                        .value = ChrB(Asc("A") + I)
+                        .Font.Bold = True
+                    End With
+                Next I
             End If
-            cErr = setVertBorders(objExel, xlThin)
-            If cErr <> 0 Then GoTo ERR2
+            
+            objExel.ActiveSheet.Cells(exRow, lastColInt).value = "    стр."
+            cErr = setVertBorders(objExel, xlThin, lastColInt)
             exRow = exRow + 1
         End If
+
 '---------------------------------------------------------------------------
 'Далее выдаются параметры по каждому изделию группы
         
@@ -1411,23 +1514,35 @@ For I = 1 To UBound(NN) ' перебор всех групп
         objExel.ActiveSheet.Cells(exRow, 2).value = tbProduct!prSize
         objExel.ActiveSheet.Cells(exRow, 3).value = tbProduct!prDescript
         objExel.ActiveSheet.Cells(exRow, 4).value = Format(tbProduct!Cena4 * curRate, "0.00")
+        
+        If Regim = "default" Then
+            If gain4 > 0 Then
+                objExel.ActiveSheet.Cells(exRow, 7).value = Format(Round(tbProduct!Cena4 * curRate * gain4, 1), "0.00")
+            End If
+        ElseIf Regim = "combi" Then
+            gain2 = getRabbat(tbProduct!Cena4)
+            gain3 = getCenaSale(tbProduct!prId)
+        End If
+        
         If gain2 > 0 Then
             objExel.ActiveSheet.Cells(exRow, 5).value = Format(Round(tbProduct!Cena4 * curRate * gain2, 1), "0.00")
-            objExel.ActiveSheet.Cells(exRow, 6).value = Format(Round(tbProduct!Cena4 * curRate * gain3, 1), "0.00")
-            objExel.ActiveSheet.Cells(exRow, 7).value = Format(Round(tbProduct!Cena4 * curRate * gain4, 1), "0.00")
         End If
-        objExel.ActiveSheet.Cells(exRow, 8).value = " " & tbProduct!Page
-        cErr = setVertBorders(objExel, xlThin)
+        If gain3 > 0 Then
+            objExel.ActiveSheet.Cells(exRow, 6).value = Format(Round(tbProduct!Cena4 * curRate * gain3, 1), "0.00")
+        End If
+        
+        objExel.ActiveSheet.Cells(exRow, lastColInt).value = " " & tbProduct!Page
+        cErr = setVertBorders(objExel, xlThin, lastColInt)
         If cErr <> 0 Then GoTo ERR2
         exRow = exRow + 1:
-
+    
         tbProduct.MoveNext
       Wend
     End If
     tbProduct.Close
   End If
 Next I
-With objExel.ActiveSheet.Range("A" & exRow & ":H" & exRow)
+With objExel.ActiveSheet.Range("A" & exRow & ":" & lastCol & exRow)
     .Borders(xlEdgeTop).Weight = xlMedium
 End With
 
@@ -1452,21 +1567,14 @@ getGainAndHead = True
 End Function
 
 
-Function setVertBorders(ByRef objExel, lineWeight As Long) As Integer
-On Error GoTo ERR1
-
-objExel.ActiveSheet.Cells(exRow, 1).Borders(xlEdgeRight).Weight = lineWeight
-objExel.ActiveSheet.Cells(exRow, 2).Borders(xlEdgeRight).Weight = lineWeight
-objExel.ActiveSheet.Cells(exRow, 3).Borders(xlEdgeRight).Weight = lineWeight
-objExel.ActiveSheet.Cells(exRow, 4).Borders(xlEdgeRight).Weight = lineWeight
-objExel.ActiveSheet.Cells(exRow, 5).Borders(xlEdgeRight).Weight = lineWeight
-objExel.ActiveSheet.Cells(exRow, 6).Borders(xlEdgeRight).Weight = lineWeight
-objExel.ActiveSheet.Cells(exRow, 7).Borders(xlEdgeRight).Weight = lineWeight
-objExel.ActiveSheet.Cells(exRow, 8).Borders(xlEdgeRight).Weight = xlMedium
-Exit Function
-
-ERR1:
-setVertBorders = Err
-
+Function setVertBorders(ByRef objExel, lineWeight As Long, Optional lastCol = 8) As Integer
+Dim I As Integer
+    For I = 1 To lastCol
+        If I < lastCol Then
+            objExel.ActiveSheet.Cells(exRow, I).Borders(xlEdgeRight).Weight = lineWeight
+        Else
+            objExel.ActiveSheet.Cells(exRow, I).Borders(xlEdgeRight).Weight = xlMedium
+        End If
+    Next I
 End Function
 
