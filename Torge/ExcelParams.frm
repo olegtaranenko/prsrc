@@ -13,6 +13,15 @@ Begin VB.Form ExcelParamDialog
    ScaleWidth      =   7056
    ShowInTaskbar   =   0   'False
    StartUpPosition =   1  'CenterOwner
+   Begin VB.TextBox tbRabbat 
+      Height          =   288
+      Left            =   5016
+      TabIndex        =   9
+      Text            =   "20"
+      Top             =   600
+      Visible         =   0   'False
+      Width           =   492
+   End
    Begin VB.TextBox tbKegl 
       Height          =   288
       Left            =   5040
@@ -69,6 +78,17 @@ Begin VB.Form ExcelParamDialog
       Top             =   120
       Width           =   1215
    End
+   Begin VB.Label lbRabbat 
+      Alignment       =   1  'Right Justify
+      AutoSize        =   -1  'True
+      Caption         =   "Скидка в процентах"
+      Height          =   192
+      Left            =   3228
+      TabIndex        =   10
+      Top             =   600
+      Visible         =   0   'False
+      Width           =   1608
+   End
    Begin VB.Label lbKegl 
       Alignment       =   1  'Right Justify
       AutoSize        =   -1  'True
@@ -101,6 +121,9 @@ Public outputUE As Boolean
 Public RubRate As Double
 Public mainReportTitle As String
 Public kegl As Integer
+Public doRabbat As Boolean
+Public rabbatPercent As Double
+
 
 Dim doUnload As Boolean
 
@@ -119,34 +142,55 @@ Private Sub Form_Load()
     If kegl <> 0 Then
         tbKegl.Text = kegl
     End If
+    If doRabbat Then
+        tbRabbat.Visible = True
+        lbRabbat.Visible = True
+    Else
+        tbRabbat.Visible = False
+        lbRabbat.Visible = False
+    End If
 End Sub
 
 Private Sub OKButton_Click()
     exitCode = vbOK
+    doUnload = True
     If IsNumeric(tbRate.Text) Then
         RubRate = tbRate.Text
-        doUnload = True
     Else
         MsgBox "Некорректное значение курса", , "Ошибка ввода"
         tbRate.SetFocus
         tbRate.SelStart = 0
         tbRate.SelLength = Len(tbRate.Text)
+        doUnload = False
     End If
     
     mainReportTitle = tbMainTitle.Text
     If IsNumeric(tbKegl.Text) Then
         kegl = tbKegl.Text
-        doUnload = True
     Else
         MsgBox "Некорректное значение кегля отчета", , "Ошибка ввода"
         tbKegl.SetFocus
         tbKegl.SelStart = 0
         tbKegl.SelLength = Len(tbKegl.Text)
+        doUnload = False
     End If
     
+    If doRabbat Then
+        doRabbat = False
+        If IsNumeric(tbRabbat.Text) Then
+            rabbatPercent = tbRabbat.Text
+        Else
+            MsgBox "Некорректное значение кегля отчета", , "Ошибка ввода"
+            tbRabbat.SetFocus
+            tbRabbat.SelStart = 0
+            tbRabbat.SelLength = Len(tbKegl.Text)
+        doUnload = False
+        End If
+    End If
     If doUnload Then
         Unload Me
     End If
+    
 End Sub
 
 Private Sub rbRub_Click()

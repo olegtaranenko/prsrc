@@ -1411,22 +1411,25 @@ If noOpen = "" Then
     If tbProduct.BOF Then tbProduct.Close: Exit Function
 End If
 
-SumCenaFreight = getSumCena
+SumCenaFreight = getSumCena(tbProduct!prId)
 If InStr(tbProduct!formula, "SumCenaFreight") > 0 Then
   If IsNumeric(SumCenaFreight) Then
     sc.ExecuteStatement "SumCenaFreight=" & SumCenaFreight
     SumCenaFreight = Round(CSng(SumCenaFreight), 2)
   Else
     productFormula = "error —ум÷.доставка" 'текст ошибки
+    tbProduct.Close
     GoTo EN1
   End If
 End If
-SumCenaSale = getSumCena("Sale")
+
+SumCenaSale = getSumCena(tbProduct!prId, "Sale")
 If InStr(tbProduct!formula, "SumCenaSale") > 0 Then
   If IsNumeric(SumCenaSale) Then
     sc.ExecuteStatement "SumCenaSale=" & SumCenaSale
     SumCenaSale = Round(CSng(SumCenaSale), 2)
   Else
+    tbProduct.Close
     productFormula = "error —ум÷оѕродажа" 'текст ошибки
     GoTo EN1
   End If

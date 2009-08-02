@@ -1450,7 +1450,7 @@ For I = 1 To UBound(NN) ' перебор всех групп
 '"Номер"    "Код"   "web"   "Описание"    Размер   "1-5"   "Стр."
 'SortNom   prName    web    prDescript    prSize   Cena4    page
 
-  sql = "SELECT prName, prDescript, prSize, Cena4, page From sGuideProducts " & _
+  sql = "SELECT prId, prName, prDescript, prSize, Cena4, page From sGuideProducts " & _
   "Where prSeriaId = " & findId & " AND web = 'web' ORDER BY SortNom"
 
   Set tbProduct = myOpenRecordSet("##415", sql, dbOpenDynaset)
@@ -1496,7 +1496,7 @@ For I = 1 To UBound(NN) ' перебор всех групп
             ElseIf Regim = "combi" Then
                 Dim J As Integer
                 For J = 0 To 2
-                    With objExel.ActiveSheet.Cells(exRow, 1 + J)
+                    With objExel.ActiveSheet.Cells(exRow, 4 + J)
                         .value = ChrB(Asc("A") + J)
                         .Font.Bold = True
                     End With
@@ -1518,19 +1518,17 @@ For I = 1 To UBound(NN) ' перебор всех групп
         
         If Regim = "default" Then
             If gain4 > 0 Then
+                objExel.ActiveSheet.Cells(exRow, 5).value = Format(Round(tbProduct!Cena4 * curRate * gain2, 1), "0.00")
+                objExel.ActiveSheet.Cells(exRow, 6).value = Format(Round(tbProduct!Cena4 * curRate * gain3, 1), "0.00")
                 objExel.ActiveSheet.Cells(exRow, 7).value = Format(Round(tbProduct!Cena4 * curRate * gain4, 1), "0.00")
             End If
         ElseIf Regim = "combi" Then
-            'gain2 = getRabbat(tbProduct!Cena4)
-            'gain3 = getCenaSale(tbProduct!prId)
+            gain2 = getRabbat(tbProduct!Cena4)
+            objExel.ActiveSheet.Cells(exRow, 5).value = Format(Round(curRate * gain2, 1), "0.00")
+            gain3 = getCenaSale(tbProduct!prId)
+            objExel.ActiveSheet.Cells(exRow, 5).value = Format(Round(curRate * gain3, 1), "0.00")
         End If
         
-        If gain2 > 0 Then
-            objExel.ActiveSheet.Cells(exRow, 5).value = Format(Round(tbProduct!Cena4 * curRate * gain2, 1), "0.00")
-        End If
-        If gain3 > 0 Then
-            objExel.ActiveSheet.Cells(exRow, 6).value = Format(Round(tbProduct!Cena4 * curRate * gain3, 1), "0.00")
-        End If
         
         objExel.ActiveSheet.Cells(exRow, lastColInt).value = " " & tbProduct!Page
         cErr = setVertBorders(objExel, xlThin, lastColInt)
@@ -1558,6 +1556,19 @@ Set objExel = Nothing
 
 End Sub
 
+Function getRabbat(cenaProd As Double) As Double
+    getRabbat = (1 - rabbatProcent / 100) * cenaProd
+End Function
+
+Function getCenaSale(productId As Integer) As Double
+    Dim ret As String
+    ret = getSumCena(productId, "sale")
+    If IsNumeric(ret) Then
+        getCenaSale = CDbl(ret)
+    End If
+    getCenaSale = 0
+End Function
+
 Function getGainAndHead() As Boolean
 getGainAndHead = False
 sql = "SELECT head1, head2, head3, head4, gain2, gain3, gain4 " & _
@@ -1581,7 +1592,7 @@ End Function
 
 'reg = "" => SumCenaFreight
 'reg <> "" => SumCenaSale
-Function getSumCena(Optional reg As String = "") As String
+Function getSumCena(productId As Integer, Optional reg As String = "") As String
 Dim sum As Single, v, s As Single, prevGroup As String, max As Single
 
 sum = 0
@@ -1591,11 +1602,11 @@ sql = "SELECT sProducts.nomNom, sProducts.quantity, sProducts.xgroup, sGuideNome
 "sGuideNomenk.CENA_W " & _
 "FROM (sGuideFormuls INNER JOIN sGuideNomenk ON sGuideFormuls.nomer = " & _
 "sGuideNomenk.formulaNom) INNER JOIN sProducts ON sGuideNomenk.nomNom " & _
-"= sProducts.nomNom WHERE (((sProducts.ProductId)=" & tbProduct!prId & "))" & _
+"= sProducts.nomNom WHERE (((sProducts.ProductId)=" & productId & "))" & _
 "ORDER BY sProducts.xgroup;"
 Set tbNomenk = myOpenRecordSet("##313", sql, dbOpenForwardOnly)
 If tbNomenk Is Nothing Then
-    tbProduct.Close
+    'tbProduct.Close
     If reg = "" Then
         getSumCena = "Error ##31 в SumCenaFreight"
     Else
