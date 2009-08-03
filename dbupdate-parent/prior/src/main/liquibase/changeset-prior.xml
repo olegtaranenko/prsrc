@@ -728,5 +728,13 @@ end;
 		<sqlFile path="procedures/n_exec_filter.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 		<rollback/>
 	</changeSet>
+
+	<changeSet id="1" author="mantis-11">
+		<comment>Remove sales functionality</comment>
+		<dropColumn tableName="bayguidefirms" columnName="oborud"/>
+		<dropColumn tableName="bayguidefirms" columnName="kategor"/>
+	</changeSet>
+
 </databaseChangeLog>
+
 
