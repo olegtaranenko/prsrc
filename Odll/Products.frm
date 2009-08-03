@@ -1132,8 +1132,8 @@ Else '                обе присутствуют
     Dim gHeightMax As Double, g3HeightMax As Double
     Dim fullHeight As Double
     
-    gHeightMax = Grid.rows * (Grid.CellHeight + 12) + 95
-    g3HeightMax = Grid3.rows * (Grid3.CellHeight + 12) + 95
+    gHeightMax = Grid.rows * (Grid.CellHeight + 13) + 95
+    g3HeightMax = Grid3.rows * (Grid3.CellHeight + 13) + 95
     fullHeight = gHeightMax + g3HeightMax + laGrid.Height
     
     If fullHeight > formHeight Then
