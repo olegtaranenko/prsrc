@@ -427,6 +427,9 @@ Begin VB.Form Documents
       Begin VB.Menu mnConstants 
          Caption         =   "Константы для формул"
       End
+      Begin VB.Menu mnProdCategory 
+         Caption         =   "Категории Гот.Изделий"
+      End
       Begin VB.Menu mnManag 
          Caption         =   "Менеджеры"
       End
@@ -1525,6 +1528,10 @@ Private Sub mnPriceToExcel_Click()
 
 End Sub
 
+
+Private Sub mnProdCategory_Click()
+    GuideProdCategory.Show
+End Sub
 
 Private Sub mnProducts_Click()
 Products.Regim = "" ' Просто Справочник

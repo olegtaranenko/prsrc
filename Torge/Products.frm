@@ -525,20 +525,21 @@ Const gpId = 1 '*************** должны совпадать
 Const gpSortNom = 2
 Const gpName = 3
 Const gpPrWeb = 4
-Const gpDescript = 5
-Const gpSize = 6
-Const gpVremObr = 7
-Const gpSumCenaFreight = 8
-Const gpSumCenaSale = 9
-Const gpFormulaNom = 10
-Const gpFormula = 11 'скрыт
-Const gpCena3 = 12
-Const gpCol1 = 13
-Const gpCol2 = 14
-Const gpCol3 = 15
-Const gpCol4 = 16
-Const gpPage = 17 ' страница в прайсе
-Const gpUsed = 18
+Const gpRabbat = 5
+Const gpDescript = 6
+Const gpSize = 7
+Const gpVremObr = 8
+Const gpSumCenaFreight = 9
+Const gpSumCenaSale = 10
+Const gpFormulaNom = 11
+Const gpFormula = 12 'скрыт
+Const gpCena3 = 13
+Const gpCol1 = 14
+Const gpCol2 = 15
+Const gpCol3 = 16
+Const gpCol4 = 17
+Const gpPage = 18 ' страница в прайсе
+Const gpUsed = 19
 
 ''для прайса
 'Const prHideName = 0
@@ -1315,8 +1316,16 @@ laNomenk.Caption = ""
 End Sub
 
 Private Sub lbPrWeb_DblClick()
-If ValueToTableField("##411", "'" & lbPrWeb.Text & "'", "sGuideProducts", _
-"prodCategoryId", "byProductId") Then
+Dim success As Boolean, prodCategoryId As Integer, val As String
+
+prodCategoryId = lbPrWeb.ItemData(lbPrWeb.ListIndex)
+If prodCategoryId = 0 Then
+    val = "null"
+Else
+    val = CStr(prodCategoryId)
+End If
+success = ValueToTableField("##411", val, "sGuideProducts", "prodCategoryId", "byProductId")
+If success Then
     Grid.TextMatrix(mousRow, gpPrWeb) = lbPrWeb.Text
 End If
 lbHide
