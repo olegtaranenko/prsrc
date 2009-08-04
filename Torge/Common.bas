@@ -1513,19 +1513,19 @@ sql = "SELECT prId, prName, prDescript, prSize, Cena4, page, rabbat " _
         objExel.ActiveSheet.Cells(exRow, 1).value = tbProduct!prName
         objExel.ActiveSheet.Cells(exRow, 2).value = tbProduct!prSize
         objExel.ActiveSheet.Cells(exRow, 3).value = tbProduct!prDescript
-        objExel.ActiveSheet.Cells(exRow, 4).value = Format(tbProduct!Cena4 * curRate, "0.00")
+        objExel.ActiveSheet.Cells(exRow, 4).value = Chr(160) & Format(tbProduct!Cena4 * curRate, "0.00")
         
         If Regim = "default" Then
             If gain4 > 0 Then
-                objExel.ActiveSheet.Cells(exRow, 5).value = Format(Round(tbProduct!Cena4 * curRate * gain2, 1), "0.00")
-                objExel.ActiveSheet.Cells(exRow, 6).value = Format(Round(tbProduct!Cena4 * curRate * gain3, 1), "0.00")
-                objExel.ActiveSheet.Cells(exRow, 7).value = Format(Round(tbProduct!Cena4 * curRate * gain4, 1), "0.00")
+                objExel.ActiveSheet.Cells(exRow, 5).value = Chr(160) & Format(Round(tbProduct!Cena4 * curRate * gain2, 1), "0.00")
+                objExel.ActiveSheet.Cells(exRow, 6).value = Chr(160) & Format(Round(tbProduct!Cena4 * curRate * gain3, 1), "0.00")
+                objExel.ActiveSheet.Cells(exRow, 7).value = Chr(160) & Format(Round(tbProduct!Cena4 * curRate * gain4, 1), "0.00")
             End If
         ElseIf Regim = "combi" Then
             gain2 = getRabbat(tbProduct!Cena4, tbProduct!rabbat)
-            objExel.ActiveSheet.Cells(exRow, 5).value = Format(Round(curRate * gain2, 1), "0.00")
+            objExel.ActiveSheet.Cells(exRow, 5).value = Chr(160) & Format(Round(curRate * gain2, 1), "0.00")
             gain3 = getCenaSale(tbProduct!prId)
-            objExel.ActiveSheet.Cells(exRow, 6).value = Format(Round(curRate * gain3, 1), "0.00")
+            objExel.ActiveSheet.Cells(exRow, 6).value = Chr(160) & Format(Round(curRate * gain3, 1), "0.00")
         End If
         
         

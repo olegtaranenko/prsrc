@@ -142,14 +142,19 @@ Private Sub Form_Load()
         tbKegl.Text = kegl
     End If
     
+    initProdCategoryBox cbProdCategory
     If doProdCategory Then
         lProdCategory.Visible = True
         cbProdCategory.Visible = True
+        If cbProdCategory.ListCount > 0 Then
+            cbProdCategory.ListIndex = 1
+        Else
+            cbProdCategory.ListIndex = 0
+        End If
     Else
         lProdCategory.Visible = False
         cbProdCategory.Visible = False
     End If
-    initProdCategoryBox cbProdCategory
 End Sub
 
 Private Sub OKButton_Click()
