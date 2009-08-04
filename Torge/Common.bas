@@ -5,7 +5,6 @@ Private Const dhcMissing = -2 'нужна для quickSort
 Public objExel As Excel.Application, exRow As Long
 Public gain2 As Single, gain3 As Single, gain4 As Single
 Public head1 As String, head2 As String, head3 As String, head4 As String
-Public rabbatProcent As Double
 
 Public sql As String, strWhere As String
 Public webProducts As String
@@ -1367,7 +1366,7 @@ Function excelStdSchapka(ByRef objExel, ByVal RubRate As Double, ByVal mainTitle
     End With
 End Function
 
-Sub PriceToExcel(Regim As String, curRate As Double, mainReportTitle As String, kegl As Integer)
+Sub PriceToExcel(Regim As String, curRate As Double, mainReportTitle As String, kegl As Integer, Optional prodCategoryId As Integer = 1)
 Dim I As Integer, findId As Integer, str As String
 
 ' столбец - последний. В зависимости от режима - разный
@@ -1375,14 +1374,13 @@ Dim lastCol As String, lastColInt As Integer
 
 'Из Спарвочника Готовых изделий получаем Список Id всех групп(серий),
 'в которых есть хотя бы одно изделие.
-sql = "SELECT prSeriaId from sGuideProducts Where(((web) = 'web')) GROUP BY prSeriaId;"
+sql = "SELECT DISTINCT prSeriaId from sGuideProducts"
+If prodCategoryId <> 0 Then
+    sql = sql & " where prodCategoryId = " & prodCategoryId
+End If
+
 Set tbProduct = myOpenRecordSet("##412", sql, dbOpenDynaset)
 If tbProduct Is Nothing Then Exit Sub
-
-'В этом блоке получаем имена всех групп Списка(по Id)====================
-'Set tbGuide = myOpenRecordSet("##413", "select * from sGuideSeries", dbOpenForwardOnly)
-'If tbGuide Is Nothing Then Exit Sub
-'tbGuide.index = "PrimaryKey"
 
 ReDim NN(0): I = 0
 While Not tbProduct.EOF
@@ -1450,8 +1448,10 @@ For I = 1 To UBound(NN) ' перебор всех групп
 '"Номер"    "Код"   "web"   "Описание"    Размер   "1-5"   "Стр."
 'SortNom   prName    web    prDescript    prSize   Cena4    page
 
-  sql = "SELECT prId, prName, prDescript, prSize, Cena4, page From sGuideProducts " & _
-  "Where prSeriaId = " & findId & " AND web = 'web' ORDER BY SortNom"
+sql = "SELECT prId, prName, prDescript, prSize, Cena4, page, rabbat " _
+    & " From sGuideProducts " _
+    & " Where prSeriaId = " & findId & " AND prodCategoryId = " & prodCategoryId _
+    & " ORDER BY SortNom"
 
   Set tbProduct = myOpenRecordSet("##415", sql, dbOpenDynaset)
   If Not tbProduct Is Nothing Then
@@ -1522,7 +1522,7 @@ For I = 1 To UBound(NN) ' перебор всех групп
                 objExel.ActiveSheet.Cells(exRow, 7).value = Format(Round(tbProduct!Cena4 * curRate * gain4, 1), "0.00")
             End If
         ElseIf Regim = "combi" Then
-            gain2 = getRabbat(tbProduct!Cena4)
+            gain2 = getRabbat(tbProduct!Cena4, tbProduct!rabbat)
             objExel.ActiveSheet.Cells(exRow, 5).value = Format(Round(curRate * gain2, 1), "0.00")
             gain3 = getCenaSale(tbProduct!prId)
             objExel.ActiveSheet.Cells(exRow, 6).value = Format(Round(curRate * gain3, 1), "0.00")
@@ -1555,8 +1555,8 @@ Set objExel = Nothing
 
 End Sub
 
-Function getRabbat(cenaProd As Double) As Double
-    getRabbat = (1 - rabbatProcent / 100) * cenaProd
+Function getRabbat(cenaProd As Double, rabbat As Integer) As Double
+    getRabbat = (1 - rabbat / 100) * cenaProd
 End Function
 
 Function getCenaSale(productId As Integer) As Double
@@ -1665,4 +1665,34 @@ er:
 tbNomenk.Close
 End Function
 
+
+Public Sub initPrWebLB(ByRef lbPrWeb As ListBox, Optional extended As Boolean = False)
+Dim table As Recordset
+Dim name As String
+
+    ' Сначала удаляем старые значения
+    While lbPrWeb.ListCount
+        lbPrWeb.RemoveItem (0)
+    Wend
+    
+    sql = "select * from GuideProdCategory"
+    
+    Set table = myOpenRecordSet("##72", sql, dbOpenForwardOnly)
+    If table Is Nothing Then myBase.Close: End
+    
+    lbPrWeb.AddItem "", 0
+    While Not table.EOF
+        If extended Then
+            name = table!nameRu & " (" & table!sysname & ")"
+        Else
+            name = table!sysname
+        End If
+        lbPrWeb.AddItem table!sysname
+        lbPrWeb.ItemData(lbPrWeb.ListCount - 1) = table!prodCategoryId
+        table.MoveNext
+    Wend
+    table.Close
+    lbPrWeb.Height = 225 * lbPrWeb.ListCount
+
+End Sub
 

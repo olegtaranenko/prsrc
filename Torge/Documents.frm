@@ -1349,14 +1349,12 @@ End Sub
 Private Sub mnCombiPrice_Click()
     ExcelParamDialog.mainReportTitle = "КОРПОРАТИВНЫЕ ПРИЗЫ И НАГРАДЫ (Каталог 2008-2009 Выпуск 5)"
     ExcelParamDialog.kegl = 9
-    ExcelParamDialog.doRabbat = True
     ExcelParamDialog.Show vbModal, Me
     If ExcelParamDialog.exitCode = vbCancel Then
         Exit Sub
     End If
     
     Dim reportRate As Double
-    rabbatProcent = ExcelParamDialog.rabbatPercent
     If ExcelParamDialog.outputUE Then
         reportRate = 1
     Else

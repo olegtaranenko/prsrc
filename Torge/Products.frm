@@ -15,6 +15,7 @@ Begin VB.Form Products
    MinButton       =   0   'False
    ScaleHeight     =   6396
    ScaleWidth      =   11880
+   StartUpPosition =   2  'CenterScreen
    WhatsThisHelp   =   -1  'True
    Begin VB.CommandButton cmSostavExcel 
       Caption         =   "Печать в Excel"
@@ -749,6 +750,7 @@ Private Sub cmSostavExcel_Click()
     GridToExcel Grid2, laNomenk.Caption
 End Sub
 
+
 Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
 Dim value As String, str As String
 
@@ -778,6 +780,7 @@ oldWidth = Me.Width
     wesGrid = Grid.Width / sumGridsWidth
 'End If
 
+initPrWebLB lbPrWeb
 
 frmMode = ""
 gridIsLoad = False
@@ -1313,7 +1316,9 @@ End Sub
 
 Private Sub lbPrWeb_DblClick()
 If ValueToTableField("##411", "'" & lbPrWeb.Text & "'", "sGuideProducts", _
-"web", "byProductId") Then Grid.TextMatrix(mousRow, gpPrWeb) = lbPrWeb.Text
+"prodCategoryId", "byProductId") Then
+    Grid.TextMatrix(mousRow, gpPrWeb) = lbPrWeb.Text
+End If
 lbHide
 
 End Sub
@@ -1929,10 +1934,12 @@ clearGridRow Grid2, 1
 quantity2 = 0
 
 sql = "SELECT p.*, n.nomName, n.ed_Izmer, n.Size, n.cod, n.perList, n.CENA1, n.VES, n.STAVKA" _
-    & ", n.web, n.CENA_W, f.Formula " _
+    & ", n.CENA_W, f.Formula, pc.sysname as web " _
     & " FROM sProducts p " _
     & " JOIN sGuideNomenk n on n.nomNom = p.nomNom " _
     & " JOIN sGuideFormuls f ON f.nomer = n.formulaNom " _
+    & " JOIN sGuideProducts gp on gp.prId = p.productId " _
+    & " left join GuideProdCategory pc on pc.prodCategoryId = gp.prodCategoryId " _
     & " WHERE p.ProductId = " & gProductId
 
 Set tbNomenk = myOpenRecordSet("##108", sql, dbOpenForwardOnly)
@@ -1961,7 +1968,9 @@ If Not tbNomenk.BOF Then
 '        Grid2.TextMatrix(quantity2, gpCENA_W) = str
 '    End If
     Grid2.TextMatrix(quantity2, gpGroup) = tbNomenk!xgroup
-    Grid2.TextMatrix(quantity2, gpWeb) = tbNomenk!web
+    If Not IsNull(tbNomenk!web) Then
+        Grid2.TextMatrix(quantity2, gpWeb) = tbNomenk!web
+    End If
     
     Grid2.AddItem ""
     tbNomenk.MoveNext
@@ -2087,13 +2096,14 @@ Else
     "' в колонке '" & str & "'"
 End If
 
-sql = "SELECT p.prId, p.prName, p.prSize, p.SortNom, p.VremObr, p.FormulaNom, p.prDescript, p.cena4, p.page, p.web, f.Formula " _
+sql = "SELECT p.prId, p.prName, p.prSize, p.SortNom, p.VremObr, p.FormulaNom, p.prDescript, p.cena4, p.page, pc.sysname as web, f.Formula " _
     & ", max(i.prid) as used" _
     & " FROM sGuideProducts p " _
     & " LEFT JOIN sGuideFormuls f ON f.nomer = p.formulaNom " _
     & " left join xPredmetyByIzdelia i on i.prId = p.prId " _
+    & " left join GuideProdCategory pc on pc.prodCategoryId = p.prodCategoryId " _
     & strWhere _
-    & " GROUP BY p.prId, p.prName, p.prSize, p.SortNom, p.VremObr, p.FormulaNom, p.prDescript, p.cena4, p.page, p.web, f.Formula " _
+    & " GROUP BY p.prId, p.prName, p.prSize, p.SortNom, p.VremObr, p.FormulaNom, p.prDescript, p.cena4, p.page, pc.sysname, f.Formula " _
     & " ORDER BY p.SortNom"
 
 'Debug.Print sql
@@ -2127,7 +2137,9 @@ If Not tbProduct.BOF Then
     Grid.TextMatrix(quantity, gpCol3) = Format(Round(tbProduct!Cena4 * gain3, 1), "0.00")
     Grid.TextMatrix(quantity, gpCol4) = Format(Round(tbProduct!Cena4 * gain4, 1), "0.00")
     Grid.TextMatrix(quantity, gpPage) = tbProduct!Page
-    Grid.TextMatrix(quantity, gpPrWeb) = tbProduct!web
+    If Not IsNull(tbProduct!web) Then
+        Grid.TextMatrix(quantity, gpPrWeb) = tbProduct!web
+    End If
     If Not IsNull(tbProduct!used) Then
         Grid.TextMatrix(quantity, gpUsed) = tbProduct!used
     End If

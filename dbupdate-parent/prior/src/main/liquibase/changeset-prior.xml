@@ -735,6 +735,66 @@ end;
 		<dropColumn tableName="bayguidefirms" columnName="kategor"/>
 	</changeSet>
 
+	<changeSet id="1" author="mantis-79" runOnChange="false">
+		<comment>“аблица категорий готовых изделий (призы, награды и т.д.)</comment>
+		<createTable tableName="GuideProdCategory">
+			<column name="prodCategoryId" type="integer" autoIncrement="true">
+				<constraints primaryKey="true" primaryKeyName="pk_prodCategory"/>
+			</column>
+			<column name="sysname" type="varchar(64)" >
+				<constraints nullable="false"/>
+			</column>
+			<column name="nameRu" type="varchar(256)"/>
+		</createTable>
+	</changeSet>
+
+	<changeSet id="2" author="mantis-79" runOnChange="false">
+		<comment> атегори€ гот. изделий и скидка</comment>
+		<addColumn tableName="sguideproducts">
+			<column name="prodCategoryId" type="integer"><constraints nullable="true"/></column>
+		</addColumn>
+		<addColumn tableName="sguideproducts">
+			<column name="rabbat" type="float" defaultValueNumeric="20"><constraints nullable="true"/></column>
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="3" author="mantis-79" runOnChange="false">
+		<comment> атегори€ по умолчанию (исторически)</comment>
+		<insert tableName="GuideProdCategory">
+			<column name="sysname" value="web"/>
+			<column name="nameRu" value="выводить в справочник"/>
+		</insert>
+	</changeSet>
+
+
+	<changeSet id="4" author="mantis-79" runOnChange="false">
+		<comment>скидка дл€ продуктов по умолчанию - 20%</comment>
+		<update tableName="sGuideProducts">
+			<column name="rabbat" valueNumeric="20"/>
+		</update>
+	</changeSet>
+
+	<changeSet id="5" author="mantis-79" runOnChange="false">
+		<comment>web категри€ - как ссылка</comment>
+		<sql splitStatements="false" stripComments="false"><![CDATA[
+update sGuideProducts set prodCategoryId = pc.prodCategoryId
+from GuideProdCategory pc
+where pc.sysname = sGuideProducts.web
+		]]></sql>
+	</changeSet>
+
+	<changeSet id="6" author="mantis-79" runOnChange="false">
+		<comment>”дал€ем столбец web</comment>
+		<dropColumn tableName="sGuideProducts" columnName="web"/>
+	</changeSet>
+
+	<changeSet id="7" author="mantis-79" runOnChange="false">
+		<addForeignKeyConstraint constraintName="fk_gp_category" baseTableName="sGuideProducts" baseColumnNames="prodCategoryId"
+			referencedTableName="GuideProdCategory" referencedColumnNames="prodCategoryId"
+			onDelete="SET NULL" onUpdate="SET NULL"
+		/>
+	</changeSet>
+
 </databaseChangeLog>
 
 

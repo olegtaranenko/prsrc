@@ -366,14 +366,14 @@ Private Sub cmExit_Click()
 End Sub
 
 Private Sub cmHide_Click()
-Dim i As Integer
+Dim I As Integer
 If quantity = 0 Then Exit Sub
-For i = Grid.row To Grid.RowSel
+For I = Grid.row To Grid.RowSel
     If Grid.Rows > 2 Then
         Grid.RemoveItem Grid.row
         quantity = quantity - 1
     End If
-Next i
+Next I
 Grid.SetFocus
 Grid_EnterCell
 End Sub
@@ -454,7 +454,7 @@ If row > 0 Then _
 End Function
 
 Private Sub Form_Load()
-Dim str As String, i As Integer, delta As Single
+Dim str As String, I As Integer, delta As Single
 
 
 controlEnable False
@@ -879,7 +879,7 @@ End Sub
 
 
 Private Sub mnDel_Click()
-Dim pQuant As Single, i As Integer ', str  As String
+Dim pQuant As Single, I As Integer ', str  As String
 
 If beNaklads() Then Exit Sub
 
@@ -1057,7 +1057,7 @@ End If
 End Sub
 'при delta < 0 - возм. удаление
 Function nomenkToDMCrez(delta As Single, Optional mov As String = "") As Boolean
-Dim s As Single, i As Integer
+Dim s As Single, I As Integer
 
 nomenkToDMCrez = False
 
@@ -1200,7 +1200,7 @@ End Sub
 
 Sub loadKlass()
 Dim Key As String, pKey As String, k() As String, pK()  As String
-Dim i As Integer, iErr As Integer
+Dim I As Integer, iErr As Integer
 bilo = False
 sql = "SELECT sGuideKlass.*  From sGuideKlass ORDER BY sGuideKlass.parentKlassId;"
 Set tbKlass = myOpenRecordSet("##102", sql, dbOpenForwardOnly)
@@ -1229,16 +1229,16 @@ tbKlass.Close
 
 While bilo ' необходимы еще проходы
   bilo = False
-  For i = 1 To UBound(k())
-    If k(i) <> "" Then
+  For I = 1 To UBound(k())
+    If k(I) <> "" Then
         On Error GoTo ERR2 ' назначить еще проход
-        Set Node = tv.Nodes.Add(pK(i), tvwChild, k(i), NN(i))
+        Set Node = tv.Nodes.Add(pK(I), tvwChild, k(I), NN(I))
         On Error GoTo 0
-        k(i) = ""
+        k(I) = ""
         Node.Sorted = True
     End If
 NXT:
-  Next i
+  Next I
 Wend
 tv.Nodes.Item("k0").Expanded = True
 Exit Sub
@@ -1254,7 +1254,7 @@ End Sub
 
 Sub loadSeria()
 Dim Key As String, pKey As String, k() As String, pK()  As String
-Dim i As Integer, iErr As Integer
+Dim I As Integer, iErr As Integer
 bilo = False
 sql = "SELECT sGuideSeries.*  From sGuideSeries ORDER BY sGuideSeries.seriaId;"
 Set tbSeries = myOpenRecordSet("##110", sql, dbOpenForwardOnly)
@@ -1281,16 +1281,16 @@ tbSeries.Close
 
 While bilo ' необходимы еще проходы
   bilo = False
-  For i = 1 To UBound(k())
-    If k(i) <> "" Then
+  For I = 1 To UBound(k())
+    If k(I) <> "" Then
         On Error GoTo ERR2 ' назначить еще проход
-        Set Node = tv.Nodes.Add(pK(i), tvwChild, k(i), NN(i))
+        Set Node = tv.Nodes.Add(pK(I), tvwChild, k(I), NN(I))
         On Error GoTo 0
-        k(i) = ""
+        k(I) = ""
         Node.Sorted = True
     End If
 NXT:
-  Next i
+  Next I
 Wend
 tv.Nodes.Item("k0").Expanded = True
 Exit Sub
@@ -1439,7 +1439,7 @@ End Sub
 
     
 Private Sub tv_KeyUp(KeyCode As Integer, Shift As Integer)
-Dim i As Integer, str As String
+Dim I As Integer, str As String
 If KeyCode = vbKeyReturn Or KeyCode = vbKeyEscape Then
 '    tv_NodeClick tv.SelectedItem
 End If
