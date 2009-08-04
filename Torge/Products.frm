@@ -781,7 +781,7 @@ oldWidth = Me.Width
     wesGrid = Grid.Width / sumGridsWidth
 'End If
 
-initPrWebLB lbPrWeb
+initProdCategoryBox lbPrWeb
 
 frmMode = ""
 gridIsLoad = False
@@ -790,7 +790,7 @@ gSeriaId = 0 'необходим  для добавления класса
 '    Regim = "onlyGuide"
 'End If
     
-    Grid.FormatString = "см.Входящие|id|<Номер|<Код|web|<Описание|<Размер|Время обработки" & _
+    Grid.FormatString = "см.Входящие|id|<Номер|<Код|web|Скид.|<Описание|<Размер|Время обработки" & _
     "|SumCenaFreight|SumCenaSale|№ формулы|Формула|Цена 3|кол1|кол2|кол3|кол4|Стр." _
     & "|"
     Grid.colWidth(gpNomenk) = 0 '300
@@ -800,6 +800,7 @@ gSeriaId = 0 'необходим  для добавления класса
     Grid.colWidth(gpName) = 1065
     Grid.colWidth(gpDescript) = 3720
     Grid.colWidth(gpPrWeb) = 405
+    Grid.colWidth(gpRabbat) = 405
     Grid.colWidth(gpFormula) = 0
     Grid.colWidth(gpSumCenaFreight) = 1275
     Grid.colWidth(gpSumCenaSale) = 1275
@@ -1846,6 +1847,9 @@ If KeyCode = vbKeyReturn Then
     ValueToTableField "##111", "'" & str & "'", "sGuideProducts", "prSize", "byProductId"
  ElseIf mousCol = gpDescript Then
     ValueToTableField "##111", "'" & str & "'", "sGuideProducts", "prDescript", "byProductId"
+ ElseIf mousCol = gpRabbat Then
+    If Not isNumericTbox(tbMobile, 0) Then Exit Sub
+    If Not ValueToTableField("##111", str, "sGuideProducts", "rabbat", "byProductId") Then GoTo EN1
  ElseIf mousCol = gpVremObr Then
     If Not isNumericTbox(tbMobile, 0) Then Exit Sub
     If Not ValueToTableField("##111", str, "sGuideProducts", "vremObr", _
@@ -2105,14 +2109,14 @@ Else
     "' в колонке '" & str & "'"
 End If
 
-sql = "SELECT p.prId, p.prName, p.prSize, p.SortNom, p.VremObr, p.FormulaNom, p.prDescript, p.cena4, p.page, pc.sysname as web, f.Formula " _
+sql = "SELECT p.prId, p.prName, p.prSize, p.SortNom, p.VremObr, p.FormulaNom, p.prDescript, p.cena4, p.page, pc.sysname as web, f.Formula, p.rabbat " _
     & ", max(i.prid) as used" _
     & " FROM sGuideProducts p " _
     & " LEFT JOIN sGuideFormuls f ON f.nomer = p.formulaNom " _
     & " left join xPredmetyByIzdelia i on i.prId = p.prId " _
     & " left join GuideProdCategory pc on pc.prodCategoryId = p.prodCategoryId " _
     & strWhere _
-    & " GROUP BY p.prId, p.prName, p.prSize, p.SortNom, p.VremObr, p.FormulaNom, p.prDescript, p.cena4, p.page, pc.sysname, f.Formula " _
+    & " GROUP BY p.prId, p.prName, p.prSize, p.SortNom, p.VremObr, p.FormulaNom, p.prDescript, p.cena4, p.page, pc.sysname, f.Formula, p.rabbat " _
     & " ORDER BY p.SortNom"
 
 'Debug.Print sql
@@ -2125,6 +2129,7 @@ If Not tbProduct.BOF Then
     quantity = quantity + 1
     Grid.TextMatrix(quantity, gpId) = tbProduct!prId
     Grid.TextMatrix(quantity, gpNomenk) = quantity
+    Grid.TextMatrix(quantity, gpRabbat) = tbProduct!rabbat
     If Not IsNull(tbProduct!prName) Then _
             Grid.TextMatrix(quantity, gpName) = tbProduct!prName
     Grid.TextMatrix(quantity, gpSortNom) = tbProduct!SortNom

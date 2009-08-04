@@ -5,17 +5,26 @@ Begin VB.Form ExcelParamDialog
    ClientHeight    =   3012
    ClientLeft      =   2760
    ClientTop       =   3756
-   ClientWidth     =   7056
+   ClientWidth     =   7200
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
    ScaleHeight     =   3012
-   ScaleWidth      =   7056
+   ScaleWidth      =   7200
    ShowInTaskbar   =   0   'False
    StartUpPosition =   1  'CenterOwner
+   Begin VB.ComboBox cbProdCategory 
+      Height          =   288
+      Left            =   4320
+      TabIndex        =   10
+      Text            =   "web"
+      Top             =   600
+      Visible         =   0   'False
+      Width           =   1452
+   End
    Begin VB.TextBox tbKegl 
       Height          =   288
-      Left            =   5040
+      Left            =   4320
       TabIndex        =   8
       Text            =   "8"
       Top             =   240
@@ -56,7 +65,7 @@ Begin VB.Form ExcelParamDialog
    Begin VB.CommandButton CancelButton 
       Caption         =   "Отмена"
       Height          =   375
-      Left            =   5760
+      Left            =   5880
       TabIndex        =   1
       Top             =   600
       Width           =   1215
@@ -64,17 +73,28 @@ Begin VB.Form ExcelParamDialog
    Begin VB.CommandButton OKButton 
       Caption         =   "OK"
       Height          =   375
-      Left            =   5760
+      Left            =   5880
       TabIndex        =   0
       Top             =   120
       Width           =   1215
+   End
+   Begin VB.Label lProdCategory 
+      Alignment       =   1  'Right Justify
+      AutoSize        =   -1  'True
+      Caption         =   "Категория изделий"
+      Height          =   192
+      Left            =   2592
+      TabIndex        =   9
+      Top             =   600
+      Visible         =   0   'False
+      Width           =   1644
    End
    Begin VB.Label lbKegl 
       Alignment       =   1  'Right Justify
       AutoSize        =   -1  'True
       Caption         =   "Кегль отчета"
       Height          =   192
-      Left            =   3744
+      Left            =   3144
       TabIndex        =   7
       Top             =   240
       Width           =   1116
@@ -101,7 +121,8 @@ Public outputUE As Boolean
 Public RubRate As Double
 Public mainReportTitle As String
 Public kegl As Integer
-
+Public doProdCategory As Boolean
+Public prodCategoryId As Integer
 
 Dim doUnload As Boolean
 
@@ -120,6 +141,15 @@ Private Sub Form_Load()
     If kegl <> 0 Then
         tbKegl.Text = kegl
     End If
+    
+    If doProdCategory Then
+        lProdCategory.Visible = True
+        cbProdCategory.Visible = True
+    Else
+        lProdCategory.Visible = False
+        cbProdCategory.Visible = False
+    End If
+    initProdCategoryBox cbProdCategory
 End Sub
 
 Private Sub OKButton_Click()
@@ -144,6 +174,11 @@ Private Sub OKButton_Click()
         tbKegl.SelStart = 0
         tbKegl.SelLength = Len(tbKegl.Text)
         doUnload = False
+    End If
+    
+    If doProdCategory Then
+        doProdCategory = False
+        prodCategoryId = cbProdCategory.ItemData(cbProdCategory.ListIndex)
     End If
     
     If doUnload Then

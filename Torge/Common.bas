@@ -1666,7 +1666,7 @@ tbNomenk.Close
 End Function
 
 
-Public Sub initPrWebLB(ByRef lbPrWeb As ListBox, Optional extended As Boolean = False)
+Public Sub initProdCategoryBox(ByRef lbPrWeb, Optional extended As Boolean = False)
 Dim table As Recordset
 Dim name As String
 
@@ -1692,7 +1692,10 @@ Dim name As String
         table.MoveNext
     Wend
     table.Close
-    lbPrWeb.Height = 225 * lbPrWeb.ListCount
+    
+    If TypeOf lbPrWeb Is ListBox Then
+        lbPrWeb.Height = 225 * lbPrWeb.ListCount
+    End If
 
 End Sub
 

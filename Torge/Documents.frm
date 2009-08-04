@@ -1352,6 +1352,7 @@ End Sub
 Private Sub mnCombiPrice_Click()
     ExcelParamDialog.mainReportTitle = " Œ–œŒ–¿“»¬Õ€≈ œ–»«€ » Õ¿√–¿ƒ€ ( ‡Ú‡ÎÓ„ 2008-2009 ¬˚ÔÛÒÍ 5)"
     ExcelParamDialog.kegl = 9
+    ExcelParamDialog.doProdCategory = True
     ExcelParamDialog.Show vbModal, Me
     If ExcelParamDialog.exitCode = vbCancel Then
         Exit Sub
@@ -1363,7 +1364,8 @@ Private Sub mnCombiPrice_Click()
     Else
         reportRate = ExcelParamDialog.RubRate
     End If
-    PriceToExcel "combi", reportRate, ExcelParamDialog.mainReportTitle, ExcelParamDialog.kegl
+    
+    PriceToExcel "combi", reportRate, ExcelParamDialog.mainReportTitle, ExcelParamDialog.kegl, ExcelParamDialog.prodCategoryId
 
 End Sub
 
@@ -1513,6 +1515,7 @@ Private Sub mnPriceToExcel_Click()
 
     ExcelParamDialog.mainReportTitle = " Œ–œŒ–¿“»¬Õ€≈ œ–»«€ » Õ¿√–¿ƒ€ ( ‡Ú‡ÎÓ„ 2008-2009 ¬˚ÔÛÒÍ 5)"
     ExcelParamDialog.kegl = 9
+    ExcelParamDialog.doProdCategory = True
     ExcelParamDialog.Show vbModal, Me
     If ExcelParamDialog.exitCode = vbCancel Then
         Exit Sub
@@ -1524,7 +1527,7 @@ Private Sub mnPriceToExcel_Click()
     Else
         reportRate = ExcelParamDialog.RubRate
     End If
-    PriceToExcel "default", reportRate, ExcelParamDialog.mainReportTitle, ExcelParamDialog.kegl
+    PriceToExcel "default", reportRate, ExcelParamDialog.mainReportTitle, ExcelParamDialog.kegl, ExcelParamDialog.prodCategoryId
 
 End Sub
 
