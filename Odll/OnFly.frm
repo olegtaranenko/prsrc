@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCTL.OCX"
+Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "mscomctl.ocx"
 Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Object = "{86CF1D34-0C5F-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCT2.OCX"
 Begin VB.Form OnFly 
@@ -365,11 +365,6 @@ Const comma = ", "
         values = values & comma & "'" & prSortNom & "'"
     End If
     
-    If prWeb Then
-        fields = fields & comma & "web"
-        values = values & comma & "'web'"
-    End If
-    
     If prSize <> "" Then
         fields = fields & comma & "prSize"
         values = values & comma & "'" & prSize & "'"
@@ -398,14 +393,14 @@ End Function
 
 
 Private Function selectedSeriaId() As Integer
-Dim key As String
+Dim Key As String
         
-    key = selectedNode.key
-    If Left(key, 1) = "p" Then
-        key = selectedNode.Parent.key
+    Key = selectedNode.Key
+    If Left(Key, 1) = "p" Then
+        Key = selectedNode.Parent.Key
     End If
     
-    selectedSeriaId = CStr(Mid(key, 2))
+    selectedSeriaId = CStr(Mid(Key, 2))
     
 End Function
 
@@ -478,7 +473,7 @@ Private Sub Form_Load()
     
 End Sub
 Private Sub loadTemplates(ByRef p_tv As TreeView)
-Dim key As String, pKey As String
+Dim Key As String, pKey As String
     
 '    sql = _
      " select * from sguideproducts g " _
@@ -493,9 +488,9 @@ Dim key As String, pKey As String
     If Not tbSeries.BOF Then
         
         While Not tbSeries.EOF
-            key = "p" & tbSeries!prId
+            Key = "p" & tbSeries!prId
             pKey = "k" & tbSeries!prSeriaId
-            Set Node = p_tv.Nodes.Add(pKey, tvwChild, key, _
+            Set Node = p_tv.Nodes.Add(pKey, tvwChild, Key, _
                 tbSeries!prDescript)
             Node.Sorted = True
             Node.Bold = True
@@ -960,14 +955,14 @@ Private Sub tbQty_KeyUp(KeyCode As Integer, Shift As Integer)
 End Sub
 
 Private Sub tv_NodeClick(ByVal Node As MSComctlLib.Node)
-Dim key As String
+Dim Key As String
     
-    key = Node.key
+    Key = Node.Key
     Set selectedNode = Node
-    If key = "k0" Then Exit Sub
+    If Key = "k0" Then Exit Sub
     fieldChanged = False
-    If Left(key, 1) = "p" Then
-        fillDataWithTemplate CLng(Mid(key, 2))
+    If Left(Key, 1) = "p" Then
+        fillDataWithTemplate CLng(Mid(Key, 2))
     Else
         clearData
     End If
