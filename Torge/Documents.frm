@@ -1787,7 +1787,7 @@ For I = 1 To UBound(NN) ' перебор всех групп
                 End With
                 
                 exRow = exRow + 1
-                cErr = setVertBorders(objExel, xlThin)
+                cErr = setVertBorders(objExel, xlThin, 9)
                 'If cErr <> 0 Then GoTo ERR2
                 
                 objExel.ActiveSheet.Cells(exRow, 1).value = "Код"
@@ -1818,7 +1818,7 @@ For I = 1 To UBound(NN) ' перебор всех групп
                     objExel.ActiveSheet.Cells(exRow, 9).Font.Bold = True
                 End If
                     
-                cErr = setVertBorders(objExel, xlThin)
+                cErr = setVertBorders(objExel, xlThin, 9)
                 If cErr <> 0 Then GoTo ERR2
                 exRow = exRow + 1
             End If
@@ -1869,7 +1869,7 @@ End If
                 End If
             Next iKolon
             
-            cErr = setVertBorders(objExel, xlThin)
+            cErr = setVertBorders(objExel, xlThin, 9)
             If cErr <> 0 Then GoTo ERR2
             exRow = exRow + 1:
         End If
