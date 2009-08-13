@@ -885,52 +885,6 @@ Dim flagSync As Boolean
 Dim begDateHron As Date ' Начало ведения хронологии
 
 
-Private Sub cbPeriod_Click()
-Dim curIndex As Integer, isMonth As Boolean, isPrev As Integer
-Dim currentYear As Integer, currentMonth As Integer, theYear As Integer, theMonth As Integer
-Dim endYear As Integer, endMonth As Integer
-    
-    curIndex = cbPeriod.ItemData(cbPeriod.ListIndex)
-    If curIndex <> 0 Then
-        currentYear = CInt(Format(Now, "yyyy"))
-        currentMonth = CInt(Format(Now, "mm"))
-        
-        If InStr(1, cbPeriod.Text, "месяц") <> 0 Then
-            isMonth = True
-        Else
-            isMonth = False
-        End If
-        If InStr(1, cbPeriod.Text, "редыдущ") <> 0 Then
-            isPrev = 1
-        Else
-            isPrev = 0
-        End If
-        
-        If isMonth Then
-            theYear = currentYear
-            theMonth = currentMonth - isPrev
-            If theMonth < 1 Then _
-                theMonth = 12: theYear = theYear - 1
-            
-            endYear = theYear
-            endMonth = theMonth + 1
-            If endMonth > 12 Then _
-                endMonth = 1: endYear = endYear + 1
-        Else
-            theYear = currentYear - isPrev
-            theMonth = 1
-            endMonth = 1
-            endYear = theYear + 1
-        End If
-        startDate = CDate(Format(theYear, "####") & "-" & Format(theMonth, "00") & "-" & "01")
-        endDate = DateAdd("s", -1, CDate(Format(endYear, "####") & "-" & Format(endMonth, "00") & "-" & "01"))
-        tbStartDate.Text = Format(startDate, "dd.mm.yy")
-        tbEndDate.Text = Format(endDate, "dd.mm.yy")
-        
-    End If
-End Sub
-
-
 Private Sub cmSales_Click()
     Report.param1 = laRealiz2.Caption
     Report.param2 = laMaterials2.Caption
