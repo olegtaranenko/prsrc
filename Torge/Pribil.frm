@@ -1,4 +1,5 @@
 VERSION 5.00
+Object = "{86CF1D34-0C5F-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCT2.OCX"
 Begin VB.Form Pribil 
    BackColor       =   &H8000000A&
    BorderStyle     =   1  'Fixed Single
@@ -703,19 +704,20 @@ Begin VB.Form Pribil
          Top             =   960
          Width           =   1452
       End
-      Begin VB.ComboBox cbPeriod 
+      Begin VB.ComboBox cbDateShift 
          Height          =   288
          ItemData        =   "Pribil.frx":0000
          Left            =   6000
          List            =   "Pribil.frx":0013
          Style           =   2  'Dropdown List
          TabIndex        =   68
+         ToolTipText     =   "Сдвинуть обе даты на"
          Top             =   180
          Width           =   2412
       End
       Begin VB.TextBox tbStartDate 
          Height          =   285
-         Left            =   960
+         Left            =   1080
          MaxLength       =   8
          TabIndex        =   1
          Top             =   180
@@ -723,7 +725,7 @@ Begin VB.Form Pribil
       End
       Begin VB.TextBox tbEndDate 
          Height          =   285
-         Left            =   1980
+         Left            =   2340
          MaxLength       =   8
          TabIndex        =   2
          Top             =   180
@@ -732,10 +734,22 @@ Begin VB.Form Pribil
       Begin VB.CommandButton cmManag 
          Caption         =   "Применить"
          Height          =   315
-         Left            =   3120
+         Left            =   3480
          TabIndex        =   8
          Top             =   180
          Width           =   1095
+      End
+      Begin MSComCtl2.UpDown UpDown1 
+         Height          =   372
+         Left            =   5640
+         TabIndex        =   77
+         ToolTipText     =   "Позволяет одновременно сдвинуть даты на одинаковый период"
+         Top             =   120
+         Width           =   312
+         _ExtentX        =   550
+         _ExtentY        =   656
+         _Version        =   393216
+         Enabled         =   -1  'True
       End
       Begin VB.Label laDetailMode 
          BackColor       =   &H8000000A&
@@ -758,11 +772,11 @@ Begin VB.Form Pribil
       Begin VB.Label laPo 
          BackStyle       =   0  'Transparent
          Caption         =   "по"
-         Height          =   195
-         Left            =   1785
+         Height          =   192
+         Left            =   2028
          TabIndex        =   9
          Top             =   240
-         Width           =   435
+         Width           =   432
       End
    End
    Begin VB.Label Label5 
@@ -1355,7 +1369,7 @@ tbStartDate.Text = "01." & Format(CurDate, "mm/yy")
 End Sub
 'для отчета Прибыль
 Function getProductNomenkSum() As Variant
-Dim i As Integer, j As Integer, gr() As String, sum As Single
+Dim I As Integer, J As Integer, gr() As String, sum As Single
 
 getProductNomenkSum = Null
 'вариантная ном-ра изделия
@@ -1377,11 +1391,11 @@ sql = "SELECT sProducts.xgroup, n.cost*sProducts.quantity" & _
 'MsgBox sql
 Set tbNomenk = myOpenRecordSet("##192", sql, dbOpenDynaset)
 If tbNomenk Is Nothing Then Exit Function
-ReDim gr(0): i = 0: sum = 0
+ReDim gr(0): I = 0: sum = 0
 While Not tbNomenk.EOF
-    i = i + 1
+    I = I + 1
     sum = sum + tbNomenk!sum
-    ReDim Preserve gr(i): gr(i) = tbNomenk!xgroup
+    ReDim Preserve gr(I): gr(I) = tbNomenk!xgroup
     tbNomenk.MoveNext
 Wend
 tbNomenk.Close
@@ -1399,10 +1413,10 @@ sql = "SELECT sProducts.xgroup, n.cost*sProducts.quantity" & _
 Set tbNomenk = myOpenRecordSet("##177", sql, dbOpenDynaset)
 If tbNomenk Is Nothing Then Exit Function
 While Not tbNomenk.EOF
-    For j = 1 To UBound(gr) ' если группа состоит из одной ном-ры, то она
-        If gr(j) = tbNomenk!xgroup Then GoTo NXT ' НЕвариантна, т.к. не
-    Next j                                      ' не попала в xVariantNomenc
-    i = i + 1
+    For J = 1 To UBound(gr) ' если группа состоит из одной ном-ры, то она
+        If gr(J) = tbNomenk!xgroup Then GoTo NXT ' НЕвариантна, т.к. не
+    Next J                                      ' не попала в xVariantNomenc
+    I = I + 1
     sum = sum + tbNomenk!sum
 NXT: tbNomenk.MoveNext
 Wend
@@ -1486,3 +1500,74 @@ Private Sub disableAll()
     cmDetail.Enabled = False
 End Sub
 
+
+Private Sub UpDownChange(ByVal upDirection As Integer)
+Dim startDate As Date, endDate As Date, shiftPeriod As String
+Dim startDateNew As Date, endDateNew As Date
+Dim dataAddInterval As String, dataAddNumber As Integer, shiftStrategy As Integer
+Const ssDefault As Integer = 1
+Const ssMonth   As Integer = 2
+
+    If cbDateShift.ListIndex = -1 Then
+        cbDateShift.ListIndex = 0
+    End If
+
+    If isDateTbox(tbStartDate) Then
+        startDate = tmpDate
+    Else
+        Exit Sub
+    End If
+    If isDateTbox(tbEndDate) Then
+        endDate = tmpDate
+    Else
+        Exit Sub
+    End If
+    
+    shiftPeriod = cbDateShift.Text
+    
+    If shiftPeriod = "Месяц" Then
+        dataAddInterval = "m"
+        dataAddNumber = 1
+        shiftStrategy = ssMonth
+    ElseIf shiftPeriod = "Год" Then
+        dataAddInterval = "yyyy"
+        dataAddNumber = 1
+        shiftStrategy = ssMonth
+    ElseIf shiftPeriod = "Квартал" Then
+        dataAddInterval = "m"
+        dataAddNumber = 3
+        shiftStrategy = ssMonth
+    ElseIf shiftPeriod = "Неделя" Then
+        dataAddInterval = "ww"
+        dataAddNumber = 1
+        shiftStrategy = ssDefault
+    ElseIf shiftPeriod = "День" Then
+        dataAddInterval = "d"
+        dataAddNumber = 1
+        shiftStrategy = ssDefault
+    End If
+
+    If shiftStrategy = ssDefault Then
+        startDateNew = DateAdd(dataAddInterval, dataAddNumber * upDirection, startDate)
+        endDateNew = DateAdd(dataAddInterval, dataAddNumber * upDirection, endDate)
+    ElseIf shiftStrategy = ssMonth Then
+        startDateNew = DateAdd(dataAddInterval, dataAddNumber * upDirection, startDate)
+        Dim endDateNext As Date
+        endDateNext = DateAdd("d", 1, endDate)
+        endDateNext = DateAdd(dataAddInterval, dataAddNumber * upDirection, endDateNext)
+        endDateNew = DateAdd("d", -1, endDateNext)
+    End If
+    
+    tbStartDate.Text = Format(startDateNew, "dd.mm.yy")
+    tbEndDate.Text = Format(endDateNew, "dd.mm.yy")
+
+End Sub
+
+Private Sub UpDown1_DownClick()
+    UpDownChange -1
+
+End Sub
+
+Private Sub UpDown1_UpClick()
+    UpDownChange 1
+End Sub

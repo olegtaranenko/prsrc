@@ -189,7 +189,7 @@ Begin VB.Form Analityc
          _ExtentX        =   2138
          _ExtentY        =   508
          _Version        =   393216
-         Format          =   16580609
+         Format          =   49872897
          CurrentDate     =   39599
       End
       Begin MSComCtl2.DTPicker tbEndDate 
@@ -201,7 +201,7 @@ Begin VB.Form Analityc
          _ExtentX        =   2138
          _ExtentY        =   508
          _Version        =   393216
-         Format          =   16580609
+         Format          =   49872897
          CurrentDate     =   39599
       End
       Begin VB.Label Label5 
@@ -1138,7 +1138,7 @@ Dim I As Integer
     
     cbFilters.AddItem ""
     While Not table.EOF
-        cbFilters.AddItem "" & table!Name & ""
+        cbFilters.AddItem "" & table!name & ""
         table.MoveNext
     Wend
     table.Close
@@ -1229,7 +1229,7 @@ Private Sub initClientGrid()
     clientId.colWidth(1) = clientId.Width
     
     While Not table.EOF
-        clientId.AddItem table!firmId & vbTab & table!Name
+        clientId.AddItem table!firmId & vbTab & table!name
         table.MoveNext
     Wend
     clientId.RemoveItem (1)
