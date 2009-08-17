@@ -14,7 +14,7 @@ Public appCfgFile As String
 Public siteCfgFile As String
 
 Type MapEntry
-    key As String
+    Key As String
     value As Variant
 End Type
 
@@ -22,7 +22,7 @@ End Type
 
 Sub parseCommandLine(Optional MaxArgs)
    'Declare variables.
-   Dim c, CmdLine, CmdLnLen, InArg, i, NumArgs
+   Dim c, CmdLine, CmdLnLen, InArg, I, NumArgs
    Dim inQuoted As Boolean
    
    'See if MaxArgs was provided.
@@ -35,8 +35,8 @@ Sub parseCommandLine(Optional MaxArgs)
    CmdLnLen = Len(CmdLine)
    'Go thru command line one character
    'at a time.
-   For i = 1 To CmdLnLen
-      c = Mid(CmdLine, i, 1)
+   For I = 1 To CmdLnLen
+      c = Mid(CmdLine, I, 1)
       If c = """" Then
           If inQuoted Then
              InArg = False
@@ -66,7 +66,7 @@ Sub parseCommandLine(Optional MaxArgs)
          InArg = False
       End If
       
-   Next i
+   Next I
    'Resize array just enough to hold arguments.
    ReDim Preserve rawCmdArguments(NumArgs)
 End Sub
@@ -87,23 +87,23 @@ Dim firstChar As String, secondChar As String
     End If
 End Function
 
-Function delegateArguments(key As String, Optional separator As String = " ") As String
+Function delegateArguments(Key As String, Optional separator As String = " ") As String
 
-Dim i As Integer
+Dim I As Integer
 Dim argTokens As MapEntry
 Dim argSnippet As String
     
-    For i = 1 To UBound(rawCmdArguments)
-        If rawCmdArguments(i) = "-" & key Then
-            argTokens = tokenizeKeyValue(rawCmdArguments(i + 1))
+    For I = 1 To UBound(rawCmdArguments)
+        If rawCmdArguments(I) = "-" & Key Then
+            argTokens = tokenizeKeyValue(rawCmdArguments(I + 1))
             If argTokens.value <> "" Then
-                argSnippet = separator & "-" & argTokens.key & " " & argTokens.value
+                argSnippet = separator & "-" & argTokens.Key & " " & argTokens.value
             Else
-                argSnippet = separator & argTokens.key
+                argSnippet = separator & argTokens.Key
             End If
             delegateArguments = delegateArguments & argSnippet
         End If
-    Next i
+    Next I
 End Function
 
 Function tokenizeKeyValue(ByVal match As String) As MapEntry
@@ -121,10 +121,10 @@ Dim equalPos As Long
 
     equalPos = InStr(1, match, delimiter, vbTextCompare)
     If equalPos <> 0 Then
-        result.key = trimAll(left(match, equalPos - 1))
+        result.Key = trimAll(left(match, equalPos - 1))
         result.value = trimAll(Mid(match, equalPos + 1))
     Else
-        result.key = match
+        result.Key = match
         result.value = ""
     End If
     tokenize = result
@@ -133,21 +133,21 @@ End Function
 
 'кроме нач и кон пробелов удаляет и vbTab
 Function trimAll(str As String) As String
-    Dim i As Integer, ch As String ', lPoz As Integer, rPoz As Integer
+    Dim I As Integer, ch As String ', lPoz As Integer, rPoz As Integer
     
-    For i = 1 To Len(str)
-        ch = Mid$(str, i, 1)
+    For I = 1 To Len(str)
+        ch = Mid$(str, I, 1)
         If ch <> " " And ch <> vbTab Then GoTo AA
-    Next i
+    Next I
     trimAll = ""
     Exit Function
 AA:
-    str = Mid$(str, i)
-    For i = Len(str) To 1 Step -1
-        ch = Mid$(str, i, 1)
+    str = Mid$(str, I)
+    For I = Len(str) To 1 Step -1
+        ch = Mid$(str, I, 1)
         If ch <> " " And ch <> vbTab Then Exit For
-    Next i
-    trimAll = left$(str, i)
+    Next I
+    trimAll = left$(str, I)
     
 End Function
 
@@ -190,7 +190,7 @@ End Sub
 Function loadFileSettings(filePath As String, ByRef curSettings() As MapEntry) As Integer
 Dim entry As MapEntry
 
-    Dim str As String, str2 As String, i As Integer, j As Integer
+    Dim str As String, str2 As String, I As Integer, j As Integer
     str = filePath
     ReDim curSettings(0)
     
@@ -215,49 +215,49 @@ EN1:
 End Function
 
 Sub saveFileSettings(filePath As String, ByRef curSettings() As MapEntry)
-Dim i As Integer, str  As String
+Dim I As Integer, str  As String
 Dim doSave As Boolean
 
     str = filePath
     On Error GoTo EN1
     Open str For Output As #1
-    For i = 1 To UBound(curSettings)
-        Print #1, curSettings(i).key & " = " & curSettings(i).value
-    Next i
+    For I = 1 To UBound(curSettings)
+        Print #1, curSettings(I).Key & " = " & curSettings(I).value
+    Next I
 EN1:
     On Error Resume Next
     Close #1
 End Sub
 
 Function getAppCfgDefaultName() As String
-    getAppCfgDefaultName = App.path & "\" & App.EXEName & ".cfg"
+    getAppCfgDefaultName = App.path & "\" & App.exeName & ".cfg"
 End Function
 
 Function getSiteCfgDefaultName() As String
     getSiteCfgDefaultName = App.path & "\site.cfg"
 End Function
 
-Function getCurrentSetting(key As String, ByRef curSettings() As MapEntry) As Variant
-Dim i As Integer
-    For i = 1 To UBound(curSettings)
-        If curSettings(i).key = key Then
-            getCurrentSetting = curSettings(i).value
+Function getCurrentSetting(Key As String, ByRef curSettings() As MapEntry) As Variant
+Dim I As Integer
+    For I = 1 To UBound(curSettings)
+        If curSettings(I).Key = Key Then
+            getCurrentSetting = curSettings(I).value
             Exit Function
         End If
-    Next i
+    Next I
 '    getCurrentSetting = Null
 End Function
 
 ' возвращает индекс key в массиве curSettings
 ' Empty если не найдет такой параметр
-Function getMapEntry(ByRef curSettings() As MapEntry, key As String) As Integer
-Dim i As Integer
-    For i = 1 To UBound(curSettings)
-        If curSettings(i).key = key Then
-            getMapEntry = i
+Function getMapEntry(ByRef curSettings() As MapEntry, Key As String) As Integer
+Dim I As Integer
+    For I = 1 To UBound(curSettings)
+        If curSettings(I).Key = Key Then
+            getMapEntry = I
             Exit Function
         End If
-    Next i
+    Next I
     getMapEntry = Empty
 End Function
 
@@ -265,13 +265,13 @@ End Function
 
 Sub buildEffectiveSettings()
 Dim ln As Integer
-Dim i As Integer
+Dim I As Integer
 
     ln = UBound(argumentSettings)
     ReDim settings(ln)
-    For i = 1 To ln
-        settings(i) = argumentSettings(i)
-    Next i
+    For I = 1 To ln
+        settings(I) = argumentSettings(I)
+    Next I
 
     mergeWithPreference settings, appSettings
     
@@ -283,18 +283,18 @@ End Sub
 Sub mergeWithPreference(ByRef mergeTo() As MapEntry, mergeFrom() As MapEntry)
 
 Dim lnFrom As Integer
-Dim i As Integer
+Dim I As Integer
 Dim entry As MapEntry
 Dim exists As Variant
 
     lnFrom = UBound(mergeFrom)
-    For i = 1 To lnFrom
-        entry = mergeFrom(i)
-        exists = getCurrentSetting(entry.key, mergeTo)
+    For I = 1 To lnFrom
+        entry = mergeFrom(I)
+        exists = getCurrentSetting(entry.Key, mergeTo)
         If IsEmpty(exists) Then
            append mergeTo, entry
         End If
-    Next i
+    Next I
 
 End Sub
 Public Sub cleanSettings(curSetting() As MapEntry)
@@ -303,25 +303,25 @@ End Sub
 
 
 
-Public Sub setCurrentSetting(curSettings() As MapEntry, key As String, paramVal)
-Dim i As Integer
-Dim entry As MapEntry, value
-
-    value = getCurrentSetting(key, curSettings)
-    If Not IsEmpty(value) Then
-        entry.value = paramVal
+Public Sub setCurrentSetting(curSettings() As MapEntry, Key As String, paramVal)
+Dim I As Integer
+    
+    I = getMapEntry(curSettings, Key)
+    If I > 0 Then
+        curSettings(I).value = paramVal
     Else
-        entry.key = key
+        Dim entry As MapEntry
+        entry.Key = Key
         entry.value = paramVal
         append curSettings, entry
     End If
     
 End Sub
 
-Function getEffectiveSetting(key As String, Optional defaultValue) As Variant
+Function getEffectiveSetting(Key As String, Optional defaultValue) As Variant
 Dim entry As MapEntry, value
 
-    value = getCurrentSetting(key, settings)
+    value = getCurrentSetting(Key, settings)
     If Not IsEmpty(value) Then
         getEffectiveSetting = value
         Exit Function
@@ -339,41 +339,41 @@ Function loadCmdSettings(curSettings() As MapEntry) As Boolean
 'Пример в строке stime -otlad -dostup a -devel параметр otlad имеет значение Null.
 'Если же stime -dostup a -devel, то тогда параметр otlad имеет значение Empty.
 
-Dim i As Integer
+Dim I As Integer
 Dim entry As MapEntry, exists As Variant
 Dim value As Variant
 
     ReDim argumentSettings(0)
-    For i = 1 To UBound(rawCmdArguments)
+    For I = 1 To UBound(rawCmdArguments)
         entry.value = Null
-        If isKey(rawCmdArguments(i)) Then
-            entry.key = Mid(rawCmdArguments(i), 2)
-            If isNotKey(i + 1) Then
+        If isKey(rawCmdArguments(I)) Then
+            entry.Key = Mid(rawCmdArguments(I), 2)
+            If isNotKey(I + 1) Then
                 value = Null
-                If i + 1 <= UBound(rawCmdArguments) Then
-                    value = rawCmdArguments(i + 1)
-                    i = i + 1
+                If I + 1 <= UBound(rawCmdArguments) Then
+                    value = rawCmdArguments(I + 1)
+                    I = I + 1
                 End If
                 
-                exists = getCurrentSetting(entry.key, curSettings)
+                exists = getCurrentSetting(entry.Key, curSettings)
                 If Not IsEmpty(exists) Then
                     exists = exists & " " & value
-                    appendValue curSettings, entry.key, value, " "
+                    appendValue curSettings, entry.Key, value, " "
                 Else
                     entry.value = value
                     append argumentSettings, entry
                 End If
             Else
-                exists = getCurrentSetting(rawCmdArguments(i), curSettings)
+                exists = getCurrentSetting(rawCmdArguments(I), curSettings)
                 If IsNull(exists) Then
-                    entry.key = rawCmdArguments(i)
+                    entry.Key = rawCmdArguments(I)
                     append argumentSettings, entry
-                ElseIf Not IsEmpty(entry.key) Then
+                ElseIf Not IsEmpty(entry.Key) Then
                     append argumentSettings, entry
                 End If
             End If
         End If
-    Next i
+    Next I
     loadCmdSettings = True
 End Function
 
@@ -385,15 +385,15 @@ Function isKey(arg As String) As Boolean
     End If
 End Function
 
-Function isNotKey(i As Integer) As Boolean
+Function isNotKey(I As Integer) As Boolean
 Dim arg As String
 Dim sz As Integer
 
     sz = UBound(rawCmdArguments)
-    If i > sz Then
+    If I > sz Then
         isNotKey = True
     Else
-        isNotKey = Not isKey(rawCmdArguments(i))
+        isNotKey = Not isKey(rawCmdArguments(I))
     End If
 End Function
 
@@ -406,19 +406,19 @@ Dim ln As Integer
     curSettings(ln) = entry
 End Sub
 
-Sub appendValue(curSettings() As MapEntry, key As String, value As Variant, separator As String)
-Dim sz As Integer, i As Integer
+Sub appendValue(curSettings() As MapEntry, Key As String, value As Variant, separator As String)
+Dim sz As Integer, I As Integer
 
     sz = UBound(curSettings)
-    For i = 1 To sz
-        If curSettings(i).key = key Then
-            curSettings(i).value = curSettings(i).value & separator & value
+    For I = 1 To sz
+        If curSettings(I).Key = Key Then
+            curSettings(I).value = curSettings(I).value & separator & value
             Exit Sub
         End If
-    Next i
+    Next I
 End Sub
 
-Sub setAndSave(scope As String, key As String, value As String)
+Sub setAndSave(scope As String, Key As String, ByRef value As Variant)
 Dim curSettings() As MapEntry, curCfgFile As String
 
     If scope = "app" Then
@@ -426,21 +426,21 @@ Dim curSettings() As MapEntry, curCfgFile As String
         curCfgFile = appCfgFile
     End If
 
-    setCurrentSetting curSettings, key, value
+    setCurrentSetting curSettings, Key, value
     saveFileSettings curCfgFile, curSettings
 End Sub
 
 
 Function stripPath(myFile As String) As String
-Dim i As Integer
+Dim I As Integer
 Dim sz As Integer
     sz = Len(myFile)
-    For i = sz - 1 To 1 Step -1
-        If Mid(myFile, i, 1) = "\" Then
-            stripPath = Mid(myFile, i + 1)
+    For I = sz - 1 To 1 Step -1
+        If Mid(myFile, I, 1) = "\" Then
+            stripPath = Mid(myFile, I + 1)
             Exit Function
         End If
-    Next i
+    Next I
     stripPath = myFile
 End Function
 

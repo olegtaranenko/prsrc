@@ -60,6 +60,7 @@ Public ProductsPath As String
 Public begDate As Date ' Дата вступительных остатков
 Public logFile As String
 Public dostup As String
+Public sessionCurrency As Integer
 Public otlad As Variant
 Public tbSize As Integer
 Public cErr As String 'позволяет выявить место возникновения Err, если по
@@ -259,8 +260,46 @@ Public ost() As Double, befOst() As Double
 Public selectedItems() As Long
 Public Const otladColor = &H80C0FF
 
+Public Const CC_RUBLE As Integer = 1
+Public Const CC_UE As Integer = 2
+
+' на сколько нужно увеличивать ширину колонок, если выбраны рубли
+Public Const ColWidthForRuble As Single = 1.3
 
 
+
+Function tuneCurencyAndGranularity(tunedValue, currentRate, valueCurrency As Integer, Optional quantity As Double = 1) As Double
+    '
+    Dim totalInRubles As Double
+    Dim singleInRubles As Double
+    Dim totalInUE As Double
+    Dim singleInUE As Double
+    '
+    If valueCurrency = CC_RUBLE Then
+        singleInRubles = Round(tunedValue / quantity, 2)
+    Else
+        singleInRubles = Round(tunedValue / quantity / currentRate, 2)
+    End If
+    totalInRubles = singleInRubles * quantity
+    totalInUE = totalInRubles / currentRate
+    singleInUE = totalInUE / quantity
+    tuneCurencyAndGranularity = totalInUE
+
+End Function
+
+
+
+Function rated(geld, rate) As Variant
+    If IsNull(geld) Then
+        rated = Null
+        Exit Function
+    End If
+    If sessionCurrency = CC_RUBLE Then
+        rated = CDbl(geld) * CDbl(rate)
+    Else
+        rated = geld
+    End If
+End Function
 
 Function serverIsAccessible(ventureName As String) As Boolean
 Dim I As Integer
@@ -578,7 +617,7 @@ gNzak = left$(str, I - 1)
 End Function
 '$odbc10$
 Function getResurs() As Integer
-Dim I As Integer, j As Integer, rMaxDay As Integer, s As Double
+Dim I As Integer, J As Integer, rMaxDay As Integer, s As Double
 
 Set tbSystem = myOpenRecordSet("##93", "System", dbOpenForwardOnly)
 If tbSystem Is Nothing Then myBase.Close: End
@@ -614,7 +653,7 @@ On Error GoTo ERR1
 ' Do
 While Not table.EOF
     rMaxDay = rMaxDay + 1
-    If rMaxDay = j Then
+    If rMaxDay = J Then
 '        table.Edit
 '            table!nomRes = Zagruz.tbMobile.Text
 '        table.Update
@@ -889,6 +928,7 @@ ReDim tmpL(0)
 cfg.isLoad = False  '$$2
 loadEffectiveSettingsApp
 dostup = getEffectiveSetting("dostup")
+sessionCurrency = getEffectiveSetting("currency", CC_RUBLE)
 loginsPath = getEffectiveSetting("loginsPath")
 SvodkaPath = getEffectiveSetting("SvodkaPath")
 NomenksPath = getEffectiveSetting("NomenksPath")
@@ -1331,7 +1371,7 @@ End Function
 
 '$odbc10$
 Sub nextDay()  'возможен прыжок на неск дней
-Dim I As Integer, str As String, str1 As String, j As Integer, s As Double
+Dim I As Integer, str As String, str1 As String, J As Integer, s As Double
 Dim ch As String
 'MsgBox "переход на новую дату"
 
@@ -1478,7 +1518,7 @@ End Sub
 '$NOodbc$
 Public Sub quickSort(varArray As Variant, _
  Optional lngLeft As Long = dhcMissing, Optional lngRight As Long = dhcMissing)
-Dim I As Long, j As Long, varTestVal As Variant, lngMid As Long
+Dim I As Long, J As Long, varTestVal As Variant, lngMid As Long
 
     If lngLeft = dhcMissing Then lngLeft = LBound(varArray)
     If lngRight = dhcMissing Then lngRight = UBound(varArray)
@@ -1487,28 +1527,28 @@ Dim I As Long, j As Long, varTestVal As Variant, lngMid As Long
         lngMid = (lngLeft + lngRight) \ 2
         varTestVal = varArray(lngMid)
         I = lngLeft
-        j = lngRight
+        J = lngRight
         Do
             Do While varArray(I) < varTestVal
                 I = I + 1
             Loop
-            Do While varArray(j) > varTestVal
-                j = j - 1
+            Do While varArray(J) > varTestVal
+                J = J - 1
             Loop
-            If I <= j Then
-                Call SwapElements(varArray, I, j)
+            If I <= J Then
+                Call SwapElements(varArray, I, J)
                 I = I + 1
-                j = j - 1
+                J = J - 1
             End If
-        Loop Until I > j
+        Loop Until I > J
         ' To optimize the sort, always sort the
         ' smallest segment first.
-        If j <= lngMid Then
-            Call quickSort(varArray, lngLeft, j)
+        If J <= lngMid Then
+            Call quickSort(varArray, lngLeft, J)
             Call quickSort(varArray, I, lngRight)
         Else
             Call quickSort(varArray, I, lngRight)
-            Call quickSort(varArray, lngLeft, j)
+            Call quickSort(varArray, lngLeft, J)
         End If
     End If
 End Sub
@@ -1536,7 +1576,7 @@ End Sub
 
 '$odbc10$
 Function replaceResurs(id As Integer) As Boolean
-Dim oldRes As Double, s As Double, n As Double, I As Integer, j As Integer
+Dim oldRes As Double, s As Double, n As Double, I As Integer, J As Integer
 Dim newRes As Double
 
 replaceResurs = False
@@ -1552,8 +1592,8 @@ For I = 1 To befDays
     sql = "SELECT 1, nomRes FROM Resurs" & Ceh(id) & _
     " WHERE xDate = '" & Format(tmpDate, "yy.mm.dd") & "'"
     
-    If Not byErrSqlGetValues("W##12", sql, j, s) Then Exit Function
-    If j = 0 Then ' нет этого дня
+    If Not byErrSqlGetValues("W##12", sql, J, s) Then Exit Function
+    If J = 0 Then ' нет этого дня
         day = Weekday(tmpDate)
         If Not (day = vbSunday Or day = vbSaturday) Then
             oldRes = oldRes + newRes
@@ -1725,7 +1765,7 @@ End Sub
 'эта ф-я д.заменить и startDay() и getNextDay() и getPrevDay()
 ' возвращает смещение до треб. дня
 Function getWorkDay(offsDay As Integer, Optional baseDate As String = "") As Integer
-Dim I As Integer, j As Integer, step  As Integer
+Dim I As Integer, J As Integer, step  As Integer
 getWorkDay = -1
 If baseDate = "" Then
     tmpDate = curDate
@@ -1737,11 +1777,11 @@ End If
 step = 1
 If offsDay < 0 Then step = -1
 
-j = 0: I = 0
-While step * j < step * offsDay '
+J = 0: I = 0
+While step * J < step * offsDay '
     I = I + step
     day = Weekday(DateAdd("d", I, tmpDate))
-    If Not (day = vbSunday Or day = vbSaturday) Then j = j + step
+    If Not (day = vbSunday Or day = vbSaturday) Then J = J + step
 Wend
 getWorkDay = I
 tmpDate = DateAdd("d", I, tmpDate)
@@ -1749,18 +1789,18 @@ tmpDate = DateAdd("d", I, tmpDate)
 End Function
 
 Function startDays() As Integer
-Dim I As Integer, j  As Integer, k   As Integer
+Dim I As Integer, J  As Integer, k   As Integer
 ReDim Preserve stDays(befDays + 1)
 
 For k = 0 To befDays '    *********************************************
 
-j = 0
+J = 0
 I = 1
-While j < 3 '         задание смещения зеленого коридора (3-й день)
+While J < 3 '         задание смещения зеленого коридора (3-й день)
 
     day = Weekday(DateAdd("d", k + I - befDays, curDate))
 '    day = Weekday(CurDate - befDays + K + I)
-    If Not (day = vbSunday Or day = vbSaturday) Then j = j + 1
+    If Not (day = vbSunday Or day = vbSaturday) Then J = J + 1
     I = I + 1
 Wend
 stDays(k) = I + k ' "+k" т.к. пока нумерация начинается befDays дней назад
@@ -1771,7 +1811,7 @@ startDays = stDays(befDays) - befDays ' для Сегодня, которое под №1
 End Function
 
 Sub statistic(Optional year As String = "")
-Dim nRow As Long, nCol As Long, str As String, I As Integer, j As Integer
+Dim nRow As Long, nCol As Long, str As String, I As Integer, J As Integer
 Dim iMonth As Integer, iYear As Integer, iCount As Integer, strWhere As String
 Dim nMonth As Integer, nYear As Integer, mCount As Integer, lastCol As Integer
 Dim wtSum As Double, paidSum As Double, orderSum As Double, visits As Integer, visitSum As Integer
@@ -2174,12 +2214,12 @@ byErrSqlGetValues "W##382", sql, getNevip
 End Function
 
 Sub addDays(outDay As Integer)
-Dim j As Integer
+Dim J As Integer
         If maxDay < outDay Then
             dayMassLenght outDay + 1 'если дольше , корректируем размерности
-            For j = maxDay + 1 To outDay 'новые дни
-                delta(j) = 0
-            Next j
+            For J = maxDay + 1 To outDay 'новые дни
+                delta(J) = 0
+            Next J
             maxDay = outDay
         End If
 End Sub
@@ -2235,7 +2275,7 @@ End If
 End Sub
 
 Sub zagruzFromCeh(Optional passZakazNom As String = "")
-Dim outDay As Integer, j As Integer, passSql As String, str As String
+Dim outDay As Integer, J As Integer, passSql As String, str As String
 
 If IsNumeric(passZakazNom) Then
     passSql = "((OrdersInCeh.numOrder)<>" & passZakazNom & ") AND "

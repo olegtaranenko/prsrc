@@ -4,7 +4,7 @@ Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Orders 
    Appearance      =   0  'Flat
    BackColor       =   &H8000000A&
-   Caption         =   "Предварительная обработка заказов"
+   Caption         =   "Приор"
    ClientHeight    =   6216
    ClientLeft      =   60
    ClientTop       =   636
@@ -465,6 +465,9 @@ Begin VB.Form Orders
       Begin VB.Menu mnComtexAdmin 
          Caption         =   "Интеграция с Комтех"
       End
+      Begin VB.Menu mnCurrency 
+         Caption         =   "Валюта: Рубли"
+      End
    End
    Begin VB.Menu mnServic 
       Caption         =   "Сервис"
@@ -594,6 +597,47 @@ Const rowFromOrdersSQL = "select " & _
 " LEFT JOIN OrdersMO ON Orders.numOrder = OrdersMO.numOrder " & _
 " LEFT JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder " & _
 " left join guideventure on guideventure.ventureId = orders.ventureid "
+    
+' нужно вызывать уже после того, как новая Валюта сменена.
+Private Sub adjustHotMoney()
+Dim I As Long, J As Integer
+
+    For I = 1 To Grid.rows - 1
+        Dim value As Double, rate As Double
+        Dim valueStr As String, rateStr As String
+        rateStr = Grid.TextMatrix(I, orRate)
+        If rateStr <> "" Then
+            rate = CDbl(rateStr)
+        End If
+        For J = 0 To 2 ' три смежные колонки с деньгами (заказано, оплачено, отгружено)
+            valueStr = Grid.TextMatrix(I, orZakazano + J)
+            If valueStr <> "" Then
+                value = CDbl(valueStr)
+                If sessionCurrency = CC_RUBLE Then
+                    value = value * rate
+                Else
+                    value = value / rate
+                End If
+                LoadNumeric Grid, I, orZakazano + J, value, , "###0.00"
+            End If
+            
+        Next J
+        
+    Next I
+    
+End Sub
+    
+Private Sub adjustMoneyColumnWidth()
+    If sessionCurrency = CC_RUBLE Then
+        Grid.ColWidth(orZakazano) = Grid.ColWidth(orZakazano) * ColWidthForRuble
+        Grid.ColWidth(orOplacheno) = Grid.ColWidth(orOplacheno) * ColWidthForRuble
+        Grid.ColWidth(orOtgrugeno) = Grid.ColWidth(orOtgrugeno) * ColWidthForRuble
+    Else
+        Grid.ColWidth(orZakazano) = Grid.ColWidth(orZakazano) / ColWidthForRuble
+        Grid.ColWidth(orOplacheno) = Grid.ColWidth(orOplacheno) / ColWidthForRuble
+        Grid.ColWidth(orOtgrugeno) = Grid.ColWidth(orOtgrugeno) / ColWidthForRuble
+    End If
+End Sub
     
     
 Private Sub cbClose_Click()
@@ -1266,6 +1310,20 @@ If KeyCode = vbKeyMenu Then cmAdd.Caption = AddCaption
 
 End Sub
 
+Private Sub setCurrencyCaption()
+    
+    Dim mnCaption As String
+    mnCaption = "Валюта: сменить на "
+    If sessionCurrency = CC_RUBLE Then
+        mnCurrency.Caption = mnCaption & "доллары"
+        Me.Caption = Me.Caption & " - Рубли"
+    ElseIf sessionCurrency = CC_UE Then
+        mnCurrency.Caption = mnCaption & "рубли"
+        Me.Caption = Me.Caption & " - Доллары"
+    End If
+
+End Sub
+
 Private Sub Form_Load()
 Dim I As Integer, str As String
 
@@ -1273,7 +1331,6 @@ If tbEnable.Visible Then mnAllOrders.Visible = True
 
 oldHeight = Me.Height
 oldWidth = Me.Width
-
 
 If Not IsEmpty(otlad) Then
     Frame1.BackColor = otladColor
@@ -1284,12 +1341,19 @@ If Not IsEmpty(otlad) Then
     tbEnable.Text = "arh"
     cmToWeb.Visible = True
 End If
-If dostup <> "a" Then mnPathSet.Visible = False '$$2
 If dostup = "a" Or dostup = "b" Then
     mnNaklad.Visible = True
 Else
     mnNaklad.Visible = False
 End If
+
+If dostup = "a" Then
+    mnComtexAdmin.Visible = True
+Else
+    mnComtexAdmin.Visible = False
+    mnPathSet.Visible = False
+End If
+
 
 #If Not COMTEC = 1 Then '---------------------------------------------------
     mnServic.Visible = False
@@ -1299,7 +1363,11 @@ End If
 
 beClick = False
 flDelRowInMobile = False
+
 Me.Caption = Me.Caption & mainTitle
+' заголовок в меню: в какой валюте вводить данные
+setCurrencyCaption
+
 orColNumber = 0
 mousCol = 1
 initOrCol orNomZak, "nOrders.numOrder"
@@ -1335,6 +1403,7 @@ initOrCol orlastModified, "dOrders.lastModified"
 initOrCol orBillId, "nOrders.id_bill"
 initOrCol orVocnameId, "nOrders.id_voc_names"
 initOrCol orServername, "sOrders.servername"
+
 
 ReDim Preserve orSqlWhere(orColNumber)
 
@@ -1373,6 +1442,10 @@ Grid.ColWidth(orlastModified) = 0
 Grid.ColWidth(orBillId) = 0
 Grid.ColWidth(orVocnameId) = 0
 Grid.ColWidth(orServername) = 0
+
+adjustMoneyColumnWidth
+
+
 
 '*********************************************************************$$7
 managLoad 'загрузка Manag() cbM lbM и Filtr.lbM
@@ -2645,6 +2718,24 @@ cfg.setRegim
 cfg.Show vbModal
 End Sub
 
+Private Sub mnCurrency_Click()
+    If sessionCurrency = CC_RUBLE Then
+        sessionCurrency = CC_UE
+    Else
+        sessionCurrency = CC_RUBLE
+    End If
+    setAndSave "app", "currency", sessionCurrency
+    Dim deletedPart As String
+    deletedPart = InStr(Me.Caption, " - ")
+    If deletedPart > 0 Then
+        Me.Caption = left(Me.Caption, deletedPart - 1)
+    End If
+    setCurrencyCaption
+    adjustMoneyColumnWidth
+    adjustHotMoney
+    
+End Sub
+
 Private Sub mnExit_Click()
     exitAll
 End Sub
@@ -2886,10 +2977,12 @@ Function isFloatFromMobile(field As String, Optional errorCode As String = "##23
 Dim isIssue As Integer
 
     If checkNumeric(tbMobile.Text, 0) Then
-        isIssue = orderUpdate(errorCode, tbMobile.Text, "Orders", field)
-        If isIssue > 0 Then
-            
-        End If
+        Dim ueValue As String
+        
+        ueValue = CStr(tuneCurencyAndGranularity(tbMobile.Text, Grid.TextMatrix(mousRow, orRate), sessionCurrency))
+        
+        isIssue = orderUpdate(errorCode, ueValue, "Orders", field)
+        
         Grid.TextMatrix(mousRow, mousCol) = tbMobile.Text
         isFloatFromMobile = True
     Else
@@ -3381,12 +3474,12 @@ Sub copyRowToGrid(row As Long)
     Grid.TextMatrix(row, orType) = tqOrders!Type
  If Not IsNull(tqOrders!temaId) Then _
     Grid.TextMatrix(row, orTema) = lbTema.List(tqOrders!temaId)
- LoadNumeric Grid, row, orZakazano, tqOrders!ordered, , "###0.00"
- LoadNumeric Grid, row, orOplacheno, tqOrders!paid, , "###0.00"
- LoadNumeric Grid, row, orZalog, tqOrders!zalog, , "###0.00"
- LoadNumeric Grid, row, orNal, tqOrders!nal, , "###0.00"
+ LoadNumeric Grid, row, orZakazano, rated(tqOrders!ordered, tqOrders!rate), , "###0.00"
+ LoadNumeric Grid, row, orOplacheno, rated(tqOrders!paid, tqOrders!rate), , "###0.00"
+ LoadNumeric Grid, row, orZalog, rated(tqOrders!zalog, tqOrders!rate), , "###0.00"
+ LoadNumeric Grid, row, orNal, rated(tqOrders!nal, tqOrders!rate), , "###0.00"
  LoadNumeric Grid, row, orRate, tqOrders!rate, , "###0.00"
- LoadNumeric Grid, row, orOtgrugeno, tqOrders!shipped, , "###0.00"
+ LoadNumeric Grid, row, orOtgrugeno, rated(tqOrders!shipped, tqOrders!rate), , "###0.00"
  If Not IsNull(tqOrders!lastManag) Then _
     Grid.TextMatrix(row, orLastMen) = tqOrders!lastManag
  If Not IsNull(tqOrders!Venture) Then _
@@ -3449,7 +3542,7 @@ Dim I As Integer, txt As String
 End Function
 '$odbc08!$
 Function startParams(Optional idCeh As Integer = 0) As Boolean
-Dim I As Integer, str As String, j As Integer ', sumSroch As Double
+Dim I As Integer, str As String, J As Integer ', sumSroch As Double
 Dim item As ListItem, id As Integer, v As Variant, s As Double
 
 startParams = False
