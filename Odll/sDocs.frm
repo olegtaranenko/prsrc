@@ -908,7 +908,7 @@ End If
 
 tbStartDate.Text = Format(DateAdd("d", -14, curDate), "dd/mm/yy")
 tbEndDate.Text = Format(curDate, "dd/mm/yy")
-If Not IsEmpty(otlad) Then ckStartDate.value = 1
+ckStartDate.value = 1
 
 Grid.FormatString = "|<Дата|<№ Док-та|<Окуда|<Куда|<Примечание|<Предпр"
 Grid.ColWidth(dcSourId) = 0

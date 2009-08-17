@@ -1714,7 +1714,7 @@ StatParamsLoad = log
 End Function
 
 Sub rowViem(numRow As Long, Grid As MSFlexGrid)
-Dim I As Integer
+Dim I As Long
 
 I = Grid.Height \ Grid.RowHeight(1) - 1 ' столько умещается строк
 I = numRow - I \ 2 ' в центр
