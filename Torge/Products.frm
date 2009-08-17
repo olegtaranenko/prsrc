@@ -1573,28 +1573,15 @@ If MsgBox("Для удаления класса  нажмите <Да>." & Chr(13) & Chr(13) & _
 vbYesNo Or vbDefaultButton2, "Удалить '" & tv.SelectedItem.Text & _
 "'. Вы уверены?") = vbNo Then GoTo EN1
 
-'sql = "SELECT  sGuideSeries.seriaId From sGuideSeries " & _
-'      "WHERE (((sGuideSeries.seriaId)=" & gSeriaId & "));"
-'Set tbSeries = myOpenRecordSet("##107", sql, dbOpenDynaset)
-'If tbSeries Is Nothing Then Exit Sub
-'On Error GoTo ERR1
-'If Not tbSeries.BOF Then tbSeries.Delete
-'tbSeries.Close
 
-sql = "DELETE  From sGuideSeries WHERE (((seriaId)=" & gSeriaId & "));"
+sql = "DELETE  From sGuideSeries WHERE seriaId =" & gSeriaId
 I = myExecute("##107", sql, -198)
 If I = 0 Then
     tv.Nodes.Remove tv.SelectedItem.Key
     controlVisible
-ElseIf I = -2 Then
-'Exit Sub
+Else
+    Exit Sub
 
-'ERR1:
-'If Err = 3200 Then
-    MsgBox "Нельзя удалять непустой класс, сначала удалите входящие в " & _
-    "него элементы.", , "Удаление невозможно !"
-'Else
-'    MsgBox Error, , "Ошибка 109-" & Err & ":  " '##109
 End If
 EN1:
 On Error Resume Next

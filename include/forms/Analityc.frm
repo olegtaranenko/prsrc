@@ -189,7 +189,7 @@ Begin VB.Form Analityc
          _ExtentX        =   2138
          _ExtentY        =   508
          _Version        =   393216
-         Format          =   49872897
+         Format          =   16580609
          CurrentDate     =   39599
       End
       Begin MSComCtl2.DTPicker tbEndDate 
@@ -201,7 +201,7 @@ Begin VB.Form Analityc
          _ExtentX        =   2138
          _ExtentY        =   508
          _Version        =   393216
-         Format          =   49872897
+         Format          =   16580609
          CurrentDate     =   39599
       End
       Begin VB.Label Label5 
