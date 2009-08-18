@@ -268,7 +268,7 @@ Public Const ColWidthForRuble As Single = 1.3
 
 
 
-Function tuneCurencyAndGranularity(tunedValue, currentRate, valueCurrency As Integer, Optional quantity As Double = 1) As Double
+Function tuneCurencyAndGranularity(tunedValue, currentRate, valueCurrency As Integer, perList As Integer, Optional quantity As Double = 1) As Double
     '
     Dim totalInRubles As Double
     Dim singleInRubles As Double
@@ -276,9 +276,9 @@ Function tuneCurencyAndGranularity(tunedValue, currentRate, valueCurrency As Int
     Dim singleInUE As Double
     '
     If valueCurrency = CC_RUBLE Then
-        singleInRubles = Round(tunedValue / quantity, 2)
+        singleInRubles = Round(CDbl(tunedValue) / CDbl(quantity), 2)
     Else
-        singleInRubles = Round(tunedValue / quantity / currentRate, 2)
+        singleInRubles = Round(CDbl(tunedValue) / CDbl(quantity) * CDbl(currentRate), 2)
     End If
     totalInRubles = singleInRubles * quantity
     totalInUE = totalInRubles / currentRate
@@ -617,7 +617,7 @@ gNzak = left$(str, I - 1)
 End Function
 '$odbc10$
 Function getResurs() As Integer
-Dim I As Integer, J As Integer, rMaxDay As Integer, s As Double
+Dim I As Integer, j As Integer, rMaxDay As Integer, s As Double
 
 Set tbSystem = myOpenRecordSet("##93", "System", dbOpenForwardOnly)
 If tbSystem Is Nothing Then myBase.Close: End
@@ -653,7 +653,7 @@ On Error GoTo ERR1
 ' Do
 While Not table.EOF
     rMaxDay = rMaxDay + 1
-    If rMaxDay = J Then
+    If rMaxDay = j Then
 '        table.Edit
 '            table!nomRes = Zagruz.tbMobile.Text
 '        table.Update
@@ -1371,7 +1371,7 @@ End Function
 
 '$odbc10$
 Sub nextDay()  'возможен прыжок на неск дней
-Dim I As Integer, str As String, str1 As String, J As Integer, s As Double
+Dim I As Integer, str As String, str1 As String, j As Integer, s As Double
 Dim ch As String
 'MsgBox "переход на новую дату"
 
@@ -1518,7 +1518,7 @@ End Sub
 '$NOodbc$
 Public Sub quickSort(varArray As Variant, _
  Optional lngLeft As Long = dhcMissing, Optional lngRight As Long = dhcMissing)
-Dim I As Long, J As Long, varTestVal As Variant, lngMid As Long
+Dim I As Long, j As Long, varTestVal As Variant, lngMid As Long
 
     If lngLeft = dhcMissing Then lngLeft = LBound(varArray)
     If lngRight = dhcMissing Then lngRight = UBound(varArray)
@@ -1527,28 +1527,28 @@ Dim I As Long, J As Long, varTestVal As Variant, lngMid As Long
         lngMid = (lngLeft + lngRight) \ 2
         varTestVal = varArray(lngMid)
         I = lngLeft
-        J = lngRight
+        j = lngRight
         Do
             Do While varArray(I) < varTestVal
                 I = I + 1
             Loop
-            Do While varArray(J) > varTestVal
-                J = J - 1
+            Do While varArray(j) > varTestVal
+                j = j - 1
             Loop
-            If I <= J Then
-                Call SwapElements(varArray, I, J)
+            If I <= j Then
+                Call SwapElements(varArray, I, j)
                 I = I + 1
-                J = J - 1
+                j = j - 1
             End If
-        Loop Until I > J
+        Loop Until I > j
         ' To optimize the sort, always sort the
         ' smallest segment first.
-        If J <= lngMid Then
-            Call quickSort(varArray, lngLeft, J)
+        If j <= lngMid Then
+            Call quickSort(varArray, lngLeft, j)
             Call quickSort(varArray, I, lngRight)
         Else
             Call quickSort(varArray, I, lngRight)
-            Call quickSort(varArray, lngLeft, J)
+            Call quickSort(varArray, lngLeft, j)
         End If
     End If
 End Sub
@@ -1576,7 +1576,7 @@ End Sub
 
 '$odbc10$
 Function replaceResurs(id As Integer) As Boolean
-Dim oldRes As Double, s As Double, n As Double, I As Integer, J As Integer
+Dim oldRes As Double, s As Double, n As Double, I As Integer, j As Integer
 Dim newRes As Double
 
 replaceResurs = False
@@ -1592,8 +1592,8 @@ For I = 1 To befDays
     sql = "SELECT 1, nomRes FROM Resurs" & Ceh(id) & _
     " WHERE xDate = '" & Format(tmpDate, "yy.mm.dd") & "'"
     
-    If Not byErrSqlGetValues("W##12", sql, J, s) Then Exit Function
-    If J = 0 Then ' нет этого дн€
+    If Not byErrSqlGetValues("W##12", sql, j, s) Then Exit Function
+    If j = 0 Then ' нет этого дн€
         day = Weekday(tmpDate)
         If Not (day = vbSunday Or day = vbSaturday) Then
             oldRes = oldRes + newRes
@@ -1765,7 +1765,7 @@ End Sub
 'эта ф-€ д.заменить и startDay() и getNextDay() и getPrevDay()
 ' возвращает смещение до треб. дн€
 Function getWorkDay(offsDay As Integer, Optional baseDate As String = "") As Integer
-Dim I As Integer, J As Integer, step  As Integer
+Dim I As Integer, j As Integer, step  As Integer
 getWorkDay = -1
 If baseDate = "" Then
     tmpDate = curDate
@@ -1777,11 +1777,11 @@ End If
 step = 1
 If offsDay < 0 Then step = -1
 
-J = 0: I = 0
-While step * J < step * offsDay '
+j = 0: I = 0
+While step * j < step * offsDay '
     I = I + step
     day = Weekday(DateAdd("d", I, tmpDate))
-    If Not (day = vbSunday Or day = vbSaturday) Then J = J + step
+    If Not (day = vbSunday Or day = vbSaturday) Then j = j + step
 Wend
 getWorkDay = I
 tmpDate = DateAdd("d", I, tmpDate)
@@ -1789,18 +1789,18 @@ tmpDate = DateAdd("d", I, tmpDate)
 End Function
 
 Function startDays() As Integer
-Dim I As Integer, J  As Integer, k   As Integer
+Dim I As Integer, j  As Integer, k   As Integer
 ReDim Preserve stDays(befDays + 1)
 
 For k = 0 To befDays '    *********************************************
 
-J = 0
+j = 0
 I = 1
-While J < 3 '         задание смещени€ зеленого коридора (3-й день)
+While j < 3 '         задание смещени€ зеленого коридора (3-й день)
 
     day = Weekday(DateAdd("d", k + I - befDays, curDate))
 '    day = Weekday(CurDate - befDays + K + I)
-    If Not (day = vbSunday Or day = vbSaturday) Then J = J + 1
+    If Not (day = vbSunday Or day = vbSaturday) Then j = j + 1
     I = I + 1
 Wend
 stDays(k) = I + k ' "+k" т.к. пока нумераци€ начинаетс€ befDays дней назад
@@ -1811,7 +1811,7 @@ startDays = stDays(befDays) - befDays ' дл€ —егодн€, которое под є1
 End Function
 
 Sub statistic(Optional year As String = "")
-Dim nRow As Long, nCol As Long, str As String, I As Integer, J As Integer
+Dim nRow As Long, nCol As Long, str As String, I As Integer, j As Integer
 Dim iMonth As Integer, iYear As Integer, iCount As Integer, strWhere As String
 Dim nMonth As Integer, nYear As Integer, mCount As Integer, lastCol As Integer
 Dim wtSum As Double, paidSum As Double, orderSum As Double, visits As Integer, visitSum As Integer
@@ -2214,12 +2214,12 @@ byErrSqlGetValues "W##382", sql, getNevip
 End Function
 
 Sub addDays(outDay As Integer)
-Dim J As Integer
+Dim j As Integer
         If maxDay < outDay Then
             dayMassLenght outDay + 1 'если дольше , корректируем размерности
-            For J = maxDay + 1 To outDay 'новые дни
-                delta(J) = 0
-            Next J
+            For j = maxDay + 1 To outDay 'новые дни
+                delta(j) = 0
+            Next j
             maxDay = outDay
         End If
 End Sub
@@ -2275,7 +2275,7 @@ End If
 End Sub
 
 Sub zagruzFromCeh(Optional passZakazNom As String = "")
-Dim outDay As Integer, J As Integer, passSql As String, str As String
+Dim outDay As Integer, j As Integer, passSql As String, str As String
 
 If IsNumeric(passZakazNom) Then
     passSql = "((OrdersInCeh.numOrder)<>" & passZakazNom & ") AND "
@@ -2505,7 +2505,7 @@ End Function
 
 'исп-с€ при формировании предметов, а также отвечает за часть Ќадлежит
 'отпустить в Otgruz.frm
-Sub loadPredmeti(Frm As Form, Optional reg As String = "", Optional needToRefresh As Boolean = False)
+Sub loadPredmeti(Frm As Form, orderRate As Double, Optional reg As String = "", Optional needToRefresh As Boolean = False)
 Dim I As Integer
 
 Screen.MousePointer = flexHourglass
@@ -2536,9 +2536,9 @@ If Not tbNomenk.BOF Then
     Frm.Grid5.TextMatrix(Frm.quantity5 + I, prDescript) = tbNomenk!prDescript
     Frm.Grid5.TextMatrix(Frm.quantity5 + I, prEdizm) = "шт."
     If Not IsNull(tbNomenk!cenaEd) Then
-        Frm.Grid5.TextMatrix(Frm.quantity5 + I, prCenaEd) = Round(tbNomenk!cenaEd, 2)
+        Frm.Grid5.TextMatrix(Frm.quantity5 + I, prCenaEd) = Round(rated(tbNomenk!cenaEd, orderRate), 2)
         Frm.Grid5.TextMatrix(Frm.quantity5 + I, prSumm) = _
-                                Round(tbNomenk!cenaEd * tbNomenk!quant, 2)
+                                Round(rated(tbNomenk!cenaEd * tbNomenk!quant, orderRate), 2)
     End If
     Frm.Grid5.TextMatrix(Frm.quantity5 + I, prQuant) = Round(tbNomenk!quant, 2)
 ' все изменени€ проделать и дл€ ном-ры (см. ниже)
@@ -2579,9 +2579,9 @@ If Not tbNomenk.BOF Then
         tbNomenk!nomName & " " & tbNomenk!Size
     Frm.Grid5.TextMatrix(Frm.quantity5 + I, prEdizm) = tbNomenk!ed_Izmer
     If Not IsNull(tbNomenk!cenaEd) Then
-        Frm.Grid5.TextMatrix(Frm.quantity5 + I, prCenaEd) = Round(tbNomenk!cenaEd, 2)
+        Frm.Grid5.TextMatrix(Frm.quantity5 + I, prCenaEd) = Round(rated(tbNomenk!cenaEd, orderRate), 2)
         Frm.Grid5.TextMatrix(Frm.quantity5 + I, prSumm) = _
-                                Round(tbNomenk!cenaEd * tbNomenk!quant, 2)
+                                Round(rated(tbNomenk!cenaEd * tbNomenk!quant, orderRate), 2)
     End If
 
     Frm.Grid5.TextMatrix(Frm.quantity5 + I, prQuant) = Round(tbNomenk!quant, 2)
@@ -2606,11 +2606,11 @@ If Frm.quantity5 > 0 Then
     Frm.Grid5.col = prQuant
     Frm.Grid5.Text = "»того:"
     Frm.Grid5.col = prSumm
-    Frm.Grid5.Text = sProducts.saveOrdered(needToRefresh)
+    Frm.Grid5.Text = Round(rated(sProducts.saveOrdered(orderRate, needToRefresh), orderRate), 2)
     Frm.Grid5.CellFontBold = True
     If reg = "fromOtgruz" Then
         Frm.Grid5.col = prOutSum
-        Frm.Grid5.Text = Otgruz.saveShipped
+        Frm.Grid5.Text = Round(rated(Otgruz.saveShipped(False), orderRate), 2)
         Frm.Grid5.CellFontBold = True
         Frm.Grid5.col = prNowSum
         Frm.Grid5.Text = "0"

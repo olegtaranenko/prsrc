@@ -795,6 +795,14 @@ where pc.sysname = sGuideProducts.web
 		/>
 	</changeSet>
 
+	<changeSet id="1" author="mantis-87" runOnChange="true">
+		<comment>некорректно апдейтятся цены на номенклатуру</comment>
+		<sqlFile path="triggers\xPredmetyByNomenk.wf_update_nomenk.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<rollback>
+			<sqlFile path="rollback\xPredmetyByNomenk.wf_update_nomenk.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		</rollback>
+	</changeSet>
+
 </databaseChangeLog>
 
 

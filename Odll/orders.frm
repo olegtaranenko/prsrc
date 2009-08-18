@@ -600,7 +600,7 @@ Const rowFromOrdersSQL = "select " & _
     
 ' нужно вызывать уже после того, как новая Валюта сменена.
 Private Sub adjustHotMoney()
-Dim I As Long, J As Integer
+Dim I As Long, j As Integer
 
     For I = 1 To Grid.rows - 1
         Dim value As Double, rate As Double
@@ -609,8 +609,8 @@ Dim I As Long, J As Integer
         If rateStr <> "" Then
             rate = CDbl(rateStr)
         End If
-        For J = 0 To 2 ' три смежные колонки с деньгами (заказано, оплачено, отгружено)
-            valueStr = Grid.TextMatrix(I, orZakazano + J)
+        For j = 0 To 2 ' три смежные колонки с деньгами (заказано, оплачено, отгружено)
+            valueStr = Grid.TextMatrix(I, orZakazano + j)
             If valueStr <> "" Then
                 value = CDbl(valueStr)
                 If sessionCurrency = CC_RUBLE Then
@@ -618,10 +618,10 @@ Dim I As Long, J As Integer
                 Else
                     value = value / rate
                 End If
-                LoadNumeric Grid, I, orZakazano + J, value, , "###0.00"
+                LoadNumeric Grid, I, orZakazano + j, value, , "###0.00"
             End If
             
-        Next J
+        Next j
         
     Next I
     
@@ -1900,6 +1900,7 @@ BB:     tmpStr = ""
     End If
     numDoc = gNzak
     numExt = 0 ' это флаг для некот. п\п, что нужно считать именно доступные остатки
+    sProducts.orderRate = Grid.TextMatrix(mousRow, orRate)
     sProducts.Show vbModal
   End If
 
@@ -3542,7 +3543,7 @@ Dim I As Integer, txt As String
 End Function
 '$odbc08!$
 Function startParams(Optional idCeh As Integer = 0) As Boolean
-Dim I As Integer, str As String, J As Integer ', sumSroch As Double
+Dim I As Integer, str As String, j As Integer ', sumSroch As Double
 Dim item As ListItem, id As Integer, v As Variant, s As Double
 
 startParams = False
@@ -3736,7 +3737,7 @@ Sub textBoxOrOtgruzFrm()
         Else
             Otgruz.Regim = "uslug"
 AA:         Otgruz.closeZakaz = (Grid.TextMatrix(mousRow, orStatus) = "закрыт")
-            otgruz.orderRate = Grid.TextMatrix(mousRow, orRate)
+            Otgruz.orderRate = Grid.TextMatrix(mousRow, orRate)
             Otgruz.Show vbModal
             If IsNumeric(Grid.TextMatrix(mousRow, orOtgrugeno)) And _
             flDelRowInMobile Then delZakazFromGrid

@@ -315,7 +315,7 @@ If Regim = "uslug" Then
     Grid5.col = usNowSum
     mousCol5 = usNowSum
 Else
-    loadPredmeti Me, "fromOtgruz"
+    loadPredmeti Me, orderRate, "fromOtgruz"
     Grid5.col = prNowQuant
     mousCol5 = prNowQuant
     Grid5.row = 2
@@ -381,8 +381,9 @@ If Regim = "uslug" Then
     Grid5.TextMatrix(row, usOutSum) = Round(rated(s, orderRate), 2)
 Else
     Grid5.TextMatrix(row, prOutQuant) = Round(s, 2)
-    If IsNumeric(tbNomenk!cenaEd) Then _
-        Grid5.TextMatrix(row, prOutSum) = Round(tbNomenk!cenaEd * s, 2)
+    If IsNumeric(tbNomenk!cenaEd) Then
+        Grid5.TextMatrix(row, prOutSum) = Round(rated(tbNomenk!cenaEd * s, orderRate), 2)
+    End If
 End If
 
 'If lbDate.ListIndex = outLen Then
@@ -410,12 +411,12 @@ If Regim = "uslug" Then
 Else
     Grid5.TextMatrix(row, prNowQuant) = Round(s, 2)
     If IsNumeric(tbNomenk!cenaEd) Then _
-        Grid5.TextMatrix(row, prNowSum) = Round(tbNomenk!cenaEd * s, 2)
+        Grid5.TextMatrix(row, prNowSum) = Round(rated(tbNomenk!cenaEd * s, orderRate), 2)
 End If
 End Sub
 
 'обновляет поле shipped в Orders
-Function saveShipped() As Variant
+Function saveShipped(Optional doUpdate As Boolean = True) As Variant
 Dim s As Double, s1 As Double
 
 saveShipped = Null
@@ -435,7 +436,7 @@ If Regim = "" Then
     "WHERE (((xPredmetyByNomenk.numOrder)=" & gNzak & "));"
     If Not byErrSqlGetValues("W##214", sql, s1) Then Exit Function
 
-    s = Round(s + s1, 2)
+    s = s + s1
 Else 'услуги
     sql = "SELECT Sum(quant) AS Sum_quant From xUslugOut " & _
     "WHERE (((numOrder)=" & gNzak & "));"
@@ -448,7 +449,9 @@ Else
 End If
 'sql = "UPDATE Orders SET shipped = " & tmpStr & " WHERE (((numOrder)=" & gNzak & "));"
 'If myExecute("##368", sql) = 0 Then saveShipped = s
-orderUpdate "##368", tmpStr, "Orders", "shipped"
+If doUpdate Then
+    orderUpdate "##368", tmpStr, "Orders", "shipped"
+End If
 saveShipped = s
 End Function
 
@@ -551,7 +554,7 @@ cmOtgruzDate.Enabled = lbDate.ListIndex < outLen
 
 gridIsLoad = False
 If Regim = "" Then
-    loadPredmeti Me, "fromOtgruz"
+    loadPredmeti Me, orderRate, "fromOtgruz"
     OutNowSummToGrid5
     Grid5.row = 2
     Grid5.col = prNowQuant

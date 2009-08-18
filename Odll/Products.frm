@@ -345,6 +345,8 @@ Public mousRow3 As Long
 Public zakazano As Double
 Public FO As Double ' ФО
 Public convertToIzdelie As Boolean
+Public orderRate As Double
+Dim PL() As Double
 
 
 Private selectNomenkFlag As Boolean
@@ -408,9 +410,10 @@ leng = UBound(NN)
     Next j
     leng = leng + 1
     ReDim Preserve NN(leng): NN(leng) = tbNomenk!nomNom
-    ReDim Preserve QQ(leng): QQ(leng) = Round(pQuant * tbNomenk!quantity, 2)
-    ReDim Preserve QQ2(leng): QQ2(leng) = Round(eQuant * tbNomenk!quantity, 2)
-    ReDim Preserve QQ3(leng): QQ3(leng) = Round(prQuant * tbNomenk!quantity, 2)
+    ReDim Preserve QQ(leng): QQ(leng) = pQuant * tbNomenk!quantity
+    ReDim Preserve QQ2(leng): QQ2(leng) = eQuant * tbNomenk!quantity
+    ReDim Preserve QQ3(leng): QQ3(leng) = prQuant * tbNomenk!quantity
+    'ReDim Preserve PL(leng): PL(leng) = tbNomenk!perList
     
 
 End Sub
@@ -725,7 +728,10 @@ gSeriaId = 0 'необходим  для добавления класса
 
 quantity2 = 0
 loadProducts 'номенклатурный состав
-If Regim = "" Or Regim = "closeZakaz" Then loadPredmeti Me ' состав предметов
+If Regim = "" Or Regim = "closeZakaz" Then
+    loadPredmeti Me, orderRate ' состав предметов
+End If
+
 If quantity2 > 0 Then
     str = "Редактирование"
 Else
@@ -1655,7 +1661,7 @@ deleteSelected
 
 wrkDefault.CommitTrans
 
-tmpVar = saveOrdered
+tmpVar = saveOrdered(orderRate)
 If Not IsNumeric(tmpVar) Then GoTo ER1
 wrkDefault.CommitTrans
 
@@ -1806,7 +1812,7 @@ End Sub
 Private Sub mnOnfly_Click()
     OnFly.Show vbModal
     If convertToIzdelie Then
-        loadPredmeti Me
+        loadPredmeti Me, orderRate
         loadProducts
         convertToIzdelie = False
     End If
@@ -2017,14 +2023,6 @@ errr:
 End Sub
 
 
-Private Sub tbMobile2_Change()
-
-End Sub
-
-Private Sub tbMobile5_Change()
-    
-End Sub
-
 '$odbc15$
 Public Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
 Dim c As Double, s As Double, str As String
@@ -2106,33 +2104,34 @@ AA:         tbProduct!eQuant = s
     If Not Me.convertToIzdelie Then
         If Not isNumericTbox(tbMobile, 0) Then Exit Sub
     
+        Dim tunedCenaEd As Double
         If mousCol5 = prSumm Then
-            s = tbMobile.Text
-            c = s / CDbl(Grid5.TextMatrix(mousRow5, prQuant)) 'не округлять
-            GoTo BB
+            s = tuneCurencyAndGranularity(tbMobile.Text, orderRate, sessionCurrency, Grid5.TextMatrix(mousRow5, prQuant))
+            tunedCenaEd = s / CDbl(Grid5.TextMatrix(mousRow5, prQuant)) 'не округлять
         Else
-            c = tbMobile.Text
-            s = c * CDbl(Grid5.TextMatrix(mousRow5, prQuant))
-BB:         If str = "изделие" Then
-                sql = "UPDATE xPredmetyByIzdelia SET cenaEd = " & c & _
-                "  WHERE (((numOrder)=" & gNzak & ") AND ((prId)=" & gProductId & _
-                ") AND ((prExt)=" & prExt & "));"
-            Else
-                sql = "UPDATE xPredmetyByNomenk SET cenaEd = " & c & _
-                " WHERE (((numOrder)=" & gNzak & ") AND ((nomNom)='" & gNomNom & "'));"
-            End If
-    '        MsgBox sql
-            
-            If myExecute("##205", sql) = 0 Then
-                Grid5.TextMatrix(mousRow5, prCenaEd) = Round(c, 2)
-                Grid5.TextMatrix(mousRow5, prSumm) = Round(s, 2)
-                tmpVar = saveOrdered
-                If IsNumeric(tmpVar) Then
-                    Grid5.TextMatrix(Grid5.rows - 1, prSumm) = tmpVar
-                    Otgruz.saveShipped 'цена влияет и на отгрузку
-                    Orders.openOrdersRowToGrid "##212"
-                    tqOrders.Close
-                End If
+            tunedCenaEd = tuneCurencyAndGranularity(tbMobile.Text, orderRate, sessionCurrency, Grid5.TextMatrix(mousRow5, prQuant))
+            s = tunedCenaEd * CDbl(Grid5.TextMatrix(mousRow5, prQuant))
+        End If
+        
+        If str = "изделие" Then
+            sql = "UPDATE xPredmetyByIzdelia SET cenaEd = " & tunedCenaEd & _
+            "  WHERE (((numOrder)=" & gNzak & ") AND ((prId)=" & gProductId & _
+            ") AND ((prExt)=" & prExt & "));"
+        Else
+            sql = "UPDATE xPredmetyByNomenk SET cenaEd = " & tunedCenaEd & _
+            " WHERE (((numOrder)=" & gNzak & ") AND ((nomNom)='" & gNomNom & "'));"
+        End If
+'        MsgBox sql
+        
+        If myExecute("##205", sql) = 0 Then
+            Grid5.TextMatrix(mousRow5, prCenaEd) = Round(rated(tunedCenaEd, orderRate), 2)
+            Grid5.TextMatrix(mousRow5, prSumm) = Round(rated(s, orderRate), 2)
+            tmpVar = saveOrdered(orderRate)
+            If IsNumeric(tmpVar) Then
+                Grid5.TextMatrix(Grid5.rows - 1, prSumm) = Round(rated(tmpVar, orderRate), 2)
+                Otgruz.saveShipped 'цена влияет и на отгрузку
+                Orders.openOrdersRowToGrid "##212"
+                tqOrders.Close
             End If
         End If
         lbHide
@@ -2189,7 +2188,7 @@ If opNomenk.value Then
     Exit Sub
   End If
   If Regim = "" Then 'предметы к заказу т.е 0<numExt<254
-    nomenkToPredmeti needToRefresh
+    nomenkToPredmeti False
   Else
     s = Round(tbQuant.Text, 2)
     If sDocs.isIntMove() Then
@@ -2276,9 +2275,9 @@ End If
   
   lockSklad "un"
 End If ' opNomenk.value
-  
+
 If Regim = "" Then
-    loadPredmeti Me, , needToRefresh ' состав
+    loadPredmeti Me, orderRate, , needToRefresh ' состав
 End If
     
 loadProducts ' ном-ра заказа
@@ -2444,25 +2443,26 @@ End Function
 
 
 'обновляет поле ordered в Orders
-Function saveOrdered(Optional update As Boolean = True) As Variant
+Function saveOrdered(orderRate As Double, Optional update As Boolean = True) As Variant
 Dim s As Double, s1 As Double
 
-saveOrdered = Null
-sql = "SELECT Sum([quant]*[cenaEd]) From xPredmetyByIzdelia GROUP BY numOrder " & _
-"HAVING (((numOrder)=" & gNzak & "));"
-If Not byErrSqlGetValues("W##368", sql, s) Then Exit Function
+    saveOrdered = Null
+    sql = "SELECT Sum([quant]*[cenaEd]) From xPredmetyByIzdelia GROUP BY numOrder " & _
+    "HAVING (((numOrder)=" & gNzak & "));"
+    If Not byErrSqlGetValues("W##368", sql, s) Then Exit Function
+    
+    sql = "SELECT Sum([quant]*[cenaEd]) From xPredmetyByNomenk GROUP BY numOrder " & _
+    "HAVING (((numOrder)=" & gNzak & "));"
+    'MsgBox sql
+    If Not byErrSqlGetValues("W##210", sql, s1) Then Exit Function
+    
+    s = s + s1
+    If update Then
+        orderUpdate "##211", CStr(s), "orders", "ordered"
+        Orders.Grid.TextMatrix(Orders.mousRow, orZakazano) = Round(s, 2)
+    End If
+    saveOrdered = s
 
-sql = "SELECT Sum([quant]*[cenaEd]) From xPredmetyByNomenk GROUP BY numOrder " & _
-"HAVING (((numOrder)=" & gNzak & "));"
-'MsgBox sql
-If Not byErrSqlGetValues("W##210", sql, s1) Then Exit Function
-
-s = Round(s + s1, 2)
-If update Then
-    orderUpdate "##211", Round(s, 2), "orders", "ordered"
-    Orders.Grid.TextMatrix(Orders.mousRow, orZakazano) = s
-End If
-saveOrdered = s
 End Function
 
 '=0 - если у изделия вообще нет вариантов поставки(или оно не вариантно или
