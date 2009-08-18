@@ -94,7 +94,10 @@ Public quantity5 As Long
 Public mousRow5 As Long, mousCol5 As Long
 Public Regim As String
 Public closeZakaz As Boolean
+Public orderRate As Double
+
 Dim doOtgruzDateUpdate As Boolean
+Dim uslugOrdered As Double
 
 Const usSumm = 1
 Const usOutSum = 2
@@ -287,7 +290,9 @@ Dim s As Double
 
 sql = "SELECT ordered From Orders WHERE (((Orders.numOrder)=" & gNzak & "));"
 If byErrSqlGetValues("##227", sql, s) Then _
-    Grid5.TextMatrix(1, usSumm) = Round(s, 2)
+    Grid5.TextMatrix(1, usSumm) = Round(rated(s, orderRate), 2)
+uslugOrdered = s
+
 getOtgrugeno 1 ' usNowSum и usOutSum
 
 End Sub
@@ -303,6 +308,7 @@ Next I
 lbDate.ListIndex = outLen: gridIsLoad = False
 
 ReDim QQ(0)
+ReDim QQ2(0)
 
 If Regim = "uslug" Then
     loadUslug
@@ -372,15 +378,16 @@ End If
 'MsgBox sql
 byErrSqlGetValues "W##203", sql, s
 If Regim = "uslug" Then
-    Grid5.TextMatrix(row, usOutSum) = Round(s, 2)
+    Grid5.TextMatrix(row, usOutSum) = Round(rated(s, orderRate), 2)
 Else
     Grid5.TextMatrix(row, prOutQuant) = Round(s, 2)
     If IsNumeric(tbNomenk!cenaEd) Then _
         Grid5.TextMatrix(row, prOutSum) = Round(tbNomenk!cenaEd * s, 2)
 End If
 
-'фиксируем Уже отпущено на сегодня
-If lbDate.ListIndex = outLen Then ReDim Preserve QQ(row): QQ(row) = s
+'If lbDate.ListIndex = outLen Then
+    ReDim Preserve QQ(row): QQ(row) = s
+'End If
 'отпущено на дату
 If Regim = "uslug" Then
     sql = "SELECT Sum(quant) AS Sum_quant From xUslugOut " & _
@@ -396,9 +403,10 @@ Else
 End If
 'MsgBox sql
 byErrSqlGetValues "W##204", sql, s
+ReDim Preserve QQ2(row): QQ2(row) = s
 
 If Regim = "uslug" Then
-    Grid5.TextMatrix(row, usNowSum) = Round(s, 2)
+    Grid5.TextMatrix(row, usNowSum) = Round(rated(s, orderRate), 2)
 Else
     Grid5.TextMatrix(row, prNowQuant) = Round(s, 2)
     If IsNumeric(tbNomenk!cenaEd) Then _
@@ -563,6 +571,57 @@ Private Sub tbMobile_DblClick()
 lbHide5
 End Sub
 '$odbc15$
+
+' total - общая сумма по позиции (сколько максимально можно отпустить) - только в долларах
+' before - уже отпущено - доллары
+' nowBack и nowFore - на вход - значения от в введенной валюте, на выход - в долларах
+' для nowFore - определяет, если позиция близка к закрытию - корректирует валютное значение с учетом квантования
+Function adjustOtgruz(ByVal total As Double, ByVal before As Double, ByRef nowBack As Double, nowFore As Double) As Boolean
+    
+    adjustOtgruz = True
+ 
+    Dim nowForeStr As String
+    
+    nowForeStr = tbMobile.Text
+    If Not IsNumeric(nowForeStr) Then
+        adjustOtgruz = False
+        GoTo finally
+    Else
+        nowFore = CDbl(nowForeStr)
+    End If
+    
+    Dim overflow As Double, ceilValue As Double
+    If sessionCurrency = CC_RUBLE Then
+        Dim maxInputRub As Double
+        
+        nowBack = nowBack / orderRate
+        nowFore = nowFore / orderRate
+        
+        ceilValue = (total - before) * orderRate
+        overflow = (total - (before + nowFore)) * orderRate
+    Else
+        overflow = (total - (before - nowBack + nowFore))
+    
+        
+    End If
+    
+    If overflow < -0.01 Or nowFore < 0 Then
+        MsgBox "значение должно быть в диапазоне от 0 " _
+        & " до " & CStr(Round(ceilValue, 2)), , "Error"
+        adjustOtgruz = False
+        GoTo finally
+    End If
+    
+finally:
+    If Not adjustOtgruz Then
+        tbMobile.SetFocus
+        tbMobile.SelStart = 0
+        tbMobile.SelLength = Len(tbMobile.Text)
+    End If
+    
+    
+End Function
+
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
 Dim pQuant As Double, s As Double, maxQ As Double
 
@@ -574,33 +633,39 @@ If KeyCode = vbKeyReturn Then
         Exit Sub
     End If
   If Regim = "uslug" Then
-    maxQ = Grid5.TextMatrix(1, usSumm)
-    maxQ = maxQ - QQ(1) 'на столько можно увеличивать
-    maxQ = Round(maxQ + Grid5.TextMatrix(mousRow5, usNowSum), 2)
-    If Not isNumericTbox(tbMobile, 0, maxQ) Then Exit Sub
-    pQuant = Round(tbMobile.Text, 2)
-    tbMobile.Text = pQuant
+    Dim nowBack As Double, nowFore As Double
+    
+    nowBack = Grid5.TextMatrix(mousRow5, usNowSum)
+    If Not adjustOtgruz(uslugOrdered, QQ(1), nowBack, nowFore) Then
+        ' ввели не число
+        Exit Sub
+    End If
+    
+    'maxQ = uslugOrdered
+    'maxQ = maxQ - QQ(1) 'на столько можно увеличивать
+    'maxQ = maxQ + currentOtgruz
+    'If Not isNumericTbox(tbMobile, 0, rated(maxQ, orderRate)) Then Exit Sub
+    'pquant = tuneCurencyAndGranularity(,,,)
+    'pQuant = Round(tbMobile.Text, 2)
+    'tbMobile.Text = rated(nowFore, orderRate)
     
     sql = "SELECT * from xUslugOut WHERE (((numOrder)=" & gNzak & _
     ") AND ((outDate)='" & Format(outDate(lbDate.ListIndex), "yyyy-mm-dd  hh:nn:ss") & "'));"
     Set tbProduct = myOpenRecordSet("##229", sql, dbOpenForwardOnly)
-'    If tbProduct Is Nothing Then GoTo ER2
-'    tbProduct.index = "Key2"
-'    tbProduct.Seek "=", outDate(lbDate.ListIndex), gNzak
-'    If tbProduct.NoMatch Then
+    
     If tbProduct.BOF Then
-        If pQuant > 0 Then
+        If nowFore > 0 Then
             tbProduct.AddNew
             tbProduct!outDate = outDate(lbDate.ListIndex)
             tbProduct!numorder = gNzak
-            tbProduct!quant = pQuant
-                tbProduct.update
+            tbProduct!quant = nowFore
+            tbProduct.update
         End If
-    ElseIf pQuant = 0 Then
+    ElseIf nowFore = 0 Then
         tbProduct.Delete
     Else
         tbProduct.Edit
-        tbProduct!quant = pQuant
+        tbProduct!quant = nowFore
         tbProduct.update
     End If
     tbProduct.Close
@@ -610,8 +675,8 @@ If KeyCode = vbKeyReturn Then
     Orders.openOrdersRowToGrid "##228":  tqOrders.Close
 
   'корректируем Уже отпущено на сегодня
-    QQ(1) = QQ(1) + pQuant - Grid5.TextMatrix(1, usNowSum)
-    Grid5.TextMatrix(1, usNowSum) = pQuant
+    'QQ(1) = QQ(1) + nowFore - Grid5.TextMatrix(1, usNowSum)
+    Grid5.TextMatrix(1, usNowSum) = rated(nowFore, orderRate)
     lbHide5
     Exit Sub
   End If

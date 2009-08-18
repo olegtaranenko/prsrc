@@ -3736,6 +3736,7 @@ Sub textBoxOrOtgruzFrm()
         Else
             Otgruz.Regim = "uslug"
 AA:         Otgruz.closeZakaz = (Grid.TextMatrix(mousRow, orStatus) = "закрыт")
+            otgruz.orderRate = Grid.TextMatrix(mousRow, orRate)
             Otgruz.Show vbModal
             If IsNumeric(Grid.TextMatrix(mousRow, orOtgrugeno)) And _
             flDelRowInMobile Then delZakazFromGrid
