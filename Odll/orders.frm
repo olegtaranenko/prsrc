@@ -600,7 +600,7 @@ Const rowFromOrdersSQL = "select " & _
     
 ' нужно вызывать уже после того, как новая Валюта сменена.
 Private Sub adjustHotMoney()
-Dim I As Long, j As Integer
+Dim I As Long, J As Integer
 
     For I = 1 To Grid.rows - 1
         Dim value As Double, rate As Double
@@ -609,8 +609,9 @@ Dim I As Long, j As Integer
         If rateStr <> "" Then
             rate = CDbl(rateStr)
         End If
-        For j = 0 To 2 ' три смежные колонки с деньгами (заказано, оплачено, отгружено)
-            valueStr = Grid.TextMatrix(I, orZakazano + j)
+        For J = 0 To 5 ' 5 смежных колонки с деньгами (залог, нал, заказано, оплачено, отгружено)
+            If J = 2 Then GoTo skip
+            valueStr = Grid.TextMatrix(I, orZalog + J)
             If valueStr <> "" Then
                 value = CDbl(valueStr)
                 If sessionCurrency = CC_RUBLE Then
@@ -618,25 +619,26 @@ Dim I As Long, j As Integer
                 Else
                     value = value / rate
                 End If
-                LoadNumeric Grid, I, orZakazano + j, value, , "###0.00"
+                LoadNumeric Grid, I, orZalog + J, value, , "###0.00"
             End If
-            
-        Next j
+skip:
+        Next J
         
     Next I
     
 End Sub
     
-Private Sub adjustMoneyColumnWidth()
-    If sessionCurrency = CC_RUBLE Then
-        Grid.ColWidth(orZakazano) = Grid.ColWidth(orZakazano) * ColWidthForRuble
-        Grid.ColWidth(orOplacheno) = Grid.ColWidth(orOplacheno) * ColWidthForRuble
-        Grid.ColWidth(orOtgrugeno) = Grid.ColWidth(orOtgrugeno) * ColWidthForRuble
-    Else
-        Grid.ColWidth(orZakazano) = Grid.ColWidth(orZakazano) / ColWidthForRuble
-        Grid.ColWidth(orOplacheno) = Grid.ColWidth(orOplacheno) / ColWidthForRuble
-        Grid.ColWidth(orOtgrugeno) = Grid.ColWidth(orOtgrugeno) / ColWidthForRuble
-    End If
+Private Sub adjustMoneyColumnWidth(inStartup As Boolean)
+Dim I As Long, J As Integer
+    For J = 0 To 4 ' 5 смежных колонки с деньгами (залог, нал, заказано, оплачено, отгружено)
+        If J = 2 Then GoTo skip
+        If sessionCurrency = CC_RUBLE Then
+            Grid.ColWidth(orZalog + J) = Grid.ColWidth(orZalog + J) * ColWidthForRuble
+        ElseIf Not inStartup Then
+            Grid.ColWidth(orZalog + J) = Grid.ColWidth(orZalog + J) / ColWidthForRuble
+        End If
+skip:
+    Next J
 End Sub
     
     
@@ -1443,7 +1445,7 @@ Grid.ColWidth(orBillId) = 0
 Grid.ColWidth(orVocnameId) = 0
 Grid.ColWidth(orServername) = 0
 
-adjustMoneyColumnWidth
+adjustMoneyColumnWidth (True)
 
 
 
@@ -2974,13 +2976,16 @@ Function isFloatFromMobileWithIssue(field As String, issueMarker As String) As I
     End If
 End Function
 
-Function isFloatFromMobile(field As String, Optional errorCode As String = "##23") As Boolean
+Function isFloatFromMobile(field As String, Optional errorCode As String = "##23", Optional isCurrency As Boolean = False) As Boolean
 Dim isIssue As Integer
 
     If checkNumeric(tbMobile.Text, 0) Then
         Dim ueValue As String
-        
-        ueValue = CStr(tuneCurencyAndGranularity(tbMobile.Text, Grid.TextMatrix(mousRow, orRate), sessionCurrency))
+        If isCurrency Then
+            ueValue = CStr(tuneCurencyAndGranularity(tbMobile.Text, Grid.TextMatrix(mousRow, orRate), sessionCurrency, 1))
+        Else
+            ueValue = field
+        End If
         
         isIssue = orderUpdate(errorCode, ueValue, "Orders", field)
         
@@ -3054,13 +3059,13 @@ DNM = Format(Now(), "dd.mm.yy hh:nn") & vbTab & cbM.Text & " " & gNzak ' именно 
         Print #2, DNM & " изделия=" & tbMobile.Text
         Close #2
     ElseIf mousCol = orZakazano Then
-        If Not isFloatFromMobile("ordered") Then Exit Sub
+        If Not isFloatFromMobile("ordered", , True) Then Exit Sub
     ElseIf mousCol = orOplacheno Then
-        If Not isFloatFromMobile("paid") Then Exit Sub
+        If Not isFloatFromMobile("paid", , True) Then Exit Sub
     ElseIf mousCol = orZalog Then
-        If Not isFloatFromMobile("zalog") Then Exit Sub
+        If Not isFloatFromMobile("zalog", , True) Then Exit Sub
     ElseIf mousCol = orNal Then
-        If Not isFloatFromMobile("nal") Then Exit Sub
+        If Not isFloatFromMobile("nal", , True) Then Exit Sub
     ElseIf mousCol = orRate Then
         Dim issueId As Integer
         Dim issueMarker As String
@@ -3107,7 +3112,7 @@ DNM = Format(Now(), "dd.mm.yy hh:nn") & vbTab & cbM.Text & " " & gNzak ' именно 
         myExecute "W#resetIssueMarker", sql, -1
         
     ElseIf mousCol = orOtgrugeno Then
-        If Not isFloatFromMobile("shipped") Then Exit Sub
+        If Not isFloatFromMobile("shipped", , True) Then Exit Sub
         s = Round(tbMobile.Text, 2)
         If s = 0 Then
             orderUpdate "##78", "Null", "Orders", "shipped"
@@ -3543,7 +3548,7 @@ Dim I As Integer, txt As String
 End Function
 '$odbc08!$
 Function startParams(Optional idCeh As Integer = 0) As Boolean
-Dim I As Integer, str As String, j As Integer ', sumSroch As Double
+Dim I As Integer, str As String, J As Integer ', sumSroch As Double
 Dim item As ListItem, id As Integer, v As Variant, s As Double
 
 startParams = False
