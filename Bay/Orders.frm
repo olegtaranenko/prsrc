@@ -1107,6 +1107,7 @@ If mousCol = orNomZak Then
         Else
             sProducts.Regim = "closeZakaz"
         End If
+        sProducts.orderRate = Grid.TextMatrix(mousRow, orRate)
         sProducts.Show vbModal
   End If
   Exit Sub
@@ -1852,9 +1853,16 @@ cmRefr.Caption = "Загрузить"
 
 End Sub
 
-Function isFloatFromMobile(field As String) As Boolean
+Function isFloatFromMobile(field As String, Optional isMoney As Boolean = False) As Boolean
 
         If checkNumeric(tbMobile.Text, 0) Then
+            Dim ueValue As Double
+            If isMoney Then
+                ueValue = tuneCurencyAndGranularity(tbMobile.Text, Grid.TextMatrix(mousRow, orRate), sessionCurrency)
+            Else
+                ueValue = tbMobile.Text
+            End If
+            
             ValueToTableField "##23", tbMobile.Text, "BayOrders", field
             Grid.TextMatrix(mousRow, mousCol) = tbMobile.Text
             isFloatFromMobile = True

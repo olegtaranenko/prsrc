@@ -262,6 +262,8 @@ Public mousCol3 As Long
 Public mousRow3 As Long
 Public zakazano As Single
 Public FO As Single ' ФО
+Public orderRate As Double
+
 
 Dim mousCol4 As Long, mousRow4 As Long
 Dim msgBilo As Boolean, biloG3Enter_Cell As Boolean
@@ -319,6 +321,26 @@ Const nkDostup = 5
 Const nkQuant = 6
 
 Dim buntColumn As Integer
+
+
+Private Function adjustGirdMoneyColWidth() As Long
+Dim J As Integer
+Dim ret As Long
+' Расширить колонки для рублей
+    For J = 1 To Grid2.Cols - 1
+        If Grid2.colWidth(J) > 0 _
+            And (InStr(Grid2.TextMatrix(0, J), "Цена") > 0 Or Grid2.TextMatrix(0, J) = "Сумма") _
+        Then
+            If sessionCurrency = CC_RUBLE Then
+                Grid2.colWidth(J) = Grid2.colWidth(J) * ColWidthForRuble
+            End If
+        End If
+        ret = ret + Grid2.colWidth(J)
+    Next J
+    adjustGirdMoneyColWidth = ret
+End Function
+
+
 
 
 Sub nomenkToNNQQ(pQuant As Single, eQuant As Single, prQuant As Single)
@@ -542,6 +564,10 @@ Grid2.colWidth(dnVes) = 600
 
 quantity2 = 0
 loadPredmeti ' сюда попадаем только из предметов заказа
+Dim Grid2Width As Long: Grid2Width = adjustGirdMoneyColWidth()
+Grid2.Width = Grid2Width + 500
+Me.Width = Grid.left + Grid.Width + Grid2Width + 800
+
 If quantity2 > 0 Then
     str = "Редактирование"
 Else
@@ -565,7 +591,7 @@ grid2Ves = Grid2.Width / (tv.Width + Grid.Width + Grid2.Width)
 isLoad = True
 End Sub
 
-Sub loadPredmeti()
+Function loadPredmeti() As Double
 
 Dim s As Single, sum As Single, sumVes As Single, quant As Single
 
@@ -593,15 +619,15 @@ If Not tbNomenk.BOF Then
     Grid2.TextMatrix(quantity2, dnEdIzm) = tbNomenk!ed_Izmer2
     Grid2.TextMatrix(quantity2, dnVesEd) = tbNomenk!VES
 
-    Grid2.TextMatrix(quantity2, dnCenaEd) = tbNomenk!intQuant
+    Grid2.TextMatrix(quantity2, dnCenaEd) = Round(rated(tbNomenk!intQuant, orderRate), 2)
     quant = Round(tbNomenk!quantity / tbNomenk!perList, 2)
     Grid2.TextMatrix(quantity2, dnQuant) = quant
     s = Round(tbNomenk!VES * quant, 3)
     Grid2.TextMatrix(quantity2, dnVes) = s
     sumVes = sumVes + s
     
-    s = Round(quant * tbNomenk!intQuant, 2)
-    Grid2.TextMatrix(quantity2, dnSumm) = s
+    s = quant * tbNomenk!intQuant
+    Grid2.TextMatrix(quantity2, dnSumm) = Round(rated(s, orderRate), 2)
     sum = sum + s
     Grid2.AddItem ""
     tbNomenk.MoveNext
@@ -614,7 +640,7 @@ Grid2.Visible = True
 If quantity2 > 0 Then
     Grid2.TextMatrix(quantity2 + 1, dnQuant) = "Итого:"
     Grid2.row = quantity2 + 1: Grid2.col = dnSumm
-    Grid2.Text = Round(sum, 2)
+    Grid2.Text = Round(rated(sum, orderRate), 2)
     Grid2.CellFontBold = True
     
     Grid2.col = dnVes
@@ -629,10 +655,12 @@ If quantity2 > 0 Then
         Grid2.TabIndex = 0
     End If
 End If
+loadPredmeti = sum
+
 MousePointer = flexDefault
 
 
-End Sub
+End Function
 
 
 Private Sub Form_Resize()
@@ -891,8 +919,7 @@ sql = "DELETE From sDMCrez WHERE (((numDoc)=" & gNzak & _
 'MsgBox sql
 
 If myExecute("##348", sql) = 0 Then
-    loadPredmeti ' ном-ра
-    Orders.Grid.TextMatrix(Orders.Grid.row, orZakazano) = getOrdered(gNzak)
+    Orders.Grid.TextMatrix(Orders.Grid.row, orZakazano) = Round(rated(loadPredmeti, orderRate), 2)
 End If
 'Grid2.SetFocus ' здесь не срабатывает
 
@@ -959,26 +986,22 @@ Dim c As Single, s As Single, str As String
 If KeyCode = vbKeyReturn Then
     If Not isNumericTbox(tbMobile, 0) Then Exit Sub
     If mousCol2 = dnSumm Then
-        s = tbMobile.Text
+        s = tuneCurencyAndGranularity(tbMobile.Text, orderRate, sessionCurrency, Grid2.TextMatrix(mousRow2, dnQuant))
         c = s / CSng(Grid2.TextMatrix(mousRow2, dnQuant)) 'не округлять
-        GoTo BB
     Else 'dnCenaEd
-        c = tbMobile.Text
+        c = tuneCurencyAndGranularity(tbMobile.Text, orderRate, sessionCurrency, 1)
         s = c * CSng(Grid2.TextMatrix(mousRow2, dnQuant))
-BB:     sql = "UPDATE sDMCrez SET intQuant = " & c & " WHERE (((numDoc)=" & _
-        gNzak & ") AND ((nomNom)='" & Grid2.TextMatrix(mousRow2, dnNomNom) & "'));"
-        If myExecute("##205", sql) = 0 Then
-            Grid2.TextMatrix(mousRow2, dnCenaEd) = Round(c, 2)
-            Grid2.TextMatrix(mousRow2, dnSumm) = Round(s, 2)
-            s = getOrdered(gNzak)
-            Orders.Grid.TextMatrix(Orders.Grid.row, orZakazano) = s
-            Orders.Grid.TextMatrix(Orders.Grid.row, orOtgrugeno) = getShipped(gNzak)
-'            tmpVar = saveOrdered
-'            If IsNumeric(tmpVar) Then
-                Grid2.TextMatrix(Grid2.Rows - 1, dnSumm) = s 'tmpVar
-'                Otgruz.saveBayShipped 'цена влияет и на отгрузку
-'            End If
-        End If
+    End If
+    sql = "UPDATE sDMCrez SET intQuant = " & c & " WHERE (((numDoc)=" & _
+    gNzak & ") AND ((nomNom)='" & Grid2.TextMatrix(mousRow2, dnNomNom) & "'));"
+    
+    If myExecute("##205", sql) = 0 Then
+        Grid2.TextMatrix(mousRow2, dnCenaEd) = Round(rated(c, orderRate), 2)
+        Grid2.TextMatrix(mousRow2, dnSumm) = Round(rated(s, orderRate), 2)
+        s = getOrdered(gNzak)
+        Orders.Grid.TextMatrix(Orders.Grid.row, orZakazano) = Round(rated(s, orderRate), 2)
+        Orders.Grid.TextMatrix(Orders.Grid.row, orOtgrugeno) = getShipped(gNzak)
+        Grid2.TextMatrix(Grid2.Rows - 1, dnSumm) = Round(rated(s, orderRate), 2)
     End If
     
     lbHide
@@ -1040,7 +1063,7 @@ AA: lockSklad "un"
     
   lockSklad "un"
 
-  loadPredmeti ' ном-ра
+    Orders.Grid.TextMatrix(Orders.Grid.row, orZakazano) = Round(rated(loadPredmeti, orderRate), 2)
   
   Grid.SetFocus
   GoTo ES2
