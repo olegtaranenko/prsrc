@@ -312,6 +312,9 @@ Begin VB.Form Orders
    End
    Begin VB.Menu mnMeassure 
       Caption         =   "Настройка"
+      Begin VB.Menu mnCurrency 
+         Caption         =   "Валюта: Рубли"
+      End
    End
    Begin VB.Menu mnSklad 
       Caption         =   "Склад"
@@ -398,6 +401,63 @@ Const rowFromOrdersSQL = "SELECT BayOrders.numOrder, BayOrders.inDate, " & _
 ",guideventure.sysname as servername" & _
 " FROM BayOrders INNER JOIN BayGuideFirms ON BayGuideFirms.FirmId = BayOrders.FirmId " & _
 " left join guideventure on guideventure.ventureId = bayOrders.ventureid "
+
+
+' нужно вызывать уже после того, как новая Валюта сменена.
+Private Sub adjustHotMoney()
+Dim I As Long, J As Integer
+
+    For I = 1 To Grid.Rows - 1
+        Dim value As Double, rate As Double
+        Dim valueStr As String, rateStr As String
+        rateStr = Grid.TextMatrix(I, orRate)
+        If rateStr <> "" Then
+            rate = CDbl(rateStr)
+        End If
+        For J = 0 To 2 ' три смежные колонки с деньгами (заказано, оплачено, отгружено)
+            valueStr = Grid.TextMatrix(I, orZakazano + J)
+            If valueStr <> "" Then
+                value = CDbl(valueStr)
+                If sessionCurrency = CC_RUBLE Then
+                    value = value * rate
+                Else
+                    value = value / rate
+                End If
+                LoadNumeric Grid, I, orZakazano + J, value, "###0.00"
+            End If
+            
+        Next J
+        
+    Next I
+    
+End Sub
+    
+Private Sub adjustMoneyColumnWidth(inStartup As Boolean)
+Dim I As Long, J As Integer
+    For J = 0 To 2 ' 3 смежных колонки с деньгами (заказано, оплачено, отгружено)
+        If sessionCurrency = CC_RUBLE Then
+            Grid.colWidth(orZakazano + J) = Grid.colWidth(orZakazano + J) * ColWidthForRuble
+        ElseIf Not inStartup Then
+            Grid.colWidth(orZakazano + J) = Grid.colWidth(orZakazano + J) / ColWidthForRuble
+        End If
+    Next J
+End Sub
+
+Private Sub setCurrencyCaption()
+    
+    Dim mnCaption As String
+    mnCaption = "Валюта: сменить на "
+    If sessionCurrency = CC_RUBLE Then
+        mnCurrency.Caption = mnCaption & "доллары"
+        Me.Caption = Me.Caption & " - Рубли"
+    ElseIf sessionCurrency = CC_UE Then
+        mnCurrency.Caption = mnCaption & "рубли"
+        Me.Caption = Me.Caption & " - Доллары"
+    End If
+
+End Sub
+
+
 
 Private Sub cbClose_Click()
 cmRefr.Caption = "Загрузить"
@@ -752,6 +812,10 @@ End If
 beClick = False
 flDelRowInMobile = False
 Me.Caption = Me.Caption & mainTitle
+' заголовок в меню: в какой валюте вводить данные
+setCurrencyCaption
+
+
 mousCol = 1
 orColNumber = 0
 initOrCol orNomZak, "№ заказа", 1050, "nBayOrders.numOrder"
@@ -768,13 +832,16 @@ initOrCol orVes, "Вес", 630
 initOrCol orSize, "Размер", 830
 initOrCol orPlaces, "Мест", 600
 initOrCol orRate, "Курс", 660 ', "nBayOrders.rate" $$6
-initOrCol orZakazano, "заказано", 660 ', "nBayOrders.ordered" $$6
-initOrCol orOplacheno, "согласовано", 645, "nBayOrders.paid"
-initOrCol orOtgrugeno, "отгружено", 645 ', "nBayOrders.shipped"$$6
+initOrCol orZakazano, "заказано", 900 ', "nBayOrders.ordered" $$6
+initOrCol orOplacheno, "согласовано", 900, "nBayOrders.paid"
+initOrCol orOtgrugeno, "отгружено", 900 ', "nBayOrders.shipped"$$6
 initOrCol orLastMen, "M", 255, "sGuideManag_1.Manag"
 initOrCol orBillId, "", 0, "sOrders.id_bill"
 initOrCol orVocnameId, "", 0, "nOrders.id_voc_names"
 initOrCol orServername, "", 0, "sOrders.servername"
+
+adjustMoneyColumnWidth (True)
+
 
 ReDim Preserve orSqlWhere(orColNumber)
 zakazNum = 0
@@ -1171,6 +1238,7 @@ ElseIf mousCol = orOtgrugeno Then
 AA:     Otgruz.closeZakaz = (Grid.TextMatrix(mousRow, orStatus) = "закрыт")
         Otgruz.laZakaz = Grid.TextMatrix(mousRow, orNomZak)
         Otgruz.laFirm = Grid.TextMatrix(mousRow, orFirma)
+        Otgruz.orderRate = Grid.TextMatrix(mousRow, orRate)
         Otgruz.Show vbModal
 '        textBoxInGridCell tbMobile, Grid
     End If
@@ -1643,6 +1711,24 @@ Dim ventureName As String
     
 End Sub
 
+Private Sub mnCurrency_Click()
+    If sessionCurrency = CC_RUBLE Then
+        sessionCurrency = CC_UE
+    Else
+        sessionCurrency = CC_RUBLE
+    End If
+    setAndSave "app", "currency", sessionCurrency
+    Dim deletedPart As String
+    deletedPart = InStr(Me.Caption, " - ")
+    If deletedPart > 0 Then
+        Me.Caption = left(Me.Caption, deletedPart - 1)
+    End If
+    setCurrencyCaption
+    adjustMoneyColumnWidth (False)
+    adjustHotMoney
+    
+End Sub
+
 Private Sub mnExit_Click()
     exitAll
 End Sub
@@ -2079,10 +2165,10 @@ Dim str  As String
     Grid.TextMatrix(row, orRate) = tqOrders!rate
  End If
  
- Grid.TextMatrix(row, orZakazano) = getOrdered(gNzak)
- LoadNumeric Grid, row, orOplacheno, tqOrders!paid
+ Grid.TextMatrix(row, orZakazano) = Round(rated(getOrdered(gNzak), tqOrders!rate), 2)
+ LoadNumeric Grid, row, orOplacheno, Round(rated(tqOrders!paid, tqOrders!rate), 2)
  'LoadNumeric Grid, row, orOtgrugeno, tqOrders!shipped
- Grid.TextMatrix(row, orOtgrugeno) = getShipped(gNzak)
+ Grid.TextMatrix(row, orOtgrugeno) = Round(rated(getShipped(gNzak), tqOrders!rate), 2)
  LoadNumeric Grid, row, orRate, tqOrders!rate
  
  Grid.TextMatrix(row, orVes) = tqOrders!VES

@@ -104,6 +104,9 @@ Public orBillId As Integer
 Public orVocnameId As Integer
 Public orServername As Integer
 
+Public sessionCurrency As Integer
+
+
 'Grid в FirmComtex
 Public Const fcId = 0
 Public Const fcFirmName = 1
@@ -155,6 +158,46 @@ Public Const gfId = 19
 
 Public Const otladColor = &H80C0FF
 
+Public Const CC_RUBLE As Integer = 1
+Public Const CC_UE As Integer = 2
+
+' на сколько нужно увеличивать ширину колонок, если выбраны рубли
+Public Const ColWidthForRuble As Single = 1.3
+
+
+
+Function tuneCurencyAndGranularity(tunedValue, currentRate, valueCurrency As Integer, Optional quantity As Double = 1) As Double
+    '
+    Dim totalInRubles As Double
+    Dim singleInRubles As Double
+    Dim totalInUE As Double
+    Dim singleInUE As Double
+    '
+    If valueCurrency = CC_RUBLE Then
+        singleInRubles = Round(tunedValue / quantity, 2)
+    Else
+        singleInRubles = Round(tunedValue / quantity / currentRate, 2)
+    End If
+    totalInRubles = singleInRubles * quantity
+    totalInUE = totalInRubles / currentRate
+    singleInUE = totalInUE / quantity
+    tuneCurencyAndGranularity = totalInUE
+
+End Function
+
+
+
+Function rated(geld, rate) As Variant
+    If IsNull(geld) Then
+        rated = Null
+        Exit Function
+    End If
+    If sessionCurrency = CC_RUBLE Then
+        rated = CDbl(geld) * CDbl(rate)
+    Else
+        rated = geld
+    End If
+End Function
 
 
 
@@ -534,6 +577,7 @@ checkReloadCfg
 baseOpen
 dostup = getEffectiveSetting("dostup")
 otlad = getEffectiveSetting("otlad")
+sessionCurrency = getEffectiveSetting("currency", CC_RUBLE)
 
 
 On Error GoTo ERRf 'проверка настройки Win98
@@ -792,7 +836,7 @@ End Sub
 'эта ф-я д.заменить и startDay() и getNextDay() и getPrevDay()
 ' возвращает смещение до треб. дня
 Function getWorkDay(offsDay As Integer, Optional baseDate As String = "") As Integer
-Dim i As Integer, j As Integer, step  As Integer
+Dim i As Integer, J As Integer, step  As Integer
 getWorkDay = -1
 If baseDate = "" Then
     tmpDate = CurDate
@@ -804,12 +848,12 @@ End If
 step = 1
 If offsDay < 0 Then step = -1
 
-j = 0: i = 0
-While step * j < step * offsDay '
+J = 0: i = 0
+While step * J < step * offsDay '
     i = i + step
 '    day = Weekday(tmpDate + i)
     day = Weekday(DateAdd("d", i, tmpDate))
-    If Not (day = vbSunday Or day = vbSaturday) Then j = j + step
+    If Not (day = vbSunday Or day = vbSaturday) Then J = J + step
 Wend
 getWorkDay = i
 'tmpDate = tmpDate + i

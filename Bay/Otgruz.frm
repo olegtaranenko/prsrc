@@ -1,15 +1,15 @@
 VERSION 5.00
-Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "msflxgrd.ocx"
+Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Otgruz 
    BackColor       =   &H8000000A&
    Caption         =   "Отгрузка"
    ClientHeight    =   3360
-   ClientLeft      =   165
-   ClientTop       =   450
-   ClientWidth     =   11685
+   ClientLeft      =   168
+   ClientTop       =   456
+   ClientWidth     =   11688
    LinkTopic       =   "Form1"
    ScaleHeight     =   3360
-   ScaleWidth      =   11685
+   ScaleWidth      =   11688
    StartUpPosition =   2  'CenterScreen
    Begin VB.CommandButton cmDel 
       Caption         =   "Удалить"
@@ -38,7 +38,7 @@ Begin VB.Form Otgruz
       Width           =   975
    End
    Begin VB.ListBox lbDate 
-      Height          =   2010
+      Height          =   1968
       Left            =   60
       TabIndex        =   0
       Top             =   780
@@ -50,8 +50,8 @@ Begin VB.Form Otgruz
       TabIndex        =   1
       Top             =   480
       Width           =   10035
-      _ExtentX        =   17701
-      _ExtentY        =   4260
+      _ExtentX        =   17695
+      _ExtentY        =   4255
       _Version        =   393216
       Rows            =   3
       FixedRows       =   2
@@ -94,7 +94,7 @@ Begin VB.Form Otgruz
       Width           =   735
    End
    Begin VB.Label laNomer 
-      Alignment       =   2  'Центровка
+      Alignment       =   2  'Center
       Caption         =   "Накладная /  Отгрузка   от:"
       Height          =   435
       Left            =   120
@@ -114,6 +114,8 @@ Public mousRow2 As Long, mousCol2 As Long
 Public Regim As String
 Public closeZakaz As Boolean
 Public isLoad As Boolean
+Public orderRate As Double
+
 'Const usSumm = 1
 'Const usOutSum = 2
 'Const usNowSum = 3
@@ -135,9 +137,27 @@ Dim oldHeight As Integer, oldWidth As Integer ' нач размер формы
 Dim outDate() As Date, outLen As Integer, deltaHeight As Integer
 
 Private Sub cmCancel_Click()
-
-Unload Me
+    Unload Me
 End Sub
+
+Private Function adjustGirdMoneyColWidth(inStartup As Boolean) As Long
+Dim J As Integer
+Dim ret As Long
+' Расширить колонки для рублей
+    For J = 1 To Grid2.Cols - 1
+        If Grid2.colWidth(J) > 0 _
+            And (Grid2.TextMatrix(1, J) = "Цена" Or Grid2.TextMatrix(1, J) = "Сумма") _
+        Then
+            If sessionCurrency = CC_RUBLE Then
+                Grid2.colWidth(J) = Grid2.colWidth(J) * ColWidthForRuble
+            ElseIf Not inStartup Then
+                Grid2.colWidth(J) = Grid2.colWidth(J) / ColWidthForRuble
+            End If
+        End If
+        ret = ret + Grid2.colWidth(J)
+    Next J
+    adjustGirdMoneyColWidth = ret
+End Function
 
 
 
@@ -151,7 +171,7 @@ Private Sub cmHelp_Click()
 End Sub
 
 Private Sub cmDel_Click()
-Dim i As Integer, j As Integer
+Dim I As Integer, J As Integer
 
 strWhere = "WHERE (((outDate)='" & Format(lbDate.Text, "yyyy-mm-dd hh:nn:ss") & _
 "' AND (numOrder)=" & gNzak & "));"
@@ -160,15 +180,15 @@ strWhere = "WHERE (((outDate)='" & Format(lbDate.Text, "yyyy-mm-dd hh:nn:ss") & 
 wrkDefault.BeginTrans
 
   sql = "DELETE From bayNomenkOut " & strWhere
-  j = myExecute("##208", sql, 0)
-  If j > 0 Then GoTo ER1
+  J = myExecute("##208", sql, 0)
+  If J > 0 Then GoTo ER1
   
   cErr = 219 '##219
 '  If Not IsNumeric(saveShipped) Then GoTo ER1
 
 wrkDefault.CommitTrans
 loadOtgruz
-Orders.Grid.TextMatrix(Orders.mousRow, orOtgrugeno) = getShipped(gNzak)
+Orders.Grid.TextMatrix(Orders.mousRow, orOtgrugeno) = rated(getShipped(gNzak), orderRate)
 
 'Orders.openOrdersRowToGrid "##218": tqOrders.Close
 
@@ -217,18 +237,20 @@ Grid2.TextMatrix(1, prSumm) = str
 Grid2.TextMatrix(1, prOutSum) = str
 Grid2.TextMatrix(1, prNowSum) = str
 
-Grid2.ColWidth(0) = 0
+Grid2.colWidth(0) = 0
 'Grid2.ColWidth(prType) = 380
-Grid2.ColWidth(prNomNom) = 1185
-Grid2.ColWidth(prDescript) = 3300 '1270
-Grid2.ColWidth(prEdIzm) = 420
-Grid2.ColWidth(prCenaEd) = 495
-Grid2.ColWidth(prQuant) = 630
-Grid2.ColWidth(prSumm) = 1035
-Grid2.ColWidth(prOutQuant) = 630
-Grid2.ColWidth(prOutSum) = 800
-Grid2.ColWidth(prNowQuant) = 630
-Grid2.ColWidth(prNowSum) = 800
+Grid2.colWidth(prNomNom) = 1185
+Grid2.colWidth(prDescript) = 3300 '1270
+Grid2.colWidth(prEdIzm) = 420
+Grid2.colWidth(prCenaEd) = 630
+Grid2.colWidth(prQuant) = 630
+Grid2.colWidth(prSumm) = 1035
+Grid2.colWidth(prOutQuant) = 630
+Grid2.colWidth(prOutSum) = 800
+Grid2.colWidth(prNowQuant) = 630
+Grid2.colWidth(prNowSum) = 800
+
+Me.Width = adjustGirdMoneyColWidth(True) + lbDate.left + lbDate.Width + 400
 
 loadOtgruz
 fitFormToGrid Me, Grid2
@@ -267,12 +289,12 @@ If Not tbNomenk.BOF Then
         tbNomenk!nomName & " " & tbNomenk!Size
     Grid2.TextMatrix(quantity2 + 1, prNomNom) = tbNomenk!nomNom
     Grid2.TextMatrix(quantity2 + 1, prEdIzm) = tbNomenk!ed_Izmer2
-    Grid2.TextMatrix(quantity2 + 1, prCenaEd) = tbNomenk!intQuant
-'    s = Round(tbNomenk!quantity / tbNomenk!perList, 2)
-    s = Round(tbNomenk!quantity / tbNomenk!perList, 2)
-    Grid2.TextMatrix(quantity2 + 1, prQuant) = s
-    s = Round(s * tbNomenk!intQuant, 2)
-    Grid2.TextMatrix(quantity2 + 1, prSumm) = s
+    Grid2.TextMatrix(quantity2 + 1, prCenaEd) = Round(rated(tbNomenk!intQuant, orderRate), 2)
+    
+    s = tbNomenk!quantity / tbNomenk!perList
+    Grid2.TextMatrix(quantity2 + 1, prQuant) = Round(s, 2)
+    s = s * tbNomenk!intQuant      'итоговая сумма по позиции (сколько вообще заказано этой позиции в заказе)
+    Grid2.TextMatrix(quantity2 + 1, prSumm) = Round(rated(s, orderRate), 2)
     sum = sum + s
         
     
@@ -287,28 +309,22 @@ If Not tbNomenk.BOF Then
     str = sql & "<" & strWhere & "));"
     'MsgBox str
     byErrSqlGetValues "W##203", str, s
-'    s = Round(s / tbNomenk!perList, 2)
-    s = Round(s, 2)
-    Grid2.TextMatrix(quantity2 + 1, prOutQuant) = s
-    Grid2.TextMatrix(quantity2 + 1, prOutSum) = Round(tbNomenk!intQuant * s, 2)
-    sum2 = sum2 + Round(tbNomenk!intQuant * s, 2)
+
+    ' заказано ранее (до текущей отгрузки)
+    Grid2.TextMatrix(quantity2 + 1, prOutQuant) = Round(s, 2)
+    Grid2.TextMatrix(quantity2 + 1, prOutSum) = Round(rated(tbNomenk!intQuant * s, orderRate), 2)
+    sum2 = sum2 + tbNomenk!intQuant * s
     
-  
-  If lbDate.ListIndex = lbDate.ListCount - 1 Then ' последний
-'    Grid2.TextMatrix(quantity2 + 1, prNowQuant) = tbNomenk!curQuant
-'    Grid2.TextMatrix(quantity2 + 1, prNowSum) = Round(tbNomenk!intQuant * tbNomenk!curQuant, 2)
-    'фиксируем Уже отпущено на сегодня
-    ReDim Preserve QQ(quantity2 + 1): QQ(quantity2 + 1) = s
-'  Else
-  End If
+    If lbDate.ListIndex = lbDate.ListCount - 1 Then ' последний
+        ReDim Preserve QQ(quantity2 + 1): QQ(quantity2 + 1) = s
+    End If
+    
     'отпущено на дату
     str = sql & "=" & strWhere & "));"
-'MsgBox str
+    
     byErrSqlGetValues "W##204", str, s
-'    s = Round(s / tbNomenk!perList, 2)
-    s = Round(s, 2)
     Grid2.TextMatrix(quantity2 + 1, prNowQuant) = s
-    Grid2.TextMatrix(quantity2 + 1, prNowSum) = Round(tbNomenk!intQuant * s, 2)
+    Grid2.TextMatrix(quantity2 + 1, prNowSum) = Round(rated(tbNomenk!intQuant * s, orderRate), 2)
 '  End If
     Grid2.AddItem ""
     tbNomenk.MoveNext
@@ -322,10 +338,10 @@ If quantity2 > 0 Then
 '    If quantity2 > 23 Then cmPrint.Visible = False
     Grid2.TextMatrix(quantity2 + 2, prQuant) = "Итого:"
     Grid2.row = quantity2 + 2: Grid2.col = prSumm
-    Grid2.Text = Round(sum, 2)
+    Grid2.Text = Round(rated(sum, orderRate), 2)
     Grid2.CellFontBold = True
     Grid2.col = prOutSum
-    Grid2.Text = Round(sum2, 2)
+    Grid2.Text = Round(rated(sum2, orderRate), 2)
     Grid2.CellFontBold = True
     Grid2.col = prNowSum
     Grid2.CellFontBold = True
@@ -346,13 +362,13 @@ MousePointer = flexDefault
 End Sub
 
 Sub loadOtgruz()
-Dim i As Integer
+Dim I As Integer
 
 lbDate.Clear
 loadOutDates
-For i = 0 To outLen
-    lbDate.AddItem Format(outDate(i), "dd.mm.yy hh:nn:ss")
-Next i
+For I = 0 To outLen
+    lbDate.AddItem Format(outDate(I), "dd.mm.yy hh:nn:ss")
+Next I
 lbDate.ListIndex = outLen: gridIsLoad = False
 
 ReDim QQ(0)
@@ -462,7 +478,7 @@ lbDate.Height = Me.Height - deltaHeight
 Grid2.Width = Grid2.Width + w
 
 cmCancel.Top = cmCancel.Top + h
-cmCancel.Left = cmCancel.Left + w
+cmCancel.left = cmCancel.left + w
 cmDel.Top = cmDel.Top + h
 
 'cmPrint.Top = cmPrint.Top + h
@@ -494,7 +510,7 @@ Grid2_EnterCell
 End Sub
 
 Private Sub Grid2_EnterCell()
-Dim str As String, i As Integer
+Dim str As String, I As Integer
 
 If quantity2 = 0 Or Not gridIsLoad Or closeZakaz Or noClick Then Exit Sub
 
@@ -503,8 +519,8 @@ If 2 > Grid2.row Or Grid2.row > quantity2 + 1 Then Exit Sub
 mousRow2 = Grid2.row
 mousCol2 = Grid2.col
 str = Grid2.TextMatrix(mousRow2, prNomNom) '
-i = InStr(str, "/")
-prExt = 0: If i > 1 Then prExt = Left$(str, i - 1)   'номер поставки
+I = InStr(str, "/")
+prExt = 0: If I > 1 Then prExt = left$(str, I - 1)   'номер поставки
 
 gNomNom = Grid2.TextMatrix(mousRow2, prNomNom)
 
@@ -535,7 +551,7 @@ End Sub
 
 Private Sub Grid2_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
 If Grid2.MouseRow = 0 And Shift = 2 Then _
-        MsgBox "ColWidth = " & Grid2.ColWidth(Grid2.MouseCol)
+        MsgBox "ColWidth = " & Grid2.colWidth(Grid2.MouseCol)
 
 End Sub
 
@@ -612,6 +628,26 @@ lbHide2
 MsgBox "Отгрузка не прошла", , "Error-" & cErr & " Сообщите администратору"
 End Sub
 
+Private Function checkQuantInput() As Boolean
+Dim pQuant As Long
+    checkQuantInput = True
+    
+    If Not checkNumeric(tbMobile.Text) Then
+        GoTo finally
+    End If
+    pQuant = Round(tbMobile.Text)
+    If CStr(pQuant) <> tbMobile.Text Then
+        MsgBox "Может быть только целым значением", , "Error"
+        GoTo finally
+    End If
+    Exit Function
+finally:
+    checkQuantInput = False
+    tbMobile.SetFocus
+    tbMobile.SelStart = 1
+    tbMobile.SelLength = Len(tbMobile.Text)
+End Function
+
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
 Dim pQuant As Single, s As Single, maxQ As Single
 
@@ -620,15 +656,16 @@ If KeyCode = vbKeyReturn Then
   wrkDefault.BeginTrans
   
   maxQ = Grid2.TextMatrix(mousRow2, prQuant) 'надлежит отгрузить
+  If Not checkQuantInput() Then
+    wrkDefault.Rollback: Exit Sub
+  End If
   maxQ = maxQ - QQ(mousRow2) 'на столько можно увеличивать
-  maxQ = Round(maxQ + Grid2.TextMatrix(mousRow2, prNowQuant), 2)
   If Not isNumericTbox(tbMobile, 0, maxQ) Then wrkDefault.Rollback: Exit Sub
-    pQuant = Round(tbMobile.Text, 2)
-    tbMobile.Text = pQuant
+    pQuant = tbMobile.Text
 
     On Error GoTo ER1
     sql = "SELECT * from bayNomenkOut " & _
-    "WHERE (((outDate)='" & Format(outDate(lbDate.ListIndex), "yyyy-mm-dd") & _
+    "WHERE (((outDate)='" & Format(outDate(lbDate.ListIndex), "yyyy-mm-dd hh:nn:ss") & _
     "') AND ((numOrder)=" & gNzak & ") AND ((nomNom)='" & gNomNom & "'));"
         
     Set tbNomenk = myOpenRecordSet("##201", sql, dbOpenForwardOnly)
@@ -636,7 +673,7 @@ If KeyCode = vbKeyReturn Then
         If pQuant > 0 Then
             tbNomenk.AddNew
             tbNomenk!outDate = outDate(lbDate.ListIndex)
-            tbNomenk!numOrder = gNzak
+            tbNomenk!numorder = gNzak
             tbNomenk!nomNom = gNomNom
             tbNomenk!quant = pQuant
             tbNomenk.Update
@@ -657,10 +694,10 @@ If KeyCode = vbKeyReturn Then
   'Orders.openOrdersRowToGrid "##217":  tqOrders.Close
   wrkDefault.CommitTrans
   
-  Orders.Grid.TextMatrix(Orders.mousRow, orOtgrugeno) = getShipped(gNzak)
+  Orders.Grid.TextMatrix(Orders.mousRow, orOtgrugeno) = Round(rated(getShipped(gNzak), orderRate), 2)
   
   'корректируем Уже отпущено на сегодня
-  QQ(mousRow2) = QQ(mousRow2) + pQuant - Grid2.TextMatrix(mousRow2, prNowQuant)
+'  QQ(mousRow2) = QQ(mousRow2) + pQuant - Grid2.TextMatrix(mousRow2, prNowQuant)
   
   Grid2.TextMatrix(mousRow2, prNowQuant) = pQuant
   maxQ = Grid2.TextMatrix(mousRow2, prCenaEd)
