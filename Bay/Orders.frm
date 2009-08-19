@@ -1863,7 +1863,7 @@ Function isFloatFromMobile(field As String, Optional isMoney As Boolean = False)
                 ueValue = tbMobile.Text
             End If
             
-            ValueToTableField "##23", tbMobile.Text, "BayOrders", field
+            ValueToTableField "##23", CStr(ueValue), "BayOrders", field
             Grid.TextMatrix(mousRow, mousCol) = tbMobile.Text
             isFloatFromMobile = True
         Else
@@ -1922,7 +1922,7 @@ BB:     tmpDate = Grid.TextMatrix(mousRow, orDataVid)
     ElseIf mousCol = orRate Then
         If Not isFloatFromMobile("rate") Then Exit Sub
     ElseIf mousCol = orOplacheno Then
-        If Not isFloatFromMobile("paid") Then Exit Sub
+        If Not isFloatFromMobile("paid", True) Then Exit Sub
 '    ElseIf mousCol = orOtgrugeno Then
 '        If Not isFloatFromMobile("shipped") Then Exit Sub
 '        s = Round(tbMobile.Text, 2)

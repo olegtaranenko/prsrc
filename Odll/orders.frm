@@ -2734,7 +2734,7 @@ Private Sub mnCurrency_Click()
         Me.Caption = left(Me.Caption, deletedPart - 1)
     End If
     setCurrencyCaption
-    adjustMoneyColumnWidth
+    adjustMoneyColumnWidth (False)
     adjustHotMoney
     
 End Sub

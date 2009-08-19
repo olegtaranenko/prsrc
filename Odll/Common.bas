@@ -268,7 +268,7 @@ Public Const ColWidthForRuble As Single = 1.3
 
 
 
-Function tuneCurencyAndGranularity(tunedValue, currentRate, valueCurrency As Integer, perList As Integer, Optional quantity As Double = 1) As Double
+Function tuneCurencyAndGranularity(tunedValue, currentRate, valueCurrency As Integer, Optional quantity As Double = 1, Optional perlist As Long = 1) As Double
     '
     Dim totalInRubles As Double
     Dim singleInRubles As Double
