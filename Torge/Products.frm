@@ -1498,6 +1498,7 @@ If frmMode = "productCopy" Then
     Grid.TextMatrix(Grid.Rows - 1, gpSize) = Grid.TextMatrix(mousRow, gpSize)
     Grid.TextMatrix(Grid.Rows - 1, gpDescript) = Grid.TextMatrix(mousRow, gpDescript)
     Grid.TextMatrix(Grid.Rows - 1, gpPrWeb) = Grid.TextMatrix(mousRow, gpPrWeb)
+    Grid.TextMatrix(Grid.Rows - 1, gpRabbat) = Grid.TextMatrix(mousRow, gpRabbat)
 Else
     Grid.TextMatrix(Grid.Rows - 1, gpSumCenaFreight) = "Error: Не обнаружены комплектующие"
     Grid.TextMatrix(Grid.Rows - 1, gpSumCenaSale) = "Error: Не обнаружены комплектующие"
@@ -1803,8 +1804,17 @@ If KeyCode = vbKeyReturn Then
         If str <> "" Then flds = flds & ", Page": vals = vals & ", '" & str & "'"
         str = Grid.TextMatrix(mousRow, gpSize)
         If str <> "" Then flds = flds & ", prSize": vals = vals & ", '" & str & "'"
+        str = Grid.TextMatrix(mousRow, gpRabbat)
+        If str <> "" Then flds = flds & ", rabbat": vals = vals & ", '" & str & "'"
         str = Grid.TextMatrix(mousRow, gpPrWeb)
-        If str <> "" Then flds = flds & ", web": vals = vals & ", '" & str & "'"
+        If str <> "" Then
+            sql = "select * from GuideProdCategory where sysname = '" & str & "'"
+            byErrSqlGetValues "##1001", sql, str
+            If str <> "" Then
+                flds = flds & ", prodCategoryId"
+                vals = vals & ", " & str
+            End If
+        End If
         str = Grid.TextMatrix(mousRow, gpDescript)
         If str <> "" Then flds = flds & ", prDescript": vals = vals & ", '" & str & "'"
 '        On Error GoTo 0
