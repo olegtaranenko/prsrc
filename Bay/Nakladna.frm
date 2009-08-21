@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "msflxgrd.ocx"
+Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Nakladna 
    BackColor       =   &H8000000A&
    Caption         =   "Предметы "
@@ -349,7 +349,7 @@ MousePointer = flexDefault
 End Sub
 'ind=1 м.б. только при Regim = ""
 Sub loadToGrid()
-Dim i As Integer, s As Single, s2 As Single, str As String, str2 As String
+Dim i As Integer, s As Double, s2 As Double, str As String, str2 As String
 
 
 'ReDim NN(0): ReDim QQ(0): ReDim QQ2(0): QQ2(0) = 0: ReDim QQ3(0)
@@ -466,7 +466,7 @@ Regim = "" 'нужно для lbInside_LostFocus
 End Sub
 
 Private Sub Grid2_DblClick()
-Dim str As String, per As Single, ed_Izmer As String
+Dim str As String, per As Double, ed_Izmer As String
 
 If Not Grid2.CellBackColor = &H88FF88 Then Exit Sub
   
@@ -510,7 +510,7 @@ Grid2_EnterCell
 End Sub
 
 Private Sub tbMobile2_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim delta As Single, quant As Single, s As Single, str As String
+Dim delta As Double, quant As Double, s As Double, str As String
 
 If KeyCode = vbKeyReturn Then
   

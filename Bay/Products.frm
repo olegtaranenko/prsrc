@@ -260,8 +260,8 @@ Public mousCol2 As Long
 Public mousRow2 As Long
 Public mousCol3 As Long
 Public mousRow3 As Long
-Public zakazano As Single
-Public FO As Single ' ФО
+Public zakazano As Double
+Public FO As Double ' ФО
 Public orderRate As Double
 
 
@@ -280,13 +280,13 @@ Dim Node As Node
 Dim quantity  As Long, quantity2 As Long, quantity3 As Long
 Public quantity5 As Long
 Dim oldHeight As Integer, oldWidth As Integer ' нач размер формы
-Dim tvVes As Single, gridVes As Single, grid2Ves As Single 'веса горизонт. размеров
+Dim tvVes As Double, gridVes As Double, grid2Ves As Double 'веса горизонт. размеров
 
 Dim tbSeries As Recordset
 Dim tbKlass As Recordset
 Dim typeId As Integer
 Dim beShift As Boolean
-'Dim QP() As Single
+'Dim QP() As Double
 'Dim VN() As String
 
 'Grid4
@@ -343,7 +343,7 @@ End Function
 
 
 
-Sub nomenkToNNQQ(pQuant As Single, eQuant As Single, prQuant As Single)
+Sub nomenkToNNQQ(pQuant As Double, eQuant As Double, prQuant As Double)
 Dim J As Integer, leng As Integer
 
 leng = UBound(NN)
@@ -395,7 +395,7 @@ For I = Grid.row To Grid.RowSel
         Grid.RemoveItem Grid.row
         quantity = quantity - 1
     End If
-Next I
+Next i
 Grid.SetFocus
 Grid_EnterCell
 End Sub
@@ -420,7 +420,7 @@ End Sub
 
 
 Sub dostupOstatkiToGrid(Optional reg As String)
-Dim s As Single, sum As Single, rr As Long, il As Long
+Dim s As Double, sum As Double, rr As Long, il As Long
 
 Me.MousePointer = flexHourglass
 'If numExt = 254 Then
@@ -444,8 +444,8 @@ gridFrame.ZOrder
 
 End Sub
 
-Public Function nomencOstatkiToGrid(row As Long) As Single
-Dim s As Single, str As String, z As Single, str2 As String
+Public Function nomencOstatkiToGrid(row As Long) As Double
+Dim s As Double, str As String, z As Double, str2 As String
 
 'Ф.остатки
 sql = "SELECT nomName, Ed_Izmer2, perList From sGuideNomenk " & _
@@ -476,7 +476,7 @@ If row > 0 Then _
 End Function
 
 Private Sub Form_Load()
-Dim str As String, I As Integer, delta As Single
+Dim str As String, I As Integer, delta As Double
 
 
 controlEnable False
@@ -593,7 +593,7 @@ End Sub
 
 Function loadPredmeti() As Double
 
-Dim s As Single, sum As Single, sumVes As Single, quant As Single
+Dim s As Double, sum As Double, sumVes As Double, quant As Double
 
 MousePointer = flexHourglass
 Grid2.Visible = False
@@ -907,7 +907,7 @@ End Sub
 
 
 Private Sub mnDel_Click()
-Dim pQuant As Single, I As Integer ', str  As String
+Dim pQuant As Double, I As Integer ', str  As String
 
 If beNaklads() Then Exit Sub
 
@@ -934,8 +934,8 @@ cmSel.Enabled = EN
 End Sub
 
 
-Function nomenkToDMC(delta As Single, Optional noOpen As String = "") As Boolean
-Dim s As Single
+Function nomenkToDMC(delta As Double, Optional noOpen As String = "") As Boolean
+Dim s As Double
 
 nomenkToDMC = False
 
@@ -981,16 +981,16 @@ End Function
 
 
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim c As Single, s As Single, str As String
+Dim c As Double, s As Double, str As String
 
 If KeyCode = vbKeyReturn Then
     If Not isNumericTbox(tbMobile, 0) Then Exit Sub
     If mousCol2 = dnSumm Then
         s = tuneCurencyAndGranularity(tbMobile.Text, orderRate, sessionCurrency, Grid2.TextMatrix(mousRow2, dnQuant))
-        c = s / CSng(Grid2.TextMatrix(mousRow2, dnQuant)) 'не округлять
+        c = s / CDbl(Grid2.TextMatrix(mousRow2, dnQuant)) 'не округлять
     Else 'dnCenaEd
         c = tuneCurencyAndGranularity(tbMobile.Text, orderRate, sessionCurrency, 1)
-        s = c * CSng(Grid2.TextMatrix(mousRow2, dnQuant))
+        s = c * CDbl(Grid2.TextMatrix(mousRow2, dnQuant))
     End If
     sql = "UPDATE sDMCrez SET intQuant = " & c & " WHERE (((numDoc)=" & _
     gNzak & ") AND ((nomNom)='" & Grid2.TextMatrix(mousRow2, dnNomNom) & "'));"
@@ -1019,8 +1019,8 @@ Grid2_EnterCell
 
 End Sub
 
-Function deficitAndNoIgnore(delta As Single) As Boolean
-Dim s As Single, il As Long
+Function deficitAndNoIgnore(delta As Double) As Boolean
+Dim s As Double, il As Long
 
 
 deficitAndNoIgnore = False
@@ -1034,9 +1034,9 @@ End If
 End Function
 
 Private Sub tbQuant_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim s As Single ', str As String
+Dim s As Double ', str As String
 'Dim i As Integer, NN2() As String
-Dim per As Single ', delta As Single
+Dim per As Double ', delta As Double
 
 If KeyCode = vbKeyReturn Then
 
@@ -1079,8 +1079,8 @@ End If
 
 End Sub
 'при delta < 0 - возм. удаление
-Function nomenkToDMCrez(delta As Single, Optional mov As String = "") As Boolean
-Dim s As Single, I As Integer
+Function nomenkToDMCrez(delta As Double, Optional mov As String = "") As Boolean
+Dim s As Double, I As Integer
 
 nomenkToDMCrez = False
 
@@ -1146,7 +1146,7 @@ Else '                обе присутствуют
     fullHeight = gHeightMax + g3HeightMax + laGrid.Height
     
     If fullHeight > formHeight Then
-        Dim normalGrid As Single, normalGird3 As Single
+        Dim normalGrid As Double, normalGird3 As Double
         Dim baseIsGrid As Boolean, baseIsGrid3 As Boolean
         
         If gHeightMax < formHeight * 2 / 3 Then
@@ -1401,8 +1401,8 @@ Me.MousePointer = flexDefault
 End Sub
 
 Sub loadKlassNomenk()
-Dim il As Long, r As Single, strWhere As String
-Dim beg As Single, prih As Single, rash As Single, oldNow As Single
+Dim il As Long, r As Double, strWhere As String
+Dim beg As Double, prih As Double, rash As Double, oldNow As Double
 
 
 

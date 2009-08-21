@@ -151,7 +151,7 @@ Const CT_SCHET = "schet"
 
 
 ' будут храниться итоги по столбам для показа их внизу таблицы
-Dim columnTotals() As Single
+Dim columnTotals() As Double
 
 
 Private Sub cmExel_Click()
@@ -235,24 +235,24 @@ End Sub
 
 Private Sub Form_Resize()
     Grid.left = 100
-    Grid.width = Me.width - 300
+    Grid.Width = Me.Width - 300
     TabStrip1.Top = 100
-    TabStrip1.width = Grid.width
+    TabStrip1.Width = Grid.Width
     TabStrip1.left = Grid.left
     Grid.Top = TabStrip1.Top + TabStrip1.Height
     Grid.Height = Me.Height - Grid.Top - 1200
-    cmExit.left = Grid.left + Grid.width - cmExit.width
+    cmExit.left = Grid.left + Grid.Width - cmExit.Width
     cmExit.Top = Grid.Top + Grid.Height + 50
     cmExel.Top = cmExit.Top
     cmPrint.Top = cmExit.Top
     cmExel.left = 500
-    cmPrint.left = cmExel.left + cmExel.width + 300
+    cmPrint.left = cmExel.left + cmExel.Width + 300
     cmExit.Visible = True
-    lbTotal.left = cmPrint.left + cmPrint.width + 300
+    lbTotal.left = cmPrint.left + cmPrint.Width + 300
     lbTotal.Top = cmExit.Top + 50
     lbTotalQty.Top = lbTotal.Top
-    lbTotalQty.left = lbTotal.left + lbTotal.width + 50
-    cmFind.left = lbTotalQty.left + lbTotalQty.width + 300
+    lbTotalQty.left = lbTotal.left + lbTotal.Width + 50
+    cmFind.left = lbTotalQty.left + lbTotalQty.Width + 300
     cmFind.Top = cmExit.Top
     Grid.Visible = True
 
@@ -273,7 +273,7 @@ End Sub
 Private Sub Grid_Compare(ByVal Row1 As Long, ByVal Row2 As Long, Cmp As Integer)
 Dim cell_1, cell_2 As String
 Dim date1, date2 As Date
-Dim num1, num2 As Single
+Dim num1, num2 As Double
 
     ' Всегда проверяем у строки 0-й столбец. если он пустой - считаем, что это строка с итогами по столбцам.
     ' потому что у всех остальных там должен быть id (фирмы, регионах и т.д.)
@@ -304,8 +304,8 @@ Dim num1, num2 As Single
     End If
     
     If colType = CT_NUMBER Then
-        num1 = Round(CSng(cell_1), 5)
-        num2 = Round(CSng(cell_2), 5)
+        num1 = Round(CDbl(cell_1), 5)
+        num2 = Round(CDbl(cell_2), 5)
         Cmp = Sgn(num1 - num2)
     ElseIf colType = CT_STRING Then
         If cell_1 > cell_2 Then
@@ -420,7 +420,7 @@ Dim groupSelectorColumn As String, prevSelector As Variant
 Dim checkResult As String
 Dim I As Integer ' номер столбца
 Dim columnBaseIndex As Integer, periodCount As Integer
-Dim orderQty As Integer, orderOrdered As Single, materialQty As Single, materialSaled As Single
+Dim orderQty As Integer, orderOrdered As Double, materialQty As Double, materialSaled As Double
 Dim rowTotals() As Double
 Dim columnIndex As Integer
 Dim skipFixedInit As Boolean
@@ -558,7 +558,7 @@ Dim periodIndex As Integer
     AjustColumnWidths Me.Grid, Label1
     totalQtyLabel = getCurrentSetting("totalQtyLabel", filterSettings)
     lbTotalQty.Caption = CStr(rownum) & " " & totalQtyLabel
-    cmFind.left = lbTotalQty.left + lbTotalQty.width + 100
+    cmFind.left = lbTotalQty.left + lbTotalQty.Width + 100
     
     activateTab 1
     

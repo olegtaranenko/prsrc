@@ -24,7 +24,7 @@ Public Manag() As String ' индекс = id из GuideManag
 
 Public insideId() As String
 Public Const begCehProblemId = 10 ' начало цеховых проблем в справочнике
-Public neVipolnen As Single, neVipolnen_O As Single
+Public neVipolnen As Double, neVipolnen_O As Double
 Public MaxDay As Integer ' число дней в реестре
 'Public tmpMaxDay As Integer 'число дней в окне Zakaz
 Public befDays As Integer ' число дней до даты реестра (когда сменилась дата)
@@ -58,13 +58,13 @@ Public endDay As Integer ' день последнего куска заказа
 Public begDayMO As Integer ' день первого куска ћќ заказа
 Public endDayMO As Integer ' день последнего куска ћќ заказа
 Public flEdit As String ' редактируетс€ ресурс
-Public Nstan As Single
-Public KPD As Single
-Public newRes As Single ' смена по умолчанию
-Public nr As Single, dr As Single 'убываощие ном. и доп. ресурсы
+Public Nstan As Double
+Public KPD As Double
+Public newRes As Double ' смена по умолчанию
+Public nr As Double, dr As Double 'убываощие ном. и доп. ресурсы
 'Public isDoMO As Boolean ' ћќ готов или пред. ћќ был готов - заказ достоверно начал делатьс€
 Public isLive As Boolean ' флаг - заказ живой
-Public zagAll As Single, zagLive As Single
+Public zagAll As Double, zagLive As Double
 Public drobleDopRes As Boolean
 
 Public table As Recordset '
@@ -78,7 +78,7 @@ Public trigger As Boolean '
 Public tmpDate As Date    '
 Public tmpStr As String
 Public tmpVar As Variant
-Public tmpSng As Single
+Public tmpSng As Double
 Public day As Integer     '
 Public tiki As Integer    '
 Public flClickDouble As Boolean
@@ -127,9 +127,9 @@ Public Const fcFormatString = _
 & "|<“елефон" _
 
 
-Public NN() As String, QQ() As Single ' откатываема€ номенклатура и кол-во
-Public QQ2() As Single, QQ3() As Single
-'Public tmpNum As Single ' времена€ в т.ч. дл€ isNunericTbox()
+Public NN() As String, QQ() As Double ' откатываема€ номенклатура и кол-во
+Public QQ2() As Double, QQ3() As Double
+'Public tmpNum As Double ' времена€ в т.ч. дл€ isNunericTbox()
 'Public cehNom As Integer
 Public skladId As Integer
 
@@ -263,7 +263,7 @@ End If
 For I = 2 To maxi
     If IsNull(tabl.Fields(I - 2)) Or c = "W" Then
         str = TypeName(val(I))
-'        If str = "Single" Or str = "Integer" Or str = "Long" Or str = "Double" Then
+'        If str = "Double" Or str = "Integer" Or str = "Long" Or str = "Double" Then
         If str = "String" Then
             val(I) = ""
         Else
@@ -321,8 +321,8 @@ If newLen < maxLen Then Exit Sub
 ReDim Preserve Mass(newLen + 20)
 End Sub
 
-Sub delay(tau As Single)
-Dim s As Single
+Sub delay(tau As Double)
+Dim s As Double
     s = Timer
     While Timer - s < tau ' 1 сек
         DoEvents
@@ -423,8 +423,8 @@ frm.Height = frm.Height + delta
 
 End Sub
 
-Function getOrdered(numZak As String) As Single
-Dim s As Single
+Function getOrdered(numZak As String) As Double
+Dim s As Double
 
 getOrdered = -1
 
@@ -435,8 +435,8 @@ If Not byErrSqlGetValues("W##209", sql, s) Then Exit Function
 getOrdered = s
 End Function
 'Orders.Grid.TextMatrix(Orders.Grid.row, orOtgrugeno)=getShipped()
-Function getShipped(numZak As String) As Single
-Dim s As Single, s1 As Single, str As String
+Function getShipped(numZak As String) As Double
+Dim s As Double, s1 As Double, str As String
 
 getShipped = 0
 'sql = "SELECT Sum([sDMC].[quant]*[sDMCrez].[intQuant]/[sGuideNomenk].[perList]) AS ¬ыражение1 " & _
@@ -498,7 +498,7 @@ Dim I As Integer
 End Sub
 
 Function LoadNumeric(Grid As MSFlexGrid, row As Long, col As Integer, _
-        val As Variant, Optional myErr As String = "") As Single
+        val As Variant, Optional myErr As String = "") As Double
  If IsNull(val) Then
     Grid.TextMatrix(row, col) = ""
     LoadNumeric = 0 ' дл€ log файла
@@ -556,7 +556,7 @@ End Sub
 
 
 Sub Main()
-Dim I As Integer, s As Single, str As String, str1 As String, str2 As String
+Dim I As Integer, s As Double, str As String, str1 As String, str2 As String
 Dim isXP As Boolean
 
 If App.PrevInstance = True Then
@@ -995,7 +995,7 @@ End Function
 
 Function beNaklads(Optional reg As String = "") As Boolean
 beNaklads = True
-Dim s As Single
+Dim s As Double
 'отпущено
 sql = "SELECT Sum(sDMC.quant) AS Sum_quant From sDMC " & _
 "WHERE (((sDMC.numExt)< 254) AND ((sDMC.numDoc)=" & numDoc & "));"
@@ -1012,8 +1012,8 @@ End If
 
 End Function
     
-Function PrihodRashod(reg As String, skladId As Integer) As Single
-Dim qWhere As String, s As Single
+Function PrihodRashod(reg As String, skladId As Integer) As Double
+Dim qWhere As String, s As Double
 
 PrihodRashod = 0
 
@@ -1057,7 +1057,7 @@ If Format(begDate, "dd.mm") = "01.01" Then _
     getLockYear = getLockYear - 1 'считаем, что этот год не учавствовал в отсечении базы
 End Function
 
-Function ostatCorr(delta As Single) As Boolean
+Function ostatCorr(delta As Double) As Boolean
 Dim sId As Integer, dId As Integer
 
 ostatCorr = False
@@ -1079,7 +1079,7 @@ End Function
 
 
 Function predmetiIsClose() As Variant
-Dim I As Integer, s As Single
+Dim I As Integer, s As Double
 
 predmetiIsClose = Null
 'If gNzak = 4092402 Then

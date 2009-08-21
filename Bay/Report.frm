@@ -93,11 +93,11 @@ Option Explicit
 Public Regim As String
 'Public Regim As String
 Dim oldHeight As Integer, oldWidth As Integer ' нач размер формы
-Dim zakazano As Single, Oplacheno As Single, Otgrugeno As Single
+Dim zakazano As Double, Oplacheno As Double, Otgrugeno As Double
 Public nCols As Integer ' общее кол-во колонок
 Public mousRow As Long
 Public mousCol As Long
-Dim workSum As Single, paidSum As Single, quantity As Long
+Dim workSum As Double, paidSum As Double, quantity As Long
 'константы для firmOrders
 Const rpNomZak = 1
 Const rpM = 2
@@ -164,10 +164,10 @@ End If
 End Sub
 
 Sub statistic(Optional year As String = "")
-Dim nRow As Long, nCol As Long, str As String, i As Integer, j As Integer
+Dim nRow As Long, nCol As Long, str As String, i As Integer, J As Integer
 Dim iMonth As Integer, iYear As Integer, iCount As Integer, strWhere As String
 Dim nMonth As Integer, nYear As Integer, mCount As Integer, lastCol As Integer
-Dim wtSum As Single, paidSum As Single, orderSum As Single, visits As Integer, visitSum As Integer
+Dim wtSum As Double, paidSum As Double, orderSum As Double, visits As Integer, visitSum As Integer
 Dim year01 As Integer, year02 As Integer, year03 As Integer, year04 As Integer
 Dim errCurYear As Integer, errBefYear As Integer ', whereByTemaAndType As String
 errCurYear = 0:   errBefYear = 0
@@ -347,7 +347,7 @@ End Sub
 
 '3052715
 Sub whoRezerved()
-Dim v, s As Single, ed2 As String, per As Single, sum As Single  ', ed1 As String, obr As String
+Dim v, s As Double, ed2 As String, per As Double, sum As Double  ', ed1 As String, obr As String
 'obrez, ed_Izmer, obr, ed1,
 sql = "SELECT  ed_Izmer2, perList From sGuideNomenk " & _
 "WHERE (((nomNom)='" & gNomNom & "'));"
@@ -505,7 +505,7 @@ End Sub
 'Regim = "allOrdersByFirmName" 'Отчет "Все заказы Фирмы"'
 'Regim = "OrdersByFirmName"    'Отчет "Незакрытые заказы"'
 Sub firmOrders()
-Dim l As Long, str As String, i As Integer, j As Integer
+Dim l As Long, str As String, i As Integer, J As Integer
 Dim strFirm As String, strFrom As String, strWhere As String
 Grid.FormatString = "|<№ заказа|^M |<Статус|<Проблемы|" & _
 "<Дата выдачи|<Время выдачи|Заказано|Оплачено|Отгружено"
@@ -559,22 +559,22 @@ If Not tqOrders.BOF Then
 '  Grid.MergeRow(2) = True
 
     Grid.TextMatrix(l, rpNomZak) = tqOrders!numOrder
-    j = tqOrders!StatusId
-    If j = 2 Or j = 3 Or j = 9 Then
+    J = tqOrders!StatusId
+    If J = 2 Or J = 3 Or J = 9 Then
         Grid.MergeRow(l) = True
-        str = status(j) & " на " & tqOrders!dateRS
+        str = status(J) & " на " & tqOrders!dateRS
         Grid.TextMatrix(l, rpStatus) = str
         Grid.row = l
         Grid.col = rpStatus
         Grid.CellFontBold = True
-        If j = 2 Then
+        If J = 2 Then
            Grid.CellForeColor = vbBlue
         Else
            Grid.CellForeColor = &HAA00& ' т.зел.
         End If
         Grid.TextMatrix(l, rpProblem) = str
     Else
-        Grid.TextMatrix(l, rpStatus) = status(j)
+        Grid.TextMatrix(l, rpStatus) = status(J)
         Grid.TextMatrix(l, rpProblem) = Problems(tqOrders!problemId)
     End If
     LoadDate Grid, l, rpDataVid, tqOrders!outDateTime, "dd.mm.yy"
@@ -584,7 +584,7 @@ If Not tqOrders.BOF Then
     zakazano = zakazano + numericToReport(l, rpZakazano, getOrdered(tqOrders!numOrder)) '$$6
     Oplacheno = Oplacheno + numericToReport(l, rpOplacheno, tqOrders!paid)
     'Otgrugeno = Otgrugeno + numericToReport(l, rpOtgrugeno, tqOrders!shipped) '$$6
-    Otgrugeno = Otgrugeno + numericToReport(l, rpOtgrugeno, getShipped(tqOrders!numOrder)) '$$6
+    Otgrugeno = Otgrugeno + numericToReport(l, rpOtgrugeno, getShipped(tqOrders!numorder)) '$$6
     l = l + 1
     Grid.AddItem ""
     tqOrders.MoveNext
@@ -620,7 +620,7 @@ Grid.col = 0
 End Sub
 
 Function numericToReport(row As Long, col As Integer, value As Variant) _
-As Single
+As Double
     If Not IsNumeric(value) Then
         numericToReport = 0
     Else

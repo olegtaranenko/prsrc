@@ -261,7 +261,7 @@ End Sub
 
 
 Sub loadPredmeti() '
-Dim s As Single, sum As Single, sum2 As Single, str As String
+Dim s As Double, sum As Double, sum2 As Double, str As String
 
 MousePointer = flexHourglass
 Grid2.Visible = False
@@ -433,7 +433,7 @@ End Function
 
 
 Sub nowSummToGrid()
-Dim il As Long, sum As Single
+Dim il As Long, sum As Double
 sum = 0
 For il = 2 To Grid2.Rows - 2
     sum = sum + Grid2.TextMatrix(il, prNowSum)
@@ -445,7 +445,7 @@ End Sub
 
 ''обновляет поле shipped в Orders
 'Function saveBayShipped() As Variant
-'Dim s As Single, s1 As Single, str As String
+'Dim s As Double, s1 As Double, str As String
 'saveBayShipped = Null
 ''sql = "SELECT Sum([sDMC].[quant]*[sDMC].[intQuant]/[sGuideNomenk].[perList]) AS cSum " & _
 '"FROM sGuideNomenk INNER JOIN sDMC ON sGuideNomenk.nomNom = sDMCrez.nomNom " & _
@@ -592,7 +592,7 @@ lbHide2
 End Sub
 
 Private Sub tbMobileOld_KeyDown(KeyCode As Integer, Shift As Integer)
-'Dim pQuant  As Single, maxQ As Single
+'Dim pQuant  As Double, maxQ As Double
 
 'If KeyCode = vbKeyReturn Then
     
@@ -649,7 +649,7 @@ finally:
 End Function
 
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim pQuant As Single, s As Single, maxQ As Single
+Dim pQuant As Double, s As Double, maxQ As Double
 
 If KeyCode = vbKeyReturn Then
   
@@ -721,7 +721,7 @@ End Sub
 
 
 Sub OutNowSummToGrid2()
-Dim il As Long, sum As Single, sum2 As Single
+Dim il As Long, sum As Double, sum2 As Double
 sum = 0: sum2 = 0
 For il = 2 To Grid2.Rows - 2
     sum = sum + Grid2.TextMatrix(il, prOutSum)

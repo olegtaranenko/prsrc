@@ -436,9 +436,9 @@ Private Sub adjustMoneyColumnWidth(inStartup As Boolean)
 Dim I As Long, J As Integer
     For J = 0 To 2 ' 3 смежных колонки с деньгами (заказано, оплачено, отгружено)
         If sessionCurrency = CC_RUBLE Then
-            Grid.colWidth(orZakazano + J) = Grid.colWidth(orZakazano + J) * ColWidthForRuble
+            Grid.ColWidth(orZakazano + J) = Grid.ColWidth(orZakazano + J) * ColWidthForRuble
         ElseIf Not inStartup Then
-            Grid.colWidth(orZakazano + J) = Grid.colWidth(orZakazano + J) / ColWidthForRuble
+            Grid.ColWidth(orZakazano + J) = Grid.ColWidth(orZakazano + J) / ColWidthForRuble
         End If
     Next J
 End Sub
@@ -772,7 +772,7 @@ Optional field As String = "")
 
 If orColNumber = 0 Then
     Grid.Cols = 2
-    Grid.colWidth(0) = 0
+    Grid.ColWidth(0) = 0
 Else
     Grid.Cols = Grid.Cols + 1
 End If
@@ -784,7 +784,7 @@ curCol = orColNumber
 ReDim Preserve orSqlFields(orColNumber + 1)
 orSqlFields(orColNumber) = field
 
-If colWdth >= 0 Then Grid.colWidth(orColNumber) = colWdth
+If colWdth >= 0 Then Grid.ColWidth(orColNumber) = colWdth
 Grid.TextMatrix(0, orColNumber) = colName
 
 End Sub
@@ -1054,12 +1054,12 @@ Dim tmpRow As Long, tmpCol As Long
 End Sub
 
 Function haveUslugi() As Boolean
-Dim s As Single
+Dim s As Double
 
 End Function
 
 Function havePredmeti() As Boolean
-Dim s As Single
+Dim s As Double
 havePredmeti = False
 sql = "SELECT quantity From sDMCrez WHERE (((numDoc)=" & gNzak & "));"
 If Not byErrSqlGetValues("W##199", sql, s) Then myBase.Close: End
@@ -1321,7 +1321,7 @@ End Sub
 
 Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then _
-        MsgBox "ColWidth = " & Grid.colWidth(Grid.MouseCol)
+        MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
 End Sub
 
 Private Sub Grid_RowColChange()
@@ -1902,7 +1902,7 @@ lbHide
 End Sub
 
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim str As String, DNM As String, s As Single
+Dim str As String, DNM As String, s As Double
 
 If KeyCode = vbKeyReturn Then
 DNM = Format(Now(), "dd.mm.yy hh:nn") & vbTab & cbM.Text & " " & gNzak ' именно vbTab
