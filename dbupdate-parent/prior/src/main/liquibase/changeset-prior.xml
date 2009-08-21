@@ -819,6 +819,63 @@ where pc.sysname = sGuideProducts.web
 		</update>
 	</changeSet>
 
+	<changeSet id="2" author="mantis-87" runOnChange="true">
+		<comment>изменить точность денежных столбцов</comment>
+		<modifyColumn tableName="xPredmetyByIzdelia">
+			<column name="cenaEd" type="double"/>
+			<column name="quant" type="double"/>
+		</modifyColumn>
+		<modifyColumn tableName="xPredmetyByNomenk">
+			<column name="cenaEd" type="double"/>
+			<column name="quant" type="double"/>
+		</modifyColumn>
+		<modifyColumn tableName="xPredmetyByIzdeliaOut">
+			<column name="quant" type="double"/>
+		</modifyColumn>
+		<modifyColumn tableName="xPredmetyByNomenkOut">
+			<column name="quant" type="double"/>
+		</modifyColumn>
+		<modifyColumn tableName="xUslugOut">
+			<column name="quant" type="double"/>
+		</modifyColumn>
+		<modifyColumn tableName="xEtapByIzdelia">
+			<column name="eQuant" type="double"/>
+			<column name="prevQuant" type="double"/>
+		</modifyColumn>
+		<modifyColumn tableName="xEtapByNomenk">
+			<column name="eQuant" type="double"/>
+			<column name="prevQuant" type="double"/>
+		</modifyColumn>
+		<modifyColumn tableName="sDMC">
+			<column name="quant" type="double"/>
+		</modifyColumn>
+		<modifyColumn tableName="sDMCmov">
+			<column name="quantity" type="double"/>
+		</modifyColumn>
+		<modifyColumn tableName="sDMCrez">
+			<column name="quantity" type="double"/>
+			<column name="curQuant" type="double"/>
+			<column name="intQuant" type="double"/>
+		</modifyColumn>
+		<modifyColumn tableName="sDMCVenture">
+			<column name="quant" type="double"/>
+			<column name="costed" type="double"/>
+		</modifyColumn>
+		<modifyColumn tableName="orders">
+			<column name="ordered" type="double"/>
+			<column name="paid" type="double"/>
+			<column name="shipped" type="double"/>
+			<column name="rate" type="double"/>
+		</modifyColumn>
+		<modifyColumn tableName="Bayorders">
+			<column name="ordered" type="double"/>
+			<column name="paid" type="double"/>
+			<column name="shipped" type="double"/>
+		</modifyColumn>
+	</changeSet>
+
+
+
 </databaseChangeLog>
 
 
