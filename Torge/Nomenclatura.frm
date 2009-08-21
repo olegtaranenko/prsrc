@@ -2226,29 +2226,26 @@ Grid.CellBackColor = vbWhite
   If MsgBox("После нажатия <Да> данный элемент будет удален из Справочника", _
   vbDefaultButton2 Or vbYesNo, "Удалить '" & gNomNom & "'. Вы уверены?") = vbYes Then
     sql = "delete from  sGuideNomenk WHERE nomNom ='" & gNomNom & "'"
-Debug.Print sql
+'Debug.Print sql
 
-    myExecute "##delete nomnom", sql
-    quantity = quantity - 1
-    If quantity = 0 Then
-        clearGridRow Grid, mousRow
+    If myExecute("##delete nomnom", sql, -198) = -2 Then
+        wrkDefault.Rollback
+        MsgBox "Номенклатура задействована либо в каком-то документе либо " & _
+        "в каком-то изделии из Cправочника изделий, поэтому сначала " & _
+        "необходимо удалить ее оттуда.", , "Позиция '" & gNomNom & _
+        "' задействована!"
     Else
-        Grid.RemoveItem mousRow
+        quantity = quantity - 1
+        If quantity = 0 Then
+            clearGridRow Grid, mousRow
+        Else
+            Grid.RemoveItem mousRow
+        End If
     End If
   End If
-GoTo EN1
 
-ERR1:
-If errorCodAndMsg("##164", -198) Then
-    MsgBox "Номенклатура задействована либо в каком-то документе либо " & _
-    "в каком-то изделии из Cправочника изделий, поэтому сначала " & _
-    "необходимо удалить ее оттуда.", , "Позиция '" & gNomNom & _
-    "' задействована!"
-End If
-EN1:
-Grid_EnterCell
-On Error Resume Next
-Grid.SetFocus
+  Grid_EnterCell
+  Grid.SetFocus
 End Sub
 
 Private Sub mnEdit5_Click()
