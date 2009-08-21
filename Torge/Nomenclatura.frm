@@ -2604,9 +2604,6 @@ If KeyCode = vbKeyReturn Then
         tbNomenk!FormulaNom = Grid.TextMatrix(mousRow, nkFormulaNom)
 '        tbNomenk! = Grid.TextMatrix(mousRow, nkCenaFreight)
 '        tbNomenk! = Grid.TextMatrix(mousRow, nkWebFormula)
-        tbNomenk!margin = Grid.TextMatrix(mousRow, nkMargin)
-        tbNomenk!kodel = Grid.TextMatrix(mousRow, nkKodel)
-        tbNomenk!kolonok = Grid.TextMatrix(mousRow, nkKolonok)
         ' не добавлят вычисляемые kolon1/2/3/4
         tbNomenk!CENA_W = Grid.TextMatrix(mousRow, nkCena2W)
         sql = "SELECT sourceId from sGuideSource WHERE (((sourceName)='" & _
@@ -2623,6 +2620,9 @@ If KeyCode = vbKeyReturn Then
     On Error GoTo ERR1
     tbNomenk!nomnom = str
     tbNomenk!KlassId = gKlassId
+    tbNomenk!margin = Grid.TextMatrix(mousRow, nkMargin)
+    tbNomenk!kodel = Grid.TextMatrix(mousRow, nkKodel)
+    tbNomenk!kolonok = Grid.TextMatrix(mousRow, nkKolonok)
     tbNomenk.Update
     tbNomenk.Close
     Grid.TextMatrix(mousRow, nkNomer) = str
