@@ -803,6 +803,22 @@ where pc.sysname = sGuideProducts.web
 		</rollback>
 	</changeSet>
 
+	<changeSet id="1" author="mantis-91" runOnChange="true">
+		<comment>При добавление подгруппы с названием "таблички" в 25 группу возник Run-time error.</comment>
+		<update tableName="sGuideNomenk">
+			<column name="margin" valueNumeric="20"/>
+			<where>margin is null</where>
+		</update>
+		<update tableName="sGuideNomenk">
+			<column name="kodel" valueNumeric="0.5"/>
+			<where>kodel is null</where>
+		</update>
+		<update tableName="sGuideNomenk">
+			<column name="kolonok" valueNumeric="1"/>
+			<where>kolonok is null</where>
+		</update>
+	</changeSet>
+
 </databaseChangeLog>
 
 

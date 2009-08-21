@@ -1609,8 +1609,13 @@ End Sub
 
 
 Private Function inKolonYellow() As Boolean
-    Dim kolonok As Integer
-    kolonok = CInt(Grid.TextMatrix(mousRow, nkKolonok))
+    Dim kolonok As Integer, kolonokStr As String
+    kolonokStr = Grid.TextMatrix(mousRow, nkKolonok)
+    If IsNumeric(kolonokStr) Then
+        kolonok = CInt(kolonokStr)
+    Else
+        kolonok = 1
+    End If
     inKolonYellow = False
     If kolonok > 0 Then
         Dim greenKolon As Integer
@@ -2065,6 +2070,9 @@ textBoxInGridCell tbMobile, Grid
 Grid.TextMatrix(mousRow, nkPerList) = 1
 Grid.TextMatrix(mousRow, nkCena1W) = "error: Формула не задана"
 Grid.TextMatrix(mousRow, nkCenaFreight) = "error: Формула не задана"
+Grid.TextMatrix(mousRow, nkMargin) = 20
+Grid.TextMatrix(mousRow, nkKodel) = 0.5
+Grid.TextMatrix(mousRow, nkKolonok) = 1
 If obraz <> "" Then
     Grid.TextMatrix(mousRow, nkName) = Grid.TextMatrix(obrazRow, nkName)
     Grid.TextMatrix(mousRow, nkEdIzm) = Grid.TextMatrix(obrazRow, nkEdIzm)
@@ -2699,7 +2707,13 @@ CC: cenaFreight = Grid.TextMatrix(mousRow, nkCenaFreight)
     If mousCol = nkMargin Then
         margin = CDbl(str)
     Else
-        margin = CDbl(Grid.TextMatrix(mousRow, nkMargin))
+        tmpStr = Grid.TextMatrix(mousRow, nkMargin)
+        If IsNumeric(tmpStr) Then
+            margin = CDbl(tmpStr)
+        Else
+            margin = 20 ' по умолчанию - 20 %
+        End If
+        
     End If
     
     If refreshGridCell = nkCena1W Then
@@ -2710,7 +2724,13 @@ CC: cenaFreight = Grid.TextMatrix(mousRow, nkCenaFreight)
     If mousCol = nkKolonok Then
         kolonok = CInt(str)
     Else
-        kolonok = CInt(Grid.TextMatrix(mousRow, nkKolonok))
+        tmpStr = Grid.TextMatrix(mousRow, nkKolonok)
+        If IsNumeric(tmpStr) Then
+            kolonok = CInt(tmpStr)
+        Else
+            kolonok = 1
+        End If
+        
     End If
     If kolonok > 0 Then
         manualOpt = False
@@ -2722,7 +2742,12 @@ CC: cenaFreight = Grid.TextMatrix(mousRow, nkCenaFreight)
     If mousCol = nkKodel Then
         kodel = CDbl(str)
     Else
-        kodel = CDbl(Grid.TextMatrix(mousRow, nkKodel))
+        tmpStr = Grid.TextMatrix(mousRow, nkKodel)
+        If IsNumeric(tmpStr) Then
+            kodel = CInt(tmpStr)
+        Else
+            kodel = 0.5
+        End If
     End If
     
     baseCena = cena2W * (1 - margin / 100)
