@@ -13,6 +13,18 @@ Begin VB.Form sProducts
    ScaleHeight     =   6384
    ScaleWidth      =   11880
    StartUpPosition =   1  'CenterOwner
+   Begin VB.Frame splLeftH 
+      BackColor       =   &H8000000A&
+      BorderStyle     =   0  'None
+      Caption         =   "Frame1"
+      ForeColor       =   &H8000000A&
+      Height          =   80
+      Left            =   2400
+      MousePointer    =   7  'Size N S
+      TabIndex        =   22
+      Top             =   3360
+      Width           =   3480
+   End
    Begin VB.CommandButton cmExel2 
       Caption         =   "Печать в Exel"
       Height          =   315
@@ -38,7 +50,7 @@ Begin VB.Form sProducts
    Begin VB.CommandButton cmExel 
       Caption         =   "Печать в Exel"
       Height          =   315
-      Left            =   2340
+      Left            =   900
       TabIndex        =   13
       Top             =   5940
       Visible         =   0   'False
@@ -66,6 +78,15 @@ Begin VB.Form sProducts
          AllowBigSelection=   0   'False
          AllowUserResizing=   1
       End
+      Begin VB.Label laGrid 
+         AutoSize        =   -1  'True
+         Caption         =   "Label1"
+         Height          =   192
+         Left            =   2400
+         TabIndex        =   20
+         Top             =   3360
+         Width           =   492
+      End
       Begin VB.Label laGrid4 
          Alignment       =   2  'Center
          BackColor       =   &H00800000&
@@ -88,6 +109,7 @@ Begin VB.Form sProducts
       End
       Begin VB.Label Label2 
          Alignment       =   2  'Center
+         BackColor       =   &H8000000A&
          Caption         =   "Если остатки позволяют, введите треб. кол-во изделий и нажмите <Enter>, иначе - <ESC>.."
          Height          =   255
          Left            =   60
@@ -110,6 +132,7 @@ Begin VB.Form sProducts
       AllowUserResizing=   1
    End
    Begin VB.Frame Frame 
+      BackColor       =   &H8000000A&
       BorderStyle     =   0  'None
       Height          =   255
       Left            =   0
@@ -193,17 +216,33 @@ Begin VB.Form sProducts
       AllowBigSelection=   0   'False
       AllowUserResizing=   1
    End
-   Begin VB.Label laGrid 
-      AutoSize        =   -1  'True
-      Caption         =   "Label1"
-      Height          =   192
-      Left            =   2400
-      TabIndex        =   20
-      Top             =   3360
-      Width           =   492
+   Begin VB.Frame splRightV 
+      BackColor       =   &H8000000A&
+      BorderStyle     =   0  'None
+      Caption         =   "Frame1"
+      ForeColor       =   &H8000000A&
+      Height          =   5892
+      Left            =   7080
+      MousePointer    =   9  'Size W E
+      TabIndex        =   21
+      Top             =   0
+      Width           =   80
+   End
+   Begin VB.Frame splLeftV 
+      BackColor       =   &H8000000A&
+      BorderStyle     =   0  'None
+      Caption         =   "Frame1"
+      ForeColor       =   &H8000000A&
+      Height          =   5892
+      Left            =   2280
+      MousePointer    =   9  'Size W E
+      TabIndex        =   23
+      Top             =   0
+      Width           =   80
    End
    Begin VB.Label laGrid1 
       AutoSize        =   -1  'True
+      BackColor       =   &H8000000A&
       Height          =   192
       Left            =   2760
       TabIndex        =   18
@@ -211,6 +250,7 @@ Begin VB.Form sProducts
       Width           =   36
    End
    Begin VB.Label laBegin 
+      BackColor       =   &H8000000A&
       Caption         =   "Label2"
       Height          =   4395
       Left            =   2760
@@ -219,6 +259,7 @@ Begin VB.Form sProducts
       Width           =   3795
    End
    Begin VB.Label laQuant 
+      BackColor       =   &H8000000A&
       Caption         =   "изделий"
       Enabled         =   0   'False
       Height          =   255
@@ -228,6 +269,7 @@ Begin VB.Form sProducts
       Width           =   675
    End
    Begin VB.Label laGrid2 
+      BackColor       =   &H8000000A&
       Caption         =   "Номенклатурный состав предметов:"
       Height          =   195
       Left            =   7380
@@ -322,6 +364,8 @@ Const nkQuant = 6
 
 Dim buntColumn As Integer
 
+Dim Dragging As Boolean
+Dim DraggingX As Single, DraggingY As Single
 
 Private Function adjustGirdMoneyColWidth() As Long
 Dim J As Integer
@@ -395,7 +439,7 @@ For I = Grid.row To Grid.RowSel
         Grid.RemoveItem Grid.row
         quantity = quantity - 1
     End If
-Next i
+Next I
 Grid.SetFocus
 Grid_EnterCell
 End Sub
@@ -482,6 +526,7 @@ Dim str As String, I As Integer, delta As Double
 controlEnable False
 laQuant.Visible = False
 laQuant.Caption = "лист"
+splLeftH.Visible = False
 
 Frame.Visible = False
     
@@ -494,7 +539,7 @@ If Regim = "products" Then
     Grid3.colWidth(gpName) = 1300
     Grid3.colWidth(gpSize) = 1080
     Grid3.colWidth(gpDescript) = 4085
-    laGrid.left = Grid3.left
+    laGrid.Left = Grid3.Left
 
 Else
     laBegin = "В классификаторе выберите (кликом Mouse) группу, при этом " & _
@@ -540,10 +585,11 @@ If Regim = "ostat" Or Regim = "products" Then
     laQuant.Visible = False
     laGrid2.Visible = False
     Grid2.Visible = False
+    splRightV.Visible = Grid2.Visible
     laGrid.Visible = False
     Grid.Width = 7000 '6230
     Me.Width = Grid.Width + 2527
-    cmExit.left = Me.Width - cmExit.Width - 200
+    cmExit.Left = Me.Width - cmExit.Width - 200
     Grid2.Width = 0 'для Resize
     GoTo EN1
 ElseIf Regim = "" Or Regim = "closeZakaz" Then
@@ -566,7 +612,7 @@ quantity2 = 0
 loadPredmeti ' сюда попадаем только из предметов заказа
 Dim Grid2Width As Long: Grid2Width = adjustGirdMoneyColWidth()
 Grid2.Width = Grid2Width + 500
-Me.Width = Grid.left + Grid.Width + Grid2Width + 800
+Me.Width = Grid.Left + Grid.Width + Grid2Width + 800
 
 If quantity2 > 0 Then
     str = "Редактирование"
@@ -597,6 +643,7 @@ Dim s As Double, sum As Double, sumVes As Double, quant As Double
 
 MousePointer = flexHourglass
 Grid2.Visible = False
+splRightV.Visible = Grid2.Visible
 quantity2 = 0
 clearGrid Grid2
 sql = "SELECT sGuideNomenk.nomNom, sGuideNomenk.nomName, sGuideNomenk.ed_Izmer2, " & _
@@ -637,6 +684,8 @@ End If
 tbNomenk.Close
 EN1:
 Grid2.Visible = True
+splRightV.Visible = True
+
 If quantity2 > 0 Then
     Grid2.TextMatrix(quantity2 + 1, dnQuant) = "Итого:"
     Grid2.row = quantity2 + 1: Grid2.col = dnSumm
@@ -664,7 +713,7 @@ End Function
 
 
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer
+Dim h As Integer, w As Integer, Left As Long
 
 If Not isLoad Then Exit Sub
 If Me.WindowState = vbMinimized Then Exit Sub
@@ -681,39 +730,53 @@ oldHeight = Me.Height
 w = Me.Width - oldWidth
 oldWidth = Me.Width
 tv.Height = tv.Height + h
+
 tv.Width = tv.Width + w * tvVes
 If Regim <> "products" Then
     Grid.Height = tv.Height
+    splLeftH.Visible = False
 End If
 
-Grid.left = Grid.left + w * tvVes
-laGrid1.left = Grid.left
-laBegin.left = tv.left + tv.Width + 100
+Grid.Left = Grid.Left + w * tvVes
+laGrid1.Left = Grid.Left
+laBegin.Left = tv.Left + tv.Width + 100
 laBegin.Top = tv.Top
 
 Grid.Height = Grid.Height + h
 Grid.Width = Grid.Width + w * gridVes
 
-Grid2.left = Grid2.left + w * (tvVes + gridVes)
-laGrid2.left = Grid2.left
+Grid2.Left = Grid2.Left + w * (tvVes + gridVes)
+laGrid2.Left = Grid2.Left
 Grid2.Height = Grid2.Height + h
 Grid2.Width = Grid2.Width + w * grid2Ves
 
+splLeftV.Top = Grid.Top
+splLeftV.Left = tv.Left + tv.Width + 15
+splLeftV.Height = tv.Height
+
+splLeftH.Top = Grid3.Top + Grid3.Height + 5
+splLeftH.Left = splLeftV.Left + splLeftV.Width
+splLeftH.Width = Grid3.Width
+
+splRightV.Top = splLeftV.Top
+splRightV.Left = splLeftH.Left + splLeftH.Width
+splRightV.Height = splLeftV.Height
+
 cmSel.Top = cmSel.Top + h
-cmSel.left = cmSel.left + w
+cmSel.Left = cmSel.Left + w
 tbQuant.Top = tbQuant.Top + h
-tbQuant.left = tbQuant.left + w
+tbQuant.Left = tbQuant.Left + w
 laQuant.Top = laQuant.Top + h
-laQuant.left = laQuant.left + w
+laQuant.Left = laQuant.Left + w
 cmExit.Top = cmExit.Top + h
-cmExit.left = cmExit.left + w
+cmExit.Left = cmExit.Left + w
 cmExel2.Top = cmExel2.Top + h
-cmExel2.left = cmExel2.left + w
+cmExel2.Left = cmExel2.Left + w
 cmExel.Top = cmExel.Top + h
 cmHide.Top = cmHide.Top + h
-Grid3.left = Grid.left
+Grid3.Left = Grid.Left
 Grid3.Width = Grid.Width
-laGrid.left = Grid3.left
+laGrid.Left = Grid3.Left
 
 End Sub
 
@@ -800,7 +863,7 @@ Private Sub Grid_LeaveCell()
 End Sub
 
 
-Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid.colWidth(Grid.MouseCol)
 End Sub
@@ -823,7 +886,7 @@ End If
 
 End Sub
 
-Private Sub Grid2_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid2_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
 If Grid2.MouseRow = 0 Then
     If Shift = 2 Then MsgBox "ColWidth = " & Grid2.colWidth(Grid2.MouseCol)
 ElseIf Button = 2 And quantity2 <> 0 Then
@@ -885,7 +948,7 @@ End Sub
 
 
 
-Private Sub Grid3_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid3_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
     If Grid3.MouseRow = 0 And Shift = 2 Then MsgBox "ColWidth = " & Grid3.colWidth(Grid3.MouseCol)
     
     'On Error Resume Next ' когда снова по tv_click
@@ -899,7 +962,7 @@ Private Sub Grid4_GotFocus()
 tbQuant.SetFocus
 End Sub
 
-Private Sub Grid4_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid4_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
 If Grid4.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid4.colWidth(Grid4.MouseCol)
 
@@ -929,6 +992,7 @@ End Sub
 Sub controlEnable(EN As Boolean)
 If Not EN Then ' только гасим
     Grid.Visible = False
+    splLeftH.Visible = Grid.Visible
 End If
 cmSel.Enabled = EN
 End Sub
@@ -979,6 +1043,103 @@ EN1:
 If noOpen = "" Then lockSklad "un"
 End Function
 
+Private Sub splLeftH_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
+    Dragging = True
+    DraggingY = Y
+End Sub
+
+Private Sub splLeftH_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+    If Dragging Then
+        Dim DraggingShift As Single
+        DraggingShift = Y
+        If Not (Grid3.Height + DraggingShift > 100) Then
+            Exit Sub
+        End If
+        If Not (Grid.Height - DraggingShift > 100) Then
+            Exit Sub
+        End If
+        splLeftH.Top = splLeftH.Top + DraggingShift
+        Grid3.Height = Grid3.Height + DraggingShift
+        laGrid.Top = splLeftH.Top + splLeftH.Height
+        Grid.Top = laGrid.Top + laGrid.Height
+        Grid.Height = Grid.Height - DraggingShift
+    End If
+End Sub
+
+Private Sub splLeftH_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+    Dragging = False
+End Sub
+
+Private Sub splLeftV_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
+    Dragging = True
+    DraggingX = X
+End Sub
+
+Private Sub splLeftV_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+    If Dragging Then
+        Dim DraggingShift As Single
+        DraggingShift = X
+        If tv.Width + DraggingShift > 100 Then
+        Else
+            Exit Sub
+        End If
+        
+        If Grid.Width - DraggingShift > 100 Then
+        Else
+            Exit Sub
+        End If
+            Grid.Width = Grid.Width - DraggingShift
+            tv.Width = tv.Width + DraggingShift
+        splLeftV.Left = splLeftV.Left + DraggingShift
+        Grid.Left = Grid.Left + DraggingShift
+        laGrid.Left = Grid.Left
+        laGrid.Width = Grid.Width
+        Grid3.Left = Grid.Left
+        Grid3.Width = Grid.Width
+        laBegin.Left = Grid.Left
+        If laBegin.Width > DraggingShift Then _
+            laBegin.Width = Grid.Width
+        splLeftH.Left = Grid.Left
+        splLeftH.Width = Grid.Width
+    End If
+End Sub
+
+
+Private Sub splLeftV_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+    Dragging = False
+End Sub
+
+
+Private Sub splRightV_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
+    Dragging = True
+    DraggingX = X
+End Sub
+
+Private Sub splRightV_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+    If Dragging Then
+        Dim DraggingShift As Single
+        DraggingShift = X
+        If Not (Grid3.Width + DraggingShift > 100) Then
+            Exit Sub
+        End If
+        If Not (Grid2.Width - DraggingShift > 100) Then
+            Exit Sub
+        End If
+            
+        Grid3.Width = Grid3.Width + DraggingShift
+        Grid.Width = Grid3.Width
+        splRightV.Left = splRightV.Left + DraggingShift
+        splLeftH.Width = Grid3.Width
+        Grid2.Left = Grid2.Left + DraggingShift
+        Grid2.Width = Grid2.Width - DraggingShift
+        laGrid2.Left = Grid2.Left
+        laGrid2.Width = Grid2.Width
+    End If
+End Sub
+
+Private Sub splRightV_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+    Dragging = False
+End Sub
 
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
 Dim c As Double, s As Double, str As String
@@ -1185,6 +1346,9 @@ Else '                обе присутствуют
     If mousRow3 < Grid3.Rows Then
         If Not Grid3.RowIsVisible(mousRow3) Then rowViem mousRow3, Grid3
     End If
+    splLeftH.Top = Grid3.Top + Grid3.Height
+    splLeftH.Width = Grid3.Width
+    splLeftH.Left = Grid3.Left
     
 End If
 
@@ -1329,7 +1493,9 @@ End Sub
 
 
 Sub loadProductNomenk(ByVal v_productId As Integer)
-Dim s As Double, grBef As String
+Dim s As Double, grBef As String, Left As Integer
+
+Dragging = False
 
 Me.MousePointer = flexHourglass
 buntColumn = nkQuant
@@ -1395,6 +1561,7 @@ If Not tbNomenk.BOF Then
 End If
 tbNomenk.Close
 Grid.Visible = True
+splLeftH.Visible = Grid.Visible
 Grid.ZOrder
 Me.MousePointer = flexDefault
 
@@ -1404,6 +1571,7 @@ Sub loadKlassNomenk()
 Dim il As Long, r As Double, strWhere As String
 Dim beg As Double, prih As Double, rash As Double, oldNow As Double
 
+Dragging = False
 
 
 If tv.SelectedItem.Key = "all" Then
@@ -1422,6 +1590,7 @@ If beShift Then
 Else
     quantity = 0
     Grid.Visible = False
+    splLeftH.Visible = Grid.Visible
     clearGrid Grid
 End If
 
@@ -1456,6 +1625,7 @@ End If
 tbNomenk.Close
 
 Grid.Visible = True
+'splLeftH.Visible = Grid.Visible
 EN1:
 Me.MousePointer = flexDefault
 End Sub
@@ -1469,7 +1639,7 @@ End If
 End Sub
 
 
-Private Sub tv_MouseDown(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub tv_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
 beShift = False
 If Shift = 2 Then beShift = True
 
@@ -1494,6 +1664,7 @@ If Regim = "products" Then
     loadSeriaProduct
     Grid3.Visible = True
     Grid.Visible = False
+    splLeftH.Visible = Grid.Visible
     'laGrid.Visible = True
     cmSel.Enabled = False
     gridOrGrid3Hide "grid"
