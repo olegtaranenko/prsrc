@@ -55,6 +55,7 @@ begin
 				, v_cenaEd
 				, v_date
 				, v_rate
+				, v_ndsrate
 			);
 	end if;
 	  
