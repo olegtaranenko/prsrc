@@ -18,10 +18,13 @@ begin
 	declare scet_nu integer;
 	declare v_date date;
 	declare v_perList float;
-	declare v_rate float;
+	declare v_rate double;
+	declare v_ndsrate       float;
 
 	select id_jscet, ventureId, inDate, rate
+		, v.nds
 	into v_id_jscet, v_ventureId, v_date, v_rate
+		, v_ndsrate
 	from orders 
 	where numOrder = new_name.numOrder;
 	select id_inv, perList into v_id_inv, v_perList from sGuideNomenk where nomNom = new_name.nomNom;
@@ -39,6 +42,7 @@ begin
 				, new_name.cenaEd
 				, v_date
 				, v_rate
+				, v_ndsrate
 			);
 	end if;
 	  

@@ -8,13 +8,14 @@ referencing old as old_name new as new_name
 for each row
 begin
 	declare v_id_scet integer;
-	declare remoteServerNew varchar(32);
+	declare remoteServerOld varchar(32);
 
 	declare v_cenaEd        double;
 	declare v_quantity      double;
 	declare v_perList       double;
 	declare v_currency_rate double;
 	declare v_ndsrate       float;
+	declare v_updated       integer;
 	
 	set v_id_scet = old_name.id_scet;
 	  
@@ -22,7 +23,7 @@ begin
 		, n.perList 
 		, rate
 		, v.nds
-	into remoteServerNew
+	into remoteServerOld
 		, v_perList 
 		, v_currency_rate
 		, v_ndsrate
@@ -32,24 +33,13 @@ begin
 	where numOrder = old_name.numDoc;
 
 
-	if remoteServerNew is not null then
+	if remoteServerOld is not null then
+		set v_quantity = new_name.quantity/v_perList;
 		if update(quantity) or update(intQuant) then
-			set v_quantity = round(new_name.quantity/v_perList, 2);
-			call update_remote(remoteServerNew, 'scet', 'summa_sale'
-				, convert(varchar(20), v_currency_rate * v_quantity * new_name.intQuant)
-				, 'id = ' + convert(varchar(20), v_id_scet)
-			);
-			call update_remote(remoteServerNew, 'scet', 'summa_nds'
-				, convert(varchar(20), round(v_currency_rate * v_quantity * new_name.intQuant * v_ndsrate / 100, 2))
-				, 'id = ' + convert(varchar(20), v_id_scet)
-			);
-			call update_remote(remoteServerNew, 'scet', 'summa_salev'
-				, convert(varchar(20), v_quantity*new_name.intQuant)
-				, 'id = ' + convert(varchar(20), v_id_scet)
-			);
+			set v_updated = wf_scet_price_changed(remoteServerOld, v_quantity, new_name.intQuant, v_id_scet, v_currency_rate, v_ndsrate);
         end if;
 		if update(quantity) then
-			call update_remote(remoteServerNew, 'scet', 'kol1', convert(varchar(20), v_quantity), 'id = ' + convert(varchar(20), v_id_scet));
+			call update_remote(remoteServerOld, 'scet', 'kol1', convert(varchar(20), v_quantity), 'id = ' + convert(varchar(20), v_id_scet));
 		end if;
 	end if;
 

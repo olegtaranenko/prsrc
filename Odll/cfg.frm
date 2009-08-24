@@ -200,6 +200,7 @@ Const bsDbName = 1
 Const bsServer = 2
 Const bsActive = 3
 Const bsPrefix = 4
+Const bsNds = 5
 
 
 
@@ -303,7 +304,7 @@ Dim I As Integer
 
 If Regim = "comtexAdmin" Then
     Grid.rows = 2: Grid.Cols = 5: Grid.Clear
-    Grid.FormatString = "|<Бухгалтерская база|<Cервер|<Совместная работа|<Префикс"
+    Grid.FormatString = "|<Бухгалтерская база|<Cервер|<Совместная работа|<Префикс|>НДС"
     MsgBox "Будьте уверены, что вы знаете, что вы делаете. В противном случае изменения сделанные в открывающеммся окне могут повлечь за собой проблемы в режиме совместной работы Prior и Comtex", , "Предупреждение"
 Else
     Grid.rows = 2: Grid.Cols = 2: Grid.Clear
@@ -319,7 +320,7 @@ If Regim = "pathSet" Then
     laNomenks.Caption = NomenksPath
     laProducts.Caption = ProductsPath
 ElseIf Regim = "comtexAdmin" Then
-    Me.Caption = "Выбор базы"
+    'Me.Caption = "Выбор базы"
 '    laGlobal.Visible = False
     laLogins.Visible = False
     laSvodka.Visible = False
@@ -340,8 +341,9 @@ ElseIf Regim = "comtexAdmin" Then
     Grid.ColWidth(bsServer) = 1000
     Grid.ColWidth(bsActive) = 800
     Grid.ColWidth(bsPrefix) = 800
+    Grid.ColWidth(bsNds) = 650
     I = Grid.Width
-    Grid.Width = Grid.ColWidth(bsDbName) + Grid.ColWidth(bsServer) + Grid.ColWidth(bsActive) + Grid.ColWidth(bsPrefix) + 350
+    Grid.Width = Grid.ColWidth(bsDbName) + Grid.ColWidth(bsServer) + Grid.ColWidth(bsActive) + Grid.ColWidth(bsPrefix) + Grid.ColWidth(bsNds) + 350
     I = Grid.Width - I
     Me.Width = Me.Width + I
     cmExit.left = cmExit.left + I
@@ -361,6 +363,7 @@ ElseIf Regim = "comtexAdmin" Then
         End If
         
         Grid.TextMatrix(I + 1, bsPrefix) = table!invCode
+        Grid.TextMatrix(I + 1, bsNds) = table!nds
 
         table.MoveNext
         Grid.AddItem ""
@@ -394,7 +397,7 @@ Dim ind As Integer, I As Integer, str As String
     If Regim = "comtexAdmin" Then
         If Grid.col = bsActive Then
             listBoxInGridCell lbActive, Grid, Grid.TextMatrix(Grid.MouseRow, Grid.MouseCol)
-        ElseIf Grid.col = bsPrefix Then
+        ElseIf Grid.col = bsPrefix Or Grid.col = bsNds Then
             textBoxInGridCell tbMobile, Grid
         End If
         
@@ -465,8 +468,16 @@ Dim I As Integer
 
     If KeyCode = vbKeyReturn Then
         If Regim = "comtexAdmin" Then
-            sql = "update guideVenture set invCode = " & tbMobile.Text & " where sysname = '" & Grid.TextMatrix(clickedRow, bsServer) & "'"
-            I = myExecute("##1.2", sql)
+            sql = ""
+            If Grid.col = bsPrefix Then
+                sql = "update guideVenture set invCode = " & tbMobile.Text & " where sysname = '" & Grid.TextMatrix(clickedRow, bsServer) & "'"
+                I = myExecute("##1.2", sql)
+            ElseIf Grid.col = bsNds Then
+                sql = "update guideVenture set nds = " & tbMobile.Text & " where sysname = '" & Grid.TextMatrix(clickedRow, bsServer) & "'"
+            End If
+            If sql <> "" Then
+                I = myExecute("##1.2", sql)
+            End If
         End If
         Grid.Text = tbMobile.Text
         saveFileSettings appCfgFile, appSettings

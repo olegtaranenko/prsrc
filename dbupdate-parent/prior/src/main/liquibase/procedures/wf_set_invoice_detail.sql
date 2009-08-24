@@ -8,7 +8,8 @@ create procedure wf_set_invoice_detail (
 			, p_id_jscet integer
 			, p_numOrder integer
 			, p_date date
-			, p_rate float
+			, p_rate double
+			, p_ndsrate double
 )
 begin
 -- Процедура синхронизирует предметы заказа Приора
@@ -22,8 +23,8 @@ begin
 	declare is_variant integer;
 	declare v_id_variant integer;
 	declare is_uslug integer;
-	declare v_quant float;
-	declare v_perList float;
+	declare v_quant double;
+	declare v_perList double;
 
 	set is_uslug = 1; // предполагаем изначально, что да
 
@@ -49,6 +50,7 @@ begin
 				, r_cenaEd * v_perList
 				, p_date
 				, p_rate
+				, p_ndsrate
 			);
 		update xPredmetyByNomenk set id_scet = v_id_scet where current of n;
 
@@ -89,6 +91,7 @@ begin
 				, r_cenaEd
 				, p_date
 				, p_rate
+				, p_ndsrate
 			);
 
 		update xPredmetyByIzdelia set id_scet = v_id_scet, id_inv = v_id_inv where current of i;
@@ -109,6 +112,7 @@ begin
 				, v_quant//r_cenaEd
 				, now()//p_date
 				, p_rate
+				, p_ndsrate
 			);
 
 	end if;

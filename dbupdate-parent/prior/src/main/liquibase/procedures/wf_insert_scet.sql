@@ -21,9 +21,12 @@ begin
 --	declare v_currency_rate double;
 	declare v_datev varchar(20);
 	declare v_id_cur integer;
+	declare v_nds  double;
+
+	set v_nds = p_ndsrate / 100;
 
 
-  set wf_insert_scet =  null;
+	set wf_insert_scet =  null;
  
   if p_servername is not null and p_id_jscet is not null then
 
@@ -49,6 +52,7 @@ begin
 		,summa_sale
 		,summa_salev
 		,summa_nds
+		,percent_nds
 	';
 
 	set v_values = 
@@ -56,9 +60,10 @@ begin
 		+', '+ convert(varchar(20), p_id_inv)
 		+', '+ convert(varchar(20), p_quant)
 		+', '+ convert(varchar(20), scet_nu)
-		+', '+ convert(varchar(20), round(p_quant*p_cena * p_rate, 2))
-		+', '+ convert(varchar(20), round(p_quant*p_cena, 2))
-		+', '+ convert(varchar(20), round(p_quant*p_cena*p_ndsrate/100, 2))
+		+', '+ convert(varchar(20), round(p_quant * p_cena * p_rate, 2))
+		+', '+ convert(varchar(20), round(p_quant * p_cena, 2))
+		+', '+ convert(varchar(20), round(p_quant * p_cena * v_nds / (1 + v_nds), 2))
+		+', '+ convert(varchar(20), round(p_ndsrate / 100, 2))
 	;
 	--message 'p_cena = ', p_cena to client;
 	--message 'p_quant = ', p_quant to client;

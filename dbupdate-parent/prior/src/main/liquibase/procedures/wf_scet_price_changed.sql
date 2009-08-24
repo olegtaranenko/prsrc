@@ -6,18 +6,28 @@ end if;
 CREATE function wf_scet_price_changed (
 -- апдейтим цены(руб и валютную) в бух базе комтеха при изменении суммы в приоре.
 	  p_server_new    varchar(32)
-	, p_quant         float
-	, p_cenaEd        float
+	, p_quant         double
+	, p_cenaEd        double
 	, p_id_scet       integer
-	, p_currency_rate float
+	, p_currency_rate double
+	, in p_ndsrate double
 )
 returns integer
 begin
 	declare v_updated integer;
+	declare v_rubleEd double;
+	declare v_nds  double;
 
+	set v_nds = p_ndsrate / 100;
+
+	set v_rubleEd = p_currency_rate * p_cenaEd;
 
 	set v_updated = update_count_remote(p_server_new, 'scet', 'summa_sale'
-		, convert(varchar(20), p_currency_rate * p_quant * p_cenaEd)
+		, convert(varchar(20), v_rubleEd * p_quant)
+		, 'id = ' + convert(varchar(20), p_id_scet)
+	);
+	set v_updated = update_count_remote(p_server_new, 'scet', 'summa_nds'
+		, convert(varchar(20), v_rubleEd * p_quant * v_nds / (1 + v_nds))
 		, 'id = ' + convert(varchar(20), p_id_scet)
 	);
 	set v_updated = update_count_remote(p_server_new, 'scet', 'summa_salev'

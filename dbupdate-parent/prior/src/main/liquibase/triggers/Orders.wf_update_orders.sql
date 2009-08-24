@@ -7,45 +7,49 @@ Orders
 referencing old as old_name new as new_name
 for each row
 begin
-	declare remoteServerOld varchar(32);
-	declare remoteServerNew varchar(32);
-	declare v_fields varchar(255);
-	declare v_values varchar(2000);
-	declare v_nu_jscet integer;
-	declare r_nu varchar(50);
-	declare r_id integer;
---	declare v_firm_id integer;
-	declare v_invCode varchar(10);
-	declare v_id_dest integer;
-	declare v_id_schef integer;
-	declare v_id_bux integer;
-	declare v_id_bank integer;
-	declare v_datev varchar(20);
-	declare v_id_cur integer;
-	declare v_currency_rate float;
-	declare v_cenaEd float;
-	declare v_order_date varchar(20);
-	declare v_check_count integer; 
-	declare v_id_jscet integer;
-	declare v_id_scet integer;
-	declare v_id_inv integer;
-	declare v_numorder integer;
-	declare v_updated integer;
+	declare remoteServerOld   varchar(32);
+	declare remoteServerNew   varchar(32);
+	declare v_fields          varchar(255);
+	declare v_values          varchar(2000);
+	declare v_nu_jscet        integer;
+	declare r_nu              varchar(50);
+	declare r_id              integer;
+--	declare v_firm_id           integer;
+	declare v_invCode         varchar(10);
+	declare v_id_dest         integer;
+	declare v_id_schef        integer;
+	declare v_id_bux          integer;
+	declare v_id_bank         integer;
+	declare v_datev           varchar(20);
+	declare v_id_cur          integer;
+	declare v_currency_rate   double;
+	declare v_cenaEd          double;
+	declare v_order_date      varchar(20);
+	declare v_check_count     integer; 
+	declare v_id_jscet        integer;
+	declare v_id_scet         integer;
+	declare v_id_inv          integer;
+	declare v_numorder        integer;
+	declare v_updated         integer;
 
-	declare v_issue_id integer;
-	declare v_msgCode integer;
+	declare v_issue_id        integer;
+	declare v_msgCode         integer;
 
 --	declare v_total_account_date datetime;
-	declare sync char(1);
+	declare sync              char(1);
 	declare c_status_close_id integer;
-	declare v_ivo_procent float;
+	declare v_ivo_procent     double;
+	declare v_ndsrate         float;
 
 	set c_status_close_id = 6;  -- закрыт
 
-	select sysname, invCode into remoteServerOld, v_invcode from GuideVenture where ventureId = old_name.ventureId;
-	set v_currency_rate = new_name.rate;
+	select sysname, invCode 
+	into remoteServerOld, v_invcode 
+	from GuideVenture where ventureId = old_name.ventureId;
+	
+	set    v_currency_rate = new_name.rate;
 	select id_cur into v_id_cur from system;
-	select sysname into remoteServerOld from GuideVenture where ventureId = old_name.ventureId;
+
 
 	if update(invoice) and remoteServerOld is not null then begin
 		declare v_nu_jdog varchar(17);
@@ -80,7 +84,12 @@ begin
 				set new_name.id_bill = null;
 			end if;
 		
-			select sysname, invCode into remoteServerNew, v_invcode from GuideVenture where ventureId = new_name.ventureId;
+			select sysname, invCode 
+				, v.nds
+			into remoteServerNew, v_invcode 
+				, v_ndsrate
+			from GuideVenture where ventureId = new_name.ventureId;
+
 			if remoteServerNew is not null then
 		
 				set v_numOrder = old_name.numOrder;
@@ -90,7 +99,7 @@ begin
 		
 				set new_name.id_jscet = r_id;
 				set new_name.invoice = v_invCode + convert(varchar(20), v_nu_jscet);
-				call wf_set_invoice_detail(remoteServerNew, r_id, new_name.numOrder, v_order_date, v_currency_rate);
+				call wf_set_invoice_detail(remoteServerNew, r_id, new_name.numOrder, v_order_date, v_currency_rate, v_ndsrate);
 			end if;
 
 			-- исправление расходных накладных, связанных с заказом
@@ -108,11 +117,15 @@ begin
 
 	
 	
-	if update (ordered) or update(rate) then
+	if (update (ordered) or update(rate)) 
+		and not update(ventureId) 
+	then
 
 		set v_id_jscet = old_name.id_jscet;
 	
 		if remoteServerOld is not null and v_id_jscet is not null then
+
+			select nds into v_ndsrate from GuideVenture where ventureId = old_name.ventureId;
 
 			if update(rate) then
 				call update_remote(remoteServerOld, 'jscet', 'curr', convert(varchar(20), v_currency_rate ), 'id = ' + convert(varchar(20), old_name.id_jscet));
@@ -134,7 +147,7 @@ begin
 				where numorder = old_name.numorder
 			do
 				set v_check_count = 1;
-				set v_updated = wf_scet_price_changed(remoteServerOld, r_quant, r_cenaEd, r_id_scet, v_currency_rate);
+				set v_updated = wf_scet_price_changed(remoteServerOld, r_quant, r_cenaEd, r_id_scet, v_currency_rate, v_ndsrate);
 				if v_updated = 0 then
 					-- Этой позиции нет в комтехе. Вероятно бухгалтер изменил номенклатуру
 					if v_issue_id is null then
@@ -163,7 +176,7 @@ begin
 				where numorder = old_name.numorder
 			do
 				set v_check_count = 1;
-				set v_updated = wf_scet_price_changed(remoteServerOld, r_quant, r_cenaEd, r_id_scet, v_currency_rate);
+				set v_updated = wf_scet_price_changed(remoteServerOld, r_quant, r_cenaEd, r_id_scet, v_currency_rate, v_ndsrate);
 				if v_updated = 0 then
 					-- Этой позиции нет в комтехе. Вероятно бухгалтер изменил номенклатуру
 					if v_issue_id is null then
@@ -215,7 +228,7 @@ begin
 			if v_id_scet is not null then
 
 				-- именно такой случай
-				set v_updated = wf_scet_price_changed(remoteServerOld, new_name.ordered, v_cenaEd, v_id_scet, v_currency_rate);
+				set v_updated = wf_scet_price_changed(remoteServerOld, new_name.ordered, v_cenaEd, v_id_scet, v_currency_rate, v_ndsrate);
 
 			else
 				-- первый раз меням это поле => нужно добавить
@@ -228,6 +241,7 @@ begin
 						, new_name.ordered
 						, old_name.indate
 						, v_currency_rate
+						, v_ndsrate
 					);
 			end if;
 		end if;

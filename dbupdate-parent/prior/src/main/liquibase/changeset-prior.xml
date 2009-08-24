@@ -507,7 +507,7 @@ end;
 	</changeSet>
 -->
 
-	<changeSet id="1" author="mantis-71" runOnChange="false">
+	<changeSet id="1" author="mantis-71" runOnChange="true">
 		<comment>при смене курса не пересчитывается рубли в комтехе</comment>
 		<sqlFile path="triggers/Orders.wf_update_orders.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 	</changeSet>
@@ -902,6 +902,8 @@ where pc.sysname = sGuideProducts.web
 	<changeSet id="4" author="mantis-94" runOnChange="true">
 		<comment>НДС: процедура добавления номенклатуры в счет</comment>
 		<sqlFile path="procedures/wf_insert_scet.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="procedures/wf_set_invoice_detail.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="procedures/wf_scet_price_changed.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 	</changeSet>
 
 	<changeSet id="5" author="mantis-94" runOnChange="true">
