@@ -84,11 +84,11 @@ begin
 				set new_name.id_bill = null;
 			end if;
 		
-			select sysname, invCode 
+			select v.sysname, v.invCode 
 				, v.nds
 			into remoteServerNew, v_invcode 
 				, v_ndsrate
-			from GuideVenture where ventureId = new_name.ventureId;
+			from GuideVenture v where v.ventureId = new_name.ventureId;
 
 			if remoteServerNew is not null then
 		
@@ -224,25 +224,31 @@ begin
 
 			set v_id_scet = null;
 			set v_id_scet = select_remote(remoteServerOld, 'scet', 'id', 'id_jmat = ' + convert(varchar(20), v_id_jscet) + ' and id_inv = ' + convert(varchar(20), v_id_inv));
-			set v_cenaEd = 1; -- цена услуги - 1 ”≈
+			set v_cenaEd = new_name.ordered;
 			if v_id_scet is not null then
 
 				-- именно такой случай
-				set v_updated = wf_scet_price_changed(remoteServerOld, new_name.ordered, v_cenaEd, v_id_scet, v_currency_rate, v_ndsrate);
+				set v_updated = wf_scet_price_changed(
+					remoteServerOld
+					, 1
+					, v_cenaEd
+					, v_id_scet
+					, v_currency_rate
+					, v_ndsrate
+				);
 
 			else
 				-- первый раз мен€м это поле => нужно добавить
-				set v_id_scet = 
-					wf_insert_scet(
-						remoteServerOld
-						, v_id_jscet
-						, v_id_inv
-						, v_cenaEd
-						, new_name.ordered
-						, old_name.indate
-						, v_currency_rate
-						, v_ndsrate
-					);
+				set v_id_scet = wf_insert_scet(
+					remoteServerOld
+					, v_id_jscet
+					, v_id_inv
+					, 1
+					, v_cenaEd
+					, old_name.indate
+					, v_currency_rate
+					, v_ndsrate
+				);
 			end if;
 		end if;
 

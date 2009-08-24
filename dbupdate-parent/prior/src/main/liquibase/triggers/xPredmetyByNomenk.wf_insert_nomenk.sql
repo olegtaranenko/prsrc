@@ -22,13 +22,19 @@ begin
 	declare v_ndsrate       float;
 
 	select id_jscet, ventureId, inDate, rate
-		, v.nds
 	into v_id_jscet, v_ventureId, v_date, v_rate
-		, v_ndsrate
 	from orders 
 	where numOrder = new_name.numOrder;
-	select id_inv, perList into v_id_inv, v_perList from sGuideNomenk where nomNom = new_name.nomNom;
-	select sysname, invCode into remoteServerNew, v_invcode from GuideVenture where ventureId = v_ventureId;
+
+	select id_inv, perList 
+	into v_id_inv, v_perList 
+	from sGuideNomenk where nomNom = new_name.nomNom;
+
+	select sysname, invCode 
+		, v.nds
+	into remoteServerNew, v_invcode 
+		, v_ndsrate
+	from GuideVenture v where ventureId = v_ventureId;
 
 	if remoteServerNew is not null and v_id_jscet is not null then
 	  -- «аказ, который имеет ссылки в бух.базах интеграции
