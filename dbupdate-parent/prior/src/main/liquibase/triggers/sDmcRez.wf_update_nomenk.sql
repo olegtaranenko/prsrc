@@ -10,19 +10,22 @@ begin
 	declare v_id_scet integer;
 	declare remoteServerNew varchar(32);
 
-	declare v_cenaEd float;
-	declare v_quantity float;
-	declare v_perList float;
-	declare v_currency_rate float;
+	declare v_cenaEd        double;
+	declare v_quantity      double;
+	declare v_perList       double;
+	declare v_currency_rate double;
+	declare v_ndsrate       float;
 	
 	set v_id_scet = old_name.id_scet;
 	  
 	select v.sysname
 		, n.perList 
 		, rate
+		, v.nds
 	into remoteServerNew
 		, v_perList 
 		, v_currency_rate
+		, v_ndsrate
 	from BayOrders o
 	join GuideVenture v on o.ventureId = v.ventureId and v.standalone = 0
 	join sGuideNomenk n on n.nomNom = old_name.nomNom
@@ -34,6 +37,10 @@ begin
 			set v_quantity = round(new_name.quantity/v_perList, 2);
 			call update_remote(remoteServerNew, 'scet', 'summa_sale'
 				, convert(varchar(20), v_currency_rate * v_quantity * new_name.intQuant)
+				, 'id = ' + convert(varchar(20), v_id_scet)
+			);
+			call update_remote(remoteServerNew, 'scet', 'summa_nds'
+				, convert(varchar(20), round(v_currency_rate * v_quantity * new_name.intQuant * v_ndsrate / 100, 2))
 				, 'id = ' + convert(varchar(20), v_id_scet)
 			);
 			call update_remote(remoteServerNew, 'scet', 'summa_salev'
