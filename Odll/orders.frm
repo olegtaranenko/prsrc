@@ -1702,6 +1702,18 @@ Function stopOrderAtVenture() As Boolean
 End Function
 
 
+Function checkInvoiceBusy(p_numOrder As String, p_newInvoice As String) As Integer
+Dim ret As Integer
+
+    sql = "select wf_jscet_check_busy (" & p_numOrder & ", '" & p_newInvoice & "')"
+On Error GoTo sqle
+    byErrSqlGetValues "##100.2", sql, checkInvoiceBusy
+    
+    Exit Function
+sqle:
+    wrkDefault.rollback
+    errorCodAndMsg "checkInvoiceBusy"
+End Function
 
 
 Function checkInvoiceMerge(p_numOrder As String, p_newInvoice As String) As Integer
@@ -1710,11 +1722,11 @@ Dim ret As Integer
     sql = "select wf_check_jscet_merge (" & p_numOrder & ", '" & p_newInvoice & "')"
 On Error GoTo sqle
     byErrSqlGetValues "##100.2", sql, checkInvoiceMerge
-    If checkInvoiceMerge < 0 Then
-        MsgBox "Для объединения заказов в один счет требуется, чтобы фирма-заказчик и предприятие (а так же курс) были одинаковые" _
-        & vbCr & "Исправьте эти поля и попробуйте еще раз", , "Нельзя присоединить заказ"
-        wrkDefault.rollback
-    End If
+'    If checkInvoiceMerge < 0 Then
+'        MsgBox "Для объединения заказов в один счет требуется, чтобы фирма-заказчик и предприятие (а так же курс) были одинаковые" _
+'        & vbCr & "Исправьте эти поля и попробуйте еще раз", , "Нельзя присоединить заказ"
+'        wrkDefault.rollback
+'    End If
     
     Exit Function
 sqle:
@@ -3122,18 +3134,18 @@ DNM = Format(Now(), "dd.mm.yy hh:nn") & vbTab & cbM.Text & " " & gNzak ' именно 
             delZakazFromGrid
         End If
     ElseIf mousCol = orInvoice Then
-        If Grid.TextMatrix(mousRow, orVenture) <> "" Then
-            sql = "select nextnu_remote( '" & Grid.TextMatrix(mousRow, orServername) & "', 'jscet')"
-            byErrSqlGetValues "##78.1", sql, next_nu
-            If tbMobile.Text <> next_nu Then
-                If vbYes <> MsgBox("Следующий номер по бухгалтерии должен быть равен " _
+'        If Grid.TextMatrix(mousRow, orVenture) <> "" Then
+'            sql = "select nextnu_remote( '" & Grid.TextMatrix(mousRow, orServername) & "', 'jscet')"
+'            byErrSqlGetValues "##78.1", sql, next_nu
+'            If tbMobile.Text <> next_nu Then
+'                If vbYes <> MsgBox("Следующий номер по бухгалтерии должен быть равен " _
                     & next_nu & ". Нажмите да, если вы действительно хотите изменить номер заказа на " _
                     & tbMobile.Text, vbYesNo, "Внимание") _
                 Then
-                    GoTo AA
-                End If
-            End If
-        End If
+'                    GoTo AA
+'                End If
+'            End If
+'        End If
         
         If InStr(tbMobile.Text, "счет") > 0 Or tbMobile.Text = "0" Then
             str = Grid.TextMatrix(mousRow, orOtgrugeno)
@@ -3152,31 +3164,40 @@ DNM = Format(Now(), "dd.mm.yy hh:nn") & vbTab & cbM.Text & " " & gNzak ' именно 
         Else
             If Grid.TextMatrix(mousRow, orVenture) <> "" Then
         
-                id_jscet_split = checkInvoiceSplit(gNzak, tbMobile.Text)
-                id_jscet_merge = checkInvoiceMerge(gNzak, tbMobile.Text)
+'                id_jscet_split = checkInvoiceSplit(gNzak, tbMobile.Text)
+'                id_jscet_merge = checkInvoiceMerge(gNzak, tbMobile.Text)
+                Dim id_jscet As Integer
+                id_jscet = checkInvoiceBusy(gNzak, tbMobile.Text)
                 
                 p_newInvoice = tbMobile.Text
-                p_Invoice = Grid.TextMatrix(mousRow, orInvoice)
-                mFault = ""
-                bFault = False
-                
-                If id_jscet_merge < 0 Then
-                    mFault = "Заказ " & gNzak & " не был присоединен к счету " & p_newInvoice
-                ElseIf id_jscet_split > 0 And id_jscet_merge > 0 Then
-                    bFault = tryInvoiceMove(gNzak, p_Invoice, id_jscet_merge, p_newInvoice)
-                    mFault = mFault = "Заказ " & gNzak & " не был переведен из счета " & gNzak & " в счет " & p_newInvoice
-                ElseIf id_jscet_split > 0 Then
-                    bFault = tryInvoiceSplit(gNzak, p_Invoice)
-                    mFault = "Заказ " & gNzak & " не был выделен в отдельный счет"
-                ElseIf id_jscet_merge > 0 Then
-                    bFault = tryInvoiceMerge(gNzak, id_jscet_merge, p_newInvoice)
-                    mFault = "Заказ " & gNzak & " не был присоединен к счету " & p_newInvoice
+'                p_Invoice = Grid.TextMatrix(mousRow, orInvoice)
+                If id_jscet > 0 Then
+                    
+                    MsgBox "Номер счета " & p_newInvoice _
+                        & " уже используется. Выберите другой номер." _
+                        , , "Ошибка"
+                    GoTo AA
                 End If
-                
-                If Not bFault And mFault <> "" Then
-                    MsgBox "Произошла ошибка" & vbCr & mFault, , "Сообщите администратору"
-                    Exit Sub
-                End If
+'                mFault = ""
+'                bFault = False
+'
+'                If id_jscet_merge < 0 Then
+'                    mFault = "Заказ " & gNzak & " не был присоединен к счету " & p_newInvoice
+'                ElseIf id_jscet_split > 0 And id_jscet_merge > 0 Then
+'                    bFault = tryInvoiceMove(gNzak, p_Invoice, id_jscet_merge, p_newInvoice)
+'                    mFault = mFault = "Заказ " & gNzak & " не был переведен из счета " & gNzak & " в счет " & p_newInvoice
+'                ElseIf id_jscet_split > 0 Then
+'                    bFault = tryInvoiceSplit(gNzak, p_Invoice)
+'                    mFault = "Заказ " & gNzak & " не был выделен в отдельный счет"
+'                ElseIf id_jscet_merge > 0 Then
+'                    bFault = tryInvoiceMerge(gNzak, id_jscet_merge, p_newInvoice)
+'                    mFault = "Заказ " & gNzak & " не был присоединен к счету " & p_newInvoice
+'                End If
+'
+'                If Not bFault And mFault <> "" Then
+'                    MsgBox "Произошла ошибка" & vbCr & mFault, , "Сообщите администратору"
+'                    Exit Sub
+'                End If
             End If
             
             If Not isFloatFromMobile("Invoice") Then Exit Sub

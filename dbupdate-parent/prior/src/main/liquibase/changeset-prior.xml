@@ -920,5 +920,20 @@ where pc.sysname = sGuideProducts.web
 		<sqlFile path="triggers/xPredmetyByIzdelia.wf_update_izd.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 	</changeSet>
 	
+	<changeSet id="1" author="mantis-96" runOnChange="true">
+		<comment>Вместо мержа счетов - запрет</comment>
+		<sqlFile path="procedures/wf_check_jscet_busy.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<executeCommand executable="dbisqlc.exe">
+			<arg value="-c"/>
+			<arg value="DSN=prior;UID=dba;PWD=sql"/>
+			<arg value="-q"/>
+			<arg value="\dev\prsrc\trunk\dbupdate-parent\prior\target\classes\mainteinance\rp_jscet_check.sql"/>
+		</executeCommand>
+<!--
+		<sqlFile path="mainteinance\rp_jscet_check.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+-->
+	</changeSet>
+
+
 </databaseChangeLog>
 

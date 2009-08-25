@@ -693,5 +693,10 @@ end;
 		<sqlFile path="triggers/jscet.wf_jscet_update.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 	</changeSet>
 
+	<changeSet id="1" author="mantis-96" runOnChange="true">
+		<comment>Запретить назначать один и тот же договор разным счетам</comment>
+		<sqlFile path="procedures/cmt_jscet_check.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+	</changeSet>
+
 </databaseChangeLog>
 

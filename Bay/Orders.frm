@@ -17,7 +17,7 @@ Begin VB.Form Orders
    StartUpPosition =   2  'CenterScreen
    Begin VB.ListBox lbVenture 
       Appearance      =   0  'Flat
-      Height          =   600
+      Height          =   792
       Left            =   5500
       TabIndex        =   26
       Top             =   1000
@@ -402,6 +402,19 @@ Const rowFromOrdersSQL = "SELECT BayOrders.numOrder, BayOrders.inDate, " & _
 " FROM BayOrders INNER JOIN BayGuideFirms ON BayGuideFirms.FirmId = BayOrders.FirmId " & _
 " left join guideventure on guideventure.ventureId = bayOrders.ventureid "
 
+Function checkInvoiceBusy(p_numOrder As String, p_newInvoice As String) As Integer
+Dim ret As Integer
+
+    sql = "select wf_jscet_check_busy (" & p_numOrder & ", '" & p_newInvoice & "')"
+On Error GoTo sqle
+    byErrSqlGetValues "##100.2", sql, checkInvoiceBusy
+    
+    Exit Function
+sqle:
+    wrkDefault.Rollback
+    errorCodAndMsg "checkInvoiceBusy"
+End Function
+
 
 ' нужно вызывать уже после того, как новая Валюта сменена.
 Private Sub adjustHotMoney()
@@ -436,9 +449,9 @@ Private Sub adjustMoneyColumnWidth(inStartup As Boolean)
 Dim I As Long, J As Integer
     For J = 0 To 2 ' 3 смежных колонки с деньгами (заказано, оплачено, отгружено)
         If sessionCurrency = CC_RUBLE Then
-            Grid.ColWidth(orZakazano + J) = Grid.ColWidth(orZakazano + J) * ColWidthForRuble
+            Grid.colWidth(orZakazano + J) = Grid.colWidth(orZakazano + J) * ColWidthForRuble
         ElseIf Not inStartup Then
-            Grid.ColWidth(orZakazano + J) = Grid.ColWidth(orZakazano + J) / ColWidthForRuble
+            Grid.colWidth(orZakazano + J) = Grid.colWidth(orZakazano + J) / ColWidthForRuble
         End If
     Next J
 End Sub
@@ -772,7 +785,7 @@ Optional field As String = "")
 
 If orColNumber = 0 Then
     Grid.Cols = 2
-    Grid.ColWidth(0) = 0
+    Grid.colWidth(0) = 0
 Else
     Grid.Cols = Grid.Cols + 1
 End If
@@ -784,7 +797,7 @@ curCol = orColNumber
 ReDim Preserve orSqlFields(orColNumber + 1)
 orSqlFields(orColNumber) = field
 
-If colWdth >= 0 Then Grid.ColWidth(orColNumber) = colWdth
+If colWdth >= 0 Then Grid.colWidth(orColNumber) = colWdth
 Grid.TextMatrix(0, orColNumber) = colName
 
 End Sub
@@ -1321,7 +1334,7 @@ End Sub
 
 Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then _
-        MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
+        MsgBox "ColWidth = " & Grid.colWidth(Grid.MouseCol)
 End Sub
 
 Private Sub Grid_RowColChange()
@@ -1943,7 +1956,19 @@ BB:     tmpDate = Grid.TextMatrix(mousRow, orDataVid)
             End If
             ValueToTableField "##77", "'" & "счет ?" & "'", "BayOrders", "Invoice"
         Else
-            If Not isFloatFromMobile("Invoice") Then Exit Sub
+            
+            Dim id_jscet As Integer, p_newInvoice As String
+            id_jscet = checkInvoiceBusy(gNzak, tbMobile.Text)
+            
+            p_newInvoice = tbMobile.Text
+            If id_jscet > 0 Then
+                MsgBox "Номер счета " & p_newInvoice _
+                    & " уже используется. Выберите другой номер." _
+                    , , "Ошибка"
+                GoTo CC
+            Else
+                If Not isFloatFromMobile("Invoice") Then Exit Sub
+            End If
         End If
     ElseIf mousCol = orVes Then
         str = "Ves": GoTo AA
