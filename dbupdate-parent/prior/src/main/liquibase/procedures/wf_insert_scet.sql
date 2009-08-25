@@ -62,7 +62,7 @@ begin
 		+', '+ convert(varchar(20), scet_nu)
 		+', '+ convert(varchar(20), round(p_quant * p_cena * p_rate, 2))
 		+', '+ convert(varchar(20), round(p_quant * p_cena, 2))
-		+', '+ convert(varchar(20), round(p_quant * p_cena * v_nds / (1 + v_nds), 2))
+		+', '+ convert(varchar(20), round(p_quant * p_cena * p_rate * v_nds / (1 + v_nds), 2))
 		+', '+ convert(varchar(20), round(p_ndsrate / 100, 2))
 	;
 	--message 'p_cena = ', p_cena to client;
