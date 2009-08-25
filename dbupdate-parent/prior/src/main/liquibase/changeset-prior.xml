@@ -897,6 +897,7 @@ where pc.sysname = sGuideProducts.web
 		<comment>НДС: триггер добавления предмета к заказу продаж</comment>
 		<sqlFile path="triggers/sDmcRez.wf_insert_nomenk.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="triggers/sDmcRez.wf_update_nomenk.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="triggers/BayOrders.wf_update_orders.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 	</changeSet>
 	
 	<changeSet id="4" author="mantis-94" runOnChange="true">
@@ -904,6 +905,7 @@ where pc.sysname = sGuideProducts.web
 		<sqlFile path="procedures/wf_insert_scet.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="procedures/wf_set_invoice_detail.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="procedures/wf_scet_price_changed.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="procedures/wf_set_bay_detail.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 	</changeSet>
 
 	<changeSet id="5" author="mantis-94" runOnChange="true">

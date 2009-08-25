@@ -6,8 +6,9 @@ create procedure wf_set_bay_detail (
 			p_servername varchar(20)
 			, p_id_jscet integer
 			, p_numOrder integer
-			, p_date date
-			, in p_rate float
+			, p_date     date
+			, in p_rate  double
+			, p_ndsrate  float
 )
 begin
 -- Процедура синхронизирует предметы bay-заказа Приора
@@ -52,6 +53,7 @@ begin
 				, r_cenaEd
 				, p_date
 				, p_rate
+				, p_ndsrate
 			);
 		update sDmcRez set id_scet = v_id_scet where current of nn;
 

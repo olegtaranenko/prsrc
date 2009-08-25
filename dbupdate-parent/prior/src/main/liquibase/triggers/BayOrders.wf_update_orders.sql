@@ -30,10 +30,14 @@ begin
 	declare v_updated integer;
 	declare v_nu_jdog varchar(17);
 	declare v_id_jdog integer;
+	declare v_ndsrate         float;
 
 
 	set c_status_close_id = 6;  -- закрыт
-	select sysname, invCode into remoteServerOld, v_invcode from GuideVenture where ventureId = old_name.ventureId;
+
+	select sysname, invCode 
+	into remoteServerOld, v_invcode 
+	from GuideVenture v where ventureId = old_name.ventureId;
 
 	if update(invoice) and remoteServerOld is not null then begin
 
@@ -65,7 +69,11 @@ begin
 				set new_name.id_bill = null;
 			end if;
 
-			select sysname, invCode into remoteServerNew, v_invcode from GuideVenture where ventureId = new_name.ventureId;
+			select sysname, invCode 
+				, v.nds
+			into remoteServerNew, v_invcode 
+				, v_ndsrate
+			from GuideVenture v where ventureId = new_name.ventureId;
 
 			--message 'sysname = ', remoteServerNew to client;
 			if remoteServerNew is not null then
@@ -77,7 +85,7 @@ begin
 		
 				set new_name.id_jscet = r_id;
 				set new_name.invoice = v_invCode + convert(varchar(20), v_nu_jscet);
-				call wf_set_bay_detail(remoteServerNew, r_id, new_name.numOrder, v_inv_date, old_name.rate);
+				call wf_set_bay_detail(remoteServerNew, r_id, new_name.numOrder, v_inv_date, old_name.rate, v_ndsrate);
 			end if;
 		end if;
 	end if;
@@ -103,6 +111,7 @@ begin
 
 	if update(rate) then
 		if remoteServerOld is not null then
+			select nds into v_ndsrate from GuideVenture where ventureId = old_name.ventureId;
 			select id_cur into v_id_cur from system;
 			call update_remote(remoteServerOld, 'jscet', 'curr', convert(varchar(20), new_name.rate ), 'id = ' + convert(varchar(20), old_name.id_jscet));
 			call update_remote(remoteServerOld, 'jscet', 'id_curr', convert(varchar(20), v_id_cur ), 'id = ' + convert(varchar(20), old_name.id_jscet));
@@ -114,7 +123,7 @@ begin
 				join sGuideNomenk n on n.nomnom = r.nomnom
 				where numdoc = old_name.numorder
 			do
-				set v_updated = wf_scet_price_changed(remoteServerOld, r_quant, r_cenaEd, r_id_scet, new_name.rate);
+				set v_updated = wf_scet_price_changed(remoteServerOld, r_quant, r_cenaEd, r_id_scet, new_name.rate, v_ndsrate);
 			end for;
 		end if;
 
