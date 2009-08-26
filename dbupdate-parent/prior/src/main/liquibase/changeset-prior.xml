@@ -911,7 +911,6 @@ where pc.sysname = sGuideProducts.web
 	<changeSet id="5" author="mantis-94" runOnChange="true">
 		<comment>НДС: триггер добавления номенклатуры к заказу</comment>
 		<sqlFile path="triggers/xPredmetyByNomenk.wf_insert_nomenk.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
-		<sqlFile path="triggers/xPredmetyByNomenk.wf_update_nomenk.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 	</changeSet>
 	
 	<changeSet id="6" author="mantis-94" runOnChange="true">

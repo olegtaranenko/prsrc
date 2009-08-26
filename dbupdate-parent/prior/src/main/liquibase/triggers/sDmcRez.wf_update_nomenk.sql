@@ -46,7 +46,7 @@ begin
 				remoteServerOld
 				, v_quantity
 				, new_name.intQuant
-				, v_id_scet
+				, old_name.id_scet
 				, v_currency_rate
 				, v_ndsrate
 				, v_id_jscet
@@ -56,8 +56,8 @@ begin
 				set new_name.id_scet = v_updated;
 			end if;
         end if;
-		if update(quantity) then
-			call update_remote(remoteServerOld, 'scet', 'kol1', convert(varchar(20), v_quantity), 'id = ' + convert(varchar(20), v_id_scet));
+		if update(quantity) and old_name.id_scet is not null then
+			call update_remote(remoteServerOld, 'scet', 'kol1', convert(varchar(20), v_quantity), 'id = ' + convert(varchar(20), old_name.id_scet));
 		end if;
 	end if;
 

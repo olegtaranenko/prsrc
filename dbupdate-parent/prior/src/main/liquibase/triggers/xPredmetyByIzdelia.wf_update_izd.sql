@@ -17,7 +17,6 @@ begin
 	declare v_currency_rate double;
 	declare v_ndsrate       float;
 	
-	set v_id_scet = old_name.id_scet;
 --	set v_numorder = old_name.numOrder;
 
 	select sysname, rate
@@ -35,7 +34,7 @@ begin
 				remoteServerNew
 				, new_name.quant
 				, new_name.cenaEd
-				, v_id_scet
+				, old_name.id_scet
 				, v_currency_rate
 				, v_ndsrate
 				, v_id_jscet
@@ -45,13 +44,13 @@ begin
 				set new_name.id_scet = v_id_scet;
 			end if
 		end if;
-		if update(quant) then
+		if update(quant) and old_name.id_scet is not null then
 			call update_remote(
 				remoteServerNew
 				, 'scet'
 				, 'kol1'
 				, convert(varchar(20), new_name.quant)
-				, 'id = ' + convert(varchar(20), v_id_scet)
+				, 'id = ' + convert(varchar(20), old_name.id_scet)
 			);
 		end if;
 	end if;

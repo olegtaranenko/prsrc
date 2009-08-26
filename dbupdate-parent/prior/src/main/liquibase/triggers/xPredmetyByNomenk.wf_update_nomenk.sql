@@ -19,7 +19,6 @@ begin
 	declare v_values varchar(100);
 	declare v_fields varchar(200);
 	
-	set v_id_scet = old_name.id_scet;
 
 	select sysname, rate
 		, v.nds, o.id_jscet
@@ -42,7 +41,7 @@ begin
 				remoteServerNew
 				, new_name.quant / v_perlist
 				, new_name.cenaEd * v_perlist
-				, v_id_scet
+				, old_name.id_scet
 				, v_currency_rate
 				, v_ndsrate
 				, v_id_jscet
@@ -52,8 +51,15 @@ begin
 				set new_name.id_scet = v_id_scet;
 			end if
         end if;
-		if update(quant) then
-			call update_remote(remoteServerNew, 'scet', 'kol1', convert(varchar(20), new_name.quant / v_perlist), 'id = ' + convert(varchar(20), v_id_scet));
+		if update(quant) and old_name.id_scet is not null then
+			call update_remote(
+				remoteServerNew
+				, 'scet'
+				, 'kol1'
+				, convert(varchar(20), new_name.quant / v_perlist)
+				, 'id = ' + convert(varchar(20)
+				, old_name.id_scet)
+			);
 		end if;
 	end if;
 	  
