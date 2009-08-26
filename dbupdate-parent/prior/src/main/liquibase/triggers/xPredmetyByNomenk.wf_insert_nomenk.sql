@@ -41,12 +41,11 @@ begin
 	  -- т.е. уже назначен той, иди другой фирме
 		set new_name.id_scet = 
 			wf_insert_scet (
-				remoteServerNew
+				  remoteServerNew
 				, v_id_jscet
 				, v_id_inv
 				, new_name.quant / v_perList
 				, new_name.cenaEd
-				, v_date
 				, v_rate
 				, v_ndsrate
 			);

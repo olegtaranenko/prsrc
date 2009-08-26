@@ -4,12 +4,12 @@ end if;
 
 
 create procedure wf_set_invoice_detail (
-			p_servername varchar(20)
-			, p_id_jscet integer
-			, p_numOrder integer
-			, p_date date
-			, p_rate double
-			, p_ndsrate double
+	p_servername varchar(20)
+	, p_id_jscet integer
+	, p_numOrder integer
+	, p_date date
+	, p_rate double
+	, p_ndsrate double
 )
 begin
 -- Процедура синхронизирует предметы заказа Приора
@@ -48,7 +48,6 @@ begin
 				, v_id_inv
 				, r_quant / v_perList
 				, r_cenaEd * v_perList
-				, p_date
 				, p_rate
 				, p_ndsrate
 			);
@@ -89,7 +88,6 @@ begin
 				, v_id_inv
 				, r_quant
 				, r_cenaEd
-				, p_date
 				, p_rate
 				, p_ndsrate
 			);
@@ -110,7 +108,6 @@ begin
 				, v_id_inv
 				, 1 // quant
 				, v_quant//r_cenaEd
-				, now()//p_date
 				, p_rate
 				, p_ndsrate
 			);

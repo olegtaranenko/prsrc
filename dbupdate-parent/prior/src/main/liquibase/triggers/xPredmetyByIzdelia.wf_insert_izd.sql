@@ -38,7 +38,6 @@ begin
 				, v_id_inv
 				, new_name.quant
 				, new_name.cenaEd
-				, v_date
 				, v_rate
 				, v_ndsrate
 			);

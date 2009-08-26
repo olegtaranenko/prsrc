@@ -51,7 +51,6 @@ begin
 				, v_id_inv
 				, v_quant
 				, r_cenaEd
-				, p_date
 				, p_rate
 				, p_ndsrate
 			);

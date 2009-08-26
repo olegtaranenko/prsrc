@@ -7,7 +7,9 @@ sDmcRez
 referencing old as old_name new as new_name
 for each row
 begin
-	declare v_id_scet integer;
+	declare v_id_scet       integer;
+	declare v_id_jscet      integer;
+	declare v_id_inv        integer;
 	declare remoteServerOld varchar(32);
 
 	declare v_cenaEd        double;
@@ -23,10 +25,14 @@ begin
 		, n.perList 
 		, rate
 		, v.nds
+		, o.id_jscet
+		, n.id_inv
 	into remoteServerOld
 		, v_perList 
 		, v_currency_rate
 		, v_ndsrate
+		, v_id_jscet
+		, v_id_inv
 	from BayOrders o
 	join GuideVenture v on o.ventureId = v.ventureId and v.standalone = 0
 	join sGuideNomenk n on n.nomNom = old_name.nomNom
@@ -36,7 +42,19 @@ begin
 	if remoteServerOld is not null then
 		set v_quantity = new_name.quantity/v_perList;
 		if update(quantity) or update(intQuant) then
-			set v_updated = wf_scet_price_changed(remoteServerOld, v_quantity, new_name.intQuant, v_id_scet, v_currency_rate, v_ndsrate);
+			set v_updated = wf_scet_price_changed(
+				remoteServerOld
+				, v_quantity
+				, new_name.intQuant
+				, v_id_scet
+				, v_currency_rate
+				, v_ndsrate
+				, v_id_jscet
+				, v_id_inv
+			);
+			if v_updated > 0 then
+				set new_name.id_scet = v_updated;
+			end if;
         end if;
 		if update(quantity) then
 			call update_remote(remoteServerOld, 'scet', 'kol1', convert(varchar(20), v_quantity), 'id = ' + convert(varchar(20), v_id_scet));

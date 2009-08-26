@@ -118,12 +118,25 @@ begin
 			for x as xxc dynamic scroll cursor for
 				select r.id_scet as r_id_scet
 					, r.intQuant / n.perList as r_cenaEd
-					, r.quantity as r_quant
+					, r.quantity as r_quant, n.id_inv as r_id_inv
+					, r_nomnom as r_nomnom
 				from sdmcrez r 
 				join sGuideNomenk n on n.nomnom = r.nomnom
 				where numdoc = old_name.numorder
 			do
-				set v_updated = wf_scet_price_changed(remoteServerOld, r_quant, r_cenaEd, r_id_scet, new_name.rate, v_ndsrate);
+				set v_updated = wf_scet_price_changed(
+					remoteServerOld
+					, r_quant
+					, r_cenaEd
+					, r_id_scet
+					, new_name.rate
+					, v_ndsrate
+					, old_name.id_jscet
+					, r_id_inv
+				);
+				if v_updated > 0 then
+					update smcrez set id_scet = v_updated where numdoc = old_name.numorder and nomnom = r_nomnom
+				end if;
 			end for;
 		end if;
 

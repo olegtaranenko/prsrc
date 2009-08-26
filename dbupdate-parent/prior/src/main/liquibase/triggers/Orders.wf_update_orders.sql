@@ -142,12 +142,22 @@ begin
 			for x as xc dynamic scroll cursor for
 				select n.id_scet as r_id_scet, n.cenaEd as r_cenaEd, n.quant as r_quant, n.nomnom as r_nomnom
 					, k.ed_izmer as r_edizm, trim(k.cod + ' ' + k.nomname + ' ' + k.size) as r_nomenk
+					, k.id_inv as r_id_inv
 				from xpredmetybynomenk n
 				join sguidenomenk k on k.nomnom = n.nomnom
 				where numorder = old_name.numorder
 			do
 				set v_check_count = 1;
-				set v_updated = wf_scet_price_changed(remoteServerOld, r_quant, r_cenaEd, r_id_scet, v_currency_rate, v_ndsrate);
+				set v_updated = wf_scet_price_changed(
+					remoteServerOld
+					, r_quant
+					, r_cenaEd
+					, r_id_scet
+					, v_currency_rate
+					, v_ndsrate
+					, old_name.id_jscet
+					, r_id_inv
+				);
 				if v_updated = 0 then
 					-- Этой позиции нет в комтехе. Вероятно бухгалтер изменил номенклатуру
 					if v_issue_id is null then
@@ -165,18 +175,30 @@ begin
 					call wi_add_issue_attribute(v_issue_id, 'Количество', r_quant);
 					call wi_add_issue_attribute(v_issue_id, 'Единица измерения', r_edizm);
 					call wi_add_issue_attribute(v_issue_id, 'Цена за единицу', r_cenaEd);
+				elseif v_updated > 0 then
+					update xpredmetybynomenk set id_scet = v_updated where numorder = v_id_jscet and nomnom = r_nomnom;
 				end if;
 			end for;
 
 			for y as yc dynamic scroll cursor for
-				select i.id_scet as r_id_scet, i.cenaEd as r_cenaEd, i.quant as r_quant, i.prId as r_prId
+				select i.id_scet as r_id_scet, i.cenaEd as r_cenaEd, i.quant as r_quant, i.prId as r_prId, i.prExt as r_prExt
 					, trim (p.prName + ' ' + p.prDescript + ' ' + p.prSize) as r_productDescript
+					, p.id_inv as r_id_inv
 				from xpredmetybyizdelia i
 				join sguideProducts p on p.prId = i.prId
 				where numorder = old_name.numorder
 			do
 				set v_check_count = 1;
-				set v_updated = wf_scet_price_changed(remoteServerOld, r_quant, r_cenaEd, r_id_scet, v_currency_rate, v_ndsrate);
+				set v_updated = wf_scet_price_changed(
+					remoteServerOld
+					, r_quant
+					, r_cenaEd
+					, r_id_scet
+					, v_currency_rate
+					, v_ndsrate
+					, old_name.id_jscet
+					, r_id_inv
+				);
 				if v_updated = 0 then
 					-- Этой позиции нет в комтехе. Вероятно бухгалтер изменил номенклатуру
 					if v_issue_id is null then
@@ -194,6 +216,8 @@ begin
 					call wi_add_issue_attribute(v_issue_id, 'Индекс изделия в заказе', r_prExt);
 					call wi_add_issue_attribute(v_issue_id, 'Количество', r_quant);
 					call wi_add_issue_attribute(v_issue_id, 'Цена за единицу', r_cenaEd);
+				elseif v_updated > 0 then
+					update xpredmetybyizdelia set id_scet = v_updated where numorder = v_id_jscet and prId = r_prId and prExt = r_prExt;
 				end if;
 			end for;
 
@@ -235,7 +259,12 @@ begin
 					, v_id_scet
 					, v_currency_rate
 					, v_ndsrate
+					, v_id_jscet
+					, v_id_inv
 				);
+				if v_updated > 0 then
+					set v_id_scet = v_updated;
+				end if
 
 			else
 				-- первый раз меням это поле => нужно добавить
@@ -245,7 +274,6 @@ begin
 					, v_id_inv
 					, 1
 					, v_cenaEd
-					, old_name.indate
 					, v_currency_rate
 					, v_ndsrate
 				);
