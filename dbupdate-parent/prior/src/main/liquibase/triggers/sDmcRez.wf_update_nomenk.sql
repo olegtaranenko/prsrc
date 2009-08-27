@@ -54,6 +54,8 @@ begin
 			);
 			if v_updated > 0 then
 				set new_name.id_scet = v_updated;
+			elseif v_updated = -2 then
+				set new_name.id_scet = null;
 			end if;
         end if;
 		if update(quantity) and old_name.id_scet is not null then

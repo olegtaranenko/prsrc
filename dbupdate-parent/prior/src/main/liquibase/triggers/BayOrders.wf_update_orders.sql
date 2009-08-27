@@ -135,7 +135,9 @@ begin
 					, r_id_inv
 				);
 				if v_updated > 0 then
-					update smcrez set id_scet = v_updated where numdoc = old_name.numorder and nomnom = r_nomnom
+					update smcrez set id_scet = v_updated where numdoc = old_name.numorder and nomnom = r_nomnom;
+				elseif v_updated = -2 then
+					update smcrez set id_scet = null where numdoc = old_name.numorder and nomnom = r_nomnom;
 				end if;
 			end for;
 		end if;

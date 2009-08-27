@@ -42,7 +42,9 @@ begin
 			);
 			if v_id_scet > 0 then
 				set new_name.id_scet = v_id_scet;
-			end if
+			elseif v_id_scet = -2 then
+				set new_name.id_scet = null;
+			end if;
 		end if;
 		if update(quant) and old_name.id_scet is not null then
 			call update_remote(

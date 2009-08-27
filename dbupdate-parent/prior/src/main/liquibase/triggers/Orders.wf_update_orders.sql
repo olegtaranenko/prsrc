@@ -177,6 +177,8 @@ begin
 					call wi_add_issue_attribute(v_issue_id, 'Цена за единицу', r_cenaEd);
 				elseif v_updated > 0 then
 					update xpredmetybynomenk set id_scet = v_updated where numorder = v_id_jscet and nomnom = r_nomnom;
+				elseif v_updated = -2 then
+					update xpredmetybynomenk set id_scet = null      where numdoc = old_name.numorder and nomnom = r_nomnom;
 				end if;
 			end for;
 

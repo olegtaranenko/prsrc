@@ -22,23 +22,31 @@ begin
 
 
 	if p_id_scet is not null then
-		set v_nds = p_ndsrate / 100;
-    
-		set v_rubleEd = p_currency_rate * p_cenaEd;
-    
-		set v_updated = update_count_remote(p_server_new, 'scet', 'summa_sale'
-			, convert(varchar(20), v_rubleEd * p_quant)
-			, 'id = ' + convert(varchar(20), p_id_scet)
-		);
-		set v_updated = update_count_remote(p_server_new, 'scet', 'summa_nds'
-			, convert(varchar(20), v_rubleEd * p_quant * v_nds / (1 + v_nds))
-			, 'id = ' + convert(varchar(20), p_id_scet)
-		);
-		set v_updated = update_count_remote(p_server_new, 'scet', 'summa_salev'
-			, convert(varchar(20), p_quant * p_cenaEd)
-			, 'id = ' + convert(varchar(20), p_id_scet)
-		);
-		set wf_scet_price_changed = -v_updated;
+		if p_cenaEd > 0 then
+			set v_nds = p_ndsrate / 100;
+
+			set v_rubleEd = p_currency_rate * p_cenaEd;
+
+			set v_updated = update_count_remote(p_server_new, 'scet', 'summa_sale'
+				, convert(varchar(20), v_rubleEd * p_quant)
+				, 'id = ' + convert(varchar(20), p_id_scet)
+			);
+			set v_updated = update_count_remote(p_server_new, 'scet', 'summa_nds'
+				, convert(varchar(20), v_rubleEd * p_quant * v_nds / (1 + v_nds))
+				, 'id = ' + convert(varchar(20), p_id_scet)
+			);
+			set v_updated = update_count_remote(p_server_new, 'scet', 'summa_salev'
+				, convert(varchar(20), p_quant * p_cenaEd)
+				, 'id = ' + convert(varchar(20), p_id_scet)
+			);
+			set wf_scet_price_changed = -v_updated;
+		else
+			set v_updated = delete_count_remote(p_server_new, 'scet'
+				, 'id = ' + convert(varchar(20), p_id_scet)
+			);
+			set wf_scet_price_changed = -v_updated * 2;
+		end if;
+
 	else
 		set wf_scet_price_changed = 
 			wf_insert_scet(
@@ -51,7 +59,6 @@ begin
 				, p_ndsrate
 			);
 	end if;
-
 
 end;
 
