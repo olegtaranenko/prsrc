@@ -916,7 +916,6 @@ where pc.sysname = sGuideProducts.web
 	<changeSet id="6" author="mantis-94" runOnChange="true">
 		<comment>НДС: триггер добавления готового изделия к заказу</comment>
 		<sqlFile path="triggers/xPredmetyByIzdelia.wf_insert_izd.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
-		<sqlFile path="triggers/xPredmetyByIzdelia.wf_update_izd.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 	</changeSet>
 	
 	<changeSet id="1" author="mantis-96" runOnChange="true">
@@ -932,6 +931,15 @@ where pc.sysname = sGuideProducts.web
 		<sqlFile path="mainteinance\rp_jscet_check.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 -->
 	</changeSet>
+
+	<changeSet id="1" author="mantis-100" runOnChange="true">
+		<comment>Regression: после 96 нельзя удалить предмет из заказа</comment>
+		<sqlFile path="triggers/xPredmetyByIzdelia.wf_delete_izd.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="triggers/sDmcRez.wf_delete_nomenk.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="triggers/xPredmetyByNomenk.wf_delete_nomenk.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+	</changeSet>
+
+
 
 
 </databaseChangeLog>
