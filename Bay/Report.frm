@@ -164,7 +164,7 @@ End If
 End Sub
 
 Sub statistic(Optional year As String = "")
-Dim nRow As Long, nCol As Long, str As String, i As Integer, J As Integer
+Dim nRow As Long, nCol As Long, str As String, I As Integer, J As Integer
 Dim iMonth As Integer, iYear As Integer, iCount As Integer, strWhere As String
 Dim nMonth As Integer, nYear As Integer, mCount As Integer, lastCol As Integer
 Dim wtSum As Double, paidSum As Double, orderSum As Double, visits As Integer, visitSum As Integer
@@ -196,9 +196,9 @@ If year = "" Then
  Loop While iCount > 0
  str = str & "|Итого|Вр.вып|Заказано|Оплачено"
  Report.Grid.FormatString = str
- Report.Grid.ColWidth(0) = 0
- Report.Grid.ColWidth(1) = 1875
- Report.Grid.ColWidth(3) = 1605
+ Report.Grid.colWidth(0) = 0
+ Report.Grid.colWidth(1) = 1875
+ Report.Grid.colWidth(3) = 1605
 'Grid.ColWidth(lastCol + 2) = 795
  Report.nCols = lastCol + 2
   
@@ -261,7 +261,7 @@ While Not tbFirms.EOF '                         *******************
                     paidSum = paidSum + tbOrders!paid
 '             If Not IsNull(tbOrders!ordered) Then _
                     orderSum = orderSum + tbOrders!ordered'$$6
-               orderSum = orderSum + getOrdered(tbOrders!numOrder) '$$6 tbOrders!ordered
+               orderSum = orderSum + getOrdered(tbOrders!numorder) '$$6 tbOrders!ordered
           Else
             If iYear = lastYear - 3 Then
                 year01 = year01 + 1 'не исп-ся
@@ -358,18 +358,18 @@ laHeader.Caption = "Список заказов, кот. резервировали ном-ру '" & gNomNom & _
 "' [" & ed2 & "]."
 Grid.FormatString = "|>№ заказа|кол-во|^Цех |^Дата |^ М" & _
 "|<Статус|<Название Фирмы|<Изделия|заказано|согласовано"
-Grid.ColWidth(0) = 0
+Grid.colWidth(0) = 0
 'Grid.ColWidth(rtNomZak) =
 'Grid.ColWidth(rtReserv) = 765
 'Grid.ColWidth(rtEdIzm)=
-Grid.ColWidth(rtCeh) = 765
-Grid.ColWidth(rtData) = 870
+Grid.colWidth(rtCeh) = 765
+Grid.colWidth(rtData) = 870
 'Grid.ColWidth(rtMen) =
-Grid.ColWidth(rtStatus) = 930
-Grid.ColWidth(rtFirma) = 3270
-Grid.ColWidth(rtProduct) = 1950
+Grid.colWidth(rtStatus) = 930
+Grid.colWidth(rtFirma) = 3270
+Grid.colWidth(rtProduct) = 1950
 'Grid.ColWidth(rtZakazano) =
-Grid.ColWidth(rtOplacheno) = 810
+Grid.colWidth(rtOplacheno) = 810
 
 '******************************* Prior заказы
 quantity = 0: sum = 0
@@ -395,7 +395,7 @@ If Not tbOrders.BOF Then
     s = Round((tbOrders!quantity - v) / per, 2)
     If s > 0 Then
         quantity = quantity + 1
-        Grid.TextMatrix(quantity, rtNomZak) = tbOrders!numOrder
+        Grid.TextMatrix(quantity, rtNomZak) = tbOrders!numorder
         Grid.TextMatrix(quantity, rtCeh) = tbOrders!Ceh
     '    Grid.TextMatrix(quantity, rtData) = tbOrders!inDate
         LoadDate Grid, quantity, rtData, tbOrders!inDate, "dd.mm.yy"
@@ -461,7 +461,7 @@ If Not tbOrders Is Nothing Then
       s = Round((tbOrders!quantity - v) / per, 2)
       If s > 0 Then
         quantity = quantity + 1
-        Grid.TextMatrix(quantity, rtNomZak) = tbOrders!numOrder
+        Grid.TextMatrix(quantity, rtNomZak) = tbOrders!numorder
         Grid.TextMatrix(quantity, rtCeh) = "Продажа"
         LoadDate Grid, quantity, rtData, tbOrders!inDate, "dd.mm.yy"
         Grid.TextMatrix(quantity, rtMen) = Manag(tbOrders!managId)
@@ -470,7 +470,7 @@ If Not tbOrders Is Nothing Then
         Grid.TextMatrix(quantity, rtReserv) = s
 '        If Not IsNull(tbOrders!ordered) Then _
             Grid.TextMatrix(quantity, rtZakazano) = tbOrders!ordered  $$6
-        Grid.TextMatrix(quantity, rtZakazano) = getOrdered(tbOrders!numOrder) '$$6
+        Grid.TextMatrix(quantity, rtZakazano) = getOrdered(tbOrders!numorder) '$$6
             
         If Not IsNull(tbOrders!paid) Then _
             Grid.TextMatrix(quantity, rtOplacheno) = tbOrders!paid
@@ -505,17 +505,17 @@ End Sub
 'Regim = "allOrdersByFirmName" 'Отчет "Все заказы Фирмы"'
 'Regim = "OrdersByFirmName"    'Отчет "Незакрытые заказы"'
 Sub firmOrders()
-Dim l As Long, str As String, i As Integer, J As Integer
+Dim l As Long, str As String, I As Integer, J As Integer
 Dim strFirm As String, strFrom As String, strWhere As String
 Grid.FormatString = "|<№ заказа|^M |<Статус|<Проблемы|" & _
 "<Дата выдачи|<Время выдачи|Заказано|Оплачено|Отгружено"
 
-Grid.ColWidth(0) = 0
+Grid.colWidth(0) = 0
 'Grid.ColWidth(rpNomZak) = 840
-Grid.ColWidth(rpStatus) = 720
-Grid.ColWidth(rpProblem) = 975
-Grid.ColWidth(rpDataVid) = 1095
-Grid.ColWidth(rpVrVid) = 615
+Grid.colWidth(rpStatus) = 720
+Grid.colWidth(rpProblem) = 975
+Grid.colWidth(rpDataVid) = 1095
+Grid.colWidth(rpVrVid) = 615
 
 If Regim = "Orders" Or Regim = "allOrders" Then 'из FindFirm
     strFirm = FindFirm.lb.Text
@@ -558,7 +558,7 @@ If Not tqOrders.BOF Then
     
 '  Grid.MergeRow(2) = True
 
-    Grid.TextMatrix(l, rpNomZak) = tqOrders!numOrder
+    Grid.TextMatrix(l, rpNomZak) = tqOrders!numorder
     J = tqOrders!StatusId
     If J = 2 Or J = 3 Or J = 9 Then
         Grid.MergeRow(l) = True
@@ -581,7 +581,7 @@ If Not tqOrders.BOF Then
     LoadDate Grid, l, rpVrVid, tqOrders!outDateTime, "hh"
     Grid.TextMatrix(l, rpM) = tqOrders!Manag
     'zakazano = zakazano + numericToReport(l, rpZakazano, tqOrders!ordered) '$$6
-    zakazano = zakazano + numericToReport(l, rpZakazano, getOrdered(tqOrders!numOrder)) '$$6
+    zakazano = zakazano + numericToReport(l, rpZakazano, getOrdered(tqOrders!numorder)) '$$6
     Oplacheno = Oplacheno + numericToReport(l, rpOplacheno, tqOrders!paid)
     'Otgrugeno = Otgrugeno + numericToReport(l, rpOtgrugeno, tqOrders!shipped) '$$6
     Otgrugeno = Otgrugeno + numericToReport(l, rpOtgrugeno, getShipped(tqOrders!numorder)) '$$6
@@ -624,7 +624,7 @@ As Double
     If Not IsNumeric(value) Then
         numericToReport = 0
     Else
-        numericToReport = value
+        numericToReport = Round(value, 2)
     End If
     Grid.TextMatrix(row, col) = numericToReport
 
@@ -678,6 +678,6 @@ End Sub
 
 Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then _
-        MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
+        MsgBox "ColWidth = " & Grid.colWidth(Grid.MouseCol)
 End Sub
 
