@@ -940,6 +940,13 @@ where pc.sysname = sGuideProducts.web
 	</changeSet>
 
 
+	<changeSet id="1" author="mantis-104">
+		<comment>Разборки с фирмой Стам</comment>
+		<update tableName="bayguidefirms">
+			<column name="name" valueNumeric="'я!Не использовать! ' + name"/>
+			<where><![CDATA[firmId = 290]]></where>
+		</update>
+	</changeSet>
 
 
 </databaseChangeLog>
