@@ -948,6 +948,17 @@ where pc.sysname = sGuideProducts.web
 		</update>
 	</changeSet>
 
+	<changeSet id="1" author="mantis-105" runOnChange="true">
+		<comment>Ошибка при заведении новой хоз операции</comment>
+		<executeCommand executable="dbisqlc.exe">
+			<arg value="-c"/>
+			<arg value="DSN=prior;UID=dba;PWD=sql"/>
+			<arg value="-q"/>
+			<arg value="\dev\prsrc\trunk\dbupdate-parent\prior\target\classes\mainteinance\mantis-105.sql"/>
+		</executeCommand>
+		<rollback/>
+	</changeSet>
+
 
 </databaseChangeLog>
 
