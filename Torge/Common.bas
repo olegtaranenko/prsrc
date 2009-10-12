@@ -452,7 +452,7 @@ End Function
 Sub listBoxInGridCell(lb As ListBox, Grid As MSFlexGrid, Optional sel As String = "")
 Dim I As Integer, l As Long
     If lb.ListCount < 200 Then
-        l = 195 * lb.ListCount + 100 ' Для больших списков
+        l = CLng(195 * lb.ListCount) + 100 ' Для больших списков
     Else
         l = Grid.Height / 2 + 500
     End If
