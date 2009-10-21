@@ -11,6 +11,7 @@ Begin VB.Form Report
    LinkTopic       =   "Form1"
    ScaleHeight     =   8184
    ScaleWidth      =   11880
+   StartUpPosition =   2  'CenterScreen
    Begin VB.CommandButton cmPrev 
       Caption         =   "<"
       Height          =   255
