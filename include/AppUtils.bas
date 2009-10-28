@@ -19,13 +19,17 @@ objExel.Workbooks.Add
 With objExel.ActiveSheet
 .Cells(1, 2).value = title
 ReDim Preserve strA(Grid.Cols + 1)
-For r = 0 To Grid.Rows - 1
+For r = 0 To Grid.rows - 1
     Dim curColumn As Integer
     curColumn = 1
     For c = 1 To Grid.Cols - 1
-        If Grid.colWidth(c) > 0 Then
+        If Grid.ColWidth(c) > 0 Then
             str = Grid.TextMatrix(r, c) '=' - наверно зарезервирован для ввода формул
-            If left$(str, 1) = "=" Then str = "." & str
+            Dim firstLetter As String
+            firstLetter = left$(str, 1)
+            If firstLetter = "=" Or firstLetter = "+" Then
+                str = "'" & str
+            End If
 'иногда символы Cr и Lf (поле MEMO в базе) дают Err в Excel, поэтому из поля
             I = InStr(str, vbCr) 'MEMO берем только первую строчку
             If I > 0 Then str = left$(str, I - 1)
