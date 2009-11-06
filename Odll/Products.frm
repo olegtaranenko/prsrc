@@ -1102,7 +1102,7 @@ Private Sub Grid_DblClick()
 Dim il As Long, curRow As Long
 
 grColor = Grid.CellBackColor
-If grColor = &H88FF88 Or (mousCol = buntColumn And Me.Regim = "ostat" And checkFactDost(nkCurOstat, buntColumn)) Then
+If grColor = &H88FF88 Then
     If MsgBox("Если Вы хотите просмотреть список всех заказов, под " & _
     "которые была зарезервирована эта номенклатура, нажмите <Да>.", _
     vbYesNo Or vbDefaultButton2, "Посмотреть, кто резервировал? '" & _
@@ -2818,7 +2818,7 @@ If Me.Regim = "" Then
 ElseIf Me.Regim = "fromDocs" Then
     buntColumn = nkDostup
 ElseIf Me.Regim = "ostat" Then
-    buntColumn = nkDostup
+    buntColumn = nkQuant
 Else
     buntColumn = 0
 End If
