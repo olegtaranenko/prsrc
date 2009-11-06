@@ -1102,7 +1102,7 @@ Private Sub Grid_DblClick()
 Dim il As Long, curRow As Long
 
 grColor = Grid.CellBackColor
-If grColor = &H88FF88 Then
+If grColor = &H88FF88 Or (mousCol = buntColumn And Me.Regim = "ostat" And checkFactDost(nkCurOstat, buntColumn)) Then
     If MsgBox("Если Вы хотите просмотреть список всех заказов, под " & _
     "которые была зарезервирована эта номенклатура, нажмите <Да>.", _
     vbYesNo Or vbDefaultButton2, "Посмотреть, кто резервировал? '" & _
@@ -1111,49 +1111,58 @@ If grColor = &H88FF88 Then
         Report.Show vbModal
     End If
 ElseIf grColor = groupColor1 Or grColor = groupColor2 Then
-    curRow = Grid.row
-    Grid.CellFontBold = True
-'    Grid.col = nkQuant
-    For il = curRow - 1 To 1 Step -1  'вверх от клика
-        Grid.row = il
-        If Grid.CellBackColor <> grColor Then Exit For
-        Grid.CellFontBold = False
-    Next il
-    For il = curRow + 1 To Grid.rows - 1 'вниз от клика
-        Grid.row = il
-        If Grid.CellBackColor <> grColor Then Exit For
-        Grid.CellFontBold = False
-    Next il
-    Grid.row = curRow
+    If Me.Regim <> "ostat" Then
+        curRow = Grid.row
+        Grid.CellFontBold = True
+    '    Grid.col = nkQuant
+        For il = curRow - 1 To 1 Step -1  'вверх от клика
+            Grid.row = il
+            If Grid.CellBackColor <> grColor Then Exit For
+            Grid.CellFontBold = False
+        Next il
+        For il = curRow + 1 To Grid.rows - 1 'вниз от клика
+            Grid.row = il
+            If Grid.CellBackColor <> grColor Then Exit For
+            Grid.CellFontBold = False
+        Next il
+        Grid.row = curRow
+    Else
+        
+    End If
 End If
 End Sub
 
-Private Sub Grid_EnterCell()
-Dim fact As Integer, dost As Integer
+Function checkFactDost(ByRef factCol As Integer, ByRef dostCol As Integer) As Boolean
+Dim fact As Double, dost As Double
 Dim factStr As String, dostStr As String
-
-If quantity = 0 Or Grid.col = buntColumn Then Exit Sub
-mousRow = Grid.row
-mousCol = Grid.col
-
-gNomNom = Grid.TextMatrix(mousRow, nkNomer)
-
-Grid.CellBackColor = vbYellow
-If mousCol = nkDostup And cbInside.ListIndex = 0 Then
-    factStr = Grid.TextMatrix(mousRow, nkCurOstat)
+    factStr = Grid.TextMatrix(mousRow, factCol)
     If Not IsNumeric(factStr) Then
         fact = 0
     Else
-        fact = CInt(factStr)
+        fact = CDbl(factStr)
     End If
     
-    dostStr = Grid.TextMatrix(mousRow, nkDostup)
+    dostStr = Grid.TextMatrix(mousRow, dostCol)
     If Not IsNumeric(dostStr) Then
         dost = 0
     Else
-        dost = CInt(dostStr)
+        dost = CDbl(dostStr)
     End If
-    If dost < fact Then Grid.CellBackColor = &H88FF88
+    checkFactDost = dost < fact
+End Function
+
+Private Sub Grid_EnterCell()
+
+mousRow = Grid.row
+mousCol = Grid.col
+gNomNom = Grid.TextMatrix(mousRow, nkNomer)
+
+If quantity = 0 Or Grid.col = buntColumn Then Exit Sub
+
+
+Grid.CellBackColor = vbYellow
+If mousCol = nkDostup And cbInside.ListIndex = 0 And checkFactDost(nkCurOstat, nkDostup) Then
+    Grid.CellBackColor = &H88FF88
 End If
 
 End Sub
@@ -2806,8 +2815,12 @@ Sub loadProductNomenk(ByVal v_productId As Integer)
 Dim s As Double, grBef As String
 If Me.Regim = "" Then
     buntColumn = nkQuant
-Else
+ElseIf Me.Regim = "fromDocs" Then
     buntColumn = nkDostup
+ElseIf Me.Regim = "ostat" Then
+    buntColumn = nkDostup
+Else
+    buntColumn = 0
 End If
 Dragging = False
 

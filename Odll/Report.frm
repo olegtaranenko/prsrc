@@ -769,7 +769,7 @@ If mousRow = 0 And (Regim = "KK" Or Regim = "RA") Then
 End If
 
 End Sub
-Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
 End Sub
@@ -829,9 +829,9 @@ If Not tbOrders.BOF Then
         If Not IsNull(tbOrders!Product) Then _
             Grid.TextMatrix(quantity, rtProduct) = tbOrders!Product
         If Not IsNull(tbOrders!ordered) Then _
-            Grid.TextMatrix(quantity, rtZakazano) = tbOrders!ordered
+            Grid.TextMatrix(quantity, rtZakazano) = Round(tbOrders!ordered, 2)
         If Not IsNull(tbOrders!paid) Then _
-            Grid.TextMatrix(quantity, rtOplacheno) = tbOrders!paid
+            Grid.TextMatrix(quantity, rtOplacheno) = Round(tbOrders!paid, 2)
         Grid.TextMatrix(quantity, rtReserv) = s
     
         Grid.AddItem ""
@@ -891,10 +891,10 @@ If Not tbOrders Is Nothing Then
         Grid.TextMatrix(quantity, rtReserv) = s
 '        If Not IsNull(tbOrders!ordered) Then _
             Grid.TextMatrix(quantity, rtZakazano) = tbOrders!ordered
-         Grid.TextMatrix(quantity, rtZakazano) = getOrdered(tbOrders!numorder)
+         Grid.TextMatrix(quantity, rtZakazano) = Round(getOrdered(tbOrders!numorder), 2)
         
         If Not IsNull(tbOrders!paid) Then _
-            Grid.TextMatrix(quantity, rtOplacheno) = tbOrders!paid
+            Grid.TextMatrix(quantity, rtOplacheno) = Round(tbOrders!paid, 2)
         Grid.AddItem ""
       End If
       tbOrders.MoveNext
