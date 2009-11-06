@@ -11,6 +11,7 @@ Begin VB.Form Report
    LinkTopic       =   "Form1"
    ScaleHeight     =   8184
    ScaleWidth      =   11880
+   StartUpPosition =   2  'CenterScreen
    Begin VB.CommandButton cmPrint 
       Caption         =   "Печать"
       Height          =   315
@@ -383,7 +384,7 @@ sql = "SELECT Orders.numOrder, GuideCeh.Ceh, Orders.inDate, " & _
 "AND (sDMC.numDoc = sDMCrez.numDoc)) ON GuideCeh.CehId = Orders.CehId) " & _
 "ON GuideFirms.FirmId = Orders.FirmId) ON GuideManag.ManagId = " & _
 "Orders.ManagId) ON GuideStatus.StatusId = Orders.StatusId " & _
-"Where(((sDMCrez.nomNom) = '" & gNomNom & "')) " & _
+"Where(((sDMCrez.nomNom) = '" & gNomNom & "')) and orders.statusId <> 6" & _
 "GROUP BY Orders.numOrder, GuideCeh.Ceh, Orders.inDate, GuideManag.Manag, " & _
 "GuideStatus.Status, GuideFirms.Name, Orders.Product, Orders.ordered, Orders.paid, sDMCrez.quantity;"
 'MsgBox sql
@@ -406,9 +407,9 @@ If Not tbOrders.BOF Then
         If Not IsNull(tbOrders!Product) Then _
             Grid.TextMatrix(quantity, rtProduct) = tbOrders!Product
         If Not IsNull(tbOrders!ordered) Then _
-            Grid.TextMatrix(quantity, rtZakazano) = tbOrders!ordered 'Prior
+            Grid.TextMatrix(quantity, rtZakazano) = Round(tbOrders!ordered, 2) 'Prior
         If Not IsNull(tbOrders!paid) Then _
-            Grid.TextMatrix(quantity, rtOplacheno) = tbOrders!paid
+            Grid.TextMatrix(quantity, rtOplacheno) = Round(tbOrders!paid, 2)
         Grid.TextMatrix(quantity, rtReserv) = s
     
         Grid.AddItem ""
@@ -451,7 +452,7 @@ sql = "SELECT BayOrders.numOrder, BayOrders.inDate, BayOrders.ManagId, " & _
 "sDMC.numDoc)) INNER JOIN BayOrders ON sDMCrez.numDoc = BayOrders.numOrder) " & _
 "ON BayGuideProblem.ProblemId = " & _
 "BayOrders.ProblemId) ON BayGuideFirms.FirmId = BayOrders.FirmId " & _
-"WHERE (((sDMCrez.nomNom)='" & gNomNom & "'));"
+"WHERE sDMCrez.nomNom ='" & gNomNom & "'  and BayOrders.statusId <> 6"
 
 Set tbOrders = myOpenRecordSet("##351", sql, dbOpenForwardOnly) ', dbOpenDynaset)
 If Not tbOrders Is Nothing Then
@@ -470,10 +471,10 @@ If Not tbOrders Is Nothing Then
         Grid.TextMatrix(quantity, rtReserv) = s
 '        If Not IsNull(tbOrders!ordered) Then _
             Grid.TextMatrix(quantity, rtZakazano) = tbOrders!ordered  $$6
-        Grid.TextMatrix(quantity, rtZakazano) = getOrdered(tbOrders!numorder) '$$6
+        Grid.TextMatrix(quantity, rtZakazano) = Round(getOrdered(tbOrders!numorder), 2) '$$6
             
         If Not IsNull(tbOrders!paid) Then _
-            Grid.TextMatrix(quantity, rtOplacheno) = tbOrders!paid
+            Grid.TextMatrix(quantity, rtOplacheno) = Round(tbOrders!paid, 2)
         Grid.AddItem ""
       End If
       tbOrders.MoveNext

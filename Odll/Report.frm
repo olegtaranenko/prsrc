@@ -774,8 +774,6 @@ If Grid.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
 End Sub
 
-#If Not COMTEC = 1 Then '----------------------------------------------------
-
 Sub whoRezerved()
 Dim v, s As Double, ed2 As String, per As Double, sum As Double
 sql = "SELECT  ed_Izmer2, perList From sGuideNomenk WHERE (((nomNom)='" & gNomNom & "'));"
@@ -970,5 +968,4 @@ Me.Width = delta + 700
 End Sub
 
 
-#End If '--------------------------------------------------------------
 

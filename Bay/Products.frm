@@ -27,7 +27,7 @@ Begin VB.Form sProducts
       Height          =   80
       Left            =   2400
       MousePointer    =   7  'Size N S
-      TabIndex        =   22
+      TabIndex        =   21
       Top             =   3360
       Width           =   3480
    End
@@ -83,15 +83,6 @@ Begin VB.Form sProducts
          _Version        =   393216
          AllowBigSelection=   0   'False
          AllowUserResizing=   1
-      End
-      Begin VB.Label laGrid 
-         AutoSize        =   -1  'True
-         Caption         =   "Label1"
-         Height          =   192
-         Left            =   2400
-         TabIndex        =   20
-         Top             =   3360
-         Width           =   492
       End
       Begin VB.Label laGrid4 
          Alignment       =   2  'Center
@@ -230,7 +221,7 @@ Begin VB.Form sProducts
       Height          =   5892
       Left            =   7080
       MousePointer    =   9  'Size W E
-      TabIndex        =   21
+      TabIndex        =   20
       Top             =   0
       Width           =   80
    End
@@ -242,9 +233,20 @@ Begin VB.Form sProducts
       Height          =   5892
       Left            =   2280
       MousePointer    =   9  'Size W E
-      TabIndex        =   23
+      TabIndex        =   22
       Top             =   0
       Width           =   80
+   End
+   Begin VB.Label laGrid 
+      AutoSize        =   -1  'True
+      BackColor       =   &H8000000A&
+      Caption         =   "Label1"
+      ForeColor       =   &H80000017&
+      Height          =   192
+      Left            =   3000
+      TabIndex        =   23
+      Top             =   0
+      Width           =   492
    End
    Begin VB.Label laGrid1 
       AutoSize        =   -1  'True
@@ -519,7 +521,7 @@ If Not byErrSqlGetValues("##145", sql, z, s) Then myBase.Close: End
 nomencOstatkiToGrid = FO - (z - s) ' минус, что несписано
 
 nomencOstatkiToGrid = nomencOstatkiToGrid / tmpSng
-
+FO = FO / tmpSng
 If row > 0 Then _
     Grid4.TextMatrix(row, frOstat) = Round(nomencOstatkiToGrid, 2)
 
@@ -545,7 +547,7 @@ If Regim = "products" Then
     Grid3.colWidth(gpName) = 1300
     Grid3.colWidth(gpSize) = 1080
     Grid3.colWidth(gpDescript) = 4085
-    laGrid.left = Grid3.left
+    laGrid.Left = Grid3.Left
 
 Else
     laBegin = "¬ классификаторе выберите (кликом Mouse) группу, при этом " & _
@@ -595,7 +597,7 @@ If Regim = "ostat" Or Regim = "products" Then
     laGrid.Visible = False
     Grid.Width = 7000 '6230
     Me.Width = Grid.Width + 2527
-    cmExit.left = Me.Width - cmExit.Width - 200
+    cmExit.Left = Me.Width - cmExit.Width - 200
     Grid2.Width = 0 'дл€ Resize
     GoTo EN1
 ElseIf Regim = "" Or Regim = "closeZakaz" Then
@@ -618,7 +620,7 @@ quantity2 = 0
 loadPredmeti ' сюда попадаем только из предметов заказа
 Dim Grid2Width As Long: Grid2Width = adjustGirdMoneyColWidth()
 Grid2.Width = Grid2Width + 500
-Me.Width = Grid.left + Grid.Width + Grid2Width + 800
+Me.Width = Grid.Left + Grid.Width + Grid2Width + 800
 
 If quantity2 > 0 Then
     str = "–едактирование"
@@ -673,7 +675,7 @@ If Not tbNomenk.BOF Then
     Grid2.TextMatrix(quantity2, dnVesEd) = tbNomenk!VES
 
     Grid2.TextMatrix(quantity2, dnCenaEd) = Round(rated(tbNomenk!intQuant, orderRate), 2)
-    quant = Round(tbNomenk!quantity / tbNomenk!perList, 2)
+    quant = Round(tbNomenk!quantity / tbNomenk!perlist, 2)
     Grid2.TextMatrix(quantity2, dnQuant) = quant
     s = Round(tbNomenk!VES * quant, 3)
     Grid2.TextMatrix(quantity2, dnVes) = s
@@ -719,7 +721,7 @@ End Function
 
 
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer, left As Long
+Dim h As Integer, w As Integer, Left As Long
 
 If Not isLoad Then Exit Sub
 If Me.WindowState = vbMinimized Then Exit Sub
@@ -743,46 +745,46 @@ If Regim <> "products" Then
     splLeftH.Visible = False
 End If
 
-Grid.left = Grid.left + w * tvVes
-laGrid1.left = Grid.left
-laBegin.left = tv.left + tv.Width + 100
+Grid.Left = Grid.Left + w * tvVes
+laGrid1.Left = Grid.Left
+laBegin.Left = tv.Left + tv.Width + 100
 laBegin.Top = tv.Top
 
 Grid.Height = Grid.Height + h
 Grid.Width = Grid.Width + w * gridVes
 
-Grid2.left = Grid2.left + w * (tvVes + gridVes)
-laGrid2.left = Grid2.left
+Grid2.Left = Grid2.Left + w * (tvVes + gridVes)
+laGrid2.Left = Grid2.Left
 Grid2.Height = Grid2.Height + h
 Grid2.Width = Grid2.Width + w * grid2Ves
 
 splLeftV.Top = Grid.Top
-splLeftV.left = tv.left + tv.Width + 15
+splLeftV.Left = tv.Left + tv.Width + 15
 splLeftV.Height = tv.Height
 
 splLeftH.Top = Grid3.Top + Grid3.Height + 5
-splLeftH.left = splLeftV.left + splLeftV.Width
+splLeftH.Left = splLeftV.Left + splLeftV.Width
 splLeftH.Width = Grid3.Width
 
 splRightV.Top = splLeftV.Top
-splRightV.left = splLeftH.left + splLeftH.Width
+splRightV.Left = splLeftH.Left + splLeftH.Width
 splRightV.Height = splLeftV.Height
 
 cmSel.Top = cmSel.Top + h
-cmSel.left = cmSel.left + w
+cmSel.Left = cmSel.Left + w
 tbQuant.Top = tbQuant.Top + h
-tbQuant.left = tbQuant.left + w
+tbQuant.Left = tbQuant.Left + w
 laQuant.Top = laQuant.Top + h
-laQuant.left = laQuant.left + w
+laQuant.Left = laQuant.Left + w
 cmExit.Top = cmExit.Top + h
-cmExit.left = cmExit.left + w
+cmExit.Left = cmExit.Left + w
 cmExel2.Top = cmExel2.Top + h
-cmExel2.left = cmExel2.left + w
+cmExel2.Left = cmExel2.Left + w
 cmExel.Top = cmExel.Top + h
 cmHide.Top = cmHide.Top + h
-Grid3.left = Grid.left
+Grid3.Left = Grid.Left
 Grid3.Width = Grid.Width
-laGrid.left = Grid3.left
+laGrid.Left = Grid3.Left
 
 End Sub
 
@@ -824,6 +826,27 @@ Else
 End If
 End Sub
 
+
+Function checkFactDost(ByRef factCol As Integer, ByRef dostCol As Integer) As Boolean
+Dim fact As Double, dost As Double
+Dim factStr As String, dostStr As String
+    factStr = Grid.TextMatrix(mousRow, factCol)
+    If Not IsNumeric(factStr) Then
+        fact = 0
+    Else
+        fact = CDbl(factStr)
+    End If
+    
+    dostStr = Grid.TextMatrix(mousRow, dostCol)
+    If Not IsNumeric(dostStr) Then
+        dost = 0
+    Else
+        dost = CDbl(dostStr)
+    End If
+    checkFactDost = dost < fact
+End Function
+
+
 Private Sub Grid_EnterCell()
 Dim f As String, d As String
 
@@ -841,10 +864,8 @@ gNomNom = Grid.TextMatrix(mousRow, nkNomer)
 'End If
  
 Grid.CellBackColor = vbYellow
-If mousCol = nkDostup Then
-    f = Grid.TextMatrix(mousRow, nkCurOstat)
-    d = Grid.TextMatrix(mousRow, nkDostup)
-    If d < f Then Grid.CellBackColor = &H88FF88
+If mousCol = nkDostup And checkFactDost(nkCurOstat, nkDostup) Then
+    Grid.CellBackColor = &H88FF88
 End If
 
 End Sub
@@ -1072,6 +1093,7 @@ Private Sub splLeftH_MouseDown(Button As Integer, Shift As Integer, x As Single,
 End Sub
 
 Private Sub splLeftH_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
+Dim Left As String
     If Dragging Then
         Dim DraggingShift As Single
         DraggingShift = y
@@ -1084,6 +1106,7 @@ Private Sub splLeftH_MouseMove(Button As Integer, Shift As Integer, x As Single,
         splLeftH.Top = splLeftH.Top + DraggingShift
         Grid3.Height = Grid3.Height + DraggingShift
         laGrid.Top = splLeftH.Top + splLeftH.Height
+        laGrid.Left = Grid.Left
         Grid.Top = laGrid.Top + laGrid.Height
         Grid.Height = Grid.Height - DraggingShift
     End If
@@ -1113,16 +1136,16 @@ Private Sub splLeftV_MouseMove(Button As Integer, Shift As Integer, x As Single,
         End If
             Grid.Width = Grid.Width - DraggingShift
             tv.Width = tv.Width + DraggingShift
-        splLeftV.left = splLeftV.left + DraggingShift
-        Grid.left = Grid.left + DraggingShift
-        laGrid.left = Grid.left
+        splLeftV.Left = splLeftV.Left + DraggingShift
+        Grid.Left = Grid.Left + DraggingShift
+        laGrid.Left = Grid.Left
         laGrid.Width = Grid.Width
-        Grid3.left = Grid.left
+        Grid3.Left = Grid.Left
         Grid3.Width = Grid.Width
-        laBegin.left = Grid.left
+        laBegin.Left = Grid.Left
         If laBegin.Width > DraggingShift Then _
             laBegin.Width = Grid.Width
-        splLeftH.left = Grid.left
+        splLeftH.Left = Grid.Left
         splLeftH.Width = Grid.Width
     End If
 End Sub
@@ -1151,11 +1174,11 @@ Private Sub splRightV_MouseMove(Button As Integer, Shift As Integer, x As Single
             
         Grid3.Width = Grid3.Width + DraggingShift
         Grid.Width = Grid3.Width
-        splRightV.left = splRightV.left + DraggingShift
+        splRightV.Left = splRightV.Left + DraggingShift
         splLeftH.Width = Grid3.Width
-        Grid2.left = Grid2.left + DraggingShift
+        Grid2.Left = Grid2.Left + DraggingShift
         Grid2.Width = Grid2.Width - DraggingShift
-        laGrid2.left = Grid2.left
+        laGrid2.Left = Grid2.Left
         laGrid2.Width = Grid2.Width
     End If
 End Sub
@@ -1327,7 +1350,7 @@ Else '                обе присутствуют
     
     gHeightMax = Grid.Rows * (Grid.CellHeight + 13) + 95
     g3HeightMax = Grid3.Rows * (Grid3.CellHeight + 13) + 95
-    fullHeight = gHeightMax + g3HeightMax + laGrid.Height
+    fullHeight = gHeightMax + g3HeightMax + laGrid.Height + splLeftH.Height
     
     If fullHeight > formHeight Then
         Dim normalGrid As Double, normalGird3 As Double
@@ -1361,7 +1384,7 @@ Else '                обе присутствуют
         
     Else
         Grid3.Height = g3HeightMax
-        laGrid.Top = Grid3.Top + g3HeightMax
+        laGrid.Top = Grid3.Top + g3HeightMax + splLeftH.Height
         Grid.Height = gHeightMax
         Grid.Top = laGrid.Top + laGrid.Height
         Grid.Height = tv.Top + tv.Height - Grid.Top
@@ -1371,7 +1394,7 @@ Else '                обе присутствуют
     End If
     splLeftH.Top = Grid3.Top + Grid3.Height
     splLeftH.Width = Grid3.Width
-    splLeftH.left = Grid3.left
+    splLeftH.Left = Grid3.Left
     
 End If
 
@@ -1516,7 +1539,7 @@ End Sub
 
 
 Sub loadProductNomenk(ByVal v_productId As Integer)
-Dim s As Double, grBef As String, left As Integer
+Dim s As Double, grBef As String, Left As Integer
 
 Dragging = False
 
@@ -1529,7 +1552,7 @@ clearGrid Grid
 
 sql = "SELECT sProducts.nomNom, sProducts.quantity, sProducts.xGroup, " & _
 "sGuideNomenk.Size, sGuideNomenk.cod, " & _
-" sGuideNomenk.nomName, sGuideNomenk.ed_Izmer  " & _
+" sGuideNomenk.nomName, sGuideNomenk.ed_Izmer2 as ed_izmer  " & _
 "FROM sGuideNomenk INNER JOIN sProducts ON sGuideNomenk.nomNom = sProducts.nomNom " & _
 "WHERE (((sProducts.ProductId)=" & v_productId & ")) ORDER BY sProducts.xGroup DESC;"
 'MsgBox sql
@@ -1573,7 +1596,7 @@ If Not tbNomenk.BOF Then
         Grid.TextMatrix(quantity, nkQuant) = tbNomenk!quantity
     'доступные остатки:
     Grid.TextMatrix(quantity, nkDostup) = Round(nomencOstatkiToGrid(-1), 2)
-    If Regim = "ostat" Then
+    If Regim = "ostat" Or Regim = "products" Then
         Grid.TextMatrix(quantity, nkCurOstat) = Round(FO, 2)
     End If
     
@@ -1691,7 +1714,7 @@ If Regim = "products" Then
     'laGrid.Visible = True
     cmSel.Enabled = False
     gridOrGrid3Hide "grid"
-    Grid.colWidth(nkCurOstat) = 0
+    'Grid.colWidth(nkCurOstat) = 0
 Else
     loadKlassNomenk
 End If
