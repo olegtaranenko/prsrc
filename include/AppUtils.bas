@@ -19,11 +19,11 @@ objExel.Workbooks.Add
 With objExel.ActiveSheet
 .Cells(1, 2).value = title
 ReDim Preserve strA(Grid.Cols + 1)
-For r = 0 To Grid.rows - 1
+For r = 0 To Grid.Rows - 1
     Dim curColumn As Integer
     curColumn = 1
     For c = 1 To Grid.Cols - 1
-        If Grid.ColWidth(c) > 0 Then
+        If Grid.colWidth(c) > 0 Then
             str = Grid.TextMatrix(r, c) '=' - наверно зарезервирован для ввода формул
             Dim firstLetter As String
             firstLetter = left$(str, 1)
@@ -38,6 +38,9 @@ For r = 0 To Grid.rows - 1
             If IsNumeric(str) And r > 0 Then
                 strA(curColumn - 1) = CStr(CDbl(str))
             Else
+                If Len(str) > 255 Then
+                    str = left(str, 252) & "..."
+                End If
                 strA(curColumn - 1) = str
             End If
             curColumn = curColumn + 1
