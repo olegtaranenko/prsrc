@@ -910,7 +910,7 @@ Grid3.Width = Grid.Width
 End Sub
 
 
-Private Sub Form_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Form_MouseMove(Button As Integer, Shift As Integer, X As Single, y As Single)
     If Dragging Then
         Dragging = True
     End If
@@ -1175,7 +1175,7 @@ If Grid.col <> 0 And Grid.col <> buntColumn Then Grid.CellBackColor = Grid.BackC
 End Sub
 
 
-Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
 End Sub
@@ -1198,7 +1198,7 @@ End If
 End Sub
 
 
-Private Sub Grid2_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid2_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
 If Grid2.MouseRow = 0 And Shift = 2 Then
         MsgBox "ColWidth = " & Grid2.ColWidth(Grid2.MouseCol)
 ElseIf Button = 2 And Regim = "fromDocs" And quantity2 > 0 Then
@@ -1332,7 +1332,7 @@ Private Sub Grid3_LeaveCell()
 Grid3.CellBackColor = Grid3.BackColor
 End Sub
 
-Private Sub Grid3_MouseDown(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid3_MouseDown(Button As Integer, Shift As Integer, X As Single, y As Single)
 'не выносить это в Grid3_Click
 
 If Grid3.MouseRow = 0 Then
@@ -1351,7 +1351,7 @@ End If
 
 End Sub
 
-Private Sub Grid3_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid3_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
 
 If Grid3.MouseRow = 0 And Shift = 2 Then MsgBox "ColWidth = " & Grid3.ColWidth(Grid3.MouseCol)
 
@@ -1367,7 +1367,7 @@ Private Sub Grid4_GotFocus()
     tbQuant.SetFocus
 End Sub
 
-Private Sub Grid4_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid4_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
 If Grid4.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid4.ColWidth(Grid4.MouseCol)
 
@@ -1648,7 +1648,7 @@ Dim currentCol As Integer, currentLeft As Integer
 End Sub
 
 
-Private Sub Grid5_MouseDown(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid5_MouseDown(Button As Integer, Shift As Integer, X As Single, y As Single)
 Dim I As Integer
 
     If isCtrlDown And Button = 1 And Grid5.row <> 0 And Grid5.row <> Grid5.rows - 1 Then
@@ -1675,7 +1675,7 @@ Dim I As Integer
     
 End Sub
 
-Private Sub Grid5_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid5_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
     If isCtrlDown Then
     Else
         If hasSelection(Grid5) And Button = 1 Then
@@ -2123,13 +2123,13 @@ End Sub
 
 
 
-Private Sub splLeftH_MouseDown(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub splLeftH_MouseDown(Button As Integer, Shift As Integer, X As Single, y As Single)
     Dragging = True
     DraggingY = y
 End Sub
 
 
-Private Sub splLeftH_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub splLeftH_MouseMove(Button As Integer, Shift As Integer, X As Single, y As Single)
     If Dragging Then
         Dim DraggingShift As Single
         DraggingShift = y
@@ -2147,21 +2147,21 @@ Private Sub splLeftH_MouseMove(Button As Integer, Shift As Integer, x As Single,
     End If
 End Sub
 
-Private Sub splLeftH_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub splLeftH_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
     Dragging = False
 End Sub
 
 
 
-Private Sub splLeftV_MouseDown(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub splLeftV_MouseDown(Button As Integer, Shift As Integer, X As Single, y As Single)
     Dragging = True
-    DraggingX = x
+    DraggingX = X
 End Sub
 
-Private Sub splLeftV_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub splLeftV_MouseMove(Button As Integer, Shift As Integer, X As Single, y As Single)
     If Dragging Then
         Dim DraggingShift As Single
-        DraggingShift = x
+        DraggingShift = X
         If tv.Width + DraggingShift > 100 Then
         Else
             Exit Sub
@@ -2187,16 +2187,16 @@ Private Sub splLeftV_MouseMove(Button As Integer, Shift As Integer, x As Single,
     End If
 End Sub
 
-Private Sub splLeftV_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub splLeftV_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
     Dragging = False
 End Sub
 
-Private Sub splRightH_MouseDown(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub splRightH_MouseDown(Button As Integer, Shift As Integer, X As Single, y As Single)
     Dragging = True
     DraggingY = y
 End Sub
 
-Private Sub splRightH_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub splRightH_MouseMove(Button As Integer, Shift As Integer, X As Single, y As Single)
     If Dragging Then
         Dim DraggingShift As Single
         DraggingShift = y
@@ -2214,20 +2214,20 @@ Private Sub splRightH_MouseMove(Button As Integer, Shift As Integer, x As Single
     End If
 End Sub
 
-Private Sub splRightH_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub splRightH_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
     Dragging = False
 End Sub
 
 
-Private Sub splRightV_MouseDown(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub splRightV_MouseDown(Button As Integer, Shift As Integer, X As Single, y As Single)
     Dragging = True
-    DraggingX = x
+    DraggingX = X
 End Sub
 
-Private Sub splRightV_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub splRightV_MouseMove(Button As Integer, Shift As Integer, X As Single, y As Single)
     If Dragging Then
         Dim DraggingShift As Single
-        DraggingShift = x
+        DraggingShift = X
         If Not (Grid3.Width + DraggingShift > 100) Then
             Exit Sub
         End If
@@ -2250,7 +2250,7 @@ Private Sub splRightV_MouseMove(Button As Integer, Shift As Integer, x As Single
     End If
 End Sub
 
-Private Sub splRightV_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub splRightV_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
     Dragging = False
 End Sub
 
@@ -2882,6 +2882,7 @@ End Sub
 Sub loadKlassNomenk()
 Dim il As Long, s As Double, strWhere As String
 Dim beg As Double, prih As Double, rash As Double, oldNow As Double
+buntColumn = 0
 
 
 
@@ -3015,7 +3016,7 @@ End If
 End Sub
 
 
-Private Sub tv_MouseDown(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub tv_MouseDown(Button As Integer, Shift As Integer, X As Single, y As Single)
 beShift = False
 If Shift = 2 Then beShift = True
 
