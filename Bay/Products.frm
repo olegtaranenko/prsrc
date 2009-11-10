@@ -366,9 +366,9 @@ Const dnVes = 8
 Const nkNomer = 1
 Const nkName = 2
 Const nkEdIzm = 3
-Const nkCurOstat = 4
-Const nkDostup = 5
-Const nkQuant = 6
+Const nkQuant = 4
+Const nkCurOstat = 5
+Const nkDostup = 6
 
 Dim buntColumn As Integer
 
@@ -547,7 +547,7 @@ If Regim = "products" Then
     Grid3.colWidth(gpName) = 1300
     Grid3.colWidth(gpSize) = 1080
     Grid3.colWidth(gpDescript) = 4085
-    laGrid.Left = Grid3.Left
+    laGrid.left = Grid3.left
 
 Else
     laBegin = "В классификаторе выберите (кликом Mouse) группу, при этом " & _
@@ -561,7 +561,7 @@ End If
 
 noClick = False
 msgBilo = False
-Grid.FormatString = "|<Номер|<Описание|<Ед.изм|Ф.остатки|Д.остатки|Кол-во"
+Grid.FormatString = "|<Номер|<Описание|<Ед.изм|Кол-во|Ф.остатки|Д.остатки"
 Grid2.FormatString = "|<Номер|<Описание|<Ед.измерения|вес.ед|Цена за ед.|" & _
                      "кол-во|Сумма|вес"
 Grid.colWidth(0) = 0
@@ -597,7 +597,7 @@ If Regim = "ostat" Or Regim = "products" Then
     laGrid.Visible = False
     Grid.Width = 7000 '6230
     Me.Width = Grid.Width + 2527
-    cmExit.Left = Me.Width - cmExit.Width - 200
+    cmExit.left = Me.Width - cmExit.Width - 200
     Grid2.Width = 0 'для Resize
     GoTo EN1
 ElseIf Regim = "" Or Regim = "closeZakaz" Then
@@ -620,7 +620,7 @@ quantity2 = 0
 loadPredmeti ' сюда попадаем только из предметов заказа
 Dim Grid2Width As Long: Grid2Width = adjustGirdMoneyColWidth()
 Grid2.Width = Grid2Width + 500
-Me.Width = Grid.Left + Grid.Width + Grid2Width + 800
+Me.Width = Grid.left + Grid.Width + Grid2Width + 800
 
 If quantity2 > 0 Then
     str = "Редактирование"
@@ -675,7 +675,7 @@ If Not tbNomenk.BOF Then
     Grid2.TextMatrix(quantity2, dnVesEd) = tbNomenk!VES
 
     Grid2.TextMatrix(quantity2, dnCenaEd) = Round(rated(tbNomenk!intQuant, orderRate), 2)
-    quant = Round(tbNomenk!quantity / tbNomenk!perlist, 2)
+    quant = Round(tbNomenk!quantity / tbNomenk!perList, 2)
     Grid2.TextMatrix(quantity2, dnQuant) = quant
     s = Round(tbNomenk!VES * quant, 3)
     Grid2.TextMatrix(quantity2, dnVes) = s
@@ -721,7 +721,7 @@ End Function
 
 
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer, Left As Long
+Dim h As Integer, w As Integer, left As Long
 
 If Not isLoad Then Exit Sub
 If Me.WindowState = vbMinimized Then Exit Sub
@@ -745,46 +745,46 @@ If Regim <> "products" Then
     splLeftH.Visible = False
 End If
 
-Grid.Left = Grid.Left + w * tvVes
-laGrid1.Left = Grid.Left
-laBegin.Left = tv.Left + tv.Width + 100
+Grid.left = Grid.left + w * tvVes
+laGrid1.left = Grid.left
+laBegin.left = tv.left + tv.Width + 100
 laBegin.Top = tv.Top
 
 Grid.Height = Grid.Height + h
 Grid.Width = Grid.Width + w * gridVes
 
-Grid2.Left = Grid2.Left + w * (tvVes + gridVes)
-laGrid2.Left = Grid2.Left
+Grid2.left = Grid2.left + w * (tvVes + gridVes)
+laGrid2.left = Grid2.left
 Grid2.Height = Grid2.Height + h
 Grid2.Width = Grid2.Width + w * grid2Ves
 
 splLeftV.Top = Grid.Top
-splLeftV.Left = tv.Left + tv.Width + 15
+splLeftV.left = tv.left + tv.Width + 15
 splLeftV.Height = tv.Height
 
 splLeftH.Top = Grid3.Top + Grid3.Height + 5
-splLeftH.Left = splLeftV.Left + splLeftV.Width
+splLeftH.left = splLeftV.left + splLeftV.Width
 splLeftH.Width = Grid3.Width
 
 splRightV.Top = splLeftV.Top
-splRightV.Left = splLeftH.Left + splLeftH.Width
+splRightV.left = splLeftH.left + splLeftH.Width
 splRightV.Height = splLeftV.Height
 
 cmSel.Top = cmSel.Top + h
-cmSel.Left = cmSel.Left + w
+cmSel.left = cmSel.left + w
 tbQuant.Top = tbQuant.Top + h
-tbQuant.Left = tbQuant.Left + w
+tbQuant.left = tbQuant.left + w
 laQuant.Top = laQuant.Top + h
-laQuant.Left = laQuant.Left + w
+laQuant.left = laQuant.left + w
 cmExit.Top = cmExit.Top + h
-cmExit.Left = cmExit.Left + w
+cmExit.left = cmExit.left + w
 cmExel2.Top = cmExel2.Top + h
-cmExel2.Left = cmExel2.Left + w
+cmExel2.left = cmExel2.left + w
 cmExel.Top = cmExel.Top + h
 cmHide.Top = cmHide.Top + h
-Grid3.Left = Grid.Left
+Grid3.left = Grid.left
 Grid3.Width = Grid.Width
-laGrid.Left = Grid3.Left
+laGrid.left = Grid3.left
 
 End Sub
 
@@ -1093,7 +1093,7 @@ Private Sub splLeftH_MouseDown(Button As Integer, Shift As Integer, x As Single,
 End Sub
 
 Private Sub splLeftH_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
-Dim Left As String
+Dim left As String
     If Dragging Then
         Dim DraggingShift As Single
         DraggingShift = y
@@ -1106,7 +1106,7 @@ Dim Left As String
         splLeftH.Top = splLeftH.Top + DraggingShift
         Grid3.Height = Grid3.Height + DraggingShift
         laGrid.Top = splLeftH.Top + splLeftH.Height
-        laGrid.Left = Grid.Left
+        laGrid.left = Grid.left
         Grid.Top = laGrid.Top + laGrid.Height
         Grid.Height = Grid.Height - DraggingShift
     End If
@@ -1136,16 +1136,16 @@ Private Sub splLeftV_MouseMove(Button As Integer, Shift As Integer, x As Single,
         End If
             Grid.Width = Grid.Width - DraggingShift
             tv.Width = tv.Width + DraggingShift
-        splLeftV.Left = splLeftV.Left + DraggingShift
-        Grid.Left = Grid.Left + DraggingShift
-        laGrid.Left = Grid.Left
+        splLeftV.left = splLeftV.left + DraggingShift
+        Grid.left = Grid.left + DraggingShift
+        laGrid.left = Grid.left
         laGrid.Width = Grid.Width
-        Grid3.Left = Grid.Left
+        Grid3.left = Grid.left
         Grid3.Width = Grid.Width
-        laBegin.Left = Grid.Left
+        laBegin.left = Grid.left
         If laBegin.Width > DraggingShift Then _
             laBegin.Width = Grid.Width
-        splLeftH.Left = Grid.Left
+        splLeftH.left = Grid.left
         splLeftH.Width = Grid.Width
     End If
 End Sub
@@ -1174,11 +1174,11 @@ Private Sub splRightV_MouseMove(Button As Integer, Shift As Integer, x As Single
             
         Grid3.Width = Grid3.Width + DraggingShift
         Grid.Width = Grid3.Width
-        splRightV.Left = splRightV.Left + DraggingShift
+        splRightV.left = splRightV.left + DraggingShift
         splLeftH.Width = Grid3.Width
-        Grid2.Left = Grid2.Left + DraggingShift
+        Grid2.left = Grid2.left + DraggingShift
         Grid2.Width = Grid2.Width - DraggingShift
-        laGrid2.Left = Grid2.Left
+        laGrid2.left = Grid2.left
         laGrid2.Width = Grid2.Width
     End If
 End Sub
@@ -1394,7 +1394,7 @@ Else '                обе присутствуют
     End If
     splLeftH.Top = Grid3.Top + Grid3.Height
     splLeftH.Width = Grid3.Width
-    splLeftH.Left = Grid3.Left
+    splLeftH.left = Grid3.left
     
 End If
 
@@ -1539,7 +1539,7 @@ End Sub
 
 
 Sub loadProductNomenk(ByVal v_productId As Integer)
-Dim s As Double, grBef As String, Left As Integer
+Dim s As Double, grBef As String, left As Integer
 
 Dragging = False
 
