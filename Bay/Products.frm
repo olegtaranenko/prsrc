@@ -1661,7 +1661,7 @@ If Not tbNomenk.BOF Then
     If Regim = "ostat" Or Regim = "" Then
         'доступные остатки без дробной части (nomencOstatkiToGrid выдает perList в tmpSng):
         Grid.TextMatrix(quantity, nkDostup) = Round(nomencOstatkiToGrid(-1) - 0.4999, 0)
-        Grid.TextMatrix(quantity, nkCurOstat) = Round(FO / tmpSng, 2) 'FO из nomencOstatkiToGrid
+        Grid.TextMatrix(quantity, nkCurOstat) = Round(FO, 2) 'FO из nomencOstatkiToGrid
     End If
     Grid.AddItem ""
     tbNomenk.MoveNext
