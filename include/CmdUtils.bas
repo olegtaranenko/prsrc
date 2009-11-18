@@ -190,7 +190,7 @@ End Sub
 Function loadFileSettings(filePath As String, ByRef curSettings() As MapEntry) As Integer
 Dim entry As MapEntry
 
-    Dim str As String, str2 As String, I As Integer, j As Integer
+    Dim str As String, str2 As String, I As Integer, J As Integer
     str = filePath
     ReDim curSettings(0)
     
@@ -230,7 +230,7 @@ EN1:
 End Sub
 
 Function getAppCfgDefaultName() As String
-    getAppCfgDefaultName = App.path & "\" & App.exeName & ".cfg"
+    getAppCfgDefaultName = App.path & "\" & App.EXEName & ".cfg"
 End Function
 
 Function getSiteCfgDefaultName() As String
@@ -419,15 +419,12 @@ Dim sz As Integer, I As Integer
 End Sub
 
 Sub setAndSave(scope As String, Key As String, ByRef value As Variant)
-Dim curSettings() As MapEntry, curCfgFile As String
 
     If scope = "app" Then
-        curSettings = appSettings
-        curCfgFile = appCfgFile
+        setCurrentSetting appSettings, Key, value
+        saveFileSettings appCfgFile, appSettings
     End If
 
-    setCurrentSetting curSettings, Key, value
-    saveFileSettings curCfgFile, curSettings
 End Sub
 
 

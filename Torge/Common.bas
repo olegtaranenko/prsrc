@@ -84,6 +84,8 @@ Public arowSubtitle() As Boolean
 Public startDate As String, endDate As String
 Public rate As Variant
 
+Public gSrokPostav As Single ' переменная испольуется для определения,нужно ли пересчитывать запасы и к заявке, если срок доставки изменился
+Public gSrokBetweenPostav As Single ' переменная испольуется для определения,нужно ли пересчитывать запасы и к заявке, если срок между поставками изменился
 
 Function RateAsString(ByVal curRate As Double) As String
     
@@ -534,6 +536,10 @@ webProducts = getEffectiveSetting("ProductsPath")
 webNomenks = getEffectiveSetting("NomenksPath")
 loginsPath = getEffectiveSetting("loginsPath")
 SvodkaPath = getEffectiveSetting("SvodkaPath")
+
+gSrokPostav = getEffectiveSetting("gSrokPostav")
+gSrokBetweenPostav = getEffectiveSetting("gSrokBetweenPostav")
+
 
 checkReloadCfg
 

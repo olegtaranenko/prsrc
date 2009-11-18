@@ -7,21 +7,20 @@ Begin VB.Form Nomenklatura
    ClientHeight    =   6396
    ClientLeft      =   60
    ClientTop       =   1740
-   ClientWidth     =   11880
+   ClientWidth     =   14256
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    MinButton       =   0   'False
    ScaleHeight     =   6396
-   ScaleWidth      =   11880
+   ScaleWidth      =   14256
    StartUpPosition =   1  'CenterOwner
    Visible         =   0   'False
-   Begin VB.TextBox tbPostav 
+   Begin VB.TextBox tbBetweenPostav 
       Height          =   285
-      Left            =   8400
-      TabIndex        =   42
+      Left            =   9840
+      TabIndex        =   44
       Text            =   "1"
-      Top             =   0
-      Visible         =   0   'False
+      Top             =   120
       Width           =   372
    End
    Begin VB.CommandButton cmExit 
@@ -158,19 +157,11 @@ Begin VB.Form Nomenklatura
       Visible         =   0   'False
       Width           =   435
    End
-   Begin VB.CheckBox chPerList 
-      Caption         =   "В целых"
-      Height          =   195
-      Left            =   7500
-      TabIndex        =   27
-      Top             =   40
-      Width           =   1035
-   End
    Begin VB.ListBox lbSource 
       Height          =   2736
       Left            =   8640
       TabIndex        =   26
-      Top             =   360
+      Top             =   720
       Visible         =   0   'False
       Width           =   3075
    End
@@ -233,36 +224,39 @@ Begin VB.Form Nomenklatura
       Width           =   735
    End
    Begin VB.CheckBox ckStartDate 
+      BackColor       =   &H80000005&
       Caption         =   " "
-      Height          =   315
+      Height          =   195
       Left            =   3720
       TabIndex        =   19
-      Top             =   0
+      Top             =   150
       Width           =   195
    End
    Begin VB.CheckBox ckEndDate 
+      BackColor       =   &H80000005&
       Caption         =   " "
       Height          =   315
       Left            =   5040
       TabIndex        =   1
-      Top             =   0
+      Top             =   120
       Width           =   195
    End
    Begin VB.ComboBox cbInside 
-      Height          =   315
-      Left            =   10320
+      Height          =   288
+      Left            =   11640
       Style           =   2  'Dropdown List
       TabIndex        =   18
-      Top             =   0
+      Top             =   120
       Visible         =   0   'False
       Width           =   1335
    End
    Begin VB.CheckBox chGain 
+      BackColor       =   &H8000000A&
       Caption         =   "в У.Е."
       Height          =   195
       Left            =   6360
       TabIndex        =   16
-      Top             =   40
+      Top             =   150
       Visible         =   0   'False
       Width           =   855
    End
@@ -298,20 +292,22 @@ Begin VB.Form Nomenklatura
       Top             =   4500
    End
    Begin VB.TextBox tbEndDate 
+      BackColor       =   &H8000000A&
       Height          =   285
       Left            =   5280
       TabIndex        =   3
       Text            =   "23.12.02"
-      Top             =   0
+      Top             =   120
       Width           =   795
    End
    Begin VB.TextBox tbStartDate 
+      BackColor       =   &H8000000A&
       Enabled         =   0   'False
       Height          =   285
       Left            =   3960
       TabIndex        =   2
       Text            =   "23.12.02"
-      Top             =   0
+      Top             =   120
       Visible         =   0   'False
       Width           =   795
    End
@@ -329,13 +325,13 @@ Begin VB.Form Nomenklatura
       Width           =   975
    End
    Begin MSFlexGridLib.MSFlexGrid Grid 
-      Height          =   5535
+      Height          =   5292
       Left            =   2880
       TabIndex        =   4
-      Top             =   300
-      Width           =   8895
-      _ExtentX        =   15685
-      _ExtentY        =   9758
+      Top             =   540
+      Width           =   11292
+      _ExtentX        =   19918
+      _ExtentY        =   9335
       _Version        =   393216
       AllowBigSelection=   0   'False
       AllowUserResizing=   1
@@ -356,24 +352,54 @@ Begin VB.Form Nomenklatura
       Style           =   7
       Appearance      =   1
    End
+   Begin VB.CheckBox chPerList 
+      BackColor       =   &H8000000A&
+      Caption         =   "В целых"
+      Height          =   195
+      Left            =   7500
+      TabIndex        =   27
+      Top             =   156
+      Width           =   1035
+   End
+   Begin VB.TextBox tbPostav 
+      Height          =   285
+      Left            =   8280
+      TabIndex        =   42
+      Text            =   "1"
+      Top             =   120
+      Visible         =   0   'False
+      Width           =   372
+   End
    Begin VB.Label lbPostav 
       Alignment       =   1  'Right Justify
-      Caption         =   "Срок постав."
-      Height          =   192
-      Left            =   7200
+      BackColor       =   &H8000000A&
+      Caption         =   "Срок до поставки"
+      Height          =   432
+      Left            =   7320
       TabIndex        =   43
       Top             =   60
       Visible         =   0   'False
-      Width           =   1092
+      Width           =   852
+   End
+   Begin VB.Label lbBetweenPostav 
+      Alignment       =   1  'Right Justify
+      BackColor       =   &H8000000A&
+      Caption         =   "Срок между поставками"
+      Height          =   432
+      Left            =   8760
+      TabIndex        =   45
+      Top             =   60
+      Width           =   1020
    End
    Begin VB.Label lbInside 
+      BackColor       =   &H8000000A&
       Caption         =   "Внут.подразд-е:"
-      Height          =   255
-      Left            =   8940
+      Height          =   252
+      Left            =   10260
       TabIndex        =   17
-      Top             =   60
+      Top             =   156
       Visible         =   0   'False
-      Width           =   1275
+      Width           =   1272
    End
    Begin VB.Label laInform 
       Caption         =   "sdsds"
@@ -385,21 +411,23 @@ Begin VB.Form Nomenklatura
       Width           =   2355
    End
    Begin VB.Label laPo 
+      BackColor       =   &H8000000A&
       Caption         =   "На:"
-      Height          =   195
+      Height          =   192
       Left            =   4740
       TabIndex        =   11
-      Top             =   60
-      Width           =   255
+      Top             =   150
+      Width           =   252
    End
    Begin VB.Label laPeriod 
+      BackColor       =   &H8000000A&
       Caption         =   "Период c"
-      Height          =   195
+      Height          =   192
       Left            =   2940
       TabIndex        =   10
-      Top             =   60
+      Top             =   150
       Visible         =   0   'False
-      Width           =   735
+      Width           =   732
    End
    Begin VB.Label laBegin 
       Height          =   1335
@@ -409,6 +437,7 @@ Begin VB.Form Nomenklatura
       Width           =   6615
    End
    Begin VB.Label laKolvo 
+      BackColor       =   &H8000000A&
       Caption         =   "Число записей:"
       Height          =   195
       Left            =   3000
@@ -418,6 +447,7 @@ Begin VB.Form Nomenklatura
       Width           =   1275
    End
    Begin VB.Label laQuant 
+      BackColor       =   &H80000005&
       BorderStyle     =   1  'Fixed Single
       Height          =   315
       Left            =   4260
@@ -558,7 +588,6 @@ Public FO As Single ' ФО
 Dim dOst As Single
 Dim oldCellColor As Long
 Dim tbmobile_readonly As Boolean
-Dim gSrokPostav As Boolean ' переменная испольуется для определения,нужно ли пересчитывать запасы и к заявке, если срок доставки изменился
 
 'Dim tbDateisVisible As Boolean ' видны ли поля для ввода дат.
 'Dim replNomNom As String ' перемещаемая номенклатура
@@ -613,7 +642,9 @@ Dim nkYesNo As Integer
 Dim nkMark As Integer
 Dim nkZakupBax As Integer
 Dim nkZakupWeight As Integer
+Dim persistConst As Boolean
 
+Dim tvSelectedItem As Boolean
 
 Private Sub setMnPriceHistoryStatus()
 Dim cnt As String
@@ -968,8 +999,8 @@ If Regim = "fltOborot" Then ' ном-ра для закупки
 '    initCol nkEndOstat, "Ф.остатки", 870  'парам-ры уст-ся в ckEndDate_Click
     initCol nkEndOstat, "", 870  'парам-ры уст-ся в ckEndDate_Click
     initCol nkDostup, "Д.остатки", 700 '
-    initCol nkZapas, "Мин.запас", 645
-    initCol nkZakup, "Макс.запас", 630
+    initCol nkZapas, "1.Заяв.", 645
+    initCol nkZakup, "2.Заяв.", 630
     initCol nkDeficit, "К.заявке", 780
     initCol nkMark, "Маркер", 705
 ElseIf Regim = "asOborot" Or Regim = "sourOborot" Then
@@ -983,8 +1014,8 @@ ElseIf Regim = "asOborot" Or Regim = "sourOborot" Then
     initCol nkEndOstat, "", 700  'парам-ры уст-ся в ckEndDate_Click
     initCol nkDostup, "Д.остатки", 0 '
     initCol nkAvgOutcome, "Ср.расход", 500, flexAlignRightTop
-    initCol nkZapas, "Мин.запас", 0
-    initCol nkZakup, "Макс.запас", 0 '
+    initCol nkZapas, "1.Заяв.", 0
+    initCol nkZakup, "2.Заяв.", 0 '
     initCol nkDeficit, "К.заявке", 0 '
     initCol nkSaledProcent, "% Продаж", 500
     initCol nkMark, "Маркер", 0      '
@@ -992,11 +1023,15 @@ ElseIf Regim = "asOborot" Or Regim = "sourOborot" Then
         initCol nkWeb, "Web", 450
         lbPostav.Visible = True
         tbPostav.Visible = True
+        lbBetweenPostav.Visible = True
+        tbBetweenPostav.Visible = True
         initCol nkZakupBax, "Заяв.сумма", 650
         initCol nkZakupWeight, "Заяв.вес", 650
     Else
         lbPostav.Visible = False
         tbPostav.Visible = False
+        lbBetweenPostav.Visible = False
+        tbBetweenPostav.Visible = False
     End If
     
     ckEndDate_Click ' меняет размер кол.nkName
@@ -1320,6 +1355,12 @@ Next I
 'lbSource.Height = 195 * lbSource.ListCount + 100
 
 cbInside.ListIndex = 0
+
+tbPostav.Text = gSrokPostav
+tbBetweenPostav.Text = gSrokBetweenPostav
+persistConst = False
+tvSelectedItem = False
+
 isLoad = True
 End Sub
 
@@ -1489,8 +1530,13 @@ ckUnUsed.Top = ckUnUsed.Top + h
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
-isRegimLoad = False
-'oldRegim = Empty
+    isRegimLoad = False
+
+    If persistConst Then
+        setAndSave "app", "gSrokPostav", gSrokPostav
+        setAndSave "app", "gSrokBetweenPostav", gSrokBetweenPostav
+    End If
+
 End Sub
 
 Private Sub Grid_Click()
@@ -2550,6 +2596,7 @@ tbProduct.Close
 
 End Function
 
+
 Private Sub tbEndDate_Change()
 controlVisible False
 End Sub
@@ -2915,11 +2962,43 @@ End If
 
 End Function
 
+
+
+
+Private Sub tbBetweenPostav_GotFocus()
+    If IsNumeric(tbBetweenPostav.Text) Then
+        gSrokBetweenPostav = CSng(tbPostav.Text)
+    End If
+End Sub
+
+Private Sub tbBetweenPostav_KeyDown(KeyCode As Integer, Shift As Integer)
+    '
+    If KeyCode = vbKeyReturn Then
+        tbBetweenPostav_LostFocus
+    End If
+End Sub
+
+
+Private Sub tbBetweenPostav_LostFocus()
+    '
+    If IsNumeric(tbPostav.Text) Then
+        Dim newSrok As Single: newSrok = CSng(tbBetweenPostav.Text)
+        
+        If newSrok <> gSrokBetweenPostav Then
+            gSrokBetweenPostav = newSrok
+            persistConst = True
+            loadKlassNomenk
+        End If
+    End If
+End Sub
+
+
 Private Sub tbPostav_GotFocus()
     If IsNumeric(tbPostav.Text) Then
         gSrokPostav = CSng(tbPostav.Text)
     End If
 End Sub
+
 
 Private Sub tbPostav_KeyDown(KeyCode As Integer, Shift As Integer)
     If KeyCode = vbKeyReturn Then
@@ -2927,14 +3006,16 @@ Private Sub tbPostav_KeyDown(KeyCode As Integer, Shift As Integer)
     End If
 End Sub
 
+
 Private Sub tbPostav_LostFocus()
     If IsNumeric(tbPostav.Text) Then
         Dim newSrok As Single: newSrok = CSng(tbPostav.Text)
         
         If newSrok <> gSrokPostav Then
+            persistConst = True
+            gSrokPostav = newSrok
             loadKlassNomenk
         End If
-        gSrokPostav = newSrok
     End If
 End Sub
 
@@ -3084,6 +3165,12 @@ End If
 
 controlVisible True
 Grid.Visible = False
+
+Dim n As Node
+Set n = tv.SelectedItem
+    
+strWhere = "WHERE sGuideNomenk.klassId = " & gKlassId
+
 If filtr = "obrez" Then
     strWhere = "WHERE sGuideNomenk.perList > 1.0 "
 ElseIf filtr <> "" Then
@@ -3094,18 +3181,19 @@ ElseIf filtr <> "" Then
     End If
 ElseIf Regim = "checkCurOstat" Or Regim = "fltOborot" Then
     strWhere = ""
-ElseIf tv.SelectedItem.Key = "all" Then
-    If frmMode <> "" Then GoTo EN1
-    strWhere = ""
-    sql = "SELECT sGuideNomenk.* From sGuideNomenk"
-    quantity = 0
 ElseIf Regim = "sourOborot" Then
     strWhere = "WHERE (((sGuideNomenk.sourId)=" & gKlassId & "))"
 ElseIf gKlassType = "p" Then
     strWhere = "join sPriceBulkChange pbc on pbc.id = " & gKlassId _
     & " join sPriceHistory sph on sph.bulk_id = pbc.id and sGuideNomenk.nomnom = sph.nomnom "
-Else
-    strWhere = "WHERE sGuideNomenk.klassId = " & gKlassId
+ElseIf tvSelectedItem Then
+    ' должна быть последней в списке elseif
+    If tv.SelectedItem.Key = "all" Then
+        If frmMode <> "" Then GoTo EN1
+        sql = "SELECT sGuideNomenk.* From sGuideNomenk"
+        strWhere = ""
+        quantity = 0
+    End If
 End If
 
 If IsNumeric(gKlassId) And Regim = "" Then
@@ -3346,6 +3434,8 @@ Else
 End If
 End Sub
 
+
+
 Sub adjustKolonHeaders(ByVal KlassId As Integer, ByVal KlassType)
 Dim Kolon1 As String
 Dim Kolon2 As String
@@ -3391,36 +3481,52 @@ Private Sub recaluculateZakup(ByVal row As Long, ByVal avgOutcome As Single, ByV
 )
         
     If avgOutcome > 0 Then
-        ' вычислить мин/макс запасы/к заявке по новой формуле
         If IsNumeric(tbPostav.Text) Then
-            Dim srokPostav As Single
-            srokPostav = CSng(tbPostav.Text)
+            ' вычислить мин/макс запасы/к заявке по новой формуле описанной в файле min.doc от 7.11.2009
+            Dim planOstatok As Double
+            Dim onDemand1 As Double, onDemand2 As Double
             
-            Dim minzap As Single: minzap = srokPostav * avgOutcome
-            Grid.TextMatrix(row, nkZapas) = Round(minzap, 0)
-            Grid.TextMatrix(row, nkZakup) = Round(minzap * 2, 0)
-            Dim kZajav As Single
-            kZajav = avgOutcome * (srokPostav * 2 + 0.5) - dOst
-            If kZajav < 0 Then
-                kZajav = 0
-            ElseIf dOst >= minzap Then
-                ' доступные остатки больше, чем мин. запас
-                'kZajav = 0
-            ElseIf mark = lbMark.List(1) Then
-                'unused
-                kZajav = 0
+            planOstatok = dOst - avgOutcome * gSrokPostav
+            If planOstatok < 0 Then
+                onDemand1 = -planOstatok
+                onDemand2 = avgOutcome * gSrokBetweenPostav
+            Else
+                onDemand1 = 0
+                onDemand2 = avgOutcome * gSrokBetweenPostav - planOstatok
             End If
-            Grid.TextMatrix(row, nkDeficit) = Round(kZajav, 0)
-            If kZajav > 0 Then
-                kZajav = Round(kZajav, 0)
-                Grid.TextMatrix(row, nkZakupBax) = Round(kZajav * cenaFact, 2)
-                Grid.TextMatrix(row, nkZakupWeight) = Round(kZajav * ves, 1)
+            If onDemand1 > 0 Then
+                Grid.TextMatrix(row, nkZapas) = Round(onDemand1, 0)
+            End If
+            If onDemand2 > 0 Then
+                Grid.TextMatrix(row, nkZakup) = Round(onDemand2, 0)
+            End If
+            
+            
+            
+'            Dim minzap As Single: minzap = srokPostav * avgOutcome
+'            Grid.TextMatrix(row, nkZapas) = Round(minzap, 0)
+'            Grid.TextMatrix(row, nkZakup) = Round(minzap * 2, 0)
+'            Dim kZajav As Single
+'            kZajav = avgOutcome * (srokPostav * 2 + 0.5) - dOst
+'            If kZajav < 0 Then
+'                kZajav = 0
+'            ElseIf dOst >= minzap Then
+'                ' доступные остатки больше, чем мин. запас
+'                'kZajav = 0
+'            ElseIf mark = lbMark.List(1) Then
+'                'unused
+'                kZajav = 0
+'            End If
+'            Grid.TextMatrix(row, nkDeficit) = Round(kZajav, 0)
+            If onDemand2 > 0 Then
+                Grid.TextMatrix(row, nkZakupBax) = Round(onDemand2 * cenaFact, 2)
+                Grid.TextMatrix(row, nkZakupWeight) = Round(onDemand2 * ves, 1)
             End If
         End If
     Else
-        Grid.TextMatrix(row, nkZapas) = Round(normZapas * gainC, 2) 'maxZap
-        Grid.TextMatrix(row, nkZakup) = Round(zakup * gainC, 2) 'Макс.запас в базе в целых!
-        Grid.TextMatrix(row, nkDeficit) = "0"
+        'Grid.TextMatrix(row, nkZapas) = Round(normZapas * gainC, 2) 'maxZap
+        'Grid.TextMatrix(row, nkZakup) = Round(zakup * gainC, 2) 'Макс.запас в базе в целых!
+        'Grid.TextMatrix(row, nkDeficit) = "0"
     End If
 
 End Sub
@@ -3596,6 +3702,7 @@ End If
 End Sub
 
 Private Sub tv_NodeClick(ByVal Node As MSComctlLib.Node)
+    tvSelectedItem = True
     If Not IsNull(tv.SelectedItem.Key) Then
         gKlassId = Mid$(tv.SelectedItem.Key, 2)
         gKlassType = Mid$(tv.SelectedItem.Key, 1, 1)
