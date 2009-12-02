@@ -959,6 +959,11 @@ where pc.sysname = sGuideProducts.web
 		<rollback/>
 	</changeSet>
 
+	<changeSet id="1" author="mantis-113" runOnChange="true">
+		<comment>расходные накладные в продажах</comment>
+		<sqlFile path="triggers/sdocs.wf_delete_sdocs.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+	</changeSet>
+
 
 </databaseChangeLog>
 
