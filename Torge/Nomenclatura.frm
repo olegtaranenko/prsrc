@@ -21,6 +21,7 @@ Begin VB.Form Nomenklatura
       TabIndex        =   44
       Text            =   "1"
       Top             =   120
+      Visible         =   0   'False
       Width           =   372
    End
    Begin VB.CommandButton cmExit 
@@ -389,6 +390,7 @@ Begin VB.Form Nomenklatura
       Left            =   8760
       TabIndex        =   45
       Top             =   60
+      Visible         =   0   'False
       Width           =   1020
    End
    Begin VB.Label lbInside 
@@ -3166,9 +3168,6 @@ End If
 controlVisible True
 Grid.Visible = False
 
-Dim n As Node
-Set n = tv.SelectedItem
-    
 strWhere = "WHERE sGuideNomenk.klassId = " & gKlassId
 
 If filtr = "obrez" Then
