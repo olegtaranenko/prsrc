@@ -30,9 +30,9 @@ Begin VB.Form sDocs
       Width           =   915
    End
    Begin VB.CommandButton cmBay 
-      Caption         =   "продаж"
+      Caption         =   "Продажи"
       Height          =   315
-      Left            =   3300
+      Left            =   3540
       TabIndex        =   29
       Top             =   5460
       Width           =   855
@@ -260,12 +260,12 @@ Begin VB.Form sDocs
       Width           =   915
    End
    Begin VB.CommandButton cmOrder 
-      Caption         =   "к Заказу"
+      Caption         =   "Произв-во"
       Height          =   315
       Left            =   2340
       TabIndex        =   2
       Top             =   5460
-      Width           =   975
+      Width           =   1092
    End
    Begin MSFlexGridLib.MSFlexGrid Grid 
       Height          =   5055
@@ -1263,6 +1263,7 @@ Grid2.Height = Grid2.Height + h
 cmLoad.Top = cmLoad.Top + h
 cmAdd.Top = cmAdd.Top + h
 cmOrder.Top = cmOrder.Top + h
+cmBay.Top = cmBay.Top + h
 cmDel.Top = cmDel.Top + h
 cmAdd2.Top = cmAdd2.Top + h
 cmExit.Top = cmExit.Top + h
