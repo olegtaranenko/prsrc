@@ -111,7 +111,7 @@ Private Sub cmCancel_Click()
 End Sub
 
 Private Sub cmDel_Click()
-Dim I As Integer, j As Integer
+Dim I As Integer, J As Integer
 
 strWhere = "WHERE outDate ='" & Format(lbDate.Text, "yyyy-mm-dd hh:nn:ss") & _
 "' AND numOrder = " & gNzak
@@ -132,8 +132,8 @@ Else
   If I > 0 Then GoTo ER1
 
   sql = "DELETE From xPredmetyByNomenkOut " & strWhere
-  j = myExecute("##208", sql, 0)
-  If j > 0 Then GoTo ER1
+  J = myExecute("##208", sql, 0)
+  If J > 0 Then GoTo ER1
 End If
   cErr = 219 '##219
   If Not IsNumeric(saveShipped) Then GoTo ER1
@@ -170,7 +170,7 @@ wrkDefault.BeginTrans
         Else
             sql = "update xPredmetyByIzdeliaOut"
             
-            Debug.Print sql & strSet & newDateStr & strWhere
+            'Debug.Print sql & strSet & newDateStr & strWhere
             I = myExecute("##0.209.2", sql & strSet & newDateStr & strWhere, 0) 'дает -1, если нет таких записей - а это возможно
             If I > 0 Then GoTo ER1
             
@@ -528,7 +528,7 @@ Private Sub Grid5_LostFocus()
 Grid5.CellBackColor = Grid5.BackColor
 End Sub
 
-Private Sub Grid5_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid5_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
 If Grid5.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid5.ColWidth(Grid5.MouseCol)
 
@@ -703,7 +703,7 @@ If KeyCode = vbKeyReturn Then
     "WHERE (((outDate)='" & Format(outDate(lbDate.ListIndex), "yyyy-mm-dd  hh:nn:ss") & "'" & _
     ") AND ((numOrder)=" & gNzak & ") AND ((prId)=" & gProductId & _
     ") AND ((prExt)=" & prExt & "));"
-    Debug.Print sql
+    'Debug.Print sql
     Set tbProduct = myOpenRecordSet("##200", sql, dbOpenForwardOnly)
 '    If tbProduct Is Nothing Then GoTo ER1
 '    tbProduct.index = "Key"

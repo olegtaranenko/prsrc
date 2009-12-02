@@ -11,13 +11,23 @@ Begin VB.Form Otgruz
    ScaleHeight     =   3360
    ScaleWidth      =   11688
    StartUpPosition =   2  'CenterScreen
+   Begin VB.CommandButton cmOtgruzDate 
+      Caption         =   "Сменить дату"
+      Enabled         =   0   'False
+      Height          =   315
+      Left            =   1560
+      TabIndex        =   10
+      Top             =   3000
+      Visible         =   0   'False
+      Width           =   1452
+   End
    Begin VB.CommandButton cmDel 
       Caption         =   "Удалить"
       Enabled         =   0   'False
       Height          =   315
       Left            =   300
       TabIndex        =   9
-      Top             =   2940
+      Top             =   3000
       Width           =   855
    End
    Begin VB.CommandButton cmCancel 
@@ -45,11 +55,11 @@ Begin VB.Form Otgruz
       Width           =   1455
    End
    Begin MSFlexGridLib.MSFlexGrid Grid2 
-      Height          =   2415
+      Height          =   2412
       Left            =   1560
       TabIndex        =   1
       Top             =   480
-      Width           =   10035
+      Width           =   10032
       _ExtentX        =   17695
       _ExtentY        =   4255
       _Version        =   393216
@@ -136,6 +146,9 @@ Dim oldHeight As Integer, oldWidth As Integer ' нач размер формы
 'Dim beEdit As Boolean, outDate() As Date, outtDate As Date
 Dim outDate() As Date, outLen As Integer, deltaHeight As Integer
 
+Dim doOtgruzDateUpdate As Boolean
+
+
 Private Sub cmCancel_Click()
     Unload Me
 End Sub
@@ -200,6 +213,70 @@ MsgBox "Удаление не прошло", , ""
 
 End Sub
 
+Private Sub updateOtgruzDate()
+Dim strSet As String, I As Integer
+    tbMobile.Visible = False
+    If IsDate(tbMobile.Text) Then
+        Dim newDate As Date, oldDate As Date
+        Dim newDateStr As String
+        newDate = CDate(tbMobile.Text)
+        oldDate = CDate(lbDate.Text)
+        lbDate.List(lbDate.ListIndex) = Format(newDate, "dd.mm.yy hh:mm:ss")
+        newDateStr = "'" & Format(newDate, "yyyymmdd hh:mm:ss") & "'"
+        strSet = " set outDate = "
+        strWhere = " WHERE outDate ='" & Format(Format(oldDate, "yyyymmdd hh:mm:ss")) & "' AND numOrder = " & gNzak
+        
+wrkDefault.BeginTrans
+        If Regim = "uslug" Then
+            sql = sql & "update xUslugOut"
+            I = myExecute("##0.209.1", sql & strSet & newDateStr & strWhere, 0)
+            If I > 0 Then GoTo ER1
+        Else
+            sql = "update bayNomenkOut"
+            
+            'Debug.Print sql & strSet & newDateStr & strWhere
+            I = myExecute("##0.209.2", sql & strSet & newDateStr & strWhere, 0) 'дает -1, если нет таких записей - а это возможно
+            If I > 0 Then GoTo ER1
+            
+        End If
+    Else
+        MsgBox "ВВедена некорректная дата. Попробуйте еще раз", , "Ошибка ввода"
+    End If
+    wrkDefault.CommitTrans
+
+    lbDate.SetFocus
+    Exit Sub
+ER1:
+    wrkDefault.Rollback
+    MsgBox "Непредвиденная ошибка при смене даты отгрузки", , "Сообщите администартору"
+    
+End Sub
+
+
+Private Sub cmOtgruzDate_Click()
+Dim strDate As String
+
+    doOtgruzDateUpdate = tbMobile.Visible = True And tbMobile.Top = cmOtgruzDate.Top
+    If doOtgruzDateUpdate Then
+        updateOtgruzDate
+        Exit Sub
+    End If
+
+    strDate = Format(lbDate.Text, "dd.mm.yy")
+    If tbMobile.Visible = False Then
+        tbMobile.left = cmOtgruzDate.left + cmOtgruzDate.Width + 100
+        tbMobile.Top = cmOtgruzDate.Top
+        tbMobile.Visible = True
+        tbMobile.Text = strDate
+        tbMobile.Width = 800
+        tbMobile.SetFocus
+        tbMobile.SelStart = 0
+        tbMobile.SelLength = 10
+    End If
+    
+
+End Sub
+
 Private Sub Form_Load()
 Dim str As String
 isLoad = False
@@ -211,6 +288,9 @@ oldWidth = Me.Width
 deltaHeight = Me.Height - lbDate.Height
 gridIsLoad = False
 noClick = True
+
+cmOtgruzDate.Visible = True
+
 Me.Caption = "Отгрузка изделий по заказу № " & gNzak
 Grid2.Rows = 3
 Grid2.FixedRows = 2
@@ -481,6 +561,10 @@ cmCancel.Top = cmCancel.Top + h
 cmCancel.left = cmCancel.left + w
 cmDel.Top = cmDel.Top + h
 
+cmOtgruzDate.Top = cmDel.Top
+cmOtgruzDate.left = cmDel.left + cmDel.Width + 100
+
+
 'cmPrint.Top = cmPrint.Top + h
 'cmExel.Top = cmExel.Top + h
 'cmHelp.Top = cmHelp.Top + h
@@ -563,6 +647,7 @@ If noClick Then Exit Sub
 'If lbDate.Index < outLen Then
 
 cmDel.Enabled = ((lbDate.ListIndex < outLen) And Not closeZakaz)
+cmOtgruzDate.Enabled = cmDel.Enabled
 
 gridIsLoad = False
 'If lbDate.ListIndex = lbDate.ListCount - 1 Then ' последний
@@ -588,7 +673,7 @@ gridIsLoad = True
 End Sub
 
 Private Sub tbMobile_DblClick()
-lbHide2
+    lbHide2
 End Sub
 
 Private Sub tbMobileOld_KeyDown(KeyCode As Integer, Shift As Integer)
@@ -652,6 +737,12 @@ Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
 Dim pQuant As Double, s As Double, maxQ As Double
 
 If KeyCode = vbKeyReturn Then
+    
+    doOtgruzDateUpdate = tbMobile.Visible = True And tbMobile.Top = cmOtgruzDate.Top
+    If doOtgruzDateUpdate Then
+        updateOtgruzDate
+        Exit Sub
+    End If
   
   wrkDefault.BeginTrans
   
