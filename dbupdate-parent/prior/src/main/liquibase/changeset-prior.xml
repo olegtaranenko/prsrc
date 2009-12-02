@@ -964,6 +964,23 @@ where pc.sysname = sGuideProducts.web
 		<sqlFile path="triggers/sdocs.wf_delete_sdocs.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 	</changeSet>
 
+	<changeSet id="2" author="mantis-113" runOnChange="true">
+		<comment>без этого индекса невозможно выполнить следующий запрос</comment>
+		<createIndex tableName="sDocs" indexName="sdocs_id_jmat" unique="true">
+			<column name="id_jmat"/>
+		</createIndex>
+	</changeSet>
+
+	<changeSet id="3" author="mantis-113" runOnChange="true">
+		<comment>Скрипт для удаления оставшихся из-за бага накладных</comment>
+		<executeCommand executable="dbisqlc.exe">
+			<arg value="-c"/>
+			<arg value="DSN=prior;UID=dba;PWD=sql"/>
+			<arg value="-q"/>
+			<arg value="\dev\prsrc\trunk\dbupdate-parent\prior\target\classes\mainteinance\mantis-113.sql"/>
+		</executeCommand>
+		<rollback/>
+	</changeSet>
 
 </databaseChangeLog>
 
