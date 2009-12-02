@@ -617,7 +617,7 @@ gNzak = left$(str, I - 1)
 End Function
 '$odbc10$
 Function getResurs() As Integer
-Dim I As Integer, J As Integer, rMaxDay As Integer, s As Double
+Dim I As Integer, j As Integer, rMaxDay As Integer, s As Double
 
 Set tbSystem = myOpenRecordSet("##93", "System", dbOpenForwardOnly)
 If tbSystem Is Nothing Then myBase.Close: End
@@ -653,7 +653,7 @@ On Error GoTo ERR1
 ' Do
 While Not table.EOF
     rMaxDay = rMaxDay + 1
-    If rMaxDay = J Then
+    If rMaxDay = j Then
 '        table.Edit
 '            table!nomRes = Zagruz.tbMobile.Text
 '        table.Update
@@ -1371,7 +1371,7 @@ End Function
 
 '$odbc10$
 Sub nextDay()  'возможен прыжок на неск дней
-Dim I As Integer, str As String, str1 As String, J As Integer, s As Double
+Dim I As Integer, str As String, str1 As String, j As Integer, s As Double
 Dim ch As String
 'MsgBox "переход на новую дату"
 
@@ -1518,7 +1518,7 @@ End Sub
 '$NOodbc$
 Public Sub quickSort(varArray As Variant, _
  Optional lngLeft As Long = dhcMissing, Optional lngRight As Long = dhcMissing)
-Dim I As Long, J As Long, varTestVal As Variant, lngMid As Long
+Dim I As Long, j As Long, varTestVal As Variant, lngMid As Long
 
     If lngLeft = dhcMissing Then lngLeft = LBound(varArray)
     If lngRight = dhcMissing Then lngRight = UBound(varArray)
@@ -1527,28 +1527,28 @@ Dim I As Long, J As Long, varTestVal As Variant, lngMid As Long
         lngMid = (lngLeft + lngRight) \ 2
         varTestVal = varArray(lngMid)
         I = lngLeft
-        J = lngRight
+        j = lngRight
         Do
             Do While varArray(I) < varTestVal
                 I = I + 1
             Loop
-            Do While varArray(J) > varTestVal
-                J = J - 1
+            Do While varArray(j) > varTestVal
+                j = j - 1
             Loop
-            If I <= J Then
-                Call SwapElements(varArray, I, J)
+            If I <= j Then
+                Call SwapElements(varArray, I, j)
                 I = I + 1
-                J = J - 1
+                j = j - 1
             End If
-        Loop Until I > J
+        Loop Until I > j
         ' To optimize the sort, always sort the
         ' smallest segment first.
-        If J <= lngMid Then
-            Call quickSort(varArray, lngLeft, J)
+        If j <= lngMid Then
+            Call quickSort(varArray, lngLeft, j)
             Call quickSort(varArray, I, lngRight)
         Else
             Call quickSort(varArray, I, lngRight)
-            Call quickSort(varArray, lngLeft, J)
+            Call quickSort(varArray, lngLeft, j)
         End If
     End If
 End Sub
@@ -1576,7 +1576,7 @@ End Sub
 
 '$odbc10$
 Function replaceResurs(id As Integer) As Boolean
-Dim oldRes As Double, s As Double, n As Double, I As Integer, J As Integer
+Dim oldRes As Double, s As Double, n As Double, I As Integer, j As Integer
 Dim newRes As Double
 
 replaceResurs = False
@@ -1592,8 +1592,8 @@ For I = 1 To befDays
     sql = "SELECT 1, nomRes FROM Resurs" & Ceh(id) & _
     " WHERE xDate = '" & Format(tmpDate, "yy.mm.dd") & "'"
     
-    If Not byErrSqlGetValues("W##12", sql, J, s) Then Exit Function
-    If J = 0 Then ' нет этого дня
+    If Not byErrSqlGetValues("W##12", sql, j, s) Then Exit Function
+    If j = 0 Then ' нет этого дня
         day = Weekday(tmpDate)
         If Not (day = vbSunday Or day = vbSaturday) Then
             oldRes = oldRes + newRes
@@ -1765,7 +1765,7 @@ End Sub
 'эта ф-я д.заменить и startDay() и getNextDay() и getPrevDay()
 ' возвращает смещение до треб. дня
 Function getWorkDay(offsDay As Integer, Optional baseDate As String = "") As Integer
-Dim I As Integer, J As Integer, step  As Integer
+Dim I As Integer, j As Integer, step  As Integer
 getWorkDay = -1
 If baseDate = "" Then
     tmpDate = curDate
@@ -1777,11 +1777,11 @@ End If
 step = 1
 If offsDay < 0 Then step = -1
 
-J = 0: I = 0
-While step * J < step * offsDay '
+j = 0: I = 0
+While step * j < step * offsDay '
     I = I + step
     day = Weekday(DateAdd("d", I, tmpDate))
-    If Not (day = vbSunday Or day = vbSaturday) Then J = J + step
+    If Not (day = vbSunday Or day = vbSaturday) Then j = j + step
 Wend
 getWorkDay = I
 tmpDate = DateAdd("d", I, tmpDate)
@@ -1789,18 +1789,18 @@ tmpDate = DateAdd("d", I, tmpDate)
 End Function
 
 Function startDays() As Integer
-Dim I As Integer, J  As Integer, k   As Integer
+Dim I As Integer, j  As Integer, k   As Integer
 ReDim Preserve stDays(befDays + 1)
 
 For k = 0 To befDays '    *********************************************
 
-J = 0
+j = 0
 I = 1
-While J < 3 '         задание смещения зеленого коридора (3-й день)
+While j < 3 '         задание смещения зеленого коридора (3-й день)
 
     day = Weekday(DateAdd("d", k + I - befDays, curDate))
 '    day = Weekday(CurDate - befDays + K + I)
-    If Not (day = vbSunday Or day = vbSaturday) Then J = J + 1
+    If Not (day = vbSunday Or day = vbSaturday) Then j = j + 1
     I = I + 1
 Wend
 stDays(k) = I + k ' "+k" т.к. пока нумерация начинается befDays дней назад
@@ -1811,7 +1811,7 @@ startDays = stDays(befDays) - befDays ' для Сегодня, которое под №1
 End Function
 
 Sub statistic(Optional year As String = "")
-Dim nRow As Long, nCol As Long, str As String, I As Integer, J As Integer
+Dim nRow As Long, nCol As Long, str As String, I As Integer, j As Integer
 Dim iMonth As Integer, iYear As Integer, iCount As Integer, strWhere As String
 Dim nMonth As Integer, nYear As Integer, mCount As Integer, lastCol As Integer
 Dim wtSum As Double, paidSum As Double, orderSum As Double, visits As Integer, visitSum As Integer
@@ -2065,13 +2065,19 @@ End If
 End Function
 
 'в случеу true также возвращает дату в tmpDate
-Function isDateTbox(tBox As TextBox, Optional fryDays As String = "") As Boolean
+Function isDateTbox(tBox As TextBox, Optional fryDays As String = "", Optional doEmptyCheck As Boolean = True) As Boolean
 Dim str As String
 
-isDateTbox = True
+isDateTbox = False
 str = tBox.Text
 If str = "" Then
+    If doEmptyCheck Then
         MsgBox "Заполните поле Даты!", , "Ошибка"
+        tBox.SelStart = 0
+        tBox.SelLength = Len(tBox.Text)
+        On Error Resume Next
+        tBox.SetFocus
+    End If
 Else
 '    If Not IsDate(str) Then
 '    If Len(str) <> 8 Or Not IsDate(str) Then
@@ -2080,16 +2086,14 @@ Else
         'str = Left$(str, 6) & "20" & Mid$(str, 7, 2)
         str = "20" & right$(str, 2) & "-" & Mid$(str, 4, 2) & "-" & left$(str, 2)
         If IsDate(str) Then
+            isDateTbox = True
             tmpDate = str
-            If fryDays = "" Then
-                Exit Function
-            Else
+            If fryDays <> "" Then
                 day = Weekday(tmpDate)
                 If day = vbSunday Or day = vbSaturday Then
-                    If MsgBox(str & " - выходной день. Продолжить?", vbYesNo, _
-                    "Предупреждение!") = vbYes Then Exit Function
-                Else
-                    Exit Function
+                    If MsgBox(str & " - выходной день. Продолжить?", vbYesNo, "Предупреждение!") <> vbYes Then
+                        isDateTbox = False
+                    End If
                 End If
             End If
         Else
@@ -2098,10 +2102,6 @@ Else
 '    End If
 End If
  '   tBox.Text = oldValue
-tBox.SetFocus
-tBox.SelStart = 0
-tBox.SelLength = Len(tBox.Text)
-isDateTbox = False
 End Function
 
 
@@ -2214,12 +2214,12 @@ byErrSqlGetValues "W##382", sql, getNevip
 End Function
 
 Sub addDays(outDay As Integer)
-Dim J As Integer
+Dim j As Integer
         If maxDay < outDay Then
             dayMassLenght outDay + 1 'если дольше , корректируем размерности
-            For J = maxDay + 1 To outDay 'новые дни
-                delta(J) = 0
-            Next J
+            For j = maxDay + 1 To outDay 'новые дни
+                delta(j) = 0
+            Next j
             maxDay = outDay
         End If
 End Sub
@@ -2275,7 +2275,7 @@ End If
 End Sub
 
 Sub zagruzFromCeh(Optional passZakazNom As String = "")
-Dim outDay As Integer, J As Integer, passSql As String, str As String
+Dim outDay As Integer, j As Integer, passSql As String, str As String
 
 If IsNumeric(passZakazNom) Then
     passSql = "((OrdersInCeh.numOrder)<>" & passZakazNom & ") AND "

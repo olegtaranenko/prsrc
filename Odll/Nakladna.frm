@@ -403,6 +403,8 @@ Dim quantity2 As Long
 Public mousCol2 As Long
 Public mousRow2 As Long
 Public Regim As String
+Public docDate As Date
+
 Dim secondNaklad As String, beSUO As Boolean ' была листова€ ном-ра
 
 Dim lastPageSizePx As Long ' размер последней страницы в пиксел€х
@@ -550,8 +552,12 @@ If tbDocs Is Nothing Then GoTo ER3
 'Set tbDMC = myOpenRecordSet("##348", "select * from sDMC", dbOpenForwardOnly)
 'If tbDMC Is Nothing Then GoTo ER1
 'tbDMC.index = "NomDoc"
+If docDate <> #12:00:00 AM# Then
+    tmpDate = docDate
+Else
+    tmpDate = Now
+End If
 
-tmpDate = Now
 numExtO = 0
 If j > 0 Then numExtO = getNextNumExt()
 If moveNum = "yes" Then
@@ -963,7 +969,7 @@ For I = 1 To UBound(NN)
     If Not tbNomenk.BOF Then
         quantity2 = quantity2 + 1
         'Grid2(ind).TextMatrix(quantity2, 0) = tbNomenk!obrez
-        If tbNomenk!perList > 1 Then Grid2(ind).TextMatrix(quantity2, 0) = "ƒа" 'обрезна€
+        If tbNomenk!perlist > 1 Then Grid2(ind).TextMatrix(quantity2, 0) = "ƒа" 'обрезна€
         Grid2(ind).TextMatrix(quantity2, nkNomNom) = NN(I)
         Grid2(ind).TextMatrix(quantity2, nkNomName) = tbNomenk!cod & " " & _
             tbNomenk!nomName & " " & tbNomenk!Size
@@ -971,7 +977,7 @@ For I = 1 To UBound(NN)
         If Regim = "" Then
             If laDest(ind).Caption = "ѕродажа" Then
               Grid2(ind).TextMatrix(quantity2, nkEdIzm) = tbNomenk!ed_Izmer2
-              Grid2(ind).TextMatrix(quantity2, nkQuant) = Round(QQ(I) / tbNomenk!perList, 2)
+              Grid2(ind).TextMatrix(quantity2, nkQuant) = Round(QQ(I) / tbNomenk!perlist, 2)
             Else
               Grid2(ind).TextMatrix(quantity2, nkQuant) = Round(QQ(I), 2)
             End If
@@ -986,7 +992,7 @@ For I = 1 To UBound(NN)
                 Grid2(ind).TextMatrix(quantity2, nkEClos) = Round(s - QQ3(I), 2)
             End If
             If Regim <> "" Then
-              If tbNomenk!perList <> 1 Then 'дл€ обрезной доп. колонка дл€ целых
+              If tbNomenk!perlist <> 1 Then 'дл€ обрезной доп. колонка дл€ целых
                 beSUO = True
                 Grid2(ind).TextMatrix(quantity2, nkIntEdIzm) = tbNomenk!ed_Izmer2
               End If

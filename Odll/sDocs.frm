@@ -86,12 +86,20 @@ Begin VB.Form sDocs
       Top             =   240
       Visible         =   0   'False
       Width           =   2055
+      Begin VB.TextBox tbDocDate 
+         Height          =   285
+         Left            =   1080
+         TabIndex        =   32
+         Top             =   4680
+         Visible         =   0   'False
+         Width           =   795
+      End
       Begin VB.ListBox lbZakaz 
-         Height          =   4080
+         Height          =   3696
          Left            =   180
          TabIndex        =   26
          Top             =   360
-         Width           =   1695
+         Width           =   1692
       End
       Begin VB.CommandButton cmOk 
          Caption         =   "Ok"
@@ -99,7 +107,7 @@ Begin VB.Form sDocs
          Height          =   315
          Left            =   120
          TabIndex        =   22
-         Top             =   4620
+         Top             =   4260
          Width           =   855
       End
       Begin VB.CommandButton cmCancel 
@@ -108,17 +116,27 @@ Begin VB.Form sDocs
          Height          =   315
          Left            =   1260
          TabIndex        =   21
-         Top             =   4620
+         Top             =   4260
          Width           =   675
+      End
+      Begin VB.Label lbDocDate 
+         Alignment       =   2  'Center
+         Caption         =   "на дату"
+         Height          =   252
+         Left            =   240
+         TabIndex        =   33
+         Top             =   4680
+         Visible         =   0   'False
+         Width           =   732
       End
       Begin VB.Label Label3 
          Alignment       =   2  'Center
          Caption         =   "Выберите заказ."
-         Height          =   255
-         Left            =   180
+         Height          =   252
+         Left            =   120
          TabIndex        =   25
          Top             =   120
-         Width           =   1695
+         Width           =   1692
       End
       Begin VB.Label Label1 
          Appearance      =   0  'Flat
@@ -568,8 +586,8 @@ While Not tbDMC.EOF
     ReDim Preserve NN(I): NN(I) = gNomNom
     ReDim Preserve QQ(I)
     If reg = "bay" Then
-        QQ(I) = tbDMC!curQuant * tbDMC!perList
-        s = Round((s - QQ(I)) / tbDMC!perList, 2)
+        QQ(I) = tbDMC!curQuant * tbDMC!perlist
+        s = Round((s - QQ(I)) / tbDMC!perlist, 2)
     Else
         QQ(I) = tbDMC!quantity
         s = Round(s - QQ(I), 2)
@@ -790,12 +808,16 @@ skladId = -1001
 If Not sqlDeficitToNNQQ(lbInside.List(0), "bay") Then GoTo EN1
 
 wrkDefault.BeginTrans
+If Not isDateTbox(tbDocDate) Then
+    tmpDate = Now
+End If
+
 
 numExt = getNextNumExt()
 sql = "insert into sDocs (numDoc, numExt, xDate, sourId, destId) values (" _
-    & numDoc & ", " & numExt & ", now(), -1001, -8) "
+    & numDoc & ", " & numExt & ", '" & Format(tmpDate, "yyyymmdd hh:mm:ss") & "', -1001, -8) "
 
-Debug.Print sql
+'Debug.Print sql
 If myExecute("##367.0", sql, 0) <> 0 Then GoTo ER3
 
 For I = 1 To UBound(NN)
@@ -833,7 +855,9 @@ sql = "SELECT Orders.CehId From Orders WHERE (((Orders.numOrder)=" & numDoc & ")
 If Not byErrSqlGetValues("##98", sql, cehId) Then Exit Sub
  
 cmDel.Enabled = True
-
+If isDateTbox(tbDocDate, , False) Then
+    Nakladna.docDate = tmpDate
+End If
 Nakladna.Regim = "toNaklad"
 Nakladna.Show vbModal
 
@@ -904,6 +928,13 @@ If Regim = "fromCeh" Then
     cmOrder.Visible = False
     cmBay.Visible = False
     ckCeh.Visible = False
+End If
+
+Dim isAdmin As Boolean
+isAdmin = getEffectiveSetting("dostup", "") = "a"
+If isAdmin Then
+    lbDocDate.Visible = True
+    tbDocDate.Visible = True
 End If
 
 tbStartDate.Text = Format(DateAdd("d", -14, curDate), "dd/mm/yy")
@@ -1169,9 +1200,9 @@ If Not tbNomenk.BOF Then
    If bilo Then
         If Not byClick Then ckPerList.value = 1
         Grid2.TextMatrix(quantity2, dnEdIzm) = tbNomenk!ed_Izmer2
-        If IsNumeric(tbNomenk!perList) Then ' dnLists
-          If tbNomenk!perList > 0.01 Then Grid2.TextMatrix(quantity2, dnQuant) _
-                                = Round(tbNomenk!quant / tbNomenk!perList, 2)
+        If IsNumeric(tbNomenk!perlist) Then ' dnLists
+          If tbNomenk!perlist > 0.01 Then Grid2.TextMatrix(quantity2, dnQuant) _
+                                = Round(tbNomenk!quant / tbNomenk!perlist, 2)
         End If
     Else
         If Not byClick Then ckPerList.value = 0

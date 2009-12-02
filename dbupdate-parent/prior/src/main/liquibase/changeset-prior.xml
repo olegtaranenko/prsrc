@@ -982,5 +982,12 @@ where pc.sysname = sGuideProducts.web
 		<rollback/>
 	</changeSet>
 
+	
+	<changeSet id="1" author="mantis-115" runOnChange="true">
+		<comment>M-115 списание наклдных по дате</comment>
+		<sqlFile path="procedures/wf_dual_distribute.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="triggers/sdocs.wf_sdocs_bi.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+	</changeSet>
+
 </databaseChangeLog>
 
