@@ -2070,38 +2070,33 @@ Dim str As String
 
 isDateTbox = False
 str = tBox.Text
-If str = "" Then
-    If doEmptyCheck Then
-        MsgBox "Заполните поле Даты!", , "Ошибка"
-        tBox.SelStart = 0
-        tBox.SelLength = Len(tBox.Text)
-        On Error Resume Next
-        tBox.SetFocus
-    End If
-Else
-'    If Not IsDate(str) Then
-'    If Len(str) <> 8 Or Not IsDate(str) Then
-'        MsgBox "неверный формат даты", , "Ошибка"
-'    Else
-        'str = Left$(str, 6) & "20" & Mid$(str, 7, 2)
-        str = "20" & right$(str, 2) & "-" & Mid$(str, 4, 2) & "-" & left$(str, 2)
-        If IsDate(str) Then
-            isDateTbox = True
-            tmpDate = str
-            If fryDays <> "" Then
-                day = Weekday(tmpDate)
-                If day = vbSunday Or day = vbSaturday Then
-                    If MsgBox(str & " - выходной день. Продолжить?", vbYesNo, "Предупреждение!") <> vbYes Then
-                        isDateTbox = False
-                    End If
+If str <> "" Then
+    str = "20" & right$(str, 2) & "-" & Mid$(str, 4, 2) & "-" & left$(str, 2)
+    If IsDate(str) Then
+        isDateTbox = True
+        tmpDate = str
+        If fryDays <> "" Then
+            day = Weekday(tmpDate)
+            If day = vbSunday Or day = vbSaturday Then
+                If MsgBox(str & " - выходной день. Продолжить?", vbYesNo, "Предупреждение!") <> vbYes Then
+                    isDateTbox = False
                 End If
             End If
-        Else
-            MsgBox "Неверный формат даты или дня с такой датой не существует ", , "Ошибка"
         End If
-'    End If
+    Else
+        MsgBox "Неверный формат даты или дня с такой датой не существует ", , "Ошибка"
+    End If
+Else
+    If doEmptyCheck Then
+        MsgBox "Заполните поле Даты!", , "Ошибка"
+    End If
 End If
- '   tBox.Text = oldValue
+If Not isDateTbox Then
+    tBox.SelStart = 0
+    tBox.SelLength = Len(tBox.Text)
+    On Error Resume Next
+    tBox.SetFocus
+End If
 End Function
 
 

@@ -3271,7 +3271,7 @@ End If
 End Sub
 
 Private Sub tbStartDate_LostFocus()
-isDateTbox tbStartDate
+    isDateTbox tbStartDate
 End Sub
 
 Sub LoadBase(Optional reg As String = "")
@@ -3281,9 +3281,7 @@ laInform.Caption = ""
 Grid.Visible = False
 clearGrid Grid
 
-#If Not COMTEC = 1 Then '----------------------------------------------------
-   getNakladnieList
-#End If
+getNakladnieList
 zakazNum = 0
 'LoadOrders********************************************************
 sql = rowFromOrdersSQL & getSqlWhere & " ORDER BY Orders.inDate" & ";"
