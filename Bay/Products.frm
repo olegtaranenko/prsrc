@@ -501,7 +501,7 @@ Dim s As Double, str As String, z As Double, str2 As String
 
 'Ф.остатки
 sql = "SELECT nomName, Ed_Izmer2, perList From sGuideNomenk " & _
-"WHERE (((nomNom)='" & gNomNom & "'));"
+"WHERE nomNom ='" & gNomNom & "'"
 'MsgBox sql
 byErrSqlGetValues "##144", sql, str, str2, tmpSng
 If row > 0 Then
@@ -1550,11 +1550,11 @@ quantity = 0
 Grid.Visible = False
 clearGrid Grid
 
-sql = "SELECT sProducts.nomNom, sProducts.quantity, sProducts.xGroup, " & _
-"sGuideNomenk.Size, sGuideNomenk.cod, " & _
-" sGuideNomenk.nomName, sGuideNomenk.ed_Izmer2 as ed_izmer  " & _
-"FROM sGuideNomenk INNER JOIN sProducts ON sGuideNomenk.nomNom = sProducts.nomNom " & _
-"WHERE (((sProducts.ProductId)=" & v_productId & ")) ORDER BY sProducts.xGroup DESC;"
+sql = "SELECT p.nomNom, p.quantity, p.xGroup, " & _
+"n.Size, n.cod, " & _
+" n.nomName, n.ed_Izmer as ed_izmer  " & _
+"FROM sGuideNomenk n INNER JOIN sProducts p ON n.nomNom = p.nomNom " & _
+"WHERE p.ProductId = " & v_productId & " ORDER BY p.xGroup DESC, p.nomNom"
 'MsgBox sql
 Set tbNomenk = myOpenRecordSet("##108", sql, dbOpenForwardOnly)
 If tbNomenk Is Nothing Then Exit Sub
@@ -1595,9 +1595,9 @@ If Not tbNomenk.BOF Then
 '    ReDim Preserve QP(quantity): QP(quantity) = tbNomenk!quantity
         Grid.TextMatrix(quantity, nkQuant) = tbNomenk!quantity
     'доступные остатки:
-    Grid.TextMatrix(quantity, nkDostup) = Round(nomencOstatkiToGrid(-1), 2)
+    Grid.TextMatrix(quantity, nkDostup) = Round(nomencOstatkiToGrid(-1) * tmpSng, 2)
     If Regim = "ostat" Or Regim = "products" Then
-        Grid.TextMatrix(quantity, nkCurOstat) = Round(FO, 2)
+        Grid.TextMatrix(quantity, nkCurOstat) = Round(FO, 2) * tmpSng
     End If
     
     Grid.AddItem ""
