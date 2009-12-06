@@ -397,13 +397,6 @@ table.Close
 End Function
 
 
-Function getSystemField(field As String) As Variant
-    getSystemField = Null
-    Set tbSystem = myOpenRecordSet("##147", "System", dbOpenForwardOnly)
-    If tbSystem Is Nothing Then myBase.Close: End
-    getSystemField = tbSystem.Fields(field)
-    tbSystem.Close
-End Function
 
         
 Sub fitFormToGrid(frm As Form, Grid As MSFlexGrid)

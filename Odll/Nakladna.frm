@@ -561,7 +561,7 @@ End If
 numExtO = 0
 If j > 0 Then numExtO = getNextNumExt()
 If moveNum = "yes" Then
-    If Not sDocs.getNextDocNum() Then GoTo ER1
+    numDoc = getNextDocNum()
     moveNum = numDoc
     numExt = 254
     tbDocs.AddNew
@@ -1216,6 +1216,7 @@ If myExecute("##363", sql) = 0 Then
         Grid2(0).TextMatrix(mousRow2, mousCol2) = quant
     End If
 End If
+Debug.Print sql
 lbHide2
 Grid2(0).SetFocus
 

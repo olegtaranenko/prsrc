@@ -31,9 +31,12 @@ ERRb:
 End Sub
 
 
-Function getDbUrl() As String
-    getDbUrl = getEffectiveSetting("dbUrl")
-    If getDbUrl = "" Then
-        fatalError "Необходимо исправить конфигурацию запуска программы." & vbCr & "Не установлено значение параметра dbUrl"
-    End If
+Function getSystemField(field As String) As Variant
+    getSystemField = Null
+    Set tbSystem = myOpenRecordSet("##147", "System", dbOpenForwardOnly)
+    If tbSystem Is Nothing Then myBase.Close: End
+    getSystemField = tbSystem.fields(field)
+    tbSystem.Close
 End Function
+
+

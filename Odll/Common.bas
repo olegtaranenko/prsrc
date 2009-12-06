@@ -534,17 +534,9 @@ End Function
 
 'год ставит на первое место, а день на последнее - для правильной сортировки
 Function yymmdd(dateStr As String) As String
-yymmdd = right$(dateStr, 2) & "." & Mid$(dateStr, 4, 2) & "." & left$(dateStr, 2)
+yymmdd = Right$(dateStr, 2) & "." & Mid$(dateStr, 4, 2) & "." & left$(dateStr, 2)
 End Function
 
-Function getSystemField(field As String) As Variant
-getSystemField = Null
-sql = "SELECT " & field & " From System"
-Set tbSystem = myOpenRecordSet("##147", sql, dbOpenForwardOnly)
-'If tbSystem Is Nothing Then myBase.Close: End
-getSystemField = tbSystem.fields(field)
-tbSystem.Close
-End Function
 
 '$odbc08$----------------------------------------------------------
 Function getTableField(tabl As String, field As String) As Variant
@@ -963,7 +955,7 @@ baseOpen
 
 mainTitle = getMainTitle
 
-If Not IsEmpty(otlad) Then '
+If Not isEmpty(otlad) Then '
   webSvodkaPath = "C:\WINDOWS\TEMP\svodkaW."
   webLoginsPath = "C:\WINDOWS\TEMP\logins."
 
@@ -1462,12 +1454,12 @@ End Sub
 '$odbc08!$
 Sub nextDayDetect() 'см также Orders.cmAdd_Click
 Dim str As String ', intNum As Integer
-Dim strNow As String, DateFromNum As String, dNow As Date
+Dim strNow As String, dNow As Date
 
 strNow = Format(Now, "dd.mm.yyyy")
 curDate = strNow 'без часов и минут
 dNow = strNow
-strNow = right$(Format(curDate, "yymmdd"), 5)
+strNow = Right$(Format(curDate, "yymmdd"), 6)
  
 befDays = 0
 
@@ -1480,7 +1472,10 @@ If tbSystem Is Nothing Then Exit Sub
 
 'Строчки lock01-04 блокируют от конкурентного изменения в Sybase
 'tbSystem.Edit '$odbs?$ необходимо, чтобы Другие не могли ни читать ни писать
-                      'вплоть до Update
+'вплоть до Update
+
+Dim doUpdateNum As Boolean
+doUpdateNum = False
 
 If tbSystem!resursLock = "nextDay" Then
    wrkDefault.rollback
@@ -1488,33 +1483,35 @@ If tbSystem!resursLock = "nextDay" Then
     "но c ограниченной функциональностью.", , "Error при переводе Базы на новую дату!"
 
 Else
- str = tbSystem!lastPrivatNum
- If Len(str) > 6 Then
-    DateFromNum = Mid$(str, 4, 2) & "." & Mid$(str, 2, 2) & ".200" & left$(str, 1)
-    tmpDate = DateFromNum
-    
-    If tmpDate < dNow Then
-        befDays = DateDiff("d", tmpDate, Now)
-        GoTo AA
-    End If
- Else ' т.е. если lastPrivatNum не была еще инициализирована
-AA:  'tbSystem!lastPrivatNum = strNow & "00"
-    sql = "UPDATE SYSTEM SET lastPrivatNum = " & strNow & "00"
-'    Debug.Print sql
+    str = tbSystem!lastPrivatNum
+    Dim valueorder As Numorder
+    Set valueorder = newNumorder(str)
+    If Not valueorder.isEmpty Then
+        tmpDate = valueorder.dat
+        If tmpDate < dNow Then
+            befDays = DateDiff("d", tmpDate, Now)
+            doUpdateNum = True
+            Set valueorder = New Numorder
+        End If
+     Else ' т.е. если lastPrivatNum не была еще инициализирована
+        doUpdateNum = True
+     End If
+End If
+
+If doUpdateNum Then
+    sql = "UPDATE SYSTEM SET lastPrivatNum = " & valueorder.val
+    'Debug.Print sql
     myBase.Execute (sql)
- End If
 End If
- 
+     
 If befDays <> 0 Then
-'tbSystem!resursLock = "nextDay"
     myBase.Execute ("UPDATE SYSTEM SET resursLock = 'nextDay'")
-        
 End If
-'tbSystem.Update
 wrkDefault.CommitTrans 'lock04
 tbSystem.Close
 
 End Sub
+
 '$NOodbc$
 Public Sub quickSort(varArray As Variant, _
  Optional lngLeft As Long = dhcMissing, Optional lngRight As Long = dhcMissing)
@@ -1710,7 +1707,7 @@ Dim s As Double, log As String, str As String
  str = LoadDate(Orders.Grid, row, orDataRS, tqOrders!dateRS, "dd.mm.yy")
  If str <> "" Then log = log & " РС=" & str
  
- gNzak = tqOrders!numorder
+ gNzak = tqOrders!Numorder
  If IsNull(tqOrders!DateTimeMO) Then
     Orders.Grid.TextMatrix(row, orMOData) = ""
     Orders.Grid.TextMatrix(row, orMOVrVid) = ""
@@ -1827,7 +1824,7 @@ If year = "" Then
  Report.laHeader.Caption = "Статистика посещений фирм за период с " & str & _
                 " по " & Reports.tbEndDate.Text
  nMonth = left$(str, 2)
- nYear = right$(str, 4)
+ nYear = Right$(str, 4)
  mCount = DateDiff("m", str, Reports.tbEndDate.Text) + 1
 
  str = "|<Название фирмы|^М |Kатегория|Скидки"
@@ -1935,7 +1932,7 @@ While Not tbFirms.EOF '                         *******************
     If Not tbOrders.BOF Then
 '      tbOrders.MoveFirst
       While Not tbOrders.EOF '$$3
-            str = tbOrders!numorder
+            str = tbOrders!Numorder
           If year <> "" Then
             If iYear = lastYear - 3 Then
                 year01 = year01 + 1 'не исп-ся
@@ -2071,7 +2068,7 @@ Dim str As String
 isDateTbox = False
 str = tBox.Text
 If str <> "" Then
-    str = "20" & right$(str, 2) & "-" & Mid$(str, 4, 2) & "-" & left$(str, 2)
+    str = "20" & Right$(str, 2) & "-" & Mid$(str, 4, 2) & "-" & left$(str, 2)
     If IsDate(str) Then
         isDateTbox = True
         tmpDate = str
@@ -2120,7 +2117,7 @@ End Function
 'не записыват неуникальное значение, для полей, где такие
 'значения запрещены. А  генерит при этом error?
 Function ValueToTableField(myErrCod As String, ByVal value As String, ByVal table As String, _
-ByVal field As String, Optional by As String = "", Optional numorder As Variant) As Integer
+ByVal field As String, Optional by As String = "", Optional Numorder As Variant) As Integer
 Dim sql As String, byStr As String  ', numOrd As String
 
 
@@ -2129,10 +2126,10 @@ ValueToTableField = False
 If value = "" Then value = "''"
 If by = "" Then
     Dim nzak As String
-    If IsMissing(numorder) Then
+    If IsMissing(Numorder) Then
         nzak = gNzak
     Else
-        nzak = numorder
+        nzak = Numorder
     End If
         
     byStr = ".numOrder)= " & nzak
@@ -2656,13 +2653,13 @@ lockSklad = True
 End Function
     
 Function orderUpdateWithIssue(ByVal issueMarker As String, value As String, table As String, _
-field As String, Optional by As String = "", Optional numorder As Variant) As Integer
+field As String, Optional by As String = "", Optional Numorder As Variant) As Integer
 Dim nzak As String
 Dim issueId As Variant
-    If IsMissing(numorder) Then
+    If IsMissing(Numorder) Then
         nzak = gNzak
     Else
-        nzak = numorder
+        nzak = Numorder
     End If
     orderUpdateWithIssue = ValueToTableField("##orderUpdateWithIssue", value, table, field, by, nzak)
     
@@ -2679,12 +2676,12 @@ End Function
     
     
 Function orderUpdate(ByVal myErrCod As String, value As String, table As String, _
-field As String, Optional by As String = "", Optional numorder As Variant) As Integer
+field As String, Optional by As String = "", Optional Numorder As Variant) As Integer
 Dim nzak As String
-    If IsMissing(numorder) Then
+    If IsMissing(Numorder) Then
         nzak = gNzak
     Else
-        nzak = numorder
+        nzak = Numorder
     End If
     orderUpdate = ValueToTableField(myErrCod, value, table, field, by, nzak)
     If table = "Orders" Then

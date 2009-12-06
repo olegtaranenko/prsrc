@@ -478,25 +478,6 @@ End If
 
 End Sub
 
-Function getNextDocNum() As Boolean
-Dim il As Long, l As Long
-getNextDocNum = False
-
-il = right$(Format(Now, "yymmdd\0\0"), 7) + 200001  ' чтобы не путались с заказами
-sql = "select * from System"
-Set tbSystem = myOpenRecordSet("##149", sql, dbOpenForwardOnly)
-If tbSystem Is Nothing Then Exit Function
-tbSystem.Edit
-l = tbSystem!lastDocNum + 1
-If l < il Then l = il
-tbSystem!lastDocNum = l
-tbSystem.update
-tbSystem.Close
-numDoc = l
-
-getNextDocNum = True
-End Function
-
 Private Sub cmAdd_Click()
 Dim str As String ', intNum As Integer, il As Long, l As Long
 Dim strNow As String, DateFromNum As String, dNow As Date
@@ -504,12 +485,12 @@ Dim strNow As String, DateFromNum As String, dNow As Date
 On Error GoTo ER1
 wrkDefault.BeginTrans   ' начало транзакции
 
-If Not getNextDocNum() Then GoTo ER1
-
+numDoc = getNextDocNum()
 Set tbDocs = myOpenRecordSet("##141", "select * from sDocs", dbOpenForwardOnly) 'dbOpenForwardOnly)
 If tbDocs Is Nothing Then GoTo ER1
 
 tbDocs.AddNew
+
 tbDocs!numDoc = numDoc
 If Regim = "fromCeh" Then
     numExt = 0 ' виртуальные накладные(зарезервир-е предметы)
@@ -808,7 +789,7 @@ skladId = -1001
 If Not sqlDeficitToNNQQ(lbInside.List(0), "bay") Then GoTo EN1
 
 wrkDefault.BeginTrans
-If Not isDateTbox(tbDocDate) Then
+If Not isDateTbox(tbDocDate, , False) Then
     tmpDate = Now
 End If
 
@@ -1077,7 +1058,9 @@ If quantity > 0 Then
     Grid.col = 1
     gridIzLoad = True '
     Grid.col = 2      'вызов loadDocNomenk
+    On Error Resume Next
     Grid.SetFocus
+    On Error GoTo 0
     cmDel.Enabled = True
 Else
     cmDel.Enabled = False

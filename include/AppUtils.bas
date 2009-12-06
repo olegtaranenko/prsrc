@@ -19,11 +19,11 @@ objExel.Workbooks.Add
 With objExel.ActiveSheet
 .Cells(1, 2).value = title
 ReDim Preserve strA(Grid.Cols + 1)
-For r = 0 To Grid.Rows - 1
+For r = 0 To Grid.rows - 1
     Dim curColumn As Integer
     curColumn = 1
     For c = 1 To Grid.Cols - 1
-        If Grid.colWidth(c) > 0 Then
+        If Grid.ColWidth(c) > 0 Then
             str = Grid.TextMatrix(r, c) '=' - наверно зарезервирован для ввода формул
             Dim firstLetter As String
             firstLetter = left$(str, 1)
@@ -55,3 +55,13 @@ Next r
 End With
 Set objExel = Nothing
 End Sub
+
+
+Function getDbUrl() As String
+    getDbUrl = getEffectiveSetting("dbUrl")
+    If getDbUrl = "" Then
+        fatalError "Необходимо исправить конфигурацию запуска программы." & vbCr & "Не установлено значение параметра dbUrl"
+    End If
+End Function
+
+

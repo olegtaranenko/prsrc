@@ -220,7 +220,7 @@ Function ShellAndHold(sCommandLine As String, Optional lState As Long = vbNormal
         If left$(sCommandLine, 1) <> Chr(34) Then
             sCommandLine = Chr(34) & sCommandLine
         End If
-        If right$(sCommandLine, 1) <> Chr(34) Then
+        If Right$(sCommandLine, 1) <> Chr(34) Then
             sCommandLine = sCommandLine & Chr(34)
         End If
     End If
@@ -255,7 +255,7 @@ Function ShellAndWait(sFilePath As String, Optional sCommandLine, Optional lStat
         If left$(sFilePath, 1) <> Chr(34) Then
             sFilePath = Chr(34) & sFilePath
         End If
-        If right$(sFilePath, 1) <> Chr(34) Then
+        If Right$(sFilePath, 1) <> Chr(34) Then
             sFilePath = sFilePath & Chr(34)
         End If
     End If
@@ -307,7 +307,7 @@ Function ShellAndWaitReady(sCommandLine As String, Optional lState As Long = vbN
     If left$(sCommandLine, 1) <> Chr(34) Then
         sCommandLine = Chr(34) & sCommandLine
     End If
-    If right$(sCommandLine, 1) <> Chr(34) Then
+    If Right$(sCommandLine, 1) <> Chr(34) Then
         sCommandLine = sCommandLine & Chr(34)
     End If
     lhProc = Shell(sCommandLine, lState)
@@ -363,15 +363,15 @@ Private Function getRepositoryPathFile(exeName As String, ByRef version As Versi
 End Function
 
 
-Public Sub GetHiLoByte(X As Integer, LoByte As Integer, HiByte As Integer)
-    LoByte = X And &HFF&
-    HiByte = X \ &H100
+Public Sub GetHiLoByte(x As Integer, LoByte As Integer, HiByte As Integer)
+    LoByte = x And &HFF&
+    HiByte = x \ &H100
 End Sub
 
 
-Public Sub GetHiLoWord(X As Long, LoWord As Integer, HiWord As Integer)
-    LoWord = CInt(X And &HFFFF&)
-    HiWord = CInt(X \ &H10000)
+Public Sub GetHiLoWord(x As Long, LoWord As Integer, HiWord As Integer)
+    LoWord = CInt(x And &HFFFF&)
+    HiWord = CInt(x \ &H10000)
 End Sub
 
 

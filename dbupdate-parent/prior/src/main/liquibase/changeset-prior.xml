@@ -989,5 +989,11 @@ where pc.sysname = sGuideProducts.web
 		<sqlFile path="triggers/sdocs.wf_sdocs_bi.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 	</changeSet>
 
+	<changeSet id="1" author="mantis-85" runOnChange="true">
+		<comment>M-85 Изменено формирование маски номера заказа и документа</comment>
+		<sqlFile path="procedures/wf_next_numdoc.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="procedures/wf_next_numorder.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+	</changeSet>
+
 </databaseChangeLog>
 

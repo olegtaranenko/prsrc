@@ -710,48 +710,33 @@ End If
 End Sub
 
 Private Sub cmAdd_Click() ' см также nextDayDetect()
-Dim str As String, intNum As Integer, l As Long, numorder As String
-Dim strNow As String, DateFromNum As String, dNow As Date
+Dim str As String
+Dim strNow As String, dNow As Date, valueorder As Numorder
  
  strNow = Format(Now, "dd.mm.yyyy")
  dNow = strNow
- strNow = right$(Format(Now, "yymmdd"), 5)
+ strNow = Format(Now, "yymmdd")
  
  wrkDefault.BeginTrans 'lock01
  sql = "update system set resursLock = resursLock" 'lock02
  myBase.Execute (sql) 'lock03
 
-str = getSystemField("lastPrivatNum")
-DateFromNum = Mid$(str, 4, 2) & "." & Mid$(str, 2, 2) & ".200" & left$(str, 1)
-tmpDate = DateFromNum
-DateFromNum = left$(str, 5)
-intNum = right$(str, Len(str) - 5)
+Set valueorder = New Numorder
+valueorder.val = getSystemField("lastPrivatNum")
+tmpDate = valueorder.dat
 
-'если это небольшое расхождение часов то считаем, что отстающие тоже там
     If tmpDate >= dNow Then
-            intNum = intNum + 1
-            If intNum < 100 Then
-                str = Format(intNum, "00")
-            Else
-                str = Format(intNum, "000")
-            End If
-            l = DateFromNum & str
-            'tbSystem!lastPrivatNum = DateFromNum & str
-            myBase.Execute ("update system set lastPrivatNum = " & DateFromNum & str)
+        myBase.Execute ("update system set lastPrivatNum = " & valueorder.nextNum)
     Else        ' наступил след. день
-        l = strNow & "01"
-        'tbSystem!lastPrivatNum = strNow & "01"
-        myBase.Execute ("update System set lastPrivatNum = " & strNow & "01")
-        'tbSystem.Update
+        Set valueorder = New Numorder
+        myBase.Execute ("update System set lastPrivatNum = " & valueorder.val)
         befDays = DateDiff("d", tmpDate, Now)
         nextDay
         GoTo BB
     End If
-'MsgBox " новый номер = " & strNow & str
- 'tbSystem.Update
 BB:
 wrkDefault.CommitTrans
-'tbSystem.Close
+
 Dim baseCehId As Integer, baseCeh As String, isBaseOrder As Boolean
 Dim baseFirmId As Integer, baseFirm As String
 Dim baseProblemId As Integer, baseProblem As String, begPubNum As Long
@@ -780,15 +765,13 @@ End If
 NXT1:
 cmAdd.Caption = AddCaption
 
-'wrkDefault.BeginTrans
-sql = "select * from Orders where numOrder = " & l
+sql = "select * from Orders where numOrder = " & valueorder.val
 Set tbOrders = myOpenRecordSet("##07", sql, dbOpenForwardOnly) 'dbOpenForwardOnly
-'If tbOrders Is Nothing Then Exit Sub
 
-'If Not uniqOrderNum(tbOrders, l) Then
+
 If Not tbOrders.BOF Then
-    MsgBox "номер " & l & " не уникален (см. заказ от " _
-    & table!inDate & ").  ѕовторите попытку или обратитесь к јдминистратору!", , ""
+    MsgBox "номер " & valueorder.val & " не уникален (см. заказ от " _
+    & tbOrders!inDate & ").  ѕовторите попытку или обратитесь к јдминистратору!", , ""
     tbOrders.Close
     Exit Sub
 End If
@@ -796,7 +779,7 @@ End If
 On Error GoTo ERR1
 tbOrders.AddNew
 tbOrders!StatusId = 0
-tbOrders!numorder = l
+tbOrders!Numorder = valueorder.val
 tbOrders!inDate = Now
 tbOrders!ManagId = manId(Orders.cbM.ListIndex)
 str = getSystemField("Kurs")
@@ -816,7 +799,7 @@ If zakazNum > 0 Then Grid.AddItem ""
 zakazNum = zakazNum + 1
 Grid.TextMatrix(zakazNum, 0) = zakazNum
 Grid.TextMatrix(zakazNum, orInvoice) = "счет ?"
-Grid.TextMatrix(zakazNum, orNomZak) = l
+Grid.TextMatrix(zakazNum, orNomZak) = valueorder.val
 Grid.TextMatrix(zakazNum, orData) = Format(Now, "dd.mm.yy")
 Grid.TextMatrix(zakazNum, orMen) = Orders.cbM.Text
 Grid.TextMatrix(zakazNum, orStatus) = status(0)
@@ -1060,7 +1043,7 @@ If Not tqOrders.BOF Then
       End If
     strToWeb = ""
     valToWeb tqOrders!xLogin
-    valToWeb tqOrders!numorder
+    valToWeb tqOrders!Numorder
     valToWeb status(tqOrders!StatusId)
     valToWeb tqOrders!outDateTime, "dd.mm.yy"
     valToWeb tqOrders!outDateTime, "hh"
@@ -1334,7 +1317,7 @@ If tbEnable.Visible Then mnAllOrders.Visible = True
 oldHeight = Me.Height
 oldWidth = Me.Width
 
-If Not IsEmpty(otlad) Then
+If Not isEmpty(otlad) Then
     Frame1.BackColor = otladColor
     Me.BackColor = otladColor
 
@@ -1455,7 +1438,7 @@ managLoad 'загрузка Manag() cbM lbM и Filtr.lbM
 lbM.Height = lbM.Height + 195 * (lbM.ListCount - 1)
 Filtr.lbM.Height = Filtr.lbM.Height + 195 * (Filtr.lbM.ListCount - 1)
 
-If Not IsEmpty(otlad) Then cbM.ListIndex = cbM.ListCount - 1
+If Not isEmpty(otlad) Then cbM.ListIndex = cbM.ListCount - 1
 
 
 
@@ -1820,7 +1803,7 @@ Dim exists As Integer
         & " where statusid < 6 " _
         & " and v.venturename = '" & Grid.TextMatrix(mousRow, orVenture) & "'" _
         & " and invoice = '" & Grid.TextMatrix(mousRow, orInvoice) & "'" _
-        & " and datepart(yy, indate) = 20" & right(Grid.TextMatrix(mousRow, orData), 2) _
+        & " and datepart(yy, indate) = 20" & Right(Grid.TextMatrix(mousRow, orData), 2) _
         & " and numorder != " & Grid.TextMatrix(mousRow, orNomZak)
 
 '        Debug.Print sql
@@ -3103,7 +3086,7 @@ DNM = Format(Now(), "dd.mm.yy hh:nn") & vbTab & cbM.Text & " " & gNzak ' именно 
         If Not tbOrders Is Nothing Then
             If Not tbOrders.BOF Then
                 While Not tbOrders.EOF
-                    anotherNumorder = tbOrders!numorder
+                    anotherNumorder = tbOrders!Numorder
                     sql = "update orders set rate = " & tbMobile.Text & " where numorder = " & anotherNumorder
                     issueId = orderUpdateWithIssue(issueMarker, tbMobile.Text, "Orders", "rate")
                     If issueId > 0 Then
@@ -3292,7 +3275,7 @@ If tqOrders Is Nothing Then myBase.Close: End
 If Not tqOrders.BOF Then
 While Not tqOrders.EOF
  
- numZak = tqOrders!numorder
+ numZak = tqOrders!Numorder
   
  If chConflict.value = 1 Then If Not isConflict() Then GoTo NXT
  
@@ -3792,7 +3775,7 @@ If tbProduct.BOF Then 'т.е. отгрузка началась по старому и не закончилась
         tbProduct.AddNew
         tmpDate = "31.08.2003 10:00:00"
         tbProduct!outDate = tmpDate
-        tbProduct!numorder = gNzak
+        tbProduct!Numorder = gNzak
         tbProduct!quant = s
         tbProduct.update
     End If
