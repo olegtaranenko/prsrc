@@ -21,7 +21,6 @@ Public tbSystem As Recordset
 Public tbFirms As Recordset
 Public tbNomenk  As Recordset
 Public tbProduct As Recordset
-Public tbCeh As Recordset
 Public tbDMC As Recordset
 Public tbDocs As Recordset
 Public tbGuide As Recordset
@@ -1222,13 +1221,21 @@ Else
 End If
 End Function
 
-Sub msgOfZakaz(myErrCod As String, Optional msg As String = "")
+Sub msgOfZakaz(myErrCod As String, Optional msg As String = "", Optional mng = "")
     myErrCod = Mid$(myErrCod, 3)
-    If msg = "" Then msg = "Нарушена целостность данных."
+    
+    If msg = "" Then
+        msg = "Нарушена целостность данных."
+    End If
+    msg = msg & "Обнаружен сбой базы (Err=" & myErrCod & ") в заказе № " & gNzak
+    
+    If Not IsNull(mng) Then
+        msg = msg & "  " & CStr(mng)
+    End If
+    
     MsgBox msg & " Работа с этим заказом пока " & _
-    "невозможна. Сообщите администратору!", , _
-    "Обнаружен сбой базы (Err=" & myErrCod & ") в заказе № " & gNzak & _
-    "  " & tbCeh!Manag
+    "невозможна. Сообщите администратору!", , msg
+
 End Sub
 
 Sub msgOfEnd(myErrCod As String, Optional msg As String = "")
@@ -2093,6 +2100,8 @@ End Sub
 
 Sub zagruzFromCeh(Optional passZakazNom As String = "")
 Dim outDay As Integer, j As Integer, passSql As String, str As String
+Dim tbCeh As Recordset
+
 
 If IsNumeric(passZakazNom) Then
     passSql = "((OrdersInCeh.numOrder)<>" & passZakazNom & ") AND "

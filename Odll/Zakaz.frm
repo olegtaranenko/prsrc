@@ -1,6 +1,6 @@
 VERSION 5.00
-Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCTL.OCX"
-Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "msflxgrd.ocx"
+Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "mscomctl.ocx"
+Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Zakaz 
    BackColor       =   &H8000000A&
    BorderStyle     =   3  'Fixed Dialog
@@ -271,7 +271,7 @@ Begin VB.Form Zakaz
    End
    Begin VB.Label laZapas 
       BackColor       =   &H8000000E&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Height          =   255
       Left            =   5400
       TabIndex        =   24
@@ -305,7 +305,7 @@ Begin VB.Form Zakaz
    End
    Begin VB.Label laNomZak 
       BackColor       =   &H80000009&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Height          =   285
       Left            =   8220
       TabIndex        =   0
@@ -347,7 +347,7 @@ Begin VB.Form Zakaz
       Width           =   1215
    End
    Begin VB.Label laDateRS 
-      Alignment       =   2  'Центровка
+      Alignment       =   2  'Center
       Caption         =   "Дата Р\С (не позже)"
       Enabled         =   0   'False
       Height          =   195
@@ -412,7 +412,6 @@ Const zgOtlad = 7
 
 Sub lvAddDay(I As Integer)
 Dim item As ListItem, str As String
-
     str = Format(DateAdd("d", I - 1, curDate), "dd/mm/yy")
     Set item = Zakaz.lv.ListItems.Add(, "k" & I, str)
     day = Weekday(DateAdd("d", I - 1, curDate))
@@ -624,7 +623,7 @@ End If
 Set tbOrders = myOpenRecordSet("##370", sql, dbOpenForwardOnly) ', dbOpenDynaset)
 If tbOrders Is Nothing Then Exit Sub
 While Not tbOrders.EOF
-If tbOrders!numOrder = 5021505 Then
+If tbOrders!Numorder = 5021505 Then
     quantity = quantity
 End If
     bDay = tbOrders!begDay '  отн. Now()
@@ -632,7 +631,7 @@ End If
 '    If eDay > maxDay Then msgOfEnd ("##371")
     
     If isMzagruz Then 'у Менеджеров тек.заказ б.браться всегда из формы, поэ-
-        If tbOrders!numOrder = laNomZak.Caption Then GoTo NXT ' тому в базе
+        If tbOrders!Numorder = laNomZak.Caption Then GoTo NXT ' тому в базе
         'его пропускаем, т.к. у него будет новое место среди других
         
 'вставляем тек.заказ так, чтобы не нарушить порядок уменьшения Даты Начала
@@ -676,7 +675,7 @@ End If
     
     If reg = "" Then
       quantity = quantity + 1
-      Grid.TextMatrix(quantity, zgNomZak) = tbOrders!numOrder
+      Grid.TextMatrix(quantity, zgNomZak) = tbOrders!Numorder
 '      If tbOrders!StatusId = -1 Then
       If tbOrders!nevip = -1 Then '"образец"
         Grid.TextMatrix(quantity, zgStatus) = "образец"
@@ -692,7 +691,7 @@ End If
     End If
     
     If reg = "tail" Then ' из Enter_cell
-      If tbOrders!numOrder = Grid.TextMatrix(Grid.row, zgNomZak) Then
+      If tbOrders!Numorder = Grid.TextMatrix(Grid.row, zgNomZak) Then
         If Grid.TextMatrix(Grid.row, zgStatus) = "образец" Then
           If tbOrders!nevip = -1 Then GoTo EN1 '"образец"
         ElseIf tbOrders!nevip <> -1 Then
@@ -985,8 +984,8 @@ Dim workTime As String
 'MaxDay = tmpMaxDay наверно это уже никому не нужно
 
 Timer1.Enabled = False
-'Set tbCeh = myOpenRecordSet("##01", "OrdersInCeh", dbOpenTable)
-'If tbCeh Is Nothing Then GoTo AA
+'Set tbOrders = myOpenRecordSet("##01", "OrdersInCeh", dbOpenTable)
+'If tbOrders Is Nothing Then GoTo AA
 
 sql = "SELECT * from Orders WHERE (((numOrder)=" & gNzak & "));"
 Set tbOrders = myOpenRecordSet("##30", sql, dbOpenForwardOnly) '$#$
@@ -1065,21 +1064,21 @@ sql = "UPDATE Orders SET dateRS = " & str & _
 If myExecute("##392", sql) <> 0 Then GoTo ER1
 
 sql = "SELECT * from OrdersInCeh WHERE (((numOrder)=" & gNzak & "));"
-Set tbCeh = myOpenRecordSet("##01", sql, dbOpenForwardOnly)
-'If tbCeh Is Nothing Then GoTo AA
+Set tbOrders = myOpenRecordSet("##01", sql, dbOpenForwardOnly)
+'If tbOrders Is Nothing Then GoTo AA
 
 workTime = workTimeOld ' для случая, если не менялось
-If Not tbCeh.BOF Then
+If Not tbOrders.BOF Then
     If isTimeZakaz Then
-'        tbCeh.Edit
-'        tbCeh!rowLock = ""
+'        tbOrders.Edit
+'        tbOrders!rowLock = ""
        If workChange Then
          If (id = 1 Or id = 5) And editWorkTime Then 'остается в работе или отложен
 '            tbOrders!workTime = Round(tbOrders!workTime + tbWorkTime.Text _
                      - neVipolnen, 1) 'время с учетом коррекции
             workTime = Round(workTimeOld + tbWorkTime.Text _
                      - neVipolnen, 1) 'время с учетом коррекции
-'            tbCeh!nevip = tbWorkTime.Text / tbOrders!workTime
+'            tbOrders!nevip = tbWorkTime.Text / tbOrders!workTime
             sql = "UPDATE OrdersInCeh SET Nevip = " & _
             tbWorkTime.Text / workTime & " WHERE (((numOrder)=" & gNzak & "));"
             If myExecute("##393", sql) <> 0 Then GoTo ER1
@@ -1093,7 +1092,7 @@ If Not tbCeh.BOF Then
        If myExecute("##403", sql) <> 0 Then GoTo ER1
        GoTo DD
     Else
-'        tbCeh.Delete
+'        tbOrders.Delete
         sql = "DELETE from OrdersInCeh WHERE (((numOrder)=" & gNzak & "));"
         If myExecute("##394", sql) <> 0 Then GoTo ER1
 '        tbOrders!workTime = 0
@@ -1101,8 +1100,8 @@ If Not tbCeh.BOF Then
     End If
 Else
     If isTimeZakaz Then
-'        tbCeh.AddNew
-'        tbCeh!numOrder = gNzak
+'        tbOrders.AddNew
+'        tbOrders!numOrder = gNzak
 '        On Error GoTo ERRp
 '        On Error GoTo 0
 '        tbOrders!workTime = tbWorkTime.Text
@@ -1114,13 +1113,13 @@ DD:     noClick = True
         Orders.Grid.col = orCeh
 '        Grid.row = zakazNum
         If urgent = "y" Then
-'            tbCeh!urgent = "y"
+'            tbOrders!urgent = "y"
             Orders.Grid.CellForeColor = 200
         Else
-'            tbCeh!urgent = ""
+'            tbOrders!urgent = ""
             Orders.Grid.CellForeColor = vbBlack
         End If
-'        tbCeh.Update
+'        tbOrders.Update
         Orders.Grid.col = orStatus
         noClick = False
     End If
@@ -1195,7 +1194,7 @@ table.Close
  End If ' согласов
 'End If ' If Not table Is Nothing
 'table.Close
-tbCeh.Close
+tbOrders.Close
 
 ' коррекция посещения фирмой
 'If (tbOrders!statusId = 0 Or tbOrders!statusId = 7) And id <> 0 And id <> 7 Then
@@ -1294,7 +1293,7 @@ On Error Resume Next
 'table.Close
 'tbOrders.Close
 'tqOrders.Close
-tbCeh.Close
+tbOrders.Close
 End Sub
 
 Private Sub cmExit_Click()

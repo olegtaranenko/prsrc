@@ -235,9 +235,9 @@ Else
 End If
 AA:
 'делаем обычный вид даты
-tmpStr = right$(curDay, 2)
+tmpStr = Right$(curDay, 2)
 tmpStr = tmpStr & Mid$(curDay, 3, 4)
-tmpStr = tmpStr & left$(curDay, 2)
+tmpStr = tmpStr & Left$(curDay, 2)
 laHeader.Caption = "¬ыработка по цеху " & Ceh(cehId) & " на " & tmpStr
 
 Grid.rows = 2
@@ -264,20 +264,20 @@ Set tbOrders = myOpenRecordSet("##377", sql, dbOpenForwardOnly)
 If tbOrders Is Nothing Then Exit Sub
 If tbOrders.BOF Then GoTo EN1
 resurs = -1: live = -1
-If tbOrders!numorder = 0 Then
+If tbOrders!Numorder = 0 Then
     resurs = Round(tbOrders!virabotka, 2)
     tbOrders.MoveNext
 End If
 If tbOrders.EOF Then GoTo EN2
 
 kpd = -1
-If tbOrders!numorder = 1 Then
+If tbOrders!Numorder = 1 Then
     kpd_ = Round(tbOrders!virabotka, 2)
     tbOrders.MoveNext
 End If
 If tbOrders.EOF Then GoTo EN2
 
-If tbOrders!numorder = 2 Then
+If tbOrders!Numorder = 2 Then
     live = Round(tbOrders!virabotka, 2)
     tbOrders.MoveNext
 End If
@@ -286,8 +286,8 @@ ReDim NN(0): ReDim QQ(0): ReDim QQ2(0)
 While Not tbOrders.EOF
     quantity = quantity + 1
     ReDim Preserve NN(quantity): ReDim Preserve QQ(quantity): ReDim Preserve QQ2(quantity)
-    NN(quantity) = tbOrders!numorder
-If tbOrders!numorder = 4080201 Then
+    NN(quantity) = tbOrders!Numorder
+If tbOrders!Numorder = 4080201 Then
     I = I
 End If
     QQ2(quantity) = (tbOrders!obrazec = "o") ' = -1 дл€ образца
@@ -380,32 +380,32 @@ If sum > 0 Then
     End If
     Grid.TextMatrix(quantity + I, crVirab) = QQ(I)
     
-    Set tbCeh = myOpenRecordSet("##380", sql, dbOpenForwardOnly)
-    If tbCeh Is Nothing Then GoTo NXT1
-    If Not tbCeh.BOF Then
-        Grid.TextMatrix(quantity + I, crM) = Manag(tbCeh!ManagId)
+    Set tbOrders = myOpenRecordSet("##380", sql, dbOpenForwardOnly)
+    If tbOrders Is Nothing Then GoTo NXT1
+    If Not tbOrders.BOF Then
+        Grid.TextMatrix(quantity + I, crM) = Manag(tbOrders!ManagId)
         'образца уже м.не быть, тогда поле IsNull
-        If Not IsNull(tbCeh!workTime) Then _
-            Grid.TextMatrix(quantity + I, crVrVip) = tbCeh!workTime
-        If IsNull(tbCeh!stat) Then
+        If Not IsNull(tbOrders!workTime) Then _
+            Grid.TextMatrix(quantity + I, crVrVip) = tbOrders!workTime
+        If IsNull(tbOrders!stat) Then
             Grid.TextMatrix(quantity + I, crStatus) = "нет"
         Else
-            Grid.TextMatrix(quantity + I, crStatus) = tbCeh!stat
+            Grid.TextMatrix(quantity + I, crStatus) = tbOrders!stat
         End If
         If QQ2(I) = 0 Then ' не образец
-            If tbCeh!StatusId = 5 Then
+            If tbOrders!StatusId = 5 Then
                 Grid.TextMatrix(quantity + I, crStatus) = "отложен"
-                Grid.TextMatrix(quantity + I, crProblem) = Problems(tbCeh!ProblemId)
+                Grid.TextMatrix(quantity + I, crProblem) = Problems(tbOrders!ProblemId)
             End If
-            If Not IsNull(tbCeh!nevip) Then _
-                Grid.TextMatrix(quantity + I, crProcVip) = Round(100 * (1 - tbCeh!nevip), 1)
+            If Not IsNull(tbOrders!nevip) Then _
+                Grid.TextMatrix(quantity + I, crProcVip) = Round(100 * (1 - tbOrders!nevip), 1)
         End If
-'        Grid.TextMatrix(quantity + i, crProblem) = Problems(tbCeh!ProblemId)
-        LoadDate Grid, quantity + I, crDataVid, tbCeh!outDateTime, "dd.mm.yy"
-        LoadDate Grid, quantity + I, crVrVid, tbCeh!outDateTime, "hh"
-        Grid.TextMatrix(quantity + I, crFirma) = tbCeh!name
-        Grid.TextMatrix(quantity + I, crLogo) = tbCeh!Logo
-        Grid.TextMatrix(quantity + I, crIzdelia) = tbCeh!Product
+'        Grid.TextMatrix(quantity + i, crProblem) = Problems(tbOrders!ProblemId)
+        LoadDate Grid, quantity + I, crDataVid, tbOrders!outDateTime, "dd.mm.yy"
+        LoadDate Grid, quantity + I, crVrVid, tbOrders!outDateTime, "hh"
+        Grid.TextMatrix(quantity + I, crFirma) = tbOrders!name
+        Grid.TextMatrix(quantity + I, crLogo) = tbOrders!Logo
+        Grid.TextMatrix(quantity + I, crIzdelia) = tbOrders!Product
     End If
   Next I
 End If
@@ -529,11 +529,11 @@ End If
 
 str = Reports.tbStartDate2.Text
 'strWhere = Left$(str, 2) & "/1/" & Right$(str, 4)
-strWhere = "'" & right$(str, 4) & "-" & left$(str, 2) & "-01'"
+strWhere = "'" & Right$(str, 4) & "-" & Left$(str, 2) & "-01'"
 str = Reports.tbEndDate2.Text
 ' формируем самое начало след мес€ца
-I = left$(str, 2) ' мес€ц
-j = right$(str, 4) 'год
+I = Left$(str, 2) ' мес€ц
+j = Right$(str, 4) 'год
 I = I + 1:
 If I > 12 Then I = 1: j = j + 1
 'strWhere = strWhere & "# And (Orders.inDate)<#" & i & "/1/" & j
@@ -634,7 +634,7 @@ Otgrugeno = 0
 If tqOrders Is Nothing Then GoTo ENs
 If Not tqOrders.BOF Then
   While Not tqOrders.EOF
-    Grid.TextMatrix(l, rpNomZak) = tqOrders!numorder
+    Grid.TextMatrix(l, rpNomZak) = tqOrders!Numorder
     j = tqOrders!StatusId
     If j = 2 Or j = 3 Or j = 9 Then
         Grid.MergeRow(l) = True
@@ -745,9 +745,9 @@ laHeader.Width = laHeader.Width + w
 cmExel.Top = cmExel.Top + h
 cmPrint.Top = cmPrint.Top + h
 cmExit.Top = cmExit.Top + h
-cmExit.left = cmExit.left + w
-cmPrev.left = cmPrev.left + w
-cmNext.left = cmNext.left + w
+cmExit.Left = cmExit.Left + w
+cmPrev.Left = cmPrev.Left + w
+cmNext.Left = cmNext.Left + w
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
@@ -817,7 +817,7 @@ If Not tbOrders.BOF Then
     s = Round((tbOrders!quantity - v) / per, 2)
     If s > 0 Then
         quantity = quantity + 1
-        Grid.TextMatrix(quantity, rtNomZak) = tbOrders!numorder
+        Grid.TextMatrix(quantity, rtNomZak) = tbOrders!Numorder
         Grid.TextMatrix(quantity, rtCeh) = tbOrders!Ceh
         LoadDate Grid, quantity, rtData, tbOrders!inDate, "dd.mm.yy"
         Grid.TextMatrix(quantity, rtMen) = tbOrders!Manag
@@ -880,7 +880,7 @@ If Not tbOrders Is Nothing Then
       s = Round((tbOrders!quantity - v) / per, 2)
       If s > 0 Then
         quantity = quantity + 1
-        Grid.TextMatrix(quantity, rtNomZak) = tbOrders!numorder
+        Grid.TextMatrix(quantity, rtNomZak) = tbOrders!Numorder
         Grid.TextMatrix(quantity, rtCeh) = "ѕродажа"
         LoadDate Grid, quantity, rtData, tbOrders!inDate, "dd.mm.yy"
         Grid.TextMatrix(quantity, rtMen) = Manag(tbOrders!ManagId)
@@ -889,7 +889,7 @@ If Not tbOrders Is Nothing Then
         Grid.TextMatrix(quantity, rtReserv) = s
 '        If Not IsNull(tbOrders!ordered) Then _
             Grid.TextMatrix(quantity, rtZakazano) = tbOrders!ordered
-         Grid.TextMatrix(quantity, rtZakazano) = Round(getOrdered(tbOrders!numorder), 2)
+         Grid.TextMatrix(quantity, rtZakazano) = Round(getOrdered(tbOrders!Numorder), 2)
         
         If Not IsNull(tbOrders!paid) Then _
             Grid.TextMatrix(quantity, rtOplacheno) = Round(tbOrders!paid, 2)

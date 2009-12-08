@@ -567,6 +567,7 @@ Dim minut As Integer
 Dim objExel As Excel.Application, exRow As Long
 Dim head1 As String, head2 As String, head3 As String, head4 As String
 Dim gain2 As Double, gain3 As Double, gain4 As Double
+Dim tbCeh As Recordset
 
 
 
@@ -3269,7 +3270,7 @@ zakazNum = 0
 'LoadOrders********************************************************
 sql = rowFromOrdersSQL & getSqlWhere & " ORDER BY Orders.inDate" & ";"
 'MsgBox getSqlWhere
-'Debug.Print "sql4 = " & sql
+'Debug.Print sql
 Set tqOrders = myOpenRecordSet("##08", sql, dbOpenForwardOnly)
 If tqOrders Is Nothing Then myBase.Close: End
 If Not tqOrders.BOF Then

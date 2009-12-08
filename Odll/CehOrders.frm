@@ -188,6 +188,7 @@ Public Regim As String ' режим окна
 Public mousRow As Long    '
 Public mousCol As Long    '
 Dim maxExt
+Dim tbCeh As Recordset
 
 
 
@@ -324,7 +325,7 @@ If Not tbCeh.BOF Then
   
   tbCeh.MoveFirst
   While Not tbCeh.EOF
-    gNzak = tbCeh!numorder
+    gNzak = tbCeh!Numorder
     
     If chSingl.value = 1 And gNzak <> tbNomZak.Text Then GoTo NXT
 'If gNzak = 3103125 Then
@@ -333,7 +334,7 @@ If Not tbCeh.BOF Then
     If IsDate(tbCeh!DateTimeMO) Then
       If tbCeh!DateTimeMO < CDate("01.01.2000") _
       Or tbCeh!DateTimeMO > CDate("01.01.2050") Then
-            msgOfZakaz "##308", "Недопустимая дата МО. Обратитесь к менеджеру. "
+            msgOfZakaz "##308", "Недопустимая дата МО. Обратитесь к менеджеру. ", tbCeh!Manag
             GoTo NXT
       End If
       If IsNull(tbCeh!workTimeMO) Then
@@ -435,7 +436,7 @@ End If
         LoadDate Grid, cehRows, chVrVid, tbCeh!DateTimeMO, "hh"
     End If
     If IsNull(s) Then
-        msgOfZakaz ("##36")
+        msgOfZakaz ("##36"), , tbCeh!Manag
         Grid.TextMatrix(cehRows, chVrVip) = "(??) "
     Else
       If chDetail.value = 1 Then '
@@ -502,7 +503,7 @@ If Not IsNull(val) Then
     Exit Sub
   End If
 End If
-msgOfZakaz (myErr)
+msgOfZakaz myErr, , tbCeh!Manag
 Grid.TextMatrix(cehRows, chDataRes) = "??"
 Grid.TextMatrix(cehRows, chKey) = 0
 End Sub
@@ -988,7 +989,7 @@ AA:
     If tbOrders.BOF Then
         tbOrders.AddNew
         tbOrders!xDate = str
-        tbOrders!numorder = gNzak
+        tbOrders!Numorder = gNzak
         tbOrders!obrazec = obraz
     Else
         virabotka = virabotka + tbOrders!virabotka
