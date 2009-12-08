@@ -40,3 +40,11 @@ Function getSystemField(field As String) As Variant
 End Function
 
 
+Function getDbUrl() As String
+    getDbUrl = getEffectiveSetting("dbUrl")
+    If getDbUrl = "" Then
+        fatalError "Необходимо исправить конфигурацию запуска программы." & vbCr & "Не установлено значение параметра dbUrl"
+    End If
+End Function
+
+

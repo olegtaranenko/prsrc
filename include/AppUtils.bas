@@ -57,11 +57,48 @@ Set objExel = Nothing
 End Sub
 
 
-Function getDbUrl() As String
-    getDbUrl = getEffectiveSetting("dbUrl")
-    If getDbUrl = "" Then
-        fatalError "Необходимо исправить конфигурацию запуска программы." & vbCr & "Не установлено значение параметра dbUrl"
+
+Function existsInTreeview(ByRef tTree As TreeView, Key As String) As Boolean
+Dim I As Integer
+    For I = 1 To tTree.Nodes.count
+        If tTree.Nodes(I).Key = Key Then
+            existsInTreeview = True
+            Exit Function
+        End If
+    Next I
+    existsInTreeview = False
+End Function
+
+
+
+Function newNumorder(value As String) As Numorder
+    Dim ret As Numorder
+    Set ret = New Numorder
+    ret.val = value
+    Set newNumorder = ret
+End Function
+
+
+Function getNextDocNum() As Long
+Dim valueorder As Numorder
+
+    Set valueorder = New Numorder
+    valueorder.val = getSystemField("lastDocNum")
+    If valueorder.isEmpty Then
+        valueorder.docs = True
     End If
+    If Not valueorder.isCurrentDay Then
+        Set valueorder = New Numorder
+        valueorder.docs = True
+    End If
+    valueorder.nextNum
+    sql = "UPDATE SYSTEM SET lastDocNum = " & valueorder.val
+    'Debug.Print sql
+    myBase.Execute (sql)
+    numDoc = valueorder.val
+    
+    getNextDocNum = valueorder.val
+    
 End Function
 
 
