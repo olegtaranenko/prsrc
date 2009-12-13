@@ -1248,7 +1248,7 @@ Private Function productUsedIn(ByVal productId As Integer) As String
     If tbProduct Is Nothing Then Exit Function
     If Not tbProduct.BOF Then
       While Not tbProduct.EOF
-        productUsedIn = productUsedIn & "  " & tbProduct!numorder
+        productUsedIn = productUsedIn & "  " & tbProduct!Numorder
         tbProduct.MoveNext
       Wend
     End If
@@ -1433,7 +1433,7 @@ If InStr(tbProduct!formula, "SumCenaFreight") > 0 Then
     SumCenaFreight = Round(CSng(SumCenaFreight), 2)
   Else
     productFormula = "error —ум÷.доставка" 'текст ошибки
-    tbProduct.Close
+    'tbProduct.Close
     GoTo EN1
   End If
 End If
@@ -1444,7 +1444,7 @@ If InStr(tbProduct!formula, "SumCenaSale") > 0 Then
     sc.ExecuteStatement "SumCenaSale=" & SumCenaSale
     SumCenaSale = Round(CSng(SumCenaSale), 2)
   Else
-    tbProduct.Close
+    'tbProduct.Close
     productFormula = "error —ум÷оѕродажа" 'текст ошибки
     GoTo EN1
   End If
