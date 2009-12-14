@@ -995,5 +995,17 @@ where pc.sysname = sGuideProducts.web
 		<sqlFile path="procedures/wf_next_numorder.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 	</changeSet>
 
+	<changeSet id="1" author="mantis-114" runOnChange="true">
+		<comment>Двойное списание по ПМ и ММ. Только исправление по накладным. Не обнаружена причина возникновения подобных ситуаций.</comment>
+		<executeCommand executable="dbisqlc.exe">
+			<arg value="-c"/>
+			<arg value="DSN=prior;UID=dba;PWD=sql"/>
+			<arg value="-q"/>
+			<arg value="\dev\prsrc\trunk\dbupdate-parent\prior\target\classes\mainteinance\mantis-114.sql"/>
+		</executeCommand>
+		<rollback/>
+	</changeSet>
+
+
 </databaseChangeLog>
 
