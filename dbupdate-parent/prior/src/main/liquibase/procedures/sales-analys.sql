@@ -143,7 +143,7 @@ begin
 		s.nomnom, s.id, s.periodid;
 
 	insert into #results (nomnom, periodId, nomname, edizm, cena)
-	select distinct i.nomnom, i.id, trim(n.cod + ' ' + nomname + ' ' + n.size), n.ed_izmer2, n.cena1
+	select distinct i.nomnom, i.id, trim(n.cod + ' ' + nomname + ' ' + n.size), n.ed_izmer2, n.cost
 	from #itogo i
 	join sguidenomenk n on n.nomnom = i.nomnom 
 	order by i.nomnom, i.id
@@ -211,8 +211,8 @@ begin
 		end if;
 	end if;
 	
-	message 'p_begin = ', p_begin to client;
-	message 'p_end = ', p_end to client;
+	--message 'p_begin = ', p_begin to client;
+	--message 'p_end = ', p_end to client;
 
 end;
 

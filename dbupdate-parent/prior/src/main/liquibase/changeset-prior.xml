@@ -98,7 +98,7 @@ end;
 	</changeSet>
 -->
 
-	<changeSet id="mantis-10" author="code" runOnChange="false">
+	<changeSet id="mantis-10" author="code" runOnChange="true">
 		<comment>Процедуры для анализа продаж</comment>
 		<sqlFile path="procedures/sales-analys.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 	</changeSet>
