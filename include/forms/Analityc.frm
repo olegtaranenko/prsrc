@@ -585,19 +585,21 @@ Dim filterId As Integer
     Results.left = Me.left + Me.Width
     Results.Top = Me.Top
     Results.filterId = submitFilter("")
-    Results.applyTriggered = True
-    Results.managId = managId
-    If ckStartDate.value = 1 Then
-        Results.startDate = tbStartDate.value
-    Else
-        Results.startDate = Empty
+    If Results.filterId <> 0 Then
+        Results.applyTriggered = True
+        Results.managId = managId
+        If ckStartDate.value = 1 Then
+            Results.startDate = tbStartDate.value
+        Else
+            Results.startDate = Empty
+        End If
+        If ckEndDate.value = 1 Then
+            Results.endDate = tbEndDate.value
+        Else
+            Results.endDate = Empty
+        End If
+        Results.Show , Me
     End If
-    If ckEndDate.value = 1 Then
-        Results.endDate = tbEndDate.value
-    Else
-        Results.endDate = Empty
-    End If
-    Results.Show , Me
 
 End Sub
 
@@ -1138,7 +1140,7 @@ Dim I As Integer
     
     cbFilters.AddItem ""
     While Not table.EOF
-        cbFilters.AddItem "" & table!name & ""
+        cbFilters.AddItem "" & table!Name & ""
         table.MoveNext
     Wend
     table.Close
@@ -1229,7 +1231,7 @@ Private Sub initClientGrid()
     clientId.colWidth(1) = clientId.Width
     
     While Not table.EOF
-        clientId.AddItem table!firmId & vbTab & table!name
+        clientId.AddItem table!firmId & vbTab & table!Name
         table.MoveNext
     Wend
     clientId.RemoveItem (1)
