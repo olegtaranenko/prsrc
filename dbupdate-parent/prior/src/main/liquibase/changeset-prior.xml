@@ -1006,6 +1006,23 @@ where pc.sysname = sGuideProducts.web
 		<rollback/>
 	</changeSet>
 
+	<changeSet id="1" author="mantis-83" runOnChange="true">
+		<comment>Некорректное перемещение гот.изделия</comment>
+		<executeCommand executable="dbisqlc.exe">
+			<arg value="-c"/>
+			<arg value="DSN=prior;UID=dba;PWD=sql"/>
+			<arg value="-q"/>
+			<arg value="\dev\prsrc\trunk\dbupdate-parent\prior\target\classes\mainteinance\mantis-83.sql"/>
+		</executeCommand>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="2" author="mantis-83" runOnChange="true">
+		<comment>Некорректное перемещение гот.изделия: ошибка в триггере</comment>
+		<sqlFile path="triggers/sGuideProducts.wf_update_gproducts.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback/>
+	</changeSet>
+
 
 </databaseChangeLog>
 
