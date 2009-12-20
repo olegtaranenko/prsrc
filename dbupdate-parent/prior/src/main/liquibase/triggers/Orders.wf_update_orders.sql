@@ -184,7 +184,7 @@ begin
 
 			for y as yc dynamic scroll cursor for
 				select i.id_scet as r_id_scet, i.cenaEd as r_cenaEd, i.quant as r_quant, i.prId as r_prId, i.prExt as r_prExt
-					, trim (p.prName + ' ' + p.prDescript + ' ' + p.prSize) as r_productDescript
+					, trim (p.prName + ' ' + p.prDescript + ' ' + p.prSize) as r_productDesc
 					, p.id_inv as r_id_inv
 				from xpredmetybyizdelia i
 				join sguideProducts p on p.prId = i.prId
