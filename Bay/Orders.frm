@@ -532,35 +532,31 @@ End Sub
 
 
 Private Sub cmAdd_Click()
-Dim str As String, intNum As Integer, l As Long
-Dim DateFromNum As String
+Dim valueorder As Numorder, dNow As Date
   
 wrkDefault.BeginTrans 'lock01
 sql = "update system set resursLock = resursLock" 'lock02
 myBase.Execute (sql) 'lock03
 
 Dim rate As Double
-str = getSystemField("Kurs")
-rate = Abs(CDbl(str))
+tmpStr = getSystemField("Kurs")
+rate = Abs(CDbl(tmpStr))
 
 
-str = getSystemField("lastPrivatNum")
+Set valueorder = New Numorder
+valueorder.val = getSystemField("lastPrivatNum")
 
-
-
-DateFromNum = left$(str, 5)
-intNum = right$(str, Len(str) - 5)
-
-intNum = intNum + 1
-If intNum < 100 Then
-    str = Format(intNum, "00")
-Else
-    str = Format(intNum, "000")
+dNow = Format(Now(), "dd.mm.yyyy")
+If valueorder.dat >= dNow Then
+    valueorder.nextNum
+Else        ' наступил след. день
+    Set valueorder = New Numorder
+    'befDays = DateDiff("d", tmpDate, Now)
+    nextDay
 End If
-l = DateFromNum & str
-'tbSystem!lastPrivatNum = DateFromNum & str
-myBase.Execute ("update system set lastPrivatNum = " & DateFromNum & str)
-'tbSystem.Update
+myBase.Execute ("update System set lastPrivatNum = " & valueorder.val)
+
+
 BB:
 wrkDefault.CommitTrans
 'tbSystem.Close
@@ -593,14 +589,14 @@ End If
 NXT1:
 cmAdd.Caption = AddCaption
 
-sql = "select * from BayOrders where numOrder = " & l
+sql = "select * from BayOrders where numOrder = " & valueorder.val
 'MsgBox sql
 Set tbOrders = myOpenRecordSet("##07", sql, dbOpenForwardOnly)
 'If tbOrders Is Nothing Then Exit Sub
 
 'If Not uniqOrderNum(tbOrders, l) Then
 If Not tbOrders.BOF Then
-    MsgBox "номер " & l & " не уникален (см. заказ от " _
+    MsgBox "номер " & valueorder.val & " не уникален (см. заказ от " _
     & tbOrders!inDate & ").  ѕовторите попытку или обратитесь к јдминистратору!", , ""
     tbOrders.Close
     Exit Sub
@@ -610,7 +606,7 @@ End If
 tbOrders.AddNew
 tbOrders!rate = rate
 tbOrders!StatusId = 0
-tbOrders!numorder = l
+tbOrders!Numorder = valueorder.val
 tbOrders!inDate = Now
 tbOrders!managId = manId(cbM.ListIndex)
 'tbOrders!firmId = 0
@@ -624,7 +620,7 @@ If zakazNum > 0 Then Grid.AddItem ""
 zakazNum = zakazNum + 1
 Grid.TextMatrix(zakazNum, 0) = zakazNum
 Grid.TextMatrix(zakazNum, orInvoice) = "счет ?"
-Grid.TextMatrix(zakazNum, orNomZak) = l
+Grid.TextMatrix(zakazNum, orNomZak) = valueorder.val
 Grid.TextMatrix(zakazNum, orData) = Format(Now, "dd.mm.yy")
 Grid.TextMatrix(zakazNum, orMen) = Orders.cbM.Text
 Grid.TextMatrix(zakazNum, orStatus) = status(0)
@@ -2030,7 +2026,7 @@ Set tqOrders = myOpenRecordSet("##08", sql, dbOpenForwardOnly)
 If Not tqOrders.BOF Then
 While Not tqOrders.EOF
  
- gNzak = tqOrders!numorder
+ gNzak = tqOrders!Numorder
   
  
  If zakazNum > 0 Then Grid.AddItem ""
@@ -2190,7 +2186,7 @@ Dim str  As String
  LoadDate Orders.Grid, row, orVrVid, tqOrders!outDateTime, "hh"
  
  
- gNzak = tqOrders!numorder
+ gNzak = tqOrders!Numorder
  
  
  LoadNumeric Grid, row, orRate, tqOrders!rate

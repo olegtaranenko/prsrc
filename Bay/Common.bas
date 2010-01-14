@@ -18,6 +18,7 @@ Public tbGuide As Recordset
 Public isBlock As Boolean
 Public status() As String
 Public Problems() As String
+Public Ceh(10) As String
 
 Public manId() As Integer
 Public Manag() As String ' индекс = id из GuideManag
@@ -620,6 +621,11 @@ Else
 End If
 tbSystem.Close
 
+Ceh(1) = "YAG"
+Ceh(2) = "CO2"
+Ceh(3) = "SUB" '$$ceh
+
+
 str = Format(Now, "dd.mm.yyyy")
 CurDate = str 'без часов и минут
 
@@ -906,7 +912,7 @@ Else
 '        MsgBox "неверный формат даты", , "Ошибка"
 '    Else
         'str = Left$(str, 6) & "20" & Mid$(str, 7, 2)
-        str = "20" & right$(str, 2) & "-" & Mid$(str, 4, 2) & "-" & left$(str, 2)
+        str = "20" & Right$(str, 2) & "-" & Mid$(str, 4, 2) & "-" & left$(str, 2)
         If IsDate(str) Then
             tmpDate = str
             If fryDays = "" Then

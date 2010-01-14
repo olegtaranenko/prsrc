@@ -25,6 +25,7 @@ Module=LogUtils; ..\include\LogUtils.bas
 Form=..\include\forms\AnalysResults.frm
 Form=..\include\forms\Portrait.frm
 Module=AnalysTypes; ..\include\types\analysTypes.bas
+Class=Numorder; ..\include\Numorder.cls
 Startup="Sub Main"
 HelpFile=""
 Title="Rowmat"
