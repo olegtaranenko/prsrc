@@ -481,29 +481,27 @@ End Sub
 Private Sub cmAdd_Click()
 Dim str As String ', intNum As Integer, il As Long, l As Long
 Dim strNow As String, DateFromNum As String, dNow As Date
+Dim tbDocsNote As String
  
 On Error GoTo ER1
 wrkDefault.BeginTrans   ' начало транзакции
 
 numDoc = getNextDocNum()
-Set tbDocs = myOpenRecordSet("##141", "select * from sDocs", dbOpenForwardOnly) 'dbOpenForwardOnly)
-If tbDocs Is Nothing Then GoTo ER1
 
-tbDocs.AddNew
-
-tbDocs!numDoc = numDoc
 If Regim = "fromCeh" Then
     numExt = 0 ' виртуальные накладные(зарезервир-е предметы)
-    tbDocs!Note = Ceh(cehId)
+    tbDocsNote = Ceh(cehId)
 Else
     numExt = 254
 End If
-tbDocs!numExt = numExt
-tbDocs!xDate = Now
-tbDocs!sourId = -1002
-tbDocs!destId = -7 'инвентаризация
-tbDocs.update
-tbDocs.Close
+
+
+sql = "insert into sdocs (numdoc, numExt, xDate, sourId, destId, Note) values (" _
+& numDoc & ", " & numExt & ", convert(datetime, '" & Format(Now, "yyyy-mm-dd hh:mm:ss.000") & "', 121), -1002, -7, '" & tbDocsNote & "'" _
+& ")"
+    
+  'Debug.Print sql
+myExecute "##sDocs.cmAdd", sql
 
 wrkDefault.CommitTrans  ' подтверждение транзакции
 

@@ -584,50 +584,32 @@ End If
 End Sub
 
 Private Sub cmAdd_Click()
-Dim str As String, intNum As Integer, l As Long, il As Long
+Dim str As String ', intNum As Integer, l As Long, il As Long
 Dim strNow As String, DateFromNum As String, dNow As Date
  
-il = right$(Format(Now, "yymmdd\0\0"), 7) + 200001  ' чтобы не путались с заказами
-
-Set tbSystem = myOpenRecordSet("##149", "System", dbOpenTable)
-If tbSystem Is Nothing Then Exit Sub
-tbSystem.Edit
-l = tbSystem!lastDocNum + 1
-If l < il Then l = il
-tbSystem!lastDocNum = l
-tbSystem.Update
-tbSystem.Close
-numDoc = l
+numDoc = getNextDocNum()
 numExt = 255
+
 addDoc
+loadDocs "add" ' не загружать все док-ты
+
 Grid.col = dcSour
 End Sub
 
 Sub addDoc()
-Set tbDocs = myOpenRecordSet("##129", "sDocs", dbOpenTable) 'dbOpenForwardOnly)
-If tbDocs Is Nothing Then Exit Sub
 
 On Error GoTo ERR1
-tbDocs.AddNew
-'If mnIn.Checked Then
-    tbDocs!sourId = 0
-    tbDocs!destId = -1001
-'Else
-'    tbDocs!sourId = -1001
-'    tbDocs!destId = -6
-'End If
 
-tbDocs!numDoc = numDoc
-tbDocs!numExt = numExt
-tbDocs!xDate = Now
-'tbDocs!ManagId = manId(cbM.ListIndex)
-tbDocs.Update
-tbDocs.Close
+    sql = "insert into sdocs (numdoc, numExt, xDate, sourId, destId) values (" _
+    & numDoc & ", " & numExt & ", convert(datetime, '" & Format(Now, "yyyy-mm-dd hh:mm:ss.000") & "', 121), 0, -1001, " _
+    & ")"
+        
+      'Debug.Print sql
+    myExecute "##sDocs.cmAdd", sql
 
-loadDocs "add" ' не загружать все док-ты
-Exit Sub
+    Exit Sub
 ERR1:
-errorCodAndMsg "##tDocs update"
+    errorCodAndMsg "##tDocs update"
 End Sub
 
 Private Sub cmAdd2_Click()
@@ -1743,7 +1725,7 @@ End If
 
 For I = 1 To UBound(NN) ' перебор всех групп
   str = NN(I)
-  findId = right$(str, 4) ' извлекаем из имен группы id группы
+  findId = Right$(str, 4) ' извлекаем из имен группы id группы
   
 '$comtec$  Далее ссылки на табл.sGuideNomenk и на ее поля надо заменить на
 'эквиваленты из базы Comtec исходя из след.соответствия с колонками

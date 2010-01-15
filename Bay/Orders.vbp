@@ -26,6 +26,7 @@ Form=..\include\forms\AnalysResults.frm
 Form=..\include\forms\Portrait.frm
 Module=AnalysTypes; ..\include\types\analysTypes.bas
 Class=Numorder; ..\include\Numorder.cls
+Module=OrderUtils; ..\include\OrderUtils.bas
 Startup="Sub Main"
 HelpFile=""
 Title="Rowmat"

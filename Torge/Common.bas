@@ -103,14 +103,14 @@ Function RateAsString(ByVal curRate As Double) As String
         Dim strLastDigit As String, strLastTwoDigit As String
         Dim digit As Integer
         If Len(strRate) >= 2 Then
-            strLastTwoDigit = right(strRate, 2)
+            strLastTwoDigit = Right(strRate, 2)
             digit = CInt(strLastTwoDigit)
             If digit >= 5 And digit <= 20 Then
                 rubleSuffix = "ей"
             End If
         End If
         If rubleSuffix = "" Then
-            strLastDigit = right(strRate, 1)
+            strLastDigit = Right(strRate, 1)
             digit = CInt(strLastDigit)
             If digit = 1 Then
                 rubleSuffix = "ь"
@@ -141,7 +141,7 @@ End Function
 Function dateBasic2Sybase(aDay As String)
 Dim dt_str As String
 
-dt_str = "20" & right$(aDay, 2) & "-" & Mid$(aDay, 4, 2) & "-" & left$(aDay, 2)
+dt_str = "20" & Right$(aDay, 2) & "-" & Mid$(aDay, 4, 2) & "-" & left$(aDay, 2)
 dateBasic2Sybase = CDate(dt_str)
 
 End Function
@@ -150,7 +150,7 @@ End Function
 Function dateSybase2Basic(aDay As String)
 Dim dt_str As String
 
-dt_str = left(aDay, 4) & "-" & Mid(aDay, 5, 2) & "-" & right(aDay, 2)
+dt_str = left(aDay, 4) & "-" & Mid(aDay, 5, 2) & "-" & Right(aDay, 2)
 dateSybase2Basic = dt_str
 
 End Function
@@ -350,7 +350,7 @@ Dim dt As String
 Dim ret As Variant
     
     dt = tBox.Text
-    If IsEmpty(dt) Or Len(CStr(dt)) = 0 Then
+    If isEmpty(dt) Or Len(CStr(dt)) = 0 Then
         isDateEmpty = False
         Exit Function
     End If
@@ -388,7 +388,7 @@ Else
 '        MsgBox "неверный формат даты", , "Ошибка"
 '    Else
         'str = Left$(str, 6) & "20" & Mid$(str, 7, 2)
-        str = "20" & right$(str, 2) & "-" & Mid$(str, 4, 2) & "-" & left$(str, 2)
+        str = "20" & Right$(str, 2) & "-" & Mid$(str, 4, 2) & "-" & left$(str, 2)
         If IsDate(str) Then
             tmpDate = str
             If fryDays = "" Then
@@ -870,14 +870,6 @@ getPurposeIdByDescript = id
 End Function
 
 
-Function getSystemField(field As String) As Variant
-getSystemField = Null
-Set tbSystem = myOpenRecordSet("##147", "System", dbOpenForwardOnly)
-If tbSystem Is Nothing Then Exit Function
-getSystemField = tbSystem.fields(field)
-tbSystem.Close
-End Function
-
 Function valueToSystemField(val As Variant, field As String) As Boolean
 valueToSystemField = False
 Set tbSystem = myOpenRecordSet("##148", "System", dbOpenTable)
@@ -1100,7 +1092,7 @@ End Function
 
 Public Sub quickSort(varArray As Variant, _
  Optional lngLeft As Long = dhcMissing, Optional lngRight As Long = dhcMissing)
-Dim I As Long, J As Long, varTestVal As Variant, lngMid As Long
+Dim I As Long, j As Long, varTestVal As Variant, lngMid As Long
 
     If lngLeft = dhcMissing Then lngLeft = LBound(varArray)
     If lngRight = dhcMissing Then lngRight = UBound(varArray)
@@ -1109,28 +1101,28 @@ Dim I As Long, J As Long, varTestVal As Variant, lngMid As Long
         lngMid = (lngLeft + lngRight) \ 2
         varTestVal = varArray(lngMid)
         I = lngLeft
-        J = lngRight
+        j = lngRight
         Do
             Do While varArray(I) < varTestVal
                 I = I + 1
             Loop
-            Do While varArray(J) > varTestVal
-                J = J - 1
+            Do While varArray(j) > varTestVal
+                j = j - 1
             Loop
-            If I <= J Then
-                Call SwapElements(varArray, I, J)
+            If I <= j Then
+                Call SwapElements(varArray, I, j)
                 I = I + 1
-                J = J - 1
+                j = j - 1
             End If
-        Loop Until I > J
+        Loop Until I > j
         ' To optimize the sort, always sort the
         ' smallest segment first.
-        If J <= lngMid Then
-            Call quickSort(varArray, lngLeft, J)
+        If j <= lngMid Then
+            Call quickSort(varArray, lngLeft, j)
             Call quickSort(varArray, I, lngRight)
         Else
             Call quickSort(varArray, I, lngRight)
-            Call quickSort(varArray, lngLeft, J)
+            Call quickSort(varArray, lngLeft, j)
         End If
     End If
 End Sub
@@ -1446,7 +1438,7 @@ On Error GoTo ERR2
 
 For I = 1 To UBound(NN) ' перебор всех групп
   str = NN(I)
-  findId = right$(str, 4) ' извлекаем из имен группы id группы
+  findId = Right$(str, 4) ' извлекаем из имен группы id группы
 
 '$comtec$  Далее ссылки на табл.sGuideProducts и на ее поля надо заменить на
 'эквиваленты из базы Comtec исходя из след.соответствия с колонками
@@ -1500,12 +1492,12 @@ sql = "SELECT prId, prName, prDescript, prSize, Cena4, page, rabbat " _
                     objExel.ActiveSheet.Cells(exRow, 7).value = " " & head4
                 End If
             ElseIf Regim = "combi" Then
-                Dim J As Integer
-                For J = 0 To 2
-                    With objExel.ActiveSheet.Cells(exRow, 4 + J)
-                        .value = ChrB(Asc("A") + J)
+                Dim j As Integer
+                For j = 0 To 2
+                    With objExel.ActiveSheet.Cells(exRow, 4 + j)
+                        .value = ChrB(Asc("A") + j)
                     End With
-                Next J
+                Next j
             End If
             
             objExel.ActiveSheet.Cells(exRow, lastColInt).value = "    стр."

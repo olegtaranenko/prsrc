@@ -43,6 +43,7 @@ Form=..\include\forms\Portrait.frm
 Form=GuideConstants.frm
 Form=GuideProdCategory.frm
 Form=ExcelParams.frm
+Class=Numorder; ..\include\Numorder.cls
 IconForm="AUTO"
 Startup="Sub Main"
 HelpFile=""
