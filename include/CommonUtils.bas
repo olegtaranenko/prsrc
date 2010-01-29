@@ -17,8 +17,14 @@ Type OrderNumInfo
     ext As Integer
 End Type
 
-Sub fatalError(msg As String)
-    MsgBox msg & vbCr & "Обратитесь к администратору", vbCritical, "Критическая ошибка"
+Sub fatalError(msg As String, Optional lookAdmin As String)
+    Dim adminMsg As String
+    If IsMissing(lookAdmin) Then
+        adminMsg = "Обратитесь к администратору"
+    Else
+        adminMsg = lookAdmin
+    End If
+    MsgBox msg & vbCr & adminMsg, vbCritical, "Критическая ошибка"
     End
 End Sub
 

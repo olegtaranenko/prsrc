@@ -1373,9 +1373,21 @@ End Function
 Sub nextDayDetect() 'см также Orders.cmAdd_Click
 Dim str As String ', intNum As Integer
 Dim strNow As String, dNow As Date
+Dim serverDate As String
 
 strNow = Format(Now, "dd.mm.yyyy")
 curDate = strNow 'без часов и минут
+
+sql = "select convert(varchar(10), now(), 104)"
+byErrSqlGetValues "##chksrvdate", sql, serverDate
+
+If serverDate <> curDate Then
+    fatalError "Время на компьютере очень сильно отличается от времени сервера." _
+    & vbCr & "Дата на сервере: " & serverDate _
+    & vbCr & "Работа программы будет завершена.", _
+    "Если не получается или вы не знаете как, обратитесь к администратору"
+End If
+
 dNow = strNow
 strNow = Right$(Format(curDate, "yymmdd"), 6)
  
