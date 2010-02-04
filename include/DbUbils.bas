@@ -30,6 +30,15 @@ ERRb:
     End If
 End Sub
 
+Public Sub reconnectDB()
+    Dim conn As String
+    conn = myBase.Connect
+    myBase.Connection.Close
+    Set myBase = wrkDefault.OpenConnection("Connection1", dbDriverNoPrompt, False, conn)
+    'myBase.Connect
+    'myBase.Connection.Connect
+End Sub
+
 
 Function getSystemField(field As String) As Variant
     getSystemField = Null

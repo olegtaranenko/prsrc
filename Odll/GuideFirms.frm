@@ -4,16 +4,17 @@ Begin VB.Form GuideFirms
    BackColor       =   &H8000000A&
    BorderStyle     =   1  'Fixed Single
    Caption         =   "Справочник сторонних организаций"
-   ClientHeight    =   8190
-   ClientLeft      =   45
-   ClientTop       =   330
-   ClientWidth     =   11895
+   ClientHeight    =   8184
+   ClientLeft      =   48
+   ClientTop       =   336
+   ClientWidth     =   11892
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    LockControls    =   -1  'True
    MinButton       =   0   'False
-   ScaleHeight     =   8190
-   ScaleWidth      =   11895
+   ScaleHeight     =   8184
+   ScaleWidth      =   11892
+   StartUpPosition =   1  'CenterOwner
    Begin VB.CommandButton cmExel 
       Caption         =   "Печать в Exel"
       Height          =   315
@@ -33,7 +34,7 @@ Begin VB.Form GuideFirms
    Begin VB.TextBox tbInform 
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   9.75
+         Size            =   9.6
          Charset         =   204
          Weight          =   400
          Underline       =   0   'False
@@ -79,7 +80,7 @@ Begin VB.Form GuideFirms
       Width           =   2535
    End
    Begin VB.ListBox lbM 
-      Height          =   255
+      Height          =   240
       Left            =   3780
       TabIndex        =   13
       Top             =   2100
@@ -97,7 +98,7 @@ Begin VB.Form GuideFirms
       Width           =   795
    End
    Begin VB.ListBox lbKP 
-      Height          =   840
+      Height          =   816
       ItemData        =   "GuideFirms.frx":0000
       Left            =   3300
       List            =   "GuideFirms.frx":0010
@@ -165,8 +166,8 @@ Begin VB.Form GuideFirms
       TabIndex        =   5
       Top             =   960
       Width           =   11715
-      _ExtentX        =   20664
-      _ExtentY        =   11351
+      _ExtentX        =   20659
+      _ExtentY        =   11345
       _Version        =   393216
       MergeCells      =   2
       AllowUserResizing=   1
@@ -207,6 +208,13 @@ Begin VB.Form GuideFirms
       Top             =   7740
       Width           =   1215
    End
+   Begin VB.Menu pop1 
+      Caption         =   "pop1"
+      Visible         =   0   'False
+      Begin VB.Menu mnMergeTo 
+         Caption         =   "Слить фирму с..."
+      End
+   End
 End
 Attribute VB_Name = "GuideFirms"
 Attribute VB_GlobalNameSpace = False
@@ -221,6 +229,10 @@ Dim oldHeight As Integer, oldWidth As Integer ' нач размер формы
 Dim quantity As Integer 'количество найденных фирм
 Const cEmpty = "пустой менеджер"
 
+Dim moveSrcFirmId As Integer
+Dim moveSrcFirmName As String
+Dim searchDestFirm As Boolean
+
 Private Sub chClose_Click()
 
 End Sub
@@ -232,10 +244,10 @@ Grid.SetFocus
 End Sub
 
 Private Sub cmAdd_Click()
-If Grid.TextMatrix(Grid.rows - 1, gfId) <> "" Then Grid.AddItem ("")
+If Grid.TextMatrix(Grid.Rows - 1, gfId) <> "" Then Grid.AddItem ("")
 
-Grid.row = Grid.rows - 1
-Grid.col = gfNazwFirm 'название
+Grid.Row = Grid.Rows - 1
+Grid.Col = gfNazwFirm 'название
 Grid.SetFocus
 textBoxInGridCell tbMobile, Grid
 End Sub
@@ -388,7 +400,7 @@ If Not tbFirms.BOF Then
     fieldToCol tbFirms!FIO, gfFIO
     fieldToCol tbFirms!Fax, gfFax
     fieldToCol tbFirms!Email, gfEmail
-    fieldToCol tbFirms!Level, gfLevel
+    fieldToCol tbFirms!level, gfLevel
     fieldToCol tbFirms!Type, gfType
     fieldToCol tbFirms!Katalog, gfKatalog
     fieldToCol tbFirms!Atr1, gfAtr1
@@ -412,8 +424,8 @@ Me.MousePointer = flexDefault
 
 End Sub
 
-Sub fieldToCol(field As Variant, col As Long)
-If Not IsNull(field) Then Grid.TextMatrix(quantity, col) = field
+Sub fieldToCol(field As Variant, Col As Long)
+If Not IsNull(field) Then Grid.TextMatrix(quantity, Col) = field
 End Sub
 
 Private Sub cmLoad_Click()
@@ -444,9 +456,9 @@ Dim sqlReq As String, firmId As String, DNM As String
 
     Orders.Grid.Text = Grid.Text
 
-    gNzak = Orders.Grid.TextMatrix(Orders.Grid.row, orNomZak)
+    gNzak = Orders.Grid.TextMatrix(Orders.Grid.Row, orNomZak)
     visits "-", "firm" ' уменьщаем посещения у старой фирмы, если она была
-    firmId = Grid.TextMatrix(Grid.row, gfId)
+    firmId = Grid.TextMatrix(Grid.Row, gfId)
     ValueToTableField "##20", firmId, "Orders", "FirmId"
     visits "+", "firm" ' увеличиваем посещения у новой фирмы
 
@@ -571,7 +583,7 @@ cmDel.Top = cmDel.Top + h
 'cmFind.Top = cmFind.Top + h
 cmAdd.Top = cmAdd.Top + h
 cmExel.Top = cmExel.Top + h
-cmExel.Left = cmExel.Left + w
+cmExel.left = cmExel.left + w
 End Sub
 
 Private Sub Grid_Click()
@@ -585,7 +597,7 @@ If Grid.MouseRow = 0 Then
     Else
         SortCol Grid, mousCol
     End If
-    Grid.row = 1    ' только чтобы снять выделение
+    Grid.Row = 1    ' только чтобы снять выделение
     Grid_EnterCell
 End If
 
@@ -609,8 +621,8 @@ End Sub
 
 Private Sub Grid_EnterCell()
 If noClick Then Exit Sub
-mousRow = Grid.row
-mousCol = Grid.col
+mousRow = Grid.Row
+mousCol = Grid.Col
 If mousCol = gfNazwFirm Then
     cmSel.Enabled = True
     cmDel.Enabled = True
@@ -673,8 +685,55 @@ Grid.CellBackColor = Grid.BackColor
 End Sub
 
 Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
-If Grid.MouseRow = 0 And Shift = 2 Then _
+    'Dim Rows As String, Col As String
+    Dim err As Integer
+    If searchDestFirm Then
+        searchDestFirm = False
+        Grid.MousePointer = flexDefault
+        If MsgBox("Подтвердите, что вы действительно хотите присоединить заказы фирмы '" & moveSrcFirmName & "' к фирме '" & Grid.TextMatrix(mousRow, gfNazwFirm) & "'", vbYesNo) = vbYes Then
+        
+            On Error GoTo execError
+            sql = "update orders set firmId = " & Grid.TextMatrix(mousRow, gfId) & " where firmId = " & moveSrcFirmId
+            wrkDefault.BeginTrans
+            myExecute "##moveF.1", sql, -1
+            wrkDefault.CommitTrans
+            MsgBox "Заказы успешно переведены с одной фирмы на другую"
+            
+            If MsgBox("Вы так же можете из базы полностью удалить информацию о фирме '" & moveSrcFirmName & "'" _
+            & vbCr & "Нажмите Да[Yes], если вы действительно хотите удалить, или Нет[No], тогда это можно будет сделать позже.", vbYesNo) = vbYes Then
+                sql = "delete from guidefirms where firmId = " & moveSrcFirmId
+                wrkDefault.BeginTrans
+                err = myExecute("##moveF.2", sql)
+                wrkDefault.CommitTrans
+                If err <> 1 Then
+                    Dim I As Long
+                    For I = 1 To Grid.Rows - 1
+                        If Grid.TextMatrix(I, gfId) = moveSrcFirmId Then
+                            Grid.removeItem (I)
+                            Exit For
+                        End If
+                    Next I
+                    MsgBox "Информация о фирме успешно удалена." & vbCr & "Не забудьте обновить список заказов."
+                End If
+            End If
+        End If
+    End If
+    If Grid.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
+    If Button = 2 Then
+        Grid.Row = Grid.MouseRow
+        Grid.Col = Grid.MouseCol
+        'Grid_EnterCell
+        Me.PopupMenu pop1
+        
+    End If
+    Exit Sub
+execError:
+        wrkDefault.rollback
+        MsgBox "Произошла непредвиденная ошибка, которая будет показана в следующем диалоге." & vbCr & "Сообщите о ней администратору", , "Выполение невозможно"
+        errorCodAndMsg cErr
+        reconnectDB
+        Exit Sub
 End Sub
 
 Private Sub lbKP_DblClick()
@@ -706,13 +765,26 @@ ValueToTableField "##66", str, "GuideFirms", "ManagId", "byFirmId"
 Grid.TextMatrix(mousRow, gfM) = lbM.Text
 lbHide
 If cep Then
-   Grid.col = gfKategor: mousCol = gfKategor
+   Grid.Col = gfKategor: mousCol = gfKategor
    listBoxInGridCell lbKP, Grid
 End If
 End Sub
 
 Private Sub lbM_KeyDown(KeyCode As Integer, Shift As Integer)
 If KeyCode = vbKeyReturn Then lbM_DblClick
+End Sub
+
+Private Sub mnMergeTo_Click()
+    If MsgBox("Вы действительно хотите присоединить ВСЕ заказы этой фирмы к другой?", vbYesNo) = vbYes Then
+        moveSrcFirmId = Grid.TextMatrix(mousRow, gfId)
+        moveSrcFirmName = Grid.TextMatrix(mousRow, gfNazwFirm)
+        MsgBox "Выберете фирму, к который вы хотите присоединить заказы фирмы '" & moveSrcFirmName & "'"
+        Grid.MousePointer = flexArrowQuestion
+        searchDestFirm = True
+    Else
+        searchDestFirm = False
+        Grid.MousePointer = flexDefault
+    End If
 End Sub
 
 Private Sub tbFind_Change()
@@ -777,7 +849,7 @@ If KeyCode = vbKeyReturn Then
     cmExel.Enabled = False
     Grid.TextMatrix(mousRow, mousCol) = str
     lbHide
-    Grid.col = gfM: mousCol = gfM
+    Grid.Col = gfM: mousCol = gfM
     listBoxInGridCell lbM, Grid
     Exit Sub
    Else
