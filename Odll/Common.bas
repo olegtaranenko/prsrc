@@ -26,6 +26,7 @@ Public tbDocs As Recordset
 Public tbGuide As Recordset
 Public tbSeries As Recordset
 Public Node As Node
+Public isAdmin As Boolean
 
 
 Public isBlock As Boolean
@@ -926,6 +927,7 @@ NomenksPath = getEffectiveSetting("NomenksPath")
 ProductsPath = getEffectiveSetting("ProductsPath")
 
 initLogFileName
+isAdmin = getEffectiveSetting("dostup", "") = "a"
 
 checkReloadCfg
 

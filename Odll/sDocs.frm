@@ -909,8 +909,6 @@ If Regim = "fromCeh" Then
     ckCeh.Visible = False
 End If
 
-Dim isAdmin As Boolean
-isAdmin = getEffectiveSetting("dostup", "") = "a"
 If isAdmin Then
     lbDocDate.Visible = True
     tbDocDate.Visible = True

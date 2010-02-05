@@ -685,48 +685,52 @@ Grid.CellBackColor = Grid.BackColor
 End Sub
 
 Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
-    'Dim Rows As String, Col As String
-    Dim err As Integer
-    If searchDestFirm Then
-        searchDestFirm = False
-        Grid.MousePointer = flexDefault
-        If MsgBox("Подтвердите, что вы действительно хотите присоединить заказы фирмы '" & moveSrcFirmName & "' к фирме '" & Grid.TextMatrix(mousRow, gfNazwFirm) & "'", vbYesNo) = vbYes Then
-        
-            On Error GoTo execError
-            sql = "update orders set firmId = " & Grid.TextMatrix(mousRow, gfId) & " where firmId = " & moveSrcFirmId
-            wrkDefault.BeginTrans
-            myExecute "##moveF.1", sql, -1
-            wrkDefault.CommitTrans
-            MsgBox "Заказы успешно переведены с одной фирмы на другую"
+    Dim Rows As String
+    Dim Col As String
+    If isAdmin Then
+        Dim err As Integer
+        If searchDestFirm Then
+            searchDestFirm = False
+            Grid.MousePointer = flexDefault
+            If MsgBox("Подтвердите, что вы действительно хотите присоединить заказы фирмы '" & moveSrcFirmName & "' к фирме '" & Grid.TextMatrix(mousRow, gfNazwFirm) & "'", vbYesNo) = vbYes Then
             
-            If MsgBox("Вы так же можете из базы полностью удалить информацию о фирме '" & moveSrcFirmName & "'" _
-            & vbCr & "Нажмите Да[Yes], если вы действительно хотите удалить, или Нет[No], тогда это можно будет сделать позже.", vbYesNo) = vbYes Then
-                sql = "delete from guidefirms where firmId = " & moveSrcFirmId
+                On Error GoTo execError
+                sql = "update orders set firmId = " & Grid.TextMatrix(mousRow, gfId) & " where firmId = " & moveSrcFirmId
                 wrkDefault.BeginTrans
-                err = myExecute("##moveF.2", sql)
+                myExecute "##moveF.1", sql, -1
                 wrkDefault.CommitTrans
-                If err <> 1 Then
-                    Dim I As Long
-                    For I = 1 To Grid.Rows - 1
-                        If Grid.TextMatrix(I, gfId) = moveSrcFirmId Then
-                            Grid.removeItem (I)
-                            Exit For
-                        End If
-                    Next I
-                    MsgBox "Информация о фирме успешно удалена." & vbCr & "Не забудьте обновить список заказов."
+                MsgBox "Заказы успешно переведены с одной фирмы на другую"
+                
+                If MsgBox("Вы так же можете из базы полностью удалить информацию о фирме '" & moveSrcFirmName & "'" _
+                & vbCr & "Нажмите Да[Yes], если вы действительно хотите удалить, или Нет[No], тогда это можно будет сделать позже.", vbYesNo) = vbYes Then
+                    sql = "delete from guidefirms where firmId = " & moveSrcFirmId
+                    wrkDefault.BeginTrans
+                    err = myExecute("##moveF.2", sql)
+                    wrkDefault.CommitTrans
+                    If err <> 1 Then
+                        Dim I As Long
+                        For I = 1 To Grid.Rows - 1
+                            If Grid.TextMatrix(I, gfId) = moveSrcFirmId Then
+                                Grid.removeItem (I)
+                                Exit For
+                            End If
+                        Next I
+                        MsgBox "Информация о фирме успешно удалена." & vbCr & "Не забудьте обновить список заказов."
+                    End If
                 End If
             End If
+        End If
+    
+        If Button = 2 Then
+            Grid.row = Grid.MouseRow
+            Grid.Col = Grid.MouseCol
+            'Grid_EnterCell
+            Me.PopupMenu pop1
+            
         End If
     End If
     If Grid.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
-    If Button = 2 Then
-        Grid.Row = Grid.MouseRow
-        Grid.Col = Grid.MouseCol
-        'Grid_EnterCell
-        Me.PopupMenu pop1
-        
-    End If
     Exit Sub
 execError:
         wrkDefault.rollback
