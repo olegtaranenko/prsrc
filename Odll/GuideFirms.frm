@@ -212,7 +212,7 @@ Begin VB.Form GuideFirms
       Caption         =   "pop1"
       Visible         =   0   'False
       Begin VB.Menu mnMergeTo 
-         Caption         =   "Слить фирму с..."
+         Caption         =   "Передать заказы другой фирме..."
       End
    End
 End
@@ -244,10 +244,10 @@ Grid.SetFocus
 End Sub
 
 Private Sub cmAdd_Click()
-If Grid.TextMatrix(Grid.Rows - 1, gfId) <> "" Then Grid.AddItem ("")
+If Grid.TextMatrix(Grid.rows - 1, gfId) <> "" Then Grid.AddItem ("")
 
-Grid.Row = Grid.Rows - 1
-Grid.Col = gfNazwFirm 'название
+Grid.row = Grid.rows - 1
+Grid.col = gfNazwFirm 'название
 Grid.SetFocus
 textBoxInGridCell tbMobile, Grid
 End Sub
@@ -424,8 +424,8 @@ Me.MousePointer = flexDefault
 
 End Sub
 
-Sub fieldToCol(field As Variant, Col As Long)
-If Not IsNull(field) Then Grid.TextMatrix(quantity, Col) = field
+Sub fieldToCol(field As Variant, col As Long)
+If Not IsNull(field) Then Grid.TextMatrix(quantity, col) = field
 End Sub
 
 Private Sub cmLoad_Click()
@@ -456,9 +456,9 @@ Dim sqlReq As String, firmId As String, DNM As String
 
     Orders.Grid.Text = Grid.Text
 
-    gNzak = Orders.Grid.TextMatrix(Orders.Grid.Row, orNomZak)
+    gNzak = Orders.Grid.TextMatrix(Orders.Grid.row, orNomZak)
     visits "-", "firm" ' уменьщаем посещения у старой фирмы, если она была
-    firmId = Grid.TextMatrix(Grid.Row, gfId)
+    firmId = Grid.TextMatrix(Grid.row, gfId)
     ValueToTableField "##20", firmId, "Orders", "FirmId"
     visits "+", "firm" ' увеличиваем посещения у новой фирмы
 
@@ -597,7 +597,7 @@ If Grid.MouseRow = 0 Then
     Else
         SortCol Grid, mousCol
     End If
-    Grid.Row = 1    ' только чтобы снять выделение
+    Grid.row = 1    ' только чтобы снять выделение
     Grid_EnterCell
 End If
 
@@ -621,8 +621,8 @@ End Sub
 
 Private Sub Grid_EnterCell()
 If noClick Then Exit Sub
-mousRow = Grid.Row
-mousCol = Grid.Col
+mousRow = Grid.row
+mousCol = Grid.col
 If mousCol = gfNazwFirm Then
     cmSel.Enabled = True
     cmDel.Enabled = True
@@ -685,8 +685,8 @@ Grid.CellBackColor = Grid.BackColor
 End Sub
 
 Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
-    Dim Rows As String
-    Dim Col As String
+    Dim rows As String
+    Dim col As String
     If isAdmin Then
         Dim err As Integer
         If searchDestFirm Then
@@ -695,11 +695,38 @@ Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As 
             If MsgBox("Подтвердите, что вы действительно хотите присоединить заказы фирмы '" & moveSrcFirmName & "' к фирме '" & Grid.TextMatrix(mousRow, gfNazwFirm) & "'", vbYesNo) = vbYes Then
             
                 On Error GoTo execError
-                sql = "update orders set firmId = " & Grid.TextMatrix(mousRow, gfId) & " where firmId = " & moveSrcFirmId
+                Dim dstFirmId As String
+                dstFirmId = Grid.TextMatrix(mousRow, gfId)
+
+                sql = "update orders set firmId = " & dstFirmId & " where firmId = " & moveSrcFirmId
                 wrkDefault.BeginTrans
                 myExecute "##moveF.1", sql, -1
+
+                sql = " update guidefirms dst" _
+                    & " set dst.year01 = dst.year01 + src.year01 " _
+                    & " ,dst.year02 = dst.year02 + src.year02   " _
+                    & " ,dst.year03 = dst.year03 + src.year03   " _
+                    & " ,dst.year04 = dst.year04 + src.year04   " _
+                    & " from guidefirms src                     " _
+                    & " where src.firmid = " & moveSrcFirmId _
+                    & " and dst.firmId = " & dstFirmId
+                    
+                myExecute "##moveF.2", sql, -1
+
+                sql = " update guidefirms set " _
+                    & "   year01 = 0          " _
+                    & " , year02 = 0          " _
+                    & " , year03 = 0          " _
+                    & " , year04 = 0          " _
+                    & " where firmid = " & moveSrcFirmId
+                myExecute "##moveF.3", sql, -1
+             
+
                 wrkDefault.CommitTrans
-                MsgBox "Заказы успешно переведены с одной фирмы на другую"
+                MsgBox "Заказы успешно переведены с одной фирмы на другую. " & vbCr _
+                    & "Список фирм будет обновлен."
+                
+                loadGuide
                 
                 If MsgBox("Вы так же можете из базы полностью удалить информацию о фирме '" & moveSrcFirmName & "'" _
                 & vbCr & "Нажмите Да[Yes], если вы действительно хотите удалить, или Нет[No], тогда это можно будет сделать позже.", vbYesNo) = vbYes Then
@@ -709,7 +736,7 @@ Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As 
                     wrkDefault.CommitTrans
                     If err <> 1 Then
                         Dim I As Long
-                        For I = 1 To Grid.Rows - 1
+                        For I = 1 To Grid.rows - 1
                             If Grid.TextMatrix(I, gfId) = moveSrcFirmId Then
                                 Grid.removeItem (I)
                                 Exit For
@@ -723,7 +750,7 @@ Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As 
     
         If Button = 2 Then
             Grid.row = Grid.MouseRow
-            Grid.Col = Grid.MouseCol
+            Grid.col = Grid.MouseCol
             'Grid_EnterCell
             Me.PopupMenu pop1
             
@@ -769,7 +796,7 @@ ValueToTableField "##66", str, "GuideFirms", "ManagId", "byFirmId"
 Grid.TextMatrix(mousRow, gfM) = lbM.Text
 lbHide
 If cep Then
-   Grid.Col = gfKategor: mousCol = gfKategor
+   Grid.col = gfKategor: mousCol = gfKategor
    listBoxInGridCell lbKP, Grid
 End If
 End Sub
@@ -853,7 +880,7 @@ If KeyCode = vbKeyReturn Then
     cmExel.Enabled = False
     Grid.TextMatrix(mousRow, mousCol) = str
     lbHide
-    Grid.Col = gfM: mousCol = gfM
+    Grid.col = gfM: mousCol = gfM
     listBoxInGridCell lbM, Grid
     Exit Sub
    Else
