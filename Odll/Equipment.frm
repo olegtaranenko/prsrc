@@ -226,7 +226,7 @@ Attribute VB_Exposed = False
 Option Explicit
 
 Public orderStatusStr As String
-Dim Err As String
+Dim Err As String ' чтобы не прыгал регистр
 
 
 Private Sub cbEquipment_Click(Index As Integer)

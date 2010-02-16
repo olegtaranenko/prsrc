@@ -15,6 +15,15 @@ Begin VB.Form Nomenklatura
    ScaleWidth      =   14256
    StartUpPosition =   1  'CenterOwner
    Visible         =   0   'False
+   Begin VB.ComboBox cbEquip 
+      Height          =   288
+      ItemData        =   "Nomenclatura.frx":0000
+      Left            =   1680
+      List            =   "Nomenclatura.frx":0010
+      TabIndex        =   46
+      Top             =   6000
+      Width           =   1092
+   End
    Begin VB.TextBox tbBetweenPostav 
       Height          =   285
       Left            =   9840
@@ -53,18 +62,18 @@ Begin VB.Form Nomenklatura
       Width           =   4095
       Begin VB.ListBox lbEdIzm 
          Height          =   816
-         ItemData        =   "Nomenclatura.frx":0000
+         ItemData        =   "Nomenclatura.frx":0025
          Left            =   1860
-         List            =   "Nomenclatura.frx":0010
+         List            =   "Nomenclatura.frx":0035
          TabIndex        =   39
          Top             =   1800
          Width           =   495
       End
       Begin VB.ListBox lbEdIzm2 
          Height          =   624
-         ItemData        =   "Nomenclatura.frx":0024
+         ItemData        =   "Nomenclatura.frx":0049
          Left            =   480
-         List            =   "Nomenclatura.frx":0031
+         List            =   "Nomenclatura.frx":0056
          TabIndex        =   38
          Top             =   1800
          Width           =   615
@@ -150,9 +159,9 @@ Begin VB.Form Nomenklatura
    End
    Begin VB.ListBox lbWeb 
       Height          =   432
-      ItemData        =   "Nomenclatura.frx":0047
+      ItemData        =   "Nomenclatura.frx":006C
       Left            =   3240
-      List            =   "Nomenclatura.frx":0051
+      List            =   "Nomenclatura.frx":0076
       TabIndex        =   28
       Top             =   1260
       Visible         =   0   'False
@@ -188,9 +197,9 @@ Begin VB.Form Nomenklatura
    End
    Begin VB.ListBox lbMark 
       Height          =   432
-      ItemData        =   "Nomenclatura.frx":005C
+      ItemData        =   "Nomenclatura.frx":0081
       Left            =   3000
-      List            =   "Nomenclatura.frx":0066
+      List            =   "Nomenclatura.frx":008B
       TabIndex        =   23
       Top             =   3660
       Visible         =   0   'False
@@ -198,9 +207,9 @@ Begin VB.Form Nomenklatura
    End
    Begin VB.ListBox lbYesNo 
       Height          =   432
-      ItemData        =   "Nomenclatura.frx":0078
+      ItemData        =   "Nomenclatura.frx":009D
       Left            =   3060
-      List            =   "Nomenclatura.frx":0082
+      List            =   "Nomenclatura.frx":00A7
       TabIndex        =   22
       Top             =   1920
       Visible         =   0   'False
@@ -370,6 +379,17 @@ Begin VB.Form Nomenklatura
       Top             =   120
       Visible         =   0   'False
       Width           =   372
+   End
+   Begin VB.Label lbEquip 
+      Alignment       =   1  'Right Justify
+      BackColor       =   &H8000000A&
+      Caption         =   "Оборудование:"
+      Height          =   192
+      Left            =   0
+      TabIndex        =   47
+      Top             =   6000
+      Visible         =   0   'False
+      Width           =   1512
    End
    Begin VB.Label lbPostav 
       Alignment       =   1  'Right Justify
@@ -672,6 +692,15 @@ Dim cnt As String
     
 End Sub
 
+Private Sub cbEquip_Change()
+    sql = "update sGuideKlass set cehId = " & cbEquip.ListIndex & " where klassId = " & gKlassId
+    myExecute "##ceh.update", sql, -1
+End Sub
+
+Private Sub cbEquip_Click()
+    cbEquip_Change
+End Sub
+
 Private Sub cbInside_Click()
 'If isRegimLoad Then loadKlassNomenk
 If Grid.Visible Then
@@ -680,9 +709,6 @@ If Grid.Visible Then
 End If
 End Sub
 
-Private Sub Check1_Click()
-
-End Sub
 
 Private Sub chGain_Click()
 If noClick Then Exit Sub
@@ -995,6 +1021,8 @@ If oldRegim <> Regim Or oldRegim = "##undef##" Then
     tbEndDate.Enabled = True
 End If
 chPerList.Visible = False
+cbEquip.Visible = False
+lbEquip.Visible = False
 If Regim = "fltOborot" Then ' ном-ра для закупки
     cotnrolTopElementsVisible False
     initCol nkCena, "Цена факт.", 660
@@ -1405,8 +1433,8 @@ If Not tbKlass.BOF Then
  
  ReDim k(0): ReDim pK(0): ReDim NN(0): iErr = 0
  While Not tbKlass.EOF
-    If tbKlass!KlassId = 0 Then GoTo NXT1
-    Key = "k" & tbKlass!KlassId
+    If tbKlass!klassId = 0 Then GoTo NXT1
+    Key = "k" & tbKlass!klassId
     pKey = "k" & tbKlass!parentKlassId
     On Error GoTo ERR1 ' назначить второй проход
     Set Node = tv.Nodes.Add(pKey, tvwChild, Key, tbKlass!klassName)
@@ -1471,23 +1499,23 @@ End Sub
 
 
 Private Sub showNomenkPath(nomnom As String)
-Dim klassName As String, ret As String, KlassId As Integer, parentKlassId As Integer
+Dim klassName As String, ret As String, klassId As Integer, parentKlassId As Integer
 
     bilo = True
     sql = "select KlassId, nomnom from sguidenomenk where nomnom = '" & nomnom & "'"
 
-    byErrSqlGetValues "##102.2", sql, KlassId
+    byErrSqlGetValues "##102.2", sql, klassId
     
     While bilo
-        sql = "select klassName, parentKlassId from sguideklass where klassid = " & KlassId
+        sql = "select klassName, parentKlassId from sguideklass where klassid = " & klassId
         If byErrSqlGetValues("##102.2", sql, klassName, parentKlassId) Then
-            If KlassId = 0 Then
+            If klassId = 0 Then
                 bilo = False
             Else
                 If Len(ret) > 0 Then ret = " / " & ret
                 ret = klassName & ret
             End If
-            KlassId = parentKlassId
+            klassId = parentKlassId
         End If
 '        Set tbKlass = myOpenRecordSet("##102.x", sql, dbOpenForwardOnly)
 '        If tbKlass Is Nothing Then End
@@ -1527,6 +1555,8 @@ cmExit.Top = cmExit.Top + h
 cmExit.left = cmExit.left + w
 cmObrez.Top = cmObrez.Top + h
 ckUnUsed.Top = ckUnUsed.Top + h
+cbEquip.Top = cbEquip.Top + h
+
 '.Left = .Left + w
 
 End Sub
@@ -1924,6 +1954,7 @@ Else
 End If
 End Sub
 
+
 Private Sub lbMark_DblClick()
 
 If lbMark.Text = lbMark.List(1) Then
@@ -1943,7 +1974,7 @@ If valueToNomencField("##153", lbMark.Text, "mark") Then
 
             Dim outcome As Single, strOutcome As String
             strOutcome = Grid.TextMatrix(mousRow, nkAvgOutcome)
-            If right(strOutcome, 1) = "*" Then
+            If Right(strOutcome, 1) = "*" Then
                 strOutcome = left(strOutcome, Len(strOutcome) - 1)
             End If
             If IsNumeric(strOutcome) Then
@@ -2199,7 +2230,7 @@ Private Sub mnCost_Click()
 Dim msgOk As VbMsgBoxResult
 Dim tvKlass As String
 Dim tvNode As Node
-Dim KlassId As String
+Dim klassId As String
 Dim newKey As String, xDate As String, groupText As String
 Dim queryTimeout As Variant
 
@@ -2212,9 +2243,9 @@ Dim queryTimeout As Variant
     
     MousePointer = flexHourglass
     Set tvNode = tv.Nodes(tv.SelectedItem.index)
-    KlassId = Mid(tvNode.Key, 2)
+    klassId = Mid(tvNode.Key, 2)
     
-    sql = "select wf_cost_bulk_change( " & KlassId & ")"
+    sql = "select wf_cost_bulk_change( " & klassId & ")"
     queryTimeout = myBase.queryTimeout
     myBase.queryTimeout = 6000
     
@@ -2223,7 +2254,7 @@ Dim queryTimeout As Variant
     If newKey > 0 Then
         sql = "select xDate from sPriceBulkChange where id = " & newKey
         byErrSqlGetValues "##nomenklatura.3", sql, xDate
-        If KlassId <> "0" Then
+        If klassId <> "0" Then
             groupText = " по группе " + tvNode.Text
         Else
             groupText = " по всей номенклатуре группе "
@@ -2665,7 +2696,7 @@ If KeyCode = vbKeyReturn Then
     End If
     On Error GoTo ERR1
     tbNomenk!nomnom = str
-    tbNomenk!KlassId = gKlassId
+    tbNomenk!klassId = gKlassId
     tbNomenk!margin = Grid.TextMatrix(mousRow, nkMargin)
     tbNomenk!kodel = Grid.TextMatrix(mousRow, nkKodel)
     tbNomenk!kolonok = Grid.TextMatrix(mousRow, nkKolonok)
@@ -3120,6 +3151,19 @@ Dim restCsv As String, currentOrder As Integer
 
 End Sub
 
+
+Sub loadKlassEquip(ByVal klassId As Integer)
+    sql = "select cehId from sGuideKlass where klassId = " & CStr(klassId)
+    cbEquip.Visible = True
+    lbEquip.Visible = True
+    Dim cehId As Integer
+    If byErrSqlGetValues("##klassEquip", sql, cehId) <> 0 Then
+        cbEquip.ListIndex = cehId
+    End If
+    
+End Sub
+
+
 Sub loadKlassNomenk(Optional filtr As String = "")
 Dim il As Long, strWhere As String, befWhere  As String
 Dim insWhere As String, strN As String, I As Integer, s As Single
@@ -3189,7 +3233,7 @@ ElseIf tvSelectedItem Then
     ' должна быть последней в списке elseif
     If tv.SelectedItem.Key = "all" Then
         If frmMode <> "" Then GoTo EN1
-        sql = "SELECT sGuideNomenk.* From sGuideNomenk"
+        'sql = "SELECT sGuideNomenk.* From sGuideNomenk"
         strWhere = ""
         quantity = 0
     End If
@@ -3435,14 +3479,14 @@ End Sub
 
 
 
-Sub adjustKolonHeaders(ByVal KlassId As Integer, ByVal KlassType)
+Sub adjustKolonHeaders(ByVal klassId As Integer, ByVal KlassType)
 Dim Kolon1 As String
 Dim Kolon2 As String
 Dim Kolon3 As String
 Dim Kolon4 As String
 
     If KlassType <> "p" Then
-        sql = "SELECT kolon1, kolon2, kolon3, kolon4 from sGuideKlass where klassId = " & KlassId
+        sql = "SELECT kolon1, kolon2, kolon3, kolon4 from sGuideKlass where klassId = " & klassId
         byErrSqlGetValues "##ACH", sql, Kolon1, Kolon2, Kolon3, Kolon4
         If "" <> IIf(IsNull(Kolon1), "", Kolon1) Then
             Grid.TextMatrix(0, nkCena2W) = Kolon1
@@ -3718,6 +3762,13 @@ Private Sub tv_NodeClick(ByVal Node As MSComctlLib.Node)
         End If
         
         loadKlassNomenk
+        If gKlassType = "k" Then
+            loadKlassEquip gKlassId
+        Else
+            cbEquip.ListIndex = 0
+            cbEquip.Visible = False
+            lbEquip.Visible = False
+        End If
     End If
 'Grid.SetFocus
 'Grid_EnterCell
