@@ -228,6 +228,7 @@ Public Const fnNomNom = 1
 Public Const fnNomName = 2
 Public Const fnEdIzm = 3
 Public Const fnQuant = 4
+Public Const fnEquip = 5
 
 'Grid5 в sProducts и Otgruz
 Public Const prId = 0
@@ -420,11 +421,11 @@ On Error GoTo 0
 Exit Sub
 
 ERR1:
-If err = 9 Then
+If Err = 9 Then
     maxLen = 0
     Resume Next
 Else
-    MsgBox Error, , "Ошибка 17-" & err & ":  " '##17
+    MsgBox Error, , "Ошибка 17-" & Err & ":  " '##17
     End
 End If
 
@@ -694,11 +695,11 @@ getResurs = maxDay '1:
 Exit Function
 
 ERR1:
-If err = 9 Then
+If Err = 9 Then
     dayMassLenght 'корректируем размерности, если надо
     Resume
 Else
-    MsgBox Error, , "Ошибка 18-" & err & ":  " '##18
+    MsgBox Error, , "Ошибка 18-" & Err & ":  " '##18
     myBase.Close: End
 End If
 
@@ -1545,7 +1546,7 @@ Dim s As Double, log As String, str As String
  str = LoadDate(Orders.Grid, row, orVrVid, tqOrders!outDateTime, "hh")
  If str <> "" Then log = log & "_" & str
  
- str = LoadNumeric(Orders.Grid, row, orVrVip, tqOrders!workTime, , "#0.0")
+ str = LoadNumeric(Orders.Grid, row, orVrVip, tqOrders!worktime, , "#0.0")
  log = log & " Вр.вып=" & str
  
  Orders.Grid.TextMatrix(row, orProblem) = tqOrders!problem
@@ -1791,7 +1792,7 @@ While Not tbFirms.EOF '                         *******************
             End If
           End If
           visits = visits + 1
-          wtSum = wtSum + tbOrders!workTime
+          wtSum = wtSum + tbOrders!worktime
           If Not IsNull(tbOrders!paid) Then _
                 paidSum = paidSum + tbOrders!paid
           If Not IsNull(tbOrders!ordered) Then _
@@ -2257,7 +2258,7 @@ Dim I As Integer, s As Double
     On Error GoTo errMsg
     GoTo START
 errMsg:
-    MsgBox Error, , "Ошибка  " & err & " в п\п predmetiIsClose" '
+    MsgBox Error, , "Ошибка  " & Err & " в п\п predmetiIsClose" '
     End
 START:
 #End If

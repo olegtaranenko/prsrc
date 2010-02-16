@@ -395,7 +395,7 @@ Public zakazano As Double
 Public FO As Double ' ФО
 Public convertToIzdelie As Boolean
 Public orderRate As Double
-Dim PL() As Double
+'Dim equip() As Double
 
 
 Private selectNomenkFlag As Boolean
@@ -447,7 +447,7 @@ Dim DraggingX As Single, DraggingY As Single
 Sub nomenkToNNQQ(pQuant As Double, eQuant As Double, prQuant As Double)
 Dim j As Integer, leng As Integer
 
-leng = UBound(NN)
+    leng = UBound(NN)
 
     For j = 1 To leng
         If NN(j) = tbNomenk!nomNom Then
@@ -464,8 +464,10 @@ leng = UBound(NN)
     ReDim Preserve QQ(leng): QQ(leng) = pQuant * tbNomenk!quantity
     ReDim Preserve QQ2(leng): QQ2(leng) = eQuant * tbNomenk!quantity
     ReDim Preserve QQ3(leng): QQ3(leng) = prQuant * tbNomenk!quantity
-    'ReDim Preserve PL(leng): PL(leng) = tbNomenk!perList
-    
+'    ReDim Preserve equip(leng)
+'    If Not IsNull(tbNomenk!Ceh) Then
+'        equip(leng) = tbNomenk!Ceh
+'    End If
 
 End Sub
 
@@ -529,11 +531,11 @@ Dim I As Integer, gr() As String
 productNomenkToNNQQ = False
 
 'вариантная ном-ра изделия
-sql = "SELECT sProducts.nomNom, sProducts.quantity, sProducts.xGroup " & _
-"FROM sProducts " & _
-"INNER JOIN xVariantNomenc ON (sProducts.nomNom = xVariantNomenc.nomNom) AND (sProducts.ProductId = xVariantNomenc.prId) " & _
-"WHERE (((xVariantNomenc.numOrder)=" & gNzak & ") AND (" & _
-"(xVariantNomenc.prId)=" & gProductId & ") AND ((xVariantNomenc.prExt)=" & prExt & "));"
+sql = "SELECT p.nomNom, p.quantity, p.xGroup " & _
+"FROM sProducts p" _
+& " JOIN xVariantNomenc x ON p.nomNom = x.nomNom AND p.ProductId = x.prId " _
+& " WHERE x.numOrder =" & gNzak & " AND " _
+& " x.prId =" & gProductId & " AND x.prExt=" & prExt
 'Debug.Print sql
 Set tbNomenk = myOpenRecordSet("##192", sql, dbOpenDynaset)
 If tbNomenk Is Nothing Then Exit Function
@@ -547,8 +549,9 @@ Wend
 tbNomenk.Close
     
 'НЕвариантная ном-ра изделия
-sql = "SELECT sProducts.nomNom, sProducts.quantity, sProducts.xGroup " & _
-"From sProducts WHERE (((sProducts.ProductId)=" & gProductId & "));"
+sql = "SELECT p.nomNom, p.quantity, p.xGroup" _
+& " From sProducts p " _
+& " WHERE p.ProductId =" & gProductId
 
 'MsgBox sql
 Set tbNomenk = myOpenRecordSet("##177", sql, dbOpenDynaset)
@@ -705,11 +708,12 @@ Grid.ColWidth(nkNomer) = 0 '900
 Grid.ColWidth(nkEdIzm) = 630 'ostat
 Grid.ColWidth(nkCurOstat) = 0
 
-Grid2.FormatString = "|<Номер|<Описание|<Ед.измерения|кол-во"
+Grid2.FormatString = "|<Номер|<Описание|<Ед.измерения|кол-во|Оборуд."
 Grid2.ColWidth(0) = 0
 Grid2.ColWidth(fnNomNom) = 0 '900
 Grid2.ColWidth(fnEdIzm) = 435
 Grid2.ColWidth(fnQuant) = 585
+Grid2.ColWidth(fnEquip) = 600
 
 Grid3.FormatString = "|<Номер|<Размер|<Описание|id"
 
@@ -826,24 +830,33 @@ Dragging = False
 quantity2 = 0
 clearGrid Grid2
 If numExt = 254 Then
-    sql = "SELECT sGuideNomenk.nomNom, sGuideNomenk.nomName, sGuideNomenk.perList, " & _
-    "sGuideNomenk.ed_Izmer, sGuideNomenk.ed_Izmer2, sDMC.quant as quantity  " & _
-    ",sGuideNomenk.Size, sGuideNomenk.cod " & _
-    "FROM sGuideNomenk INNER JOIN sDMC ON sGuideNomenk.nomNom = sDMC.nomNom  " & _
-    "WHERE (((sDMC.numDoc)=" & numDoc & " And (sDMC.numExt)=" & numExt & "));"
+    sql = "SELECT n.nomNom, n.nomName, n.perList" _
+    & " ,n.ed_Izmer, n.ed_Izmer2, d.quant as quantity  " _
+    & " ,n.Size, n.cod, h.ceh " _
+    & " FROM sDMC d" _
+    & " JOIN sGuideNomenk n ON n.nomNom = d.nomNom" _
+    & " LEFT JOIN sGuideKlass k ON n.klassId = k.klassId" _
+    & " LEFT JOIN GuideCeh h ON h.cehId = k.cehId" _
+    & " WHERE d.numDoc = " & numDoc & " And d.numExt =" & numExt
 ElseIf Regim <> "fromDocs" Then GoTo AA
 ElseIf numExt = 0 And sDocs.reservNoNeed Then ' без резервирования
-    sql = "SELECT sGuideNomenk.nomNom, sGuideNomenk.nomName, sGuideNomenk.perList,  " & _
-    "sGuideNomenk.ed_Izmer, sGuideNomenk.ed_Izmer2, sDMCmov.quantity  " & _
-    ",sGuideNomenk.Size, sGuideNomenk.cod " & _
-    "FROM sGuideNomenk INNER JOIN sDMCmov ON sGuideNomenk.nomNom = sDMCmov.nomNom  " & _
-    "WHERE (((sDMCmov.numDoc)=" & numDoc & "));"
+    sql = "SELECT n.nomNom, n.nomName, n.perList" _
+    & " ,n.ed_Izmer, n.ed_Izmer2, d.quantity  " _
+    & " ,n.Size, n.cod, h.ceh " _
+    & " FROM sGuideNomenk n" _
+    & " JOIN sDMCmov d ON n.nomNom = d.nomNom" _
+    & " LEFT JOIN sGuideKlass k ON n.klassId = k.klassId" _
+    & " LEFT JOIN GuideCeh h ON h.cehId = k.cehId" _
+    & "WHERE d.numDoc =" & numDoc
 Else ' ном-ра заказа или выписанная из Цеха с Целого склада
-AA: sql = "SELECT sGuideNomenk.nomNom, sGuideNomenk.nomName, sGuideNomenk.perList, " & _
-    "sGuideNomenk.ed_Izmer, sGuideNomenk.ed_Izmer2, sDMCrez.quantity  " & _
-    ",sGuideNomenk.Size, sGuideNomenk.cod " & _
-    "FROM sGuideNomenk INNER JOIN sDMCrez ON sGuideNomenk.nomNom = sDMCrez.nomNom  " & _
-    "WHERE (((sDMCrez.numDoc)=" & numDoc & "));"
+AA: sql = "SELECT n.nomNom, n.nomName, n.perList " _
+    & " ,n.ed_Izmer, n.ed_Izmer2, d.quantity" _
+    & " ,n.Size, n.cod, h.ceh " _
+    & " FROM sDMCrez d " _
+    & " JOIN sGuideNomenk n ON n.nomNom = d.nomNom" _
+    & " LEFT JOIN sGuideKlass k ON n.klassId = k.klassId" _
+    & " LEFT JOIN GuideCeh h ON h.cehId = k.cehId" _
+    & " WHERE d.numDoc =" & numDoc
 End If
 'MsgBox sql
 
@@ -858,6 +871,9 @@ If Not tbNomenk.BOF Then
         tbNomenk!nomName & " " & tbNomenk!Size
     Grid2.TextMatrix(quantity2, fnEdIzm) = tbNomenk!ed_Izmer
     Grid2.TextMatrix(quantity2, fnQuant) = Round(tbNomenk!quantity, 2)
+    If Not IsNull(tbNomenk!ceh) Then
+        Grid2.TextMatrix(quantity2, fnEquip) = tbNomenk!ceh
+    End If
     If Regim = "fromDocs" Then
       If sDocs.isIntMove() Then
         Grid2.TextMatrix(quantity2, fnEdIzm) = tbNomenk!ed_Izmer2
@@ -1486,17 +1502,20 @@ If Grid5.TextMatrix(mousRow5, prType) = "изделие" Then
         quantity2 = quantity2 + 1
         Grid2.AddItem ""
         Grid2.TextMatrix(il, fnNomNom) = NN(il)
-        sql = "SELECT Size, ed_Izmer, cod, nomName from sGuideNomenk " & _
-        "WHERE (((nomNom)='" & NN(il) & "'));"
-        byErrSqlGetValues "##413", sql, str, str2, str3, str4
+        Dim ceh As String
+        sql = "SELECT n.Size, n.ed_Izmer, n.cod, n.nomName, h.ceh " _
+            & " from sGuideNomenk n " _
+            & " LEFT JOIN sGuideKlass k ON k.klassId = n.klassId" _
+            & " LEFT JOIN GuideCeh h ON h.cehId = k.cehId" _
+            & " WHERE nomNom ='" & NN(il) & "'"
+        byErrSqlGetValues "##413", sql, str, str2, str3, str4, ceh
         
-'        tbNomenk.Seek "=", NN(il)
-'        If tbNomenk.NoMatch Then msgOfEnd ("##194")
         Grid2.TextMatrix(il, fnNomName) = str3 & " " & str4 & " " & str
         Grid2.TextMatrix(il, fnEdIzm) = str2
         Grid2.TextMatrix(il, fnQuant) = Round(QQ(il), 2)
+        Grid2.TextMatrix(il, fnEquip) = ceh
     Next il
-'    tbNomenk.Close
+    
     If quantity2 > 0 Then Grid2.removeItem Grid2.rows - 1
   End If
 Else
@@ -1508,6 +1527,13 @@ Else
         " " & Grid5.TextMatrix(mousRow5, prDescript)
     Grid2.TextMatrix(1, fnEdIzm) = Grid5.TextMatrix(mousRow5, prEdizm)
     Grid2.TextMatrix(1, fnQuant) = Grid5.TextMatrix(mousRow5, prQuant)
+    sql = "SELECT h.ceh " _
+        & " from sGuideNomenk n " _
+        & " LEFT JOIN sGuideKlass k ON k.klassId = n.klassId" _
+        & " LEFT JOIN GuideCeh h ON h.cehId = k.cehId" _
+        & " WHERE n.nomNom ='" & Grid5.TextMatrix(mousRow5, prId) & "'"
+    byErrSqlGetValues "##413.2", sql, ceh
+    Grid2.TextMatrix(1, fnEquip) = ceh
 End If
 Grid2.Visible = True
 

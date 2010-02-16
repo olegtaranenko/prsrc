@@ -137,10 +137,10 @@ tmpSng = 0 'сумма невыполнено живых
 "WHERE (((Orders.StatusId)=1) AND ((Orders.CehId)=" & id & "));"
 ''byErrSqlGetValues "##372", sql, tmpSng
 s = 0 ' плюс неготовые образцы
-sql = "SELECT Sum(OrdersMO.workTimeMO) AS Sum_workTimeMO " & _
+''sql = "SELECT Sum(OrdersMO.workTimeMO) AS Sum_workTimeMO " & _
 "FROM Orders INNER JOIN OrdersMO ON Orders.numOrder = OrdersMO.numOrder " & _
 "WHERE (((OrdersMO.StatO)='в работе') AND ((Orders.CehId)=" & id & "));"
-byErrSqlGetValues "##378", sql, s
+''byErrSqlGetValues "##378", sql, s
 tmpSng = tmpSng + s
 
 sql = "SELECT Nstan" & Ceh(id) & ", KPD_" & Ceh(id) & " FROM System;"
