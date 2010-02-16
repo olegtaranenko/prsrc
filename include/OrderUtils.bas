@@ -34,18 +34,17 @@ sql = "UPDATE Orders INNER JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.num
 'MsgBox sql
 If myExecute("##11", sql, 0) > 0 Then GoTo ER1
 
-sql = "UPDATE Orders INNER JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder " & _
+''sql = "UPDATE Orders INNER JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder " & _
 "SET Orders.outDateTime = '" & Format(curDate, "yyyy-mm-dd 10:00:00") & _
 "' WHERE (((Orders.outDateTime)<'" & Format(curDate, "yyyy-mm-dd 0:0:0") & "'));"
-'MsgBox sql
-If myExecute("##404", sql, 0) > 0 Then GoTo ER1
+''If myExecute("##404", sql, 0) > 0 Then GoTo ER1
 
 sql = "UPDATE OrdersMO SET DateTimeMO = '" & Format(curDate, "yyyy-mm-dd 10:00:00") & _
 "' WHERE (((DateTimeMO)<'" & Format(curDate, "yyyy-mm-dd 00:00:00") & "'));"
 If myExecute("##405", sql, 0) > 0 Then GoTo ER1
 
 ''      "OrdersMO.workTimeMO, OrdersInCeh.VrVipParts, OrdersInCeh.Stat  "
-'sql = "SELECT Orders.outDateTime, Orders.StatusId, OrdersMO.DateTimeMO, " & _
+''sql = "SELECT Orders.outDateTime, Orders.StatusId, OrdersMO.DateTimeMO, " & _
 '      "Orders.DateRs, " & _
 '      "OrdersMO.workTimeMO, OrdersInCeh.Stat  " & _
 '      "FROM (Orders RIGHT JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder) " & _
@@ -132,10 +131,11 @@ If myExecute("##406", sql, 0) > 0 Then Exit Function
 
 '****** отстреливаем итоги ***********
 tmpSng = 0 'сумма невыполнено живых
-sql = "SELECT Sum(Orders.workTime*OrdersInCeh.Nevip) AS nevip " & _
+'' equipment
+''sql = "SELECT Sum(Orders.workTime*OrdersInCeh.Nevip) AS nevip " & _
 "FROM Orders INNER JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder " & _
 "WHERE (((Orders.StatusId)=1) AND ((Orders.CehId)=" & id & "));"
-byErrSqlGetValues "##372", sql, tmpSng
+''byErrSqlGetValues "##372", sql, tmpSng
 s = 0 ' плюс неготовые образцы
 sql = "SELECT Sum(OrdersMO.workTimeMO) AS Sum_workTimeMO " & _
 "FROM Orders INNER JOIN OrdersMO ON Orders.numOrder = OrdersMO.numOrder " & _

@@ -41,7 +41,7 @@ Public manId() As Integer '$$7
 Public Manag() As String  '
 Public insideId() As String
 Public Const begCehProblemId = 10 ' начало цеховых проблем в справочнике
-Public neVipolnen As Double, neVipolnen_O As Double
+'Public neVipolnen As Double, neVipolnen_O As Double
 Public maxDay As Integer ' число дней в реестре
 Public befDays As Integer ' число дней до даты реестра (когда сменилась дата)
 Public webSvodkaPath As String
@@ -420,11 +420,11 @@ On Error GoTo 0
 Exit Sub
 
 ERR1:
-If Err = 9 Then
+If err = 9 Then
     maxLen = 0
     Resume Next
 Else
-    MsgBox Error, , "Ошибка 17-" & Err & ":  " '##17
+    MsgBox Error, , "Ошибка 17-" & err & ":  " '##17
     End
 End If
 
@@ -694,11 +694,11 @@ getResurs = maxDay '1:
 Exit Function
 
 ERR1:
-If Err = 9 Then
+If err = 9 Then
     dayMassLenght 'корректируем размерности, если надо
     Resume
 Else
-    MsgBox Error, , "Ошибка 18-" & Err & ":  " '##18
+    MsgBox Error, , "Ошибка 18-" & err & ":  " '##18
     myBase.Close: End
 End If
 
@@ -2042,10 +2042,11 @@ End If
 End Sub
 
 Function getNevip(day As Integer)
-sql = "SELECT Sum(Orders.workTime*OrdersInCeh.Nevip) AS wSum " & _
-"FROM Orders INNER JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder " & _
+sql = "SELECT Sum(oe.workTime*oc.Nevip) AS wSum " & _
+"FROM OrdersEquip oe " & _
+"JOIN OrdersInCeh oc ON oe.numOrder = oc.numOrder " & _
 "WHERE (((DateDiff(day,'" & Format(curDate, "yyyy-mm-dd") & _
-"',Orders.outDateTime))=" & day - 1 & " AND (Orders.CehId)=" & cehId & "));"
+"',oe.outDateTime))=" & day - 1 & " AND (oe.CehId)=" & cehId & "));"
 'MsgBox sql
 getNevip = 0
 byErrSqlGetValues "W##382", sql, getNevip
@@ -2118,17 +2119,18 @@ Dim tbCeh As Recordset
 
 
 If IsNumeric(passZakazNom) Then
-    passSql = "((OrdersInCeh.numOrder)<>" & passZakazNom & ") AND "
+    passSql = " AND oc.numOrder <> " & passZakazNom
 Else
     passSql = ""
 End If
 
 '    "OrdersInCeh.numOrder, OrdersInCeh.VrVipParts, OrdersInCeh.rowLock "
-sql = "SELECT Orders.outDateTime, Orders.StatusId, " & _
-    "OrdersInCeh.numOrder " & _
-    "FROM OrdersInCeh LEFT JOIN Orders " & _
-    "ON OrdersInCeh.numOrder = Orders.numOrder " & _
-    "WHERE (" & passSql & "((Orders.CehId)=" & cehId & "));"
+sql = "SELECT oe.outDateTime, o.StatusId, " & _
+    "o.numOrder " & _
+    "FROM OrdersInCeh oc  " _
+    & " JOIN Orders o ON oc.numOrder = o.numOrder " _
+    & " JOIN OrdersEquip oe ON oe.numOrder = o.numOrder " _
+    & " WHERE oe.CehId = " & cehId & passSql
 
 Set tbCeh = myOpenRecordSet("##14", sql, dbOpenForwardOnly)
 If tbCeh Is Nothing Then Exit Sub
@@ -2255,7 +2257,7 @@ Dim I As Integer, s As Double
     On Error GoTo errMsg
     GoTo START
 errMsg:
-    MsgBox Error, , "Ошибка  " & Err & " в п\п predmetiIsClose" '
+    MsgBox Error, , "Ошибка  " & err & " в п\п predmetiIsClose" '
     End
 START:
 #End If

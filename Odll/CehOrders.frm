@@ -442,7 +442,7 @@ End If
       If chDetail.value = 1 Then '
         Grid.TextMatrix(cehRows, chVrVip) = "(" & s & ")"
       Else
-        Grid.TextMatrix(cehRows, chVrVip) = s
+        Grid.TextMatrix(cehRows, chVrVip) = Round(s, 2)
       End If
     End If
 If isMO = "o" Then
@@ -961,9 +961,10 @@ AA:
         virabotka = -virabotka
     End If
   Else
-    sql = "SELECT Orders.workTime, OrdersInCeh.Nevip " & _
-    "FROM Orders INNER JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder " & _
-    "WHERE (((Orders.numOrder)=" & gNzak & "));"
+    sql = "SELECT oe.workTime, oc.Nevip " & _
+    " FROM OrdersEquip oe " & _
+    " JOIN OrdersInCeh oc ON oe.numOrder = oc.numOrder " & _
+    " WHERE oc.numOrder =" & gNzak
     If Not byErrSqlGetValues("##421", sql, t, n) Then Exit Function
 '    virabotka = Round((table!nevip - s) * table!workTime, 2)
     virabotka = Round((n - s) * t, 2)

@@ -1023,6 +1023,141 @@ where pc.sysname = sGuideProducts.web
 		<rollback/>
 	</changeSet>
 
+	<changeSet id="1" author="mantis-125" runOnChange="false">
+		<comment>Оборудование про заказ</comment>
+		<createTable tableName="OrdersEquip">
+			<column name="id" type="integer" autoIncrement="true">
+				<constraints primaryKey="true" primaryKeyName="pk_oe"/>
+			</column>
+			<column name="numorder" type="integer" >
+				<constraints nullable="false"/>
+			</column>
+			<column name="cehId" type="integer" >
+				<constraints nullable="false"/>
+			</column>
+			<column name="worktime" type="float" defaultValueNumeric="0.0">
+				<constraints nullable="false"/>
+			</column>
+			<column name="outDateTime" type="datetime" >
+				<constraints nullable="true"/>
+			</column>
+		</createTable>
+	</changeSet>
+
+	<changeSet id="2" author="mantis-125" runOnChange="false">
+		<sql><![CDATA[
+insert	into OrdersEquip (numorder, cehId, worktime, outDateTime)
+select	numorder, cehId, worktime, outDateTime
+from	orders
+where	cehId > 0
+		]]></sql>
+		<rollback>truncate table OrdersEquip</rollback>
+	</changeSet>
+
+	<changeSet id="3" author="taranenko" runOnChange="false">
+		<comment>Денормализованное поле equip в таблице Заказов. Иначе очень долго делается обновление списка заказов</comment>
+		<addColumn tableName="Orders">
+			<column name="equip" type="varchar(16)"><constraints nullable="true"/></column>
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="4" author="mantis-125" runOnChange="false">
+		<sql>
+update	Orders set equip = GuideCeh.ceh
+from	GuideCeh 
+where	GuideCeh.cehId = orders.cehId
+		</sql>
+		<rollback>truncate table OrdersEquip</rollback>
+	</changeSet>
+
+	<changeSet id="5" author="mantis-125" runOnChange="false">
+		<comment>Удаляем столбцы по цеху/времени выполнения/... из таблицы Заказов</comment>
+		<dropColumn tableName="orders" columnName="worktime"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="6" author="mantis-125" runOnChange="false">
+		<comment>Сбросить ключ на цех</comment>
+		<dropForeignKeyConstraint baseTableName="Orders" constraintName="GuideCehOrders"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="7" author="mantis-125" runOnChange="false">
+		<comment>Удаляем столбцы по цеху/времени выполнения/... из таблицы Заказов</comment>
+		<dropColumn tableName="orders" columnName="cehId"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="8" author="mantis-125" runOnChange="false">
+		<comment>Удаляем столбцы по цеху/времени выполнения/... из таблицы Заказов</comment>
+		<dropColumn tableName="orders" columnName="outDateTime"/>
+		<rollback/>
+	</changeSet>
+	
+	<changeSet id="9" author="taranenko" runOnChange="true">
+		<comment>Саммари вьюха</comment>
+		<sqlFile path="procedures/enumEquip.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="views/vw_OrdersEquipSummary.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback>
+			<sqlFile path="rollback/vw_OrdersEquipSummary.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		</rollback>
+	</changeSet>
+
+	<changeSet id="10" author="mantis-125" runOnChange="true">
+		<comment>Индеск для Оборудования по Заказу</comment>
+		<createIndex tableName="OrdersEquip" indexName="oe_main" unique="true">
+			<column name="numorder"/>
+			<column name="cehId"/>
+		</createIndex>
+	</changeSet>
+
+	<changeSet id="11" author="mantis-125" runOnChange="true">
+		<comment>Переделка основных вьюх для цеховых форм</comment>
+		<sqlFile path="views/wCO2_plus.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="views/wCO2.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="views/wYAG_plus.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="views/wYAG.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="views/wSUB_plus.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="views/wSUB.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="12" author="taranenko" runOnChange="true">
+		<comment>При изменении имени source менять и в комтехе</comment>
+		<sqlFile path="triggers/sGuideSource.wf_update_source.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback>
+			<sqlFile path="rollback/sGuideSource.wf_update_source.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		</rollback>
+	</changeSet>
+
+	<changeSet id="13" author="mantis-125" runOnChange="true">
+		<comment>Статья расхода "заказчик без работы" теперь будет называться "производство"</comment>
+		<update tableName="sGuideSource">
+			<column name="sourceName" value="Произ-во"/>
+			<where>sourceId = -6</where>
+		</update>
+		<rollback/>
+	</changeSet>
+	
+	<changeSet id="14" author="taranenko" runOnChange="true">
+		<comment>Саммари вьюха</comment>
+		<sqlFile path="procedures/putOrderEquip.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="procedures/deleteOrderEquip.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback>
+			<sqlFile path="rollback/putOrderEquip.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+			<sqlFile path="rollback/deleteOrderEquip.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		</rollback>
+	</changeSet>
+
+	<changeSet id="15" author="taranenko" runOnChange="true">
+		<comment>При изменении имени source менять и в комтехе</comment>
+		<sqlFile path="triggers/OrdersEquip.wf_insert.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="triggers/OrdersEquip.wf_delete.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback>
+			<sqlFile path="rollback/OrdersEquip.wf_insert.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+			<sqlFile path="rollback/OrdersEquip.wf_delete.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		</rollback>
+	</changeSet>
 
 </databaseChangeLog>
 

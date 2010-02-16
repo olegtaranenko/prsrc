@@ -830,14 +830,16 @@ Sub workZakazi()
 'сделать, чтобы по "Ok" сразу не появлялись пока  накладные(пустые), а только
 'по закрытию Nakladna.frm
 cmOrder.Enabled = True
-sql = "SELECT Orders.CehId From Orders WHERE (((Orders.numOrder)=" & numDoc & "));"
-If Not byErrSqlGetValues("##98", sql, cehId) Then Exit Sub
+sql = "SELECT enumEquip (" & numDoc & ")"
+Dim equip As String
+If Not byErrSqlGetValues("##98", sql, equip) Then Exit Sub
  
 cmDel.Enabled = True
 If isDateTbox(tbDocDate, , False) Then
     Nakladna.docDate = tmpDate
 End If
 Nakladna.Regim = "toNaklad"
+Nakladna.prvoCaption = "Пр-во " & equip
 Nakladna.Show vbModal
 
 End Sub

@@ -591,28 +591,31 @@ For I = 2 To maxDay
 '    befOst(i) = Round(nomRes(i) * kpd * Nstan, 1)  '
 Next I
 'VrVipParts заменнили на Nevip
-sql = "SELECT Orders.numOrder, Orders.workTime, " & _
-"DateDiff(day,Now(),Orders.outDateTime) AS endDay, " & _
-"DateDiff(day,Now(),Orders.inDate) AS begDay, Orders.outDateTime, " & _
-"Orders.inDate, Orders.StatusId, OrdersInCeh.Nevip, OrdersInCeh.urgent " & _
-"FROM Orders INNER JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder " & _
-"Where (((Orders.StatusId) = 1 Or (Orders.StatusId) = 5) AND ((Orders.CehId)= " & cehId & ")) " & _
+sql = "SELECT o.numOrder, oe.workTime, " & _
+"DateDiff(day,Now(),oe.outDateTime) AS endDay, " & _
+"DateDiff(day,Now(),o.inDate) AS begDay, oe.outDateTime, " & _
+"o.inDate, o.StatusId, oc.Nevip, oc.urgent " & _
+"FROM Orders o " & _
+"JOIN OrdersEquip oe ON oe.numorder = o.numorder " & _
+"JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder " & _
+"Where (((o.StatusId) = 1 Or (o.StatusId) = 5) AND ((oe.CehId)= " & cehId & ")) " & _
 "UNION ALL " & _
-"SELECT Orders.numOrder, Orders.workTime, " & _
-"DateDiff(day,Now(),Orders.outDateTime) AS endDay, " & _
-"DateDiff(day,Now(),Orders.DateRS) AS begDay, Orders.outDateTime, " & _
-"Orders.DateRS, Orders.StatusId, OrdersInCeh.Nevip, OrdersInCeh.urgent " & _
-"FROM Orders INNER JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder " & _
-"Where (((Orders.StatusId) = 2 Or (Orders.StatusId) = 3) AND ((Orders.CehId)= " & cehId & ")) " & _
+"SELECT o.numOrder, oe.workTime, DateDiff(day,Now(),oe.outDateTime) AS endDay, " & _
+"DateDiff(day,Now(),o.DateRS) AS begDay, oe.outDateTime, " & _
+"o.DateRS, o.StatusId, oc.Nevip, oc.urgent " & _
+"FROM Orders o " & _
+"JOIN OrdersEquip oe ON oe.numorder = o.numorder " & _
+"JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder " & _
+"Where (((o.StatusId) = 2 Or (o.StatusId) = 3) AND ((oe.CehId)= " & cehId & ")) " & _
 "UNION ALL " & _
-"SELECT Orders.numOrder, OrdersMO.workTimeMO, " & _
-"DateDiff(day,Now(),OrdersMO.DateTimeMO) AS endDay, " & _
-"DateDiff(day,Now(),Orders.inDate) AS begDay, OrdersMO.DateTimeMO, " & _
-"Orders.inDate, 1 AS StatusId, -1 AS Nevip, '' AS urgent " & _
-"FROM Orders INNER JOIN OrdersMO ON Orders.numOrder = OrdersMO.numOrder " & _
-"Where (((OrdersMO.statO) = 'в работе') AND ((Orders.CehId)= " & cehId & _
+"SELECT o.numOrder, omo.workTimeMO, DateDiff(day,Now(),omo.DateTimeMO) AS endDay, " & _
+"DateDiff(day,Now(),o.inDate) AS begDay, omo.DateTimeMO, " & _
+"o.inDate, 1 AS StatusId, -1 AS Nevip, '' AS urgent " & _
+"FROM Orders o " & _
+"JOIN OrdersEquip oe ON oe.numorder = o.numorder " & _
+"JOIN OrdersMO omo ON o.numOrder = omo.numOrder " & _
+"Where (((omo.statO) = 'в работе') AND ((oe.CehId)= " & cehId & _
 ")) ORDER BY "
-'")) ORDER BY endDay, begDay DESC;"
 
 If isMzagruz Then
     sql = sql & "4 DESC;" ' в порядке уменьшения Даты Начала

@@ -404,6 +404,7 @@ Public mousCol2 As Long
 Public mousRow2 As Long
 Public Regim As String
 Public docDate As Date
+Public prvoCaption As String
 
 Dim secondNaklad As String, beSUO As Boolean ' была листовая ном-ра
 
@@ -546,12 +547,9 @@ End If
 
 wrkDefault.BeginTrans
 
-Set tbDocs = myOpenRecordSet("##357", "select * from sDocs", dbOpenForwardOnly) 'dbOpenForwardOnly)
+Set tbDocs = myOpenRecordSet("##357", "select * from sDocs where 1 = 0", dbOpenForwardOnly) 'dbOpenForwardOnly)
 If tbDocs Is Nothing Then GoTo ER3
 
-'Set tbDMC = myOpenRecordSet("##348", "select * from sDMC", dbOpenForwardOnly)
-'If tbDMC Is Nothing Then GoTo ER1
-'tbDMC.index = "NomDoc"
 If docDate <> #12:00:00 AM# Then
     tmpDate = docDate
 Else
@@ -903,12 +901,7 @@ Dim I As Integer, s As Double, s2 As Double, str As String, str2 As String
 ReDim NN(0): ReDim QQ(0): ReDim QQ2(0): QQ2(0) = 0: ReDim QQ3(0)
 
 If Regim = "toNaklad" Then
-  laSours(ind).Caption = ""
-  If cehId = 3 Then                    '$ceh$
-    laDest(ind).Caption = "Пр-во SUB"  '
-  Else
-    laDest(ind).Caption = sDocs.lbStatia.List(cehId - 1)
-  End If
+  laDest(ind).Caption = prvoCaption
   If Not sProducts.zakazNomenkToNNQQ Then Exit Sub
 ElseIf Regim = "" Then
   sql = "SELECT sGuideSource.sourceName, sGuideDest.sourceName AS destName " & _

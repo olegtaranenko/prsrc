@@ -557,7 +557,7 @@ Public g_id_bill As String
 Private loadBaseTimestamp As Date
 
 Dim quantity4 As Long
-Dim outDate() As Date
+'Dim outDate() As Date
 Dim tbUslug As Recordset
 Dim strToWeb As String
 Dim oldHeight As Integer, oldWidth As Integer ' нач размер формы
@@ -569,16 +569,18 @@ Dim head1 As String, head2 As String, head3 As String, head4 As String
 Dim gain2 As Double, gain3 As Double, gain4 As Double
 Dim tbCeh As Recordset
 
+Public refreshCurrentRow As Boolean
+
 
 
 Const AddCaption = "Добавить"
 Const t17_00 = 61200 ' в секундах
 
 Const rowFromOrdersSQL = "select " & _
-"    Orders.numOrder, GuideCeh.Ceh, Orders.inDate" & _
+"    Orders.numOrder, orders.equip as Ceh, Orders.inDate" & _
 "   ,GuideManag.Manag, GuideStatus.Status, Orders.StatusId, GuideProblem.Problem" & _
-"   ,Orders.DateRS, GuideFirms.Name, Orders.outDateTime, Orders.Type" & _
-"   ,Orders.workTime, Orders.Logo, Orders.Product, Orders.ordered" & _
+"   ,Orders.DateRS, GuideFirms.Name, oes.outDateTime, Orders.Type" & _
+"   ,oes.workTime, Orders.Logo, Orders.Product, Orders.ordered" & _
 "   ,Orders.temaId, Orders.paid, Orders.shipped,  Orders.Invoice" & _
 "   ,OrdersMO.DateTimeMO, OrdersMO.workTimeMO, OrdersMO.StatM, OrdersMO.StatO" & _
 "   ,GuideManag_1.Manag AS lastManag, OrdersInCeh.urgent" & _
@@ -593,11 +595,14 @@ Const rowFromOrdersSQL = "select " & _
 " JOIN GuideProblem ON GuideProblem.ProblemId = Orders.ProblemId " & _
 " JOIN GuideManag ON GuideManag.ManagId = Orders.ManagId " & _
 " JOIN GuideFirms ON GuideFirms.FirmId = Orders.FirmId " & _
-" JOIN GuideCeh ON GuideCeh.CehId = Orders.CehId " & _
+" LEFT JOIN vw_OrdersEquipSummary oes ON oes.numorder = Orders.numorder " & _
 " LEFT JOIN GuideManag AS GuideManag_1 ON Orders.lastManagId = GuideManag_1.ManagId " & _
 " LEFT JOIN OrdersMO ON Orders.numOrder = OrdersMO.numOrder " & _
 " LEFT JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder " & _
 " left join guideventure on guideventure.ventureId = orders.ventureid "
+    
+    
+    
     
 ' нужно вызывать уже после того, как новая Валюта сменена.
 Private Sub adjustHotMoney()
@@ -824,25 +829,6 @@ errorCodAndMsg "##419"
 
 End Sub
 
-'Function uniqOrderNum(table As Recordset, OrderNum As Long) As Boolean
-'Dim str As String
-    '
-'    sql = "SELECT Orders.numOrder from Orders WHERE (((Orders.numOrder)= " & OrderNum & "));"
-'    Set tbOrders = myOpenRecordSet("##402", sql, dbOpenForwardOnly)
-    
-    
-'    If tbOrders.BOF Then
-'    table.Seek "=", OrderNum
-'    If table.NoMatch Then
-'        uniqOrderNum = True
-'    Else
-'        uniqOrderNum = False
-'            str = "Обратитесь к Администратору!"
-'        MsgBox "номер " & table!numOrder & " не уникален (см. заказ от " _
-'                & table!inDate & "). " & str
-'    End If
-'    tbOrders.Close
-'End Function
 
 Private Sub cmCehCO2_Click()
 If cehId <> 2 And isCehOrders Then Unload CehOrders
@@ -914,11 +900,13 @@ Sub openOrdersRowToGrid(myErr As String)
 
 gNzak = Grid.TextMatrix(mousRow, orNomZak)
 sql = rowFromOrdersSQL & " WHERE (((Orders.numOrder)= " & gNzak & " ));"
-Set tqOrders = myOpenRecordSet("##57", sql, dbOpenForwardOnly)
+Set tqOrders = myOpenRecordSet(myErr, sql, dbOpenForwardOnly)
 If tqOrders Is Nothing Then myBase.Close: End
 If tqOrders.BOF Then myBase.Close: End
 
 copyRowToGrid mousRow
+
+'tqOrders.Close
 End Sub
 
 Function isConflict(Optional msg As String = "") As Boolean
@@ -1109,14 +1097,14 @@ Me.MousePointer = flexDefault
 Exit Sub
 
 ERR1:
-If Err = 76 Then
+If err = 76 Then
     MsgBox "Невозможно создать файл " & tmpFile, , "Error: Не обнаружен ПК или Путь к файлу"
-ElseIf Err = 53 Then
+ElseIf err = 53 Then
     Resume Next ' файла м.не быть
-ElseIf Err = 47 Then
+ElseIf err = 47 Then
     MsgBox "Невозможно создать файл " & tmpFile, , "Error: Нет доступа на запись."
 Else
-    MsgBox Error, , "Ошибка 47-" & Err '##47
+    MsgBox Error, , "Ошибка 47-" & err '##47
     'End
 End If
 GoTo ENs
@@ -1167,6 +1155,12 @@ On Error Resume Next 'т.к. почему-то вызывается во время перехода из
 'FindFirm в  GuideFirms
 If beStart Then Orders.Grid.SetFocus
 beStart = True
+
+If refreshCurrentRow Then
+    refreshCurrentRow = False
+    openOrdersRowToGrid "##activate"
+    tqOrders.Close
+End If
 End Sub
 
 Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
@@ -1736,7 +1730,7 @@ On Error GoTo sqle
     mText = "Подтвердите, что вы хотите " _
         & "перенести заказ из счета " & p_Invoice & " в счет " & p_newInvoice
     sql = "call wf_move_jscet (" & p_numOrder & ", " & CStr(id_jscet_new) & ")"
-    Debug.Print sql
+    'Debug.Print sql
     If MsgBox(mText, vbOKCancel, "Вы уверены?") = vbOK Then
         myBase.Execute sql
     Else
@@ -1831,22 +1825,19 @@ If zakazNum = 0 Then Exit Sub
 If mousRow = 0 Then Exit Sub
 
 gNzak = Grid.TextMatrix(mousRow, orNomZak)
-sql = "SELECT O.CehId, O.StatusId, O.lastModified, m.Manag From Orders o " _
+sql = "SELECT O.StatusId, O.lastModified, m.Manag From Orders o " _
 & " join GuideManag m on o.lastManagId = m.managid " _
 & " WHERE (((O.numOrder)=" & gNzak & "));"
 'Debug.Print (sql)
-If Not byErrSqlGetValues("##174", sql, cehId, statId, orderTimestamp, lastManager) Then Exit Sub
+If Not byErrSqlGetValues("##174", sql, statId, orderTimestamp, lastManager) Then Exit Sub
 
 If mousCol = orVrVip Then
-    If dostup = "a" And statId = 4 Then
-      If MsgBox("Это несанкционированное изменение Времени выполнения! " & _
-      " Если вы уверены нажмите 'Да'.", vbYesNo Or vbDefaultButton2, _
-      "Заказ № " & gNzak) = vbYes Then textBoxInGridCell tbMobile, Grid
-    End If
+    'If dostup = "a" And statId = 4 Then
+    '  If MsgBox("Это несанкционированное изменение Времени выполнения! " & _
+    '  " Если вы уверены нажмите 'Да'.", vbYesNo Or vbDefaultButton2, _
+    '  "Заказ № " & gNzak) = vbYes Then textBoxInGridCell tbMobile, Grid
+    'End If
 ElseIf mousCol = orNomZak Then
-#If COMTEC = 1 Then '---------------------------------------------------
-    MsgBox "Предметы теперь смотри в Комтеx", , ""
-#Else
   If statId = 7 Then
     MsgBox "У заказа с данным статусом не может быть предметов!", , "Предупреждение"
     Exit Sub
@@ -1902,7 +1893,6 @@ BB:     tmpStr = ""
     sProducts.Show vbModal
   End If
 
-#End If '-------------------------------------------------------------------
   Exit Sub
 End If
 
@@ -2023,15 +2013,15 @@ ElseIf mousCol = orFirma Then
     Me.PopupMenu mnContext
 ElseIf mousCol = orCeh Then
     ' есть ли накладные
-#If Not COMTEC = 1 Then '---------------------------------------------------
     sql = "SELECT sDocs.numDoc From sDocs WHERE (((sDocs.numDoc)=" & gNzak & "));"
     If Not byErrSqlGetValues("W##175", sql, numDoc) Then Exit Sub
     If numDoc > 0 Then
         MsgBox "По этому заказу выписаны накладные.", , "Изменение цеха недопустимо!"
         Exit Sub
     End If
-#End If '-------------------------------------------------------------------
-    listBoxInGridCell lbCeh, Grid
+    Equipment.orderStatusStr = Grid.TextMatrix(mousRow, orStatus)
+    Equipment.Show vbModal, Me
+    'listBoxInGridCell lbCeh, Grid
 ElseIf mousCol = orStatus Then
 '$odbs?$ в этом блоке мы должны найти опред.запись, =========================
 'заблокировать ее и считать несколько ее полей.
@@ -2042,7 +2032,7 @@ ElseIf mousCol = orStatus Then
     sql = "UPDATE Orders set rowLock = rowLock where numOrder = " & gNzak 'lock02
     myBase.Execute (sql) 'lock03 блокируем
     
-    sql = "SELECT rowLock, StatusId, workTime FROM Orders WHERE numOrder = " & gNzak
+    sql = "SELECT rowLock, StatusId FROM Orders WHERE numOrder = " & gNzak
     Set tbOrders = myOpenRecordSet("##29", sql, dbOpenForwardOnly)
 '    If tbOrders Is Nothing Then Exit Sub
     'If Not findZakazInTable("Orders", "msg") Then GoTo ExCl
@@ -2065,7 +2055,7 @@ ElseIf mousCol = orStatus Then
     tbOrders!rowLock = Orders.cbM.Text
     tbOrders.update ' снимаем блокировку
     statId = tbOrders!StatusId
-    If Not IsNull(tbOrders!workTime) Then _
+    'If Not IsNull(tbOrders!workTime) Then _
         neVipolnen = tbOrders!workTime
     wrkDefault.CommitTrans ' снимаем блокировку
     tbOrders.Close
@@ -2081,31 +2071,26 @@ ElseIf mousCol = orStatus Then
      listBoxInGridCell lbDel, Grid, "select"
    ElseIf Grid.TextMatrix(mousRow, orCeh) <> "" Then
         If statId = 1 Then 'в работе                                 $$1
-          sql = "SELECT Nevip from OrdersInCeh WHERE (((numOrder)=" & gNzak & "));"
-'          Set tbCeh = myOpenRecordSet("##373", "select * from OrdersInCeh", dbOpenForwardOnly)
+          sql = "SELECT Nevip from OrdersInCeh WHERE numOrder = " & gNzak
           Set tbCeh = myOpenRecordSet("##373", sql, dbOpenForwardOnly)
-'          If tbCeh Is Nothing Then Exit Sub '$$1
-'          tbCeh.index = "PrimaryKey"        '
-'          tbCeh.Seek "=", gNzak             '
-'          If tbCeh.NoMatch Then             '
            If tbCeh.BOF Then
-            neVipolnen = 0
+            ''neVipolnen = 0
             tbCeh.Close
             MsgBox "Заказа № " & gNzak & " нет в цеховой сводке поэтому " & _
             "текущий статус считается сбойным. Измените статус либо " & _
             "обратитесь к Администратору.", , "Error"             '
             GoTo ALL                              '
           Else
-              neVipolnen = Round(neVipolnen * tbCeh!nevip, 2)   '$$1
+              ''neVipolnen = Round(neVipolnen * tbCeh!nevip, 2)   '$$1
               tbCeh.Close
           End If                                  '
         End If                                    '
-        If startParams Then
-            Zakaz.Show vbModal
-            refreshTimestamp gNzak
-        Else
-            msgOfZakaz ("##19")
-        End If
+        ''If startParams Then
+        ''   'Zakaz.Show vbModal
+        ''    refreshTimestamp gNzak
+        ''Else
+        ''    msgOfZakaz ("##19")
+        ''End If
    Else
      If dostup <> "a" Then
         listBoxInGridCell lbClose, Grid, "select"
@@ -3351,11 +3336,11 @@ End If
 Exit Sub
 
 ERR1:
-If Err = 7 Then
+If err = 7 Then
     MsgBox "Программе нехватает памяти для просмотра всех заказов. " & _
     "Установите меньший период просмотра!", , "Ошибка 351"
 Else
-    MsgBox Error, , "Ошибка 351-" & Err & ":  " '##351
+    MsgBox Error, , "Ошибка 351-" & err & ":  " '##351
 End If
 On Error Resume Next
 GoTo NXT2
@@ -3470,7 +3455,9 @@ Sub copyRowToGrid(row As Long)
 
  If Not IsNull(tqOrders!invoice) Then _
      Grid.TextMatrix(row, orInvoice) = tqOrders!invoice
+If Not IsNull(tqOrders!Ceh) Then
  Grid.TextMatrix(row, orCeh) = tqOrders!Ceh
+End If
  Grid.TextMatrix(row, orMen) = tqOrders!Manag
  Grid.TextMatrix(row, orFirma) = tqOrders!name
  LoadDate Grid, row, orData, tqOrders!inDate, "dd.mm.yy"
@@ -3578,16 +3565,16 @@ Else
     Zakaz.cmRepit.Visible = True
     
 '    If Not findZakazInTable_("Orders") Then Exit Function '$#$
-    sql = "SELECT StatusId, outDateTime from Orders " & _
+    sql = "SELECT StatusId from Orders " & _
     "WHERE (((Orders.numOrder)=" & gNzak & "));"
     Set tbOrders = myOpenRecordSet("##402", sql, dbOpenForwardOnly)
     If tbOrders.BOF Then Exit Function
     
-    If IsDate(tbOrders!outDateTime) Then
-        I = DateDiff("d", curDate, tbOrders!outDateTime) + 1
-        addDays I 'добавляем дни, т.к. Дата Выд тек.заказа может оказаться
+    ''If IsDate(tbOrders!outDateTime) Then
+    ''    I = DateDiff("d", curDate, tbOrders!outDateTime) + 1
+    ''    addDays I 'добавляем дни, т.к. Дата Выд тек.заказа может оказаться
                   'дальше чем всех других, либо чем stDay и rMaxDay
-    End If
+    ''End If
     id = tbOrders!StatusId
     tbOrders.Close
 End If
@@ -3602,22 +3589,22 @@ End If
     Zakaz.lv.ListItems("k1").SubItems(zkResurs) = Round(nr * Nstan * kpd, 1)
 
 If id = 0 Or id = 7 Then 'принят или аннулир
-    neVipolnen = 0
-    neVipolnen_O = 0
+    ''neVipolnen = 0
+    ''neVipolnen_O = 0
     If idCeh > 0 Then
         Zakaz.Caption = "Сетка заказов " & Ceh(cehId)
     ElseIf id = 0 Then
         Zakaz.Caption = "Перемещение заказа в цех " & Ceh(cehId)
     End If
     
-    Zakaz.tbWorkTime = ""
+    Zakaz.tbWorktime = ""
     Zakaz.tbReadyDate = ""
 Else
     Zakaz.Caption = "Редактирование заказа"
     Zakaz.tbDateRS = Grid.TextMatrix(mousRow, orDataRS)
     Zakaz.tbReadyDate = Grid.TextMatrix(mousRow, orDataVid)
           
-    Zakaz.tbWorkTime = neVipolnen
+    ''Zakaz.tbWorkTime = neVipolnen
     
     v = getTableField("OrdersMO", "StatM")
     If cbMOsetByText(Zakaz.cbM, v) Then
@@ -3635,9 +3622,9 @@ Else
             "WHERE (((numOrder)=" & gNzak & "));"
 'MsgBox sql
             byErrSqlGetValues "##384", sql, s '$odbc18!$
-            neVipolnen_O = Round(s, 2)
+            ''neVipolnen_O = Round(s, 2)
         
-            Zakaz.tbVrVipO = neVipolnen_O
+            ''Zakaz.tbVrVipO = neVipolnen_O
         End If
     End If
 End If
@@ -3792,7 +3779,7 @@ Dim s As Double
     On Error GoTo errMsg
     GoTo START
 errMsg:
-    MsgBox Error, , "Ошибка  " & Err & " в п\п isNewEtap"
+    MsgBox Error, , "Ошибка  " & err & " в п\п isNewEtap"
     End
 START:
 #End If
