@@ -831,30 +831,24 @@ clearGrid Grid2
 If numExt = 254 Then
     sql = "SELECT n.nomNom, n.nomName, n.perList" _
     & " ,n.ed_Izmer, n.ed_Izmer2, d.quant as quantity  " _
-    & " ,n.Size, n.cod, h.ceh " _
+    & " ,n.Size, n.cod" _
     & " FROM sDMC d" _
     & " JOIN sGuideNomenk n ON n.nomNom = d.nomNom" _
-    & " LEFT JOIN sGuideKlass k ON n.klassId = k.klassId" _
-    & " LEFT JOIN GuideCeh h ON h.cehId = k.cehId" _
     & " WHERE d.numDoc = " & numDoc & " And d.numExt =" & numExt
 ElseIf Regim <> "fromDocs" Then GoTo AA
 ElseIf numExt = 0 And sDocs.reservNoNeed Then ' без резервирования
     sql = "SELECT n.nomNom, n.nomName, n.perList" _
     & " ,n.ed_Izmer, n.ed_Izmer2, d.quantity  " _
-    & " ,n.Size, n.cod, h.ceh " _
+    & " ,n.Size, n.cod" _
     & " FROM sGuideNomenk n" _
     & " JOIN sDMCmov d ON n.nomNom = d.nomNom" _
-    & " LEFT JOIN sGuideKlass k ON n.klassId = k.klassId" _
-    & " LEFT JOIN GuideCeh h ON h.cehId = k.cehId" _
     & "WHERE d.numDoc =" & numDoc
 Else ' ном-ра заказа или выписанная из Цеха с Целого склада
 AA: sql = "SELECT n.nomNom, n.nomName, n.perList " _
     & " ,n.ed_Izmer, n.ed_Izmer2, d.quantity" _
-    & " ,n.Size, n.cod, h.ceh " _
+    & " ,n.Size, n.cod" _
     & " FROM sDMCrez d " _
     & " JOIN sGuideNomenk n ON n.nomNom = d.nomNom" _
-    & " LEFT JOIN sGuideKlass k ON n.klassId = k.klassId" _
-    & " LEFT JOIN GuideCeh h ON h.cehId = k.cehId" _
     & " WHERE d.numDoc =" & numDoc
 End If
 'MsgBox sql
@@ -1499,12 +1493,10 @@ If Grid5.TextMatrix(mousRow5, prType) = "изделие" Then
         Grid2.AddItem ""
         Grid2.TextMatrix(il, fnNomNom) = NN(il)
         Dim ceh As String
-        sql = "SELECT n.Size, n.ed_Izmer, n.cod, n.nomName, h.ceh " _
+        sql = "SELECT n.Size, n.ed_Izmer, n.cod, n.nomName" _
             & " from sGuideNomenk n " _
-            & " LEFT JOIN sGuideKlass k ON k.klassId = n.klassId" _
-            & " LEFT JOIN GuideCeh h ON h.cehId = k.cehId" _
             & " WHERE nomNom ='" & NN(il) & "'"
-        byErrSqlGetValues "##413", sql, str, str2, str3, str4, ceh
+        byErrSqlGetValues "##413", sql, str, str2, str3, str4
         
         Grid2.TextMatrix(il, fnNomName) = str3 & " " & str4 & " " & str
         Grid2.TextMatrix(il, fnEdIzm) = str2
