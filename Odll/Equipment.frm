@@ -294,6 +294,12 @@ Private Sub deleteOrderEquip(Index As Integer)
     
 End Sub
 
+Private Sub cmSetOutDate_Click(Index As Integer)
+    Dim cehId As Integer
+    cehId = Index + 1
+    
+End Sub
+
 Private Sub Form_Load()
     lbNumorder.Caption = gNzak
     lbStatus.Caption = orderStatusStr

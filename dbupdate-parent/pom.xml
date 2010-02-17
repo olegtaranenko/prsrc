@@ -27,9 +27,22 @@
 			</properties>
 		</profile>
 		<profile>
-			<id>user-defined</id>
+			<id>development</id>
 			<activation>
 				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<changelog.context>${context}</changelog.context>
+				<prior.port>9810</prior.port>
+				<accountn.port>9811</accountn.port>
+				<markmaster.port>9812</markmaster.port>
+				<stime.port>9813</stime.port>
+			</properties>
+		</profile>
+		<profile>
+			<id>make-dev</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
 			</activation>
 			<properties>
 				<changelog.context>${context}</changelog.context>

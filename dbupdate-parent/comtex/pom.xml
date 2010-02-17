@@ -21,6 +21,9 @@
 	<properties>
 		<syb.username>admin</syb.username>
 		<syb.password>z</syb.password>
+		<asa.remote.pm>dev_prior</asa.remote.pm>
+		<asa.remote.user>dba</asa.remote.user>
+		<asa.remote.password>sql</asa.remote.password>
 	</properties>
 
 

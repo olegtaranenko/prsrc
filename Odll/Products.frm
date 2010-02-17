@@ -708,12 +708,11 @@ Grid.ColWidth(nkNomer) = 0 '900
 Grid.ColWidth(nkEdIzm) = 630 'ostat
 Grid.ColWidth(nkCurOstat) = 0
 
-Grid2.FormatString = "|<Номер|<Описание|<Ед.измерения|кол-во|Оборуд."
+Grid2.FormatString = "|<Номер|<Описание|<Ед.измерения|кол-во"
 Grid2.ColWidth(0) = 0
 Grid2.ColWidth(fnNomNom) = 0 '900
 Grid2.ColWidth(fnEdIzm) = 435
 Grid2.ColWidth(fnQuant) = 585
-Grid2.ColWidth(fnEquip) = 600
 
 Grid3.FormatString = "|<Номер|<Размер|<Описание|id"
 
@@ -871,9 +870,6 @@ If Not tbNomenk.BOF Then
         tbNomenk!nomName & " " & tbNomenk!Size
     Grid2.TextMatrix(quantity2, fnEdIzm) = tbNomenk!ed_Izmer
     Grid2.TextMatrix(quantity2, fnQuant) = Round(tbNomenk!quantity, 2)
-    If Not IsNull(tbNomenk!ceh) Then
-        Grid2.TextMatrix(quantity2, fnEquip) = tbNomenk!ceh
-    End If
     If Regim = "fromDocs" Then
       If sDocs.isIntMove() Then
         Grid2.TextMatrix(quantity2, fnEdIzm) = tbNomenk!ed_Izmer2
@@ -1513,7 +1509,6 @@ If Grid5.TextMatrix(mousRow5, prType) = "изделие" Then
         Grid2.TextMatrix(il, fnNomName) = str3 & " " & str4 & " " & str
         Grid2.TextMatrix(il, fnEdIzm) = str2
         Grid2.TextMatrix(il, fnQuant) = Round(QQ(il), 2)
-        Grid2.TextMatrix(il, fnEquip) = ceh
     Next il
     
     If quantity2 > 0 Then Grid2.removeItem Grid2.rows - 1
@@ -1527,13 +1522,6 @@ Else
         " " & Grid5.TextMatrix(mousRow5, prDescript)
     Grid2.TextMatrix(1, fnEdIzm) = Grid5.TextMatrix(mousRow5, prEdizm)
     Grid2.TextMatrix(1, fnQuant) = Grid5.TextMatrix(mousRow5, prQuant)
-    sql = "SELECT h.ceh " _
-        & " from sGuideNomenk n " _
-        & " LEFT JOIN sGuideKlass k ON k.klassId = n.klassId" _
-        & " LEFT JOIN GuideCeh h ON h.cehId = k.cehId" _
-        & " WHERE n.nomNom ='" & Grid5.TextMatrix(mousRow5, prId) & "'"
-    byErrSqlGetValues "##413.2", sql, ceh
-    Grid2.TextMatrix(1, fnEquip) = ceh
 End If
 Grid2.Visible = True
 

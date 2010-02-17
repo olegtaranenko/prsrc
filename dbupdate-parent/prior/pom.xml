@@ -80,6 +80,11 @@
 		<syb.servicename>prior</syb.servicename>
 		<syb.username>dba</syb.username>
 		<syb.password>sql</syb.password>
+		<asa.remote.stime>dev_stime</asa.remote.stime>
+		<asa.remote.pm>dev_pm</asa.remote.pm>
+		<asa.remote.mm>dev_mm</asa.remote.mm>
+		<asa.remote.user>admin</asa.remote.user>
+		<asa.remote.password>z</asa.remote.password>
 	</properties>
 
 </project>

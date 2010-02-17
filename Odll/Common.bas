@@ -228,7 +228,6 @@ Public Const fnNomNom = 1
 Public Const fnNomName = 2
 Public Const fnEdIzm = 3
 Public Const fnQuant = 4
-Public Const fnEquip = 5
 
 'Grid5 в sProducts и Otgruz
 Public Const prId = 0
@@ -1546,7 +1545,7 @@ Dim s As Double, log As String, str As String
  str = LoadDate(Orders.Grid, row, orVrVid, tqOrders!outDateTime, "hh")
  If str <> "" Then log = log & "_" & str
  
- str = LoadNumeric(Orders.Grid, row, orVrVip, tqOrders!worktime, , "#0.0")
+ str = LoadNumeric(Orders.Grid, row, orVrVip, tqOrders!workTime, , "#0.0")
  log = log & " ¬р.вып=" & str
  
  Orders.Grid.TextMatrix(row, orProblem) = tqOrders!problem
@@ -1792,7 +1791,7 @@ While Not tbFirms.EOF '                         *******************
             End If
           End If
           visits = visits + 1
-          wtSum = wtSum + tbOrders!worktime
+          wtSum = wtSum + tbOrders!workTime
           If Not IsNull(tbOrders!paid) Then _
                 paidSum = paidSum + tbOrders!paid
           If Not IsNull(tbOrders!ordered) Then _

@@ -1097,14 +1097,14 @@ Me.MousePointer = flexDefault
 Exit Sub
 
 ERR1:
-If err = 76 Then
+If Err = 76 Then
     MsgBox "Невозможно создать файл " & tmpFile, , "Error: Не обнаружен ПК или Путь к файлу"
-ElseIf err = 53 Then
+ElseIf Err = 53 Then
     Resume Next ' файла м.не быть
-ElseIf err = 47 Then
+ElseIf Err = 47 Then
     MsgBox "Невозможно создать файл " & tmpFile, , "Error: Нет доступа на запись."
 Else
-    MsgBox Error, , "Ошибка 47-" & err '##47
+    MsgBox Error, , "Ошибка 47-" & Err '##47
     'End
 End If
 GoTo ENs
@@ -3336,11 +3336,11 @@ End If
 Exit Sub
 
 ERR1:
-If err = 7 Then
+If Err = 7 Then
     MsgBox "Программе нехватает памяти для просмотра всех заказов. " & _
     "Установите меньший период просмотра!", , "Ошибка 351"
 Else
-    MsgBox Error, , "Ошибка 351-" & err & ":  " '##351
+    MsgBox Error, , "Ошибка 351-" & Err & ":  " '##351
 End If
 On Error Resume Next
 GoTo NXT2
@@ -3556,7 +3556,7 @@ If idCeh > 0 Then ' вызов в режиме Сетки заказов
     id = 0
     Zakaz.urgent = ""
 Else
-    sql = "SELECT urgent from OrdersInCeh WHERE (((numOrder)=" & gNzak & "));"
+    sql = "SELECT urgent from OrdersInCeh WHERE numOrder = " & gNzak
     byErrSqlGetValues "W##381", sql, str
     Zakaz.urgent = str
     
@@ -3565,8 +3565,8 @@ Else
     Zakaz.cmRepit.Visible = True
     
 '    If Not findZakazInTable_("Orders") Then Exit Function '$#$
-    sql = "SELECT StatusId from Orders " & _
-    "WHERE (((Orders.numOrder)=" & gNzak & "));"
+    sql = "SELECT StatusId from Orders o  " & _
+    "WHERE o.numOrder =" & gNzak
     Set tbOrders = myOpenRecordSet("##402", sql, dbOpenForwardOnly)
     If tbOrders.BOF Then Exit Function
     
@@ -3619,8 +3619,7 @@ Else
             Zakaz.tbDateMO.Enabled = False
         Else 'AS nevipO
             sql = "SELECT workTimeMO  FROM OrdersMO " & _
-            "WHERE (((numOrder)=" & gNzak & "));"
-'MsgBox sql
+            "WHERE numOrder = " & gNzak
             byErrSqlGetValues "##384", sql, s '$odbc18!$
             ''neVipolnen_O = Round(s, 2)
         
@@ -3640,10 +3639,14 @@ Zakaz.cmZapros.Enabled = False
 For I = 1 To maxDay
     delta(I) = 0
 Next I
-str = "DateDiff(day,'" & Format(curDate, "yyyy-mm-dd") & "',outDateTime)"
-sql = "SELECT " & str & " AS day, Orders.FirmId From Orders " & _
-"Where (((Orders.cehId) = " & cehId & ") And ((Orders.StatusId) < 4)) " & _
-"GROUP BY " & str & ", Orders.FirmId  HAVING (((" & str & ")>=0));"
+str = "DateDiff(day, now(), oe.outDateTime)"
+sql = "SELECT " & str & " AS day, o.FirmId" _
+& " From Orders o" _
+& " join OrdersEquip oe on oe.numorder = o.numorder and oe.cehId = " & cehId _
+& " Where o.StatusId < 4" _
+& " GROUP BY " & str & ", o.FirmId" _
+& " HAVING " & str & " >= 0"
+
 'MsgBox str & Chr(13) & Chr(13) & sql
 'Debug.Print sql
 
@@ -3779,7 +3782,7 @@ Dim s As Double
     On Error GoTo errMsg
     GoTo START
 errMsg:
-    MsgBox Error, , "Ошибка  " & err & " в п\п isNewEtap"
+    MsgBox Error, , "Ошибка  " & Err & " в п\п isNewEtap"
     End
 START:
 #End If

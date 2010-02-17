@@ -1159,12 +1159,5 @@ where	GuideCeh.cehId = orders.cehId
 		</rollback>
 	</changeSet>
 
-	<changeSet id="16" author="mantis-52" runOnChange="false">
-		<comment>Тип оборудования на котором обрабатывается номенклатура</comment>
-		<addColumn tableName="sGuideKlass">
-			<column name="cehId" type="integer"><constraints nullable="true"/></column>
-		</addColumn>
-	</changeSet>
-
 </databaseChangeLog>
 
