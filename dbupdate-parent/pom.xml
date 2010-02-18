@@ -13,10 +13,6 @@
 			<id>production</id>
 			<activation>
 				<activeByDefault>false</activeByDefault>
-				<property>
-					<name>context</name>
-					<value>production</value>
-				</property>
 			</activation>
 			<properties>
 				<changelog.context>production</changelog.context>
@@ -24,6 +20,9 @@
 				<accountn.port>9801</accountn.port>
 				<markmaster.port>9802</markmaster.port>
 				<stime.port>9803</stime.port>
+				<remote.odbc.pm>dev_pm</remote.odbc.pm>
+				<remote.odbc.mm>dev_mm</remote.odbc.mm>
+				<remote.odbc.stime>dev_stime</remote.odbc.stime>
 			</properties>
 		</profile>
 		<profile>
@@ -37,25 +36,28 @@
 				<accountn.port>9811</accountn.port>
 				<markmaster.port>9812</markmaster.port>
 				<stime.port>9813</stime.port>
+				<remote.odbc.pm>dev_accountn</remote.odbc.pm>
+				<remote.odbc.mm>dev_markmaster</remote.odbc.mm>
+				<remote.odbc.stime>dev_stime</remote.odbc.stime>
 			</properties>
 		</profile>
 		<profile>
-			<id>make-dev</id>
+			<id>parallel</id>
 			<activation>
 				<activeByDefault>false</activeByDefault>
 			</activation>
 			<properties>
-				<changelog.context>${context}</changelog.context>
-				<prior.port>9810</prior.port>
-				<accountn.port>9811</accountn.port>
-				<markmaster.port>9812</markmaster.port>
-				<stime.port>9813</stime.port>
+				<changelog.context>parallel</changelog.context>
+				<prior.port>9820</prior.port>
+				<accountn.port>9821</accountn.port>
+				<markmaster.port>9822</markmaster.port>
+				<stime.port>9823</stime.port>
+				<changelog.file>${changelog.PATH}/parallel-${artifactId}.xml</changelog.file>
 			</properties>
 		</profile>
 	</profiles>
 
 	<build>
-<!--		<sourceDirectory>src/main/liquibase</sourceDirectory> -->
 		<pluginManagement>
 			<plugins>
 				<plugin>
@@ -100,7 +102,7 @@
 					<configuration>
 						<verbose>true</verbose>
 						<changeLogFile>${changelog.file}</changeLogFile>
-						<url><![CDATA[jdbc:sybase:Tds:localhost:${syb.server.port}?servicename=${syb.servicename}]]></url>
+						<url><![CDATA[jdbc:sybase:Tds:localhost:${syb.server.port}/${syb.servicename}]]></url>
 						<driver>${sybase.driver}</driver>
 <!-- 
 						<url><![CDATA[jdbc:odbc:dsn=accountn]]></url>
@@ -122,14 +124,14 @@
 					</configuration>
 					<executions>
 						<execution>
-							<id>generate-sql-for-update</id>
+							<id>generate-sqls</id>
 							<phase>compile</phase>
 							<goals>
 								<goal>updateSQL</goal>
 							</goals>
 						</execution>
 						<execution>
-							<id>execute-db-update</id>
+							<id>execute-sqls</id>
 							<phase>process-test-resources</phase>
 							<goals>
 								<goal>update</goal>
@@ -145,7 +147,7 @@
 		<module>prior</module>
 	</modules>
 	<properties>
-		<liquibase.version>1.9.4.0-SNAPSHOT</liquibase.version>
+		<liquibase.version>1.9.5.0-SNAPSHOT</liquibase.version>
 		<sybase.driver>com.sybase.jdbc3.jdbc.SybDriver</sybase.driver>
 		<sybase.artifactId>jconn3</sybase.artifactId>
 		<sybase.driver.version>6.0</sybase.driver.version>

@@ -17,13 +17,29 @@
 		<module>mm</module>
 	</modules>
 
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.liquibase</groupId>
+					<artifactId>liquibase-plugin</artifactId>
+					<version>${liquibase.version}</version>
+					<configuration>
+						<expressionVars>
+							<property>
+								<name>this.server.name</name>
+								<value>${syb.servicename.orig}</value>
+							</property>
+						</expressionVars>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
 
 	<properties>
 		<syb.username>admin</syb.username>
 		<syb.password>z</syb.password>
-		<asa.remote.pm>dev_prior</asa.remote.pm>
-		<asa.remote.user>dba</asa.remote.user>
-		<asa.remote.password>sql</asa.remote.password>
 	</properties>
 
 

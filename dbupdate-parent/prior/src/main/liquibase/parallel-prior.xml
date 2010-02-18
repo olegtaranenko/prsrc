@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="CP1251"?>
+ 
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
+		 http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd"
+  logicalFilePath="parallel-prior.xml"
+>
+ 
+
+	<changeSet id="1" author="parallel" runOnChange="true" context="parallel">
+		<comment>Научиться запускать и работать параллельно в две версиях системы: production и development</comment>
+		<sql><![CDATA[alter server accountn class 'ASAODBC' USING 'DSN=${remote.odbc.pm};UID=admin;PWD=z']]></sql>
+		<sql><![CDATA[alter server markmaster class 'ASAODBC' USING 'DSN=${remote.odbc.mm};UID=admin;PWD=z']]></sql>
+		<sql><![CDATA[alter server stime class 'ASAODBC' USING 'DSN=${remote.odbc.stime};UID=admin;PWD=z']]></sql>
+	</changeSet>
+
+
+
+</databaseChangeLog>
+

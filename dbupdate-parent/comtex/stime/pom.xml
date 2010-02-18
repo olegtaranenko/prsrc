@@ -11,6 +11,18 @@
   <packaging>jar</packaging>
   <name>Update stime</name>
   <description>Update stime database</description>
+	<profiles>
+		<profile>
+			<id>parallel</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<syb.servicename>dev_stime</syb.servicename>
+			</properties>
+		</profile>
+	</profiles>
+	
 	<build>
 		<resources>
 			<resource>
@@ -53,6 +65,7 @@
 	<properties>
 		<syb.server.port>${stime.port}</syb.server.port>
 		<syb.servicename>stime</syb.servicename>
+		<syb.servicename.orig>stime</syb.servicename.orig>
 	</properties>
 
 </project>

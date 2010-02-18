@@ -11,6 +11,20 @@
   <name>Update markmaster</name>
   <version>1.0-SNAPSHOT</version>
   <description>Update markmaster database</description>
+
+	<profiles>
+		<profile>
+			<id>parallel</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<syb.servicename>dev_mm</syb.servicename>
+			</properties>
+		</profile>
+	</profiles>
+	
+	
 	<build>
 		<resources>
 			<resource>
@@ -53,5 +67,6 @@
 	<properties>
 		<syb.server.port>${markmaster.port}</syb.server.port>
 		<syb.servicename>markmaster</syb.servicename>
+		<syb.servicename.orig>markmaster</syb.servicename.orig>
 	</properties>
 </project>

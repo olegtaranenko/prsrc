@@ -1,8 +1,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<artifactId>dbupdate-parent</artifactId>
 		<groupId>ru.petmas</groupId>
+		<artifactId>dbupdate-parent</artifactId>
 		<version>1.0-SNAPSHOT</version>
 	</parent>
 	<packaging>jar</packaging>
@@ -13,28 +13,13 @@
 	<description>Update Prior database</description>
 	<profiles>
 		<profile>
-			<id>mergeFirmBay</id>
+			<id>parallel</id>
 			<activation>
 				<activeByDefault>false</activeByDefault>
 			</activation>
 			<properties>
-				<changelog.file>${changelog.PATH}/merge-firm.xml</changelog.file>
-				<orders.table.name>BayOrders</orders.table.name>
-				<firms.table.name>BayGuideFirms</firms.table.name>
+				<syb.servicename>dev_prior</syb.servicename>
 			</properties>
-			<build>
-				<resources>
-					<resource>
-	        		    <filtering>true</filtering>
-						<directory>${basedir}/src/main/liquibase</directory>
-						<includes>
-							<include>**/*.xml</include>
-							<include>**/*.sql</include>
-							<include>**/*.csv</include>
-						</includes>
-					</resource>
-				</resources>
-			</build>
 		</profile>
 	</profiles>
 	<build>
@@ -58,8 +43,8 @@
 				</includes>
 			</resource>
 		</resources>
-		<plugins>
 
+		<plugins>
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
 				<configuration>
@@ -71,6 +56,22 @@
 				<groupId>org.liquibase</groupId>
 				<artifactId>liquibase-plugin</artifactId>
 				<version>${liquibase.version}</version>
+				<configuration>
+					<expressionVars>
+						<property>
+							<name>remote.odbc.pm</name>
+							<value>${remote.odbc.pm}</value>
+						</property>
+						<property>
+							<name>remote.odbc.mm</name>
+							<value>${remote.odbc.mm}</value>
+						</property>
+						<property>
+							<name>remote.odbc.stime</name>
+							<value>${remote.odbc.stime}</value>
+						</property>
+					</expressionVars>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
@@ -78,13 +79,9 @@
 	<properties>
 		<syb.server.port>${prior.port}</syb.server.port>
 		<syb.servicename>prior</syb.servicename>
+		<syb.servicename.orig>prior</syb.servicename.orig>
 		<syb.username>dba</syb.username>
 		<syb.password>sql</syb.password>
-		<asa.remote.stime>dev_stime</asa.remote.stime>
-		<asa.remote.pm>dev_pm</asa.remote.pm>
-		<asa.remote.mm>dev_mm</asa.remote.mm>
-		<asa.remote.user>admin</asa.remote.user>
-		<asa.remote.password>z</asa.remote.password>
 	</properties>
 
 </project>

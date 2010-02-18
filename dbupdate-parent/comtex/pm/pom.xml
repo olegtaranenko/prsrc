@@ -11,6 +11,18 @@
   <name>Update accountn</name>
   <version>1.0-SNAPSHOT</version>
   <description>Бухгалтерская база для Петровских Мастерских</description>
+	<profiles>
+		<profile>
+			<id>parallel</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<syb.servicename>dev_pm</syb.servicename>
+			</properties>
+		</profile>
+	</profiles>
+	
 	<build>
 		<resources>
 			<resource>
@@ -52,5 +64,6 @@
 	<properties>
 		<syb.server.port>${accountn.port}</syb.server.port>
 		<syb.servicename>accountn</syb.servicename>
+		<syb.servicename.orig>accountn</syb.servicename.orig>
 	</properties>
 </project>
