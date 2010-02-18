@@ -1819,6 +1819,7 @@ Dim lastManager As String
 Dim strDate As String
 Dim billCompany As String
 Dim I As Integer
+Dim vOutDatetime As Date
 
 
 If zakazNum = 0 Then Exit Sub
@@ -2055,7 +2056,7 @@ ElseIf mousCol = orStatus Then
     tbOrders!rowLock = Orders.cbM.Text
     tbOrders.update ' снимаем блокировку
     statId = tbOrders!StatusId
-    'If Not IsNull(tbOrders!workTime) Then _
+    If Not IsNull(tbOrders!workTime) Then _
         neVipolnen = tbOrders!workTime
     wrkDefault.CommitTrans ' снимаем блокировку
     tbOrders.Close
@@ -2074,23 +2075,23 @@ ElseIf mousCol = orStatus Then
           sql = "SELECT Nevip from OrdersInCeh WHERE numOrder = " & gNzak
           Set tbCeh = myOpenRecordSet("##373", sql, dbOpenForwardOnly)
            If tbCeh.BOF Then
-            ''neVipolnen = 0
+            neVipolnen = 0
             tbCeh.Close
             MsgBox "Заказа № " & gNzak & " нет в цеховой сводке поэтому " & _
             "текущий статус считается сбойным. Измените статус либо " & _
             "обратитесь к Администратору.", , "Error"             '
             GoTo ALL                              '
           Else
-              ''neVipolnen = Round(neVipolnen * tbCeh!nevip, 2)   '$$1
+              neVipolnen = Round(neVipolnen * tbCeh!nevip, 2)   '$$1
               tbCeh.Close
           End If                                  '
         End If                                    '
-        ''If startParams Then
-        ''   'Zakaz.Show vbModal
-        ''    refreshTimestamp gNzak
-        ''Else
-        ''    msgOfZakaz ("##19")
-        ''End If
+        If startParams Then
+           Zakaz.Show vbModal
+            refreshTimestamp gNzak
+        Else
+            msgOfZakaz ("##19")
+        End If
    Else
      If dostup <> "a" Then
         listBoxInGridCell lbClose, Grid, "select"
@@ -3565,16 +3566,17 @@ Else
     Zakaz.cmRepit.Visible = True
     
 '    If Not findZakazInTable_("Orders") Then Exit Function '$#$
-    sql = "SELECT StatusId from Orders o  " & _
-    "WHERE o.numOrder =" & gNzak
+    sql = "SELECT StatusId, oe.outDateTime from Orders o" _
+    & " JOIN OrdersEquip oe on oe.numorder = o.numorder and oe.cehId = " & CStr(cehId) _
+    & " WHERE o.numOrder =" & gNzak
     Set tbOrders = myOpenRecordSet("##402", sql, dbOpenForwardOnly)
     If tbOrders.BOF Then Exit Function
     
-    ''If IsDate(tbOrders!outDateTime) Then
-    ''    I = DateDiff("d", curDate, tbOrders!outDateTime) + 1
-    ''    addDays I 'добавляем дни, т.к. Дата Выд тек.заказа может оказаться
+    If IsDate(tbOrders!outDateTime) Then
+        I = DateDiff("d", curDate, tbOrders!outDateTime) + 1
+        addDays I 'добавляем дни, т.к. Дата Выд тек.заказа может оказаться
                   'дальше чем всех других, либо чем stDay и rMaxDay
-    ''End If
+    End If
     id = tbOrders!StatusId
     tbOrders.Close
 End If
@@ -3589,8 +3591,8 @@ End If
     Zakaz.lv.ListItems("k1").SubItems(zkResurs) = Round(nr * Nstan * kpd, 1)
 
 If id = 0 Or id = 7 Then 'принят или аннулир
-    ''neVipolnen = 0
-    ''neVipolnen_O = 0
+    neVipolnen = 0
+    neVipolnen_O = 0
     If idCeh > 0 Then
         Zakaz.Caption = "Сетка заказов " & Ceh(cehId)
     ElseIf id = 0 Then
@@ -3604,7 +3606,7 @@ Else
     Zakaz.tbDateRS = Grid.TextMatrix(mousRow, orDataRS)
     Zakaz.tbReadyDate = Grid.TextMatrix(mousRow, orDataVid)
           
-    ''Zakaz.tbWorkTime = neVipolnen
+    Zakaz.tbWorkTime = neVipolnen
     
     v = getTableField("OrdersMO", "StatM")
     If cbMOsetByText(Zakaz.cbM, v) Then
@@ -3621,9 +3623,9 @@ Else
             sql = "SELECT workTimeMO  FROM OrdersMO " & _
             "WHERE numOrder = " & gNzak
             byErrSqlGetValues "##384", sql, s '$odbc18!$
-            ''neVipolnen_O = Round(s, 2)
+            neVipolnen_O = Round(s, 2)
         
-            ''Zakaz.tbVrVipO = neVipolnen_O
+            Zakaz.tbVrVipO = neVipolnen_O
         End If
     End If
 End If

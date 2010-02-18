@@ -41,7 +41,7 @@ Public manId() As Integer '$$7
 Public Manag() As String  '
 Public insideId() As String
 Public Const begCehProblemId = 10 ' начало цеховых проблем в справочнике
-'Public neVipolnen As Double, neVipolnen_O As Double
+Public neVipolnen As Double, neVipolnen_O As Double
 Public maxDay As Integer ' число дней в реестре
 Public befDays As Integer ' число дней до даты реестра (когда сменилась дата)
 Public webSvodkaPath As String
@@ -1545,7 +1545,7 @@ Dim s As Double, log As String, str As String
  str = LoadDate(Orders.Grid, row, orVrVid, tqOrders!outDateTime, "hh")
  If str <> "" Then log = log & "_" & str
  
- str = LoadNumeric(Orders.Grid, row, orVrVip, tqOrders!workTime, , "#0.0")
+ str = LoadNumeric(Orders.Grid, row, orVrVip, tqOrders!worktime, , "#0.0")
  log = log & " Вр.вып=" & str
  
  Orders.Grid.TextMatrix(row, orProblem) = tqOrders!problem
@@ -1791,7 +1791,7 @@ While Not tbFirms.EOF '                         *******************
             End If
           End If
           visits = visits + 1
-          wtSum = wtSum + tbOrders!workTime
+          wtSum = wtSum + tbOrders!worktime
           If Not IsNull(tbOrders!paid) Then _
                 paidSum = paidSum + tbOrders!paid
           If Not IsNull(tbOrders!ordered) Then _

@@ -527,7 +527,7 @@ If reg = "" Then
     If stat = "образец" Then
         Grid.TextMatrix(quantity, zgVrVip) = tbVrVipO.Text
     Else
-        Grid.TextMatrix(quantity, zgVrVip) = tbWorkTime.Text
+        Grid.TextMatrix(quantity, zgVrVip) = tbWorktime.Text
     End If
     Grid.TextMatrix(quantity, zgNevip) = nevip
     
@@ -990,7 +990,10 @@ Timer1.Enabled = False
 'Set tbOrders = myOpenRecordSet("##01", "OrdersInCeh", dbOpenTable)
 'If tbOrders Is Nothing Then GoTo AA
 
-sql = "SELECT * from Orders WHERE (((numOrder)=" & gNzak & "));"
+sql = "SELECT o.statusId, oe.worktime " _
+& " from Orders o" _
+& " left join OrdersEquip oe on oe.numorder = o.numorder and oe.cehId = " & cehId _
+& " WHERE o.numOrder = " & gNzak
 Set tbOrders = myOpenRecordSet("##30", sql, dbOpenForwardOnly) '$#$
 'If tbOrders Is Nothing Then GoTo AA
 
@@ -1005,7 +1008,9 @@ id = statId(Zakaz.cbStatus.ListIndex)
 
 Dim workTimeOld As Double, statIdOld As Integer
 workTimeOld = 0
-If Not IsNull(tbOrders!workTime) Then workTimeOld = tbOrders!workTime
+If Not IsNull(tbOrders!WorkTime) Then
+    workTimeOld = tbOrders!WorkTime
+End If
 statIdOld = tbOrders!StatusId
 tbOrders.Close
 
@@ -1077,11 +1082,11 @@ If Not tbOrders.BOF Then
 '        tbOrders!rowLock = ""
        If workChange Then
          If (id = 1 Or id = 5) And editWorkTime Then 'остается в работе или отложен
-'            tbOrders!workTime = Round(tbOrders!workTime + tbWorkTime.Text _
+            tbOrders!worktime = Round(tbOrders!worktime + tbWorktime.Text _
                      - neVipolnen, 1) 'время с учетом коррекции
-            workTime = Round(workTimeOld + tbWorkTime.Text _
+            worktime = Round(workTimeOld + tbWorktime.Text _
                      - neVipolnen, 1) 'время с учетом коррекции
-'            tbOrders!nevip = tbWorkTime.Text / tbOrders!workTime
+            tbOrders!nevip = tbWorktime.Text / tbOrders!worktime
             sql = "UPDATE OrdersInCeh SET Nevip = " & _
             tbWorkTime.Text / workTime & " WHERE (((numOrder)=" & gNzak & "));"
             If myExecute("##393", sql) <> 0 Then GoTo ER1
