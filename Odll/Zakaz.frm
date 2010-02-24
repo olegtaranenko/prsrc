@@ -5,24 +5,23 @@ Begin VB.Form Zakaz
    BackColor       =   &H8000000A&
    BorderStyle     =   3  'Fixed Dialog
    Caption         =   "Перемещение заказа в цеховую сводку"
-   ClientHeight    =   5910
-   ClientLeft      =   45
-   ClientTop       =   330
-   ClientWidth     =   9465
+   ClientHeight    =   5904
+   ClientLeft      =   48
+   ClientTop       =   336
+   ClientWidth     =   9468
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form2"
-   LockControls    =   -1  'True
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   5910
-   ScaleWidth      =   9465
+   ScaleHeight     =   5904
+   ScaleWidth      =   9468
    ShowInTaskbar   =   0   'False
    StartUpPosition =   2  'CenterScreen
    Begin VB.CheckBox ckCeh 
       Caption         =   "Цех"
       Height          =   255
       Left            =   6480
-      TabIndex        =   29
+      TabIndex        =   20
       Top             =   5280
       Visible         =   0   'False
       Width           =   675
@@ -30,12 +29,12 @@ Begin VB.Form Zakaz
    Begin MSFlexGridLib.MSFlexGrid Grid 
       Height          =   3555
       Left            =   60
-      TabIndex        =   27
+      TabIndex        =   18
       Top             =   4920
       Visible         =   0   'False
       Width           =   5835
-      _ExtentX        =   10292
-      _ExtentY        =   6271
+      _ExtentX        =   10287
+      _ExtentY        =   6265
       _Version        =   393216
       AllowUserResizing=   1
    End
@@ -43,81 +42,29 @@ Begin VB.Form Zakaz
       Caption         =   "Новая укладка"
       Height          =   375
       Left            =   6480
-      TabIndex        =   26
+      TabIndex        =   17
       Top             =   5640
       Visible         =   0   'False
       Width           =   1335
-   End
-   Begin VB.ComboBox cbO 
-      Height          =   315
-      ItemData        =   "Zakaz.frx":0000
-      Left            =   8160
-      List            =   "Zakaz.frx":000D
-      Style           =   2  'Dropdown List
-      TabIndex        =   6
-      Top             =   2940
-      Width           =   1035
-   End
-   Begin VB.ComboBox cbM 
-      Height          =   315
-      ItemData        =   "Zakaz.frx":0026
-      Left            =   6660
-      List            =   "Zakaz.frx":0033
-      Style           =   2  'Dropdown List
-      TabIndex        =   5
-      Top             =   2940
-      Width           =   1035
    End
    Begin VB.Timer Timer1 
       Left            =   7080
       Top             =   4140
    End
-   Begin VB.TextBox tbDateMO 
-      Enabled         =   0   'False
-      Height          =   285
-      Left            =   8220
-      TabIndex        =   7
-      Top             =   3360
-      Width           =   915
-   End
-   Begin VB.TextBox tbDateRS 
-      Enabled         =   0   'False
-      Height          =   285
-      Left            =   8220
-      TabIndex        =   4
-      Top             =   2220
-      Width           =   915
-   End
    Begin VB.TextBox tbReadyDate 
       Enabled         =   0   'False
       Height          =   285
       Left            =   8220
-      TabIndex        =   3
+      TabIndex        =   2
       Top             =   1740
       Width           =   915
-   End
-   Begin VB.TextBox tbVrVipO 
-      Enabled         =   0   'False
-      Height          =   285
-      Left            =   8220
-      TabIndex        =   8
-      Top             =   3780
-      Width           =   915
-   End
-   Begin VB.ComboBox cbStatus 
-      Height          =   315
-      Left            =   8220
-      Style           =   2  'Dropdown List
-      TabIndex        =   1
-      Top             =   780
-      Width           =   1215
    End
    Begin VB.CommandButton cmExit 
       Cancel          =   -1  'True
       Caption         =   "Выход"
       Height          =   315
       Left            =   8340
-      TabIndex        =   12
+      TabIndex        =   6
       Top             =   5400
       Width           =   975
    End
@@ -125,7 +72,7 @@ Begin VB.Form Zakaz
       Caption         =   "Cancel"
       Height          =   315
       Left            =   8340
-      TabIndex        =   11
+      TabIndex        =   5
       Top             =   4740
       Visible         =   0   'False
       Width           =   975
@@ -135,19 +82,19 @@ Begin VB.Form Zakaz
       Enabled         =   0   'False
       Height          =   315
       Left            =   7560
-      TabIndex        =   9
+      TabIndex        =   3
       Top             =   4260
       Width           =   975
    End
    Begin MSComctlLib.ListView lv 
       Height          =   4515
       Left            =   60
-      TabIndex        =   13
+      TabIndex        =   7
       TabStop         =   0   'False
       Top             =   360
       Width           =   6375
-      _ExtentX        =   11245
-      _ExtentY        =   7964
+      _ExtentX        =   11240
+      _ExtentY        =   7959
       View            =   3
       LabelEdit       =   1
       LabelWrap       =   -1  'True
@@ -239,7 +186,7 @@ Begin VB.Form Zakaz
       Enabled         =   0   'False
       Height          =   315
       Left            =   6780
-      TabIndex        =   10
+      TabIndex        =   4
       Top             =   4740
       Visible         =   0   'False
       Width           =   975
@@ -248,7 +195,7 @@ Begin VB.Form Zakaz
       Enabled         =   0   'False
       Height          =   285
       Left            =   8220
-      TabIndex        =   2
+      TabIndex        =   1
       Top             =   1320
       Width           =   915
    End
@@ -256,25 +203,17 @@ Begin VB.Form Zakaz
       Caption         =   "Label1"
       Height          =   195
       Left            =   8340
-      TabIndex        =   28
+      TabIndex        =   19
       Top             =   5760
       Visible         =   0   'False
       Width           =   1095
-   End
-   Begin VB.Label laMO 
-      Caption         =   "Макет                    Образец"
-      Height          =   195
-      Left            =   6840
-      TabIndex        =   25
-      Top             =   2700
-      Width           =   2115
    End
    Begin VB.Label laZapas 
       BackColor       =   &H8000000E&
       BorderStyle     =   1  'Fixed Single
       Height          =   255
       Left            =   5400
-      TabIndex        =   24
+      TabIndex        =   16
       Top             =   60
       Width           =   975
    End
@@ -282,14 +221,14 @@ Begin VB.Form Zakaz
       Caption         =   "Запас:"
       Height          =   195
       Left            =   4680
-      TabIndex        =   23
+      TabIndex        =   15
       Top             =   60
       Width           =   675
    End
    Begin VB.Label laError 
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   8.25
+         Size            =   7.8
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -299,13 +238,14 @@ Begin VB.Form Zakaz
       ForeColor       =   &H000000C0&
       Height          =   195
       Left            =   1080
-      TabIndex        =   22
+      TabIndex        =   14
       Top             =   60
       Width           =   3495
    End
    Begin VB.Label laNomZak 
       BackColor       =   &H80000009&
       BorderStyle     =   1  'Fixed Single
+      Enabled         =   0   'False
       Height          =   285
       Left            =   8220
       TabIndex        =   0
@@ -317,24 +257,15 @@ Begin VB.Form Zakaz
       Enabled         =   0   'False
       Height          =   195
       Left            =   6540
-      TabIndex        =   21
+      TabIndex        =   13
       Top             =   3840
       Width           =   1335
-   End
-   Begin VB.Label laDateMO 
-      Caption         =   "Дата Мак.\Обр."
-      Enabled         =   0   'False
-      Height          =   195
-      Left            =   6540
-      TabIndex        =   20
-      Top             =   3420
-      Width           =   1275
    End
    Begin VB.Label laHnomZak 
       Caption         =   "№ Заказа"
       Height          =   195
       Left            =   6540
-      TabIndex        =   19
+      TabIndex        =   12
       Top             =   360
       Width           =   855
    End
@@ -342,24 +273,14 @@ Begin VB.Form Zakaz
       Caption         =   "Статус:"
       Height          =   195
       Left            =   6540
-      TabIndex        =   18
+      TabIndex        =   11
       Top             =   840
       Width           =   1215
-   End
-   Begin VB.Label laDateRS 
-      Alignment       =   2  'Center
-      Caption         =   "Дата Р\С (не позже)"
-      Enabled         =   0   'False
-      Height          =   195
-      Left            =   6540
-      TabIndex        =   17
-      Top             =   2280
-      Width           =   1575
    End
    Begin VB.Label laMess 
       Height          =   555
       Left            =   420
-      TabIndex        =   16
+      TabIndex        =   10
       Top             =   5100
       Width           =   5835
    End
@@ -367,7 +288,7 @@ Begin VB.Form Zakaz
       Caption         =   "Дата выдачи"
       Height          =   195
       Left            =   6540
-      TabIndex        =   15
+      TabIndex        =   9
       Top             =   1800
       Width           =   1155
    End
@@ -375,7 +296,7 @@ Begin VB.Form Zakaz
       Caption         =   "Время выполнения"
       Height          =   255
       Left            =   6540
-      TabIndex        =   14
+      TabIndex        =   8
       Top             =   1320
       Width           =   1515
    End
@@ -568,7 +489,7 @@ If isMzagruz Then getBegEndDays 'ZbDay,ObDay,ZbDay,ObDay (если заполнены)
 
 If reg = "" Then ' не из Enter_cell
     Grid.Clear
-    Grid.Rows = 2
+    Grid.rows = 2
     Grid.FormatString = "|<№ Заказа|<Статус|Вр.вып|Нев-но|Нач.дата|Кон.дата|"
     Grid.ColWidth(0) = 0
     Grid.ColWidth(zgStatus) = 765
@@ -649,8 +570,8 @@ End If
 '        If eDay > ZeDay Or (eDay = ZeDay And bDay <= ZbDay) Then ' не нарушаем сортировку
         If bDay <= ZbDay Then ' не нарушаем сортировку
             dayCorrect ZbDay, ZeDay, urgent
-            ukladka ost, ZeDay, ZbDay, tbWorkTime.Text 'обратная укладка (в bef не попадает)
-            If Not zakazToGrid(reg, cbStatus.Text, tbWorkTime.Text) Then GoTo EN1
+            ukladka ost, ZeDay, ZbDay, tbWorktime.Text 'обратная укладка (в bef не попадает)
+            If Not zakazToGrid(reg, cbStatus.Text, tbWorktime.Text) Then GoTo EN1
             'ZeDay = maxDay + 1 ' чтобы более не срабатывал
             ZbDay = -32000 ' чтобы более не срабатывал
         End If
@@ -663,16 +584,16 @@ End If
     dayCorrect bDay, eDay, ""
     
     If tbOrders!nevip = -1 Then '"образец"
-        nevip = tbOrders!workTime
+        nevip = tbOrders!Worktime
     Else
-        nevip = Round(tbOrders!workTime * tbOrders!nevip, 2)
+        nevip = Round(tbOrders!Worktime * tbOrders!nevip, 2)
     End If
     If isMzagruz Then
         ukladka ost, eDay, bDay, nevip 'обратная укладка
         ukladka befOst, eDay, bDay, nevip 'обратная укладка
     Else
         ukladka ost, bDay, eDay, nevip
-        If tbOrders!StatusId = 1 Or tbOrders!StatusId = -1 Then _
+        If tbOrders!statusId = 1 Or tbOrders!statusId = -1 Then _
             ukladka befOst, bDay, eDay, nevip ' жывые(в раб. и образец)
     End If
     
@@ -683,9 +604,9 @@ End If
       If tbOrders!nevip = -1 Then '"образец"
         Grid.TextMatrix(quantity, zgStatus) = "образец"
       Else
-        Grid.TextMatrix(quantity, zgStatus) = status(tbOrders!StatusId)
+        Grid.TextMatrix(quantity, zgStatus) = status(tbOrders!statusId)
       End If
-      Grid.TextMatrix(quantity, zgVrVip) = tbOrders!workTime
+      Grid.TextMatrix(quantity, zgVrVip) = tbOrders!Worktime
       Grid.TextMatrix(quantity, zgNevip) = nevip
       Grid.TextMatrix(quantity, zgInDate) = Format(tbOrders!inDate, "dd.mm.yy")
       Grid.TextMatrix(quantity, zgOutDate) = Format(tbOrders!outDateTime, "dd.mm.yy")
@@ -718,12 +639,12 @@ If isMzagruz Then
 '  If ZeDay < maxDay + 1 Then
   If ZbDay > -32000 Then
     dayCorrect ZbDay, ZeDay
-    ukladka ost, ZeDay, ZbDay, tbWorkTime.Text 'обратная укладка (в bef не попадает)
-    zakazToGrid reg, cbStatus.Text, tbWorkTime.Text
+    ukladka ost, ZeDay, ZbDay, tbWorktime.Text 'обратная укладка (в bef не попадает)
+    zakazToGrid reg, cbStatus.Text, tbWorktime.Text
   End If
 End If
 
-If reg = "" And quantity > 0 Then Grid.RemoveItem Grid.Rows - 1
+If reg = "" And quantity > 0 Then Grid.removeItem Grid.rows - 1
 EN1:
 tbOrders.Close
 
@@ -840,9 +761,9 @@ lv.Width = lv.Width + w
 laHnomZak.Left = laHnomZak.Left + w
 laNomZak.Left = laNomZak.Left + w
 laStatus.Left = laStatus.Left + w
-cbStatus.Left = cbStatus.Left + w
+'cbStatus.left = cbStatus.left + w
 laWorkTime.Left = laWorkTime.Left + w
-tbWorkTime.Left = tbWorkTime.Left + w
+tbWorktime.Left = tbWorktime.Left + w
 laReadyDate.Left = laReadyDate.Left + w
 tbReadyDate.Left = tbReadyDate.Left + w
 laDateRS.Left = laDateRS.Left + w
@@ -893,6 +814,10 @@ If Grid.MouseRow = 0 And Shift = 2 Then _
 
 End Sub
 
+Private Sub laNomZak_Click()
+    Dim Left As String, Worktime As String, tbWorktime As String, Rollback As String
+End Sub
+
 Private Sub tbDateMO_GotFocus()
 If FormIsActiv Then Zakaz.cmZapros.Enabled = True
 If tbDateMO.Text = "" Then
@@ -906,10 +831,6 @@ End Sub
 Private Sub cbStatus_Click()
 Dim noClick As Boolean
 
-'If noClick Then
-'    noClick = False
-'    Exit Sub
-'End If
 If FormIsActiv Then Zakaz.cmZapros.Enabled = True
 If cbStatus.Text = "в работе" Then
 '    If ((cbO.Text <> "" And cbO.Text <> "утвержден") _
@@ -955,7 +876,7 @@ If cbStatus.Text = "согласов" Or cbStatus.Text = "резерв" Then
     Zakaz.laWorkTime.Enabled = True
     Zakaz.laReadyDate.Enabled = True
     Zakaz.tbReadyDate.Enabled = True
-    Zakaz.tbWorkTime.Enabled = True
+    Zakaz.tbWorktime.Enabled = True
 'ElseIf cbStatus.ListIndex = 1 Then      'в работу
 ElseIf cbStatus.Text = "в работе" Or cbStatus.Text = "отложен" Then
 '    tbDateRS.Text = ""
@@ -964,14 +885,14 @@ ElseIf cbStatus.Text = "в работе" Or cbStatus.Text = "отложен" Then
     Zakaz.laWorkTime.Enabled = True
     Zakaz.laReadyDate.Enabled = True
     Zakaz.tbReadyDate.Enabled = True
-    Zakaz.tbWorkTime.Enabled = True
+    Zakaz.tbWorktime.Enabled = True
 Else
     laWorkTime.Enabled = False
     laReadyDate.Enabled = False
     tbReadyDate.Text = ""
     tbReadyDate.Enabled = False
-    tbWorkTime.Text = ""
-    tbWorkTime.Enabled = False
+    tbWorktime.Text = ""
+    tbWorktime.Enabled = False
     tbDateRS.Text = ""
     tbDateRS.Enabled = False
     laDateRS.Enabled = False
@@ -982,7 +903,7 @@ End Sub
 Private Sub cmAdd_Click()
 Dim I As Integer, str As String, item As ListItem, s As Double, t As Double
 Dim id As Integer, VrVip As String, VrVipO As String, editWorkTime As Boolean
-Dim workTime As String
+Dim Worktime As String
 
 'MaxDay = tmpMaxDay наверно это уже никому не нужно
 
@@ -1008,10 +929,10 @@ id = statId(Zakaz.cbStatus.ListIndex)
 
 Dim workTimeOld As Double, statIdOld As Integer
 workTimeOld = 0
-If Not IsNull(tbOrders!WorkTime) Then
-    workTimeOld = tbOrders!WorkTime
+If Not IsNull(tbOrders!Worktime) Then
+    workTimeOld = tbOrders!Worktime
 End If
-statIdOld = tbOrders!StatusId
+statIdOld = tbOrders!statusId
 tbOrders.Close
 
 wrkDefault.BeginTrans
@@ -1075,24 +996,24 @@ sql = "SELECT * from OrdersInCeh WHERE (((numOrder)=" & gNzak & "));"
 Set tbOrders = myOpenRecordSet("##01", sql, dbOpenForwardOnly)
 'If tbOrders Is Nothing Then GoTo AA
 
-workTime = workTimeOld ' для случая, если не менялось
+Worktime = workTimeOld ' для случая, если не менялось
 If Not tbOrders.BOF Then
     If isTimeZakaz Then
 '        tbOrders.Edit
 '        tbOrders!rowLock = ""
        If workChange Then
          If (id = 1 Or id = 5) And editWorkTime Then 'остается в работе или отложен
-            tbOrders!worktime = Round(tbOrders!worktime + tbWorktime.Text _
+            tbOrders!Worktime = Round(tbOrders!Worktime + tbWorktime.Text _
                      - neVipolnen, 1) 'время с учетом коррекции
-            worktime = Round(workTimeOld + tbWorktime.Text _
+            Worktime = Round(workTimeOld + tbWorktime.Text _
                      - neVipolnen, 1) 'время с учетом коррекции
-            tbOrders!nevip = tbWorktime.Text / tbOrders!worktime
+            tbOrders!nevip = tbWorktime.Text / tbOrders!Worktime
             sql = "UPDATE OrdersInCeh SET Nevip = " & _
-            tbWorkTime.Text / workTime & " WHERE (((numOrder)=" & gNzak & "));"
+            tbWorktime.Text / Worktime & " WHERE (((numOrder)=" & gNzak & "));"
             If myExecute("##393", sql) <> 0 Then GoTo ER1
          Else
 '            tbOrders!workTime = tbWorkTime.Text
-            workTime = tbWorkTime.Text
+            Worktime = tbWorktime.Text
          End If
        End If
        sql = "UPDATE OrdersInCeh SET urgent = '" & urgent & _
@@ -1104,7 +1025,7 @@ If Not tbOrders.BOF Then
         sql = "DELETE from OrdersInCeh WHERE (((numOrder)=" & gNzak & "));"
         If myExecute("##394", sql) <> 0 Then GoTo ER1
 '        tbOrders!workTime = 0
-        workTime = 0
+        Worktime = 0
     End If
 Else
     If isTimeZakaz Then
@@ -1113,7 +1034,7 @@ Else
 '        On Error GoTo ERRp
 '        On Error GoTo 0
 '        tbOrders!workTime = tbWorkTime.Text
-        workTime = tbWorkTime.Text
+        Worktime = tbWorktime.Text
         sql = "INSERT INTO OrdersInCeh ( numOrder, urgent )" & _
         "SELECT " & gNzak & ",'" & urgent & "';"
         If myExecute("##395", sql) <> 0 Then GoTo ER1
@@ -1133,7 +1054,7 @@ DD:     noClick = True
     End If
 End If
 
-sql = "UPDATE Orders SET workTime = " & workTime & _
+sql = "UPDATE Orders SET workTime = " & Worktime & _
 ", statusId = " & id & ", lastManagId = " & manId(Orders.cbM.ListIndex) & _
 " WHERE (((Orders.numOrder)=" & gNzak & "));"
 If myExecute("##396", sql) <> 0 Then GoTo ER1
@@ -1176,19 +1097,19 @@ table.Close
   End If
   If cbO.Text = "в работе" Or cbO.Text = "готов" Then
 '    table!workTimeMO = tbVrVipO
-    workTime = tbVrVipO.Text
+    Worktime = tbVrVipO.Text
   Else
 '    table!workTimeMO = Null
-    workTime = "Null"
+    Worktime = "Null"
   End If
 '  table.Update
   If bilo Then      '
     sql = "UPDATE OrdersMO SET DateTimeMO = " & str & ", workTimeMO = " & _
-    workTime & ", StatM = '" & cbM.Text & "', StatO = '" & cbO.Text & _
+    Worktime & ", StatM = '" & cbM.Text & "', StatO = '" & cbO.Text & _
     "' WHERE (((numOrder)=" & gNzak & "));"
   Else
     sql = "INSERT INTO OrdersMO ( numOrder, DateTimeMO, workTimeMO, StatM, " & _
-    "StatO ) SELECT " & gNzak & ", " & str & ", " & workTime & ", '" & _
+    "StatO ) SELECT " & gNzak & ", " & str & ", " & Worktime & ", '" & _
     cbM.Text & "', '" & cbO.Text & "';"
   End If
 '  MsgBox sql
@@ -1312,7 +1233,7 @@ Private Sub cmRepit_Click()
 workChange = False
     cmAdd.Enabled = False
     tbReadyDate.Enabled = True
-    tbWorkTime.Enabled = True
+    tbWorktime.Enabled = True
     tbReadyDate.SetFocus
     Orders.startParams
 Timer1.Enabled = False
@@ -1448,8 +1369,8 @@ BB: isTimeZakaz = False
     Exit Sub
 End If
 
-If Not isNumericTbox(tbWorkTime, 0, 2000) Then Exit Sub
-tbWorkTime.Text = Round(tbWorkTime.Text, 1)
+If Not isNumericTbox(tbWorktime, 0, 2000) Then Exit Sub
+tbWorktime.Text = Round(tbWorktime.Text, 1)
 If Not isDateTbox(tbReadyDate, "fri") Then Exit Sub
 
 tmpDate = CDate(tbReadyDate.Text)
@@ -1729,7 +1650,7 @@ If KeyCode = vbKeyReturn Then
 
 If tbDateRS.Enabled Then
   If isDateTbox(tbReadyDate, "fri") Then
-    s = Round(CDbl(tbWorkTime.Text), 1)
+    s = Round(CDbl(tbWorktime.Text), 1)
     I = -(Int((CDbl(s) - 0.05) / 3) + 1 + 2) ' + 2 - дата выд от посл. куска
     getWorkDay I, tbReadyDate.Text ' дает tmpDate
     If tmpDate < curDate Then tmpDate = curDate
@@ -1757,10 +1678,10 @@ Dim s As Double, I As Integer
 
 If KeyCode = vbKeyReturn Then
 
-  If isNumericTbox(tbWorkTime, 0, 2000) Then
+  If isNumericTbox(tbWorktime, 0, 2000) Then
      If cbStatus.Text = "в работе" Then
-        s = Round(CDbl(tbWorkTime.Text), 1)
-        tbWorkTime.Text = s
+        s = Round(CDbl(tbWorktime.Text), 1)
+        tbWorktime.Text = s
         I = Int((CDbl(s) - 0.05) / 3)
         getWorkDay 3 + I ' дает tmpDate
         tbReadyDate.Text = Format(tmpDate, "dd.mm.yy")
