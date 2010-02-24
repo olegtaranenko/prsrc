@@ -3,6 +3,8 @@ Option Explicit
 
 
 Sub nextDay()  'возможен прыжок на неск дней
+Dim Ceh As String
+
 Dim I As Integer, str As String, str1 As String, j As Integer, s As Double
 Dim ch As String
 'MsgBox "переход на новую дату"
@@ -12,21 +14,6 @@ Dim ch As String
 sql = "DELETE from OrdersInCeh WHERE (((Stat)='готов'));"
 If myExecute("##63", sql, 0) > 0 Then GoTo ER1
 
-'Set tbCeh = myOpenRecordSet("##63", "OrdersInCeh", dbOpenTable) 'dbOpenForwardOnly)
-'If Not tbCeh Is Nothing Then
-'  If Not tbCeh.BOF Then
-'    tbCeh.MoveFirst
-'    While Not tbCeh.EOF
-'        If tbCeh!stat = "готов" Then
-'            tbCeh.Delete
-'        End If
-'        tbCeh.MoveNext
-'    Wend
-'  End If
-'  tbCeh.Close
-'End If
-
-
 sql = "UPDATE Orders INNER JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder " & _
 "SET Orders.DateRS = '" & Format(curDate, "yyyy-mm-dd 10:00:00") & _
 "' WHERE (((Orders.DateRS) < '" & Format(curDate, "yyyy-mm-dd 00:00:00") & _
@@ -34,38 +21,17 @@ sql = "UPDATE Orders INNER JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.num
 'MsgBox sql
 If myExecute("##11", sql, 0) > 0 Then GoTo ER1
 
-''sql = "UPDATE Orders INNER JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder " & _
-"SET Orders.outDateTime = '" & Format(curDate, "yyyy-mm-dd 10:00:00") & _
-"' WHERE (((Orders.outDateTime)<'" & Format(curDate, "yyyy-mm-dd 0:0:0") & "'));"
-''If myExecute("##404", sql, 0) > 0 Then GoTo ER1
+sql = "UPDATE OrdersEquip " _
+& " INNER JOIN OrdersInCeh ON OrdersEquip.numOrder = OrdersInCeh.numOrder " _
+& "SET OrdersEquip.outDateTime = '" & Format(curDate, "yyyy-mm-dd 10:00:00") & _
+"' WHERE Orders.outDateTime <'" & Format(curDate, "yyyy-mm-dd 0:0:0") & "'"
 
-sql = "UPDATE OrdersMO SET DateTimeMO = '" & Format(curDate, "yyyy-mm-dd 10:00:00") & _
-"' WHERE (((DateTimeMO)<'" & Format(curDate, "yyyy-mm-dd 00:00:00") & "'));"
+If myExecute("##404", sql, 0) > 0 Then GoTo ER1
+
+sql = "UPDATE OrdersEquip SET DateTimeMO = '" & Format(curDate, "yyyy-mm-dd 10:00:00") & _
+"' WHERE DateTimeMO < '" & Format(curDate, "yyyy-mm-dd 00:00:00") & "'"
 If myExecute("##405", sql, 0) > 0 Then GoTo ER1
 
-''      "OrdersMO.workTimeMO, OrdersInCeh.VrVipParts, OrdersInCeh.Stat  "
-''sql = "SELECT Orders.outDateTime, Orders.StatusId, OrdersMO.DateTimeMO, " & _
-'      "Orders.DateRs, " & _
-'      "OrdersMO.workTimeMO, OrdersInCeh.Stat  " & _
-'      "FROM (Orders RIGHT JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder) " & _
-'      "LEFT JOIN OrdersMO ON OrdersInCeh.numOrder = OrdersMO.numOrder;"
-
-'Set table = myOpenRecordSet("##11", sql, dbOpenDynaset) 'dbOpenForwardOnly)
-'If table Is Nothing Then myBase.Close: End
-  
-'If Not table.BOF Then
-'  table.MoveFirst
-'  While Not table.EOF
-'    table.Edit
-'    replaceDate table!outDateTime
-'    replaceDate table!dateRS
-'    replaceDate table!DateTimeMO
-'    table.Update
-'NXT:
-'    table.MoveNext
-'  Wend
-'End If
-'table.Close
 
 If Not replaceResurs(1) Then GoTo ER1
 If Not replaceResurs(2) Then GoTo ER1
@@ -73,14 +39,6 @@ If Not replaceResurs(3) Then GoTo ER1  '$$ceh
 
 sql = "UPDATE System SET resursLock = '', Kurs = -Abs([Kurs]);"
 If myExecute("##90", sql, 0) > 0 Then GoTo ER1
-
-'  Set tbSystem = myOpenRecordSet("##90", "System", dbOpenTable) ', dbOpenForwardOnly)
-'  If tbSystem Is Nothing Then myBase.Close: End
-'  tbSystem.Edit
-'  tbSystem!resursLock = ""
-'  tbSystem!Kurs = -Abs(tbSystem!Kurs)
-'  tbSystem.Update
- ' tbSystem.Close
 
 wrkDefault.CommitTrans
 MsgBox "Ѕаза переведена на новую дату!"
@@ -120,7 +78,7 @@ For I = 1 To befDays
 Next I
 
 'sql = "SELECT Sum(nomRes) AS rSum from Resurs" & Ceh(id) & _
-" WHERE (((xDate)< '" & Format(curDate, "yy.mm.dd") & "'));"
+" WHERE xDate < '" & Format(curDate, "yy.mm.dd") & "'"
 'Debug.Print sql
 'If Not byErrSqlGetValues("W##12", sql, oldRes) Then Exit Function
 
@@ -132,15 +90,20 @@ If myExecute("##406", sql, 0) > 0 Then Exit Function
 '****** отстреливаем итоги ***********
 tmpSng = 0 'сумма невыполнено живых
 '' equipment
-''sql = "SELECT Sum(Orders.workTime*OrdersInCeh.Nevip) AS nevip " & _
-"FROM Orders INNER JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder " & _
-"WHERE (((Orders.StatusId)=1) AND ((Orders.CehId)=" & id & "));"
-''byErrSqlGetValues "##372", sql, tmpSng
+sql = "SELECT Sum(OrdersEquip.workTime*OrdersInCeh.Nevip) AS nevip " & _
+"FROM OrdersInCeh " _
+& " JOIN Orders ON Orders.numOrder = OrdersInCeh.numOrder " _
+& " JOIN OrdersEquip ON OrdersEquip.numOrder = OrdersInCeh.numOrder " _
+& " WHERE Orders.StatusId =1 AND OrdersEquip.CehId =" & id
+byErrSqlGetValues "##372", sql, tmpSng
+
 s = 0 ' плюс неготовые образцы
-''sql = "SELECT Sum(OrdersMO.workTimeMO) AS Sum_workTimeMO " & _
-"FROM Orders INNER JOIN OrdersMO ON Orders.numOrder = OrdersMO.numOrder " & _
-"WHERE (((OrdersMO.StatO)='в работе') AND ((Orders.CehId)=" & id & "));"
-''byErrSqlGetValues "##378", sql, s
+sql = "SELECT Sum(OrdersMO.workTimeMO) AS Sum_workTimeMO " _
+& " FROM OrdersMO " _
+& " JOIN Orders ON Orders.numOrder = OrdersMO.numOrder " _
+& " JOIN OrdersEquip ON OrdersEquip.numOrder = OrdersMO.numOrder " _
+& " WHERE OrdersMO.StatO = 'в работе' AND OrdersEquip.CehId = " & id
+byErrSqlGetValues "##378", sql, s
 tmpSng = tmpSng + s
 
 sql = "SELECT Nstan" & Ceh(id) & ", KPD_" & Ceh(id) & " FROM System;"
@@ -161,9 +124,11 @@ sql = "INSERT INTO Itogi_" & Ceh(id) & " ( [xDate], numOrder, Virabotka ) " & _
 "SELECT '" & tmpStr & "', 0, " & Round(oldRes * n, 2) & ";"
 'MsgBox sql
 myExecute "##408", sql
+
 sql = "INSERT INTO Itogi_" & Ceh(id) & " ( [xDate], numOrder, Virabotka ) " & _
 "SELECT '" & tmpStr & "', 1, " & s & ";"
 myExecute "##409", sql
+
 'записываем сумму невыполнено живых(относ€тс€ к сегодн€)
 'numOrder = 2 ' признак суммы невыполнено живых
 sql = "INSERT INTO Itogi_" & Ceh(id) & " ( [xDate], numOrder, Virabotka ) " & _
@@ -172,7 +137,7 @@ myExecute "##410", sql
 
 'оставл€ем только историю последнего мес€ца
 sql = "DELETE from Itogi_" & Ceh(id) & _
-" WHERE (((xDate)<'" & Format(DateAdd("m", -1, curDate), "yy.mm.dd") & "'));"
+" WHERE xDate < '" & Format(DateAdd("m", -1, curDate), "yy.mm.dd") & "'"
 myExecute "##411", sql, 0
 EN1:
 replaceResurs = True

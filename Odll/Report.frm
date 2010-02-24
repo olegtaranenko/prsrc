@@ -152,6 +152,7 @@ Const rtZakazano = 9
 Const rtOplacheno = 10
 
 Private Sub cmExel_Click()
+Dim Ceh As String, Left As String, X As String
     GridToExcel Grid, laHeader.Caption
 End Sub
 
@@ -373,10 +374,12 @@ If sum > 0 Then
     Else 'образец
         Grid.TextMatrix(quantity + I, crNomZak) = NN(I) & "o"
         sql = "SELECT Orders.ManagId, Orders.Logo, OrdersMO.StatO As Stat, " & _
-        "Orders.Product, Orders.ProblemId, OrdersMO.DateTimeMO As outDateTime, " & _
-        "GuideFirms.Name, OrdersMO.workTimeMO As workTime " & _
-        "FROM GuideFirms INNER JOIN (Orders LEFT JOIN OrdersMO ON Orders.numOrder = OrdersMO.numOrder) ON (GuideFirms.FirmId = Orders.FirmId) AND (GuideFirms.FirmId = Orders.FirmId) " & _
-        "WHERE (((Orders.numOrder)=" & NN(I) & "));"
+        "Orders.Product, Orders.ProblemId, oe.DateTimeMO As outDateTime, " _
+        & "GuideFirms.Name, oe.workTimeMO As workTime " _
+        & "FROM Orders " _
+        & "JOIN GuideFirms ON GuideFirms.FirmId = Orders.FirmId " _
+        & "LEFT JOIN vw_OrdersEquipSummary oe ON Orders.numOrder = oe.numOrder " _
+        & "WHERE Orders.numOrder = " & NN(I)
     End If
     Grid.TextMatrix(quantity + I, crVirab) = QQ(I)
     
@@ -385,8 +388,8 @@ If sum > 0 Then
     If Not tbOrders.BOF Then
         Grid.TextMatrix(quantity + I, crM) = Manag(tbOrders!ManagId)
         'образца уже м.не быть, тогда поле IsNull
-        If Not IsNull(tbOrders!workTime) Then _
-            Grid.TextMatrix(quantity + I, crVrVip) = tbOrders!workTime
+        If Not IsNull(tbOrders!Worktime) Then _
+            Grid.TextMatrix(quantity + I, crVrVip) = tbOrders!Worktime
         If IsNull(tbOrders!stat) Then
             Grid.TextMatrix(quantity + I, crStatus) = "нет"
         Else

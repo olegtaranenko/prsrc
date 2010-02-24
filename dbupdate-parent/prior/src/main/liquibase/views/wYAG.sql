@@ -23,15 +23,16 @@ CREATE VIEW wYAG (
 	StatO
 ) as
 SELECT 
-	[wYAG_plus].*, 
-	OrdersInCeh.rowLock, 
-	OrdersInCeh.Stat, 
-	OrdersInCeh.Nevip, 
-	OrdersMO.DateTimeMO, 
-	OrdersMO.workTimeMO, 
-	OrdersMO.StatM, 
-	OrdersMO.StatO
-FROM (
-	[wYAG_plus] 
-	INNER JOIN OrdersInCeh ON [wYAG_plus].numOrder = OrdersInCeh.numOrder) 
-	LEFT JOIN OrdersMO ON [wYAG_plus].numOrder = OrdersMO.numOrder;
+	w.*, 
+	c.rowLock, 
+	c.Stat, 
+	c.Nevip, 
+	oe.DateTimeMO, 
+	oe.workTimeMO, 
+	mo.StatM, 
+	mo.StatO
+FROM 
+	wYAG_plus w
+	INNER JOIN OrdersInCeh c  ON w.numOrder = c.numOrder
+	LEFT JOIN OrdersMO     mo ON w.numOrder = mo.numOrder
+	LEFT JOIN OrdersEquip  oe ON w.numOrder = oe.numOrder

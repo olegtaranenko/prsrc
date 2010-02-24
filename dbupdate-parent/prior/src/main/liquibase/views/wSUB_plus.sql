@@ -30,4 +30,4 @@ FROM Orders o
 JOIN OrdersEquip oe ON oe.numorder = o.numorder
 JOIN GuideFirms f ON f.FirmId = o.FirmId
 JOIN GuideManag m ON m.ManagId = o.ManagId
-WHERE oe.CehId = 2
+WHERE oe.CehId = 3

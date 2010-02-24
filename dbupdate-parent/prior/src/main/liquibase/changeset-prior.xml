@@ -1034,6 +1034,9 @@ where pc.sysname = sGuideProducts.web
 			<column name="numorder" type="integer" >
 				<constraints nullable="false"/>
 			</column>
+			<column name="statusEquipId" type="integer" >
+				<constraints nullable="true"/>
+			</column>
 			<column name="cehId" type="integer" >
 				<constraints nullable="false"/>
 			</column>
@@ -1043,14 +1046,21 @@ where pc.sysname = sGuideProducts.web
 			<column name="outDateTime" type="datetime" >
 				<constraints nullable="true"/>
 			</column>
+			<column name="WorktimeMO" type="float" defaultValueNumeric="0.0">
+				<constraints nullable="true"/>
+			</column>
+			<column name="DateTimeMO" type="datetime" >
+				<constraints nullable="true"/>
+			</column>
 		</createTable>
 	</changeSet>
 
 	<changeSet id="2" author="mantis-125" runOnChange="false">
 		<sql><![CDATA[
-insert	into OrdersEquip (numorder, cehId, worktime, outDateTime)
-select	numorder, cehId, worktime, outDateTime
-from	orders
+insert	into OrdersEquip (numorder, cehId, worktime, outDateTime, worktimeMO, datetimeMO)
+select	o.numorder, o.cehId, o.worktime, o.outDateTime, mo.worktimeMO, mo.datetimeMO
+from	  orders o
+left join ordersMO mo on mo.numorder = o.numorder
 where	cehId > 0
 		]]></sql>
 		<rollback>truncate table OrdersEquip</rollback>
@@ -1074,7 +1084,8 @@ where	GuideCeh.cehId = orders.cehId
 
 	<changeSet id="5" author="mantis-125" runOnChange="false">
 		<comment>Удаляем столбцы по цеху/времени выполнения/... из таблицы Заказов</comment>
-		<dropColumn tableName="orders" columnName="worktime"/>
+		<dropColumn tableName="Orders" columnName="worktime"/>
+		<dropColumn tableName="OrdersMO" columnName="worktimeMO"/>
 		<rollback/>
 	</changeSet>
 
@@ -1092,7 +1103,8 @@ where	GuideCeh.cehId = orders.cehId
 
 	<changeSet id="8" author="mantis-125" runOnChange="false">
 		<comment>Удаляем столбцы по цеху/времени выполнения/... из таблицы Заказов</comment>
-		<dropColumn tableName="orders" columnName="outDateTime"/>
+		<dropColumn tableName="Orders" columnName="outDateTime"/>
+		<dropColumn tableName="OrdersMO" columnName="DateTimeMO"/>
 		<rollback/>
 	</changeSet>
 	

@@ -3,14 +3,14 @@ Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form CehOrders 
    BackColor       =   &H8000000A&
    Caption         =   " "
-   ClientHeight    =   5730
+   ClientHeight    =   5724
    ClientLeft      =   60
-   ClientTop       =   345
+   ClientTop       =   348
    ClientWidth     =   11880
    Icon            =   "CehOrders.frx":0000
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
-   ScaleHeight     =   5730
+   ScaleHeight     =   5724
    ScaleWidth      =   11880
    StartUpPosition =   2  'CenterScreen
    Begin VB.CommandButton cmNaklad 
@@ -97,7 +97,7 @@ Begin VB.Form CehOrders
       Width           =   1575
    End
    Begin VB.ListBox lbProblem 
-      Height          =   1230
+      Height          =   1200
       Left            =   3300
       TabIndex        =   5
       Top             =   3240
@@ -113,7 +113,7 @@ Begin VB.Form CehOrders
       Width           =   915
    End
    Begin VB.ListBox lbStatus 
-      Height          =   1815
+      Height          =   1776
       ItemData        =   "CehOrders.frx":030A
       Left            =   540
       List            =   "CehOrders.frx":0329
@@ -123,7 +123,7 @@ Begin VB.Form CehOrders
       Width           =   1035
    End
    Begin VB.ListBox lbObrazec 
-      Height          =   450
+      Height          =   432
       ItemData        =   "CehOrders.frx":0361
       Left            =   1560
       List            =   "CehOrders.frx":036B
@@ -133,7 +133,7 @@ Begin VB.Form CehOrders
       Width           =   855
    End
    Begin VB.ListBox lbMaket 
-      Height          =   450
+      Height          =   432
       ItemData        =   "CehOrders.frx":0378
       Left            =   2460
       List            =   "CehOrders.frx":0382
@@ -148,8 +148,8 @@ Begin VB.Form CehOrders
       TabIndex        =   0
       Top             =   360
       Width           =   11655
-      _ExtentX        =   20558
-      _ExtentY        =   8705
+      _ExtentX        =   20553
+      _ExtentY        =   8700
       _Version        =   393216
       AllowUserResizing=   1
    End
@@ -193,6 +193,7 @@ Dim tbCeh As Recordset
 
 
 Private Sub chDetail_Click()
+Dim StatusId As String, Worktime As String
 cehBegin
 gridIsLoad = True
 Grid.col = chKey
@@ -424,7 +425,7 @@ End If
         s = Round(100 * (1 - tbCeh!nevip), 1)
         If s > 0 Then Grid.TextMatrix(cehRows, chProcVip) = s
         
-        s = tbCeh!workTime
+        s = tbCeh!Worktime
         LoadDateKey tbCeh!outDateTime, "##36"
         LoadDate Grid, cehRows, chVrVid, tbCeh!outDateTime, "hh"
     Else
@@ -952,12 +953,12 @@ AA:
   If obraz <> "" Then
     obraz = "o"
 '    If table!statO <> "готов" And lbObrazec.Text = "готов" Then ' 100%
-    sql = "SELECT workTimeMO, StatO from OrdersMO WHERE (((numOrder)=" & gNzak & "));"
+    sql = "SELECT oe.workTimeMO, mo.StatO from OrdersMO mo " _
+    & " LEFT join OrdersEquip oe on oe.numorder = mo.numorder and oe.cehId = " & cehId _
+    & " WHERE numOrder)=" & gNzak
     If Not byErrSqlGetValues("##386", sql, virabotka, statO) Then Exit Function
     If s = 0 Then ' 100%
-'        virabotka = table!workTimeMO
     Else
-'        virabotka = -table!workTimeMO
         virabotka = -virabotka
     End If
   Else

@@ -17,84 +17,170 @@ Begin VB.Form Zakaz
    ScaleWidth      =   9468
    ShowInTaskbar   =   0   'False
    StartUpPosition =   2  'CenterScreen
+   Begin VB.CommandButton cmCeh 
+      Caption         =   "YAG"
+      Height          =   315
+      Index           =   0
+      Left            =   3360
+      TabIndex        =   32
+      Top             =   5520
+      Width           =   495
+   End
+   Begin VB.CommandButton cmCeh 
+      Caption         =   "CO2"
+      Height          =   315
+      Index           =   1
+      Left            =   4560
+      TabIndex        =   31
+      Top             =   5520
+      Width           =   495
+   End
+   Begin VB.CommandButton cmCeh 
+      Caption         =   "SUB"
+      Height          =   315
+      Index           =   2
+      Left            =   5640
+      TabIndex        =   30
+      Top             =   5520
+      Width           =   495
+   End
    Begin VB.CheckBox ckCeh 
+      BackColor       =   &H8000000A&
       Caption         =   "Цех"
       Height          =   255
       Left            =   6480
-      TabIndex        =   20
+      TabIndex        =   29
       Top             =   5280
       Visible         =   0   'False
       Width           =   675
    End
    Begin MSFlexGridLib.MSFlexGrid Grid 
-      Height          =   3555
-      Left            =   60
-      TabIndex        =   18
-      Top             =   4920
+      Height          =   4572
+      Left            =   120
+      TabIndex        =   27
+      Top             =   720
       Visible         =   0   'False
-      Width           =   5835
-      _ExtentX        =   10287
-      _ExtentY        =   6265
+      Width           =   6312
+      _ExtentX        =   11134
+      _ExtentY        =   8065
       _Version        =   393216
       AllowUserResizing=   1
    End
    Begin VB.CommandButton cmNewUklad 
+      BackColor       =   &H8000000A&
       Caption         =   "Новая укладка"
       Height          =   375
       Left            =   6480
-      TabIndex        =   17
+      TabIndex        =   26
       Top             =   5640
       Visible         =   0   'False
       Width           =   1335
+   End
+   Begin VB.ComboBox cbO 
+      Enabled         =   0   'False
+      Height          =   315
+      ItemData        =   "Zakaz.frx":0000
+      Left            =   8160
+      List            =   "Zakaz.frx":000D
+      Style           =   2  'Dropdown List
+      TabIndex        =   6
+      Top             =   2940
+      Width           =   1035
+   End
+   Begin VB.ComboBox cbM 
+      Enabled         =   0   'False
+      Height          =   288
+      ItemData        =   "Zakaz.frx":0026
+      Left            =   6660
+      List            =   "Zakaz.frx":0033
+      Style           =   2  'Dropdown List
+      TabIndex        =   5
+      Top             =   2940
+      Width           =   1035
    End
    Begin VB.Timer Timer1 
       Left            =   7080
       Top             =   4140
    End
+   Begin VB.TextBox tbDateMO 
+      Enabled         =   0   'False
+      Height          =   285
+      Left            =   8220
+      TabIndex        =   7
+      Top             =   3360
+      Width           =   915
+   End
+   Begin VB.TextBox tbDateRS 
+      Enabled         =   0   'False
+      Height          =   285
+      Left            =   8220
+      TabIndex        =   4
+      Top             =   2220
+      Width           =   915
+   End
    Begin VB.TextBox tbReadyDate 
       Enabled         =   0   'False
       Height          =   285
       Left            =   8220
-      TabIndex        =   2
+      TabIndex        =   3
       Top             =   1740
       Width           =   915
    End
+   Begin VB.TextBox tbVrVipO 
+      Enabled         =   0   'False
+      Height          =   285
+      Left            =   8220
+      TabIndex        =   8
+      Top             =   3780
+      Width           =   915
+   End
+   Begin VB.ComboBox cbStatus 
+      Height          =   288
+      Left            =   8220
+      Style           =   2  'Dropdown List
+      TabIndex        =   1
+      Top             =   900
+      Width           =   1215
+   End
    Begin VB.CommandButton cmExit 
+      BackColor       =   &H8000000A&
       Cancel          =   -1  'True
       Caption         =   "Выход"
       Height          =   315
       Left            =   8340
-      TabIndex        =   6
+      TabIndex        =   12
       Top             =   5400
       Width           =   975
    End
    Begin VB.CommandButton cmRepit 
+      BackColor       =   &H8000000A&
       Caption         =   "Cancel"
       Height          =   315
       Left            =   8340
-      TabIndex        =   5
+      TabIndex        =   11
       Top             =   4740
       Visible         =   0   'False
       Width           =   975
    End
    Begin VB.CommandButton cmZapros 
+      BackColor       =   &H8000000A&
       Caption         =   "Запросить"
       Enabled         =   0   'False
       Height          =   315
       Left            =   7560
-      TabIndex        =   3
+      TabIndex        =   9
       Top             =   4260
       Width           =   975
    End
    Begin MSComctlLib.ListView lv 
-      Height          =   4515
+      Height          =   4872
       Left            =   60
-      TabIndex        =   7
+      TabIndex        =   13
       TabStop         =   0   'False
       Top             =   360
-      Width           =   6375
+      Width           =   6372
       _ExtentX        =   11240
-      _ExtentY        =   7959
+      _ExtentY        =   8594
       View            =   3
       LabelEdit       =   1
       LabelWrap       =   -1  'True
@@ -182,11 +268,12 @@ Begin VB.Form Zakaz
       EndProperty
    End
    Begin VB.CommandButton cmAdd 
+      BackColor       =   &H8000000A&
       Caption         =   "OK"
       Enabled         =   0   'False
       Height          =   315
       Left            =   6780
-      TabIndex        =   4
+      TabIndex        =   10
       Top             =   4740
       Visible         =   0   'False
       Width           =   975
@@ -195,37 +282,82 @@ Begin VB.Form Zakaz
       Enabled         =   0   'False
       Height          =   285
       Left            =   8220
-      TabIndex        =   1
+      TabIndex        =   2
       Top             =   1320
       Width           =   915
    End
+   Begin VB.CheckBox ckCehDone 
+      BackColor       =   &H8000000A&
+      Caption         =   "Check1"
+      Enabled         =   0   'False
+      Height          =   252
+      Index           =   0
+      Left            =   3120
+      TabIndex        =   33
+      Top             =   5520
+      Width           =   252
+   End
+   Begin VB.CheckBox ckCehDone 
+      BackColor       =   &H8000000A&
+      Caption         =   "Check1"
+      Enabled         =   0   'False
+      Height          =   252
+      Index           =   1
+      Left            =   4320
+      TabIndex        =   34
+      Top             =   5520
+      Width           =   252
+   End
+   Begin VB.CheckBox ckCehDone 
+      BackColor       =   &H8000000A&
+      Caption         =   "Check1"
+      Enabled         =   0   'False
+      Height          =   252
+      Index           =   2
+      Left            =   5400
+      TabIndex        =   35
+      Top             =   5520
+      Width           =   252
+   End
    Begin VB.Label Label1 
+      BackColor       =   &H8000000A&
       Caption         =   "Label1"
       Height          =   195
       Left            =   8340
-      TabIndex        =   19
+      TabIndex        =   28
       Top             =   5760
       Visible         =   0   'False
       Width           =   1095
+   End
+   Begin VB.Label laMO 
+      BackColor       =   &H8000000A&
+      Caption         =   "Макет                    Образец"
+      Height          =   195
+      Left            =   6840
+      TabIndex        =   25
+      Top             =   2700
+      Width           =   2115
    End
    Begin VB.Label laZapas 
       BackColor       =   &H8000000E&
       BorderStyle     =   1  'Fixed Single
       Height          =   255
       Left            =   5400
-      TabIndex        =   16
+      TabIndex        =   24
       Top             =   60
       Width           =   975
    End
    Begin VB.Label Label2 
+      BackColor       =   &H8000000A&
       Caption         =   "Запас:"
       Height          =   195
       Left            =   4680
-      TabIndex        =   15
+      TabIndex        =   23
       Top             =   60
       Width           =   675
    End
    Begin VB.Label laError 
+      BackColor       =   &H8000000A&
       BeginProperty Font 
          Name            =   "MS Sans Serif"
          Size            =   7.8
@@ -238,7 +370,7 @@ Begin VB.Form Zakaz
       ForeColor       =   &H000000C0&
       Height          =   195
       Left            =   1080
-      TabIndex        =   14
+      TabIndex        =   22
       Top             =   60
       Width           =   3495
    End
@@ -246,59 +378,86 @@ Begin VB.Form Zakaz
       BackColor       =   &H80000009&
       BorderStyle     =   1  'Fixed Single
       Enabled         =   0   'False
-      Height          =   285
+      Height          =   288
       Left            =   8220
       TabIndex        =   0
-      Top             =   330
-      Width           =   915
+      Top             =   456
+      Width           =   912
    End
    Begin VB.Label laVrVipO 
+      BackColor       =   &H8000000A&
       Caption         =   "Вр.вып. Образца"
       Enabled         =   0   'False
       Height          =   195
       Left            =   6540
-      TabIndex        =   13
+      TabIndex        =   21
       Top             =   3840
       Width           =   1335
    End
-   Begin VB.Label laHnomZak 
-      Caption         =   "№ Заказа"
+   Begin VB.Label laDateMO 
+      BackColor       =   &H8000000A&
+      Caption         =   "Дата Мак.\Обр."
+      Enabled         =   0   'False
       Height          =   195
       Left            =   6540
-      TabIndex        =   12
-      Top             =   360
-      Width           =   855
+      TabIndex        =   20
+      Top             =   3420
+      Width           =   1275
+   End
+   Begin VB.Label laHnomZak 
+      BackColor       =   &H8000000A&
+      Caption         =   "№ Заказа"
+      Height          =   192
+      Left            =   6540
+      TabIndex        =   19
+      Top             =   480
+      Width           =   852
    End
    Begin VB.Label laStatus 
+      BackColor       =   &H8000000A&
       Caption         =   "Статус:"
+      Height          =   192
+      Left            =   6540
+      TabIndex        =   18
+      Top             =   960
+      Width           =   1212
+   End
+   Begin VB.Label laDateRS 
+      Alignment       =   2  'Center
+      BackColor       =   &H8000000A&
+      Caption         =   "Дата Р\С (не позже)"
+      Enabled         =   0   'False
       Height          =   195
       Left            =   6540
-      TabIndex        =   11
-      Top             =   840
-      Width           =   1215
-   End
-   Begin VB.Label laMess 
-      Height          =   555
-      Left            =   420
-      TabIndex        =   10
-      Top             =   5100
-      Width           =   5835
+      TabIndex        =   17
+      Top             =   2280
+      Width           =   1575
    End
    Begin VB.Label laReadyDate 
+      BackColor       =   &H8000000A&
       Caption         =   "Дата выдачи"
       Height          =   195
       Left            =   6540
-      TabIndex        =   9
+      TabIndex        =   15
       Top             =   1800
       Width           =   1155
    End
    Begin VB.Label laWorkTime 
+      BackColor       =   &H8000000A&
       Caption         =   "Время выполнения"
       Height          =   255
       Left            =   6540
-      TabIndex        =   8
+      TabIndex        =   14
       Top             =   1320
       Width           =   1515
+   End
+   Begin VB.Label laMess 
+      BackColor       =   &H8000000A&
+      Height          =   555
+      Left            =   420
+      TabIndex        =   16
+      Top             =   5100
+      Width           =   5835
    End
 End
 Attribute VB_Name = "Zakaz"
@@ -332,6 +491,7 @@ Const zgOutDate = 6
 Const zgOtlad = 7
 
 Sub lvAddDay(I As Integer)
+Dim Left As String, Rollback As String
 Dim item As ListItem, str As String
     str = Format(DateAdd("d", I - 1, curDate), "dd/mm/yy")
     Set item = Zakaz.lv.ListItems.Add(, "k" & I, str)
@@ -529,8 +689,8 @@ sql = "SELECT o.numOrder, oe.workTime, " & _
 "JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder " & _
 "Where (((o.StatusId) = 2 Or (o.StatusId) = 3) AND ((oe.CehId)= " & cehId & ")) " & _
 "UNION ALL " & _
-"SELECT o.numOrder, omo.workTimeMO, DateDiff(day,Now(),omo.DateTimeMO) AS endDay, " & _
-"DateDiff(day,Now(),o.inDate) AS begDay, omo.DateTimeMO, " & _
+"SELECT o.numOrder, oe.workTimeMO, DateDiff(day,Now(),oe.DateTimeMO) AS endDay, " & _
+"DateDiff(day,Now(),o.inDate) AS begDay, oe.DateTimeMO, " & _
 "o.inDate, 1 AS StatusId, -1 AS Nevip, '' AS urgent " & _
 "FROM Orders o " & _
 "JOIN OrdersEquip oe ON oe.numorder = o.numorder " & _
@@ -593,7 +753,7 @@ End If
         ukladka befOst, eDay, bDay, nevip 'обратная укладка
     Else
         ukladka ost, bDay, eDay, nevip
-        If tbOrders!statusId = 1 Or tbOrders!statusId = -1 Then _
+        If tbOrders!StatusId = 1 Or tbOrders!StatusId = -1 Then _
             ukladka befOst, bDay, eDay, nevip ' жывые(в раб. и образец)
     End If
     
@@ -604,7 +764,7 @@ End If
       If tbOrders!nevip = -1 Then '"образец"
         Grid.TextMatrix(quantity, zgStatus) = "образец"
       Else
-        Grid.TextMatrix(quantity, zgStatus) = status(tbOrders!statusId)
+        Grid.TextMatrix(quantity, zgStatus) = status(tbOrders!StatusId)
       End If
       Grid.TextMatrix(quantity, zgVrVip) = tbOrders!Worktime
       Grid.TextMatrix(quantity, zgNevip) = nevip
@@ -761,7 +921,7 @@ lv.Width = lv.Width + w
 laHnomZak.Left = laHnomZak.Left + w
 laNomZak.Left = laNomZak.Left + w
 laStatus.Left = laStatus.Left + w
-'cbStatus.left = cbStatus.left + w
+cbStatus.Left = cbStatus.Left + w
 laWorkTime.Left = laWorkTime.Left + w
 tbWorktime.Left = tbWorktime.Left + w
 laReadyDate.Left = laReadyDate.Left + w
@@ -808,7 +968,7 @@ Private Sub Grid_LostFocus()
 Grid_LeaveCell
 End Sub
 
-Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
 
@@ -831,6 +991,10 @@ End Sub
 Private Sub cbStatus_Click()
 Dim noClick As Boolean
 
+'If noClick Then
+'    noClick = False
+'    Exit Sub
+'End If
 If FormIsActiv Then Zakaz.cmZapros.Enabled = True
 If cbStatus.Text = "в работе" Then
 '    If ((cbO.Text <> "" And cbO.Text <> "утвержден") _
@@ -932,7 +1096,7 @@ workTimeOld = 0
 If Not IsNull(tbOrders!Worktime) Then
     workTimeOld = tbOrders!Worktime
 End If
-statIdOld = tbOrders!statusId
+statIdOld = tbOrders!StatusId
 tbOrders.Close
 
 wrkDefault.BeginTrans
@@ -970,11 +1134,9 @@ Else
     End If
 End If
 
-sql = "UPDATE Orders SET outDateTime = " & str & _
-" WHERE (((numOrder)=" & gNzak & "));"
-'MsgBox sql
-'Debug.Print sql
-If myExecute("##391", sql) <> 0 Then GoTo ER1
+Dim v_outDateTime As String
+v_outDateTime = str
+
 
 If tbDateRS.Enabled = True Then
 '    tbOrders!dateRS = tbDateRS.Text
@@ -1003,16 +1165,12 @@ If Not tbOrders.BOF Then
 '        tbOrders!rowLock = ""
        If workChange Then
          If (id = 1 Or id = 5) And editWorkTime Then 'остается в работе или отложен
-            tbOrders!Worktime = Round(tbOrders!Worktime + tbWorktime.Text _
-                     - neVipolnen, 1) 'время с учетом коррекции
             Worktime = Round(workTimeOld + tbWorktime.Text _
                      - neVipolnen, 1) 'время с учетом коррекции
-            tbOrders!nevip = tbWorktime.Text / tbOrders!Worktime
             sql = "UPDATE OrdersInCeh SET Nevip = " & _
             tbWorktime.Text / Worktime & " WHERE (((numOrder)=" & gNzak & "));"
             If myExecute("##393", sql) <> 0 Then GoTo ER1
          Else
-'            tbOrders!workTime = tbWorkTime.Text
             Worktime = tbWorktime.Text
          End If
        End If
@@ -1021,47 +1179,43 @@ If Not tbOrders.BOF Then
        If myExecute("##403", sql) <> 0 Then GoTo ER1
        GoTo DD
     Else
-'        tbOrders.Delete
         sql = "DELETE from OrdersInCeh WHERE (((numOrder)=" & gNzak & "));"
         If myExecute("##394", sql) <> 0 Then GoTo ER1
-'        tbOrders!workTime = 0
         Worktime = 0
     End If
 Else
     If isTimeZakaz Then
-'        tbOrders.AddNew
-'        tbOrders!numOrder = gNzak
-'        On Error GoTo ERRp
-'        On Error GoTo 0
-'        tbOrders!workTime = tbWorkTime.Text
         Worktime = tbWorktime.Text
         sql = "INSERT INTO OrdersInCeh ( numOrder, urgent )" & _
         "SELECT " & gNzak & ",'" & urgent & "';"
         If myExecute("##395", sql) <> 0 Then GoTo ER1
 DD:     noClick = True
         Orders.Grid.col = orCeh
-'        Grid.row = zakazNum
         If urgent = "y" Then
-'            tbOrders!urgent = "y"
             Orders.Grid.CellForeColor = 200
         Else
-'            tbOrders!urgent = ""
             Orders.Grid.CellForeColor = vbBlack
         End If
-'        tbOrders.Update
         Orders.Grid.col = orStatus
         noClick = False
     End If
 End If
 
-sql = "UPDATE Orders SET workTime = " & Worktime & _
-", statusId = " & id & ", lastManagId = " & manId(Orders.cbM.ListIndex) & _
-" WHERE (((Orders.numOrder)=" & gNzak & "));"
+sql = "UPDATE OrdersEquip SET outDateTime = " & v_outDateTime & ", workTime = " & Worktime _
+& " WHERE numOrder = " & gNzak & " and cehId =" & cehId
+'MsgBox sql
+'Debug.Print sql
+If myExecute("##391", sql) <> 0 Then GoTo ER1
+
+
+sql = "UPDATE Orders SET " _
+& " statusId = " & id & ", lastManagId = " & manId(Orders.cbM.ListIndex) _
+& " WHERE Orders.numOrder =" & gNzak
 If myExecute("##396", sql) <> 0 Then GoTo ER1
 
 
 ' согласование или из согласования в работу
-sql = "SELECT * from OrdersMO WHERE (((numOrder)=" & gNzak & "));"
+sql = "SELECT * from OrdersMO WHERE numOrder =" & gNzak
 Set table = myOpenRecordSet("##02", sql, dbOpenForwardOnly)
 'If Not table Is Nothing Then '
  bilo = Not table.BOF
@@ -1104,20 +1258,24 @@ table.Close
   End If
 '  table.Update
   If bilo Then      '
-    sql = "UPDATE OrdersMO SET DateTimeMO = " & str & ", workTimeMO = " & _
-    Worktime & ", StatM = '" & cbM.Text & "', StatO = '" & cbO.Text & _
-    "' WHERE (((numOrder)=" & gNzak & "));"
+    sql = "UPDATE OrdersMO SET StatM = '" & cbM.Text & "', StatO = '" & cbO.Text & _
+    "' WHERE numOrder = " & gNzak
   Else
-    sql = "INSERT INTO OrdersMO ( numOrder, DateTimeMO, workTimeMO, StatM, " & _
-    "StatO ) SELECT " & gNzak & ", " & str & ", " & Worktime & ", '" & _
+    sql = "INSERT INTO OrdersMO ( numOrder, StatM, StatO ) " & _
+    "SELECT " & gNzak & ", '" & _
     cbM.Text & "', '" & cbO.Text & "';"
   End If
 '  MsgBox sql
   If myExecute("##397", sql) <> 0 Then GoTo ER1
+    
+  sql = "UPDATE OrdersEquip SET DateTimeMO = " & str & ", workTimeMO = " & _
+  Worktime & " WHERE numOrder = " & gNzak & " and cehId = " & cehId
+  If myExecute("##397.0", sql) <> 0 Then GoTo ER1
+ 
  Else
 '  If bilo Then table.Delete
   If bilo Then
-    sql = "DELETE from OrdersMO WHERE (((numOrder)=" & gNzak & "));"
+    sql = "DELETE from OrdersMO WHERE numOrder = " & gNzak
     If myExecute("##398", sql) <> 0 Then GoTo ER1
   End If
  End If ' согласов
@@ -1195,13 +1353,16 @@ If getSystemField("resursLock") = Orders.cbM.Text Then unLockBase 'Если именно м
 wrkDefault.CommitTrans
 
 'обновить Окно Orders
-sql = "SELECT Orders.StatusId, GuideProblem.Problem, Orders.DateRS, " & _
-"Orders.outDateTime, Orders.workTime, Orders.numOrder, OrdersMO.DateTimeMO, " & _
-"OrdersMO.StatM, OrdersMO.StatO, " & _
-"OrdersMO.workTimeMO FROM (GuideStatus INNER JOIN (GuideProblem " & _
-"INNER JOIN Orders ON GuideProblem.ProblemId = Orders.ProblemId) ON " & _
-"GuideStatus.StatusId = Orders.StatusId) LEFT JOIN OrdersMO ON " & _
-"Orders.numOrder = OrdersMO.numOrder WHERE (((Orders.numOrder)=" & gNzak & "));"
+sql = "SELECT o.StatusId, o.DateRS, o.numOrder" & _
+", oe.outDateTime, oe.workTime, p.Problem" & _
+", oe.DateTimeMO, mo.StatM, mo.StatO, oe.workTimeMO " & _
+" FROM Orders o " _
+& " INNER JOIN GuideProblem p  ON p.ProblemId = o.ProblemId" _
+& " INNER JOIN OrdersEquip  oe  ON oe.numOrder = o.numOrder and oe.cehId = " & cehId _
+& " LEFT JOIN OrdersMO      mo ON o.numOrder = mo.numOrder" _
+& " WHERE o.numOrder = " & gNzak
+
+'& " INNER JOIN GuideStatus  s  ON s.StatusId = o.StatusId" _
 
 Set tqOrders = myOpenRecordSet("##16", sql, dbOpenForwardOnly) ', dbDenyWrite)
 'If tqOrders Is Nothing Then Exit Sub
@@ -1616,6 +1777,8 @@ oldHeight = Me.Height
 oldWidth = Me.Width
 
 lv.ColumnHeaders(zkHide + 1).Width = 0
+
+
 
 End Sub
 

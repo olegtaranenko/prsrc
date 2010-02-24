@@ -582,7 +582,7 @@ Const rowFromOrdersSQL = "select " & _
 "   ,Orders.DateRS, GuideFirms.Name, oes.outDateTime, Orders.Type" & _
 "   ,oes.workTime, Orders.Logo, Orders.Product, Orders.ordered" & _
 "   ,Orders.temaId, Orders.paid, Orders.shipped,  Orders.Invoice" & _
-"   ,OrdersMO.DateTimeMO, OrdersMO.workTimeMO, OrdersMO.StatM, OrdersMO.StatO" & _
+"   ,oes.DateTimeMO, oes.workTimeMO, OrdersMO.StatM, OrdersMO.StatO" & _
 "   ,GuideManag_1.Manag AS lastManag, OrdersInCeh.urgent" & _
 "   ,guideventure.venturename as venture" & _
 "   ,lastModified" & _
@@ -1367,9 +1367,9 @@ initOrCol orVrVid
 initOrCol orVrVip, "nOrders.workTime"
 initOrCol orM
 initOrCol orO
-initOrCol orMOData, "dOrdersMO.DateTimeMO"
+initOrCol orMOData, "dOrdersEquip.DateTimeMO"
 initOrCol orMOVrVid
-initOrCol orOVrVip, "dOrdersMO.workTimeMO"
+initOrCol orOVrVip, "dOrdersEquip.workTimeMO"
 initOrCol orLogo, "sOrders.Logo"
 initOrCol orIzdelia, "sOrders.Product"
 initOrCol orType, "sOrders.Type"
@@ -2094,33 +2094,33 @@ ElseIf mousCol = orStatus Then
               tbCeh.Close
           End If                                  '
         End If                                    '
-        'startParams
+        startParams
 
-Equipment.cbStatus.Clear
-addToCbStatus 7, "b" '"аннулир."
-If statusId = 5 Then
-    addToCbStatus 5   '"отложен"
-ElseIf statusId = 8 Then
-    statusId = 1
-    addToCbStatus 1 '"в работе"
-Else
-    addToCbStatus 0 '"принят"  'не разрешены в т.ч. для
-    addToCbStatus 1 '"в работе"
-    addToCbStatus 2 '"резерв"  'соглас-я с готовым образцом
-    addToCbStatus 3 '"согласов."
-End If
-
-For I = 0 To Equipment.cbStatus.ListCount
-    If statId(I) = statusId Then
-        Equipment.cbStatus.ListIndex = I
-        Exit For
-    End If
-Next I
+                ''Equipment.cbStatus.Clear
+                ''addToCbStatus 7, "b" '"аннулир."
+                ''If statusId = 5 Then
+                ''    addToCbStatus 5   '"отложен"
+                ''ElseIf statusId = 8 Then
+                ''    statusId = 1
+                ''    addToCbStatus 1 '"в работе"
+                ''Else
+                ''    addToCbStatus 0 '"принят"  'не разрешены в т.ч. для
+                ''    addToCbStatus 1 '"в работе"
+                ''    addToCbStatus 2 '"резерв"  'соглас-я с готовым образцом
+                ''    addToCbStatus 3 '"согласов."
+                ''End If
+                
+                ''For I = 0 To Equipment.cbStatus.ListCount
+                ''    If statId(I) = statusId Then
+                ''        Equipment.cbStatus.ListIndex = I
+                ''        Exit For
+                ''    End If
+                ''Next I
         
         
-        Equipment.Show vbModal, Me
-        'Zakaz.Show vbModal
-        'refreshTimestamp gNzak
+                ''Equipment.Show vbModal, Me
+        Zakaz.Show vbModal
+        refreshTimestamp gNzak
    Else
      If dostup <> "a" Then
         listBoxInGridCell lbClose, Grid, "select"
@@ -3051,10 +3051,10 @@ DNM = Format(Now(), "dd.mm.yy hh:nn") & vbTab & cbM.Text & " " & gNzak ' именно 
         str = DateFromMobileVrVid(orDataVid)
         If str = "" Then Exit Sub
         orderUpdate "##24", str, "Orders", "outDateTime"
-    ElseIf mousCol = orMOVrVid Then
-        str = DateFromMobileVrVid(orMOData)
-        If str = "" Then Exit Sub
-        orderUpdate "##25", str, "OrdersMO", "DateTimeMO"
+    '-'ElseIf mousCol = orMOVrVid Then
+    '-'    str = DateFromMobileVrVid(orMOData)
+    '-'    If str = "" Then Exit Sub
+    '-'    orderUpdate "##25", str, "OrdersEquip", "DateTimeMO"
     ElseIf mousCol = orLogo Then
         orderUpdate "##26", "'" & tbMobile.Text & "'", "Orders", "Logo"
         Grid.TextMatrix(mousRow, mousCol) = tbMobile.Text
@@ -3533,6 +3533,7 @@ If id > lenStatus Then
 End If
 
 Equipment.cbStatus.AddItem status(id)
+Zakaz.cbStatus.AddItem status(id)
 statId(I) = id
 I = I + 1
 
@@ -3632,7 +3633,7 @@ If id = 0 Or id = 7 Then 'принят или аннулир
     Zakaz.tbReadyDate = ""
 Else
     Zakaz.Caption = "Редактирование заказа"
-''    Zakaz.tbDateRS = Grid.TextMatrix(mousRow, orDataRS)
+    Zakaz.tbDateRS = Grid.TextMatrix(mousRow, orDataRS)
     Zakaz.tbReadyDate = Grid.TextMatrix(mousRow, orDataVid)
           
     Zakaz.tbWorktime = neVipolnen
@@ -3649,11 +3650,11 @@ Else
             Zakaz.tbVrVipO.Enabled = False
             Zakaz.tbDateMO.Enabled = False
         Else 'AS nevipO
-            sql = "SELECT workTimeMO  FROM OrdersMO " & _
-            "WHERE numOrder = " & gNzak
+            sql = "SELECT workTimeMO FROM OrdersEquip " & _
+            "WHERE numOrder = " & gNzak & " and cehId = " & cehId
             byErrSqlGetValues "##384", sql, s '$odbc18!$
             neVipolnen_O = Round(s, 2)
-        
+    
             Zakaz.tbVrVipO = neVipolnen_O
         End If
     End If
@@ -3694,6 +3695,27 @@ If Not tbOrders Is Nothing Then
 End If
 For I = 1 To maxDay
     Zakaz.lv.ListItems("k" & I).SubItems(zkFirmKolvo) = Round(delta(I), 1)
+Next I
+
+Zakaz.cbStatus.Clear
+addToCbStatus 7, "b" '"аннулир."
+If id = 5 Then
+    addToCbStatus 5   '"отложен"
+ElseIf id = 8 Then
+    id = 1
+    addToCbStatus 1 '"в работе"
+Else
+    addToCbStatus 0 '"принят"  'не разрешены в т.ч. для
+    addToCbStatus 1 '"в работе"
+    addToCbStatus 2 '"резерв"  'соглас-я с готовым образцом
+    addToCbStatus 3 '"согласов."
+End If
+
+For I = 0 To Zakaz.cbStatus.ListCount
+    If statId(I) = id Then
+        Zakaz.cbStatus.ListIndex = I
+        GoTo NN
+    End If
 Next I
 
 MsgBox "Err in Orders\startParams"

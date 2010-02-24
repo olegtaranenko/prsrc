@@ -7,11 +7,15 @@ CREATE VIEW vw_OrdersEquipSummary (
 	  numorder
 	, worktime
 	, outDateTime
+	, worktimeMO
+	, dateTimeMO
 ) as
 select
 	  numorder
 	, sum(isnull(worktime, 0.0))
 	, max(outDateTime)
+	, sum(isnull(worktimeMO, 0.0))
+	, max(dateTimeMO)
 from
 	OrdersEquip
 group by 
