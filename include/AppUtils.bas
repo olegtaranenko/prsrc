@@ -19,7 +19,7 @@ objExel.Workbooks.Add
 With objExel.ActiveSheet
 .Cells(1, 2).value = title
 ReDim Preserve strA(Grid.Cols + 1)
-For r = 0 To Grid.rows - 1
+For r = 0 To Grid.Rows - 1
     Dim curColumn As Integer
     curColumn = 1
     For c = 1 To Grid.Cols - 1
@@ -27,7 +27,17 @@ For r = 0 To Grid.rows - 1
             str = Grid.TextMatrix(r, c) '=' - наверно зарезервирован для ввода формул
             Dim firstLetter As String
             firstLetter = left$(str, 1)
+            Dim doEscape As Boolean
+            
             If firstLetter = "=" Or firstLetter = "+" Then
+                doEscape = True
+            End If
+            
+            If str = "--" Then
+                doEscape = True
+            End If
+            
+            If doEscape Then
                 str = "'" & str
             End If
 'иногда символы Cr и Lf (поле MEMO в базе) дают Err в Excel, поэтому из поля
@@ -60,7 +70,7 @@ End Sub
 
 Function existsInTreeview(ByRef tTree As TreeView, Key As String) As Boolean
 Dim I As Integer
-    For I = 1 To tTree.Nodes.count
+    For I = 1 To tTree.Nodes.Count
         If tTree.Nodes(I).Key = Key Then
             existsInTreeview = True
             Exit Function
