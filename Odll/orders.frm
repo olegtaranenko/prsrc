@@ -606,7 +606,7 @@ Const rowFromOrdersSQL = "select " & _
     
 ' нужно вызывать уже после того, как нова€ ¬алюта сменена.
 Private Sub adjustHotMoney()
-Dim tbWorkTime As String
+Dim tbWorktime As String
 Dim Ceh As String, Worktime As String
 Dim I As Long, j As Integer
 
@@ -2095,7 +2095,7 @@ ElseIf mousCol = orStatus Then
               tbCeh.Close
           End If                                  '
         End If                                    '
-        startParams
+        Zakaz.startParams
 
                 ''Equipment.cbStatus.Clear
                 ''addToCbStatus 7, "b" '"аннулир."
@@ -2885,17 +2885,17 @@ cbM_LostFocus
 End Sub
 
 Private Sub mnSetkaC_Click()
-    startParams (2)
+    Zakaz.startParams (2)
     Zakaz.Show vbModal
 End Sub
 
 Private Sub mnSetkaS_Click()
-    startParams (3)
+    Zakaz.startParams (3)
     Zakaz.Show vbModal
 End Sub
 
 Private Sub mnSetkaY_Click()
-    startParams (1)
+    Zakaz.startParams (1)
     Zakaz.Show vbModal
 End Sub
 
@@ -3524,229 +3524,6 @@ End If
     Grid.TextMatrix(row, orServername) = CStr(tqOrders!serverName)
  End If
 End Sub
-
-Sub addToCbStatus(id, Optional begin As String = "")
-
-Static I As Integer
-If begin <> "" Then I = 0
-If id > lenStatus Then
-    MsgBox "Err в Orders\addToCbStatus"
-End If
-
-Equipment.cbStatus.AddItem status(id)
-Zakaz.cbStatus.AddItem status(id)
-statId(I) = id
-I = I + 1
-
-End Sub
-    
-Function cbMOsetByText(cb As ComboBox, stat As Variant) As Boolean
-    cbMOsetByText = False
-Dim I As Integer, txt As String
-    txt = ""
-    If Not IsNull(stat) Then txt = CStr(stat)
-    If txt = "готов" Then
-        If cb.List(3) <> "готов" Then cb.AddItem "готов", 3
-        If cb.List(4) <> "утвержден" Then cb.AddItem "утвержден", 4
-        cb.ListIndex = 3
-        cbMOsetByText = True
-    ElseIf txt = "утвержден" Then
-        If cb.List(3) = "готов" Then
-            I = 4
-        Else
-            I = 3
-        End If
-        If cb.List(I) <> "утвержден" Then cb.AddItem "утвержден", I
-        cb.ListIndex = I
-    ElseIf txt = "в работе" Then
-        cb.ListIndex = 2
-        cbMOsetByText = True
-    ElseIf txt = "макет" Or txt = "образец" Then
-        cb.ListIndex = 1
-    Else
-        cb.ListIndex = 0
-    End If
-
-End Function
-'$odbc08!$
-Function startParams(Optional idCeh As Integer = 0) As Boolean
-Dim I As Integer, str As String, j As Integer ', sumSroch As Double
-Dim item As ListItem, id As Integer, v As Variant, s As Double
-
-startParams = False
-
-If idCeh = 0 Then
-    Zakaz.Regim = ""
-Else
-    Zakaz.Regim = "setka"
-End If
-
-'Set tbOrders = myOpenRecordSet("##28", "Orders", dbOpenTable)
-'If tbOrders Is Nothing Then Exit Function
-maxDay = 0
-
-If idCeh > 0 Then ' вызов в режиме —етки заказов
-    '!' »менно в этом месте вызываетс€ Zakaz.Form.Load() !!!!!
-    '!' ј в той процедуре и выставл€етс€ глобальна€ переменна€ cehId
-    Zakaz.cmAdd.Visible = False
-    Zakaz.cmRepit.Visible = False
-    cehId = idCeh
-    gNzak = ""
-    id = 0
-    Zakaz.urgent = ""
-Else
-    sql = "SELECT urgent from OrdersInCeh WHERE numOrder = " & gNzak
-    byErrSqlGetValues "W##381", sql, str
-    Zakaz.urgent = str
-    
-    
-    '!' »менно в этом месте вызываетс€ Zakaz.Form.Load() !!!!!
-    '!' ј в той процедуре и выставл€етс€ глобальна€ переменна€ cehId
-    
-    Zakaz.laNomZak.Caption = gNzak
-    Zakaz.cmAdd.Visible = True
-    Zakaz.cmRepit.Visible = True
-    
-'    If Not findZakazInTable_("Orders") Then Exit Function '$#$
-    sql = "SELECT StatusId, oe.outDateTime from Orders o" _
-    & " JOIN OrdersEquip oe on oe.numorder = o.numorder and oe.cehId = " & CStr(cehId) _
-    & " WHERE o.numOrder =" & gNzak
-    Set tbOrders = myOpenRecordSet("##402", sql, dbOpenForwardOnly)
-    If tbOrders.BOF Then
-        tbOrders.Close
-        Exit Function
-    End If
-    
-    If IsDate(tbOrders!outDateTime) Then
-        I = DateDiff("d", curDate, tbOrders!outDateTime) + 1
-        addDays I 'добавл€ем дни, т.к. ƒата ¬ыд тек.заказа может оказатьс€
-                  'дальше чем всех других, либо чем stDay и rMaxDay
-    End If
-    id = tbOrders!StatusId
-    tbOrders.Close
-End If
-    
-    zagruzFromCeh gNzak '              1| в delta(), Ostatki() !!! кроме текущего
-    getResurs
-    Zakaz.lvAddDays  ' добавл€ем стороки и даты
-    For I = 1 To maxDay
-        Zakaz.lv.ListItems("k" & I).SubItems(zkPrinato) = Round(getNevip(I), 1)
-        Zakaz.lv.ListItems("k" & I).SubItems(zkResurs) = Round(nomRes(I) * kpd * Nstan, 1)
-    Next I
-    Zakaz.lv.ListItems("k1").SubItems(zkResurs) = Round(nr * Nstan * kpd, 1)
-
-If id = 0 Or id = 7 Then 'прин€т или аннулир
-    neVipolnen = 0
-    neVipolnen_O = 0
-    If idCeh > 0 Then
-        Zakaz.Caption = "—етка заказов " & Ceh(cehId)
-    ElseIf id = 0 Then
-        Zakaz.Caption = "ѕеремещение заказа в цех " & Ceh(cehId)
-    End If
-    
-    Zakaz.tbWorkTime = ""
-    Zakaz.tbReadyDate = ""
-Else
-    Zakaz.Caption = "–едактирование заказа"
-    Zakaz.tbDateRS = Grid.TextMatrix(mousRow, orDataRS)
-    Zakaz.tbReadyDate = Grid.TextMatrix(mousRow, orDataVid)
-          
-    Zakaz.tbWorkTime = neVipolnen
-    
-    v = getTableField("OrdersMO", "StatM")
-    If cbMOsetByText(Zakaz.cbM, v) Then
-        Zakaz.tbDateMO = Grid.TextMatrix(mousRow, orMOData)
-    End If
-    v = getTableField("OrdersMO", "StatO")
-    If cbMOsetByText(Zakaz.cbO, v) Then
-        Zakaz.tbDateMO = Grid.TextMatrix(mousRow, orMOData)
-        If Zakaz.cbO.Text = "готов" Then
-            Zakaz.tbVrVipO = Grid.TextMatrix(mousRow, orOVrVip)
-            Zakaz.tbVrVipO.Enabled = False
-            Zakaz.tbDateMO.Enabled = False
-        Else 'AS nevipO
-            sql = "SELECT workTimeMO FROM OrdersEquip " & _
-            "WHERE numOrder = " & gNzak & " and cehId = " & cehId
-            byErrSqlGetValues "##384", sql, s '$odbc18!$
-            neVipolnen_O = Round(s, 2)
-    
-            Zakaz.tbVrVipO = neVipolnen_O
-        End If
-    End If
-End If
-'tbOrders.Close
-I = getNextDay(1)
-v = Zakaz.lv.ListItems("k1").SubItems(zkMost)
-If Not IsNumeric(v) Then v = 0
-Zakaz.laZapas.Caption = Round(nomRes(I) * kpd * Nstan + v, 1)
-
-Zakaz.cmZapros.Enabled = False
-
-'количесво фирм по дн€м выдачи
-For I = 1 To maxDay
-    delta(I) = 0
-Next I
-str = "DateDiff(day, now(), oe.outDateTime)"
-sql = "SELECT " & str & " AS day, o.FirmId" _
-& " From Orders o" _
-& " join OrdersEquip oe on oe.numorder = o.numorder and oe.cehId = " & cehId _
-& " Where o.StatusId < 4" _
-& " GROUP BY " & str & ", o.FirmId" _
-& " HAVING " & str & " >= 0"
-
-'MsgBox str & Chr(13) & Chr(13) & sql
-'Debug.Print sql
-
-Set tbOrders = myOpenRecordSet("##76", sql, dbOpenForwardOnly)
-If Not tbOrders Is Nothing Then
- If Not tbOrders.BOF Then
- While Not tbOrders.EOF
-    I = tbOrders!day + 1
-    delta(I) = delta(I) + 1
-    tbOrders.MoveNext
- Wend
- End If
- tbOrders.Close
-End If
-For I = 1 To maxDay
-    Zakaz.lv.ListItems("k" & I).SubItems(zkFirmKolvo) = Round(delta(I), 1)
-Next I
-
-Zakaz.cbStatus.Clear
-addToCbStatus 7, "b" '"аннулир."
-If id = 5 Then
-    addToCbStatus 5   '"отложен"
-ElseIf id = 8 Then
-    id = 1
-    addToCbStatus 1 '"в работе"
-Else
-    addToCbStatus 0 '"прин€т"  'не разрешены в т.ч. дл€
-    addToCbStatus 1 '"в работе"
-    addToCbStatus 2 '"резерв"  'соглас-€ с готовым образцом
-    addToCbStatus 3 '"согласов."
-End If
-
-For I = 0 To Zakaz.cbStatus.ListCount
-    If statId(I) = id Then
-        Zakaz.cbStatus.ListIndex = I
-        GoTo NN
-    End If
-Next I
-
-MsgBox "Err in Orders\startParams"
-NN:
-
-Zakaz.lv.ListItems("k" & stDay).ForeColor = &HBB00&
-Zakaz.lv.ListItems("k" & stDay).Bold = True
-
-If idCeh = 0 Then
-    Zakaz.newZagruz
-Else
-    Zakaz.newZagruz "setka" 'вли€ет только один раз
-End If
-
-startParams = True
-End Function
 
 Private Sub Timer1_Timer()
 minut = minut - 1

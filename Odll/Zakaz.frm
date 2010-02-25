@@ -610,7 +610,7 @@ If reg = "" Then
     If stat = "образец" Then
         Grid.TextMatrix(quantity, zgVrVip) = tbVrVipO.Text
     Else
-        Grid.TextMatrix(quantity, zgVrVip) = tbWorkTime.Text
+        Grid.TextMatrix(quantity, zgVrVip) = tbWorktime.Text
     End If
     Grid.TextMatrix(quantity, zgNevip) = nevip
     
@@ -732,8 +732,8 @@ End If
 '        If eDay > ZeDay Or (eDay = ZeDay And bDay <= ZbDay) Then ' не нарушаем сортировку
         If bDay <= ZbDay Then ' не нарушаем сортировку
             dayCorrect ZbDay, ZeDay, urgent
-            ukladka ost, ZeDay, ZbDay, tbWorkTime.Text 'обратна€ укладка (в bef не попадает)
-            If Not zakazToGrid(reg, cbStatus.Text, tbWorkTime.Text) Then GoTo EN1
+            ukladka ost, ZeDay, ZbDay, tbWorktime.Text 'обратна€ укладка (в bef не попадает)
+            If Not zakazToGrid(reg, cbStatus.Text, tbWorktime.Text) Then GoTo EN1
             'ZeDay = maxDay + 1 ' чтобы более не срабатывал
             ZbDay = -32000 ' чтобы более не срабатывал
         End If
@@ -801,8 +801,8 @@ If isMzagruz Then
 '  If ZeDay < maxDay + 1 Then
   If ZbDay > -32000 Then
     dayCorrect ZbDay, ZeDay
-    ukladka ost, ZeDay, ZbDay, tbWorkTime.Text 'обратна€ укладка (в bef не попадает)
-    zakazToGrid reg, cbStatus.Text, tbWorkTime.Text
+    ukladka ost, ZeDay, ZbDay, tbWorktime.Text 'обратна€ укладка (в bef не попадает)
+    zakazToGrid reg, cbStatus.Text, tbWorktime.Text
   End If
 End If
 
@@ -925,7 +925,7 @@ laNomZak.Left = laNomZak.Left + w
 laStatus.Left = laStatus.Left + w
 cbStatus.Left = cbStatus.Left + w
 laWorkTime.Left = laWorkTime.Left + w
-tbWorkTime.Left = tbWorkTime.Left + w
+tbWorktime.Left = tbWorktime.Left + w
 laReadyDate.Left = laReadyDate.Left + w
 tbReadyDate.Left = tbReadyDate.Left + w
 laDateRS.Left = laDateRS.Left + w
@@ -977,7 +977,7 @@ If Grid.MouseRow = 0 And Shift = 2 Then _
 End Sub
 
 Private Sub laNomZak_Click()
-    Dim Left As String, Worktime As String, tbWorkTime As String, rollback As String
+    Dim Left As String, Worktime As String, tbWorktime As String, rollback As String
 End Sub
 
 Private Sub tbDateMO_GotFocus()
@@ -1042,7 +1042,7 @@ If cbStatus.Text = "согласов" Or cbStatus.Text = "резерв" Then
     Zakaz.laWorkTime.Enabled = True
     Zakaz.laReadyDate.Enabled = True
     Zakaz.tbReadyDate.Enabled = True
-    Zakaz.tbWorkTime.Enabled = True
+    Zakaz.tbWorktime.Enabled = True
 'ElseIf cbStatus.ListIndex = 1 Then      'в работу
 ElseIf cbStatus.Text = "в работе" Or cbStatus.Text = "отложен" Then
 '    tbDateRS.Text = ""
@@ -1051,14 +1051,14 @@ ElseIf cbStatus.Text = "в работе" Or cbStatus.Text = "отложен" Then
     Zakaz.laWorkTime.Enabled = True
     Zakaz.laReadyDate.Enabled = True
     Zakaz.tbReadyDate.Enabled = True
-    Zakaz.tbWorkTime.Enabled = True
+    Zakaz.tbWorktime.Enabled = True
 Else
     laWorkTime.Enabled = False
     laReadyDate.Enabled = False
     tbReadyDate.Text = ""
     tbReadyDate.Enabled = False
-    tbWorkTime.Text = ""
-    tbWorkTime.Enabled = False
+    tbWorktime.Text = ""
+    tbWorktime.Enabled = False
     tbDateRS.Text = ""
     tbDateRS.Enabled = False
     laDateRS.Enabled = False
@@ -1167,13 +1167,13 @@ If Not tbOrders.BOF Then
 '        tbOrders!rowLock = ""
        If workChange Then
          If (id = 1 Or id = 5) And editWorkTime Then 'остаетс€ в работе или отложен
-            Worktime = Round(workTimeOld + tbWorkTime.Text _
+            Worktime = Round(workTimeOld + tbWorktime.Text _
                      - neVipolnen, 1) 'врем€ с учетом коррекции
             sql = "UPDATE OrdersInCeh SET Nevip = " & _
-            tbWorkTime.Text / Worktime & " WHERE (((numOrder)=" & gNzak & "));"
+            tbWorktime.Text / Worktime & " WHERE (((numOrder)=" & gNzak & "));"
             If myExecute("##393", sql) <> 0 Then GoTo ER1
          Else
-            Worktime = tbWorkTime.Text
+            Worktime = tbWorktime.Text
          End If
        End If
        sql = "UPDATE OrdersInCeh SET urgent = '" & urgent & _
@@ -1187,7 +1187,7 @@ If Not tbOrders.BOF Then
     End If
 Else
     If isTimeZakaz Then
-        Worktime = tbWorkTime.Text
+        Worktime = tbWorktime.Text
         sql = "INSERT INTO OrdersInCeh ( numOrder, urgent )" & _
         "SELECT " & gNzak & ",'" & urgent & "';"
         If myExecute("##395", sql) <> 0 Then GoTo ER1
@@ -1396,9 +1396,9 @@ Private Sub cmRepit_Click()
 workChange = False
     cmAdd.Enabled = False
     tbReadyDate.Enabled = True
-    tbWorkTime.Enabled = True
+    tbWorktime.Enabled = True
     tbReadyDate.SetFocus
-    Orders.startParams
+    startParams
 Timer1.Enabled = False
 If getSystemField("resursLock") = Orders.cbM.Text Then unLockBase '≈сли именно мы блокирова
 be_cmRepit = True
@@ -1532,8 +1532,8 @@ BB: isTimeZakaz = False
     Exit Sub
 End If
 
-If Not isNumericTbox(tbWorkTime, 0, 2000) Then Exit Sub
-tbWorkTime.Text = Round(tbWorkTime.Text, 1)
+If Not isNumericTbox(tbWorktime, 0, 2000) Then Exit Sub
+tbWorktime.Text = Round(tbWorktime.Text, 1)
 If Not isDateTbox(tbReadyDate, "fri") Then Exit Sub
 
 tmpDate = CDate(tbReadyDate.Text)
@@ -1869,7 +1869,7 @@ If KeyCode = vbKeyReturn Then
 
 If tbDateRS.Enabled Then
   If isDateTbox(tbReadyDate, "fri") Then
-    s = Round(CDbl(tbWorkTime.Text), 1)
+    s = Round(CDbl(tbWorktime.Text), 1)
     I = -(Int((CDbl(s) - 0.05) / 3) + 1 + 2) ' + 2 - дата выд от посл. куска
     getWorkDay I, tbReadyDate.Text ' дает tmpDate
     If tmpDate < curDate Then tmpDate = curDate
@@ -1897,10 +1897,10 @@ Dim s As Double, I As Integer
 
 If KeyCode = vbKeyReturn Then
 
-  If isNumericTbox(tbWorkTime, 0, 2000) Then
+  If isNumericTbox(tbWorktime, 0, 2000) Then
      If cbStatus.Text = "в работе" Then
-        s = Round(CDbl(tbWorkTime.Text), 1)
-        tbWorkTime.Text = s
+        s = Round(CDbl(tbWorktime.Text), 1)
+        tbWorktime.Text = s
         I = Int((CDbl(s) - 0.05) / 3)
         getWorkDay 3 + I ' дает tmpDate
         tbReadyDate.Text = Format(tmpDate, "dd.mm.yy")
@@ -1926,4 +1926,229 @@ Else
     unLockBase
 End If
 End Sub
+
+Public Function startParams(Optional idCeh As Integer = 0) As Boolean
+Dim I As Integer, str As String, j As Integer ', sumSroch As Double
+Dim item As ListItem, id As Integer, v As Variant, s As Double
+
+startParams = False
+
+If idCeh = 0 Then
+    Me.Regim = ""
+Else
+    Me.Regim = "setka"
+End If
+
+'Set tbOrders = myOpenRecordSet("##28", "Orders", dbOpenTable)
+'If tbOrders Is Nothing Then Exit Function
+maxDay = 0
+
+If idCeh > 0 Then ' вызов в режиме —етки заказов
+    '!' »менно в этом месте вызываетс€ Me.Form.Load() !!!!!
+    '!' ј в той процедуре и выставл€етс€ глобальна€ переменна€ cehId
+    Me.cmAdd.Visible = False
+    Me.cmRepit.Visible = False
+    cehId = idCeh
+    gNzak = ""
+    id = 0
+    Me.urgent = ""
+Else
+    sql = "SELECT urgent from OrdersInCeh WHERE numOrder = " & gNzak
+    byErrSqlGetValues "W##381", sql, str
+    Me.urgent = str
+    
+    
+    '!' »менно в этом месте вызываетс€ Me.Form.Load() !!!!!
+    '!' ј в той процедуре и выставл€етс€ глобальна€ переменна€ cehId
+    
+    Me.laNomZak.Caption = gNzak
+    Me.cmAdd.Visible = True
+    Me.cmRepit.Visible = True
+    
+'    If Not findZakazInTable_("Orders") Then Exit Function '$#$
+    sql = "SELECT StatusId, oe.outDateTime from Orders o" _
+    & " JOIN OrdersEquip oe on oe.numorder = o.numorder and oe.cehId = " & CStr(cehId) _
+    & " WHERE o.numOrder =" & gNzak
+    Set tbOrders = myOpenRecordSet("##402", sql, dbOpenForwardOnly)
+    If tbOrders.BOF Then
+        tbOrders.Close
+        Exit Function
+    End If
+    
+    If IsDate(tbOrders!outDateTime) Then
+        I = DateDiff("d", curDate, tbOrders!outDateTime) + 1
+        addDays I 'добавл€ем дни, т.к. ƒата ¬ыд тек.заказа может оказатьс€
+                  'дальше чем всех других, либо чем stDay и rMaxDay
+    End If
+    id = tbOrders!StatusId
+    tbOrders.Close
+End If
+    
+    zagruzFromCeh gNzak '              1| в delta(), Ostatki() !!! кроме текущего
+    getResurs
+    Me.lvAddDays  ' добавл€ем стороки и даты
+    For I = 1 To maxDay
+        Me.lv.ListItems("k" & I).SubItems(zkPrinato) = Round(getNevip(I), 1)
+        Me.lv.ListItems("k" & I).SubItems(zkResurs) = Round(nomRes(I) * kpd * Nstan, 1)
+    Next I
+    Me.lv.ListItems("k1").SubItems(zkResurs) = Round(nr * Nstan * kpd, 1)
+
+If id = 0 Or id = 7 Then 'прин€т или аннулир
+    neVipolnen = 0
+    neVipolnen_O = 0
+    If idCeh > 0 Then
+        Me.Caption = "—етка заказов " & Ceh(cehId)
+    ElseIf id = 0 Then
+        Me.Caption = "ѕеремещение заказа в цех " & Ceh(cehId)
+    End If
+    
+    Me.tbWorktime = ""
+    Me.tbReadyDate = ""
+Else
+    Me.Caption = "–едактирование заказа"
+    Me.tbDateRS = Orders.Grid.TextMatrix(Orders.mousRow, orDataRS)
+    Me.tbReadyDate = Orders.Grid.TextMatrix(Orders.mousRow, orDataVid)
+          
+    Me.tbWorktime = neVipolnen
+    
+    v = getTableField("OrdersMO", "StatM")
+    If cbMOsetByText(Me.cbM, v) Then
+        Me.tbDateMO = Orders.Grid.TextMatrix(Orders.mousRow, orMOData)
+    End If
+    v = getTableField("OrdersMO", "StatO")
+    If cbMOsetByText(Me.cbO, v) Then
+        Me.tbDateMO = Orders.Grid.TextMatrix(Orders.mousRow, orMOData)
+        If Me.cbO.Text = "готов" Then
+            Me.tbVrVipO = Orders.Grid.TextMatrix(Orders.mousRow, orOVrVip)
+            Me.tbVrVipO.Enabled = False
+            Me.tbDateMO.Enabled = False
+        Else 'AS nevipO
+            sql = "SELECT workTimeMO FROM OrdersEquip " & _
+            "WHERE numOrder = " & gNzak & " and cehId = " & cehId
+            byErrSqlGetValues "##384", sql, s '$odbc18!$
+            neVipolnen_O = Round(s, 2)
+    
+            Me.tbVrVipO = neVipolnen_O
+        End If
+    End If
+End If
+'tbOrders.Close
+I = getNextDay(1)
+v = Me.lv.ListItems("k1").SubItems(zkMost)
+If Not IsNumeric(v) Then v = 0
+Me.laZapas.Caption = Round(nomRes(I) * kpd * Nstan + v, 1)
+
+Me.cmZapros.Enabled = False
+
+'количесво фирм по дн€м выдачи
+For I = 1 To maxDay
+    delta(I) = 0
+Next I
+str = "DateDiff(day, now(), oe.outDateTime)"
+sql = "SELECT " & str & " AS day, o.FirmId" _
+& " From Orders o" _
+& " join OrdersEquip oe on oe.numorder = o.numorder and oe.cehId = " & cehId _
+& " Where o.StatusId < 4" _
+& " GROUP BY " & str & ", o.FirmId" _
+& " HAVING " & str & " >= 0"
+
+'MsgBox str & Chr(13) & Chr(13) & sql
+'Debug.Print sql
+
+Set tbOrders = myOpenRecordSet("##76", sql, dbOpenForwardOnly)
+If Not tbOrders Is Nothing Then
+ If Not tbOrders.BOF Then
+ While Not tbOrders.EOF
+    I = tbOrders!day + 1
+    delta(I) = delta(I) + 1
+    tbOrders.MoveNext
+ Wend
+ End If
+ tbOrders.Close
+End If
+For I = 1 To maxDay
+    Me.lv.ListItems("k" & I).SubItems(zkFirmKolvo) = Round(delta(I), 1)
+Next I
+
+Me.cbStatus.Clear
+addToCbStatus 7, "b" '"аннулир."
+If id = 5 Then
+    addToCbStatus 5   '"отложен"
+ElseIf id = 8 Then
+    id = 1
+    addToCbStatus 1 '"в работе"
+Else
+    addToCbStatus 0 '"прин€т"  'не разрешены в т.ч. дл€
+    addToCbStatus 1 '"в работе"
+    addToCbStatus 2 '"резерв"  'соглас-€ с готовым образцом
+    addToCbStatus 3 '"согласов."
+End If
+
+For I = 0 To Me.cbStatus.ListCount
+    If statId(I) = id Then
+        Me.cbStatus.ListIndex = I
+        GoTo NN
+    End If
+Next I
+
+MsgBox "Err in Zakaz\startParams"
+NN:
+
+Me.lv.ListItems("k" & stDay).ForeColor = &HBB00&
+Me.lv.ListItems("k" & stDay).Bold = True
+
+If idCeh = 0 Then
+    Me.newZagruz
+Else
+    Me.newZagruz "setka" 'вли€ет только один раз
+End If
+
+startParams = True
+End Function
+
+
+Function cbMOsetByText(cb As ComboBox, stat As Variant) As Boolean
+    cbMOsetByText = False
+Dim I As Integer, txt As String
+    txt = ""
+    If Not IsNull(stat) Then txt = CStr(stat)
+    If txt = "готов" Then
+        If cb.List(3) <> "готов" Then cb.AddItem "готов", 3
+        If cb.List(4) <> "утвержден" Then cb.AddItem "утвержден", 4
+        cb.ListIndex = 3
+        cbMOsetByText = True
+    ElseIf txt = "утвержден" Then
+        If cb.List(3) = "готов" Then
+            I = 4
+        Else
+            I = 3
+        End If
+        If cb.List(I) <> "утвержден" Then cb.AddItem "утвержден", I
+        cb.ListIndex = I
+    ElseIf txt = "в работе" Then
+        cb.ListIndex = 2
+        cbMOsetByText = True
+    ElseIf txt = "макет" Or txt = "образец" Then
+        cb.ListIndex = 1
+    Else
+        cb.ListIndex = 0
+    End If
+
+End Function
+
+Sub addToCbStatus(id, Optional begin As String = "")
+
+Static I As Integer
+If begin <> "" Then I = 0
+If id > lenStatus Then
+    MsgBox "Err в Orders\addToCbStatus"
+End If
+
+Equipment.cbStatus.AddItem status(id)
+Me.cbStatus.AddItem status(id)
+statId(I) = id
+I = I + 1
+
+End Sub
+    
 
