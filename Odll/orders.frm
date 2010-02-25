@@ -606,8 +606,8 @@ Const rowFromOrdersSQL = "select " & _
     
 ' нужно вызывать уже после того, как новая Валюта сменена.
 Private Sub adjustHotMoney()
-Dim tbWorktime As String
-Dim ceh As String, Worktime As String
+Dim tbWorkTime As String
+Dim Ceh As String, Worktime As String
 Dim I As Long, j As Integer
 
     For I = 1 To Grid.rows - 1
@@ -762,7 +762,7 @@ If InStr(Orders.cmAdd.Caption, "+") > 0 Then
   baseCehId = tbOrders!cehId
   baseFirmId = tbOrders!firmId
   baseProblemId = tbOrders!ProblemId
-  baseCeh = tbOrders!ceh
+  baseCeh = tbOrders!Ceh
   baseFirm = tbOrders!name
   baseProblem = tbOrders!problem
   isBaseOrder = True
@@ -786,7 +786,7 @@ End If
 
 On Error GoTo ERR1
 tbOrders.AddNew
-tbOrders!statusId = 0
+tbOrders!StatusId = 0
 tbOrders!Numorder = valueorder.val
 tbOrders!inDate = Now
 tbOrders!ManagId = manId(Orders.cbM.ListIndex)
@@ -924,7 +924,7 @@ problem = tqOrders!problem
 ordered = tqOrders!ordered
 paid = tqOrders!paid
 shipped = tqOrders!shipped
-stat = status(tqOrders!statusId)
+stat = status(tqOrders!StatusId)
 
 toClos = False
 If msg = "toClose" Then msg = "": toClos = True
@@ -1035,7 +1035,7 @@ If Not tqOrders.BOF Then
     strToWeb = ""
     valToWeb tqOrders!xLogin
     valToWeb tqOrders!Numorder
-    valToWeb status(tqOrders!statusId)
+    valToWeb status(tqOrders!StatusId)
     valToWeb tqOrders!outDateTime, "dd.mm.yy"
     valToWeb tqOrders!outDateTime, "hh"
     valToWeb tqOrders!problem
@@ -1261,7 +1261,7 @@ ElseIf KeyCode = vbKeyB And Shift = vbCtrlMask Then
         Filtr.lbFirm.Selected(0) = True
     End If
 BB:
-    If left$(Filtr.cmAdvan.Caption, 1) = "С" Then Filtr.cmAdvan_Click
+    If Left$(Filtr.cmAdvan.Caption, 1) = "С" Then Filtr.cmAdvan_Click
     Filtr.lbStatus.Clear
     For I = 0 To 7 ' статусы м. повторятся
        If tbEnable.Visible Or I <> 6 Then Filtr.lbStatus.AddItem status(I)
@@ -1600,7 +1600,7 @@ cmZagrCO2.Top = cmZagrCO2.Top + h
 cmZagrSUB.Top = cmZagrSUB.Top + h '$$ceh
 cmExvel.Top = cmExvel.Top + h
 tbEnable.Top = tbEnable.Top + h
-tbEnable.left = tbEnable.left + w
+tbEnable.Left = tbEnable.Left + w
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
@@ -1815,7 +1815,7 @@ End Function
 
 '$odbc08!$
 Private Sub Grid_DblClick()
-Dim str As String, statusId As Integer, s As Double
+Dim str As String, StatusId As Integer, s As Double
 Dim orderTimestamp As Date
 Dim lastManager As String
 Dim strDate As String
@@ -1829,7 +1829,7 @@ If mousRow = 0 Then Exit Sub
 
 gNzak = Grid.TextMatrix(mousRow, orNomZak)
 
-    cehId = 2
+'    cehId = 2
 
 
 sql = "SELECT O.StatusId, O.lastModified, m.Manag, oe.worktime " _
@@ -1838,7 +1838,7 @@ sql = "SELECT O.StatusId, O.lastModified, m.Manag, oe.worktime " _
 & " LEFT JOIN OrdersEquip oe on oe.numorder = o.numorder and oe.cehId = " & cehId _
 & " WHERE O.numOrder = " & gNzak
 'Debug.Print (sql)
-If Not byErrSqlGetValues("##174", sql, statusId, orderTimestamp, lastManager, neVipolnen) Then Exit Sub
+If Not byErrSqlGetValues("##174", sql, StatusId, orderTimestamp, lastManager, neVipolnen) Then Exit Sub
 
 If mousCol = orVrVip Then
     'If dostup = "a" And statusId = 4 Then
@@ -1847,7 +1847,7 @@ If mousCol = orVrVip Then
     '  "Заказ № " & gNzak) = vbYes Then textBoxInGridCell tbMobile, Grid
     'End If
 ElseIf mousCol = orNomZak Then
-  If statusId = 7 Then
+  If StatusId = 7 Then
     MsgBox "У заказа с данным статусом не может быть предметов!", , "Предупреждение"
     Exit Sub
   End If
@@ -1857,7 +1857,7 @@ ElseIf mousCol = orNomZak Then
   If havePredmetiNew Then
     str = "посмотреть"
   Else
-    If statusId > 3 Then
+    If StatusId > 3 Then
         MsgBox "У этого заказа нет предметов!", , ""
         Exit Sub
     End If
@@ -1891,7 +1891,7 @@ BB:     tmpStr = ""
      'Debug.Print sql
      myExecute "##304", sql, 0 'удаляем если есть
         
-    If statusId = 6 Then
+    If StatusId = 6 Then
       sProducts.Regim = "closeZakaz"
     Else
       sProducts.Regim = ""
@@ -1945,7 +1945,7 @@ ElseIf mousCol = orFirma Then
         End If
         mnBillFirma.Visible = False
         mnQuickBill(0).Visible = False
-        For I = mnQuickBill.Ubound To 1 Step -1
+        For I = mnQuickBill.UBound To 1 Step -1
             Unload mnQuickBill(I)
         Next I
     Else
@@ -1974,7 +1974,7 @@ ElseIf mousCol = orFirma Then
         mnBillFirma.Visible = True
         mnBillFirma.Caption = "Плательщик: " + billCompany
         
-        For I = mnQuickBill.Ubound To 1 Step -1
+        For I = mnQuickBill.UBound To 1 Step -1
             Unload mnQuickBill(I)
         Next I
         
@@ -2032,6 +2032,7 @@ ElseIf mousCol = orCeh Then
     Equipment.Show vbModal, Me
     'listBoxInGridCell lbCeh, Grid
 ElseIf mousCol = orStatus Then
+
 '$odbs?$ в этом блоке мы должны найти опред.запись, =========================
 'заблокировать ее и считать несколько ее полей.
 '(остальным мернеджерам выдается MsgBox)
@@ -2065,21 +2066,21 @@ ElseIf mousCol = orStatus Then
     tbOrders.Edit
     tbOrders!rowLock = Orders.cbM.Text
     tbOrders.update ' снимаем блокировку
-    statusId = tbOrders!statusId
+    StatusId = tbOrders!StatusId
     wrkDefault.CommitTrans ' снимаем блокировку
     tbOrders.Close
     
  ' конец блока ==============================================================
    
-   If statusId = 4 Then ' "готов"
+   If StatusId = 4 Then ' "готов"
      If dostup = "a" Then GoTo ALL
      listBoxInGridCell lbStat, Grid, "select"
-   ElseIf statusId = 6 Then ' "закрыт"
+   ElseIf StatusId = 6 Then ' "закрыт"
      GoTo ALL 'сюда только для dostup='a', т.к. для других - поле желтое
-   ElseIf statusId = 7 Then ' "аннулирован"
+   ElseIf StatusId = 7 Then ' "аннулирован"
      listBoxInGridCell lbDel, Grid, "select"
    ElseIf Grid.TextMatrix(mousRow, orCeh) <> "" Then
-        If statusId = 1 Then 'в работе                                 $$1
+        If StatusId = 1 Then 'в работе                                 $$1
           sql = "SELECT Nevip from OrdersInCeh WHERE numOrder = " & gNzak
           Set tbCeh = myOpenRecordSet("##373", sql, dbOpenForwardOnly)
            If tbCeh.BOF Then
@@ -2268,7 +2269,7 @@ If noClick Then Exit Sub
 Grid.CellBackColor = Grid.BackColor
 End Sub
 
-Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then
         MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
 End If
@@ -2742,7 +2743,7 @@ Private Sub mnCurrency_Click()
     Dim deletedPart As String
     deletedPart = InStr(Me.Caption, " - ")
     If deletedPart > 0 Then
-        Me.Caption = left(Me.Caption, deletedPart - 1)
+        Me.Caption = Left(Me.Caption, deletedPart - 1)
     End If
     setCurrencyCaption
     adjustMoneyColumnWidth (False)
@@ -3307,7 +3308,7 @@ While Not tqOrders.EOF
          Grid.row = zakazNum
          Grid.CellForeColor = vbRed
     End If
- If tqOrders!statusId < 6 Then '***************
+ If tqOrders!StatusId < 6 Then '***************
    For I = 1 To UBound(tmpL)
      If tmpL(I) = numZak Then
         Grid.col = orNomZak
@@ -3326,7 +3327,7 @@ While Not tqOrders.EOF
         Grid.row = zakazNum
         Grid.CellForeColor = 200
    End If
- ElseIf tqOrders!statusId = 6 Then
+ ElseIf tqOrders!StatusId = 6 Then
     sql = "SELECT xPredmetyByIzdelia.numOrder from xPredmetyByIzdelia " & _
     "Where (((xPredmetyByIzdelia.numOrder) = " & numZak & ")) " & _
     "UNION SELECT xPredmetyByNomenk.numOrder from xPredmetyByNomenk " & _
@@ -3406,14 +3407,14 @@ If str = "" Then
     MsgBox "По этому полю фильтр не предусмотрен"
     Exit Function
 End If
-typ = left$(str, 1)
+typ = Left$(str, 1)
 str = Mid$(str, 2)
 If typ = "d" Then
     If value = "" Then
         value = " Is Null"
     Else
         If operator = "=" Then
-            value = left$(value, 6) & "20" & Mid$(value, 7, 2) 'это нужно если в Win98 установлен "гггг" - формат года
+            value = Left$(value, 6) & "20" & Mid$(value, 7, 2) 'это нужно если в Win98 установлен "гггг" - формат года
             value = " Like '" & value & "%'"
         ElseIf operator = "<" Then
             value = " <= '" & Format(value, "yyyy-mm-dd") & " 11:59:59 PM'"
@@ -3485,8 +3486,8 @@ Sub copyRowToGrid(row As Long)
 
  If Not IsNull(tqOrders!invoice) Then _
      Grid.TextMatrix(row, orInvoice) = tqOrders!invoice
-If Not IsNull(tqOrders!ceh) Then
- Grid.TextMatrix(row, orCeh) = tqOrders!ceh
+If Not IsNull(tqOrders!Ceh) Then
+ Grid.TextMatrix(row, orCeh) = tqOrders!Ceh
 End If
  Grid.TextMatrix(row, orMen) = tqOrders!Manag
  Grid.TextMatrix(row, orFirma) = tqOrders!name
@@ -3574,12 +3575,19 @@ Dim item As ListItem, id As Integer, v As Variant, s As Double
 
 startParams = False
 
+If idCeh = 0 Then
+    Zakaz.Regim = ""
+Else
+    Zakaz.Regim = "setka"
+End If
 
 'Set tbOrders = myOpenRecordSet("##28", "Orders", dbOpenTable)
 'If tbOrders Is Nothing Then Exit Function
 maxDay = 0
 
 If idCeh > 0 Then ' вызов в режиме Сетки заказов
+    '!' Именно в этом месте вызывается Zakaz.Form.Load() !!!!!
+    '!' А в той процедуре и выставляется глобальная переменная cehId
     Zakaz.cmAdd.Visible = False
     Zakaz.cmRepit.Visible = False
     cehId = idCeh
@@ -3591,6 +3599,10 @@ Else
     byErrSqlGetValues "W##381", sql, str
     Zakaz.urgent = str
     
+    
+    '!' Именно в этом месте вызывается Zakaz.Form.Load() !!!!!
+    '!' А в той процедуре и выставляется глобальная переменная cehId
+    
     Zakaz.laNomZak.Caption = gNzak
     Zakaz.cmAdd.Visible = True
     Zakaz.cmRepit.Visible = True
@@ -3600,14 +3612,17 @@ Else
     & " JOIN OrdersEquip oe on oe.numorder = o.numorder and oe.cehId = " & CStr(cehId) _
     & " WHERE o.numOrder =" & gNzak
     Set tbOrders = myOpenRecordSet("##402", sql, dbOpenForwardOnly)
-    If tbOrders.BOF Then Exit Function
+    If tbOrders.BOF Then
+        tbOrders.Close
+        Exit Function
+    End If
     
     If IsDate(tbOrders!outDateTime) Then
         I = DateDiff("d", curDate, tbOrders!outDateTime) + 1
         addDays I 'добавляем дни, т.к. Дата Выд тек.заказа может оказаться
                   'дальше чем всех других, либо чем stDay и rMaxDay
     End If
-    id = tbOrders!statusId
+    id = tbOrders!StatusId
     tbOrders.Close
 End If
     
@@ -3624,19 +3639,19 @@ If id = 0 Or id = 7 Then 'принят или аннулир
     neVipolnen = 0
     neVipolnen_O = 0
     If idCeh > 0 Then
-        Zakaz.Caption = "Сетка заказов " & ceh(cehId)
+        Zakaz.Caption = "Сетка заказов " & Ceh(cehId)
     ElseIf id = 0 Then
-        Zakaz.Caption = "Перемещение заказа в цех " & ceh(cehId)
+        Zakaz.Caption = "Перемещение заказа в цех " & Ceh(cehId)
     End If
     
-    Zakaz.tbWorktime = ""
+    Zakaz.tbWorkTime = ""
     Zakaz.tbReadyDate = ""
 Else
     Zakaz.Caption = "Редактирование заказа"
     Zakaz.tbDateRS = Grid.TextMatrix(mousRow, orDataRS)
     Zakaz.tbReadyDate = Grid.TextMatrix(mousRow, orDataVid)
           
-    Zakaz.tbWorktime = neVipolnen
+    Zakaz.tbWorkTime = neVipolnen
     
     v = getTableField("OrdersMO", "StatM")
     If cbMOsetByText(Zakaz.cbM, v) Then
@@ -3725,10 +3740,8 @@ Zakaz.lv.ListItems("k" & stDay).ForeColor = &HBB00&
 Zakaz.lv.ListItems("k" & stDay).Bold = True
 
 If idCeh = 0 Then
-    Zakaz.Regim = ""
     Zakaz.newZagruz
 Else
-    Zakaz.Regim = "setka"
     Zakaz.newZagruz "setka" 'влияет только один раз
 End If
 

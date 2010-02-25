@@ -24,7 +24,7 @@ If myExecute("##11", sql, 0) > 0 Then GoTo ER1
 sql = "UPDATE OrdersEquip " _
 & " INNER JOIN OrdersInCeh ON OrdersEquip.numOrder = OrdersInCeh.numOrder " _
 & "SET OrdersEquip.outDateTime = '" & Format(curDate, "yyyy-mm-dd 10:00:00") & _
-"' WHERE Orders.outDateTime <'" & Format(curDate, "yyyy-mm-dd 0:0:0") & "'"
+"' WHERE OrdersEquip.outDateTime <'" & Format(curDate, "yyyy-mm-dd 0:0:0") & "'"
 
 If myExecute("##404", sql, 0) > 0 Then GoTo ER1
 
@@ -98,7 +98,7 @@ sql = "SELECT Sum(OrdersEquip.workTime*OrdersInCeh.Nevip) AS nevip " & _
 byErrSqlGetValues "##372", sql, tmpSng
 
 s = 0 ' плюс неготовые образцы
-sql = "SELECT Sum(OrdersMO.workTimeMO) AS Sum_workTimeMO " _
+sql = "SELECT Sum(OrdersEquip.workTimeMO) AS Sum_workTimeMO " _
 & " FROM OrdersMO " _
 & " JOIN Orders ON Orders.numOrder = OrdersMO.numOrder " _
 & " JOIN OrdersEquip ON OrdersEquip.numOrder = OrdersMO.numOrder " _

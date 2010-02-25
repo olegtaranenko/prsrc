@@ -329,9 +329,6 @@ If Not tbCeh.BOF Then
     gNzak = tbCeh!Numorder
     
     If chSingl.value = 1 And gNzak <> tbNomZak.Text Then GoTo NXT
-'If gNzak = 3103125 Then
-'    gNzak = gNzak
-'End If
     If IsDate(tbCeh!DateTimeMO) Then
       If tbCeh!DateTimeMO < CDate("01.01.2000") _
       Or tbCeh!DateTimeMO > CDate("01.01.2050") Then
@@ -569,10 +566,10 @@ Grid.Height = Grid.Height + h
 Grid.Width = Grid.Width + w
 cmRefresh.Top = cmRefresh.Top + h
 cmExAll.Top = cmExAll.Top + h
-cmExAll.left = cmExAll.left + w
+cmExAll.Left = cmExAll.Left + w
 cmZagruz.Top = cmZagruz.Top + h
-cmZagruz.left = cmZagruz.left + w
-cmPrint.left = cmPrint.left + w
+cmZagruz.Left = cmZagruz.Left + w
+cmPrint.Left = cmPrint.Left + w
 cmNaklad.Top = cmNaklad.Top + h
 End Sub
 
@@ -938,21 +935,9 @@ ElseIf stat = "100%" Then
 Else
     s = 1
 AA:
-' sql = "SELECT OrdersInCeh.Stat, Orders.workTime, " & _
- "OrdersInCeh.Nevip, OrdersMO.workTimeMO, " & _
- "OrdersMO.StatO  FROM (Orders INNER JOIN OrdersInCeh ON Orders.numOrder = " & _
- "OrdersInCeh.numOrder) LEFT JOIN OrdersMO ON Orders.numOrder = OrdersMO.numOrder " & _
- "WHERE (((Orders.numOrder)=" & gNzak & ") AND ((Orders.CehId)=" & cehId & "));"
-
-'Set table = myOpenRecordSet("##386", sql, dbOpenDynaset) 'dbOpenTable)
-'If table Is Nothing Then Exit Function
-'If table.BOF Then
-'    table.Close: Exit Function
-'End If
  
   If obraz <> "" Then
     obraz = "o"
-'    If table!statO <> "готов" And lbObrazec.Text = "готов" Then ' 100%
     sql = "SELECT oe.workTimeMO, mo.StatO from OrdersMO mo " _
     & " LEFT join OrdersEquip oe on oe.numorder = mo.numorder and oe.cehId = " & cehId _
     & " WHERE numOrder)=" & gNzak
@@ -965,13 +950,10 @@ AA:
     sql = "SELECT oe.workTime, oc.Nevip " & _
     " FROM OrdersEquip oe " & _
     " JOIN OrdersInCeh oc ON oe.numOrder = oc.numOrder " & _
-    " WHERE oc.numOrder =" & gNzak
+    " WHERE oc.numOrder =" & gNzak & " and oe.cehId = " & cehId
     If Not byErrSqlGetValues("##421", sql, t, n) Then Exit Function
-'    virabotka = Round((table!nevip - s) * table!workTime, 2)
     virabotka = Round((n - s) * t, 2)
   End If
-'table.Close
-
 
 
 'гот-ть может изменитс€ к примеру с 75% до 0%
@@ -980,14 +962,7 @@ AA:
   sql = "SELECT xDate, Virabotka, numOrder, obrazec from Itogi_" & Ceh(cehId) & _
   " WHERE (((xDate)='" & str & "') AND ((numOrder)=" & gNzak & ") AND " & _
   "((obrazec)='" & obraz & "'));"
-  'Set tbOrders = myOpenRecordSet("##374", "Itogi_" & Ceh(cehId), dbOpenTable)
   Set tbOrders = myOpenRecordSet("##374", sql, dbOpenTable)
-'If Not tbOrders Is Nothing Then
-'    tbOrders.index = "Key"
-'    tbOrders.Seek "=", str, gNzak, obraz
-    
-    
-'    If tbOrders.NoMatch Then
     If tbOrders.BOF Then
         tbOrders.AddNew
         tbOrders!xDate = str
@@ -1000,30 +975,17 @@ AA:
     tbOrders!virabotka = virabotka
     tbOrders.update
     tbOrders.Close
-'End If
-    
-' table.Edit ''$odbc18!$ доступен только дл€ чтени€
-'   If obraz = "" Then table!nevip = s
 
    If obraz = "o" Then '          это образец
-'    If IsNull(table!statO) Then msgOfZakaz "##311", "” образца в цеху нет статуса"
-    'If table!statO = "утвержден" Then
       If statO = "утвержден" Then
-'        table.Close
         makeProcReady = Null
         Exit Function
       End If
-'   End If
    Else 'obraz = ""
-'  If obraz <> "o" Then
-'     table!stat = "в работе"     'только не дл€ MO
      sql = "UPDATE OrdersInCeh SET Stat = 'в работе', " & _
      "Nevip = " & s & " WHERE (((numOrder)=" & gNzak & "));"
      If myExecute("##422", sql) <> 0 Then Exit Function
-'     table!nevip = s
    End If
-' table.Update
-' table.Close
 End If 'If stat
 makeProcReady = True
 
@@ -1050,8 +1012,6 @@ trigger = True
 
 End Sub
 
-#If Not COMTEC = 1 Then '----------------------------------------------------
-
 Function newEtap(table As String) As Boolean
 newEtap = False
 sql = "UPDATE " & table & " SET prevQuant = [eQuant] " & _
@@ -1059,6 +1019,4 @@ sql = "UPDATE " & table & " SET prevQuant = [eQuant] " & _
 If myExecute("##193", sql, 0) > 0 Then Exit Function
 newEtap = True
 End Function
-
-#End If
 

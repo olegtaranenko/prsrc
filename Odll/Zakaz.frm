@@ -490,8 +490,10 @@ Const zgInDate = 5
 Const zgOutDate = 6
 Const zgOtlad = 7
 
+
+
 Sub lvAddDay(I As Integer)
-Dim Left As String, Rollback As String
+Dim Left As String, rollback As String
 Dim item As ListItem, str As String
     str = Format(DateAdd("d", I - 1, curDate), "dd/mm/yy")
     Set item = Zakaz.lv.ListItems.Add(, "k" & I, str)
@@ -608,7 +610,7 @@ If reg = "" Then
     If stat = "образец" Then
         Grid.TextMatrix(quantity, zgVrVip) = tbVrVipO.Text
     Else
-        Grid.TextMatrix(quantity, zgVrVip) = tbWorktime.Text
+        Grid.TextMatrix(quantity, zgVrVip) = tbWorkTime.Text
     End If
     Grid.TextMatrix(quantity, zgNevip) = nevip
     
@@ -730,8 +732,8 @@ End If
 '        If eDay > ZeDay Or (eDay = ZeDay And bDay <= ZbDay) Then ' не нарушаем сортировку
         If bDay <= ZbDay Then ' не нарушаем сортировку
             dayCorrect ZbDay, ZeDay, urgent
-            ukladka ost, ZeDay, ZbDay, tbWorktime.Text 'обратная укладка (в bef не попадает)
-            If Not zakazToGrid(reg, cbStatus.Text, tbWorktime.Text) Then GoTo EN1
+            ukladka ost, ZeDay, ZbDay, tbWorkTime.Text 'обратная укладка (в bef не попадает)
+            If Not zakazToGrid(reg, cbStatus.Text, tbWorkTime.Text) Then GoTo EN1
             'ZeDay = maxDay + 1 ' чтобы более не срабатывал
             ZbDay = -32000 ' чтобы более не срабатывал
         End If
@@ -799,8 +801,8 @@ If isMzagruz Then
 '  If ZeDay < maxDay + 1 Then
   If ZbDay > -32000 Then
     dayCorrect ZbDay, ZeDay
-    ukladka ost, ZeDay, ZbDay, tbWorktime.Text 'обратная укладка (в bef не попадает)
-    zakazToGrid reg, cbStatus.Text, tbWorktime.Text
+    ukladka ost, ZeDay, ZbDay, tbWorkTime.Text 'обратная укладка (в bef не попадает)
+    zakazToGrid reg, cbStatus.Text, tbWorkTime.Text
   End If
 End If
 
@@ -923,7 +925,7 @@ laNomZak.Left = laNomZak.Left + w
 laStatus.Left = laStatus.Left + w
 cbStatus.Left = cbStatus.Left + w
 laWorkTime.Left = laWorkTime.Left + w
-tbWorktime.Left = tbWorktime.Left + w
+tbWorkTime.Left = tbWorkTime.Left + w
 laReadyDate.Left = laReadyDate.Left + w
 tbReadyDate.Left = tbReadyDate.Left + w
 laDateRS.Left = laDateRS.Left + w
@@ -975,7 +977,7 @@ If Grid.MouseRow = 0 And Shift = 2 Then _
 End Sub
 
 Private Sub laNomZak_Click()
-    Dim Left As String, Worktime As String, tbWorktime As String, Rollback As String
+    Dim Left As String, Worktime As String, tbWorkTime As String, rollback As String
 End Sub
 
 Private Sub tbDateMO_GotFocus()
@@ -1040,7 +1042,7 @@ If cbStatus.Text = "согласов" Or cbStatus.Text = "резерв" Then
     Zakaz.laWorkTime.Enabled = True
     Zakaz.laReadyDate.Enabled = True
     Zakaz.tbReadyDate.Enabled = True
-    Zakaz.tbWorktime.Enabled = True
+    Zakaz.tbWorkTime.Enabled = True
 'ElseIf cbStatus.ListIndex = 1 Then      'в работу
 ElseIf cbStatus.Text = "в работе" Or cbStatus.Text = "отложен" Then
 '    tbDateRS.Text = ""
@@ -1049,14 +1051,14 @@ ElseIf cbStatus.Text = "в работе" Or cbStatus.Text = "отложен" Then
     Zakaz.laWorkTime.Enabled = True
     Zakaz.laReadyDate.Enabled = True
     Zakaz.tbReadyDate.Enabled = True
-    Zakaz.tbWorktime.Enabled = True
+    Zakaz.tbWorkTime.Enabled = True
 Else
     laWorkTime.Enabled = False
     laReadyDate.Enabled = False
     tbReadyDate.Text = ""
     tbReadyDate.Enabled = False
-    tbWorktime.Text = ""
-    tbWorktime.Enabled = False
+    tbWorkTime.Text = ""
+    tbWorkTime.Enabled = False
     tbDateRS.Text = ""
     tbDateRS.Enabled = False
     laDateRS.Enabled = False
@@ -1165,13 +1167,13 @@ If Not tbOrders.BOF Then
 '        tbOrders!rowLock = ""
        If workChange Then
          If (id = 1 Or id = 5) And editWorkTime Then 'остается в работе или отложен
-            Worktime = Round(workTimeOld + tbWorktime.Text _
+            Worktime = Round(workTimeOld + tbWorkTime.Text _
                      - neVipolnen, 1) 'время с учетом коррекции
             sql = "UPDATE OrdersInCeh SET Nevip = " & _
-            tbWorktime.Text / Worktime & " WHERE (((numOrder)=" & gNzak & "));"
+            tbWorkTime.Text / Worktime & " WHERE (((numOrder)=" & gNzak & "));"
             If myExecute("##393", sql) <> 0 Then GoTo ER1
          Else
-            Worktime = tbWorktime.Text
+            Worktime = tbWorkTime.Text
          End If
        End If
        sql = "UPDATE OrdersInCeh SET urgent = '" & urgent & _
@@ -1185,7 +1187,7 @@ If Not tbOrders.BOF Then
     End If
 Else
     If isTimeZakaz Then
-        Worktime = tbWorktime.Text
+        Worktime = tbWorkTime.Text
         sql = "INSERT INTO OrdersInCeh ( numOrder, urgent )" & _
         "SELECT " & gNzak & ",'" & urgent & "';"
         If myExecute("##395", sql) <> 0 Then GoTo ER1
@@ -1378,7 +1380,7 @@ Unload Me
 Exit Sub
 
 ER1:
-wrkDefault.Rollback
+wrkDefault.rollback
 On Error Resume Next
 'table.Close
 'tbOrders.Close
@@ -1394,7 +1396,7 @@ Private Sub cmRepit_Click()
 workChange = False
     cmAdd.Enabled = False
     tbReadyDate.Enabled = True
-    tbWorktime.Enabled = True
+    tbWorkTime.Enabled = True
     tbReadyDate.SetFocus
     Orders.startParams
 Timer1.Enabled = False
@@ -1530,8 +1532,8 @@ BB: isTimeZakaz = False
     Exit Sub
 End If
 
-If Not isNumericTbox(tbWorktime, 0, 2000) Then Exit Sub
-tbWorktime.Text = Round(tbWorktime.Text, 1)
+If Not isNumericTbox(tbWorkTime, 0, 2000) Then Exit Sub
+tbWorkTime.Text = Round(tbWorkTime.Text, 1)
 If Not isDateTbox(tbReadyDate, "fri") Then Exit Sub
 
 tmpDate = CDate(tbReadyDate.Text)
@@ -1702,7 +1704,7 @@ I = 0
 '     str = tbSystem!resursLock
      If str = "nextDay" Then
 '        tbSystem.Update
-        wrkDefault.Rollback
+        wrkDefault.rollback
         MsgBox "Обнаружено, что был сбой при переводе базы на новый день. " & _
         "Сообщите Администратору или Мастеру Цеха, чтобы он произвел Сброс и " & _
         "переустановку ресурсов в Цехах.", , _
@@ -1711,7 +1713,7 @@ I = 0
      End If
      While str <> "" And str <> Orders.cbM.Text
 '        tbSystem.Update
-        wrkDefault.Rollback
+        wrkDefault.rollback
         cmZapros.Enabled = False
         laMess.ForeColor = 200
         laMess.Caption = I & " сек: Доступ к ресурсам временно занят " & _
@@ -1768,6 +1770,56 @@ Private Sub Form_Activate()
 FormIsActiv = True
 End Sub
 
+Private Sub cehSelectorAccess(cehId As Integer, action As Boolean)
+    Dim cehIndex As Integer
+    cehIndex = cehId - 1
+    
+    ckCehDone(cehIndex).Visible = action
+    'ckCehDone(cehIndex).Enabled = action
+    cmCeh(cehIndex).Visible = action
+    cmCeh(cehIndex).Enabled = action
+End Sub
+
+Private Sub cehSelectorsInit(action As Boolean)
+Dim I As Integer
+    For I = 0 To lenCeh - 1
+        ckCehDone(I).Visible = False
+        'ckCehDone(I).Enabled = False
+        cmCeh(I).Visible = False
+        cmCeh(I).Enabled = False
+    Next I
+    
+End Sub
+
+
+Private Sub InitZagruz()
+    Dim myCehId As Integer
+    sql = "select oe.* " _
+    & " from OrdersEquip oe " _
+    & " where oe.numorder = " & gNzak
+    
+    
+    Dim atLeastOne As Boolean
+    atLeastOne = False
+    Set tbOrders = myOpenRecordSet("##273", sql, dbOpenForwardOnly) ', dbOpenDynaset)
+    If tbOrders Is Nothing Then Exit Sub
+    While Not tbOrders.EOF
+        myCehId = tbOrders("cehId")
+        cehSelectorAccess myCehId, True
+        If Not atLeastOne Then
+            cehId = myCehId
+        End If
+        atLeastOne = True
+        tbOrders.MoveNext
+    Wend
+    tbOrders.Close
+    
+    If Not atLeastOne Then
+        
+    End If
+
+End Sub
+
 Private Sub Form_Load()
 Dim I As Integer, str As String
 FormIsActiv = False
@@ -1778,7 +1830,11 @@ oldWidth = Me.Width
 
 lv.ColumnHeaders(zkHide + 1).Width = 0
 
+cehSelectorsInit False
 
+If Regim = "" Then
+    InitZagruz
+End If
 
 End Sub
 
@@ -1813,7 +1869,7 @@ If KeyCode = vbKeyReturn Then
 
 If tbDateRS.Enabled Then
   If isDateTbox(tbReadyDate, "fri") Then
-    s = Round(CDbl(tbWorktime.Text), 1)
+    s = Round(CDbl(tbWorkTime.Text), 1)
     I = -(Int((CDbl(s) - 0.05) / 3) + 1 + 2) ' + 2 - дата выд от посл. куска
     getWorkDay I, tbReadyDate.Text ' дает tmpDate
     If tmpDate < curDate Then tmpDate = curDate
@@ -1841,10 +1897,10 @@ Dim s As Double, I As Integer
 
 If KeyCode = vbKeyReturn Then
 
-  If isNumericTbox(tbWorktime, 0, 2000) Then
+  If isNumericTbox(tbWorkTime, 0, 2000) Then
      If cbStatus.Text = "в работе" Then
-        s = Round(CDbl(tbWorktime.Text), 1)
-        tbWorktime.Text = s
+        s = Round(CDbl(tbWorkTime.Text), 1)
+        tbWorkTime.Text = s
         I = Int((CDbl(s) - 0.05) / 3)
         getWorkDay 3 + I ' дает tmpDate
         tbReadyDate.Text = Format(tmpDate, "dd.mm.yy")

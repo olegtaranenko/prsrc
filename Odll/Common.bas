@@ -30,6 +30,7 @@ Public isAdmin As Boolean
 
 
 Public isBlock As Boolean
+Public Const lenCeh = 3
 Public Ceh(10) As String
 Public cehId As Integer
 Public Const lenStatus = 20
@@ -329,7 +330,7 @@ If maxi < 1 Then
     MsgBox "мало параметров для п\п byErrSqlGetValues()"
     Exit Function
 End If
-str = CStr(val(0)): c = left$(str, 1)
+str = CStr(val(0)): c = Left$(str, 1)
 If c = "W" Then str = Mid$(str, 2)
 Set tabl = myOpenRecordSet(str, CStr(val(1)), dbOpenForwardOnly) 'dbOpenDynaset)$#$
 'If tabl Is Nothing Then Exit Function
@@ -534,7 +535,7 @@ End Function
 
 'год ставит на первое место, а день на последнее - для правильной сортировки
 Function yymmdd(dateStr As String) As String
-yymmdd = Right$(dateStr, 2) & "." & Mid$(dateStr, 4, 2) & "." & left$(dateStr, 2)
+yymmdd = Right$(dateStr, 2) & "." & Mid$(dateStr, 4, 2) & "." & Left$(dateStr, 2)
 End Function
 
 
@@ -604,7 +605,7 @@ For I = 1 To Len(str)
     getNumFromStr = Mid$(str, I, 1)
     If Not IsNumeric(getNumFromStr) Then Exit For
 Next I
-gNzak = left$(str, I - 1)
+gNzak = Left$(str, I - 1)
 
 End Function
 '$odbc10$
@@ -758,7 +759,7 @@ Sub textBoxInGridCell(tb As TextBox, Grid As MSFlexGrid)
     tb.Width = Grid.CellWidth
 '    tb.Text = Grid.TextMatrix(mousRow, mousCol)
     tb.Text = Grid.TextMatrix(Grid.row, Grid.col)
-    tb.left = Grid.CellLeft + Grid.left
+    tb.Left = Grid.CellLeft + Grid.Left
     tb.Top = Grid.CellTop + Grid.Top
     tb.SelStart = 0
     tb.SelLength = Len(tb.Text)
@@ -834,7 +835,7 @@ Dim I As Integer
     Else
         lb.Top = Grid.CellTop + Grid.Top - lb.Height + Grid.CellHeight
     End If
-    lb.left = Grid.CellLeft + Grid.left
+    lb.Left = Grid.CellLeft + Grid.Left
     lb.ListIndex = 0
     If sel <> "" Then
         For I = 0 To lb.ListCount - 1 '
@@ -1018,7 +1019,7 @@ If dostup = "a" Or dostup = "m" Or dostup = "" Or dostup = "b" Then
     Input #2, str
     I = InStr(str, vbTab)
     If I < 9 Then GoTo ENlog
-    str1 = left$(str, I - 1)
+    str1 = Left$(str, I - 1)
     If Not IsDate(str1) Then GoTo ENlog
     If DateDiff("d", str1, curDate) <= 7 Then Print #3, str ' удаляем > 7ми дней давности
  Wend
@@ -1545,7 +1546,7 @@ Dim s As Double, log As String, str As String
  str = LoadDate(Orders.Grid, row, orVrVid, tqOrders!outDateTime, "hh")
  If str <> "" Then log = log & "_" & str
  
- str = LoadNumeric(Orders.Grid, row, orVrVip, tqOrders!worktime, , "#0.0")
+ str = LoadNumeric(Orders.Grid, row, orVrVip, tqOrders!Worktime, , "#0.0")
  log = log & " Вр.вып=" & str
  
  Orders.Grid.TextMatrix(row, orProblem) = tqOrders!problem
@@ -1669,7 +1670,7 @@ If year = "" Then
  str = Reports.tbStartDate.Text
  Report.laHeader.Caption = "Статистика посещений фирм за период с " & str & _
                 " по " & Reports.tbEndDate.Text
- nMonth = left$(str, 2)
+ nMonth = Left$(str, 2)
  nYear = Right$(str, 4)
  mCount = DateDiff("m", str, Reports.tbEndDate.Text) + 1
 
@@ -1791,7 +1792,7 @@ While Not tbFirms.EOF '                         *******************
             End If
           End If
           visits = visits + 1
-          wtSum = wtSum + tbOrders!worktime
+          wtSum = wtSum + tbOrders!Worktime
           If Not IsNull(tbOrders!paid) Then _
                 paidSum = paidSum + tbOrders!paid
           If Not IsNull(tbOrders!ordered) Then _
@@ -1914,7 +1915,7 @@ Dim str As String
 isDateTbox = False
 str = tBox.Text
 If str <> "" Then
-    str = "20" & Right$(str, 2) & "-" & Mid$(str, 4, 2) & "-" & left$(str, 2)
+    str = "20" & Right$(str, 2) & "-" & Mid$(str, 4, 2) & "-" & Left$(str, 2)
     If IsDate(str) Then
         isDateTbox = True
         tmpDate = str
@@ -2002,10 +2003,10 @@ sql = "UPDATE " & table & " SET " & table & "." & field & _
 AA:
 'MsgBox "sql = " & sql
 
-If left$(myErrCod, 1) = "W" Then
+If Left$(myErrCod, 1) = "W" Then
     myErrCod = Mid$(myErrCod, 2)
     ValueToTableField = myExecute(myErrCod, sql, 0) 'не сообщать если не WHERE
-ElseIf left$(myErrCod, 1) = "L" Then
+ElseIf Left$(myErrCod, 1) = "L" Then
     ' Ожидаем, что выполненную операцию нужно записать в серверный журнал (lBusinessIssues).
     ' пример формата строки ошибки - "L-17002"
     myErrCod = Mid$(myErrCod, 2)
@@ -2034,7 +2035,7 @@ End If
 If Frm.Grid5.TextMatrix(v_row, prType) = "изделие" Then
     str = Frm.Grid5.TextMatrix(v_row, prName) '
     I = InStr(str, "/")
-    prExt = 0: If I > 1 Then prExt = left$(str, I - 1)   'номер поставки
+    prExt = 0: If I > 1 Then prExt = Left$(str, I - 1)   'номер поставки
     gProductId = Frm.Grid5.TextMatrix(v_row, prId)
 Else
     gNomNom = Frm.Grid5.TextMatrix(v_row, prId)
@@ -2042,11 +2043,11 @@ End If
 End Sub
 
 Function getNevip(day As Integer)
-sql = "SELECT Sum(oe.workTime*oc.Nevip) AS wSum " & _
+sql = "SELECT Sum(oe.workTime * oc.Nevip) AS wSum " & _
 "FROM OrdersEquip oe " & _
 "JOIN OrdersInCeh oc ON oe.numOrder = oc.numOrder " & _
-"WHERE (((DateDiff(day,'" & Format(curDate, "yyyy-mm-dd") & _
-"',oe.outDateTime))=" & day - 1 & " AND (oe.CehId)=" & cehId & "));"
+"WHERE DateDiff(day,'" & Format(curDate, "yyyy-mm-dd") & "',oe.outDateTime) =" & day - 1 _
+& " AND oe.CehId =" & cehId
 'MsgBox sql
 getNevip = 0
 byErrSqlGetValues "W##382", sql, getNevip

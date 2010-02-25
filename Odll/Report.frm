@@ -480,7 +480,10 @@ sql = "SELECT GuideManag.ManagId, GuideManag.Manag From GuideManag " & _
 Set table = myOpenRecordSet("##75", sql, dbOpenForwardOnly)
 If table Is Nothing Then Exit Sub
 'Table.MoveFirst
-If table.BOF Then Exit Sub
+If table.BOF Then
+    table.Close
+    Exit Sub
+End If
 line = 2
 Dim sumKK As Integer, sumRA As Integer, sumAll As Integer
 sumKK = 0: sumRA = 0: sumAll = 0
