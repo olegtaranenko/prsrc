@@ -278,7 +278,7 @@ Begin VB.Form Zakaz
       Visible         =   0   'False
       Width           =   975
    End
-   Begin VB.TextBox tbWorkTime 
+   Begin VB.TextBox tbWorktime 
       Enabled         =   0   'False
       Height          =   285
       Left            =   8220
@@ -469,6 +469,8 @@ Option Explicit
 
 Public urgent As String '"y" - срочный заказ
 Public Regim As String
+Public idCeh As Integer
+Public isUpdated As Boolean ' выставлен в true если что-то в статусе заказа действительно поменялось
 Dim isTimeZakaz As Boolean ' тождественен "заказ передается в цех"
 Dim oldHeight As Integer, oldWidth As Integer
 Dim ZbDay As Integer, ZeDay As Integer, ObDay As Integer, OeDay As Integer
@@ -482,6 +484,9 @@ Dim perenos As Integer ' этапы переноса
 Dim workChange As Boolean
 Dim isMzagruz As Boolean
 Dim quantity As Integer
+Dim statusIdNew As Integer, statusIdOld As Integer
+
+
 Const zgNomZak = 1
 Const zgStatus = 2
 Const zgVrVip = 3
@@ -552,11 +557,15 @@ End If
 
 End Sub
 
+Private Sub cmCeh_Click(Index As Integer)
+    cehId = Index + 1
+    'statusIdOld = statusIdNew
+    startParams
+    'newZagruz ' вызывается в startParams (!?)
+End Sub
 
 Private Sub cmNewUklad_Click()
-
-newZagruz
-
+    newZagruz
 End Sub
 
 Sub getBegEndDays(Optional stat As String = "")
@@ -756,7 +765,7 @@ End If
     Else
         ukladka ost, bDay, eDay, nevip
         If tbOrders!StatusId = 1 Or tbOrders!StatusId = -1 Then _
-            ukladka befOst, bDay, eDay, nevip ' жывые(в раб. и образец)
+            ukladka befOst, bDay, eDay, nevip ' живые(в раб. и образец)
     End If
     
     If reg = "" Then
@@ -981,7 +990,7 @@ Private Sub laNomZak_Click()
 End Sub
 
 Private Sub tbDateMO_GotFocus()
-If FormIsActiv Then Zakaz.cmZapros.Enabled = True
+'If FormIsActiv Then Zakaz.cmZapros.Enabled = True
 If tbDateMO.Text = "" Then
     tbDateMO.Text = Format(curDate, "dd/mm/yy")
 End If
@@ -993,34 +1002,31 @@ End Sub
 Private Sub cbStatus_Click()
 Dim noClick As Boolean
 
-'If noClick Then
-'    noClick = False
-'    Exit Sub
-'End If
-If FormIsActiv Then Zakaz.cmZapros.Enabled = True
+'If FormIsActiv Then Zakaz.cmZapros.Enabled = True
+Dim I As Integer
+
+statusIdNew = statId(cbStatus.ListIndex)
+
+cmZapros.Enabled = statusIdOld <> statusIdNew
+
+For I = 0 To lenCeh - 1
+    If ckCehDone(I).Tag = CStr(statusIdNew) Then
+        ckCehDone(I).value = 1
+    Else
+        ckCehDone(I).value = 0
+    End If
+Next I
+
 If cbStatus.Text = "в работе" Then
-'    If ((cbO.Text <> "" And cbO.Text <> "утвержден") _
-'    Or (cbM.Text <> "" And cbM.Text <> "утвержден")) And FormIsActiv Then
-'        noClick = True
-'        MsgBox "Для перевода заказа в работу необходимо, чтобы макет " & _
-'        "и(или) образец были утверждены.", , "Недопустимый статус!"
-'        cbStatus.Text = "согласов"
-'        Exit Sub
-'    End If
     laMO.Enabled = False
     cbM.Enabled = False
     cbO.Enabled = False
     tbDateMO.Enabled = False
     laVrVipO.Enabled = False
     tbVrVipO.Enabled = False
-'    End If
-'End If
-'If cbStatus.Text = "согласов" Then
 ElseIf cbStatus.Text = "согласов" Then
     cbM.Enabled = True
     cbO.Enabled = True
-'    tbDateMO.Enabled = True
-'    tbVrVipO.Enabled = True
     laMO.Enabled = True
 Else
     laMO.Enabled = False
@@ -1029,13 +1035,8 @@ Else
     tbDateMO.Enabled = False
     laVrVipO.Enabled = False
     tbVrVipO.Enabled = False
-'    cbM.ListIndex = 0
-'    cbO.ListIndex = 0
-'    tbVrVipO.Text = ""
-'    tbDateMO.Text = ""
 End If
 
-'If cbStatus.ListIndex = 2 Or cbStatus.ListIndex = 3 Then
 If cbStatus.Text = "согласов" Or cbStatus.Text = "резерв" Then
     tbDateRS.Enabled = True             ' резерв согласование
     laDateRS.Enabled = True
@@ -1043,9 +1044,7 @@ If cbStatus.Text = "согласов" Or cbStatus.Text = "резерв" Then
     Zakaz.laReadyDate.Enabled = True
     Zakaz.tbReadyDate.Enabled = True
     Zakaz.tbWorktime.Enabled = True
-'ElseIf cbStatus.ListIndex = 1 Then      'в работу
 ElseIf cbStatus.Text = "в работе" Or cbStatus.Text = "отложен" Then
-'    tbDateRS.Text = ""
     tbDateRS.Enabled = False
     laDateRS.Enabled = False
     Zakaz.laWorkTime.Enabled = True
@@ -1063,8 +1062,9 @@ Else
     tbDateRS.Enabled = False
     laDateRS.Enabled = False
 End If
-'MsgBox "ListIndex=" & cbStatus.ListIndex & "  tbDateRS.Enabled=" & tbDateRS.Enabled
 End Sub
+
+
 '$odbc08$
 Private Sub cmAdd_Click()
 Dim I As Integer, str As String, item As ListItem, s As Double, t As Double
@@ -1074,47 +1074,41 @@ Dim Worktime As String
 'MaxDay = tmpMaxDay наверно это уже никому не нужно
 
 Timer1.Enabled = False
-'Set tbOrders = myOpenRecordSet("##01", "OrdersInCeh", dbOpenTable)
-'If tbOrders Is Nothing Then GoTo AA
 
 sql = "SELECT o.statusId, oe.worktime " _
 & " from Orders o" _
 & " left join OrdersEquip oe on oe.numorder = o.numorder and oe.cehId = " & cehId _
 & " WHERE o.numOrder = " & gNzak
 Set tbOrders = myOpenRecordSet("##30", sql, dbOpenForwardOnly) '$#$
-'If tbOrders Is Nothing Then GoTo AA
 
-'If Not findZakazInTable_("Orders") Then '$#$
 If tbOrders.BOF Then
     tbOrders.Close
 AA: If getSystemField("resursLock") = Orders.cbM.Text Then unLockBase 'Если именно мы блокирова
     MsgBox "Возможно он уже удален. Обновите Реестр", , "Заказ не найден!!!"
     Exit Sub
 End If
-id = statId(Zakaz.cbStatus.ListIndex)
+id = statusIdNew
 
-Dim workTimeOld As Double, statIdOld As Integer
+Dim workTimeOld As Double
 workTimeOld = 0
 If Not IsNull(tbOrders!Worktime) Then
     workTimeOld = tbOrders!Worktime
 End If
-statIdOld = tbOrders!StatusId
+'statusIdOld = tbOrders!StatusId
 tbOrders.Close
 
 wrkDefault.BeginTrans
 
-'tbOrders.Edit
 ' коррекция посещения фирмой
-If (statIdOld = 0 Or statIdOld = 7) And id <> 0 And id <> 7 Then
+If (statusIdOld = 0 Or statusIdOld = 7) And id <> 0 And id <> 7 Then
     visits "+"
-ElseIf Not (statIdOld = 0 Or statIdOld = 7) And (id = 0 Or id = 7) Then
+ElseIf Not (statusIdOld = 0 Or statusIdOld = 7) And (id = 0 Or id = 7) Then
     visits "-"
 End If
 
 If id = 7 Then delZakazFromReplaceRS ' если аннулируемый заказ там есть
 
-'tbOrders!rowLock = "
-If id <> statIdOld Or (neVipolnen_O = 0 And neVipolnen = 0) Then
+If id <> statusIdOld Or (neVipolnen_O = 0 And neVipolnen = 0) Then
     editWorkTime = False    '
 Else                        'если что-то недовып-но и статус не меняется
     editWorkTime = True     'то это необх. условие изменения Вр.Вып.
@@ -1145,43 +1139,38 @@ If tbDateRS.Enabled = True Then
     str = tbDateRS.Text
     str = "'" & "20" & Mid$(str, 7, 2) & "-" & Mid$(str, 4, 2) & _
     "-" & Left$(str, 2) & "'"
-    'str = "'" & Mid$(str, 4, 2) & "/" & Left$(str, 2) & "/20" & _
-    Mid$(str, 7, 2) & "'"
 Else
 '    tbOrders!dateRS = Null
     str = "Null"
 End If
 sql = "UPDATE Orders SET dateRS = " & str & _
-" WHERE (((Orders.numOrder)=" & gNzak & "));"
+" WHERE Orders.numOrder = " & gNzak
 'MsgBox sql
 If myExecute("##392", sql) <> 0 Then GoTo ER1
 
-sql = "SELECT * from OrdersInCeh WHERE (((numOrder)=" & gNzak & "));"
+sql = "SELECT * from OrdersInCeh WHERE numOrder = " & gNzak
 Set tbOrders = myOpenRecordSet("##01", sql, dbOpenForwardOnly)
 'If tbOrders Is Nothing Then GoTo AA
 
 Worktime = workTimeOld ' для случая, если не менялось
 If Not tbOrders.BOF Then
     If isTimeZakaz Then
-'        tbOrders.Edit
-'        tbOrders!rowLock = ""
        If workChange Then
          If (id = 1 Or id = 5) And editWorkTime Then 'остается в работе или отложен
-            Worktime = Round(workTimeOld + tbWorktime.Text _
-                     - neVipolnen, 1) 'время с учетом коррекции
-            sql = "UPDATE OrdersInCeh SET Nevip = " & _
-            tbWorktime.Text / Worktime & " WHERE (((numOrder)=" & gNzak & "));"
+            Worktime = Round(workTimeOld + tbWorktime.Text - neVipolnen, 1) 'время с учетом коррекции
+            sql = "UPDATE OrdersInCeh SET Nevip = " & tbWorktime.Text / Worktime _
+             & " WHERE numOrder =" & gNzak
             If myExecute("##393", sql) <> 0 Then GoTo ER1
          Else
             Worktime = tbWorktime.Text
          End If
        End If
        sql = "UPDATE OrdersInCeh SET urgent = '" & urgent & _
-       "' WHERE (((OrdersInCeh.numOrder)=" & gNzak & "));"
+       "' WHERE OrdersInCeh.numOrder = " & gNzak &
        If myExecute("##403", sql) <> 0 Then GoTo ER1
        GoTo DD
     Else
-        sql = "DELETE from OrdersInCeh WHERE (((numOrder)=" & gNzak & "));"
+        sql = "DELETE from OrdersInCeh WHERE numOrder = " & gNzak
         If myExecute("##394", sql) <> 0 Then GoTo ER1
         Worktime = 0
     End If
@@ -1189,7 +1178,7 @@ Else
     If isTimeZakaz Then
         Worktime = tbWorktime.Text
         sql = "INSERT INTO OrdersInCeh ( numOrder, urgent )" & _
-        "SELECT " & gNzak & ",'" & urgent & "';"
+        "SELECT " & gNzak & ",'" & urgent & "'"
         If myExecute("##395", sql) <> 0 Then GoTo ER1
 DD:     noClick = True
         Orders.Grid.col = orCeh
@@ -1203,8 +1192,10 @@ DD:     noClick = True
     End If
 End If
 
-sql = "UPDATE OrdersEquip SET outDateTime = " & v_outDateTime & ", workTime = " & Worktime _
-& " WHERE numOrder = " & gNzak & " and cehId =" & cehId
+sql = "UPDATE OrdersEquip SET outDateTime = " & v_outDateTime _
+    & ", workTime = " & Worktime _
+    & ", statusEquipId = " & statusIdNew _
+    & " WHERE numOrder = " & gNzak & " and cehId =" & cehId
 'MsgBox sql
 'Debug.Print sql
 If myExecute("##391", sql) <> 0 Then GoTo ER1
@@ -1285,16 +1276,6 @@ table.Close
 'table.Close
 tbOrders.Close
 
-' коррекция посещения фирмой
-'If (tbOrders!statusId = 0 Or tbOrders!statusId = 7) And id <> 0 And id <> 7 Then
-'    visits "+"
-'ElseIf Not (tbOrders!statusId = 0 Or tbOrders!statusId = 7) And (id = 0 Or id = 7) Then
-'    visits "-"
-'End If
-'tbOrders!statusId = id
-'tbOrders!lastManagId = manId(Orders.cbM.ListIndex)
-'tbOrders.Update
-'tbOrders.Close
     
 '******** перенос Даты RS ***********************************
 'sql = "SELECT ReplaceRS.numOrder, ReplaceRS.newDateIn, ReplaceRS.newDateRS, " & _
@@ -1311,21 +1292,13 @@ If perenos = 1 Then ' был подтвержден перенос РС
     yymmdd(Orders.Grid.TextMatrix(Orders.mousRow, orDataVid)) & "';"
 '    MsgBox sql
     If myExecute("##399", sql) <> 0 Then GoTo ER1
-'    table.AddNew
-'    table!numOrder = gNzak 'yymmdd(
-'    table!newDateIn = Orders.Grid.TextMatrix(Orders.mousRow, orData)
-'    table!newDateRS = Orders.Grid.TextMatrix(Orders.mousRow, orDataRS)
-'    table!newDateOut = Orders.Grid.TextMatrix(Orders.mousRow, orDataVid)
-'    table.Update
     GoTo СС
   ElseIf perenos = 2 Then ' был подтвержден перенос РС
-'    table.MoveLast
 СС: ' table.AddNew
     sql = "INSERT INTO ReplaceRS ( numOrder, newDateIn, newDateRS, newDateOut) " & _
     "SELECT " & gNzak & ", '" & Format(Now(), "yyyy-mm-dd") & "', '" & _
     yymmdd(tbDateRS.Text) & "', '" & yymmdd(tbReadyDate.Text) & "';"
     If myExecute("##400", sql) <> 0 Then GoTo ER1
-'    table!numOrder = gNzak
 '    GoTo BB
   ElseIf perenos = 3 Then ' был подтвержден перенос РС
     sql = "SELECT Max(newDateIn) AS MaxDate from ReplaceRS " & _
@@ -1339,15 +1312,7 @@ If perenos = 1 Then ' был подтвержден перенос РС
         If myExecute("##401", sql) <> 0 Then GoTo ER1
       End If
     End If
-'    table.MoveLast
-'    table.Edit
-'BB: table!newDateIn = Format(Now(), "dd.mm.yy")
-'    table!newDateRS = tbDateRS.Text
-'    table!newDateOut = tbReadyDate.Text
-'    table.Update
 End If
-'End If
-'table.Close
 '******************************************************************
 
 If getSystemField("resursLock") = Orders.cbM.Text Then unLockBase 'Если именно мы блокирова
@@ -1364,10 +1329,7 @@ sql = "SELECT o.StatusId, o.DateRS, o.numOrder" & _
 & " LEFT JOIN OrdersMO      mo ON o.numOrder = mo.numOrder" _
 & " WHERE o.numOrder = " & gNzak
 
-'& " INNER JOIN GuideStatus  s  ON s.StatusId = o.StatusId" _
-
-Set tqOrders = myOpenRecordSet("##16", sql, dbOpenForwardOnly) ', dbDenyWrite)
-'If tqOrders Is Nothing Then Exit Sub
+Set tqOrders = myOpenRecordSet("##16", sql, dbOpenForwardOnly)
 str = StatParamsLoad(Orders.mousRow)
 tqOrders.Close
 
@@ -1398,11 +1360,12 @@ workChange = False
     tbReadyDate.Enabled = True
     tbWorktime.Enabled = True
     tbReadyDate.SetFocus
+    cmZapros.Enabled = False
     startParams
-Timer1.Enabled = False
-If getSystemField("resursLock") = Orders.cbM.Text Then unLockBase 'Если именно мы блокирова
-be_cmRepit = True
-laMess.Caption = ""
+    Timer1.Enabled = False
+    If getSystemField("resursLock") = Orders.cbM.Text Then unLockBase 'Если именно мы блокирова
+    be_cmRepit = True
+    laMess.Caption = ""
 End Sub
 
 Private Sub cmStatus_Click()
@@ -1509,7 +1472,7 @@ Dim begDay As Integer, endDay As Integer, begDayMO As Integer, endDayMO As Integ
 Dim begDay_ As Integer, endDay_ As Integer ', begDayMO_ As Integer, endDayMO_ As Integer
 Dim title As String, msg As String
 
-cmZapros.Enabled = True
+'cmZapros.Enabled = True
 cmAdd.Enabled = False
 laMess.Caption = ""
 isTimeZakaz = True
@@ -1722,7 +1685,7 @@ I = 0
         delay (1)
         I = I + 1
         If be_cmRepit Then
-            cmZapros.Enabled = True
+            'cmZapros.Enabled = True
 CC:         'tbSystem.Close
             Exit Sub
         End If
@@ -1732,7 +1695,7 @@ CC:         'tbSystem.Close
         str = getSystemField("resursLock")
         'str = tbSystem!resursLock
      Wend
-     cmZapros.Enabled = True
+     'cmZapros.Enabled = True
      myBase.Execute ("update system set resursLock = '" & Orders.cbM.Text & "'")
 'tbSystem!resursLock = Orders.cbM.Text
 'tbSystem.Update
@@ -1770,12 +1733,9 @@ Private Sub Form_Activate()
 FormIsActiv = True
 End Sub
 
-Private Sub cehSelectorAccess(cehId As Integer, action As Boolean)
-    Dim cehIndex As Integer
-    cehIndex = cehId - 1
-    
+Private Sub cehSelectorAccess(cehIndex As Integer, action As Boolean, syncStatus As Boolean)
     ckCehDone(cehIndex).Visible = action
-    'ckCehDone(cehIndex).Enabled = action
+    ckCehDone(cehIndex).value = IIf(syncStatus, 1, 0)
     cmCeh(cehIndex).Visible = action
     cmCeh(cehIndex).Enabled = action
 End Sub
@@ -1793,9 +1753,10 @@ End Sub
 
 
 Private Sub InitZagruz()
-    Dim myCehId As Integer
-    sql = "select oe.* " _
+    Dim myCehId As Integer, cehCtlIndex As Integer, statusIsSync As Boolean
+    sql = "select oe.*, o.statusId  " _
     & " from OrdersEquip oe " _
+    & " join orders o on o.numorder = oe.numorder" _
     & " where oe.numorder = " & gNzak
     
     
@@ -1805,7 +1766,17 @@ Private Sub InitZagruz()
     If tbOrders Is Nothing Then Exit Sub
     While Not tbOrders.EOF
         myCehId = tbOrders("cehId")
-        cehSelectorAccess myCehId, True
+        cehCtlIndex = myCehId - 1
+        If Not IsNull(tbOrders!StatusEquipId) Then
+            statusIsSync = tbOrders!StatusEquipId = tbOrders!StatusId
+            ' в Таг контрола ckCehDone() кладем статус по оборудованию на момент открытия формы.
+            ' Потом при смене статуса заказа будем смотреть совпадает ли он со статусом по оборорудованию
+            ckCehDone(cehCtlIndex).Tag = tbOrders!StatusEquipId
+        Else
+            statusIsSync = tbOrders!StatusId = 0
+            ckCehDone(cehCtlIndex).Tag = 0
+        End If
+        cehSelectorAccess cehCtlIndex, True, statusIsSync
         If Not atLeastOne Then
             cehId = myCehId
         End If
@@ -1815,7 +1786,7 @@ Private Sub InitZagruz()
     tbOrders.Close
     
     If Not atLeastOne Then
-        
+        ' warning: no ceh assigned
     End If
 
 End Sub
@@ -1835,6 +1806,7 @@ cehSelectorsInit False
 If Regim = "" Then
     InitZagruz
 End If
+startParams
 
 End Sub
 
@@ -1857,7 +1829,7 @@ tbDateRS.SelLength = 2
 End Sub
 
 Private Sub tbReadyDate_GotFocus()
-If FormIsActiv Then Zakaz.cmZapros.Enabled = True
+'If FormIsActiv Then Zakaz.cmZapros.Enabled = True
 tbReadyDate.SelStart = 0
 tbReadyDate.SelLength = 2
 
@@ -1882,17 +1854,17 @@ End If
 End Sub
 
 Private Sub tbVrVipO_Change()
-If FormIsActiv Then Zakaz.cmZapros.Enabled = True
+'If FormIsActiv Then Zakaz.cmZapros.Enabled = True
 End Sub
 
-Private Sub tbWorkTime_Change()
-If FormIsActiv Then
-    Zakaz.cmZapros.Enabled = True
+Private Sub tbWorktime_Change()
+If FormIsActiv And tbWorktime <> "" And tbWorktime <> "0" Then
+    'Zakaz.cmZapros.Enabled = True
     workChange = True
 End If
 End Sub
 
-Private Sub tbWorkTime_KeyDown(KeyCode As Integer, Shift As Integer)
+Private Sub tbWorktime_KeyDown(KeyCode As Integer, Shift As Integer)
 Dim s As Double, I As Integer
 
 If KeyCode = vbKeyReturn Then
@@ -1927,17 +1899,17 @@ Else
 End If
 End Sub
 
-Public Function startParams(Optional idCeh As Integer = 0) As Boolean
+Public Function startParams() As Boolean
 Dim I As Integer, str As String, j As Integer ', sumSroch As Double
-Dim item As ListItem, id As Integer, v As Variant, s As Double
+Dim item As ListItem, v As Variant, s As Double
 
 startParams = False
 
-If idCeh = 0 Then
-    Me.Regim = ""
-Else
-    Me.Regim = "setka"
-End If
+'If idCeh = 0 Then
+'    Me.Regim = ""
+'Else
+'    Me.Regim = "setka"
+'End If
 
 'Set tbOrders = myOpenRecordSet("##28", "Orders", dbOpenTable)
 'If tbOrders Is Nothing Then Exit Function
@@ -1950,7 +1922,7 @@ If idCeh > 0 Then ' вызов в режиме Сетки заказов
     Me.cmRepit.Visible = False
     cehId = idCeh
     gNzak = ""
-    id = 0
+    statusIdOld = 0
     Me.urgent = ""
 Else
     sql = "SELECT urgent from OrdersInCeh WHERE numOrder = " & gNzak
@@ -1966,7 +1938,7 @@ Else
     Me.cmRepit.Visible = True
     
 '    If Not findZakazInTable_("Orders") Then Exit Function '$#$
-    sql = "SELECT StatusId, oe.outDateTime from Orders o" _
+    sql = "SELECT StatusId, oe.outDateTime, oe.statusEquipId  from Orders o" _
     & " JOIN OrdersEquip oe on oe.numorder = o.numorder and oe.cehId = " & CStr(cehId) _
     & " WHERE o.numOrder =" & gNzak
     Set tbOrders = myOpenRecordSet("##402", sql, dbOpenForwardOnly)
@@ -1980,7 +1952,11 @@ Else
         addDays I 'добавляем дни, т.к. Дата Выд тек.заказа может оказаться
                   'дальше чем всех других, либо чем stDay и rMaxDay
     End If
-    id = tbOrders!StatusId
+    If statusIdOld <> statusIdNew Then
+        statusIdOld = statusIdNew
+    Else
+        statusIdOld = tbOrders!StatusId
+    End If
     tbOrders.Close
 End If
     
@@ -1993,12 +1969,12 @@ End If
     Next I
     Me.lv.ListItems("k1").SubItems(zkResurs) = Round(nr * Nstan * kpd, 1)
 
-If id = 0 Or id = 7 Then 'принят или аннулир
+If statusIdOld = 0 Or statusIdOld = 7 Then 'принят или аннулир
     neVipolnen = 0
     neVipolnen_O = 0
     If idCeh > 0 Then
         Me.Caption = "Сетка заказов " & Ceh(cehId)
-    ElseIf id = 0 Then
+    ElseIf statusIdOld = 0 Then
         Me.Caption = "Перемещение заказа в цех " & Ceh(cehId)
     End If
     
@@ -2072,10 +2048,10 @@ Next I
 
 Me.cbStatus.Clear
 addToCbStatus 7, "b" '"аннулир."
-If id = 5 Then
+If statusIdOld = 5 Then
     addToCbStatus 5   '"отложен"
-ElseIf id = 8 Then
-    id = 1
+ElseIf statusIdOld = 8 Then
+    statusIdOld = 1
     addToCbStatus 1 '"в работе"
 Else
     addToCbStatus 0 '"принят"  'не разрешены в т.ч. для
@@ -2085,7 +2061,7 @@ Else
 End If
 
 For I = 0 To Me.cbStatus.ListCount
-    If statId(I) = id Then
+    If statId(I) = statusIdOld Then
         Me.cbStatus.ListIndex = I
         GoTo NN
     End If
@@ -2097,11 +2073,7 @@ NN:
 Me.lv.ListItems("k" & stDay).ForeColor = &HBB00&
 Me.lv.ListItems("k" & stDay).Bold = True
 
-If idCeh = 0 Then
-    Me.newZagruz
-Else
-    Me.newZagruz "setka" 'влияет только один раз
-End If
+Me.newZagruz Me.Regim  'влияет только один раз
 
 startParams = True
 End Function
@@ -2144,7 +2116,7 @@ If id > lenStatus Then
     MsgBox "Err в Orders\addToCbStatus"
 End If
 
-Equipment.cbStatus.AddItem status(id)
+'Equipment.cbStatus.AddItem status(id)
 Me.cbStatus.AddItem status(id)
 statId(I) = id
 I = I + 1

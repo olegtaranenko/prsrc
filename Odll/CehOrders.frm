@@ -268,9 +268,7 @@ START:
 gridIsLoad = False
 Screen.MousePointer = flexHourglass
 
-#If Not COMTEC = 1 Then '----------------------------------------------
 getNakladnieList "ceh"
-#End If '--------------------------------------------------------------
 
 ' запоминаем настройки столбцов
 colWdth(chNomZak) = Grid.ColWidth(chNomZak)

@@ -386,7 +386,7 @@ Dim I As Integer
     End If
     
     Dim hasVisible As Boolean, isVisible As Boolean
-    For I = 0 To cbEquipment.Ubound
+    For I = 0 To cbEquipment.UBound
         isVisible = setVisibleByEquipment(I)
         If Not hasVisible Then
             hasVisible = isVisible
@@ -404,7 +404,7 @@ End Sub
 
 Private Sub cmApply_Click()
     Dim I As Integer
-    For I = 0 To cbEquipment.Ubound
+    For I = 0 To cbEquipment.UBound
         If cbEquipment(I) Then
             ' insert & update the row
             putOrderEquip (I)
@@ -468,11 +468,13 @@ Private Sub Form_Load()
 End Sub
 
 Private Sub loadEquipment()
+    If gNzak = "" Then Exit Sub
+    
     sql = "select o.statusId, oe.* from OrdersEquip oe join orders o on o.numorder = oe.numorder where oe.numorder = " & gNzak
     Set tbOrders = myOpenRecordSet("##eq.1", sql, dbOpenForwardOnly)
     If Not tbOrders Is Nothing Then
         If Not tbOrders.BOF Then
-            currStatusId = tbOrders!statusId
+            currStatusId = tbOrders!StatusId
             '
             While Not tbOrders.EOF
                 If Not tbOrders("cehId") Is Nothing Then
@@ -498,3 +500,23 @@ Private Sub loadEquipment()
     
 End Sub
 
+Private Sub Form_Unload(Cancel As Integer)
+    CleanupEquip
+End Sub
+
+Private Sub CleanupEquip()
+Dim I As Integer
+    For I = 0 To lenCeh - 1
+        cbEquipment(I).value = 0
+        tbWorktime(I).Visible = False
+        tbVrVipO(I).Visible = False
+        lbDateOut(I).Visible = False
+    Next I
+    tbDateMO.Text = ""
+    tbDateRS.Text = ""
+    cbM.ListIndex = 0
+    cbO.ListIndex = 0
+    If cbStatus.ListCount > 0 Then
+        cbStatus.ListIndex = 0
+    End If
+End Sub

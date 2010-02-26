@@ -2093,35 +2093,16 @@ ElseIf mousCol = orStatus Then
           Else
               neVipolnen = Round(neVipolnen * tbCeh!nevip, 2)   '$$1
               tbCeh.Close
-          End If                                  '
-        End If                                    '
-        Zakaz.startParams
-
-                ''Equipment.cbStatus.Clear
-                ''addToCbStatus 7, "b" '"аннулир."
-                ''If statusId = 5 Then
-                ''    addToCbStatus 5   '"отложен"
-                ''ElseIf statusId = 8 Then
-                ''    statusId = 1
-                ''    addToCbStatus 1 '"в работе"
-                ''Else
-                ''    addToCbStatus 0 '"принят"  'не разрешены в т.ч. для
-                ''    addToCbStatus 1 '"в работе"
-                ''    addToCbStatus 2 '"резерв"  'соглас-я с готовым образцом
-                ''    addToCbStatus 3 '"согласов."
-                ''End If
-                
-                ''For I = 0 To Equipment.cbStatus.ListCount
-                ''    If statId(I) = statusId Then
-                ''        Equipment.cbStatus.ListIndex = I
-                ''        Exit For
-                ''    End If
-                ''Next I
-        
+          End If
+        End If
+        'Zakaz.startParams
         
                 ''Equipment.Show vbModal, Me
+        Zakaz.Regim = "": Zakaz.idCeh = 0
         Zakaz.Show vbModal
-        refreshTimestamp gNzak
+        If Zakaz.isUpdated Then
+            refreshTimestamp gNzak
+        End If
    Else
      If dostup <> "a" Then
         listBoxInGridCell lbClose, Grid, "select"
@@ -2211,7 +2192,7 @@ If (dostup = "a" Or Grid.TextMatrix(mousRow, orStatus) <> "закрыт") _
        mousCol = orFirma _
        Or mousCol = orProblem _
        Or mousCol = orType _
-       Or (mousCol = orCeh And Grid.TextMatrix(mousRow, orStatus) = "принят") _
+       Or (mousCol = orCeh) _
        Or mousCol = orMen _
        Or mousCol = orVrVid _
        Or mousCol = orStatus _
@@ -2884,18 +2865,24 @@ Private Sub mnServic_Click()
 cbM_LostFocus
 End Sub
 
+Private Sub mnSetkaY_Click()
+    'Zakaz.startParams (1)
+    Zakaz.Regim = "setka"
+    Zakaz.idCeh = 1
+    Zakaz.Show vbModal
+End Sub
+
 Private Sub mnSetkaC_Click()
-    Zakaz.startParams (2)
+    'Zakaz.startParams (2)
+    Zakaz.Regim = "setka"
+    Zakaz.idCeh = 2
     Zakaz.Show vbModal
 End Sub
 
 Private Sub mnSetkaS_Click()
-    Zakaz.startParams (3)
-    Zakaz.Show vbModal
-End Sub
-
-Private Sub mnSetkaY_Click()
-    Zakaz.startParams (1)
+    'Zakaz.startParams (3)
+    Zakaz.Regim = "setka"
+    Zakaz.idCeh = 3
     Zakaz.Show vbModal
 End Sub
 
