@@ -239,7 +239,7 @@ AA:
 tmpStr = Right$(curDay, 2)
 tmpStr = tmpStr & Mid$(curDay, 3, 4)
 tmpStr = tmpStr & Left$(curDay, 2)
-laHeader.Caption = "Выработка по цеху " & Ceh(cehId) & " на " & tmpStr
+laHeader.Caption = "Выработка по цеху " & Ceh(gCehId) & " на " & tmpStr
 
 Grid.rows = 2
 Grid.Cols = 13
@@ -258,7 +258,7 @@ Grid.Clear
     Grid.ColWidth(crLogo) = 870
     Grid.ColWidth(crIzdelia) = 2450
 
-sql = "SELECT numOrder, obrazec, Virabotka From Itogi_" & Ceh(cehId) & _
+sql = "SELECT numOrder, obrazec, Virabotka From Itogi_" & Ceh(gCehId) & _
 " WHERE (((xDate)='" & curDay & "')) ORDER BY numOrder, obrazec DESC;"
 'MsgBox sql
 Set tbOrders = myOpenRecordSet("##377", sql, dbOpenForwardOnly)
@@ -366,11 +366,13 @@ If sum > 0 Then
     Grid.AddItem ""
     If QQ2(I) = 0 Then
         Grid.TextMatrix(quantity + I, crNomZak) = NN(I)
-        sql = "SELECT Orders.ManagId, Orders.Logo, OrdersInCeh.Stat, " & _
-        "Orders.Product, Orders.ProblemId, Orders.outDateTime, " & _
-        "GuideFirms.Name, Orders.workTime, Orders.StatusId, OrdersInCeh.Nevip " & _
-        "FROM (GuideFirms INNER JOIN Orders ON (GuideFirms.FirmId = Orders.FirmId) AND (GuideFirms.FirmId = Orders.FirmId)) LEFT JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder " & _
-        "WHERE (((Orders.numOrder)=" & NN(I) & "));"
+        sql = "SELECT Orders.ManagId, Orders.Logo, OrdersInCeh.Stat, " _
+        & "Orders.Product, Orders.ProblemId, Orders.outDateTime, " _
+        & "GuideFirms.Name, Orders.workTime, Orders.StatusId, OrdersInCeh.Nevip " _
+        & " FROM Orders " _
+        & " JOIN GuideFirms ON GuideFirms.FirmId = Orders.FirmId " _
+        & " LEFT JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder " _
+        & "WHERE Orders.numOrder = " & NN(I)
     Else 'образец
         Grid.TextMatrix(quantity + I, crNomZak) = NN(I) & "o"
         sql = "SELECT Orders.ManagId, Orders.Logo, OrdersMO.StatO As Stat, " & _
@@ -378,7 +380,7 @@ If sum > 0 Then
         & "GuideFirms.Name, oe.workTimeMO As workTime " _
         & "FROM Orders " _
         & "JOIN GuideFirms ON GuideFirms.FirmId = Orders.FirmId " _
-        & "LEFT JOIN vw_OrdersEquipSummary oe ON Orders.numOrder = oe.numOrder " _
+        & "LEFT JOIN OrdersEquip oe ON Orders.numOrder = oe.numOrder " _
         & "WHERE Orders.numOrder = " & NN(I)
     End If
     Grid.TextMatrix(quantity + I, crVirab) = QQ(I)
@@ -415,12 +417,12 @@ End If
 
 NXT1:
 'есть ли соседние дни
-sql = "SELECT Max(xDate) AS Prev From Itogi_" & Ceh(cehId) & _
+sql = "SELECT Max(xDate) AS Prev From Itogi_" & Ceh(gCehId) & _
 " WHERE (((xDate)<'" & curDay & "'));"
 If Not byErrSqlGetValues("##376", sql, prevDay) Then Exit Sub
 cmPrev.Enabled = (prevDay <> "")
 
-sql = "SELECT Min(xDate) AS Next From Itogi_" & Ceh(cehId) & _
+sql = "SELECT Min(xDate) AS Next From Itogi_" & Ceh(gCehId) & _
 " WHERE (((xDate)>'" & curDay & "'));"
 If Not byErrSqlGetValues("##376", sql, nextDay) Then Exit Sub
 cmNext.Enabled = (nextDay <> "")

@@ -1085,7 +1085,7 @@ where	GuideCeh.cehId = orders.cehId
 	<changeSet id="5" author="mantis-125" runOnChange="false">
 		<comment>Добавить поле Оборудование в таблицу OrdersInCeh</comment>
 		<addColumn tableName="OrdersInCeh">
-			<column name="cehId" type="integer"><constraints nullable="false"/></column>
+			<column name="cehId" type="integer"><constraints nullable="true"/></column>
 		</addColumn>
 	</changeSet>
 
@@ -1095,7 +1095,12 @@ update	OrdersInCeh set cehId = Orders.cehId
 from	Orders 
 where	OrdersInCeh.numorder = Orders.numorder
 		</sql>
+
 		<rollback/>
+	</changeSet>
+
+	<changeSet id="18" author="mantis-125" runOnChange="false">
+		<addNotNullConstraint tableName="OrdersInCeh" columnName="cehId"/>
 	</changeSet>
 
 
@@ -1129,8 +1134,10 @@ where	OrdersInCeh.numorder = Orders.numorder
 		<comment>Саммари вьюха</comment>
 		<sqlFile path="procedures/enumEquip.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="views/vw_OrdersEquipSummary.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="views/vw_OrdersInCehSummary.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<rollback>
 			<sqlFile path="rollback/vw_OrdersEquipSummary.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+			<sqlFile path="rollback/vw_OrdersInCehSummary.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		</rollback>
 	</changeSet>
 

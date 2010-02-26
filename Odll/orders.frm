@@ -577,29 +577,27 @@ Const AddCaption = "Добавить"
 Const t17_00 = 61200 ' в секундах
 
 Const rowFromOrdersSQL = "select " & _
-"    Orders.numOrder, orders.equip as Ceh, Orders.inDate" & _
-"   ,GuideManag.Manag, GuideStatus.Status, Orders.StatusId, GuideProblem.Problem" & _
-"   ,Orders.DateRS, GuideFirms.Name, oes.outDateTime, Orders.Type" & _
-"   ,oes.workTime, Orders.Logo, Orders.Product, Orders.ordered" & _
-"   ,Orders.temaId, Orders.paid, Orders.shipped,  Orders.Invoice" & _
-"   ,oes.DateTimeMO, oes.workTimeMO, OrdersMO.StatM, OrdersMO.StatO" & _
-"   ,GuideManag_1.Manag AS lastManag, OrdersInCeh.urgent" & _
-"   ,guideventure.venturename as venture" & _
-"   ,lastModified" & _
-"   ,id_bill" & _
-"   ,GuideFirms.id_voc_names as id_voc_names" & _
-"   ,guideventure.sysname as servername" & _
-"   ,Orders.zalog, Orders.nal, Orders.rate" & _
-" from orders " & _
-" JOIN GuideStatus ON GuideStatus.StatusId = Orders.StatusId " & _
-" JOIN GuideProblem ON GuideProblem.ProblemId = Orders.ProblemId " & _
-" JOIN GuideManag ON GuideManag.ManagId = Orders.ManagId " & _
-" JOIN GuideFirms ON GuideFirms.FirmId = Orders.FirmId " & _
-" LEFT JOIN vw_OrdersEquipSummary oes ON oes.numorder = Orders.numorder " & _
-" LEFT JOIN GuideManag AS GuideManag_1 ON Orders.lastManagId = GuideManag_1.ManagId " & _
-" LEFT JOIN OrdersMO ON Orders.numOrder = OrdersMO.numOrder " & _
-" LEFT JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder " & _
-" left join guideventure on guideventure.ventureId = orders.ventureid "
+"    o.numOrder, o.equip as Ceh, o.inDate" & _
+"   ,m.Manag, s.Status, o.StatusId, p.Problem" & _
+"   ,o.DateRS, f.Name, oes.outDateTime, o.Type" & _
+"   ,oes.workTime, o.Logo, o.Product, o.ordered" & _
+"   ,o.temaId, o.paid, o.shipped,  o.Invoice" & _
+"   ,oes.DateTimeMO, oes.workTimeMO, om.StatM, om.StatO" & _
+"   ,lm.Manag AS lastManag, oc.urgent" & _
+"   ,v.venturename as venture" & _
+"   ,lastModified, id_bill, f.id_voc_names " & _
+"   ,v.sysname as servername" & _
+"   ,o.zalog, o.nal, o.rate" & _
+" from orders o " & _
+" JOIN GuideStatus s ON s.StatusId = o.StatusId " & _
+" JOIN GuideProblem p ON p.ProblemId = o.ProblemId " & _
+" JOIN GuideManag m ON m.ManagId = o.ManagId " & _
+" JOIN GuideFirms f ON f.FirmId = o.FirmId " & _
+" LEFT JOIN vw_OrdersEquipSummary oes ON oes.numorder = o.numorder " & _
+" LEFT JOIN GuideManag lm ON o.lastManagId = lm.ManagId " & _
+" LEFT JOIN OrdersMO om ON o.numOrder = om.numOrder " & _
+" LEFT JOIN vw_OrdersInCehSummary oc ON o.numOrder = oc.numOrder" & _
+" left join guideventure v on v.ventureId = o.ventureid "
     
     
     
@@ -751,12 +749,12 @@ Dim baseProblemId As Integer, baseProblem As String, begPubNum As Long
 
 gNzak = Grid.TextMatrix(Orders.mousRow, orNomZak)
 If InStr(Orders.cmAdd.Caption, "+") > 0 Then
-  sql = "SELECT Orders.CehId, Orders.ProblemId, Orders.FirmId, " & _
+  ''sql = "SELECT Orders.CehId, Orders.ProblemId, Orders.FirmId, " & _
         "GuideCeh.Ceh, GuideProblem.Problem, GuideFirms.Name " & _
         "FROM GuideProblem INNER JOIN (GuideFirms INNER JOIN " & _
         "(GuideCeh INNER JOIN Orders ON GuideCeh.CehId = Orders.CehId) " & _
         "ON GuideFirms.FirmId = Orders.FirmId) ON GuideProblem.ProblemId " & _
-        "= Orders.ProblemId WHERE (((Orders.numOrder)=" & gNzak & "));"
+        "= Orders.ProblemId WHERE Orders.numOrder = " & gNzak
 '  On Error GoTo NXT1
   Set tbOrders = myBase.OpenRecordset(sql, dbOpenForwardOnly)
   baseCehId = tbOrders!cehId
@@ -774,7 +772,7 @@ NXT1:
 cmAdd.Caption = AddCaption
 
 sql = "select * from Orders where numOrder = " & valueorder.val
-Set tbOrders = myOpenRecordSet("##07", sql, dbOpenForwardOnly) 'dbOpenForwardOnly
+Set tbOrders = myOpenRecordSet("##07", sql, dbOpenForwardOnly)
 
 
 If Not tbOrders.BOF Then
@@ -833,27 +831,31 @@ End Sub
 
 
 Private Sub cmCehCO2_Click()
-If cehId <> 2 And isCehOrders Then Unload CehOrders
-cehId = 2
+If gCehId <> 2 And isCehOrders Then Unload CehOrders
+gCehId = 2
 CehOrders.Show 'vbModal
 
 End Sub
 
+
 Private Sub cmCehSUB_Click()
-If cehId <> 3 And isCehOrders Then Unload CehOrders
-cehId = 3
+If gCehId <> 3 And isCehOrders Then Unload CehOrders
+gCehId = 3
 CehOrders.Show
 End Sub
 
+
 Private Sub cmCehYAG_Click()
-If cehId <> 1 And isCehOrders Then Unload CehOrders
-cehId = 1
+If gCehId <> 1 And isCehOrders Then Unload CehOrders
+gCehId = 1
 CehOrders.Show 'vbModal
 End Sub
+
 
 Private Sub cmExvel_Click()
 GridToExcel Grid
 End Sub
+
 
 Private Sub cmRefr_Click()
 Dim minDate As Date, maxDate As Date
@@ -882,6 +884,7 @@ laFiltr.Visible = False
 
 End Sub
 
+
 Sub valToWeb(val As Variant, Optional formatStr As String = "")
 Dim chTab As String ', str As String
 
@@ -898,10 +901,11 @@ Else
 End If
 End Sub
 
+
 Sub openOrdersRowToGrid(myErr As String)
 
 gNzak = Grid.TextMatrix(mousRow, orNomZak)
-sql = rowFromOrdersSQL & " WHERE (((Orders.numOrder)= " & gNzak & " ));"
+sql = rowFromOrdersSQL & " WHERE o.numOrder = " & gNzak
 Set tqOrders = myOpenRecordSet(myErr, sql, dbOpenForwardOnly)
 If tqOrders Is Nothing Then myBase.Close: End
 If tqOrders.BOF Then myBase.Close: End
@@ -910,6 +914,8 @@ copyRowToGrid mousRow
 
 'tqOrders.Close
 End Sub
+
+
 
 Function isConflict(Optional msg As String = "") As Boolean
 Dim problem As String, ordered, paid, shipped, stat As String, dateRS As Variant
@@ -999,6 +1005,7 @@ End If
 
 End If
 End Function
+
 
 Private Sub cmToWeb_Click()
 Dim outDate As String, outTime As String, nbsp As String, tmpFile As String
@@ -1112,21 +1119,25 @@ End If
 GoTo ENs
 End Sub
 
+
 Private Sub cmZagrCO2_Click()
-cehId = 2
+gCehId = 2
 Zagruz.Show
 End Sub
+
 
 Private Sub cmZagrSUB_Click()
-cehId = 3
+gCehId = 3
 Zagruz.Show
 
 End Sub
+
 
 Private Sub cmZagrYAG_Click()
-cehId = 1
+gCehId = 1
 Zagruz.Show
 End Sub
+
 
 Sub lbHide(Optional noFocus As String = "")
 tbMobile.Visible = False
@@ -1164,6 +1175,7 @@ If refreshCurrentRow Then
     tqOrders.Close
 End If
 End Sub
+
 
 Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
 Dim str As String, value As String, I As Integer, il As Long
@@ -1271,6 +1283,7 @@ BB:
 End If
 End Sub
 
+
 Sub loadWithFiltr(Optional nomZak As String = "")
 If IsNumeric(nomZak) Then ' поиск номера из Цеха
     orSqlWhere(0) = "" 'исп-ся только и сложного фильтра
@@ -1287,13 +1300,15 @@ cmRefr.Caption = "Загрузить"
 Me.MousePointer = flexDefault
 orSqlWhere(0) = "" 'исп-ся однократно (для сложного фильтра)
 End Sub
+
+
 Private Sub Form_KeyUp(KeyCode As Integer, Shift As Integer)
 If KeyCode = vbKeyMenu Then cmAdd.Caption = AddCaption
 
 End Sub
 
+
 Private Sub setCurrencyCaption()
-    
     Dim mnCaption As String
     mnCaption = "Валюта: сменить на "
     If sessionCurrency = CC_RUBLE Then
@@ -1305,6 +1320,7 @@ Private Sub setCurrencyCaption()
     End If
 
 End Sub
+
 
 Private Sub Form_Load()
 Dim I As Integer, str As String
@@ -1352,39 +1368,39 @@ setCurrencyCaption
 
 orColNumber = 0
 mousCol = 1
-initOrCol orNomZak, "nOrders.numOrder"
-initOrCol orInvoice, "sOrders.Invoice"
-initOrCol orVenture, "sOrders.ventureName"
+initOrCol orNomZak, "no.numOrder"
+initOrCol orInvoice, "so.Invoice"
+initOrCol orVenture, "so.ventureName"
 initOrCol orCeh, "sGuideCeh.Ceh"
-initOrCol orData, "dOrders.inDate"
+initOrCol orData, "do.inDate"
 initOrCol orMen, "sGuideManag.Manag"
 initOrCol orStatus, "sGuideStatus.Status"
 initOrCol orProblem, "sGuideProblem.Problem"
-initOrCol orDataRS, "dOrders.DateRS"
+initOrCol orDataRS, "do.DateRS"
 initOrCol orFirma, "sGuideFirms.Name"
-initOrCol orDataVid, "dOrders.outDateTime"
+initOrCol orDataVid, "do.outDateTime"
 initOrCol orVrVid
-initOrCol orVrVip, "nOrders.workTime"
+initOrCol orVrVip, "no.workTime"
 initOrCol orM
 initOrCol orO
 initOrCol orMOData, "dOrdersEquip.DateTimeMO"
 initOrCol orMOVrVid
 initOrCol orOVrVip, "dOrdersEquip.workTimeMO"
-initOrCol orLogo, "sOrders.Logo"
-initOrCol orIzdelia, "sOrders.Product"
-initOrCol orType, "sOrders.Type"
-initOrCol orTema, "nOrders.temaId"
-initOrCol orZalog, "nOrders.zalog"
-initOrCol orNal, "nOrders.nal"
-initOrCol orRate, "nOrders.rate"
-initOrCol orZakazano, "nOrders.ordered"
-initOrCol orOplacheno, "nOrders.paid"
-initOrCol orOtgrugeno, "nOrders.shipped"
-initOrCol orLastMen, "sGuideManag_1.Manag"
-initOrCol orlastModified, "dOrders.lastModified"
-initOrCol orBillId, "nOrders.id_bill"
-initOrCol orVocnameId, "nOrders.id_voc_names"
-initOrCol orServername, "sOrders.servername"
+initOrCol orLogo, "so.Logo"
+initOrCol orIzdelia, "so.Product"
+initOrCol orType, "so.Type"
+initOrCol orTema, "no.temaId"
+initOrCol orZalog, "no.zalog"
+initOrCol orNal, "no.nal"
+initOrCol orRate, "no.rate"
+initOrCol orZakazano, "no.ordered"
+initOrCol orOplacheno, "no.paid"
+initOrCol orOtgrugeno, "no.shipped"
+initOrCol orLastMen, "slm.Manag"
+initOrCol orlastModified, "do.lastModified"
+initOrCol orBillId, "no.id_bill"
+initOrCol orVocnameId, "no.id_voc_names"
+initOrCol orServername, "so.servername"
 
 
 ReDim Preserve orSqlWhere(orColNumber)
@@ -1427,8 +1443,6 @@ Grid.ColWidth(orServername) = 0
 
 adjustMoneyColumnWidth (True)
 
-
-
 '*********************************************************************$$7
 managLoad 'загрузка Manag() cbM lbM и Filtr.lbM
 
@@ -1459,6 +1473,8 @@ trigger = True
 initVentureLB
 
 End Sub
+
+
 Public Sub initVentureLB()
 ' Сначала удаляем старые значения
 While lbVenture.ListCount
@@ -1484,7 +1500,7 @@ End Sub
 Public Sub managLoad(Optional fromCeh As String = "")
 Dim I As Integer, str As String
 
-sql = "SELECT * From GuideManag  ORDER BY forSort;"
+sql = "SELECT * From GuideManag  ORDER BY forSort"
 Set table = myOpenRecordSet("##03", sql, dbOpenForwardOnly)
 If table Is Nothing Then myBase.Close: End
 I = 0: ReDim manId(0):
@@ -1524,25 +1540,25 @@ Dim addNullDate As String, strWhere As String
  Next I
  
 If chConflict.value = 1 Then '  ******************************
-    orSqlWhere(orStatus) = "(Orders.StatusId)=4" 'готов
+    orSqlWhere(orStatus) = "(o.StatusId)=4" 'готов
     If Timer > t17_00 Then
        orSqlWhere(orStatus) = orSqlWhere(orStatus) & ") OR (" & _
-       "(Orders.StatusId)=2) OR ((Orders.StatusId)=3" 'резерв согласов
+       "(o.StatusId)=2) OR ((o.StatusId)=3" 'резерв согласов
     End If
 Else                         '********************************
  
  If cbStartDate.value = 1 Then
-    stDate = "(Orders.inDate)>='" & _
-             Format(Orders.tbStartDate.Text, "yyyy-mm-dd") & "'"
+    stDate = "(o.inDate)>='" & _
+             Format(o.tbStartDate.Text, "yyyy-mm-dd") & "'"
     addNullDate = ""
  Else
     stDate = ""
-    addNullDate = " OR (Orders.inDate) Is Null"
+    addNullDate = " OR (o.inDate) Is Null"
  End If
 
  If cbEndDate.value = 1 Then
-    enDate = "(Orders.inDate)<='" & _
-            Format(Orders.tbEndDate.Text, "yyyy-mm-dd") & " 11:59:59 PM'"
+    enDate = "(o.inDate)<='" & _
+            Format(o.tbEndDate.Text, "yyyy-mm-dd") & " 11:59:59 PM'"
  Else
     enDate = ""
  End If
@@ -1557,7 +1573,7 @@ Else                         '********************************
  orSqlWhere(orData) = strWhere & addNullDate
  
  If cbClose.value = 0 Or Not tbEnable.Visible Then
-    orSqlWhere(orStatus) = "(Orders.StatusId)<>6" 'закрыт
+    orSqlWhere(orStatus) = "(o.StatusId)<>6" 'закрыт
  Else
     orSqlWhere(orStatus) = ""
  End If
@@ -1569,7 +1585,7 @@ End If 'chConflict.value      ********************************
 End Sub
 Sub getWhereInvoice()
  If Not tbEnable.Visible Then
-    orSqlWhere(orInvoice) = "isNumeric(Orders.Invoice)=1 OR (Orders.shipped) Is Null"
+    orSqlWhere(orInvoice) = "isNumeric(o.Invoice)=1 OR (o.shipped) Is Null"
  End If
 End Sub
 Private Sub Form_Resize()
@@ -1829,13 +1845,13 @@ If mousRow = 0 Then Exit Sub
 
 gNzak = Grid.TextMatrix(mousRow, orNomZak)
 
-'    cehId = 2
+'    gCehId = 2
 
 
 sql = "SELECT O.StatusId, O.lastModified, m.Manag, oe.worktime " _
 & " From Orders o " _
 & " join GuideManag m on o.lastManagId = m.managid " _
-& " LEFT JOIN OrdersEquip oe on oe.numorder = o.numorder and oe.cehId = " & cehId _
+& " LEFT JOIN OrdersEquip oe on oe.numorder = o.numorder and oe.cehId = " & gCehId _
 & " WHERE O.numOrder = " & gNzak
 'Debug.Print (sql)
 If Not byErrSqlGetValues("##174", sql, StatusId, orderTimestamp, lastManager, neVipolnen) Then Exit Sub
@@ -2381,15 +2397,8 @@ Sub do_Del()
     sql = "DELETE From sDMCrez WHERE numDoc =" & gNzak & ";"
     myExecute "##305", sql, 0
 #End If '------------------------------------------------------------------
-'$comtec$ Возможно нижеследующий запрос надо расширить, если в системе Комтех
-'при удалении договора необходимо удалять записи не только из аналога Orders
-'    sql = "DELETE OrdersMO.*, Orders.*, OrdersInCeh.* " & _
-    "FROM (Orders LEFT JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder) " & _
-    "LEFT JOIN OrdersMO ON Orders.numOrder = OrdersMO.numOrder " & _
-    "WHERE Orders.numOrder = " & gNzak & ";"
 'в базу ввел каскадное удаление
-    sql = "DELETE FROM Orders WHERE numOrder=" & gNzak & ";"
-'    myBase.Execute sql
+    sql = "DELETE FROM Orders WHERE numOrder=" & gNzak
     If myExecute("##136", sql) = 0 Then
         delZakazFromGrid
         wrkDefault.CommitTrans
@@ -2472,9 +2481,11 @@ Print #2, DNM & " проблема=" & lbProblem.Text & _
 Close #2
 End Sub
 
+
 Private Sub lbProblem_KeyDown(KeyCode As Integer, Shift As Integer)
 If KeyCode = vbKeyReturn Then lbProblem_DblClick
 End Sub
+
 
 Function orderClose() As Boolean
 Dim sql2 As String, str As String, account_is_closed As Integer
@@ -2485,7 +2496,6 @@ openOrdersRowToGrid "##56"
 bilo = isConflict("toClose")
 str = tqOrders!Type
 tqOrders.Close
-'lbHide 24 сбрасывает bilo 23.11.04
 
 If str = "" Then
     MsgBox "Перед закрытием  необходимо указать Категорию заказа.", , "Закрытие невозможно!"
@@ -2510,11 +2520,11 @@ If Not bilo Then
         orderUpdate "##45", 6, "Orders", "StatusId"
         orderUpdate "##48", str, "Orders", "lastManagId"
         delZakazFromCeh
-        sql = "DELETE From sDMCrez WHERE (((numDoc)=" & gNzak & "));"
+        sql = "DELETE From sDMCrez WHERE numDoc =" & gNzak
         myExecute "##326", sql, 0
-        sql = "DELETE From xEtapByIzdelia WHERE (((numOrder)=" & gNzak & "));"
+        sql = "DELETE From xEtapByIzdelia WHERE numOrder =" & gNzak
         myExecute "##327", sql, 0
-        sql = "DELETE From xEtapByNomenk WHERE (((numOrder)=" & gNzak & "));"
+        sql = "DELETE From xEtapByNomenk WHERE numOrder =" & gNzak
         myExecute "##328", sql, 0
         
         wrkDefault.CommitTrans  ' подтверждение транзакции
@@ -2536,16 +2546,21 @@ End Function
 
 Sub delZakazFromCeh()
         
-        sql = "DELETE From OrdersInCeh WHERE (((" & _
-              "OrdersInCeh.numOrder)=" & gNzak & "));"
-        tmpStr = "DELETE From OrdersMO WHERE (((" & _
-              "OrdersMO.numOrder)=" & gNzak & "));"
-        On Error Resume Next 'если стал готов не сегодня то заказа уже нет
-        myBase.Execute sql
-        myBase.Execute tmpStr
-        delZakazFromReplaceRS ' если он там есть
-        On Error GoTo 0
+  '$'
+    sql = "DELETE From OrdersInCeh  WHERE " & _
+          "numOrder = " & gNzak ' удалить все заказы
+    
+    tmpStr = "DELETE From OrdersMO WHERE " & _
+          "OrdersMO.numOrder = " & gNzak
+    
+    On Error Resume Next 'если стал готов не сегодня то заказа уже нет
+    myBase.Execute sql
+    myBase.Execute tmpStr
+    delZakazFromReplaceRS ' если он там есть
+    On Error GoTo 0
 End Sub
+
+
 '$odbc15$
 Private Sub lbStat_DblClick()
 Dim v As Variant
@@ -2555,7 +2570,6 @@ If noClick Then Exit Sub
 If lbStat.Text = "закрыт" Then
   If orderClose Then Grid.TextMatrix(mousRow, mousCol) = lbStat.Text
 ElseIf lbStat.Text = "принят" Then
-#If Not COMTEC = 1 Then '----------------------------------------------------
     v = isNewEtap
     If IsNull(v) Then
         MsgBox "Нельзя перевести готовый заказ снова в 'принят', поскольку " & _
@@ -2567,29 +2581,13 @@ ElseIf lbStat.Text = "принят" Then
         MsgBox "У этого заказа все предметы списаны. Открытие нового этапа " & _
         "невозможно!", , "Недопустимый статус!"
     Else
-#Else
-    If 1 = 1 Then
-#End If '--------------------------------------------------------------------
         wrkDefault.BeginTrans
         delZakazFromCeh
         
-'        Set tbOrders = myOpenRecordSet("##325", "select * from Orders", dbOpenForwardOnly)
-'        If tbOrders Is Nothing Then GoTo ER1
-'        tbOrders.index = "PrimaryKey"
-'        tbOrders.Seek "=", gNzak
-'        If tbOrders.NoMatch Then GoTo ER0
-'        tbOrders.Edit
-'        tbOrders!StatusId = 0
-'        tbOrders!dateRS = Null
-'        tbOrders!outDateTime = Null
-'        tbOrders!workTime = Null
-'        tbOrders!lastManagId = manId(cbM.ListIndex)
-'        tbOrders.Update
-'        tbOrders.Close
         
         sql = "UPDATE Orders SET StatusId = 0, DateRS = Null, " & _
-        "outDateTime = Null, workTime = 0, lastManagId = '" & _
-        manId(cbM.ListIndex) & "' WHERE (((numOrder)=" & gNzak & "));"
+        "lastManagId = '" & manId(cbM.ListIndex) & "'" _
+        & " WHERE numOrder = " & gNzak
         If myExecute("##325", sql) <> 0 Then GoTo ER1
         
         wrkDefault.CommitTrans
@@ -2608,9 +2606,8 @@ ElseIf lbStat.Text = "принят" Then
 End If
 lbHide
 'Exit Sub
-'ER0: tbOrders.Close
 ER1:
-' wrkDefault.Rollback:
+ wrkDefault.rollback:
 lbHide
 End Sub
 
@@ -3271,7 +3268,7 @@ clearGrid Grid
 getNakladnieList
 zakazNum = 0
 'LoadOrders********************************************************
-sql = rowFromOrdersSQL & getSqlWhere & " ORDER BY Orders.inDate" & ";"
+sql = rowFromOrdersSQL & getSqlWhere & " ORDER BY o.inDate"
 'MsgBox getSqlWhere
 'Debug.Print sql
 Set tqOrders = myOpenRecordSet("##08", sql, dbOpenForwardOnly)
@@ -3430,9 +3427,9 @@ For I = 1 To orColNumber
     orSqlWhere(I) = ""
 Next I
 
-orSqlWhere(orInvoice) = "(Orders.Invoice) Like 'счет%'"
+orSqlWhere(orInvoice) = "(o.Invoice) Like 'счет%'"
 orSqlWhere(orStatus) = "(GuideStatus.Status) <> 'закрыт'"
-orSqlWhere(orOtgrugeno) = "Not(Orders.shipped) Is Null"
+orSqlWhere(orOtgrugeno) = "Not(o.shipped) Is Null"
 Orders.MousePointer = flexHourglass
 Orders.LoadBase
 Orders.MousePointer = flexDefault
@@ -3449,8 +3446,8 @@ For I = 1 To orColNumber
 Next I
 If stat = "noArhiv" Then
     stat = ""
-    orSqlWhere(orInvoice) = "isNumeric(Orders.Invoice) =1 OR " & _
-    "(Orders.Invoice) Is Null OR (Orders.shipped) Is Null"
+    orSqlWhere(orInvoice) = "isNumeric(o.Invoice) =1 OR " & _
+    "(o.Invoice) Is Null OR (o.shipped) Is Null"
 End If
 If stat <> "all" And stat <> "" Then
     orSqlWhere(orFirma) = "(GuideFirms.Name) = '" & stat & "'"

@@ -32,7 +32,7 @@ Public isAdmin As Boolean
 Public isBlock As Boolean
 Public Const lenCeh = 3
 Public Ceh(10) As String
-Public cehId As Integer
+Public gCehId As Integer
 Public Const lenStatus = 20
 Public statId(lenStatus) As Integer
 Public status(lenStatus) As String
@@ -614,15 +614,15 @@ Dim I As Integer, j As Integer, rMaxDay As Integer, s As Double
 
 Set tbSystem = myOpenRecordSet("##93", "System", dbOpenForwardOnly)
 If tbSystem Is Nothing Then myBase.Close: End
-If cehId = 1 Then
+If gCehId = 1 Then
     kpd = tbSystem!KPD_YAG
     Nstan = tbSystem!NstanYAG
     newRes = tbSystem!newResYAG
-ElseIf cehId = 2 Then
+ElseIf gCehId = 2 Then
     kpd = tbSystem!KPD_CO2
     Nstan = tbSystem!NstanCO2
     newRes = tbSystem!newResCO2
-ElseIf cehId = 3 Then           '$$ceh
+ElseIf gCehId = 3 Then           '$$ceh
     kpd = tbSystem!KPD_SUB      '
     Nstan = tbSystem!NstanSUB   '
     newRes = tbSystem!newResSUB '
@@ -632,7 +632,7 @@ Else
 End If
 tbSystem.Close
 
-sql = "SELECT nomRes from Resurs" & Ceh(cehId) & " ORDER BY xDate;"
+sql = "SELECT nomRes from Resurs" & Ceh(gCehId) & " ORDER BY xDate;"
 Set table = myOpenRecordSet("##10", sql, dbOpenForwardOnly)
 'If table Is Nothing Then Exit Function
 
@@ -1066,11 +1066,11 @@ table.Close
 CheckIntegration
 
 If dostup = "y" Then
-    cehId = 1: CehOrders.Show
+    gCehId = 1: CehOrders.Show
 ElseIf dostup = "c" Then
-    cehId = 2: CehOrders.Show
+    gCehId = 2: CehOrders.Show
 ElseIf dostup = "s" Then        '$$$ceh
-    cehId = 3: CehOrders.Show   '
+    gCehId = 3: CehOrders.Show   '
 Else
     Orders.Show
 End If
@@ -1970,6 +1970,7 @@ Dim sql As String, byStr As String  ', numOrd As String
 
 ValueToTableField = False
 'If value = "" Then value = Chr(34) & Chr(34)
+
 If value = "" Then value = "''"
 If by = "" Then
     Dim nzak As String
@@ -1979,27 +1980,29 @@ If by = "" Then
         nzak = Numorder
     End If
         
-    byStr = ".numOrder)= " & nzak
+    byStr = ".numOrder = " & nzak
 ElseIf by = "byFirmId" Then
-    byStr = ".FirmId)= " & gFirmId
+    byStr = ".FirmId = " & gFirmId
 ElseIf by = "byKlassId" Then
-    byStr = ".klassId)= " & gKlassId
+    byStr = ".klassId = " & gKlassId
 ElseIf by = "byNomNom" Then
-    byStr = ".nomNom)= " & "'" & gNomNom & "'"
+    byStr = ".nomNom = " & "'" & gNomNom & "'"
 ElseIf by = "bySeriaId" Then
-    byStr = ".seriaId)= " & gSeriaId
+    byStr = ".seriaId = " & gSeriaId
 ElseIf by = "byProductId" Then
-    byStr = ".prId)= " & gProductId
+    byStr = ".prId = " & gProductId
+ElseIf by = "byCehId" Then
+    byStr = ".numOrder = " & gNzak & " and " & table & ".cehId = " & gCehId
 ElseIf by = "byNumDoc" Then
     sql = "UPDATE " & table & " SET " & table & "." & field & "=" & value _
-        & " WHERE (((" & table & ".numDoc)=" & numDoc & " AND (" & table & _
-        ".numExt)=" & numExt & " ));"
+        & " WHERE " & table & ".numDoc =" & numDoc & " AND " & table & _
+        ".numExt =" & numExt
     GoTo AA
 Else
     Exit Function
 End If
 sql = "UPDATE " & table & " SET " & table & "." & field & _
-" = " & value & " WHERE (((" & table & byStr & " ));"
+" = " & value & " WHERE " & table & byStr
 AA:
 'MsgBox "sql = " & sql
 
@@ -2045,9 +2048,9 @@ End Sub
 Function getNevip(day As Integer)
 sql = "SELECT Sum(oe.workTime * oc.Nevip) AS wSum " & _
 "FROM OrdersEquip oe " & _
-"JOIN OrdersInCeh oc ON oe.numOrder = oc.numOrder " & _
+"JOIN OrdersInCeh oc ON oe.numOrder = oc.numOrder AND oc.cehId = oe.cehId " & _
 "WHERE DateDiff(day,'" & Format(curDate, "yyyy-mm-dd") & "',oe.outDateTime) =" & day - 1 _
-& " AND oe.CehId =" & cehId
+& " AND oe.CehId =" & gCehId
 'MsgBox sql
 getNevip = 0
 byErrSqlGetValues "W##382", sql, getNevip
@@ -2128,10 +2131,10 @@ End If
 '    "OrdersInCeh.numOrder, OrdersInCeh.VrVipParts, OrdersInCeh.rowLock "
 sql = "SELECT oe.outDateTime, o.StatusId, " & _
     "o.numOrder " & _
-    "FROM OrdersInCeh oc  " _
-    & " JOIN Orders o ON oc.numOrder = o.numOrder " _
+    "FROM Orders o " _
     & " JOIN OrdersEquip oe ON oe.numOrder = o.numOrder " _
-    & " WHERE oe.CehId = " & cehId & passSql
+    & " JOIN OrdersInCeh oc ON oc.numOrder = o.numOrder AND oc.cehId = oe.cehId " _
+    & " WHERE oe.CehId = " & gCehId & passSql
 
 Set tbCeh = myOpenRecordSet("##14", sql, dbOpenForwardOnly)
 If tbCeh Is Nothing Then Exit Sub

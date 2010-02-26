@@ -313,9 +313,9 @@ Grid.ColWidth(chVrVid) = colWdth(chVrVid)
 Grid.ColWidth(chFirma) = colWdth(chFirma)
 Grid.ColWidth(chLogo) = colWdth(chLogo) - Grid.ColWidth(chDataRes)
 
-Me.Caption = Ceh(cehId) & mainTitle
-sql = "select * from w" & Ceh(cehId)
-'Set myQuery = myBase.Connection.QueryDefs("w" & Ceh(cehId))
+Me.Caption = Ceh(gCehId) & mainTitle
+sql = "select * from w" & Ceh(gCehId)
+'Set myQuery = myBase.Connection.QueryDefs("w" & Ceh(gCehId))
 Set tbCeh = myOpenRecordSet("##34", sql, dbOpenDynaset)
 If tbCeh Is Nothing Then myQuery.Close: myBase.Close: End
 
@@ -764,7 +764,7 @@ If noClick Then Exit Sub
 
 wrkDefault.BeginTrans   ' начало транзакции
 
-I = ValueToTableField("W##41", "'в работе'", "OrdersInCeh", "Stat") 'т.к если оставить Stat=готов, то на завтра он удалиться
+I = ValueToTableField("W##41", "'в работе'", "OrdersInCeh", "Stat", "cehId") 'т.к если оставить Stat=готов, то на завтра он удалиться
 If I = 0 Then
     If ValueToTableField("##41", "5", "Orders", "StatusId") <> 0 Then GoTo ER1
 
@@ -859,7 +859,7 @@ ElseIf str = "готов" Then
     If 1 = 1 Then
 #End If '-------------------------------------------------------------------
         wrkDefault.BeginTrans
-        I = ValueToTableField("W##41", "'" & str & "'", "OrdersInCeh", "Stat")
+        I = ValueToTableField("W##41", "'" & str & "'", "OrdersInCeh", "Stat", "byCehId")
         If I = 0 Then
             If ValueToTableField("##39", "4", "Orders", "StatusId") <> 0 Then GoTo ER1
             If ValueToTableField("##39", "0", "Orders", "ProblemId") <> 0 Then GoTo ER1
@@ -889,7 +889,7 @@ Else '  пусто, "*" и "в работе"
     lbStatus.Visible = False
     wrkDefault.BeginTrans
     If makeProcReady("0%") Then
-        If ValueToTableField("##41", "'" & str & "'", "OrdersInCeh", "Stat") <> 0 Then GoTo ER1
+        If ValueToTableField("##41", "'" & str & "'", "OrdersInCeh", "Stat", "byCehId") <> 0 Then GoTo ER1
         If ValueToTableField("##39", "1", "Orders", "StatusId") <> 0 Then GoTo ER1
 AA:     If ValueToTableField("##39", "0", "Orders", "ProblemId") = 0 Then
             wrkDefault.CommitTrans
@@ -937,7 +937,7 @@ AA:
   If obraz <> "" Then
     obraz = "o"
     sql = "SELECT oe.workTimeMO, mo.StatO from OrdersMO mo " _
-    & " LEFT join OrdersEquip oe on oe.numorder = mo.numorder and oe.cehId = " & cehId _
+    & " LEFT join OrdersEquip oe on oe.numorder = mo.numorder and oe.cehId = " & gCehId _
     & " WHERE numOrder)=" & gNzak
     If Not byErrSqlGetValues("##386", sql, virabotka, statO) Then Exit Function
     If s = 0 Then ' 100%
@@ -947,8 +947,8 @@ AA:
   Else
     sql = "SELECT oe.workTime, oc.Nevip " & _
     " FROM OrdersEquip oe " & _
-    " JOIN OrdersInCeh oc ON oe.numOrder = oc.numOrder " & _
-    " WHERE oc.numOrder =" & gNzak & " and oe.cehId = " & cehId
+    " JOIN OrdersInCeh oc ON oe.numOrder = oc.numOrder AND oc.cehId = oe.cehId" & _
+    " WHERE oc.numOrder =" & gNzak & " and oe.cehId = " & gCehId
     If Not byErrSqlGetValues("##421", sql, t, n) Then Exit Function
     virabotka = Round((n - s) * t, 2)
   End If
@@ -957,7 +957,7 @@ AA:
 'гот-ть может изменится к примеру с 75% до 0%
   str = Format(curDate, "yy.mm.dd")
 
-  sql = "SELECT xDate, Virabotka, numOrder, obrazec from Itogi_" & Ceh(cehId) & _
+  sql = "SELECT xDate, Virabotka, numOrder, obrazec from Itogi_" & Ceh(gCehId) & _
   " WHERE (((xDate)='" & str & "') AND ((numOrder)=" & gNzak & ") AND " & _
   "((obrazec)='" & obraz & "'));"
   Set tbOrders = myOpenRecordSet("##374", sql, dbOpenTable)
@@ -980,9 +980,10 @@ AA:
         Exit Function
       End If
    Else 'obraz = ""
-     sql = "UPDATE OrdersInCeh SET Stat = 'в работе', " & _
+     ValueToTableField "##422", "'в работе'", "OrdersInCeh", "Stat", "byCehId"
+'     sql = "UPDATE OrdersInCeh SET Stat = 'в работе', " & _
      "Nevip = " & s & " WHERE (((numOrder)=" & gNzak & "));"
-     If myExecute("##422", sql) <> 0 Then Exit Function
+'     If myExecute("##422", sql) <> 0 Then Exit Function
    End If
 End If 'If stat
 makeProcReady = True

@@ -11,13 +11,13 @@ Dim ch As String
 
 'wrkDefault.BeginTrans
 
-sql = "DELETE from OrdersInCeh WHERE (((Stat)='готов'));"
+sql = "DELETE from OrdersInCeh WHERE Stat = 'готов'"
 If myExecute("##63", sql, 0) > 0 Then GoTo ER1
 
 sql = "UPDATE Orders INNER JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder " & _
 "SET Orders.DateRS = '" & Format(curDate, "yyyy-mm-dd 10:00:00") & _
-"' WHERE (((Orders.DateRS) < '" & Format(curDate, "yyyy-mm-dd 00:00:00") & _
-"' And Not (Orders.DateRS) Is Null));"
+"' WHERE Orders.DateRS  < '" & Format(curDate, "yyyy-mm-dd 00:00:00") & _
+"' And Not Orders.DateRS Is Null"
 'MsgBox sql
 If myExecute("##11", sql, 0) > 0 Then GoTo ER1
 
@@ -83,30 +83,30 @@ Next I
 'If Not byErrSqlGetValues("W##12", sql, oldRes) Then Exit Function
 
 sql = "DELETE from Resurs" & Ceh(id) & _
-" WHERE (((xDate)<'" & Format(curDate, "yy.mm.dd") & "'));"
+" WHERE xDate < '" & Format(curDate, "yy.mm.dd") & "'"
 If myExecute("##406", sql, 0) > 0 Then Exit Function
 
 
 '****** отстреливаем итоги ***********
 tmpSng = 0 'сумма невыполнено живых
 '' equipment
-sql = "SELECT Sum(OrdersEquip.workTime*OrdersInCeh.Nevip) AS nevip " & _
-"FROM OrdersInCeh " _
-& " JOIN Orders ON Orders.numOrder = OrdersInCeh.numOrder " _
-& " JOIN OrdersEquip ON OrdersEquip.numOrder = OrdersInCeh.numOrder " _
-& " WHERE Orders.StatusId =1 AND OrdersEquip.CehId =" & id
+sql = "SELECT Sum(oe.workTime * oc.Nevip) AS nevip " & _
+"FROM OrdersInCeh oc" _
+& " JOIN Orders      o  ON o.numOrder = oc.numOrder " _
+& " JOIN OrdersEquip oe ON oe.numOrder = oc.numOrder AND oe.cehId = oc.cehId " _
+& " WHERE o.StatusId = 1 AND oe.CehId = " & id
 byErrSqlGetValues "##372", sql, tmpSng
 
 s = 0 ' плюс неготовые образцы
-sql = "SELECT Sum(OrdersEquip.workTimeMO) AS Sum_workTimeMO " _
-& " FROM OrdersMO " _
-& " JOIN Orders ON Orders.numOrder = OrdersMO.numOrder " _
-& " JOIN OrdersEquip ON OrdersEquip.numOrder = OrdersMO.numOrder " _
-& " WHERE OrdersMO.StatO = 'в работе' AND OrdersEquip.CehId = " & id
+sql = "SELECT Sum(oe.workTimeMO) AS Sum_workTimeMO " _
+& " FROM OrdersMO mo" _
+& " JOIN Orders o ON o.numOrder = mo.numOrder " _
+& " JOIN OrdersEquip oe ON oe.numOrder = mo.numOrder " _
+& " WHERE mo.StatO = 'в работе' AND oe.CehId = " & id
 byErrSqlGetValues "##378", sql, s
 tmpSng = tmpSng + s
 
-sql = "SELECT Nstan" & Ceh(id) & ", KPD_" & Ceh(id) & " FROM System;"
+sql = "SELECT Nstan" & Ceh(id) & ", KPD_" & Ceh(id) & " FROM System"
 byErrSqlGetValues "##379", sql, n, s
 
 On Error GoTo EN1
@@ -143,7 +143,5 @@ EN1:
 replaceResurs = True
 On Error Resume Next
 End Function
-
-
 
 

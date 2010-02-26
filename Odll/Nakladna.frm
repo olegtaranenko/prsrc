@@ -537,12 +537,12 @@ EN1: Grid2(0).SetFocus
     Exit Sub
 End If
 
-If cehId = 0 Then
+If gCehId = 0 Then
   id = -6 'заказчик без работы
-ElseIf cehId = 3 Then           '$ceh$
+ElseIf gCehId = 3 Then           '$ceh$
   id = getStatiaId("Пр-во SUB") '
 Else
-  id = -cehId
+  id = -gCehId
 End If
 
 wrkDefault.BeginTrans
@@ -783,7 +783,7 @@ laPlatel.Visible = False
 laFirm.Visible = False
 If Regim = "" And numExt = 0 Then
         laFirm.Visible = True
-        laFirm.Caption = "(несписанная из " & Ceh(cehId) & ")"
+        laFirm.Caption = "(несписанная из " & Ceh(gCehId) & ")"
 ElseIf numExt <> 254 Then  'к заказу
     sql = "SELECT Orders.numOrder, GuideFirms.Name " & _
     "FROM GuideFirms INNER JOIN Orders ON GuideFirms.FirmId = Orders.FirmId " & _
@@ -934,11 +934,11 @@ ElseIf Regim = "" Then
   End If
 ElseIf Regim = "predmeti" Then
   laSours(0).Caption = "Склад1"
-  If cehId = 1 Then
+  If gCehId = 1 Then
       laDest(ind).Caption = "Пр-во YAG"
-  ElseIf cehId = 2 Then
+  ElseIf gCehId = 2 Then
       laDest(ind).Caption = "Пр-во CO2"
-  ElseIf cehId = 3 Then                 '$$ceh
+  ElseIf gCehId = 3 Then                 '$$ceh
       laDest(ind).Caption = "Пр-во SUB" '
   End If
   If Not sProducts.zakazNomenkToNNQQ Then GoTo EN1
@@ -1053,17 +1053,17 @@ Dim h As Integer, w As Integer
     cmExel.Top = cmExel.Top + h
     cmSostav.Top = cmSostav.Top + h
     cmClose.Top = cmClose.Top + h
-    cmClose.left = cmClose.left + w
+    cmClose.Left = cmClose.Left + w
     cmCheckout.Top = cmPrint.Top
-    cmCheckout.left = cmPrint.left + cmPrint.Width + 150
+    cmCheckout.Left = cmPrint.Left + cmPrint.Width + 150
     cmExit.Top = cmExit.Top + h
-    cmExit.left = cmExit.left + w
-    laDate.left = laDate.left + w
-    tbPageSize.left = cmExit.left - tbPageSize.Width - 150
+    cmExit.Left = cmExit.Left + w
+    laDate.Left = laDate.Left + w
+    tbPageSize.Left = cmExit.Left - tbPageSize.Width - 150
     tbPageSize.Top = cmExit.Top
-    laPageSize.left = tbPageSize.left - laPageSize.Width - 50
+    laPageSize.Left = tbPageSize.Left - laPageSize.Width - 50
     laPageSize.Top = cmExit.Top
-    laPageOf.left = laDate.left - 100 - laPageOf.Width
+    laPageOf.Left = laDate.Left - 100 - laPageOf.Width
     
 End Sub
 
@@ -1152,7 +1152,7 @@ Grid2(Index).CellBackColor = Grid2(Index).BackColor
 
 End Sub
 
-Private Sub Grid2_MouseUp(Index As Integer, Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid2_MouseUp(Index As Integer, Button As Integer, Shift As Integer, X As Single, y As Single)
 If Grid2(Index).MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid2(Index).ColWidth(Grid2(Index).MouseCol)
 
@@ -1166,7 +1166,7 @@ Grid2(0).SetFocus
 Grid2_EnterCell 0
 End Sub
 
-Private Sub Grid4_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid4_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
 If Grid4.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid4.ColWidth(Grid4.MouseCol)
 

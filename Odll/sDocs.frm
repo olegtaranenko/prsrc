@@ -490,7 +490,7 @@ numDoc = getNextDocNum()
 
 If Regim = "fromCeh" Then
     numExt = 0 ' виртуальные накладные(зарезервир-е предметы)
-    tbDocsNote = Ceh(cehId)
+    tbDocsNote = Ceh(gCehId)
 Else
     numExt = 254
 End If
@@ -977,7 +977,7 @@ Dim strWhere As String, moveWhere As String, I As Integer, str As String
 '    str = strWhereByStEndDateBox(Me)
     str = getWhereByDateBoxes(Me, "sDocs.xDate", begDate)
     If Regim = "fromCeh" Then
-        strWhere = "((sDocs.numExt) = 0) AND ((sDocs.Note)='" & Ceh(cehId) & "')" 'вирт. накладные
+        strWhere = "((sDocs.numExt) = 0) AND ((sDocs.Note)='" & Ceh(gCehId) & "')" 'вирт. накладные
     ElseIf ckCeh.value = 1 Then
         strWhere = "((sDocs.numExt) = 0)" 'вирт. накладные
     Else
@@ -996,7 +996,7 @@ Dim strWhere As String, moveWhere As String, I As Integer, str As String
     strWhere = "": str = ""
     moveWhere = Mid$(reg, I + 1)
     If moveWhere <> "" Then moveWhere = "((sDocs.numDoc)=" & moveWhere & ")  OR "
-    I = left$(reg, I - 1)
+    I = Left$(reg, I - 1)
     If numExt > 0 Then strWhere = "(sDocs.numExt)=" & numExt
     If I > 0 Then
         str = "(sDocs.numExt)=" & I
@@ -1088,7 +1088,7 @@ If I = 0 Then
         numExt = 254
     End If
 Else
-    numDoc = left$(nom, I - 1)
+    numDoc = Left$(nom, I - 1)
     numExt = Mid$(nom, I + 1)
 End If
 End Sub
@@ -1364,7 +1364,7 @@ Private Sub Grid_LeaveCell()
 Grid.CellBackColor = Grid.BackColor
 End Sub
 
-Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then
         MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
 Else
@@ -1378,7 +1378,7 @@ End If
 End Sub
 
 
-Private Sub Grid2_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid2_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
 If Grid2.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid2.ColWidth(Grid2.MouseCol)
 
