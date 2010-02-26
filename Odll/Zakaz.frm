@@ -714,7 +714,7 @@ If isMzagruz Then
 Else
     sql = sql & "3;" ' в порядке увеличения  Даты Конца
 End If
-'Debug.Print sql
+Debug.Print sql
 Set tbOrders = myOpenRecordSet("##370", sql, dbOpenForwardOnly) ', dbOpenDynaset)
 If tbOrders Is Nothing Then Exit Sub
 While Not tbOrders.EOF
@@ -1973,10 +1973,10 @@ If statusIdOld = 0 Or statusIdOld = 7 Then 'принят или аннулир
         Me.Caption = "Перемещение заказа в цех " & Ceh(gCehId)
     End If
     
-    Me.tbWorktime = ""
-    Me.tbReadyDate = ""
+    tbWorktime = ""
+    tbReadyDate = ""
 Else
-    Me.Caption = "Редактирование заказа"
+    Me.Caption = "Редактирование заказа [" & Ceh(gCehId) & "]"
     Me.tbDateRS = Orders.Grid.TextMatrix(Orders.mousRow, orDataRS)
     Me.tbReadyDate = Orders.Grid.TextMatrix(Orders.mousRow, orDataVid)
           

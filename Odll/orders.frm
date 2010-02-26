@@ -1549,7 +1549,7 @@ Else                         '********************************
  
  If cbStartDate.value = 1 Then
     stDate = "(o.inDate)>='" & _
-             Format(o.tbStartDate.Text, "yyyy-mm-dd") & "'"
+             Format(tbStartDate.Text, "yyyy-mm-dd") & "'"
     addNullDate = ""
  Else
     stDate = ""
@@ -1558,7 +1558,7 @@ Else                         '********************************
 
  If cbEndDate.value = 1 Then
     enDate = "(o.inDate)<='" & _
-            Format(o.tbEndDate.Text, "yyyy-mm-dd") & " 11:59:59 PM'"
+            Format(tbEndDate.Text, "yyyy-mm-dd") & " 11:59:59 PM'"
  Else
     enDate = ""
  End If
