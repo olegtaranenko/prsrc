@@ -28,7 +28,7 @@ sql = "UPDATE OrdersEquip " _
 
 If myExecute("##404", sql, 0) > 0 Then GoTo ER1
 
-sql = "UPDATE OrdersEquip SET DateTimeMO = '" & Format(curDate, "yyyy-mm-dd 10:00:00") & _
+sql = "UPDATE OrdersMO SET DateTimeMO = '" & Format(curDate, "yyyy-mm-dd 10:00:00") & _
 "' WHERE DateTimeMO < '" & Format(curDate, "yyyy-mm-dd 00:00:00") & "'"
 If myExecute("##405", sql, 0) > 0 Then GoTo ER1
 
@@ -91,18 +91,17 @@ If myExecute("##406", sql, 0) > 0 Then Exit Function
 tmpSng = 0 'сумма невыполнено живых
 '' equipment
 sql = "SELECT Sum(oe.workTime * oc.Nevip) AS nevip " & _
-"FROM OrdersInCeh oc" _
-& " JOIN Orders      o  ON o.numOrder = oc.numOrder " _
-& " JOIN OrdersEquip oe ON oe.numOrder = oc.numOrder AND oe.cehId = oc.cehId " _
-& " WHERE o.StatusId = 1 AND oe.CehId = " & id
+"FROM Orders      o " _
+& " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder " _
+& " JOIN OrdersEquip oe  ON oe.numOrder = oc.numOrder AND oe.cehId = oc.cehId " _
+& " WHERE o.StatusId = 1 AND oc.CehId = " & id
 byErrSqlGetValues "##372", sql, tmpSng
 
 s = 0 ' плюс неготовые образцы
-sql = "SELECT Sum(oe.workTimeMO) AS Sum_workTimeMO " _
+sql = "SELECT Sum(mo.workTimeMO) AS Sum_workTimeMO " _
 & " FROM OrdersMO mo" _
 & " JOIN Orders o ON o.numOrder = mo.numOrder " _
-& " JOIN OrdersEquip oe ON oe.numOrder = mo.numOrder " _
-& " WHERE mo.StatO = 'в работе' AND oe.CehId = " & id
+& " WHERE mo.StatO = 'в работе' AND mo.CehId = " & id
 byErrSqlGetValues "##378", sql, s
 tmpSng = tmpSng + s
 

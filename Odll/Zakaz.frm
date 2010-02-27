@@ -498,7 +498,7 @@ Const zgOtlad = 7
 
 
 Sub lvAddDay(I As Integer)
-Dim Left As String, rollback As String
+Dim left As String, rollback As String
 Dim item As ListItem, str As String
     str = Format(DateAdd("d", I - 1, curDate), "dd/mm/yy")
     Set item = Zakaz.lv.ListItems.Add(, "k" & I, str)
@@ -700,13 +700,12 @@ sql = "SELECT o.numOrder, oe.workTime, " & _
 " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder and oc.cehId = oe.cehId " & _
 " Where (((o.StatusId) = 2 Or (o.StatusId) = 3) AND ((oe.CehId)= " & gCehId & ")) " & _
 " UNION ALL " & _
-" SELECT o.numOrder, oe.workTimeMO, DateDiff(day,Now(),oe.DateTimeMO) AS endDay, " & _
-" DateDiff(day,Now(),o.inDate) AS begDay, oe.DateTimeMO, " & _
+" SELECT o.numOrder, omo.workTimeMO, DateDiff(day,Now(),omo.DateTimeMO) AS endDay, " & _
+" DateDiff(day,Now(),o.inDate) AS begDay, omo.DateTimeMO, " & _
 " o.inDate, 1 AS StatusId, -1 AS Nevip, '' AS urgent " & _
 " FROM Orders o " & _
-" JOIN OrdersEquip oe ON oe.numorder = o.numorder " & _
 " JOIN OrdersMO omo ON o.numOrder = omo.numOrder " & _
-" Where omo.statO = 'в работе' AND oe.CehId= " & gCehId & _
+" Where omo.statO = 'в работе' AND omo.CehId= " & gCehId & _
 " ORDER BY "
 
 If isMzagruz Then
@@ -714,7 +713,7 @@ If isMzagruz Then
 Else
     sql = sql & "3;" ' в порядке увеличения  Даты Конца
 End If
-Debug.Print sql
+'Debug.Print sql
 Set tbOrders = myOpenRecordSet("##370", sql, dbOpenForwardOnly) ', dbOpenDynaset)
 If tbOrders Is Nothing Then Exit Sub
 While Not tbOrders.EOF
@@ -929,27 +928,27 @@ oldWidth = Me.Width
 
 'lv.Height = lv.Height + h
 lv.Width = lv.Width + w
-laHnomZak.Left = laHnomZak.Left + w
-laNomZak.Left = laNomZak.Left + w
-laStatus.Left = laStatus.Left + w
-cbStatus.Left = cbStatus.Left + w
-laWorkTime.Left = laWorkTime.Left + w
-tbWorktime.Left = tbWorktime.Left + w
-laReadyDate.Left = laReadyDate.Left + w
-tbReadyDate.Left = tbReadyDate.Left + w
-laDateRS.Left = laDateRS.Left + w
-tbDateRS.Left = tbDateRS.Left + w
-laMO.Left = laMO.Left + w
-cbM.Left = cbM.Left + w
-cbO.Left = cbO.Left + w
-laDateMO.Left = laDateMO.Left + w
-tbDateMO.Left = tbDateMO.Left + w
-laVrVipO.Left = laVrVipO.Left + w
-tbVrVipO.Left = tbVrVipO.Left + w
-cmZapros.Left = cmZapros.Left + w
-cmAdd.Left = cmAdd.Left + w
-cmRepit.Left = cmRepit.Left + w
-cmExit.Left = cmExit.Left + w
+laHnomZak.left = laHnomZak.left + w
+laNomZak.left = laNomZak.left + w
+laStatus.left = laStatus.left + w
+cbStatus.left = cbStatus.left + w
+laWorkTime.left = laWorkTime.left + w
+tbWorktime.left = tbWorktime.left + w
+laReadyDate.left = laReadyDate.left + w
+tbReadyDate.left = tbReadyDate.left + w
+laDateRS.left = laDateRS.left + w
+tbDateRS.left = tbDateRS.left + w
+laMO.left = laMO.left + w
+cbM.left = cbM.left + w
+cbO.left = cbO.left + w
+laDateMO.left = laDateMO.left + w
+tbDateMO.left = tbDateMO.left + w
+laVrVipO.left = laVrVipO.left + w
+tbVrVipO.left = tbVrVipO.left + w
+cmZapros.left = cmZapros.left + w
+cmAdd.left = cmAdd.left + w
+cmRepit.left = cmRepit.left + w
+cmExit.left = cmExit.left + w
 cmExit.Top = cmExit.Top + h
 
 End Sub
@@ -986,7 +985,7 @@ If Grid.MouseRow = 0 And Shift = 2 Then _
 End Sub
 
 Private Sub laNomZak_Click()
-    Dim Left As String, Worktime As String, tbWorktime As String, rollback As String
+    Dim left As String, Worktime As String, tbWorktime As String, rollback As String
 End Sub
 
 Private Sub tbDateMO_GotFocus()
@@ -1119,7 +1118,7 @@ If str = "" Then
 '    tbOrders!outDateTime = Null
     str = "Null"
 Else
-    str = "'" & "20" & Mid$(str, 7, 2) & "-" & Mid$(str, 4, 2) & "-" & Left$(str, 2)
+    str = "'" & "20" & Mid$(str, 7, 2) & "-" & Mid$(str, 4, 2) & "-" & left$(str, 2)
     sql = Orders.Grid.TextMatrix(Orders.mousRow, orVrVid)
     If sql = "" Then
 '        tbOrders!outDateTime = tbReadyDate.Text
@@ -1138,7 +1137,7 @@ If tbDateRS.Enabled = True Then
 '    tbOrders!dateRS = tbDateRS.Text
     str = tbDateRS.Text
     str = "'" & "20" & Mid$(str, 7, 2) & "-" & Mid$(str, 4, 2) & _
-    "-" & Left$(str, 2) & "'"
+    "-" & left$(str, 2) & "'"
 Else
 '    tbOrders!dateRS = Null
     str = "Null"
@@ -1228,7 +1227,7 @@ table.Close
   If cbM.Text = "в работе" Or cbM.Text = "готов" Or _
     cbO.Text = "в работе" Or cbO.Text = "готов" Then
     str = tbDateMO.Text
-    str = "'" & "20" & Mid$(str, 7, 2) & "-" & Mid$(str, 4, 2) & "-" & Left$(str, 2)
+    str = "'" & "20" & Mid$(str, 7, 2) & "-" & Mid$(str, 4, 2) & "-" & left$(str, 2)
     sql = Orders.Grid.TextMatrix(Orders.mousRow, orMOVrVid)
     If sql = "" Then
         str = str & "'"
@@ -1252,19 +1251,16 @@ table.Close
 '  table.Update
   If bilo Then      '
     sql = "UPDATE OrdersMO SET StatM = '" & cbM.Text & "', StatO = '" & cbO.Text & _
-    "' WHERE numOrder = " & gNzak
+    ", DateTimeMO = " & str & ", workTimeMO = " & Worktime & _
+    "' WHERE numOrder = " & gNzak & " AND cehId = " & gCehId
   Else
-    sql = "INSERT INTO OrdersMO ( numOrder, StatM, StatO ) " & _
+    sql = "INSERT INTO OrdersMO ( numOrder, StatM, StatO, WorktimeMO, DatetimeMO ) " & _
     "SELECT " & gNzak & ", '" & _
-    cbM.Text & "', '" & cbO.Text & "';"
+    cbM.Text & "', '" & cbO.Text & "', " & str & "," & Worktime
   End If
 '  MsgBox sql
   If myExecute("##397", sql) <> 0 Then GoTo ER1
     
-  sql = "UPDATE OrdersEquip SET DateTimeMO = " & str & ", workTimeMO = " & _
-  Worktime & " WHERE numOrder = " & gNzak & " and cehId = " & gCehId
-  If myExecute("##397.0", sql) <> 0 Then GoTo ER1
- 
  Else
 '  If bilo Then table.Delete
   If bilo Then
@@ -1322,7 +1318,7 @@ wrkDefault.CommitTrans
 'обновить Окно Orders
 sql = "SELECT o.StatusId, o.DateRS, o.numOrder" & _
 ", oe.outDateTime, oe.workTime, p.Problem" & _
-", oe.DateTimeMO, mo.StatM, mo.StatO, oe.workTimeMO " & _
+", mo.DateTimeMO, mo.StatM, mo.StatO, mo.workTimeMO " & _
 " FROM Orders o " _
 & " INNER JOIN GuideProblem p  ON p.ProblemId = o.ProblemId" _
 & " INNER JOIN OrdersEquip  oe  ON oe.numOrder = o.numOrder and oe.cehId = " & gCehId _
@@ -1810,17 +1806,6 @@ startParams
 
 End Sub
 
-
-Private Sub opM_Click()
-End Sub
-
-Private Sub opO_Click()
-End Sub
-
-Private Sub tbNomZak_Change()
-
-End Sub
-
 Private Sub tbDateRS_GotFocus()
 If FormIsActiv Then Zakaz.cmZapros.Enabled = True
 tbDateRS.SelStart = 0
@@ -1854,12 +1839,14 @@ End If
 End Sub
 
 Private Sub tbVrVipO_Change()
-'If FormIsActiv Then Zakaz.cmZapros.Enabled = True
+If FormIsActiv Then
+    Zakaz.cmZapros.Enabled = True
+End If
 End Sub
 
 Private Sub tbWorktime_Change()
-If FormIsActiv And tbWorktime <> "" And tbWorktime <> "0" Then
-    'Zakaz.cmZapros.Enabled = True
+If FormIsActiv Then
+    Zakaz.cmZapros.Enabled = True
     workChange = True
 End If
 End Sub

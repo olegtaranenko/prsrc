@@ -579,10 +579,10 @@ Const t17_00 = 61200 ' в секундах
 Const rowFromOrdersSQL = "select " & _
 "    o.numOrder, o.equip as Ceh, o.inDate" & _
 "   ,m.Manag, s.Status, o.StatusId, p.Problem" & _
-"   ,o.DateRS, f.Name, oes.outDateTime, o.Type" & _
-"   ,oes.workTime, o.Logo, o.Product, o.ordered" & _
+"   ,o.DateRS, f.Name, oe.outDateTime, o.Type" & _
+"   ,oe.workTime, o.Logo, o.Product, o.ordered" & _
 "   ,o.temaId, o.paid, o.shipped,  o.Invoice" & _
-"   ,oes.DateTimeMO, oes.workTimeMO, om.StatM, om.StatO" & _
+"   ,mo.DateTimeMO, mo.workTimeMO, mo.StatM, mo.StatO" & _
 "   ,lm.Manag AS lastManag, oc.urgent" & _
 "   ,v.venturename as venture" & _
 "   ,lastModified, id_bill, f.id_voc_names " & _
@@ -593,11 +593,11 @@ Const rowFromOrdersSQL = "select " & _
 " JOIN GuideProblem p ON p.ProblemId = o.ProblemId " & _
 " JOIN GuideManag m ON m.ManagId = o.ManagId " & _
 " JOIN GuideFirms f ON f.FirmId = o.FirmId " & _
-" LEFT JOIN vw_OrdersEquipSummary oes ON oes.numorder = o.numorder " & _
+" LEFT JOIN vw_OrdersEquipSummary oe ON oe.numorder = o.numorder " & _
 " LEFT JOIN GuideManag lm ON o.lastManagId = lm.ManagId " & _
-" LEFT JOIN OrdersMO om ON o.numOrder = om.numOrder " & _
+" LEFT JOIN vw_OrdersMOSummary mo ON o.numOrder = mo.numOrder " & _
 " LEFT JOIN vw_OrdersInCehSummary oc ON o.numOrder = oc.numOrder" & _
-" left join guideventure v on v.ventureId = o.ventureid "
+" LEFT JOIN guideventure v on v.ventureId = o.ventureid "
     
     
     
@@ -750,10 +750,10 @@ Dim baseProblemId As Integer, baseProblem As String, begPubNum As Long
 gNzak = Grid.TextMatrix(Orders.mousRow, orNomZak)
 If InStr(Orders.cmAdd.Caption, "+") > 0 Then
   ''sql = "SELECT Orders.CehId, Orders.ProblemId, Orders.FirmId, " & _
-        "GuideCeh.Ceh, GuideProblem.Problem, GuideFirms.Name " & _
+        "GuideCeh.Ceh, p.Problem, f.Name " & _
         "FROM GuideProblem INNER JOIN (GuideFirms INNER JOIN " & _
         "(GuideCeh INNER JOIN Orders ON GuideCeh.CehId = Orders.CehId) " & _
-        "ON GuideFirms.FirmId = Orders.FirmId) ON GuideProblem.ProblemId " & _
+        "ON f.FirmId = Orders.FirmId) ON p.ProblemId " & _
         "= Orders.ProblemId WHERE Orders.numOrder = " & gNzak
 '  On Error GoTo NXT1
   Set tbOrders = myBase.OpenRecordset(sql, dbOpenForwardOnly)
@@ -1071,8 +1071,8 @@ If chConflict.value = 1 Then
     chConflict.value = 0
 End If
 
-sql = "SELECT GuideFirms.xLogin, GuideFirms.Pass From GuideFirms " & _
-"Where (((GuideFirms.xLogin) <> '')) ORDER BY GuideFirms.xLogin;"
+sql = "SELECT f.xLogin, f.Pass From GuideFirms " & _
+"Where (((f.xLogin) <> '')) ORDER BY f.xLogin;"
 'MsgBox sql
 Set tbFirms = myOpenRecordSet("##80", sql, dbOpenDynaset)
 If Not tbFirms Is Nothing Then
@@ -1273,7 +1273,7 @@ ElseIf KeyCode = vbKeyB And Shift = vbCtrlMask Then
         Filtr.lbFirm.Selected(0) = True
     End If
 BB:
-    If Left$(Filtr.cmAdvan.Caption, 1) = "С" Then Filtr.cmAdvan_Click
+    If left$(Filtr.cmAdvan.Caption, 1) = "С" Then Filtr.cmAdvan_Click
     Filtr.lbStatus.Clear
     For I = 0 To 7 ' статусы м. повторятся
        If tbEnable.Visible Or I <> 6 Then Filtr.lbStatus.AddItem status(I)
@@ -1353,11 +1353,7 @@ Else
 End If
 
 
-#If Not COMTEC = 1 Then '---------------------------------------------------
-    mnServic.Visible = False
-#Else
-    mnNaklad.Visible = False
-#End If '-------------------------------------------------------------------
+mnServic.Visible = False
 
 beClick = False
 flDelRowInMobile = False
@@ -1370,22 +1366,22 @@ orColNumber = 0
 mousCol = 1
 initOrCol orNomZak, "no.numOrder"
 initOrCol orInvoice, "so.Invoice"
-initOrCol orVenture, "so.ventureName"
+initOrCol orVenture, "sv.ventureName"
 initOrCol orCeh, "sGuideCeh.Ceh"
 initOrCol orData, "do.inDate"
-initOrCol orMen, "sGuideManag.Manag"
-initOrCol orStatus, "sGuideStatus.Status"
-initOrCol orProblem, "sGuideProblem.Problem"
+initOrCol orMen, "sm.Manag"
+initOrCol orStatus, "ss.Status"
+initOrCol orProblem, "sp.Problem"
 initOrCol orDataRS, "do.DateRS"
-initOrCol orFirma, "sGuideFirms.Name"
+initOrCol orFirma, "sf.Name"
 initOrCol orDataVid, "do.outDateTime"
 initOrCol orVrVid
-initOrCol orVrVip, "no.workTime"
+initOrCol orVrVip, "noe.workTime"
 initOrCol orM
 initOrCol orO
-initOrCol orMOData, "dOrdersEquip.DateTimeMO"
+initOrCol orMOData, "dmo.DateTimeMO"
 initOrCol orMOVrVid
-initOrCol orOVrVip, "dOrdersEquip.workTimeMO"
+initOrCol orOVrVip, "dmo.workTimeMO"
 initOrCol orLogo, "so.Logo"
 initOrCol orIzdelia, "so.Product"
 initOrCol orType, "so.Type"
@@ -1616,7 +1612,7 @@ cmZagrCO2.Top = cmZagrCO2.Top + h
 cmZagrSUB.Top = cmZagrSUB.Top + h '$$ceh
 cmExvel.Top = cmExvel.Top + h
 tbEnable.Top = tbEnable.Top + h
-tbEnable.Left = tbEnable.Left + w
+tbEnable.left = tbEnable.left + w
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
@@ -2721,7 +2717,7 @@ Private Sub mnCurrency_Click()
     Dim deletedPart As String
     deletedPart = InStr(Me.Caption, " - ")
     If deletedPart > 0 Then
-        Me.Caption = Left(Me.Caption, deletedPart - 1)
+        Me.Caption = left(Me.Caption, deletedPart - 1)
     End If
     setCurrencyCaption
     adjustMoneyColumnWidth (False)
@@ -3270,7 +3266,7 @@ zakazNum = 0
 'LoadOrders********************************************************
 sql = rowFromOrdersSQL & getSqlWhere & " ORDER BY o.inDate"
 'MsgBox getSqlWhere
-'Debug.Print sql
+Debug.Print sql
 Set tqOrders = myOpenRecordSet("##08", sql, dbOpenForwardOnly)
 If tqOrders Is Nothing Then myBase.Close: End
 If Not tqOrders.BOF Then
@@ -3391,14 +3387,14 @@ If str = "" Then
     MsgBox "По этому полю фильтр не предусмотрен"
     Exit Function
 End If
-typ = Left$(str, 1)
+typ = left$(str, 1)
 str = Mid$(str, 2)
 If typ = "d" Then
     If value = "" Then
         value = " Is Null"
     Else
         If operator = "=" Then
-            value = Left$(value, 6) & "20" & Mid$(value, 7, 2) 'это нужно если в Win98 установлен "гггг" - формат года
+            value = left$(value, 6) & "20" & Mid$(value, 7, 2) 'это нужно если в Win98 установлен "гггг" - формат года
             value = " Like '" & value & "%'"
         ElseIf operator = "<" Then
             value = " <= '" & Format(value, "yyyy-mm-dd") & " 11:59:59 PM'"
@@ -3428,7 +3424,7 @@ For I = 1 To orColNumber
 Next I
 
 orSqlWhere(orInvoice) = "(o.Invoice) Like 'счет%'"
-orSqlWhere(orStatus) = "(GuideStatus.Status) <> 'закрыт'"
+orSqlWhere(orStatus) = "(s.Status) <> 'закрыт'"
 orSqlWhere(orOtgrugeno) = "Not(o.shipped) Is Null"
 Orders.MousePointer = flexHourglass
 Orders.LoadBase
@@ -3450,12 +3446,12 @@ If stat = "noArhiv" Then
     "(o.Invoice) Is Null OR (o.shipped) Is Null"
 End If
 If stat <> "all" And stat <> "" Then
-    orSqlWhere(orFirma) = "(GuideFirms.Name) = '" & stat & "'"
+    orSqlWhere(orFirma) = "(f.Name) = '" & stat & "'"
 Else
-    orSqlWhere(orFirma) = "(GuideFirms.Name) = '" & Grid.Text & "'"
+    orSqlWhere(orFirma) = "(f.Name) = '" & Grid.Text & "'"
 End If
 If stat <> "all" Then _
-    orSqlWhere(orStatus) = "(GuideStatus.Status) <> 'закрыт'"
+    orSqlWhere(orStatus) = "(s.Status) <> 'закрыт'"
 
 MousePointer = flexHourglass
 LoadBase

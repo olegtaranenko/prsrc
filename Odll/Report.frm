@@ -152,7 +152,7 @@ Const rtZakazano = 9
 Const rtOplacheno = 10
 
 Private Sub cmExel_Click()
-Dim Ceh As String, Left As String, X As String
+Dim Ceh As String, left As String, X As String
     GridToExcel Grid, laHeader.Caption
 End Sub
 
@@ -238,7 +238,7 @@ AA:
 'делаем обычный вид даты
 tmpStr = Right$(curDay, 2)
 tmpStr = tmpStr & Mid$(curDay, 3, 4)
-tmpStr = tmpStr & Left$(curDay, 2)
+tmpStr = tmpStr & left$(curDay, 2)
 laHeader.Caption = "¬ыработка по цеху " & Ceh(gCehId) & " на " & tmpStr
 
 Grid.rows = 2
@@ -376,11 +376,11 @@ If sum > 0 Then
     Else 'образец
         Grid.TextMatrix(quantity + I, crNomZak) = NN(I) & "o"
         sql = "SELECT Orders.ManagId, Orders.Logo, OrdersMO.StatO As Stat, " & _
-        "Orders.Product, Orders.ProblemId, oe.DateTimeMO As outDateTime, " _
-        & "GuideFirms.Name, oe.workTimeMO As workTime " _
+        "Orders.Product, Orders.ProblemId, mo.DateTimeMO As outDateTime, " _
+        & "GuideFirms.Name, mo.workTimeMO As workTime " _
         & "FROM Orders " _
         & "JOIN GuideFirms ON GuideFirms.FirmId = Orders.FirmId " _
-        & "LEFT JOIN OrdersEquip oe ON Orders.numOrder = oe.numOrder " _
+        & "LEFT JOIN OrdersMO mo ON Orders.numOrder = mo.numOrder " _
         & "WHERE Orders.numOrder = " & NN(I)
     End If
     Grid.TextMatrix(quantity + I, crVirab) = QQ(I)
@@ -537,10 +537,10 @@ End If
 
 str = Reports.tbStartDate2.Text
 'strWhere = Left$(str, 2) & "/1/" & Right$(str, 4)
-strWhere = "'" & Right$(str, 4) & "-" & Left$(str, 2) & "-01'"
+strWhere = "'" & Right$(str, 4) & "-" & left$(str, 2) & "-01'"
 str = Reports.tbEndDate2.Text
 ' формируем самое начало след мес€ца
-I = Left$(str, 2) ' мес€ц
+I = left$(str, 2) ' мес€ц
 j = Right$(str, 4) 'год
 I = I + 1:
 If I > 12 Then I = 1: j = j + 1
@@ -753,9 +753,9 @@ laHeader.Width = laHeader.Width + w
 cmExel.Top = cmExel.Top + h
 cmPrint.Top = cmPrint.Top + h
 cmExit.Top = cmExit.Top + h
-cmExit.Left = cmExit.Left + w
-cmPrev.Left = cmPrev.Left + w
-cmNext.Left = cmNext.Left + w
+cmExit.left = cmExit.left + w
+cmPrev.left = cmPrev.left + w
+cmNext.left = cmNext.left + w
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
