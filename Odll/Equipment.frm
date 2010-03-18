@@ -1,309 +1,381 @@
 VERSION 5.00
 Begin VB.Form Equipment 
    Caption         =   "Оборудование заказа"
-   ClientHeight    =   2724
+   ClientHeight    =   4668
    ClientLeft      =   48
    ClientTop       =   588
-   ClientWidth     =   6540
+   ClientWidth     =   6012
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   2724
-   ScaleWidth      =   6540
+   ScaleHeight     =   4668
+   ScaleWidth      =   6012
    ShowInTaskbar   =   0   'False
    StartUpPosition =   1  'CenterOwner
-   Begin VB.TextBox tbVrVipO 
-      Height          =   285
-      Index           =   2
-      Left            =   1680
-      TabIndex        =   30
-      Top             =   1920
-      Visible         =   0   'False
-      Width           =   552
-   End
-   Begin VB.TextBox tbVrVipO 
-      Height          =   285
-      Index           =   1
-      Left            =   1680
-      TabIndex        =   29
-      Top             =   1560
-      Visible         =   0   'False
-      Width           =   552
-   End
-   Begin VB.TextBox tbVrVipO 
-      Height          =   285
-      Index           =   0
-      Left            =   1680
-      TabIndex        =   28
-      Top             =   1200
-      Visible         =   0   'False
-      Width           =   552
-   End
-   Begin VB.TextBox tbDateRS 
-      Enabled         =   0   'False
-      Height          =   285
-      Left            =   4800
+   Begin VB.Frame Frame2 
+      Caption         =   "Заказ"
+      Height          =   2052
+      Left            =   240
       TabIndex        =   26
-      Top             =   1800
-      Width           =   915
-   End
-   Begin VB.TextBox tbDateMO 
-      Enabled         =   0   'False
-      Height          =   285
-      Left            =   4800
-      TabIndex        =   24
-      Top             =   1200
-      Width           =   915
-   End
-   Begin VB.ComboBox cbM 
-      Height          =   288
-      ItemData        =   "Equipment.frx":0000
-      Left            =   3120
-      List            =   "Equipment.frx":000D
-      Style           =   2  'Dropdown List
-      TabIndex        =   22
-      Top             =   480
-      Width           =   1035
-   End
-   Begin VB.ComboBox cbO 
-      Height          =   288
-      ItemData        =   "Equipment.frx":0024
-      Left            =   4380
-      List            =   "Equipment.frx":0031
-      Style           =   2  'Dropdown List
-      TabIndex        =   21
-      Top             =   480
-      Width           =   1035
-   End
-   Begin VB.ComboBox cbStatus 
-      Height          =   288
-      Left            =   1440
-      Style           =   2  'Dropdown List
-      TabIndex        =   20
-      Top             =   480
-      Width           =   1452
+      Top             =   0
+      Width           =   5532
+      Begin VB.ComboBox cbStatus 
+         Height          =   288
+         Left            =   1440
+         Style           =   2  'Dropdown List
+         TabIndex        =   31
+         Top             =   720
+         Width           =   1452
+      End
+      Begin VB.ComboBox cbO 
+         Height          =   288
+         ItemData        =   "Equipment.frx":0000
+         Left            =   4380
+         List            =   "Equipment.frx":000D
+         Style           =   2  'Dropdown List
+         TabIndex        =   30
+         Top             =   720
+         Width           =   1035
+      End
+      Begin VB.ComboBox cbM 
+         Height          =   288
+         ItemData        =   "Equipment.frx":0026
+         Left            =   3120
+         List            =   "Equipment.frx":0033
+         Style           =   2  'Dropdown List
+         TabIndex        =   29
+         Top             =   720
+         Width           =   1035
+      End
+      Begin VB.TextBox tbDateMO 
+         Enabled         =   0   'False
+         Height          =   285
+         Left            =   3720
+         TabIndex        =   28
+         Top             =   1440
+         Width           =   1152
+      End
+      Begin VB.TextBox tbDateRS 
+         Enabled         =   0   'False
+         Height          =   285
+         Left            =   1800
+         TabIndex        =   27
+         Top             =   1440
+         Width           =   1152
+      End
+      Begin VB.Label lbZakazDateOut 
+         Caption         =   "Н/А"
+         Height          =   252
+         Left            =   120
+         TabIndex        =   39
+         Top             =   1440
+         Width           =   996
+      End
+      Begin VB.Label Label6 
+         Caption         =   "Дата выд."
+         Height          =   252
+         Left            =   120
+         TabIndex        =   38
+         Top             =   1080
+         Width           =   972
+      End
+      Begin VB.Label Label3 
+         Caption         =   "Номер заказа"
+         Height          =   252
+         Left            =   120
+         TabIndex        =   37
+         Top             =   360
+         Width           =   1212
+      End
+      Begin VB.Label lbNumorder 
+         Caption         =   "Номер заказа"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   7.8
+            Charset         =   204
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   252
+         Left            =   120
+         TabIndex        =   36
+         Top             =   720
+         Width           =   1212
+      End
+      Begin VB.Label Label4 
+         Caption         =   "Статус"
+         Height          =   252
+         Left            =   1560
+         TabIndex        =   35
+         Top             =   360
+         Width           =   852
+      End
+      Begin VB.Label laMO 
+         Caption         =   "Макет                    Образец"
+         Height          =   252
+         Left            =   3180
+         TabIndex        =   34
+         Top             =   360
+         Width           =   2112
+      End
+      Begin VB.Label laDateMO 
+         Caption         =   "Дата Мак.\Обр."
+         Enabled         =   0   'False
+         Height          =   252
+         Left            =   3720
+         TabIndex        =   33
+         Top             =   1128
+         Width           =   1272
+      End
+      Begin VB.Label laDateRS 
+         Caption         =   "Дата Р\С (не позже)"
+         Enabled         =   0   'False
+         Height          =   192
+         Left            =   1800
+         TabIndex        =   32
+         Top             =   1128
+         Width           =   1692
+      End
    End
    Begin VB.CommandButton Command1 
       Caption         =   "По умолчанию"
       Height          =   315
-      Left            =   2520
-      TabIndex        =   18
-      Top             =   2280
-      Width           =   1332
-   End
-   Begin VB.CommandButton cmSetOutDate 
-      Caption         =   "..."
-      Height          =   252
-      Index           =   2
-      Left            =   4200
-      TabIndex        =   15
-      Top             =   1920
-      Visible         =   0   'False
-      Width           =   492
-   End
-   Begin VB.CommandButton cmSetOutDate 
-      Caption         =   "..."
-      Height          =   252
-      Index           =   1
-      Left            =   4200
-      TabIndex        =   14
-      Top             =   1560
-      Visible         =   0   'False
-      Width           =   492
-   End
-   Begin VB.CommandButton cmSetOutDate 
-      Caption         =   "..."
-      Height          =   252
-      Index           =   0
-      Left            =   4200
-      TabIndex        =   13
-      Top             =   1200
-      Visible         =   0   'False
-      Width           =   492
-   End
-   Begin VB.TextBox tbWorktime 
-      Height          =   288
-      Index           =   2
-      Left            =   1080
-      TabIndex        =   7
-      Top             =   1920
-      Visible         =   0   'False
-      Width           =   492
-   End
-   Begin VB.TextBox tbWorktime 
-      Height          =   288
-      Index           =   1
-      Left            =   1080
-      TabIndex        =   6
-      Top             =   1560
-      Visible         =   0   'False
-      Width           =   492
-   End
-   Begin VB.TextBox tbWorktime 
-      Height          =   288
-      Index           =   0
-      Left            =   1080
-      TabIndex        =   5
-      Top             =   1200
-      Visible         =   0   'False
-      Width           =   492
-   End
-   Begin VB.CheckBox cbEquipment 
-      Caption         =   " SUB"
-      Height          =   372
-      Index           =   2
-      Left            =   120
-      TabIndex        =   4
-      Top             =   1920
-      Width           =   732
-   End
-   Begin VB.CheckBox cbEquipment 
-      Caption         =   " CO2"
-      Height          =   372
-      Index           =   1
-      Left            =   120
-      TabIndex        =   3
-      Top             =   1560
-      Width           =   732
-   End
-   Begin VB.CheckBox cbEquipment 
-      Caption         =   " YAG"
-      Height          =   372
-      Index           =   0
-      Left            =   120
+      Left            =   2040
       TabIndex        =   2
-      Top             =   1200
-      Width           =   732
+      Top             =   4200
+      Width           =   1332
    End
    Begin VB.CommandButton cmApply 
       Caption         =   "Применить"
       Height          =   315
-      Left            =   120
+      Left            =   240
       TabIndex        =   1
-      Top             =   2280
+      Top             =   4200
       Width           =   1095
    End
    Begin VB.CommandButton cmExit 
       Cancel          =   -1  'True
       Caption         =   "Отмена"
       Height          =   315
-      Left            =   5640
+      Left            =   4560
       TabIndex        =   0
-      Top             =   2280
+      Top             =   4200
       Width           =   795
    End
-   Begin VB.Label laVrVipO 
-      Caption         =   "MO"
-      Height          =   252
-      Left            =   1920
-      TabIndex        =   31
-      Top             =   840
-      Width           =   252
-   End
-   Begin VB.Label laDateRS 
-      Caption         =   "Дата Р\С (не позже)"
-      Enabled         =   0   'False
-      Height          =   192
-      Left            =   4800
-      TabIndex        =   27
-      Top             =   1500
-      Width           =   1692
-   End
-   Begin VB.Label laDateMO 
-      Caption         =   "Дата Мак.\Обр."
-      Enabled         =   0   'False
-      Height          =   252
-      Left            =   4800
-      TabIndex        =   25
-      Top             =   840
-      Width           =   1272
-   End
-   Begin VB.Label laMO 
-      Caption         =   "Макет                    Образец"
-      Height          =   252
-      Left            =   3180
-      TabIndex        =   23
-      Top             =   120
-      Width           =   2112
-   End
-   Begin VB.Label Label4 
-      Caption         =   "Статус"
-      Height          =   252
-      Left            =   1560
-      TabIndex        =   19
-      Top             =   120
-      Width           =   852
-   End
-   Begin VB.Label lbNumorder 
-      Caption         =   "Номер заказа"
-      BeginProperty Font 
-         Name            =   "MS Sans Serif"
-         Size            =   7.8
-         Charset         =   204
-         Weight          =   700
-         Underline       =   0   'False
-         Italic          =   0   'False
-         Strikethrough   =   0   'False
-      EndProperty
-      Height          =   252
-      Left            =   120
-      TabIndex        =   17
-      Top             =   480
-      Width           =   1212
-   End
-   Begin VB.Label Label3 
-      Caption         =   "Номер заказа"
-      Height          =   252
-      Left            =   120
-      TabIndex        =   16
-      Top             =   120
-      Width           =   1212
-   End
-   Begin VB.Label Label2 
-      Caption         =   "Дата выдачи"
-      Height          =   252
-      Left            =   2520
-      TabIndex        =   12
-      Top             =   840
-      Width           =   1572
-   End
-   Begin VB.Label lbDateOut 
-      Caption         =   "Н/А"
-      Height          =   252
-      Index           =   2
-      Left            =   2400
-      TabIndex        =   11
-      Top             =   1920
-      Visible         =   0   'False
-      Width           =   1812
-   End
-   Begin VB.Label lbDateOut 
-      Caption         =   "Н/А"
-      Height          =   252
-      Index           =   1
-      Left            =   2400
-      TabIndex        =   10
-      Top             =   1560
-      Visible         =   0   'False
-      Width           =   1812
-   End
-   Begin VB.Label lbDateOut 
-      Caption         =   "Н/А"
-      Height          =   252
-      Index           =   0
-      Left            =   2400
-      TabIndex        =   9
-      Top             =   1200
-      Visible         =   0   'False
-      Width           =   1812
-   End
-   Begin VB.Label Label1 
-      Caption         =   "Вр. вып."
-      Height          =   252
-      Left            =   1080
-      TabIndex        =   8
-      Top             =   840
-      Width           =   732
+   Begin VB.Frame Frame1 
+      Caption         =   "По оборудованию"
+      Height          =   1932
+      Left            =   240
+      TabIndex        =   3
+      Top             =   2160
+      Width           =   5532
+      Begin VB.CheckBox cbEquipment 
+         Caption         =   " YAG"
+         Height          =   372
+         Index           =   0
+         Left            =   240
+         TabIndex        =   15
+         Top             =   720
+         Width           =   732
+      End
+      Begin VB.CheckBox cbEquipment 
+         Caption         =   " CO2"
+         Height          =   372
+         Index           =   1
+         Left            =   240
+         TabIndex        =   14
+         Top             =   1080
+         Width           =   732
+      End
+      Begin VB.CheckBox cbEquipment 
+         Caption         =   " SUB"
+         Height          =   372
+         Index           =   2
+         Left            =   240
+         TabIndex        =   13
+         Top             =   1440
+         Width           =   732
+      End
+      Begin VB.TextBox tbWorktime 
+         Height          =   288
+         Index           =   0
+         Left            =   1200
+         TabIndex        =   12
+         Top             =   720
+         Visible         =   0   'False
+         Width           =   492
+      End
+      Begin VB.TextBox tbWorktime 
+         Height          =   288
+         Index           =   1
+         Left            =   1200
+         TabIndex        =   11
+         Top             =   1080
+         Visible         =   0   'False
+         Width           =   492
+      End
+      Begin VB.TextBox tbWorktime 
+         Height          =   288
+         Index           =   2
+         Left            =   1200
+         TabIndex        =   10
+         Top             =   1440
+         Visible         =   0   'False
+         Width           =   492
+      End
+      Begin VB.CommandButton cmSetOutDate 
+         Caption         =   "..."
+         Height          =   252
+         Index           =   0
+         Left            =   4800
+         TabIndex        =   9
+         Top             =   720
+         Visible         =   0   'False
+         Width           =   492
+      End
+      Begin VB.CommandButton cmSetOutDate 
+         Caption         =   "..."
+         Height          =   252
+         Index           =   1
+         Left            =   4800
+         TabIndex        =   8
+         Top             =   1080
+         Visible         =   0   'False
+         Width           =   492
+      End
+      Begin VB.CommandButton cmSetOutDate 
+         Caption         =   "..."
+         Height          =   252
+         Index           =   2
+         Left            =   4800
+         TabIndex        =   7
+         Top             =   1440
+         Visible         =   0   'False
+         Width           =   492
+      End
+      Begin VB.TextBox tbVrVipO 
+         Height          =   285
+         Index           =   0
+         Left            =   1800
+         TabIndex        =   6
+         Top             =   720
+         Visible         =   0   'False
+         Width           =   552
+      End
+      Begin VB.TextBox tbVrVipO 
+         Height          =   285
+         Index           =   1
+         Left            =   1800
+         TabIndex        =   5
+         Top             =   1080
+         Visible         =   0   'False
+         Width           =   552
+      End
+      Begin VB.TextBox tbVrVipO 
+         Height          =   285
+         Index           =   2
+         Left            =   1800
+         TabIndex        =   4
+         Top             =   1440
+         Visible         =   0   'False
+         Width           =   552
+      End
+      Begin VB.Label Label7 
+         Caption         =   "Сетка"
+         Height          =   252
+         Left            =   4680
+         TabIndex        =   40
+         Top             =   360
+         Width           =   612
+      End
+      Begin VB.Label Label1 
+         Caption         =   "Вр. вып."
+         Height          =   252
+         Left            =   1200
+         TabIndex        =   25
+         Top             =   360
+         Width           =   732
+      End
+      Begin VB.Label lbDateOut 
+         Caption         =   "Н/А"
+         Height          =   252
+         Index           =   0
+         Left            =   2520
+         TabIndex        =   24
+         Top             =   720
+         Visible         =   0   'False
+         Width           =   996
+      End
+      Begin VB.Label lbDateOut 
+         Caption         =   "Н/А"
+         Height          =   252
+         Index           =   1
+         Left            =   2520
+         TabIndex        =   23
+         Top             =   1080
+         Visible         =   0   'False
+         Width           =   996
+      End
+      Begin VB.Label lbDateOut 
+         Caption         =   "Н/А"
+         Height          =   252
+         Index           =   2
+         Left            =   2520
+         TabIndex        =   22
+         Top             =   1440
+         Visible         =   0   'False
+         Width           =   996
+      End
+      Begin VB.Label Label2 
+         Caption         =   "Дата Изгот."
+         Height          =   252
+         Left            =   2520
+         TabIndex        =   21
+         Top             =   360
+         Width           =   1092
+      End
+      Begin VB.Label laVrVipO 
+         Caption         =   "MO"
+         Height          =   252
+         Left            =   2040
+         TabIndex        =   20
+         Top             =   360
+         Width           =   252
+      End
+      Begin VB.Label Label5 
+         Caption         =   "Статус"
+         Height          =   252
+         Left            =   3720
+         TabIndex        =   19
+         Top             =   360
+         Width           =   972
+      End
+      Begin VB.Label lbEquipStatus 
+         Height          =   252
+         Index           =   2
+         Left            =   3600
+         TabIndex        =   18
+         Top             =   1440
+         Width           =   996
+      End
+      Begin VB.Label lbEquipStatus 
+         Height          =   252
+         Index           =   1
+         Left            =   3600
+         TabIndex        =   17
+         Top             =   1080
+         Width           =   996
+      End
+      Begin VB.Label lbEquipStatus 
+         Height          =   252
+         Index           =   0
+         Left            =   3600
+         TabIndex        =   16
+         Top             =   720
+         Width           =   996
+      End
    End
 End
 Attribute VB_Name = "Equipment"
@@ -326,6 +398,7 @@ Private Function setVisibleByEquipment(Index As Integer) As Boolean
     cmSetOutDate(Index).Visible = visibleFlag
     lbDateOut(Index).Visible = visibleFlag
     tbVrVipO(Index).Visible = False
+    lbEquipStatus(Index).Visible = visibleFlag
     
     If visibleFlag Then
         If currStatusId = 3 Then '"согласов"
@@ -336,6 +409,7 @@ Private Function setVisibleByEquipment(Index As Integer) As Boolean
     
     End If
     setVisibleByEquipment = visibleFlag
+    
     
 End Function
 
@@ -470,11 +544,25 @@ End Sub
 Private Sub loadEquipment()
     If gNzak = "" Then Exit Sub
     
-    sql = "select o.statusId, oe.* from OrdersEquip oe join orders o on o.numorder = oe.numorder where oe.numorder = " & gNzak
-    Set tbOrders = myOpenRecordSet("##eq.1", sql, dbOpenForwardOnly)
+    Dim Outdate As Date
+    sql = "select o.StatusId, oe.Outdatetime" _
+    & " from orders o " _
+    & " join vw_OrdersEquipSummary oe on o.numorder = oe.numorder " _
+    & " where o.numorder = " & gNzak
+    
+    byErrSqlGetValues "##eq01", sql, currStatusId, Outdate
+    lbZakazDateOut.Caption = Format(Outdate, "dd.mm.yyyy")
+    
+    
+    sql = "select oe.* " _
+    & " , s.status " _
+    & " from OrdersEquip oe " _
+    & " join guideStatus s on s.statusId = oe.statusEquipId " _
+    & " where oe.numorder = " & gNzak
+    
+    Set tbOrders = myOpenRecordSet("##eq02", sql, dbOpenForwardOnly)
     If Not tbOrders Is Nothing Then
         If Not tbOrders.BOF Then
-            currStatusId = tbOrders!StatusId
             '
             While Not tbOrders.EOF
                 If Not tbOrders("cehId") Is Nothing Then
@@ -485,10 +573,16 @@ Private Sub loadEquipment()
                         tbWorktime(cehId).Text = tbOrders!Worktime
                     End If
                     
-                    If Not IsNull(tbOrders!outDateTime) Then
-                        lbDateOut(cehId).Caption = tbOrders!outDateTime
+                    If Not IsNull(tbOrders!Outdatetime) Then
+                        lbDateOut(cehId).Caption = tbOrders!Outdatetime
                     Else
                         lbDateOut(cehId).Caption = "N/A"
+                    End If
+                    
+                    If Not IsNull(tbOrders!status) Then
+                        lbEquipStatus(cehId).Caption = tbOrders!status
+                    Else
+                        lbDateOut(cehId).Caption = " "
                     End If
                 End If
                 tbOrders.MoveNext
@@ -520,3 +614,4 @@ Dim I As Integer
         cbStatus.ListIndex = 0
     End If
 End Sub
+

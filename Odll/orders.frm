@@ -576,32 +576,32 @@ Public refreshCurrentRow As Boolean
 Const AddCaption = "Добавить"
 Const t17_00 = 61200 ' в секундах
 
-Const rowFromOrdersSQL = "select " & _
-"    o.numOrder, o.equip as Ceh, o.inDate" & _
-"   ,m.Manag, s.Status, o.StatusId, p.Problem" & _
-"   ,o.DateRS, f.Name, oe.outDateTime, o.Type" & _
-"   ,oe.workTime, o.Logo, o.Product, o.ordered" & _
-"   ,o.temaId, o.paid, o.shipped,  o.Invoice" & _
-"   ,mo.DateTimeMO, mo.workTimeMO, mo.StatM, mo.StatO" & _
-"   ,lm.Manag AS lastManag, oc.urgent" & _
-"   ,v.venturename as venture" & _
-"   ,lastModified, id_bill, f.id_voc_names " & _
-"   ,v.sysname as servername" & _
-"   ,o.zalog, o.nal, o.rate" & _
-" from orders o " & _
-" JOIN GuideStatus s ON s.StatusId = o.StatusId " & _
-" JOIN GuideProblem p ON p.ProblemId = o.ProblemId " & _
-" JOIN GuideManag m ON m.ManagId = o.ManagId " & _
-" JOIN GuideFirms f ON f.FirmId = o.FirmId " & _
-" LEFT JOIN vw_OrdersEquipSummary oe ON oe.numorder = o.numorder " & _
-" LEFT JOIN GuideManag lm ON o.lastManagId = lm.ManagId " & _
-" LEFT JOIN vw_OrdersMOSummary mo ON o.numOrder = mo.numOrder " & _
-" LEFT JOIN vw_OrdersInCehSummary oc ON o.numOrder = oc.numOrder" & _
-" LEFT JOIN guideventure v on v.ventureId = o.ventureid "
-    
-    
-    
-    
+Const rowFromOrdersSQL = "select " & vbCr & _
+    "    o.numOrder, o.equip as Ceh, o.inDate" & vbCr & _
+    "   ,m.Manag, s.Status, o.StatusId, p.Problem" & vbCr & _
+    "   ,o.DateRS, f.Name, oe.outDateTime, o.Type" & vbCr & _
+    "   ,oe.workTime, o.Logo, o.Product, o.ordered" & vbCr & _
+    "   ,o.temaId, o.paid, o.shipped,  o.Invoice" & vbCr & _
+    "   ,mo.DateTimeMO, mo.workTimeMO, mo.StatM, mo.StatO" & vbCr & _
+    "   ,lm.Manag AS lastManag, oc.urgent" & vbCr & _
+    "   ,v.venturename as venture" & vbCr & _
+    "   ,lastModified, id_bill, f.id_voc_names " & vbCr & _
+    "   ,v.sysname as servername" & vbCr & _
+    "   ,o.zalog, o.nal, o.rate," & vbCr & _
+    "   convert(int, (oe.maxStatusId - oe.minStatusId) + abs(oe.maxStatusId - o.statusId)) as equipStatusSync " & vbCr & _
+    " from orders o " & vbCr & _
+    " JOIN GuideStatus s ON s.StatusId = o.StatusId " & vbCr & _
+    " JOIN GuideProblem p ON p.ProblemId = o.ProblemId " & vbCr & _
+    " JOIN GuideManag m ON m.ManagId = o.ManagId " & vbCr & _
+    " JOIN GuideFirms f ON f.FirmId = o.FirmId " & vbCr & _
+    " LEFT JOIN vw_OrdersEquipSummary oe ON oe.numorder = o.numorder " & vbCr & _
+    " LEFT JOIN GuideManag lm ON o.lastManagId = lm.ManagId " & vbCr & _
+    " LEFT JOIN vw_OrdersMOSummary mo ON o.numOrder = mo.numOrder " & vbCr & _
+    " LEFT JOIN vw_OrdersInCehSummary oc ON o.numOrder = oc.numOrder" & vbCr & _
+    " LEFT JOIN guideventure v on v.ventureId = o.ventureid "
+
+
+
 ' нужно вызывать уже после того, как новая Валюта сменена.
 Private Sub adjustHotMoney()
 Dim tbWorktime As String, Left As String
@@ -719,17 +719,17 @@ Private Sub cmAdd_Click() ' см также nextDayDetect()
 Dim str As String
 Dim strNow As String, dNow As Date, valueorder As Numorder
  
- strNow = Format(Now, "dd.mm.yyyy")
- dNow = strNow
- strNow = Format(Now, "yymmdd")
- 
- wrkDefault.BeginTrans 'lock01
- sql = "update system set resursLock = resursLock" 'lock02
- myBase.Execute (sql) 'lock03
-
-Set valueorder = New Numorder
-valueorder.val = getSystemField("lastPrivatNum")
-tmpDate = valueorder.dat
+    strNow = Format(Now, "dd.mm.yyyy")
+    dNow = strNow
+    strNow = Format(Now, "yymmdd")
+    
+    wrkDefault.BeginTrans 'lock01
+    sql = "update system set resursLock = resursLock" 'lock02
+    myBase.Execute (sql) 'lock03
+    
+    Set valueorder = New Numorder
+    valueorder.val = getSystemField("lastPrivatNum")
+    tmpDate = valueorder.dat
 
     If tmpDate >= dNow Then
         myBase.Execute ("update system set lastPrivatNum = " & valueorder.nextNum)
@@ -3266,7 +3266,7 @@ zakazNum = 0
 'LoadOrders********************************************************
 sql = rowFromOrdersSQL & getSqlWhere & " ORDER BY o.inDate"
 'MsgBox getSqlWhere
-Debug.Print sql
+'Debug.Print sql
 Set tqOrders = myOpenRecordSet("##08", sql, dbOpenForwardOnly)
 If tqOrders Is Nothing Then myBase.Close: End
 If Not tqOrders.BOF Then
@@ -3502,6 +3502,10 @@ End If
  End If
  If Not IsNull(tqOrders!serverName) Then
     Grid.TextMatrix(row, orServername) = CStr(tqOrders!serverName)
+ End If
+ If tqOrders!equipStatusSync <> 0 Then
+    Grid.col = orStatus
+    Grid.CellForeColor = vbRed
  End If
 End Sub
 

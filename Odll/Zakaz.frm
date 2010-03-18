@@ -1272,7 +1272,7 @@ table.Close
 '  If bilo Then table.Delete
   If bilo Then
     sql = "DELETE from OrdersMO WHERE numOrder = " & gNzak & " AND cehId = " & gCehId
-    If myExecute("##398", sql) <> 0 Then GoTo ER1
+    myExecute "##398", sql, -1
   End If
  End If ' согласов
 'End If ' If Not table Is Nothing
