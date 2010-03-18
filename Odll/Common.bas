@@ -270,6 +270,7 @@ Public Const ColWidthForRuble As Single = 1.3
 
 
 Function tuneCurencyAndGranularity(tunedValue, currentRate, valueCurrency As Integer, Optional quantity As Double = 1, Optional perlist As Long = 1) As Double
+    Dim Left As String, StatusId As String, Outdatetime As String
     '
     Dim totalInRubles As Double
     Dim singleInRubles As Double
@@ -539,24 +540,12 @@ yymmdd = Right$(dateStr, 2) & "." & Mid$(dateStr, 4, 2) & "." & Left$(dateStr, 2
 End Function
 
 
-'$odbc08$----------------------------------------------------------
-Function getTableField(tabl As String, field As String) As Variant
-Dim table As Recordset
-
-getTableField = Null
-sql = "SELECT " & tabl & "." & field & " AS fff From " & tabl & _
-      " WHERE (((OrdersMO.numOrder)=" & gNzak & "));"
-Set table = myOpenRecordSet("##59", sql, dbOpenForwardOnly)
-If table Is Nothing Then Exit Function
-If Not table.BOF Then getTableField = table!fff
-table.Close
-End Function
 Function getValueFromTable(tabl As String, field As String, where As String) As Variant
 Dim table As Recordset
 
 getValueFromTable = Null
 sql = "SELECT " & field & " as fff  From " & tabl & _
-      " WHERE " & where & ";"
+      " WHERE " & where
 Set table = myOpenRecordSet("##59.1", sql, dbOpenForwardOnly)
 If table Is Nothing Then Exit Function
 If Not table.BOF Then getValueFromTable = table!fff
@@ -632,7 +621,7 @@ Else
 End If
 tbSystem.Close
 
-sql = "SELECT nomRes from Resurs" & Ceh(gCehId) & " ORDER BY xDate;"
+sql = "SELECT nomRes from Resurs" & Ceh(gCehId) & " ORDER BY xDate"
 Set table = myOpenRecordSet("##10", sql, dbOpenForwardOnly)
 'If table Is Nothing Then Exit Function
 
@@ -658,8 +647,8 @@ Wend
 table.Close
 'End If
 
-addDays max(stDay, rMaxDay) 'добавляем дни, если Дата Выд. всех заказов
-                            'ближе чем stDay или rMaxDay(напр. заказов нет)
+addDays max(stDay, rMaxDay) 'добавляем дни, если Дата Выдачи всех заказов
+                            'ближе чем stDay или rMaxDay(например заказов нет)
 For I = rMaxDay + 1 To maxDay
 '    table.AddNew
     tmpDate = DateAdd("d", I - 1, curDate)
@@ -1541,9 +1530,9 @@ Dim s As Double, log As String, str As String
  str = status(tqOrders!StatusId): log = log & " " & str
  Orders.Grid.TextMatrix(row, orStatus) = str
  
- str = LoadDate(Orders.Grid, row, orDataVid, tqOrders!outDateTime, "dd.mm.yy")
+ str = LoadDate(Orders.Grid, row, orDataVid, tqOrders!Outdatetime, "dd.mm.yy")
  If str <> "" Then log = log & " Out=" & str
- str = LoadDate(Orders.Grid, row, orVrVid, tqOrders!outDateTime, "hh")
+ str = LoadDate(Orders.Grid, row, orVrVid, tqOrders!Outdatetime, "hh")
  If str <> "" Then log = log & "_" & str
  
  str = LoadNumeric(Orders.Grid, row, orVrVip, tqOrders!Worktime, , "#0.0")
@@ -1551,7 +1540,7 @@ Dim s As Double, log As String, str As String
  
  Orders.Grid.TextMatrix(row, orProblem) = tqOrders!problem
  
- str = LoadDate(Orders.Grid, row, orDataRS, tqOrders!dateRS, "dd.mm.yy")
+ str = LoadDate(Orders.Grid, row, orDataRS, tqOrders!DateRS, "dd.mm.yy")
  If str <> "" Then log = log & " РС=" & str
  
  gNzak = tqOrders!Numorder
@@ -1568,23 +1557,23 @@ Dim s As Double, log As String, str As String
     End If
  End If
  
- If IsNull(tqOrders!statM) Then
+ If IsNull(tqOrders!StatM) Then
     Orders.Grid.TextMatrix(row, orM) = ""
  Else
-    Orders.Grid.TextMatrix(row, orM) = tqOrders!statM
-    log = log & " Mк(" & tqOrders!statM & "):" & str ' Дата выд
+    Orders.Grid.TextMatrix(row, orM) = tqOrders!StatM
+    log = log & " Mк(" & tqOrders!StatM & "):" & str ' Дата выд
  End If
- If IsNull(tqOrders!statO) Then
+ If IsNull(tqOrders!StatO) Then
     Orders.Grid.TextMatrix(row, orO) = ""
     Orders.Grid.TextMatrix(row, orOVrVip) = ""
  Else
-    Orders.Grid.TextMatrix(row, orO) = tqOrders!statO
-    If tqOrders!statO = "в работе" Or tqOrders!statO = "готов" Then
+    Orders.Grid.TextMatrix(row, orO) = tqOrders!StatO
+    If tqOrders!StatO = "в работе" Or tqOrders!StatO = "готов" Then
         If IsNull(tqOrders!DateTimeMO) Then
             msgOfZakaz "##313", "Отсутствует 'Дата MO'."
             str = " !Нет Даты MO! "
         End If
-        log = log & " Oб(" & tqOrders!statO & "):" & str ' Дата выд
+        log = log & " Oб(" & tqOrders!StatO & "):" & str ' Дата выд
         If IsNull(tqOrders!workTimeMO) Then
             msgOfZakaz "##314", "Отсутствует 'Время выполнения MO'."
         Else
@@ -2095,7 +2084,7 @@ Sub visits(oper As String, Optional firm As String = "") '$$3
 Dim str As String, I As Integer, statId As Integer
 
 sql = "SELECT Orders.inDate, Orders.StatusId , Orders.FirmId From Orders " & _
-"WHERE (((Orders.numOrder)=" & gNzak & "));"
+"WHERE Orders.numOrder = " & gNzak
 'MsgBox sql
 If Not byErrSqlGetValues("##88", sql, tmpDate, statId, I) Then GoTo ER1
 
@@ -2104,10 +2093,10 @@ If firm <> "" And (statId = 0 Or statId = 7) Then Exit Sub ' если меняем фирму
 
 str = getYearField(tmpDate)
 
-'If str = "lock" Then Exit Sub ' если год учавствовал в отсечении базы , то его не пересчитываем
+'If str = "lock" Then Exit Sub ' если год участвовал в отсечении базы , то его не пересчитываем
 
 sql = "UPDATE GuideFirms SET GuideFirms." & str & " = [GuideFirms].[" & _
-str & "] " & oper & " 1  WHERE (((GuideFirms.FirmId)=" & I & "));"
+str & "] " & oper & " 1  WHERE GuideFirms.FirmId =" & I
 'Debug.Print sql
 I = myExecute("##87", sql, -143)
 
@@ -2117,24 +2106,26 @@ ER1:    MsgBox "Ошибка коррекции посещения фирм. Сообщите администратору!", , "E
 End If
 End Sub
 
+
 Sub zagruzFromCeh(Optional passZakazNom As String = "")
 Dim outDay As Integer, j As Integer, passSql As String, str As String
 Dim tbCeh As Recordset
 
 
 If IsNumeric(passZakazNom) Then
-    passSql = " AND oc.numOrder <> " & passZakazNom
+    passSql = " AND oe.numOrder <> " & passZakazNom
 Else
     passSql = ""
 End If
 
 '    "OrdersInCeh.numOrder, OrdersInCeh.VrVipParts, OrdersInCeh.rowLock "
-sql = "SELECT oe.outDateTime, o.StatusId, " & _
-    "o.numOrder " & _
-    "FROM Orders o " _
+sql = "SELECT oe.outDateTime, o.StatusId, o.numOrder " _
+    & " FROM Orders o " _
     & " JOIN OrdersEquip oe ON oe.numOrder = o.numOrder " _
     & " JOIN OrdersInCeh oc ON oc.numOrder = o.numOrder AND oc.cehId = oe.cehId " _
     & " WHERE oe.CehId = " & gCehId & passSql
+
+'Debug.Print sql
 
 Set tbCeh = myOpenRecordSet("##14", sql, dbOpenForwardOnly)
 If tbCeh Is Nothing Then Exit Sub
@@ -2144,7 +2135,7 @@ If Not tbCeh.BOF Then
     While Not tbCeh.EOF
         isLive = False ' неживой заказ
         If tbCeh!StatusId = 1 Then isLive = True
-        outDay = DateDiff("d", curDate, tbCeh!outDateTime) + 1
+        outDay = DateDiff("d", curDate, tbCeh!Outdatetime) + 1
         If outDay < 1 Then outDay = 1
                 
         addDays outDay '1:добавляем дни,  т.к. Дата  Выд тек.заказа может

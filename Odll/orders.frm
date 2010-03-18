@@ -604,7 +604,7 @@ Const rowFromOrdersSQL = "select " & _
     
 ' нужно вызывать уже после того, как новая Валюта сменена.
 Private Sub adjustHotMoney()
-Dim tbWorktime As String
+Dim tbWorktime As String, Left As String
 Dim Ceh As String, Worktime As String
 Dim I As Long, j As Integer
 
@@ -918,8 +918,8 @@ End Sub
 
 
 Function isConflict(Optional msg As String = "") As Boolean
-Dim problem As String, ordered, paid, shipped, stat As String, dateRS As Variant
-Dim toClos As Boolean, titl As String, statM As String, statO As String
+Dim problem As String, ordered, paid, shipped, stat As String, DateRS As Variant
+Dim toClos As Boolean, titl As String, StatM As String, StatO As String
 
 isConflict = False
 
@@ -937,7 +937,7 @@ If msg = "toClose" Then msg = "": toClos = True
 
 If stat = "резерв" Or stat = "согласов" Then
   If Timer > t17_00 Then
-    If DateDiff("d", tqOrders!dateRS, Now()) >= 0 Then
+    If DateDiff("d", tqOrders!DateRS, Now()) >= 0 Then
         isConflict = True
         If msg <> "" Then MsgBox "Просрочена Дата РС", , "Заказ № " & gNzak
     End If
@@ -1043,8 +1043,8 @@ If Not tqOrders.BOF Then
     valToWeb tqOrders!xLogin
     valToWeb tqOrders!Numorder
     valToWeb status(tqOrders!StatusId)
-    valToWeb tqOrders!outDateTime, "dd.mm.yy"
-    valToWeb tqOrders!outDateTime, "hh"
+    valToWeb tqOrders!Outdatetime, "dd.mm.yy"
+    valToWeb tqOrders!Outdatetime, "hh"
     valToWeb tqOrders!problem
     valToWeb tqOrders!Logo
     valToWeb tqOrders!Product
@@ -1053,7 +1053,7 @@ If Not tqOrders.BOF Then
     valToWeb tqOrders!shipped
     valToWeb tqOrders!name
     valToWeb tqOrders!Manag
-    valToWeb tqOrders!dateRS
+    valToWeb tqOrders!DateRS
     Print #1, strToWeb
     tqOrders.MoveNext
   Wend
@@ -1273,7 +1273,7 @@ ElseIf KeyCode = vbKeyB And Shift = vbCtrlMask Then
         Filtr.lbFirm.Selected(0) = True
     End If
 BB:
-    If left$(Filtr.cmAdvan.Caption, 1) = "С" Then Filtr.cmAdvan_Click
+    If Left$(Filtr.cmAdvan.Caption, 1) = "С" Then Filtr.cmAdvan_Click
     Filtr.lbStatus.Clear
     For I = 0 To 7 ' статусы м. повторятся
        If tbEnable.Visible Or I <> 6 Then Filtr.lbStatus.AddItem status(I)
@@ -1612,7 +1612,7 @@ cmZagrCO2.Top = cmZagrCO2.Top + h
 cmZagrSUB.Top = cmZagrSUB.Top + h '$$ceh
 cmExvel.Top = cmExvel.Top + h
 tbEnable.Top = tbEnable.Top + h
-tbEnable.left = tbEnable.left + w
+tbEnable.Left = tbEnable.Left + w
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
@@ -1703,7 +1703,7 @@ On Error GoTo sqle
     
     Exit Function
 sqle:
-    wrkDefault.rollback
+    wrkDefault.Rollback
     errorCodAndMsg "checkInvoiceBusy"
 End Function
 
@@ -1722,7 +1722,7 @@ On Error GoTo sqle
     
     Exit Function
 sqle:
-    wrkDefault.rollback
+    wrkDefault.Rollback
     errorCodAndMsg "checkInvoiceMerge"
 End Function
 
@@ -1748,12 +1748,12 @@ On Error GoTo sqle
     If MsgBox(mText, vbOKCancel, "Вы уверены?") = vbOK Then
         myBase.Execute sql
     Else
-        wrkDefault.rollback
+        wrkDefault.Rollback
         tryInvoiceMove = False
     End If
     Exit Function
 sqle:
-    wrkDefault.rollback
+    wrkDefault.Rollback
     errorCodAndMsg "tryInvoiceMove"
     tryInvoiceMove = False
 End Function
@@ -1770,12 +1770,12 @@ On Error GoTo sqle
         sql = "call wf_split_jscet (" & p_numOrder & ")"
         myBase.Execute sql
     Else
-        wrkDefault.rollback
+        wrkDefault.Rollback
         tryInvoiceSplit = False
     End If
     Exit Function
 sqle:
-    wrkDefault.rollback
+    wrkDefault.Rollback
     errorCodAndMsg "tryInvoiceSplit"
     tryInvoiceSplit = False
 End Function
@@ -1792,13 +1792,13 @@ On Error GoTo sqle
             Debug.Print sql
             myBase.Execute sql
         Else
-            wrkDefault.rollback
+            wrkDefault.Rollback
             tryInvoiceMerge = False
         End If
     End If
     Exit Function
 sqle:
-    wrkDefault.rollback
+    wrkDefault.Rollback
     errorCodAndMsg "tryInvoiceSplit"
     tryInvoiceMerge = False
     
@@ -2307,7 +2307,7 @@ BB: wrkDefault.BeginTrans
 '        End If
         wrkDefault.CommitTrans
     Else
-        wrkDefault.rollback
+        wrkDefault.Rollback
     End If
 End If
 EN1:
@@ -2376,7 +2376,7 @@ Dim str As String
         Grid.TextMatrix(mousRow, mousCol) = "аннулирован"
         wrkDefault.CommitTrans
     Else
-        wrkDefault.rollback
+        wrkDefault.Rollback
     End If
 
 End Function
@@ -2399,7 +2399,7 @@ Sub do_Del()
         delZakazFromGrid
         wrkDefault.CommitTrans
     Else
-ERR1:   wrkDefault.rollback
+ERR1:   wrkDefault.Rollback
     End If
   End If
 
@@ -2603,7 +2603,7 @@ End If
 lbHide
 'Exit Sub
 ER1:
- wrkDefault.rollback:
+ wrkDefault.Rollback:
 lbHide
 End Sub
 
@@ -2717,7 +2717,7 @@ Private Sub mnCurrency_Click()
     Dim deletedPart As String
     deletedPart = InStr(Me.Caption, " - ")
     If deletedPart > 0 Then
-        Me.Caption = left(Me.Caption, deletedPart - 1)
+        Me.Caption = Left(Me.Caption, deletedPart - 1)
     End If
     setCurrencyCaption
     adjustMoneyColumnWidth (False)
@@ -3387,14 +3387,14 @@ If str = "" Then
     MsgBox "По этому полю фильтр не предусмотрен"
     Exit Function
 End If
-typ = left$(str, 1)
+typ = Left$(str, 1)
 str = Mid$(str, 2)
 If typ = "d" Then
     If value = "" Then
         value = " Is Null"
     Else
         If operator = "=" Then
-            value = left$(value, 6) & "20" & Mid$(value, 7, 2) 'это нужно если в Win98 установлен "гггг" - формат года
+            value = Left$(value, 6) & "20" & Mid$(value, 7, 2) 'это нужно если в Win98 установлен "гггг" - формат года
             value = " Like '" & value & "%'"
         ElseIf operator = "<" Then
             value = " <= '" & Format(value, "yyyy-mm-dd") & " 11:59:59 PM'"

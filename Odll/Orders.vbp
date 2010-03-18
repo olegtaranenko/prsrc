@@ -32,6 +32,7 @@ Module=VerUtils; ..\include\VerUtils.bas
 Class=Numorder; ..\include\Numorder.cls
 Module=OrderUtils; ..\include\OrderUtils.bas
 Form=Equipment.frm
+Class=ZakazVO; ZakazVO.cls
 IconForm="Orders"
 Startup="Sub Main"
 HelpFile=""

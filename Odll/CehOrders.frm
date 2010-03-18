@@ -193,7 +193,8 @@ Dim tbCeh As Recordset
 
 
 Private Sub chDetail_Click()
-Dim StatusId As String, Worktime As String
+Dim StatusId As String, Worktime As String, Left As String, Numorder As String, Outdatetime As String
+
 cehBegin
 gridIsLoad = True
 Grid.col = chKey
@@ -399,8 +400,8 @@ If isMO = "m" Then ' макет
     If cehRows > 0 Then Grid.AddItem ("")
     str = "м"
     cehRows = cehRows + 1
-    If tbCeh!statM = "готов" Then
-        Grid.TextMatrix(cehRows, chStatus) = tbCeh!statM
+    If tbCeh!StatM = "готов" Then
+        Grid.TextMatrix(cehRows, chStatus) = tbCeh!StatM
     Else
         Grid.TextMatrix(cehRows, chStatus) = ""
     End If
@@ -421,10 +422,10 @@ End If
         If s > 0 Then Grid.TextMatrix(cehRows, chProcVip) = s
         
         s = tbCeh!Worktime
-        LoadDateKey tbCeh!outDateTime, "##36"
-        LoadDate Grid, cehRows, chVrVid, tbCeh!outDateTime, "hh"
+        LoadDateKey tbCeh!Outdatetime, "##36"
+        LoadDate Grid, cehRows, chVrVid, tbCeh!Outdatetime, "hh"
     Else
-        If tbCeh!statO = "готов" Then _
+        If tbCeh!StatO = "готов" Then _
             Grid.TextMatrix(cehRows, chProcVip) = "100"
         s = tbCeh!workTimeMO
         If s < 0 Then s = -s
@@ -442,8 +443,8 @@ End If
       End If
     End If
 If isMO = "o" Then
-   If tbCeh!statO = "готов" Then
-     Grid.TextMatrix(cehRows, chStatus) = tbCeh!statO 'образец
+   If tbCeh!StatO = "готов" Then
+     Grid.TextMatrix(cehRows, chStatus) = tbCeh!StatO 'образец
    Else
      Grid.TextMatrix(cehRows, chStatus) = "" 'образец
    End If
@@ -455,7 +456,7 @@ ElseIf tbCeh!StatusId = 3 Or tbCeh!StatusId = 9 Then  ' согласов
     str1 = "С"
 AA: Grid.col = chStatus
     Grid.CellForeColor = color
-    Grid.TextMatrix(cehRows, chStatus) = str1 & " на " & Format(tbCeh!dateRS, "dd.mm.yy")
+    Grid.TextMatrix(cehRows, chStatus) = str1 & " на " & Format(tbCeh!DateRS, "dd.mm.yy")
 Else
     Grid.TextMatrix(cehRows, chStatus) = status(tbCeh!StatusId)
 End If
@@ -743,10 +744,10 @@ ElseIf v Then
         wrkDefault.CommitTrans
         cehBegin
     Else
-        wrkDefault.rollback
+        wrkDefault.Rollback
     End If
 Else ' заказ уже удален Менеджером
-    wrkDefault.rollback
+    wrkDefault.Rollback
     msgZakazDeleted
 End If
 
@@ -773,10 +774,10 @@ If I = 0 Then
         wrkDefault.CommitTrans  ' подтверждение транзакции
         cehBegin
     Else
-ER1:    wrkDefault.rollback    ' отммена транзакции
+ER1:    wrkDefault.Rollback    ' отммена транзакции
     End If
 ElseIf I = -1 Then
-    wrkDefault.rollback
+    wrkDefault.Rollback
     msgZakazDeleted
 End If
 
@@ -895,10 +896,10 @@ AA:     If ValueToTableField("##39", "0", "Orders", "ProblemId") = 0 Then
             wrkDefault.CommitTrans
             cehBegin
         Else
-ER1:        wrkDefault.rollback
+ER1:        wrkDefault.Rollback
         End If
     Else
-ER2:    wrkDefault.rollback
+ER2:    wrkDefault.Rollback
         msgZakazDeleted
     End If
 End If
@@ -914,7 +915,7 @@ End Sub
 'Для образца, кот. Утвержден возвращает Null
 Function makeProcReady(stat As String, Optional obraz As String = "") As Variant
 Dim s As Single, t As Single, n As Single, virabotka As Single, str As String
-Dim statO As String
+Dim StatO As String
 
 makeProcReady = False
 
@@ -936,10 +937,10 @@ AA:
  
   If obraz <> "" Then
     obraz = "o"
-    sql = "SELECT oe.workTimeMO, mo.StatO from OrdersMO mo " _
-    & " LEFT join OrdersEquip oe on oe.numorder = mo.numorder and oe.cehId = " & gCehId _
-    & " WHERE numOrder)=" & gNzak
-    If Not byErrSqlGetValues("##386", sql, virabotka, statO) Then Exit Function
+    sql = "SELECT mo.workTimeMO, mo.StatO " _
+    & " from OrdersMO mo " _
+    & " WHERE numOrder =" & gNzak & " and mo.cehId = " & gCehId
+    If Not byErrSqlGetValues("##386", sql, virabotka, StatO) Then Exit Function
     If s = 0 Then ' 100%
     Else
         virabotka = -virabotka
@@ -975,7 +976,7 @@ AA:
     tbOrders.Close
 
    If obraz = "o" Then '          это образец
-      If statO = "утвержден" Then
+      If StatO = "утвержден" Then
         makeProcReady = Null
         Exit Function
       End If
