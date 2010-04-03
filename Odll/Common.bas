@@ -327,7 +327,7 @@ Dim tabl As Recordset, I As Integer, maxi As Integer, str As String, c As String
 byErrSqlGetValues = False
 maxi = UBound(val())
 If maxi < 1 Then
-    wrkDefault.rollback
+    wrkDefault.Rollback
     MsgBox "мало параметров для п\п byErrSqlGetValues()"
     Exit Function
 End If
@@ -341,7 +341,7 @@ If tabl.BOF Then
         GoTo EN1
     Else
 '        msgOfEnd CStr(val(0)), "Нет записей удовлетворяющих Where."
-        wrkDefault.rollback
+        wrkDefault.Rollback
         MsgBox "Нет записей удовлетворяющих Where!", , "Error-" & str
         GoTo EN2
     End If
@@ -599,7 +599,7 @@ gNzak = Left$(str, I - 1)
 End Function
 '$odbc10$
 Function getResurs() As Integer
-Dim I As Integer, j As Integer, rMaxDay As Integer, s As Double
+Dim I As Integer, J As Integer, rMaxDay As Integer, s As Double
 
 Set tbSystem = myOpenRecordSet("##93", "System", dbOpenForwardOnly)
 If tbSystem Is Nothing Then myBase.Close: End
@@ -635,7 +635,7 @@ On Error GoTo ERR1
 ' Do
 While Not table.EOF
     rMaxDay = rMaxDay + 1
-    If rMaxDay = j Then
+    If rMaxDay = J Then
 '        table.Edit
 '            table!nomRes = Zagruz.tbMobile.Text
 '        table.Update
@@ -1191,7 +1191,7 @@ If valueToSystemField("##389", I, "lastYear") Then
     lastYear = I
     MsgBox "База переведена в новый(" & I & ") год!"
 Else
-ER1: wrkDefault.rollback
+ER1: wrkDefault.Rollback
     MsgBox "Программа не смогла перевести базу в новый(" & I & ") год! " & _
     "Перезапустите программу еще раз или свяжитесь с Администратором.", , "Error"
 End If
@@ -1276,7 +1276,7 @@ viewAtTheErrorNumber:
         Else
             myExecuteWithIssue = 1
         End If
-        wrkDefault.rollback
+        wrkDefault.Rollback
     End If
 
 End Function
@@ -1306,7 +1306,7 @@ myExecute = 0
 Exit Function
 
 ERR1:
-wrkDefault.rollback
+wrkDefault.Rollback
 cErr = Mid$(myErrCod, 3) ' - использовался наруже только в Prior
     
 'MsgBox Error, , "Error " & cErr & "-" & Err & ":  "
@@ -1400,7 +1400,7 @@ Dim doUpdateNum As Boolean
 doUpdateNum = False
 
 If tbSystem!resursLock = "nextDay" Then
-   wrkDefault.rollback
+   wrkDefault.Rollback
    MsgBox "Срочно сообщите Администратору! А пока можно работать с программой, " & _
     "но c ограниченной функциональностью.", , "Error при переводе Базы на новую дату!"
 
@@ -1437,7 +1437,7 @@ End Sub
 '$NOodbc$
 Public Sub quickSort(varArray As Variant, _
  Optional lngLeft As Long = dhcMissing, Optional lngRight As Long = dhcMissing)
-Dim I As Long, j As Long, varTestVal As Variant, lngMid As Long
+Dim I As Long, J As Long, varTestVal As Variant, lngMid As Long
 
     If lngLeft = dhcMissing Then lngLeft = LBound(varArray)
     If lngRight = dhcMissing Then lngRight = UBound(varArray)
@@ -1446,28 +1446,28 @@ Dim I As Long, j As Long, varTestVal As Variant, lngMid As Long
         lngMid = (lngLeft + lngRight) \ 2
         varTestVal = varArray(lngMid)
         I = lngLeft
-        j = lngRight
+        J = lngRight
         Do
             Do While varArray(I) < varTestVal
                 I = I + 1
             Loop
-            Do While varArray(j) > varTestVal
-                j = j - 1
+            Do While varArray(J) > varTestVal
+                J = J - 1
             Loop
-            If I <= j Then
-                Call SwapElements(varArray, I, j)
+            If I <= J Then
+                Call SwapElements(varArray, I, J)
                 I = I + 1
-                j = j - 1
+                J = J - 1
             End If
-        Loop Until I > j
+        Loop Until I > J
         ' To optimize the sort, always sort the
         ' smallest segment first.
-        If j <= lngMid Then
-            Call quickSort(varArray, lngLeft, j)
+        If J <= lngMid Then
+            Call quickSort(varArray, lngLeft, J)
             Call quickSort(varArray, I, lngRight)
         Else
             Call quickSort(varArray, I, lngRight)
-            Call quickSort(varArray, lngLeft, j)
+            Call quickSort(varArray, lngLeft, J)
         End If
     End If
 End Sub
@@ -1532,7 +1532,7 @@ Dim s As Double, log As String, str As String
  
  str = LoadDate(Orders.Grid, row, orDataVid, tqOrders!Outdatetime, "dd.mm.yy")
  If str <> "" Then log = log & " Out=" & str
- str = LoadDate(Orders.Grid, row, orVrVid, tqOrders!Outdatetime, "hh")
+ str = LoadNumeric(Orders.Grid, row, orVrVid, tqOrders!outTime)
  If str <> "" Then log = log & "_" & str
  
  str = LoadNumeric(Orders.Grid, row, orVrVip, tqOrders!Worktime, , "#0.0")
@@ -1598,7 +1598,7 @@ End Sub
 'эта ф-я д.заменить и startDay() и getNextDay() и getPrevDay()
 ' возвращает смещение до треб. дня
 Function getWorkDay(offsDay As Integer, Optional baseDate As String = "") As Integer
-Dim I As Integer, j As Integer, step  As Integer
+Dim I As Integer, J As Integer, step  As Integer
 getWorkDay = -1
 If baseDate = "" Then
     tmpDate = curDate
@@ -1610,11 +1610,11 @@ End If
 step = 1
 If offsDay < 0 Then step = -1
 
-j = 0: I = 0
-While step * j < step * offsDay '
+J = 0: I = 0
+While step * J < step * offsDay '
     I = I + step
     day = Weekday(DateAdd("d", I, tmpDate))
-    If Not (day = vbSunday Or day = vbSaturday) Then j = j + step
+    If Not (day = vbSunday Or day = vbSaturday) Then J = J + step
 Wend
 getWorkDay = I
 tmpDate = DateAdd("d", I, tmpDate)
@@ -1622,18 +1622,18 @@ tmpDate = DateAdd("d", I, tmpDate)
 End Function
 
 Function startDays() As Integer
-Dim I As Integer, j  As Integer, k   As Integer
+Dim I As Integer, J  As Integer, k   As Integer
 ReDim Preserve stDays(befDays + 1)
 
 For k = 0 To befDays '    *********************************************
 
-j = 0
+J = 0
 I = 1
-While j < 3 '         задание смещения зеленого коридора (3-й день)
+While J < 3 '         задание смещения зеленого коридора (3-й день)
 
     day = Weekday(DateAdd("d", k + I - befDays, curDate))
 '    day = Weekday(CurDate - befDays + K + I)
-    If Not (day = vbSunday Or day = vbSaturday) Then j = j + 1
+    If Not (day = vbSunday Or day = vbSaturday) Then J = J + 1
     I = I + 1
 Wend
 stDays(k) = I + k ' "+k" т.к. пока нумерация начинается befDays дней назад
@@ -1644,7 +1644,7 @@ startDays = stDays(befDays) - befDays ' для Сегодня, которое под №1
 End Function
 
 Sub statistic(Optional year As String = "")
-Dim nRow As Long, nCol As Long, str As String, I As Integer, j As Integer
+Dim nRow As Long, nCol As Long, str As String, I As Integer, J As Integer
 Dim iMonth As Integer, iYear As Integer, iCount As Integer, strWhere As String
 Dim nMonth As Integer, nYear As Integer, mCount As Integer, lastCol As Integer
 Dim wtSum As Double, paidSum As Double, orderSum As Double, visits As Integer, visitSum As Integer
@@ -2046,12 +2046,12 @@ byErrSqlGetValues "W##382", sql, getNevip
 End Function
 
 Sub addDays(outDay As Integer)
-Dim j As Integer
+Dim J As Integer
         If maxDay < outDay Then
             dayMassLenght outDay + 1 'если дольше , корректируем размерности
-            For j = maxDay + 1 To outDay 'новые дни
-                delta(j) = 0
-            Next j
+            For J = maxDay + 1 To outDay 'новые дни
+                delta(J) = 0
+            Next J
             maxDay = outDay
         End If
 End Sub
@@ -2108,7 +2108,7 @@ End Sub
 
 
 Sub zagruzFromCeh(Optional passZakazNom As String = "")
-Dim outDay As Integer, j As Integer, passSql As String, str As String
+Dim outDay As Integer, J As Integer, passSql As String, str As String
 Dim tbCeh As Recordset
 
 

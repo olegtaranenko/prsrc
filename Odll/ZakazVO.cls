@@ -13,12 +13,13 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
-Public numorder As Long
+Public Numorder As Long
 Public cehId As Integer
-Public statusId As Integer
+Public StatusId As Integer
+Public outTime As Variant ' Integer (may be null)
 
-Public worktime As Double
-Public outdatetime As Variant
+Public Worktime As Double
+Public Outdatetime As Variant
 Public statusEquipID As Variant
 Public statusInCeh As Variant
 
@@ -39,11 +40,16 @@ Public Sub initFromDb()
         Exit Sub
     End If
 
-    numorder = tbOrders!numorder
+    Numorder = tbOrders!Numorder
     cehId = tbOrders!cehId
-    statusId = tbOrders!statusId
-    worktime = tbOrders!worktime
-    outdatetime = tbOrders!outdatetime
+    StatusId = tbOrders!StatusId
+    outTime = tbOrders!outTime
+    If IsNull(outTime) Then
+        Outdatetime = tbOrders!Outdatetime
+    Else
+        Outdatetime = DateAdd("h", outTime, tbOrders!Outdatetime)
+    End If
+    Worktime = tbOrders!Worktime
     statusEquipID = tbOrders!statusEquipID
     statusInCeh = tbOrders!statusInCeh
     DateRS = tbOrders!DateRS

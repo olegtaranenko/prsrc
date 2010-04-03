@@ -510,17 +510,17 @@ Dim item As ListItem, str As String
 End Sub
 
 Sub lvAddDays(Optional newLen As Integer = -1)
-Dim I As Integer, j As Integer
+Dim I As Integer, J As Integer
 
 If newLen < 0 Then newLen = maxDay
 
-j = lv.ListItems.count
-If newLen > j Then ' j=0 когда startParams вызыв-ся первый раз
-    For I = j + 1 To newLen
+J = lv.ListItems.count
+If newLen > J Then ' j=0 когда startParams вызыв-ся первый раз
+    For I = J + 1 To newLen
         lvAddDay I
     Next I
-ElseIf newLen < j Then
-    For I = newLen + 1 To j
+ElseIf newLen < J Then
+    For I = newLen + 1 To J
         lv.ListItems.Remove "k" & I
     Next I
     End If
@@ -1020,6 +1020,16 @@ For I = 0 To lenCeh - 1
     End If
 Next I
 
+tbWorktime.Text = zakazBean.Worktime
+If Not IsNull(zakazBean.DateRS) Then
+    tbDateRS.Text = Format(zakazBean.DateRS, "dd.mm.yy")
+End If
+
+If Not IsNull(zakazBean.Outdatetime) Then
+    tbReadyDate.Text = Format(zakazBean.Outdatetime, "dd.mm.yy")
+End If
+
+
 If cbStatus.Text = "в работе" Then
     laMO.Enabled = False
     cbM.Enabled = False
@@ -1027,7 +1037,6 @@ If cbStatus.Text = "в работе" Then
     tbDateMO.Enabled = False
     laVrVipO.Enabled = False
     tbVrVipO.Enabled = False
-    tbWorktime.Text = zakazBean.Worktime
     'tbWorktime.SetFocus
 ElseIf cbStatus.Text = "согласов" Then
     cbM.Enabled = True
@@ -1324,7 +1333,7 @@ wrkDefault.CommitTrans
 
 'обновить Окно Orders
 sql = "SELECT o.StatusId, o.DateRS, o.numOrder" & _
-", oe.outDateTime, oe.workTime, p.Problem" & _
+", oe.outDateTime, o.outTime, oe.workTime, p.Problem" & _
 ", mo.DateTimeMO, mo.StatM, mo.StatO, mo.workTimeMO " & _
 " FROM Orders o " _
 & " INNER JOIN GuideProblem p  ON p.ProblemId = o.ProblemId" _
@@ -1345,6 +1354,8 @@ Dim nextCehId As Integer
 ckCehDone(gCehId - 1).Tag = statusIdNew
  
 If Not chooseTheEquipment(statusIdNew, nextCehId) Then
+    ' refresh the Orders.Grid row
+    
     Unload Me
 Else
     gCehId = nextCehId
@@ -1941,7 +1952,7 @@ End Sub
 
 
 Public Function startParams() As Boolean
-Dim I As Integer, str As String, j As Integer ', sumSroch As Double
+Dim I As Integer, str As String, J As Integer ', sumSroch As Double
 Dim item As ListItem, v As Variant, s As Double
 startParams = False
 
@@ -1963,7 +1974,7 @@ Else
     sql = "SELECT o.numorder, o.StatusId, o.DateRS" _
     & ", oe.outDateTime, oe.statusEquipId, oe.cehId, oe.worktime" _
     & ", om.DateTimeMO, om.workTimeMO, om.StatM, om.StatO" _
-    & ", oc.stat as statusInCeh, oc.nevip, oc.urgent" _
+    & ", oc.stat as statusInCeh, oc.nevip, oc.urgent, o.outTime" _
     & " from Orders o" _
     & " JOIN OrdersEquip oe on oe.numorder = o.numorder " _
     & " LEFT JOIN OrdersMO om on om.numorder = o.numorder AND om.cehId = oe.cehId" _

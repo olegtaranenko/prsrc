@@ -1034,8 +1034,8 @@ where pc.sysname = sGuideProducts.web
 			<column name="cehId" type="integer" >
 				<constraints nullable="false" primaryKey="true" primaryKeyName="pk_oe"/>
 			</column>
-			<column name="statusEquipId" type="integer" >
-				<constraints nullable="true"/>
+			<column name="statusEquipId" type="integer" defaultValueNumeric="0">
+				<constraints nullable="false"/>
 			</column>
 			<column name="worktime" type="float" defaultValueNumeric="0.0">
 				<constraints nullable="false"/>
@@ -1135,11 +1135,35 @@ where	OrdersMO.numorder = Orders.numorder
 
 	<changeSet id="14" author="mantis-125" runOnChange="false">
 		<comment>Удаляем столбцы по цеху/времени выполнения/... из таблицы Заказов</comment>
-		<dropColumn tableName="Orders" columnName="outDateTime"/>
+<!--bug in liquibase 1.9.5		
+		<renameColumn tableName="Orders" oldColumnName="outDateTime" newColumnName="outTime" columnDataType="integer"/> 
+-->
+		<sql>ALTER TABLE Orders RENAME [outDateTime] TO [outTime]</sql>
+		<sql>ALTER TABLE Orders MODIFY [outTime] integer</sql>
+
 		<rollback/>
 	</changeSet>
 	
-	<changeSet id="15" author="taranenko" runOnChange="true">
+	<changeSet id="15" author="mantis-125" runOnChange="true">
+		<comment>Удаляем столбцы по цеху/времени выполнения/... из таблицы Заказов</comment>
+		<sql>
+			update orders set outTime = datepart(hh, oe.outdatetime)
+			from ordersequip oe where orders.numorder = oe.numorder
+		</sql>
+
+		<sql>update orders set outTime = null where outTime = 0</sql>
+
+		<rollback/>
+	</changeSet>
+	
+	<changeSet id="16" author="mantis-125" runOnChange="false">
+		<sql>
+update	OrdersEquip set outDatetime = convert(int, outDatetime)
+		</sql>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="19" author="taranenko" runOnChange="true">
 		<comment>Саммари вьюха</comment>
 		<sqlFile path="procedures/enumEquip.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="views/vw_OrdersEquipSummary.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
@@ -1152,7 +1176,7 @@ where	OrdersMO.numorder = Orders.numorder
 		</rollback>
 	</changeSet>
 
-	<changeSet id="16" author="mantis-125" runOnChange="true">
+	<changeSet id="20" author="mantis-125" runOnChange="true">
 		<comment>Индеск для Оборудования по Заказу</comment>
 		<createIndex tableName="OrdersEquip" indexName="oe_main" unique="true">
 			<column name="numorder"/>
@@ -1160,7 +1184,7 @@ where	OrdersMO.numorder = Orders.numorder
 		</createIndex>
 	</changeSet>
 
-	<changeSet id="17" author="mantis-125" runOnChange="true">
+	<changeSet id="21" author="mantis-125" runOnChange="true">
 		<comment>Переделка основных вьюх для цеховых форм</comment>
 		<sqlFile path="views/wCO2_plus.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="views/wCO2.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
@@ -1171,7 +1195,7 @@ where	OrdersMO.numorder = Orders.numorder
 		<rollback/>
 	</changeSet>
 
-	<changeSet id="18" author="taranenko" runOnChange="true">
+	<changeSet id="22" author="taranenko" runOnChange="true">
 		<comment>При изменении имени source менять и в комтехе</comment>
 		<sqlFile path="triggers/sGuideSource.wf_update_source.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<rollback>
@@ -1179,7 +1203,7 @@ where	OrdersMO.numorder = Orders.numorder
 		</rollback>
 	</changeSet>
 
-	<changeSet id="19" author="mantis-125" runOnChange="true">
+	<changeSet id="23" author="mantis-125" runOnChange="true">
 		<comment>Статья расхода "заказчик без работы" теперь будет называться "производство"</comment>
 		<update tableName="sGuideSource">
 			<column name="sourceName" value="Произ-во"/>
@@ -1188,7 +1212,7 @@ where	OrdersMO.numorder = Orders.numorder
 		<rollback/>
 	</changeSet>
 	
-	<changeSet id="20" author="taranenko" runOnChange="true">
+	<changeSet id="24" author="taranenko" runOnChange="true">
 		<comment>Саммари вьюха</comment>
 		<sqlFile path="procedures/putOrderEquip.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="procedures/deleteOrderEquip.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
@@ -1198,7 +1222,7 @@ where	OrdersMO.numorder = Orders.numorder
 		</rollback>
 	</changeSet>
 
-	<changeSet id="21" author="taranenko" runOnChange="true">
+	<changeSet id="25" author="taranenko" runOnChange="true">
 		<comment>При изменении имени source менять и в комтехе</comment>
 		<sqlFile path="triggers/OrdersEquip.wf_insert.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="triggers/OrdersEquip.wf_delete.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
@@ -1208,32 +1232,32 @@ where	OrdersMO.numorder = Orders.numorder
 		</rollback>
 	</changeSet>
 
-	<changeSet id="22" author="mantis-125" runOnChange="false">
+	<changeSet id="26" author="mantis-125" runOnChange="false">
 		<comment>Застарелый ненужный мусор из производственных таблиц</comment>
 		<dropColumn tableName="OrdersMO" columnName="id_jscet"/>
 		<dropColumn tableName="OrdersInCeh" columnName="id_jscet"/>
 		<rollback/>
 	</changeSet>
 
-	<changeSet id="23" author="mantis-125" runOnChange="false">
+	<changeSet id="27" author="mantis-125" runOnChange="false">
 		<comment>Добавить цех в первичные ключи производственных таблиц</comment>
 		<dropPrimaryKey tableName="OrdersMO"/>
 		<rollback/>
 	</changeSet>
 
-	<changeSet id="24" author="mantis-125" runOnChange="false">
+	<changeSet id="28" author="mantis-125" runOnChange="false">
 		<comment>Добавить цех в первичные ключи производственных таблиц</comment>
 		<addPrimaryKey tableName="OrdersMO" columnNames="numorder,cehId" constraintName="pk_OrdersMO"/>
 		<rollback/>
 	</changeSet>
 
-	<changeSet id="25" author="mantis-125" runOnChange="false">
+	<changeSet id="29" author="mantis-125" runOnChange="false">
 		<comment>Добавить цех в первичные ключи производственных таблиц</comment>
 		<dropPrimaryKey tableName="OrdersInCeh"/>
 		<rollback/>
 	</changeSet>
 
-	<changeSet id="26" author="mantis-125" runOnChange="false">
+	<changeSet id="30" author="mantis-125" runOnChange="false">
 		<comment>Добавить цех в первичные ключи производственных таблиц</comment>
 		<addPrimaryKey tableName="OrdersInCeh" columnNames="numorder,cehId" constraintName="pk_OrdersInCeh"/>
 		<rollback/>

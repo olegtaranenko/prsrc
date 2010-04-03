@@ -579,7 +579,7 @@ Const t17_00 = 61200 ' в секундах
 Const rowFromOrdersSQL = "select " & vbCr & _
     "    o.numOrder, o.equip as Ceh, o.inDate" & vbCr & _
     "   ,m.Manag, s.Status, o.StatusId, p.Problem" & vbCr & _
-    "   ,o.DateRS, f.Name, oe.outDateTime, o.Type" & vbCr & _
+    "   ,o.DateRS, f.Name, oe.outDateTime, o.outTime, o.Type" & vbCr & _
     "   ,oe.workTime, o.Logo, o.Product, o.ordered" & vbCr & _
     "   ,o.temaId, o.paid, o.shipped,  o.Invoice" & vbCr & _
     "   ,mo.DateTimeMO, mo.workTimeMO, mo.StatM, mo.StatO" & vbCr & _
@@ -604,9 +604,10 @@ Const rowFromOrdersSQL = "select " & vbCr & _
 
 ' нужно вызывать уже после того, как новая Валюта сменена.
 Private Sub adjustHotMoney()
+Dim Numorder As String, StatusId As String, Rollback As String, Outdatetime As String
 Dim tbWorktime As String, Left As String
 Dim Ceh As String, Worktime As String
-Dim I As Long, j As Integer
+Dim I As Long, J As Integer
 
     For I = 1 To Grid.rows - 1
         Dim value As Double, rate As Double
@@ -615,9 +616,9 @@ Dim I As Long, j As Integer
         If rateStr <> "" Then
             rate = CDbl(rateStr)
         End If
-        For j = 0 To 5 ' 5 смежных колонки с деньгами (залог, нал, заказано, оплачено, отгружено)
-            If j = 2 Then GoTo skip
-            valueStr = Grid.TextMatrix(I, orZalog + j)
+        For J = 0 To 5 ' 5 смежных колонки с деньгами (залог, нал, заказано, оплачено, отгружено)
+            If J = 2 Then GoTo skip
+            valueStr = Grid.TextMatrix(I, orZalog + J)
             If valueStr <> "" Then
                 value = CDbl(valueStr)
                 If sessionCurrency = CC_RUBLE Then
@@ -625,26 +626,26 @@ Dim I As Long, j As Integer
                 Else
                     value = value / rate
                 End If
-                LoadNumeric Grid, I, orZalog + j, value, , "###0.00"
+                LoadNumeric Grid, I, orZalog + J, value, , "###0.00"
             End If
 skip:
-        Next j
+        Next J
         
     Next I
     
 End Sub
     
 Private Sub adjustMoneyColumnWidth(inStartup As Boolean)
-Dim I As Long, j As Integer
-    For j = 0 To 4 ' 5 смежных колонки с деньгами (залог, нал, заказано, оплачено, отгружено)
-        If j = 2 Then GoTo skip
+Dim I As Long, J As Integer
+    For J = 0 To 4 ' 5 смежных колонки с деньгами (залог, нал, заказано, оплачено, отгружено)
+        If J = 2 Then GoTo skip
         If sessionCurrency = CC_RUBLE Then
-            Grid.ColWidth(orZalog + j) = Grid.ColWidth(orZalog + j) * ColWidthForRuble
+            Grid.ColWidth(orZalog + J) = Grid.ColWidth(orZalog + J) * ColWidthForRuble
         ElseIf Not inStartup Then
-            Grid.ColWidth(orZalog + j) = Grid.ColWidth(orZalog + j) / ColWidthForRuble
+            Grid.ColWidth(orZalog + J) = Grid.ColWidth(orZalog + J) / ColWidthForRuble
         End If
 skip:
-    Next j
+    Next J
 End Sub
     
     
@@ -718,6 +719,7 @@ End Sub
 Private Sub cmAdd_Click() ' см также nextDayDetect()
 Dim str As String
 Dim strNow As String, dNow As Date, valueorder As Numorder
+
  
     strNow = Format(Now, "dd.mm.yyyy")
     dNow = strNow
@@ -1008,7 +1010,7 @@ End Function
 
 
 Private Sub cmToWeb_Click()
-Dim outDate As String, outTime As String, nbsp As String, tmpFile As String
+Dim Outdate As String, outTime As String, nbsp As String, tmpFile As String
 Dim v As Variant
 
 Me.MousePointer = flexHourglass
@@ -1023,9 +1025,9 @@ If Not tqOrders.BOF Then
   Open tmpFile For Output As #1
   nbsp = "&" & "nbsp"
   tmpDate = Now
-  outDate = Format(tmpDate, "dd.mm.yy")
+  Outdate = Format(tmpDate, "dd.mm.yy")
   outTime = Format(tmpDate, "hh:nn")
-  Print #1, outDate & nbsp & nbsp & nbsp & nbsp & nbsp & outTime
+  Print #1, Outdate & nbsp & nbsp & nbsp & nbsp & nbsp & outTime
   Print #1, ""
   While Not tqOrders.EOF
       If isConflict() Then
@@ -3026,16 +3028,11 @@ If KeyCode = vbKeyReturn Then
 DNM = Format(Now(), "dd.mm.yy hh:nn") & vbTab & cbM.Text & " " & gNzak ' именно vbTab
    
     If mousCol = orVrVip Then
-        If Not isFloatFromMobile("workTime") Then Exit Sub
+'        If Not isFloatFromMobile("workTime") Then Exit Sub
 '        orderUpdate "##24", tbMobile.Text, "Orders", "workTime"
     ElseIf mousCol = orVrVid Then
-        str = DateFromMobileVrVid(orDataVid)
-        If str = "" Then Exit Sub
-        orderUpdate "##24", str, "Orders", "outDateTime"
-    '-'ElseIf mousCol = orMOVrVid Then
-    '-'    str = DateFromMobileVrVid(orMOData)
-    '-'    If str = "" Then Exit Sub
-    '-'    orderUpdate "##25", str, "OrdersEquip", "DateTimeMO"
+        'If Not isFloatFromMobile("outTime") Then Exit Sub
+        orderUpdate "##24", str, "Orders", "outTime"
     ElseIf mousCol = orLogo Then
         orderUpdate "##26", "'" & tbMobile.Text & "'", "Orders", "Logo"
         Grid.TextMatrix(mousRow, mousCol) = tbMobile.Text
@@ -3505,6 +3502,7 @@ End If
  End If
  If tqOrders!equipStatusSync <> 0 Then
     Grid.col = orStatus
+    Grid.row = zakazNum
     Grid.CellForeColor = vbRed
  End If
 End Sub
@@ -3572,7 +3570,7 @@ If tbProduct.BOF Then 'т.е. отгрузка началась по старому и не закончилась
 'на 15,12,04 таких было 75 см запрос "Услуги без хрон отгрузки"
         tbProduct.AddNew
         tmpDate = "31.08.2003 10:00:00"
-        tbProduct!outDate = tmpDate
+        tbProduct!Outdate = tmpDate
         tbProduct!Numorder = gNzak
         tbProduct!quant = s
         tbProduct.update
