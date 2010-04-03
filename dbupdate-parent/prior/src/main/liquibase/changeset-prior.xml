@@ -1008,6 +1008,11 @@ where pc.sysname = sGuideProducts.web
 		<rollback/>
 	</changeSet>
 
+	<changeSet id="1" author="mantis-129" runOnChange="true">
+		<comment>M-85 Изменено формирование маски номера заказа и документа</comment>
+		<sqlFile path="procedures/purge_jscet.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+	</changeSet>
+
 	<changeSet id="1" author="mantis-83" runOnChange="true">
 		<comment>Некорректное перемещение гот.изделия</comment>
 		<executeCommand executable="dbisqlc.exe">
