@@ -32,7 +32,7 @@
 			<arg value="-c"/>
 			<arg value="DSN=stime;UID=admin;PWD=z"/>
 			<arg value="-q"/>
-			<arg value="\dev\prsrc\trunk\dbupdate-parent\comtex\stime\target\classes\mainteinance\mantis-130.sql"/>
+			<arg value="${basedir}\target\classes\mainteinance\mantis-130.sql"/>
 		</executeCommand>
 		<rollback/>
 	</changeSet>
