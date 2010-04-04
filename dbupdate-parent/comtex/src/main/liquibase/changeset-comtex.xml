@@ -708,5 +708,10 @@ end;
 		<sql><![CDATA[alter server prior class 'ASAODBC' USING 'DSN=dev_prior;UID=dba;PWD=sql']]></sql>
 	</changeSet>
 
+	<changeSet id="1" author="mantis-130" runOnChange="true">
+		<comment>Ошибка при добавлении новой записи в журнале хозопераций</comment>
+		<sqlFile path="triggers/xoz.wf_xoz_update.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+	</changeSet>
+
 </databaseChangeLog>
 

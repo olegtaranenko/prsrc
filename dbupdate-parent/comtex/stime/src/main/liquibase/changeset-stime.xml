@@ -26,4 +26,15 @@
 		<rollback/>
 	</changeSet>
 
+	<changeSet id="1" author="mantis-130" runOnChange="true">
+		<comment>Ошибка при заведении новой хоз операции</comment>
+		<executeCommand executable="dbisqlc.exe">
+			<arg value="-c"/>
+			<arg value="DSN=stime;UID=admin;PWD=z"/>
+			<arg value="-q"/>
+			<arg value="\dev\prsrc\trunk\dbupdate-parent\comtex\stime\target\classes\mainteinance\mantis-130.sql"/>
+		</executeCommand>
+		<rollback/>
+	</changeSet>
+
 </databaseChangeLog>

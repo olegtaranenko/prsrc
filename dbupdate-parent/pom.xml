@@ -121,6 +121,12 @@
 						<logging>FINE</logging>
 						<contexts>${changelog.context}</contexts>
 						<defaultSchemaName>dba</defaultSchemaName>
+						<expressionVars>
+							<property>
+								<name>basedir</name>
+								<value>${basedir}</value>
+							</property>
+						</expressionVars>
 					</configuration>
 					<executions>
 						<execution>

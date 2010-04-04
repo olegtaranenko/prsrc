@@ -1009,8 +1009,19 @@ where pc.sysname = sGuideProducts.web
 	</changeSet>
 
 	<changeSet id="1" author="mantis-129" runOnChange="true">
-		<comment>M-85 Изменено формирование маски номера заказа и документа</comment>
+		<comment>M-129 нельзя из аннулированного заказа удалить, если есть договор уже</comment>
 		<sqlFile path="procedures/purge_jscet.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+	</changeSet>
+
+	<changeSet id="1" author="mantis-130" runOnChange="true">
+		<comment>Ошибка при заведении новой хоз операции</comment>
+		<executeCommand executable="dbisqlc.exe">
+			<arg value="-c"/>
+			<arg value="DSN=prior;UID=dba;PWD=sql"/>
+			<arg value="-q"/>
+			<arg value="${basedir}\target\classes\mainteinance\mantis-130.sql"/>
+		</executeCommand>
+		<rollback/>
 	</changeSet>
 
 	<changeSet id="1" author="mantis-83" runOnChange="true">

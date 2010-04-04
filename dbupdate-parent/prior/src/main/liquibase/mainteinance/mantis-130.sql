@@ -1,0 +1,1 @@
+delete from ybook where id = 67936
