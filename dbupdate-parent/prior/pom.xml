@@ -70,6 +70,10 @@
 							<name>remote.odbc.stime</name>
 							<value>${remote.odbc.stime}</value>
 						</property>
+							<property>
+								<name>basedir</name>
+								<value>${basedir}</value>
+							</property>
 					</expressionVars>
 				</configuration>
 			</plugin>
