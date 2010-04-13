@@ -16,14 +16,14 @@ Begin VB.Form Equipment
       Caption         =   "Заказ"
       Height          =   2052
       Left            =   240
-      TabIndex        =   26
+      TabIndex        =   23
       Top             =   0
       Width           =   5892
       Begin VB.ComboBox cbStatus 
          Height          =   288
          Left            =   1440
          Style           =   2  'Dropdown List
-         TabIndex        =   31
+         TabIndex        =   28
          Top             =   720
          Width           =   1452
       End
@@ -33,7 +33,7 @@ Begin VB.Form Equipment
          Left            =   4380
          List            =   "Equipment.frx":000D
          Style           =   2  'Dropdown List
-         TabIndex        =   30
+         TabIndex        =   27
          Top             =   720
          Width           =   1035
       End
@@ -43,7 +43,7 @@ Begin VB.Form Equipment
          Left            =   3120
          List            =   "Equipment.frx":0033
          Style           =   2  'Dropdown List
-         TabIndex        =   29
+         TabIndex        =   26
          Top             =   720
          Width           =   1035
       End
@@ -51,7 +51,7 @@ Begin VB.Form Equipment
          Enabled         =   0   'False
          Height          =   285
          Left            =   3960
-         TabIndex        =   28
+         TabIndex        =   25
          Top             =   1440
          Width           =   1152
       End
@@ -59,7 +59,7 @@ Begin VB.Form Equipment
          Enabled         =   0   'False
          Height          =   285
          Left            =   2040
-         TabIndex        =   27
+         TabIndex        =   24
          Top             =   1440
          Width           =   1152
       End
@@ -67,7 +67,7 @@ Begin VB.Form Equipment
          Caption         =   "Н/А"
          Height          =   252
          Left            =   120
-         TabIndex        =   39
+         TabIndex        =   36
          Top             =   1440
          Width           =   1692
       End
@@ -75,7 +75,7 @@ Begin VB.Form Equipment
          Caption         =   "Дата выд."
          Height          =   252
          Left            =   120
-         TabIndex        =   38
+         TabIndex        =   35
          Top             =   1080
          Width           =   972
       End
@@ -83,7 +83,7 @@ Begin VB.Form Equipment
          Caption         =   "Номер заказа"
          Height          =   252
          Left            =   120
-         TabIndex        =   37
+         TabIndex        =   34
          Top             =   360
          Width           =   1212
       End
@@ -100,7 +100,7 @@ Begin VB.Form Equipment
          EndProperty
          Height          =   252
          Left            =   120
-         TabIndex        =   36
+         TabIndex        =   33
          Top             =   720
          Width           =   1212
       End
@@ -108,7 +108,7 @@ Begin VB.Form Equipment
          Caption         =   "Статус"
          Height          =   252
          Left            =   1560
-         TabIndex        =   35
+         TabIndex        =   32
          Top             =   360
          Width           =   852
       End
@@ -116,7 +116,7 @@ Begin VB.Form Equipment
          Caption         =   "Макет                    Образец"
          Height          =   252
          Left            =   3180
-         TabIndex        =   34
+         TabIndex        =   31
          Top             =   360
          Width           =   2112
       End
@@ -125,7 +125,7 @@ Begin VB.Form Equipment
          Enabled         =   0   'False
          Height          =   252
          Left            =   3960
-         TabIndex        =   33
+         TabIndex        =   30
          Top             =   1128
          Width           =   1272
       End
@@ -134,7 +134,7 @@ Begin VB.Form Equipment
          Enabled         =   0   'False
          Height          =   192
          Left            =   2040
-         TabIndex        =   32
+         TabIndex        =   29
          Top             =   1128
          Width           =   1692
       End
@@ -171,12 +171,39 @@ Begin VB.Form Equipment
       TabIndex        =   3
       Top             =   2160
       Width           =   5892
+      Begin VB.CheckBox cbUrgent 
+         Enabled         =   0   'False
+         Height          =   252
+         Index           =   2
+         Left            =   5280
+         TabIndex        =   40
+         Top             =   1440
+         Width           =   252
+      End
+      Begin VB.CheckBox cbUrgent 
+         Enabled         =   0   'False
+         Height          =   252
+         Index           =   1
+         Left            =   5280
+         TabIndex        =   39
+         Top             =   1080
+         Width           =   252
+      End
+      Begin VB.CheckBox cbUrgent 
+         Enabled         =   0   'False
+         Height          =   252
+         Index           =   0
+         Left            =   5280
+         TabIndex        =   38
+         Top             =   720
+         Width           =   252
+      End
       Begin VB.CheckBox cbEquipment 
          Caption         =   " YAG"
          Height          =   372
          Index           =   0
          Left            =   240
-         TabIndex        =   15
+         TabIndex        =   12
          Top             =   720
          Width           =   732
       End
@@ -185,7 +212,7 @@ Begin VB.Form Equipment
          Height          =   372
          Index           =   1
          Left            =   240
-         TabIndex        =   14
+         TabIndex        =   11
          Top             =   1080
          Width           =   732
       End
@@ -194,7 +221,7 @@ Begin VB.Form Equipment
          Height          =   372
          Index           =   2
          Left            =   240
-         TabIndex        =   13
+         TabIndex        =   10
          Top             =   1440
          Width           =   732
       End
@@ -202,54 +229,24 @@ Begin VB.Form Equipment
          Height          =   288
          Index           =   0
          Left            =   1200
-         TabIndex        =   12
-         Top             =   720
-         Visible         =   0   'False
-         Width           =   492
-      End
-      Begin VB.TextBox tbWorktime 
-         Height          =   288
-         Index           =   1
-         Left            =   1200
-         TabIndex        =   11
-         Top             =   1080
-         Visible         =   0   'False
-         Width           =   492
-      End
-      Begin VB.TextBox tbWorktime 
-         Height          =   288
-         Index           =   2
-         Left            =   1200
-         TabIndex        =   10
-         Top             =   1440
-         Visible         =   0   'False
-         Width           =   492
-      End
-      Begin VB.CommandButton cmSetOutDate 
-         Caption         =   "..."
-         Height          =   252
-         Index           =   0
-         Left            =   5280
          TabIndex        =   9
          Top             =   720
          Visible         =   0   'False
          Width           =   492
       End
-      Begin VB.CommandButton cmSetOutDate 
-         Caption         =   "..."
-         Height          =   252
+      Begin VB.TextBox tbWorktime 
+         Height          =   288
          Index           =   1
-         Left            =   5280
+         Left            =   1200
          TabIndex        =   8
          Top             =   1080
          Visible         =   0   'False
          Width           =   492
       End
-      Begin VB.CommandButton cmSetOutDate 
-         Caption         =   "..."
-         Height          =   252
+      Begin VB.TextBox tbWorktime 
+         Height          =   288
          Index           =   2
-         Left            =   5280
+         Left            =   1200
          TabIndex        =   7
          Top             =   1440
          Visible         =   0   'False
@@ -283,10 +280,10 @@ Begin VB.Form Equipment
          Width           =   552
       End
       Begin VB.Label Label7 
-         Caption         =   "Сетка"
+         Caption         =   "Сроч-ть"
          Height          =   252
          Left            =   5160
-         TabIndex        =   40
+         TabIndex        =   37
          Top             =   360
          Width           =   612
       End
@@ -294,7 +291,7 @@ Begin VB.Form Equipment
          Caption         =   "Вр. вып."
          Height          =   252
          Left            =   1200
-         TabIndex        =   25
+         TabIndex        =   22
          Top             =   360
          Width           =   732
       End
@@ -303,7 +300,7 @@ Begin VB.Form Equipment
          Height          =   252
          Index           =   0
          Left            =   2520
-         TabIndex        =   24
+         TabIndex        =   21
          Top             =   720
          Visible         =   0   'False
          Width           =   1572
@@ -313,7 +310,7 @@ Begin VB.Form Equipment
          Height          =   252
          Index           =   1
          Left            =   2520
-         TabIndex        =   23
+         TabIndex        =   20
          Top             =   1080
          Visible         =   0   'False
          Width           =   1572
@@ -323,7 +320,7 @@ Begin VB.Form Equipment
          Height          =   252
          Index           =   2
          Left            =   2520
-         TabIndex        =   22
+         TabIndex        =   19
          Top             =   1440
          Visible         =   0   'False
          Width           =   1572
@@ -332,7 +329,7 @@ Begin VB.Form Equipment
          Caption         =   "Дата Изгот."
          Height          =   252
          Left            =   2520
-         TabIndex        =   21
+         TabIndex        =   18
          Top             =   360
          Width           =   1092
       End
@@ -340,7 +337,7 @@ Begin VB.Form Equipment
          Caption         =   "MO"
          Height          =   252
          Left            =   2040
-         TabIndex        =   20
+         TabIndex        =   17
          Top             =   360
          Width           =   252
       End
@@ -348,7 +345,7 @@ Begin VB.Form Equipment
          Caption         =   "Статус"
          Height          =   252
          Left            =   4200
-         TabIndex        =   19
+         TabIndex        =   16
          Top             =   360
          Width           =   972
       End
@@ -356,7 +353,7 @@ Begin VB.Form Equipment
          Height          =   252
          Index           =   2
          Left            =   4200
-         TabIndex        =   18
+         TabIndex        =   15
          Top             =   1440
          Width           =   996
       End
@@ -364,7 +361,7 @@ Begin VB.Form Equipment
          Height          =   252
          Index           =   1
          Left            =   4200
-         TabIndex        =   17
+         TabIndex        =   14
          Top             =   1080
          Width           =   996
       End
@@ -372,7 +369,7 @@ Begin VB.Form Equipment
          Height          =   252
          Index           =   0
          Left            =   4200
-         TabIndex        =   16
+         TabIndex        =   13
          Top             =   720
          Width           =   996
       End
@@ -386,8 +383,10 @@ Attribute VB_Exposed = False
 Option Explicit
 
 Public orderStatusStr As String
+Public readonlyFlag As Boolean
 Dim Err As String ' чтобы не прыгал регистр
 Dim currStatusId As Integer
+
 
 
 
@@ -395,7 +394,7 @@ Private Function setVisibleByEquipment(Index As Integer) As Boolean
     Dim visibleFlag As Boolean
     visibleFlag = cbEquipment(Index).value = 1
     tbWorktime(Index).Visible = visibleFlag
-    cmSetOutDate(Index).Visible = visibleFlag
+    'cmSetOutDate(Index).Visible = visibleFlag
     lbDateOut(Index).Visible = visibleFlag
     tbVrVipO(Index).Visible = False
     lbEquipStatus(Index).Visible = visibleFlag
@@ -476,6 +475,7 @@ Dim I As Integer
 End Sub
 
 
+
 Private Sub cmApply_Click()
     Dim I As Integer
     For I = 0 To cbEquipment.UBound
@@ -533,9 +533,22 @@ Private Sub cmSetOutDate_Click(Index As Integer)
     
 End Sub
 
+Private Sub setReadonly()
+    Dim I As Integer
+    For I = 0 To cbEquipment.UBound
+        cbEquipment(I).Enabled = Not Me.readonlyFlag
+        tbWorktime(I).Enabled = Not Me.readonlyFlag
+        tbVrVipO(I).Enabled = Not Me.readonlyFlag
+        
+    Next I
+    cmApply.Enabled = Not readonlyFlag
+    
+End Sub
+
 Private Sub Form_Load()
     lbNumorder.Caption = gNzak
     'lbStatus.Caption = orderStatusStr
+    setReadonly
     
     loadEquipment
     
@@ -556,10 +569,12 @@ Private Sub loadEquipment()
     
     sql = "select oe.* " _
     & " , s.status " _
+    & " , isnull(oc.urgent, '') as urgent " _
     & " from OrdersEquip oe " _
     & " join guideStatus s on s.statusId = oe.statusEquipId " _
+    & " left join OrdersInCeh oc on oe.numorder = oc.numorder and oe.cehId = oc.cehId " _
     & " where oe.numorder = " & gNzak
-    
+
     Set tbOrders = myOpenRecordSet("##eq02", sql, dbOpenForwardOnly)
     If Not tbOrders Is Nothing Then
         If Not tbOrders.BOF Then
@@ -569,6 +584,10 @@ Private Sub loadEquipment()
                     Dim cehId As Integer
                     cehId = tbOrders!cehId - 1
                     cbEquipment(cehId).value = 1
+                    If tbOrders!urgent <> "" Then
+                        cbUrgent(cehId).value = 1
+                    End If
+                    
                     If Not IsNull(tbOrders!Worktime) Then
                         tbWorktime(cehId).Text = tbOrders!Worktime
                     End If

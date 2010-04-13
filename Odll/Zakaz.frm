@@ -743,7 +743,7 @@ While Not tbOrders.EOF
         End If
 '        If eDay > ZeDay Or (eDay = ZeDay And bDay <= ZbDay) Then ' не нарушаем сортировку
         If bDay <= ZbDay Then ' не нарушаем сортировку
-            dayCorrect ZbDay, ZeDay, CStr(urgent)
+            dayCorrect ZbDay, ZeDay, CStr(Me.urgent)
             ukladka ost, ZeDay, ZbDay, tbWorktime.Text 'обратная укладка (в bef не попадает)
             If Not zakazToGrid(reg, cbStatus.Text, tbWorktime.Text) Then GoTo EN1
             'ZeDay = maxDay + 1 ' чтобы более не срабатывал
@@ -2092,19 +2092,7 @@ For I = 1 To maxDay
     Me.lv.ListItems("k" & I).SubItems(zkFirmKolvo) = Round(delta(I), 1)
 Next I
 
-Me.cbStatus.Clear
-addToCbStatus 7, "b" '"аннулир."
-If statusIdOld = 5 Then
-    addToCbStatus 5   '"отложен"
-ElseIf statusIdOld = 8 Then
-    statusIdOld = 1
-    addToCbStatus 1 '"в работе"
-Else
-    addToCbStatus 0 '"принят"  'не разрешены в т.ч. для
-    addToCbStatus 1 '"в работе"
-    addToCbStatus 2 '"резерв"  'соглас-я с готовым образцом
-    addToCbStatus 3 '"согласов."
-End If
+cbBuildStatuses
 
 For I = 0 To Me.cbStatus.ListCount
     If statId(I) = statusIdOld Then
@@ -2125,7 +2113,6 @@ Me.newZagruz Me.Regim  'влияет только один раз
 
 startParams = True
 End Function
-
 
 Function cbMOsetByText(cb As ComboBox, stat As Variant) As Boolean
     cbMOsetByText = False
@@ -2164,11 +2151,31 @@ If id > lenStatus Then
     MsgBox "Err в Orders\addToCbStatus"
 End If
 
-'Equipment.cbStatus.AddItem status(id)
+Equipment.cbStatus.AddItem status(id)
 Me.cbStatus.AddItem status(id)
 statId(I) = id
 I = I + 1
 
 End Sub
     
+    
+Private Sub cbBuildStatuses()
+Me.cbStatus.Clear
+Equipment.cbStatus.Clear
+
+addToCbStatus 7, "b" '"аннулир."
+If statusIdOld = 5 Then
+    addToCbStatus 5   '"отложен"
+ElseIf statusIdOld = 8 Then
+    statusIdOld = 1
+    addToCbStatus 1 '"в работе"
+Else
+    addToCbStatus 0 '"принят"  'не разрешены в т.ч. для
+    addToCbStatus 1 '"в работе"
+    addToCbStatus 2 '"резерв"  'соглас-я с готовым образцом
+    addToCbStatus 3 '"согласов."
+End If
+
+
+End Sub
 

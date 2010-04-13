@@ -29,7 +29,7 @@ Public workTimeMO As Variant
 Public StatM As Variant
 Public StatO As Variant
 Public nevip As Variant
-Public urgent As Variant
+Public urgent As String 'Variant
 
 Private done As Boolean
 
@@ -58,7 +58,11 @@ Public Sub initFromDb()
     StatM = tbOrders!StatM
     StatO = tbOrders!StatO
     nevip = tbOrders!nevip
-    urgent = tbOrders!urgent
+    If Not IsNull(tbOrders!urgent) Then
+        urgent = tbOrders!urgent
+    Else
+        urgent = ""
+    End If
 
     done = True
 End Sub
