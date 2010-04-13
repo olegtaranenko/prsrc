@@ -704,5 +704,11 @@ end;
 		<sqlFile path="triggers/xoz.wf_xoz_update.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 	</changeSet>
 
+	<changeSet id="1" author="mantis-132" runOnChange="true">
+		<comment>Падение ЖХО, если в названии фирмы апостроф</comment>
+		<sqlFile path="procedures/escapeAsaString.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="procedures/wf_kreditor_debitor.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+	</changeSet>
+
 </databaseChangeLog>
 
