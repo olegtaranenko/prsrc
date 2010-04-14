@@ -961,9 +961,13 @@ cmExit.Top = cmExit.Top + h
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
-'Если именно мы блокировали:
-If getSystemField("resursLock") = Orders.cbM.Text Then unLockBase
-Orders.Grid_EnterCell ' подсветка ячейки
+    'Если именно мы блокировали:
+    If getSystemField("resursLock") = Orders.cbM.Text Then unLockBase
+    Orders.Grid_EnterCell ' подсветка ячейки
+    
+    Unload Equipment
+    'synchOrderRow
+
 End Sub
 
 Private Sub Grid_EnterCell()
@@ -1334,19 +1338,7 @@ If getSystemField("resursLock") = Orders.cbM.Text Then unLockBase 'Если именно м
 
 wrkDefault.CommitTrans
 
-'обновить Окно Orders
-sql = "SELECT o.StatusId, o.DateRS, o.numOrder" & _
-", oe.outDateTime, o.outTime, oe.workTime, p.Problem" & _
-", mo.DateTimeMO, mo.StatM, mo.StatO, mo.workTimeMO " & _
-" FROM Orders o " _
-& " INNER JOIN GuideProblem p  ON p.ProblemId = o.ProblemId" _
-& " INNER JOIN vw_OrdersEquipSummary  oe  ON oe.numOrder = o.numOrder " _
-& " LEFT JOIN vw_OrdersMOSummary      mo ON o.numOrder = mo.numOrder" _
-& " WHERE o.numOrder = " & gNzak
-
-Set tqOrders = myOpenRecordSet("##16", sql, dbOpenForwardOnly)
-str = StatParamsLoad(Orders.mousRow)
-tqOrders.Close
+str = synchOrderRow
 
 On Error Resume Next ' в некот.ситуациях один из Open logFile дает Err: файл уже открыт
 Open logFile For Append As #2

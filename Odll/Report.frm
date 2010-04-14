@@ -342,13 +342,13 @@ Next I
 Grid.ColAlignment(crNomZak) = flexAlignLeftCenter 'flexAlignCenterCenter 'crStatus
 
 Grid.TextMatrix(0, crVirab) = "значение"
-Grid.TextMatrix(1, crVirab) = sum
+Grid.TextMatrix(1, crVirab) = Round(sum, 2)
 If resurs > -1 Then
     Grid.TextMatrix(2, crVirab) = res
     Grid.TextMatrix(3, crVirab) = resurs
 End If
 If resurs > 0.01 Then Grid.TextMatrix(4, crVirab) = Round(sum / resurs, 2)
-If live > -1 Then Grid.TextMatrix(5, crVirab) = live
+If live > -1 Then Grid.TextMatrix(5, crVirab) = Round(live, 2)
 
 If sum > 0 Then
     
@@ -367,31 +367,32 @@ If sum > 0 Then
     If QQ2(I) = 0 Then
         Grid.TextMatrix(quantity + I, crNomZak) = NN(I)
         sql = "SELECT Orders.ManagId, Orders.Logo, OrdersInCeh.Stat, " _
-        & "Orders.Product, Orders.ProblemId, Orders.outDateTime, " _
-        & "GuideFirms.Name, Orders.workTime, Orders.StatusId, OrdersInCeh.Nevip " _
+        & "Orders.Product, Orders.ProblemId, oe.outDateTime, " _
+        & "GuideFirms.Name, oe.workTime, Orders.StatusId, OrdersInCeh.Nevip " _
         & " FROM Orders " _
         & " JOIN GuideFirms ON GuideFirms.FirmId = Orders.FirmId " _
+        & " JOIN OrdersEquip oe ON Orders.numOrder = oe.numOrder " _
         & " LEFT JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder " _
         & "WHERE Orders.numOrder = " & NN(I)
     Else 'образец
         Grid.TextMatrix(quantity + I, crNomZak) = NN(I) & "o"
-        sql = "SELECT Orders.ManagId, Orders.Logo, OrdersMO.StatO As Stat, " & _
+        sql = "SELECT Orders.ManagId, Orders.Logo, mo.StatO As Stat, " & _
         "Orders.Product, Orders.ProblemId, mo.DateTimeMO As outDateTime, " _
-        & "GuideFirms.Name, mo.workTimeMO As workTime " _
-        & "FROM Orders " _
-        & "JOIN GuideFirms ON GuideFirms.FirmId = Orders.FirmId " _
-        & "LEFT JOIN OrdersMO mo ON Orders.numOrder = mo.numOrder " _
-        & "WHERE Orders.numOrder = " & NN(I)
+        & " GuideFirms.Name, mo.workTimeMO As workTime" _
+        & " FROM Orders" _
+        & " JOIN GuideFirms ON GuideFirms.FirmId = Orders.FirmId" _
+        & " LEFT JOIN OrdersMO mo ON Orders.numOrder = mo.numOrder" _
+        & " WHERE Orders.numOrder = " & NN(I)
     End If
-    Grid.TextMatrix(quantity + I, crVirab) = QQ(I)
-    
+    Grid.TextMatrix(quantity + I, crVirab) = Round(QQ(I), 2)
+    'Debug.Print sql
     Set tbOrders = myOpenRecordSet("##380", sql, dbOpenForwardOnly)
     If tbOrders Is Nothing Then GoTo NXT1
     If Not tbOrders.BOF Then
         Grid.TextMatrix(quantity + I, crM) = Manag(tbOrders!ManagId)
         'образца уже м.не быть, тогда поле IsNull
         If Not IsNull(tbOrders!Worktime) Then _
-            Grid.TextMatrix(quantity + I, crVrVip) = tbOrders!Worktime
+            Grid.TextMatrix(quantity + I, crVrVip) = Round(tbOrders!Worktime, 1)
         If IsNull(tbOrders!stat) Then
             Grid.TextMatrix(quantity + I, crStatus) = "нет"
         Else
@@ -406,8 +407,8 @@ If sum > 0 Then
                 Grid.TextMatrix(quantity + I, crProcVip) = Round(100 * (1 - tbOrders!nevip), 1)
         End If
 '        Grid.TextMatrix(quantity + i, crProblem) = Problems(tbOrders!ProblemId)
-        LoadDate Grid, quantity + I, crDataVid, tbOrders!outDateTime, "dd.mm.yy"
-        LoadDate Grid, quantity + I, crVrVid, tbOrders!outDateTime, "hh"
+        LoadDate Grid, quantity + I, crDataVid, tbOrders!Outdatetime, "dd.mm.yy"
+        LoadDate Grid, quantity + I, crVrVid, tbOrders!Outdatetime, "hh"
         Grid.TextMatrix(quantity + I, crFirma) = tbOrders!name
         Grid.TextMatrix(quantity + I, crLogo) = tbOrders!Logo
         Grid.TextMatrix(quantity + I, crIzdelia) = tbOrders!Product
@@ -646,7 +647,7 @@ If Not tqOrders.BOF Then
     j = tqOrders!StatusId
     If j = 2 Or j = 3 Or j = 9 Then
         Grid.MergeRow(l) = True
-        str = status(j) & " на " & tqOrders!dateRS
+        str = status(j) & " на " & tqOrders!DateRS
         Grid.TextMatrix(l, rpStatus) = str
         Grid.row = l
         Grid.col = rpStatus
@@ -661,8 +662,8 @@ If Not tqOrders.BOF Then
         Grid.TextMatrix(l, rpStatus) = status(j)
         Grid.TextMatrix(l, rpProblem) = Problems(tqOrders!ProblemId)
     End If
-    LoadDate Grid, l, rpDataVid, tqOrders!outDateTime, "dd.mm.yy"
-    LoadDate Grid, l, rpVrVid, tqOrders!outDateTime, "hh"
+    LoadDate Grid, l, rpDataVid, tqOrders!Outdatetime, "dd.mm.yy"
+    LoadDate Grid, l, rpVrVid, tqOrders!Outdatetime, "hh"
     Grid.TextMatrix(l, rpM) = tqOrders!Manag
     Grid.TextMatrix(l, rpLogo) = tqOrders!Logo
     Grid.TextMatrix(l, rpIzdelia) = tqOrders!Product

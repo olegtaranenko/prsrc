@@ -270,7 +270,7 @@ Public Const ColWidthForRuble As Single = 1.3
 
 
 Function tuneCurencyAndGranularity(tunedValue, currentRate, valueCurrency As Integer, Optional quantity As Double = 1, Optional perlist As Long = 1) As Double
-    Dim Left As String, StatusId As String, Outdatetime As String
+    Dim Left As String, StatusId As String, Outdatetime As String, Rollback As String
     '
     Dim totalInRubles As Double
     Dim singleInRubles As Double
@@ -1523,9 +1523,40 @@ Grid.MousePointer = flexHourglass
 Grid.MousePointer = flexDefault
 End Sub
 
-Function StatParamsLoad(row As Long)
-Dim s As Double, log As String, str As String
 
+Function synchOrderRow() As String
+    'обновить информацию по заказу в главном реестре
+    sql = "SELECT o.StatusId, o.DateRS, o.numOrder" & _
+    ", oe.outDateTime, o.outTime, oe.workTime, p.Problem" & _
+    ", mo.DateTimeMO, mo.StatM, mo.StatO, mo.workTimeMO " & _
+    ", convert(int, (oe.maxStatusId - oe.minStatusId) + abs(oe.maxStatusId - o.statusId)) as equipStatusSync " & vbCr & _
+    " FROM Orders o " _
+    & " INNER JOIN GuideProblem p  ON p.ProblemId = o.ProblemId" _
+    & " INNER JOIN vw_OrdersEquipSummary  oe  ON oe.numOrder = o.numOrder " _
+    & " LEFT JOIN vw_OrdersMOSummary      mo ON o.numOrder = mo.numOrder" _
+    & " WHERE o.numOrder = " & gNzak
+    
+    Set tqOrders = myOpenRecordSet("##16", sql, dbOpenForwardOnly)
+    synchOrderRow = StatParamsLoad(Orders.mousRow, True)
+    tqOrders.Close
+
+End Function
+
+Function StatParamsLoad(row As Long, Optional redraw As Boolean = False)
+Dim s As Double, log As String, str As String
+Dim Grid As MSFlexGrid
+
+Set Grid = Orders.Grid
+
+If redraw Then
+    Grid.col = orStatus
+    Grid.row = row
+    If tqOrders!equipStatusSync <> 0 Then
+        Grid.CellForeColor = vbRed
+    Else
+        Grid.CellForeColor = vbBlack
+    End If
+End If
 
  log = Format(Now(), "dd.mm.yy hh:nn") & vbTab & Orders.cbM.Text & " " & gNzak ' именно vbTab
  str = status(tqOrders!StatusId): log = log & " " & str
