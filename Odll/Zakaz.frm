@@ -645,10 +645,13 @@ End Function
 'reg="tail" для позаказного просмотра(только при вызове из этой формы)
 'reg = "fromCehZagruz"
 'reg = "setka" по F1,F2 - т.е. первый раз
+'reg = "" - double click at status cell
+
 Sub newZagruz(Optional reg As String = "")
 Dim s As Double, nevip As Double, I As Integer
 Dim bDay As Integer, eDay As Integer, stat As String
 
+'isMzagruz - true: если вызвали загрузку НЕ из цеха, то есть Менеджер.
 If reg = "fromCehZagruz" Then
     isMzagruz = False
 Else
@@ -712,11 +715,11 @@ sql = "SELECT o.numOrder, oe.workTime, " & _
 " ORDER BY "
 
 If isMzagruz Then
-    sql = sql & "4 DESC;" ' в порядке уменьшения Даты Начала
+    sql = sql & "4 DESC" ' в порядке уменьшения Даты Начала
 Else
-    sql = sql & "3;" ' в порядке увеличения  Даты Конца
+    sql = sql & "3" ' в порядке увеличения  Даты Конца
 End If
-Debug.Print sql
+'Debug.Print sql
 Set tbOrders = myOpenRecordSet("##370", sql, dbOpenForwardOnly) ', dbOpenDynaset)
 If tbOrders Is Nothing Then Exit Sub
 While Not tbOrders.EOF

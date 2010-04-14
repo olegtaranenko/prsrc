@@ -604,7 +604,7 @@ Const rowFromOrdersSQL = "select " & vbCr & _
 
 ' нужно вызывать уже после того, как новая Валюта сменена.
 Private Sub adjustHotMoney()
-Dim Numorder As String, Sta tusId As String, Rollback As String, Outdatetime As String
+Dim Numorder As String, StatusId As String, Rollback As String, Outdatetime As String
 Dim tbWorktime As String, Left As String
 Dim Ceh As String, Worktime As String
 Dim I As Long, J As Integer

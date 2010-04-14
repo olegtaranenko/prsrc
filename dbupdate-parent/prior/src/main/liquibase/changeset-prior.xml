@@ -1012,7 +1012,7 @@ where pc.sysname = sGuideProducts.web
 		<comment>M-129 нельз€ из аннулированного заказа удалить, если есть договор уже</comment>
 		<sqlFile path="procedures/purge_jscet.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 	</changeSet>
-
+<!--
 	<changeSet id="1" author="mantis-130" runOnChange="true">
 		<comment>ќшибка при заведении новой хоз операции</comment>
 		<executeCommand executable="dbisqlc.exe">
@@ -1023,7 +1023,7 @@ where pc.sysname = sGuideProducts.web
 		</executeCommand>
 		<rollback/>
 	</changeSet>
-
+-->
 	<changeSet id="1" author="mantis-131" runOnChange="true">
 		<comment>M-131 ошибка при попытке удалить заказ по HeadHunter</comment>
 		<sqlFile path="procedures/put_jdog.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>

@@ -600,6 +600,7 @@ End Function
 '$odbc10$
 Function getResurs() As Integer
 Dim I As Integer, J As Integer, rMaxDay As Integer, s As Double
+' rMaxDay - Resource max day - максимальное значение из таблицы ResursCEH (CO2, etc)
 
 Set tbSystem = myOpenRecordSet("##93", "System", dbOpenForwardOnly)
 If tbSystem Is Nothing Then myBase.Close: End

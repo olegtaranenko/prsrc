@@ -1,1 +1,1 @@
-delete from ybook where id = 67936
+delete from ybook where id = 67936;
