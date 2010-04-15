@@ -40,6 +40,8 @@ Public lenProblem As Integer
 Public Problems(20) As String
 Public manId() As Integer '$$7
 Public Manag() As String  '
+Public Managers() As MapEntry
+
 Public insideId() As String
 Public Const begCehProblemId = 10 ' начало цеховых проблем в справочнике
 Public neVipolnen As Double, neVipolnen_O As Double
@@ -945,6 +947,9 @@ baseOpen
     sql = "create variable @issueMarker varchar(32)"
     If myExecute("##issueMarker", sql, 0) = 0 Then End
 
+    sql = "create variable @managerId varchar(20)"
+    If myExecute("##@managerId", sql, 0) = 0 Then End
+    
 mainTitle = getMainTitle
 
 If Not isEmpty(otlad) Then '
@@ -1654,23 +1659,23 @@ tmpDate = DateAdd("d", I, tmpDate)
 End Function
 
 Function startDays() As Integer
-Dim I As Integer, J  As Integer, k   As Integer
+Dim I As Integer, J  As Integer, K   As Integer
 ReDim Preserve stDays(befDays + 1)
 
-For k = 0 To befDays '    *********************************************
+For K = 0 To befDays '    *********************************************
 
 J = 0
 I = 1
 While J < 3 '         задание смещения зеленого коридора (3-й день)
 
-    day = Weekday(DateAdd("d", k + I - befDays, curDate))
+    day = Weekday(DateAdd("d", K + I - befDays, curDate))
 '    day = Weekday(CurDate - befDays + K + I)
     If Not (day = vbSunday Or day = vbSaturday) Then J = J + 1
     I = I + 1
 Wend
-stDays(k) = I + k ' "+k" т.к. пока нумерация начинается befDays дней назад
+stDays(K) = I + K ' "+k" т.к. пока нумерация начинается befDays дней назад
 
-Next k          '       ***********************************************
+Next K          '       ***********************************************
 dayMassLenght (stDays(befDays) + 1)
 startDays = stDays(befDays) - befDays ' для Сегодня, которое под №1
 End Function
@@ -1824,8 +1829,8 @@ While Not tbFirms.EOF '                         *******************
     If visits > 0 And year = "" Then
         If Not bilo Then
             Report.Grid.TextMatrix(nRow, 1) = tbFirms!name
-            If Not IsNull(tbFirms!ManagId) Then _
-                    Report.Grid.TextMatrix(nRow, 2) = Manag(tbFirms!ManagId)
+            If Not IsNull(tbFirms!managId) Then _
+                    Report.Grid.TextMatrix(nRow, 2) = Manag(tbFirms!managId)
             Report.Grid.TextMatrix(nRow, 3) = tbFirms!Kategor
             If Not IsNull(tbFirms!Sale) Then _
                     Report.Grid.TextMatrix(nRow, 4) = tbFirms!Sale
@@ -2593,7 +2598,7 @@ Dim irow As Long
 End Function
 
 Sub loadSeria(ByRef p_tv As TreeView)
-Dim Key As String, pKey As String, k() As String, pK()  As String
+Dim Key As String, pKey As String, K() As String, pK()  As String
 Dim I As Integer, iErr As Integer
 bilo = False
 sql = "SELECT sGuideSeries.*  From sGuideSeries ORDER BY sGuideSeries.seriaId;"
@@ -2604,7 +2609,7 @@ If Not tbSeries.BOF Then
  Set Node = p_tv.Nodes.Add(, , "k0", "Справочник по сериям")
  Node.Sorted = True
  
- ReDim k(0): ReDim pK(0): ReDim NN(0): iErr = 0
+ ReDim K(0): ReDim pK(0): ReDim NN(0): iErr = 0
  While Not tbSeries.EOF
     If tbSeries!seriaId = 0 Then GoTo NXT1
     Key = "k" & tbSeries!seriaId
@@ -2621,12 +2626,12 @@ tbSeries.Close
 
 While bilo ' необходимы еще проходы
   bilo = False
-  For I = 1 To UBound(k())
-    If k(I) <> "" Then
+  For I = 1 To UBound(K())
+    If K(I) <> "" Then
         On Error GoTo ERR2 ' назначить еще проход
-        Set Node = p_tv.Nodes.Add(pK(I), tvwChild, k(I), NN(I))
+        Set Node = p_tv.Nodes.Add(pK(I), tvwChild, K(I), NN(I))
         On Error GoTo 0
-        k(I) = ""
+        K(I) = ""
         Node.Sorted = True
     End If
 NXT:
@@ -2636,11 +2641,29 @@ p_tv.Nodes.item("k0").Expanded = True
 Exit Sub
 ERR1:
  iErr = iErr + 1: bilo = True
- ReDim Preserve k(iErr): ReDim Preserve pK(iErr): ReDim Preserve NN(iErr)
- k(iErr) = Key: pK(iErr) = pKey: NN(iErr) = tbSeries!seriaName
+ ReDim Preserve K(iErr): ReDim Preserve pK(iErr): ReDim Preserve NN(iErr)
+ K(iErr) = Key: pK(iErr) = pKey: NN(iErr) = tbSeries!seriaName
  Resume Next
 
 ERR2: bilo = True: Resume NXT
 
 End Sub
+
+Public Function getManagById(managId As Variant) As String
+Dim I As Integer
+    getManagById = ""
+    If Not IsNull(managId) Then
+        Dim imanagId As String
+        imanagId = CStr(managId)
+        If imanagId <> "" Then
+            For I = 0 To UBound(Managers)
+                If Managers(I).Key = imanagId Then
+                    getManagById = CStr(Managers(I).value)
+                    Exit Function
+                End If
+            Next I
+        End If
+    End If
+End Function
+
 

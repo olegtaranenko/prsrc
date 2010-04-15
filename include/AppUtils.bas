@@ -4,7 +4,10 @@ Option Explicit
 ' Ётот файл раздел€етс€ между prior, stime и rowmat.
 ' не использовать в cfg
 
+
 Sub GridToExcel(Grid As MSFlexGrid, Optional title As String = "")
+Dim Rows As String, Count As String, Numorder As String
+
 
 Dim objExel As Excel.Application, c As Long, r As Long
 Dim I As Integer, strA() As String, begRow As Integer, str As String
@@ -26,7 +29,7 @@ For r = 0 To Grid.Rows - 1
         If Grid.ColWidth(c) > 0 Then
             str = Grid.TextMatrix(r, c) '=' - наверно зарезервирован дл€ ввода формул
             Dim firstLetter As String
-            firstLetter = left$(str, 1)
+            firstLetter = Left$(str, 1)
             Dim doEscape As Boolean
             
             If firstLetter = "=" Or firstLetter = "+" Then
@@ -42,14 +45,14 @@ For r = 0 To Grid.Rows - 1
             End If
 'иногда символы Cr и Lf (поле MEMO в базе) дают Err в Excel, поэтому из пол€
             I = InStr(str, vbCr) 'MEMO берем только первую строчку
-            If I > 0 Then str = left$(str, I - 1)
+            If I > 0 Then str = Left$(str, I - 1)
             I = InStr(str, vbLf) 'MEMO берем только первую строчку
-            If I > 0 Then str = left$(str, I - 1)
+            If I > 0 Then str = Left$(str, I - 1)
             If IsNumeric(str) And r > 0 Then
                 strA(curColumn - 1) = CStr(CDbl(str))
             Else
                 If Len(str) > 255 Then
-                    str = left(str, 252) & "..."
+                    str = Left(str, 252) & "..."
                 End If
                 strA(curColumn - 1) = str
             End If
@@ -94,7 +97,7 @@ Dim valueorder As Numorder
 
     Set valueorder = New Numorder
     valueorder.val = getSystemField("lastDocNum")
-    If valueorder.isEmpty Then
+    If valueorder.IsEmpty Then
         valueorder.docs = True
     End If
     If Not valueorder.isCurrentDay Then

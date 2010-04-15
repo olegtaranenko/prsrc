@@ -13,14 +13,10 @@ Public settings() As MapEntry
 Public appCfgFile As String
 Public siteCfgFile As String
 
-Type MapEntry
-    Key As String
-    value As Variant
-End Type
-
 
 
 Sub parseCommandLine(Optional MaxArgs)
+    Dim IsEmpty As String
    'Declare variables.
    Dim c, CmdLine, CmdLnLen, InArg, I, NumArgs
    Dim inQuoted As Boolean
@@ -121,7 +117,7 @@ Dim equalPos As Long
 
     equalPos = InStr(1, match, delimiter, vbTextCompare)
     If equalPos <> 0 Then
-        result.Key = trimAll(left(match, equalPos - 1))
+        result.Key = trimAll(Left(match, equalPos - 1))
         result.value = trimAll(Mid(match, equalPos + 1))
     Else
         result.Key = match
@@ -147,7 +143,7 @@ AA:
         ch = Mid$(str, I, 1)
         If ch <> " " And ch <> vbTab Then Exit For
     Next I
-    trimAll = left$(str, I)
+    trimAll = Left$(str, I)
     
 End Function
 
@@ -190,7 +186,7 @@ End Sub
 Function loadFileSettings(filePath As String, ByRef curSettings() As MapEntry) As Integer
 Dim entry As MapEntry
 
-    Dim str As String, str2 As String, I As Integer, J As Integer
+    Dim str As String, str2 As String, I As Integer, j As Integer
     str = filePath
     ReDim curSettings(0)
     
@@ -230,7 +226,7 @@ EN1:
 End Sub
 
 Function getAppCfgDefaultName() As String
-    getAppCfgDefaultName = App.path & "\" & App.EXEName & ".cfg"
+    getAppCfgDefaultName = App.path & "\" & App.exeName & ".cfg"
 End Function
 
 Function getSiteCfgDefaultName() As String
@@ -378,7 +374,7 @@ Dim value As Variant
 End Function
 
 Function isKey(arg As String) As Boolean
-    If left(arg, 1) = "-" Then
+    If Left(arg, 1) = "-" Then
         isKey = True
     Else
         isKey = False

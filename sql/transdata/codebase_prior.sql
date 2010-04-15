@@ -7053,23 +7053,6 @@ begin
 end;
 
 
-if exists (select 1 from systriggers where trigname = 'last_modified' and tname = 'orders') then 
-	drop trigger orders.last_modified;
-end if;
-
-create TRIGGER last_modified before update order 2 on 
-orders
-referencing old as old_name new as new_name
-for each row
-begin
-	if not update(rowLock) and not update(numorder) and not update(lastModified) and not update(id_bill) then
-		set new_name.lastModified = now();
-	end if;
-end;
-
-
-
-
 
 -----------------------------------------------------
 --	Функции, для работы с вариантными изделиями -----

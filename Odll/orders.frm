@@ -568,7 +568,7 @@ Dim objExel As Excel.Application, exRow As Long
 Dim head1 As String, head2 As String, head3 As String, head4 As String
 Dim gain2 As Double, gain3 As Double, gain4 As Double
 Dim tbCeh As Recordset
-
+Dim OrdersEquipStat() As ZakazVO
 Public refreshCurrentRow As Boolean
 
 
@@ -576,40 +576,66 @@ Public refreshCurrentRow As Boolean
 Const AddCaption = "Добавить"
 Const t17_00 = 61200 ' в секундах
 
-Const rowFromOrdersSQL = "select " & vbCr & _
-    "    o.numOrder, o.equip as Ceh, o.inDate" & vbCr & _
-    "   ,m.Manag, s.Status, o.StatusId, p.Problem" & vbCr & _
-    "   ,o.DateRS, f.Name, oe.outDateTime, o.outTime, o.Type" & vbCr & _
-    "   ,oe.workTime, o.Logo, o.Product, o.ordered" & vbCr & _
-    "   ,o.temaId, o.paid, o.shipped,  o.Invoice" & vbCr & _
-    "   ,mo.DateTimeMO, mo.workTimeMO, mo.StatM, mo.StatO" & vbCr & _
-    "   ,lm.Manag AS lastManag, oc.urgent" & vbCr & _
-    "   ,v.venturename as venture" & vbCr & _
-    "   ,lastModified, id_bill, f.id_voc_names " & vbCr & _
-    "   ,v.sysname as servername" & vbCr & _
-    "   ,o.zalog, o.nal, o.rate," & vbCr & _
-    "   convert(int, (oe.maxStatusId - oe.minStatusId) + abs(oe.maxStatusId - o.statusId)) as equipStatusSync " & vbCr & _
-    " from orders o " & vbCr & _
-    " JOIN GuideStatus s ON s.StatusId = o.StatusId " & vbCr & _
-    " JOIN GuideProblem p ON p.ProblemId = o.ProblemId " & vbCr & _
-    " JOIN GuideManag m ON m.ManagId = o.ManagId " & vbCr & _
-    " JOIN GuideFirms f ON f.FirmId = o.FirmId " & vbCr & _
-    " LEFT JOIN vw_OrdersEquipSummary oe ON oe.numorder = o.numorder " & vbCr & _
-    " LEFT JOIN GuideManag lm ON o.lastManagId = lm.ManagId " & vbCr & _
-    " LEFT JOIN vw_OrdersMOSummary mo ON o.numOrder = mo.numOrder " & vbCr & _
-    " LEFT JOIN vw_OrdersInCehSummary oc ON o.numOrder = oc.numOrder" & vbCr & _
-    " LEFT JOIN guideventure v on v.ventureId = o.ventureid "
+Const ShortSelectSqlStr = "" _
+    & vbCr & "     1 as presentationFormat" _
+    & vbCr & "   , o.numOrder, o.inDate, o.StatusId" _
+    & vbCr & "   , o.lastModified, o.lastManagId" _
+    & vbCr & "   , oe.CehId, oe.statusEquipId " _
+    & vbCr & "   , oe.lastModified as lastModifiedEquip, oe.lastManagId as lastManagEquipId" _
 
+
+Const MainSelectSqlStr = "" _
+    & vbCr & "     0 as presentationFormat" _
+    & vbCr & "   , o.numOrder, o.equip as Ceh, o.inDate" _
+    & vbCr & "   , o.StatusId, o.DateRS, o.outTime, o.Type" _
+    & vbCr & "   , o.Logo, o.Product, o.ordered" _
+    & vbCr & "   , o.temaId, o.paid, o.shipped,  o.Invoice, o.id_bill" _
+    & vbCr & "   , o.zalog, o.nal, o.rate" _
+    & vbCr & "   , f.id_voc_names, f.Name" _
+    & vbCr & "   , m.Manag, s.Status, p.Problem" _
+    & vbCr & "   , v.venturename as venture, v.sysname as servername" _
+    & vbCr & "   , mo.DateTimeMO, mo.workTimeMO, mo.StatM, mo.StatO" _
+    & vbCr & "   , oc.urgent" _
+    & vbCr & "   , oe.outDateTime, oe.workTime" _
+    & vbCr & "   , convert(int, (oe.maxStatusId - oe.minStatusId) + abs(oe.maxStatusId - o.statusId)) as equipStatusSync " _
+
+Const FixedJoinSqlStr = "" _
+    & vbCr & " from orders o " _
+    & vbCr & " JOIN GuideStatus s ON s.StatusId = o.StatusId " _
+    & vbCr & " JOIN GuideProblem p ON p.ProblemId = o.ProblemId " _
+    & vbCr & " JOIN GuideManag m ON m.ManagId = o.ManagId " _
+    & vbCr & " JOIN GuideFirms f ON f.FirmId = o.FirmId " _
+    & vbCr & " LEFT JOIN guideventure v on v.ventureId = o.ventureid "
+
+Const MainJoinSqlStr = "" _
+           & FixedJoinSqlStr _
+    & vbCr & " LEFT JOIN vw_OrdersEquipSummary oe ON oe.numorder = o.numorder " _
+    & vbCr & " LEFT JOIN vw_OrdersMOSummary mo ON o.numOrder = mo.numOrder " _
+    & vbCr & " LEFT JOIN vw_OrdersInCehSummary oc ON o.numOrder = oc.numOrder" _
+
+Const rowFromOrdersSQL = "select " _
+           & MainSelectSqlStr _
+           & MainJoinSqlStr
+
+Const countFromOrdersSQL = "select count(*)" _
+           & MainJoinSqlStr
+
+Const rowFromOrdersEquip = "select " _
+    & vbCr & ShortSelectSqlStr _
+    & vbCr & FixedJoinSqlStr _
+    & vbCr & " JOIN OrdersEquip oe ON oe.numorder = o.numorder " _
+    & vbCr & " LEFT JOIN OrdersMO om ON om.numorder = oe.numorder and om.cehId = oe.cehId" _
+    & vbCr & " LEFT JOIN OrdersInCeh oc ON oc.numorder = oe.numorder and oc.cehId = oe.cehId" _
 
 
 ' нужно вызывать уже после того, как новая Валюта сменена.
 Private Sub adjustHotMoney()
 Dim Numorder As String, StatusId As String, Rollback As String, Outdatetime As String
 Dim tbWorktime As String, Left As String
-Dim Ceh As String, Worktime As String
+Dim Ceh As String, Worktime As String, ManagId As String
 Dim I As Long, J As Integer
 
-    For I = 1 To Grid.rows - 1
+    For I = 1 To Grid.Rows - 1
         Dim value As Double, rate As Double
         Dim valueStr As String, rateStr As String
         rateStr = Grid.TextMatrix(I, orRate)
@@ -667,6 +693,10 @@ Else
     lbHide
 End If
 cbM.TabStop = False
+' устанавливаем менеджера на сервер
+    sql = "call setManagerId('" & cbM.Text & "')"
+    If myExecute("##setManagerId", sql, 0) = 0 Then End
+
 End Sub
 
 Private Sub cbM_LostFocus()
@@ -817,7 +847,7 @@ If isBaseOrder Then
   Grid.TextMatrix(zakazNum, orProblem) = baseProblem
   Grid.TextMatrix(zakazNum, orFirma) = baseFirm
 End If
-rowViem Grid.rows - 1, Grid
+rowViem Grid.Rows - 1, Grid
 tbOrders.Close
 Grid.row = zakazNum
 Grid.col = orCeh
@@ -912,7 +942,7 @@ Set tqOrders = myOpenRecordSet(myErr, sql, dbOpenForwardOnly)
 If tqOrders Is Nothing Then myBase.Close: End
 If tqOrders.BOF Then myBase.Close: End
 
-copyRowToGrid mousRow
+copyRowToGrid mousRow, gNzak
 
 'tqOrders.Close
 End Sub
@@ -1332,7 +1362,7 @@ If tbEnable.Visible Then mnAllOrders.Visible = True
 oldHeight = Me.Height
 oldWidth = Me.Width
 
-If Not isEmpty(otlad) Then
+If Not IsEmpty(otlad) Then
     Frame1.BackColor = otladColor
     Me.BackColor = otladColor
 
@@ -1447,7 +1477,7 @@ managLoad 'загрузка Manag() cbM lbM и Filtr.lbM
 lbM.Height = lbM.Height + 195 * (lbM.ListCount - 1)
 Filtr.lbM.Height = Filtr.lbM.Height + 195 * (Filtr.lbM.ListCount - 1)
 
-If Not isEmpty(otlad) Then cbM.ListIndex = cbM.ListCount - 1
+If Not IsEmpty(otlad) Then cbM.ListIndex = cbM.ListCount - 1
 
 
 
@@ -1496,15 +1526,20 @@ lbVenture.Height = 225 * lbVenture.ListCount
 End Sub
  
 Public Sub managLoad(Optional fromCeh As String = "")
-Dim I As Integer, str As String
+Dim I As Integer, str As String, J As String
 
-sql = "SELECT * From GuideManag  ORDER BY forSort"
+sql = "SELECT * From GuideManag where manag <> '' ORDER BY forSort"
 Set table = myOpenRecordSet("##03", sql, dbOpenForwardOnly)
 If table Is Nothing Then myBase.Close: End
-I = 0: ReDim manId(0):
+I = 0: ReDim manId(0): ReDim Managers(0): J = 0
 Dim imax As Integer: imax = 0: ReDim Manag(0)
+Dim theManager As MapEntry
 While Not table.EOF
     str = table!Manag
+    theManager.Key = table!ManagId
+    theManager.value = str
+    Managers(J) = theManager
+    
     If str = "not" Then
         GoTo AA
     ElseIf LCase(table!forSort) <> "unused" Then
@@ -1523,6 +1558,8 @@ AA:     If imax < table!ManagId Then
         Manag(table!ManagId) = str
     End If
     table.MoveNext
+    J = J + 1
+    ReDim Preserve Managers(J)
 Wend
 table.Close
 
@@ -1831,7 +1868,7 @@ End Function
 Private Sub Grid_DblClick()
 Dim str As String, StatusId As Integer, s As Double
 Dim orderTimestamp As Date
-Dim lastManager As String
+Dim lastManagId As Integer, lastManagEquipId As Integer
 Dim strDate As String
 Dim billCompany As String
 Dim I As Integer
@@ -1846,13 +1883,12 @@ gNzak = Grid.TextMatrix(mousRow, orNomZak)
 '    gCehId = 2
 
 
-sql = "SELECT O.StatusId, O.lastModified, m.Manag, oe.worktime " _
+sql = "SELECT O.StatusId, o.lastModified, o.lastManagId " _
 & " From Orders o " _
-& " join GuideManag m on o.lastManagId = m.managid " _
-& " LEFT JOIN OrdersEquip oe on oe.numorder = o.numorder and oe.cehId = " & gCehId _
 & " WHERE O.numOrder = " & gNzak
+
 'Debug.Print (sql)
-If Not byErrSqlGetValues("##174", sql, StatusId, orderTimestamp, lastManager, neVipolnen) Then Exit Sub
+If Not byErrSqlGetValues("##174", sql, StatusId, orderTimestamp, lastManagId) Then Exit Sub
 
 If mousCol = orVrVip Then
     'If dostup = "a" And statusId = 4 Then
@@ -1933,9 +1969,9 @@ Else
 End If
     
 
-If orderTimestamp > loadBaseTimestamp And lastManager <> cbM.Text Then
+If orderTimestamp > loadBaseTimestamp Then
     MsgBox "После того, как вы загрузили информацию о заказе, он был изменен менеджером " _
-    & lastManager & " в " & orderTimestamp & "." _
+    & lastManagId & " в " & orderTimestamp & "." _
     & vbCr & "Обновите данные и попробуйте повторить операцию снова." _
      , , "Стоп"
     Exit Sub
@@ -2096,7 +2132,10 @@ ElseIf mousCol = orStatus Then
      listBoxInGridCell lbDel, Grid, "select"
    ElseIf Grid.TextMatrix(mousRow, orCeh) <> "" Then
         If StatusId = 1 Then 'в работе                                 $$1
-          sql = "SELECT Nevip from OrdersInCeh WHERE numOrder = " & gNzak
+          sql = "SELECT sum(isnull(oc.Nevip, 0) * isnull(oe.worktime, 0)) as nevip from OrdersInCeh oc " _
+            & " LEFT JOIN OrdersEquip oe on oe.numorder = oc.numorder and oc.cehId = oe.cehId" _
+          & " WHERE oc.numOrder = " & gNzak _
+          & " group by oc.numOrder "
           Set tbCeh = myOpenRecordSet("##373", sql, dbOpenForwardOnly)
            If tbCeh.BOF Then
             neVipolnen = 0
@@ -2106,14 +2145,13 @@ ElseIf mousCol = orStatus Then
             "обратитесь к Администратору.", , "Error"             '
             GoTo ALL                              '
           Else
-              neVipolnen = Round(neVipolnen * tbCeh!nevip, 2)   '$$1
+              neVipolnen = Round(tbCeh!nevip, 2)   '$$1
               tbCeh.Close
           End If
         End If
-        'Zakaz.startParams
         
-                ''Equipment.Show vbModal, Me
-        Zakaz.Regim = "": Zakaz.idCeh = 0
+        Zakaz.Regim = ""
+        Zakaz.idCeh = 0
         Zakaz.Show vbModal
         If Zakaz.isUpdated Then
             refreshTimestamp gNzak
@@ -2300,8 +2338,8 @@ AA: If MsgBox("Такое изменение статуса можно применить только в нештатных " & _
     "у заказа есть пердметы и он был закыт, то некоторые операции с предметами будут невозможны!" _
     , vbDefaultButton2 Or vbYesNo, "Внимание!!") = vbNo Then GoTo EN1
 BB: wrkDefault.BeginTrans
-    str = manId(cbM.ListIndex)
-    orderUpdate "##50", str, "Orders", "lastManagId"
+    '''str = manId(cbM.ListIndex)
+    '''orderUpdate "##50", str, "Orders", "lastManagId"
     If orderUpdate("##50", id, "Orders", "StatusId") = 0 Then
         Grid.TextMatrix(mousRow, mousCol) = lbAnnul.Text
 '        If lbAnnul.Text = "принят" Then - !!! если открыт этап этого не надо
@@ -2374,7 +2412,7 @@ Dim str As String
     delZakazFromReplaceRS ' если он там есть
     If txt = "" Then visits "-"    ' коррекция посещения фирмой
     str = manId(cbM.ListIndex)
-    orderUpdate "##369", str, "Orders", "lastManagId"
+    '''orderUpdate "##369", str, "Orders", "lastManagId"
     If orderUpdate("##369", 7, "Orders", "StatusId") = 0 Then
         Grid.TextMatrix(mousRow, mousCol) = "аннулирован"
         wrkDefault.CommitTrans
@@ -2442,7 +2480,7 @@ Grid.Text = lbM.Text
 str = manId(lbM.ListIndex)
 orderUpdate "##22", str, "Orders", "ManagId"
 str = manId(cbM.ListIndex)
-orderUpdate "##49", str, "Orders", "lastManagId"
+'''orderUpdate "##49", str, "Orders", "lastManagId"
 
 lbHide
 End Sub
@@ -2463,7 +2501,7 @@ str = lbProblem.ListIndex
 If lbProblem.ListIndex > 5 Then str = lbProblem.ListIndex + 4
 orderUpdate "##22", str, "Orders", "ProblemId"
 str = manId(cbM.ListIndex)
-orderUpdate "##49", str, "Orders", "lastManagId"
+'''orderUpdate "##49", str, "Orders", "lastManagId"
 
 lbHide
 
@@ -2517,7 +2555,7 @@ If Not bilo Then
         wrkDefault.BeginTrans   ' начало транзакции
         str = manId(cbM.ListIndex)
         orderUpdate "##45", 6, "Orders", "StatusId"
-        orderUpdate "##48", str, "Orders", "lastManagId"
+        '''orderUpdate "##48", str, "Orders", "lastManagId"
         delZakazFromCeh
         sql = "DELETE From sDMCrez WHERE numDoc =" & gNzak
         myExecute "##326", sql, 0
@@ -2584,8 +2622,7 @@ ElseIf lbStat.Text = "принят" Then
         delZakazFromCeh
         
         
-        sql = "UPDATE Orders SET StatusId = 0, DateRS = Null, " & _
-        "lastManagId = '" & manId(cbM.ListIndex) & "'" _
+        sql = "UPDATE Orders SET StatusId = 0, DateRS = Null, " _
         & " WHERE numOrder = " & gNzak
         If myExecute("##325", sql) <> 0 Then GoTo ER1
         
@@ -2848,7 +2885,7 @@ Dim ret As Boolean, fldName As String
     If Not ret Then
         Dim str As String
         str = manId(cbM.ListIndex)
-        orderUpdate "##firm2null", str, "Orders", "lastManagId"
+        '''orderUpdate "##firm2null", str, "Orders", "lastManagId"
         Grid.TextMatrix(mousRow, orFirma) = ""
     End If
 End Sub
@@ -3182,7 +3219,7 @@ DNM = Format(Now(), "dd.mm.yy hh:nn") & vbTab & cbM.Text & " " & gNzak ' именно 
         End If
     End If
     str = manId(cbM.ListIndex)
-    orderUpdate "##48", str, "Orders", "lastManagId"
+    '''orderUpdate "##48", str, "Orders", "lastManagId"
     
     GoTo AA
 ElseIf KeyCode = vbKeyEscape Then
@@ -3252,8 +3289,43 @@ Private Sub tbStartDate_LostFocus()
     isDateTbox tbStartDate
 End Sub
 
+
+Sub prepareOrderByEquipment(sqlEquip As String)
+
+    'Debug.Print sqlEquip
+    
+    Set tbOrders = myOpenRecordSet("##08.prep", sqlEquip, dbOpenForwardOnly)
+    If tbOrders Is Nothing Then myBase.Close: End
+    ReDim OrdersEquipStat(0)
+    Dim I As Integer
+
+    If Not tbOrders.BOF Then
+        Dim orderBean As New ZakazVO
+        Dim first As Boolean
+        orderBean.incrementFromDb
+        first = True
+        While Not tbOrders.EOF
+            If orderBean.Numorder <> tbOrders!Numorder And Not first Then
+                Set OrdersEquipStat(I) = orderBean
+                I = I + 1
+                ReDim Preserve OrdersEquipStat(I)
+                Set orderBean = New ZakazVO
+            End If
+            If Not first Then
+                orderBean.incrementFromDb
+            End If
+            first = False
+            tbOrders.MoveNext
+        Wend
+        Set OrdersEquipStat(I) = orderBean
+        
+    End If 'Not tbOrders.BOF
+    tbOrders.Close '*********************************************
+End Sub
+
 Sub LoadBase(Optional reg As String = "")
 Dim numZak As Long, I As Integer
+Dim sqlShort As String, sqlCount As String
 
 laInform.Caption = ""
 Grid.Visible = False
@@ -3261,8 +3333,13 @@ clearGrid Grid
 
 getNakladnieList
 zakazNum = 0
+
+sql = rowFromOrdersEquip & getSqlWhere & " ORDER BY o.inDate"
+prepareOrderByEquipment (sql)
+
 'LoadOrders********************************************************
 sql = rowFromOrdersSQL & getSqlWhere & " ORDER BY o.inDate"
+
 'MsgBox getSqlWhere
 'Debug.Print sql
 Set tqOrders = myOpenRecordSet("##08", sql, dbOpenForwardOnly)
@@ -3320,7 +3397,7 @@ While Not tqOrders.EOF
  End If '*************************************
  noClick = False
  
- copyRowToGrid zakazNum
+ copyRowToGrid zakazNum, numZak
 
 NXT:
  tqOrders.MoveNext
@@ -3460,7 +3537,23 @@ begFiltrDisable
 
 End Sub
 
-Sub copyRowToGrid(row As Long)
+
+Sub LoadLastManag(row As Long, Numorder As Long)
+Dim I As Integer
+    '  в списке заказов (OrdersEquipStat) найти нужный заказ и посмотреть у него lastManagId
+    For I = 0 To UBound(OrdersEquipStat)
+        If OrdersEquipStat(I).Numorder = Numorder Then
+            Grid.TextMatrix(row, orLastMen) = OrdersEquipStat(I).lastManag
+            Grid.TextMatrix(row, orlastModified) = OrdersEquipStat(I).lastModified
+            Exit Sub
+        End If
+    Next I
+    'Grid.TextMatrix(row, orLastMen) = OrdersEquipStat(row - 1).lastManag
+    'Grid.TextMatrix(row, orlastModified) = OrdersEquipStat(row - 1).lastModified
+End Sub
+
+
+Sub copyRowToGrid(row As Long, ByRef Numorder As Long)
 
  If Not IsNull(tqOrders!invoice) Then _
      Grid.TextMatrix(row, orInvoice) = tqOrders!invoice
@@ -3475,23 +3568,24 @@ End If
  
  Grid.TextMatrix(row, orLogo) = tqOrders!Logo
  Grid.TextMatrix(row, orIzdelia) = tqOrders!Product
- If Not IsNull(tqOrders!Type) Then _
+ If Not IsNull(tqOrders!Type) Then
     Grid.TextMatrix(row, orType) = tqOrders!Type
- If Not IsNull(tqOrders!temaId) Then _
-    Grid.TextMatrix(row, orTema) = lbTema.List(tqOrders!temaId)
+ End If
+ If Not IsNull(tqOrders!temaId) Then
+     Grid.TextMatrix(row, orTema) = lbTema.List(tqOrders!temaId)
+ End If
  LoadNumeric Grid, row, orZakazano, rated(tqOrders!ordered, tqOrders!rate), , "###0.00"
  LoadNumeric Grid, row, orOplacheno, rated(tqOrders!paid, tqOrders!rate), , "###0.00"
  LoadNumeric Grid, row, orZalog, rated(tqOrders!zalog, tqOrders!rate), , "###0.00"
  LoadNumeric Grid, row, orNal, rated(tqOrders!nal, tqOrders!rate), , "###0.00"
  LoadNumeric Grid, row, orRate, tqOrders!rate, , "###0.00"
  LoadNumeric Grid, row, orOtgrugeno, rated(tqOrders!shipped, tqOrders!rate), , "###0.00"
- If Not IsNull(tqOrders!lastManag) Then _
-    Grid.TextMatrix(row, orLastMen) = tqOrders!lastManag
- If Not IsNull(tqOrders!Venture) Then _
+ LoadLastManag row, Numorder
+ 
+ If Not IsNull(tqOrders!Venture) Then
     Grid.TextMatrix(row, orVenture) = tqOrders!Venture
- If Not IsNull(tqOrders!LastModified) Then
-    Grid.TextMatrix(row, orlastModified) = CStr(tqOrders!LastModified)
  End If
+ 
  If Not IsNull(tqOrders!id_bill) Then
     Grid.TextMatrix(row, orBillId) = CStr(tqOrders!id_bill)
  End If

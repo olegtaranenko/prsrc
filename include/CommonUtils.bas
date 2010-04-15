@@ -1,21 +1,12 @@
 Attribute VB_Name = "CommonUtils"
 Option Explicit
 
-Type VersionInfo
-    path As String
-    maj As Long
-    min As Long
-    rev As Long
-    bld As Long
+Type MapEntry
+    Key As String
+    value As Variant
 End Type
 
 
-Type OrderNumInfo
-    Numorder As Integer
-    oDate As Date
-    num As Integer
-    ext As Integer
-End Type
 
 Sub fatalError(msg As String, Optional lookAdmin As String)
     Dim adminMsg As String
@@ -36,36 +27,36 @@ Sub getAppInfo(ByRef version As VersionInfo)
     version.rev = 0
 End Sub
 
-Function compareVersion(left As VersionInfo, Right As VersionInfo) As Integer
+Function compareVersion(Left As VersionInfo, Right As VersionInfo) As Integer
 Dim lessThen As Boolean
 Dim greateThen As Boolean
 
-    If left.maj < Right.maj Then
+    If Left.maj < Right.maj Then
         lessThen = True
-    ElseIf left.maj > Right.maj Then
+    ElseIf Left.maj > Right.maj Then
         greateThen = True
     End If
     
     If Not lessThen And Not greateThen Then
-        If left.min < Right.min Then
+        If Left.min < Right.min Then
             lessThen = True
-        ElseIf left.min > Right.min Then
+        ElseIf Left.min > Right.min Then
             greateThen = True
         End If
     End If
 
     If Not lessThen And Not greateThen Then
-        If left.rev < Right.rev Then
+        If Left.rev < Right.rev Then
             lessThen = True
-        ElseIf left.rev > Right.rev Then
+        ElseIf Left.rev > Right.rev Then
             greateThen = True
         End If
     End If
 
     If Not lessThen And Not greateThen Then
-        If left.bld < Right.bld Then
+        If Left.bld < Right.bld Then
             lessThen = True
-        ElseIf left.bld > Right.bld Then
+        ElseIf Left.bld > Right.bld Then
             greateThen = True
         End If
     End If

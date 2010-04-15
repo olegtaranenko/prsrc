@@ -1062,7 +1062,13 @@ where pc.sysname = sGuideProducts.web
 			<column name="worktime" type="float" defaultValueNumeric="0.0">
 				<constraints nullable="false"/>
 			</column>
-			<column name="outDateTime" type="datetime" >
+			<column name="outDateTime" type="datetime">
+				<constraints nullable="true"/>
+			</column>
+			<column name="lastModified" type="datetime">
+				<constraints nullable="true"/>
+			</column>
+			<column name="lastManagId" type="tinyint">
 				<constraints nullable="true"/>
 			</column>
 		</createTable>
@@ -1185,7 +1191,7 @@ update	OrdersEquip set outDatetime = convert(int, outDatetime)
 		<rollback/>
 	</changeSet>
 
-	<changeSet id="19" author="taranenko" runOnChange="true">
+	<changeSet id="19" author="mantis-125" runOnChange="true">
 		<comment>Саммари вьюха</comment>
 		<sqlFile path="procedures/enumEquip.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="views/vw_OrdersEquipSummary.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
@@ -1217,7 +1223,7 @@ update	OrdersEquip set outDatetime = convert(int, outDatetime)
 		<rollback/>
 	</changeSet>
 
-	<changeSet id="22" author="taranenko" runOnChange="true">
+	<changeSet id="22" author="mantis-125" runOnChange="true">
 		<comment>При изменении имени source менять и в комтехе</comment>
 		<sqlFile path="triggers/sGuideSource.wf_update_source.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<rollback>
@@ -1234,7 +1240,7 @@ update	OrdersEquip set outDatetime = convert(int, outDatetime)
 		<rollback/>
 	</changeSet>
 	
-	<changeSet id="24" author="taranenko" runOnChange="true">
+	<changeSet id="24" author="mantis-125" runOnChange="true">
 		<comment>Саммари вьюха</comment>
 		<sqlFile path="procedures/putOrderEquip.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="procedures/deleteOrderEquip.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
@@ -1244,7 +1250,7 @@ update	OrdersEquip set outDatetime = convert(int, outDatetime)
 		</rollback>
 	</changeSet>
 
-	<changeSet id="25" author="taranenko" runOnChange="true">
+	<changeSet id="25" author="mantis-125" runOnChange="true">
 		<comment>При изменении имени source менять и в комтехе</comment>
 		<sqlFile path="triggers/OrdersEquip.wf_insert.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="triggers/OrdersEquip.wf_delete.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
@@ -1282,6 +1288,14 @@ update	OrdersEquip set outDatetime = convert(int, outDatetime)
 	<changeSet id="30" author="mantis-125" runOnChange="false">
 		<comment>Добавить цех в первичные ключи производственных таблиц</comment>
 		<addPrimaryKey tableName="OrdersInCeh" columnNames="numorder,cehId" constraintName="pk_OrdersInCeh"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="31" author="mantis-125" runOnChange="true">
+		<comment>Перенести логику lastModified на сервер в триггера</comment>
+		<sqlFile path="triggers/Orders.wf_lastModified.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="triggers/OrdersEquip.wf_lastModified.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="procedures/setManagerId.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<rollback/>
 	</changeSet>
 

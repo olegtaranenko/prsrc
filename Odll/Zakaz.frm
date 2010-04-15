@@ -514,7 +514,7 @@ Dim I As Integer, J As Integer
 
 If newLen < 0 Then newLen = maxDay
 
-J = lv.ListItems.count
+J = lv.ListItems.Count
 If newLen > J Then ' j=0 когда startParams вызыв-ся первый раз
     For I = J + 1 To newLen
         lvAddDay I
@@ -665,7 +665,7 @@ If isMzagruz Then getBegEndDays 'ZbDay,ObDay,ZbDay,ObDay (если заполнены)
 
 If reg = "" Then ' не из Enter_cell
     Grid.Clear
-    Grid.rows = 2
+    Grid.Rows = 2
     Grid.FormatString = "|<№ Заказа|<Статус|Вр.вып|Нев-но|Нач.дата|Кон.дата|"
     Grid.ColWidth(0) = 0
     Grid.ColWidth(zgStatus) = 765
@@ -821,7 +821,7 @@ If isMzagruz Then
   End If
 End If
 
-If reg = "" And quantity > 0 Then Grid.removeItem Grid.rows - 1
+If reg = "" And quantity > 0 Then Grid.removeItem Grid.Rows - 1
 EN1:
 tbOrders.Close
 
@@ -1165,8 +1165,7 @@ Else
 '    tbOrders!dateRS = Null
     str = "Null"
 End If
-sql = "UPDATE Orders SET dateRS = " & str & _
-" WHERE Orders.numOrder = " & gNzak
+sql = "UPDATE Orders SET dateRS = " & str & " WHERE Orders.numOrder = " & gNzak
 'MsgBox sql
 If myExecute("##392", sql) <> 0 Then GoTo ER1
 
@@ -1223,10 +1222,10 @@ sql = "UPDATE OrdersEquip SET outDateTime = " & v_outDateTime _
 If myExecute("##391", sql) <> 0 Then GoTo ER1
 
 
-sql = "UPDATE Orders SET " _
+'sql = "UPDATE Orders SET " _
 & " statusId = " & id & ", lastManagId = " & manId(Orders.cbM.ListIndex) _
 & " WHERE Orders.numOrder =" & gNzak
-If myExecute("##396", sql) <> 0 Then GoTo ER1
+'If myExecute("##396", sql) <> 0 Then GoTo ER1
 
 
 ' согласование или из согласования в работу
@@ -1505,7 +1504,7 @@ ElseIf I = 0 Then  ' принят  (готов и закрыт здесь не м.б.)
     ' не освежаем данные
 BB: isTimeZakaz = False
     
-    For I = 1 To lv.ListItems.count
+    For I = 1 To lv.ListItems.Count
         lv.ListItems("k" & I).SubItems(zkMost) = lv.ListItems("k" & I).SubItems(zkMbef)
        lv.ListItems("k" & I).ListSubItems(zkMost).Bold = False
         lv.ListItems("k" & I).ListSubItems(zkMost).ForeColor = 0
@@ -1970,6 +1969,7 @@ Else
     & ", oe.outDateTime, oe.statusEquipId, oe.cehId, oe.worktime" _
     & ", om.DateTimeMO, om.workTimeMO, om.StatM, om.StatO" _
     & ", oc.stat as statusInCeh, oc.nevip, oc.urgent, o.outTime" _
+    & ", o.lastModified, o.lastManagId, 0 as presentationFormat" _
     & " from Orders o" _
     & " JOIN OrdersEquip oe on oe.numorder = o.numorder " _
     & " LEFT JOIN OrdersMO om on om.numorder = o.numorder AND om.cehId = oe.cehId" _

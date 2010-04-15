@@ -59,10 +59,10 @@ Property Let val(value As Long)
     prevYearSize = -1
     If Len(str) = 7 Then
         prevYearSize = 0
-        m_year = "200" & left$(value, 1)
+        m_year = "200" & Left$(value, 1)
     ElseIf Len(str) = 8 Then
         prevYearSize = 1
-        m_year = "20" & left$(value, 2)
+        m_year = "20" & Left$(value, 2)
     End If
  
     If prevYearSize >= 0 Then

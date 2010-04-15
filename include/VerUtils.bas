@@ -92,6 +92,15 @@ Type VS_FIXEDFILEINFO
 End Type
 
 
+Type VersionInfo
+    path As String
+    maj As Long
+    min As Long
+    rev As Long
+    bld As Long
+End Type
+
+
 
 Function GetDllVersion(ByVal supFile As String, _
                     ByRef info As VersionInfo _
@@ -137,7 +146,7 @@ If (hDll) Then
         '-- make sure there is a null(0)
         If (InStr(tmpPath, Chr$(0)) > 0) Then
             '-- trim the returned string
-            loadpath = left$(tmpPath, InStr(tmpPath, Chr$(0)) - 1)
+            loadpath = Left$(tmpPath, InStr(tmpPath, Chr$(0)) - 1)
         End If
     End If
     '-- find the version resource
@@ -217,7 +226,7 @@ Function ShellAndHold(sCommandLine As String, Optional lState As Long = vbNormal
     'Check to see that the file exists
     If FileExists(sCommandLine) Then
         'Add double quotes around the path (otherwise you can't use spaces in the path)
-        If left$(sCommandLine, 1) <> Chr(34) Then
+        If Left$(sCommandLine, 1) <> Chr(34) Then
             sCommandLine = Chr(34) & sCommandLine
         End If
         If Right$(sCommandLine, 1) <> Chr(34) Then
@@ -252,7 +261,7 @@ Function ShellAndWait(sFilePath As String, Optional sCommandLine, Optional lStat
     'Check to see that the file exists
     If FileExists(sFilePath) Then
         'Add double quotes around the path (otherwise you can't use spaces in the path)
-        If left$(sFilePath, 1) <> Chr(34) Then
+        If Left$(sFilePath, 1) <> Chr(34) Then
             sFilePath = Chr(34) & sFilePath
         End If
         If Right$(sFilePath, 1) <> Chr(34) Then
@@ -304,7 +313,7 @@ End Function
 Function ShellAndWaitReady(sCommandLine As String, Optional lState As Long = vbNormalFocus) As Long
     Dim lhProc As Long
     
-    If left$(sCommandLine, 1) <> Chr(34) Then
+    If Left$(sCommandLine, 1) <> Chr(34) Then
         sCommandLine = Chr(34) & sCommandLine
     End If
     If Right$(sCommandLine, 1) <> Chr(34) Then
@@ -350,7 +359,7 @@ Function PathFileToPath(sFilePathName As String) As String
 
     For ThisChar = 0 To Len(sFilePathName) - 1
         If Mid$(sFilePathName, Len(sFilePathName) - ThisChar, 1) = "\" Then
-            PathFileToPath = left$(sFilePathName, Len(sFilePathName) - ThisChar)
+            PathFileToPath = Left$(sFilePathName, Len(sFilePathName) - ThisChar)
             Exit For
         End If
     Next
@@ -363,15 +372,15 @@ Private Function getRepositoryPathFile(exeName As String, ByRef version As Versi
 End Function
 
 
-Public Sub GetHiLoByte(x As Integer, LoByte As Integer, HiByte As Integer)
-    LoByte = x And &HFF&
-    HiByte = x \ &H100
+Public Sub GetHiLoByte(X As Integer, LoByte As Integer, HiByte As Integer)
+    LoByte = X And &HFF&
+    HiByte = X \ &H100
 End Sub
 
 
-Public Sub GetHiLoWord(x As Long, LoWord As Integer, HiWord As Integer)
-    LoWord = CInt(x And &HFFFF&)
-    HiWord = CInt(x \ &H10000)
+Public Sub GetHiLoWord(X As Long, LoWord As Integer, HiWord As Integer)
+    LoWord = CInt(X And &HFFFF&)
+    HiWord = CInt(X \ &H10000)
 End Sub
 
 
