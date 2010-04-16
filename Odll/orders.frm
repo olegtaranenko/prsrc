@@ -933,8 +933,8 @@ Else
 End If
 End Sub
 
-
-Sub openOrdersRowToGrid(myErr As String)
+' возвращает информацию для местного (на компе пользователя) лога
+Public Function openOrdersRowToGrid(myErr As String) As String
 
 gNzak = Grid.TextMatrix(mousRow, orNomZak)
 sql = rowFromOrdersSQL & " WHERE o.Numorder = " & gNzak
@@ -942,10 +942,10 @@ Set tqOrders = myOpenRecordSet(myErr, sql, dbOpenForwardOnly)
 If tqOrders Is Nothing Then myBase.Close: End
 If tqOrders.BOF Then myBase.Close: End
 
-copyRowToGrid mousRow, gNzak
+openOrdersRowToGrid = copyRowToGrid(mousRow, gNzak)
 
 'tqOrders.Close
-End Sub
+End Function
 
 
 
@@ -1721,7 +1721,7 @@ Dim tmpRow As Long, tmpCol As Long
 End Sub
 
 Function haveUslugi() As Boolean
-Dim s As Double
+Dim S As Double
 
 End Function
 Function stopOrderAtVenture() As Boolean
@@ -1867,7 +1867,7 @@ End Function
 
 '$odbc08!$
 Private Sub Grid_DblClick()
-Dim str As String, StatusId As Integer, s As Double
+Dim str As String, StatusId As Integer, S As Double
 Dim orderTimestamp As Date
 Dim lastManagId As Integer, lastManagEquipId As Integer
 Dim strDate As String
@@ -3051,7 +3051,7 @@ lbHide
 End Sub
 
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim str As String, DNM As String, s As Double
+Dim str As String, DNM As String, S As Double
 Dim id_jscet_split As Integer
 Dim id_jscet_merge As Integer
 Dim mFault As String
@@ -3137,8 +3137,8 @@ DNM = Format(Now(), "dd.mm.yy hh:nn") & vbTab & cbM.Text & " " & gNzak ' именно 
         
     ElseIf mousCol = orOtgrugeno Then
         If Not isFloatFromMobile("shipped", , True) Then Exit Sub
-        s = Round(tbMobile.Text, 2)
-        If s = 0 Then
+        S = Round(tbMobile.Text, 2)
+        If S = 0 Then
             orderUpdate "##78", "Null", "Orders", "shipped"
             Grid.TextMatrix(mousRow, orOtgrugeno) = ""
         ElseIf flDelRowInMobile Then
@@ -3602,7 +3602,7 @@ Dim I As Integer
 End Sub
 
 
-Sub copyRowToGrid(row As Long, ByVal Numorder As Long)
+Function copyRowToGrid(row As Long, ByVal Numorder As Long) As String
 
  If Not IsNull(tqOrders!invoice) Then _
      Grid.TextMatrix(row, orInvoice) = tqOrders!invoice
@@ -3613,7 +3613,7 @@ End If
  Grid.TextMatrix(row, orFirma) = tqOrders!name
  LoadDate Grid, row, orData, tqOrders!inDate, "dd.mm.yy"
  
- StatParamsLoad row
+ copyRowToGrid = StatParamsLoad(row)
  
  Grid.TextMatrix(row, orLogo) = tqOrders!Logo
  Grid.TextMatrix(row, orIzdelia) = tqOrders!Product
@@ -3649,7 +3649,7 @@ End If
     Grid.row = zakazNum
     Grid.CellForeColor = vbRed
  End If
-End Sub
+End Function
 
 Private Sub Timer1_Timer()
 minut = minut - 1
@@ -3692,12 +3692,12 @@ AA:         Otgruz.closeZakaz = (Grid.TextMatrix(mousRow, orStatus) = "закрыт")
 End Sub
 '$odbc15$
 Function oldUslug() As Boolean
-Dim s As Double, o
+Dim S As Double, o
 
 oldUslug = False
 
 sql = "SELECT ordered, shipped From Orders WHERE (((Numorder)=" & gNzak & "));"
-If Not byErrSqlGetValues("##303", sql, o, s) Then myBase.Close: End
+If Not byErrSqlGetValues("##303", sql, o, S) Then myBase.Close: End
 
 sql = "SELECT outDate, quant from xUslugOut WHERE (((Numorder)=" & gNzak & "));"
 'Set tbProduct = myOpenRecordSet("##229", "select * from xUslugOut", dbOpenForwardOnly)
@@ -3707,16 +3707,16 @@ Set tbProduct = myOpenRecordSet("##229", sql, dbOpenForwardOnly)
 'tbProduct.Seek "=", gNzak
 'If tbProduct.NoMatch Then 'т.е. отгрузка началась по старому и не закончилась
 If tbProduct.BOF Then 'т.е. отгрузка началась по старому и не закончилась
-    If o - s < 0.005 Then
+    If o - S < 0.005 Then
         oldUslug = True
-    ElseIf s > 0.005 Then
+    ElseIf S > 0.005 Then
 'этот блок отпадет, когда не станет заказов 0< Отгружено < Заказано и кот. нет в xUslugOut
 'на 15,12,04 таких было 75 см запрос "Услуги без хрон отгрузки"
         tbProduct.AddNew
         tmpDate = "31.08.2003 10:00:00"
         tbProduct!Outdate = tmpDate
         tbProduct!Numorder = gNzak
-        tbProduct!quant = s
+        tbProduct!quant = S
         tbProduct.update
     End If
 End If
@@ -3725,7 +3725,7 @@ tbProduct.Close
 End Function
 
 Function isNewEtap() As Variant
-Dim s As Double
+Dim S As Double
 
 #If onErrorOtlad Then
     On Error GoTo errMsg
@@ -3745,22 +3745,22 @@ sql = "SELECT Max([eQuant]-[prevQuant]) as max From xEtapByIzdelia " & _
 'Debug.Print sql
  Set table = myOpenRecordSet("##385", sql, dbOpenDynaset) 'dbOpenTable)
  If table Is Nothing Then Exit Function
- s = -1
+ S = -1
  While Not table.EOF ' только 2 цикла
-    s = max(s, table!max)
+    S = max(S, table!max)
     table.MoveNext
  Wend
  table.Close
- If s > 0.005 Then
+ If S > 0.005 Then
     isNewEtap = True
- ElseIf s <> -1 Then
+ ElseIf S <> -1 Then
     isNewEtap = False
  End If
  
 End Function
 
 Function havePredmetiNew() As Boolean
-Dim s As Double
+Dim S As Double
 
 havePredmetiNew = False
 sql = "SELECT quant From xPredmetyByIzdelia " & _
@@ -3768,8 +3768,8 @@ sql = "SELECT quant From xPredmetyByIzdelia " & _
 "UNION SELECT quant From xPredmetyByNomenk " & _
 "WHERE numOrder=" & gNzak & ";"
 'Debug.Print sql
-If Not byErrSqlGetValues("W##221", sql, s) Then myBase.Close: End
-If s > 0 Then havePredmetiNew = True
+If Not byErrSqlGetValues("W##221", sql, S) Then myBase.Close: End
+If S > 0 Then havePredmetiNew = True
 
 End Function
 

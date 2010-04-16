@@ -648,7 +648,7 @@ End Function
 'reg = "" - double click at status cell
 
 Sub newZagruz(Optional reg As String = "")
-Dim s As Double, nevip As Double, I As Integer
+Dim S As Double, nevip As Double, I As Integer
 Dim bDay As Integer, eDay As Integer, stat As String
 
 'isMzagruz - true: если вызвали загрузку НЕ из цеха, то есть Менеджер.
@@ -1089,8 +1089,8 @@ End Sub
 
 '$odbc08$
 Private Sub cmAdd_Click()
-Dim I As Integer, str As String, item As ListItem, s As Double, t As Double
-Dim id As Integer, VrVip As String, VrVipO As String, editWorkTime As Boolean
+Dim I As Integer, str As String, item As ListItem, S As Double, t As Double
+Dim VrVip As String, VrVipO As String, editWorkTime As Boolean
 Dim Worktime As String
 
 'MaxDay = tmpMaxDay наверно это уже никому не нужно
@@ -1109,7 +1109,6 @@ AA: If getSystemField("resursLock") = Orders.cbM.Text Then unLockBase 'Если имен
     MsgBox "Возможно он уже удален. Обновите Реестр", , "Заказ не найден!!!"
     Exit Sub
 End If
-id = statusIdNew
 
 Dim workTimeOld As Double
 workTimeOld = 0
@@ -1122,15 +1121,15 @@ tbOrders.Close
 wrkDefault.BeginTrans
 
 ' коррекция посещения фирмой
-If (statusIdOld = 0 Or statusIdOld = 7) And id <> 0 And id <> 7 Then
+If (statusIdOld = 0 Or statusIdOld = 7) And statusIdNew <> 0 And statusIdNew <> 7 Then
     visits "+"
-ElseIf Not (statusIdOld = 0 Or statusIdOld = 7) And (id = 0 Or id = 7) Then
+ElseIf Not (statusIdOld = 0 Or statusIdOld = 7) And (statusIdNew = 0 Or statusIdNew = 7) Then
     visits "-"
 End If
 
-If id = 7 Then delZakazFromReplaceRS ' если аннулируемый заказ там есть
+If statusIdNew = 7 Then delZakazFromReplaceRS ' если аннулируемый заказ там есть
 
-If id <> statusIdOld Or (neVipolnen_O = 0 And neVipolnen = 0) Then
+If statusIdNew <> statusIdOld Or (neVipolnen_O = 0 And neVipolnen = 0) Then
     editWorkTime = False    '
 Else                        'если что-то недовып-но и статус не меняется
     editWorkTime = True     'то это необх. условие изменения Вр.Вып.
@@ -1171,13 +1170,12 @@ If myExecute("##392", sql) <> 0 Then GoTo ER1
 
 sql = "SELECT * from OrdersInCeh WHERE numOrder = " & gNzak & " and cehId = " & gCehId
 Set tbOrders = myOpenRecordSet("##01", sql, dbOpenForwardOnly)
-'If tbOrders Is Nothing Then GoTo AA
 
 Worktime = workTimeOld ' для случая, если не менялось
 If Not tbOrders.BOF Then
     If isTimeZakaz Then
        If workChange Then
-         If (id = 1 Or id = 5) And editWorkTime Then 'остается в работе или отложен
+         If (statusIdNew = 1 Or statusIdNew = 5) And editWorkTime Then 'остается в работе или отложен
             Worktime = Round(workTimeOld + tbWorktime.Text - neVipolnen, 1) 'время с учетом коррекции
             sql = "UPDATE OrdersInCeh SET Nevip = " & tbWorktime.Text / Worktime _
              & " WHERE numOrder =" & gNzak & " and cehId = " & gCehId
@@ -1217,35 +1215,21 @@ sql = "UPDATE OrdersEquip SET outDateTime = " & v_outDateTime _
     & ", workTime = " & Worktime _
     & ", statusEquipId = " & statusIdNew _
     & " WHERE numOrder = " & gNzak & " and cehId =" & gCehId
-'MsgBox sql
 'Debug.Print sql
 If myExecute("##391", sql) <> 0 Then GoTo ER1
 
 
-'sql = "UPDATE Orders SET " _
-& " statusId = " & id & ", lastManagId = " & manId(Orders.cbM.ListIndex) _
-& " WHERE Orders.numOrder =" & gNzak
-'If myExecute("##396", sql) <> 0 Then GoTo ER1
+sql = "UPDATE Orders SET statusId = " & statusIdNew & " WHERE Orders.numOrder =" & gNzak
+If myExecute("##396", sql) <> 0 Then GoTo ER1
 
 
 ' согласование или из согласования в работу
 sql = "SELECT * from OrdersInCeh WHERE numOrder =" & gNzak
 Set table = myOpenRecordSet("##02", sql, dbOpenForwardOnly)
-'If Not table Is Nothing Then '
- bilo = Not table.BOF
+bilo = Not table.BOF
 table.Close
 
-' bilo = findZakazInTable(table) '1:
- 
- If id = 3 Then ' согласов
-'  If bilo Then      '
-'    table.Edit      '
-'  Else              '
-'    table.AddNew    '
-'    table!numOrder = gNzak
-'  End If            '
-'  table!statM = cbM.Text '
-'  table!statO = cbO.Text '
+ If statusIdNew = 3 Then ' согласов
   If cbM.Text = "в работе" Or cbM.Text = "готов" Or _
     cbO.Text = "в работе" Or cbO.Text = "готов" Then
     str = tbDateMO.Text
@@ -1253,24 +1237,17 @@ table.Close
     sql = Orders.Grid.TextMatrix(Orders.mousRow, orMOVrVid)
     If sql = "" Then
         str = str & "'"
-'        table!DateTimeMO = tbDateMO.Text
     Else
         str = str & " " & sql & ":00'"
-'        str = tbDateMO.Text & " " & str & ":00"
-'        table!DateTimeMO = str
     End If
   Else
-'    table!DateTimeMO = Null
     str = "Null"
   End If
   If cbO.Text = "в работе" Or cbO.Text = "готов" Then
-'    table!workTimeMO = tbVrVipO
     Worktime = tbVrVipO.Text
   Else
-'    table!workTimeMO = Null
     Worktime = "Null"
   End If
-'  table.Update
   If bilo Then      '
     sql = "UPDATE OrdersInCeh SET StatM = '" & cbM.Text & "', StatO = '" & cbO.Text & _
     "', DateTimeMO = " & str & ", workTimeMO = " & Worktime & _
@@ -1283,25 +1260,11 @@ table.Close
   'Debug.Print sql
   If myExecute("##397", sql) <> 0 Then GoTo ER1
     
- Else
-'  If bilo Then table.Delete
-  If bilo Then
-    sql = "DELETE from OrdersMO WHERE numOrder = " & gNzak & " AND cehId = " & gCehId
-    myExecute "##398", sql, -1
-  End If
  End If ' согласов
-'End If ' If Not table Is Nothing
-'table.Close
 tbOrders.Close
 
     
 '******** перенос Даты RS ***********************************
-'sql = "SELECT ReplaceRS.numOrder, ReplaceRS.newDateIn, ReplaceRS.newDateRS, " & _
-'"ReplaceRS.newDateOut  From ReplaceRS " & _
-'"Where (((ReplaceRS.numOrder) = " & gNzak & ")) ORDER BY ReplaceRS.newDateIn;"
-
-'Set table = myOpenRecordSet("##22", sql, dbOpenForwardOnly)
-'If Not table Is Nothing Then
 If perenos = 1 Then ' был подтвержден перенос РС
     sql = "INSERT INTO ReplaceRS ( numOrder, newDateIn, newDateRS, newDateOut) " & _
     "SELECT " & gNzak & ", '" & _
@@ -1337,7 +1300,7 @@ If getSystemField("resursLock") = Orders.cbM.Text Then unLockBase 'Если именно м
 
 wrkDefault.CommitTrans
 
-str = synchOrderRow
+str = Orders.openOrdersRowToGrid("##16")
 
 On Error Resume Next ' в некот.ситуациях один из Open logFile дает Err: файл уже открыт
 Open logFile For Append As #2
@@ -1877,13 +1840,13 @@ Me.cmZapros.Enabled = IsNumeric(tbWorktime.Text) And IsDate(tbReadyDate)
 End Sub
 
 Private Sub tbReadyDate_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim s As Double, I As Integer
+Dim S As Double, I As Integer
 If KeyCode = vbKeyReturn Then
 
 If tbDateRS.Enabled Then
   If isDateTbox(tbReadyDate, "fri") Then
-    s = Round(CDbl(tbWorktime.Text), 1)
-    I = -(Int((CDbl(s) - 0.05) / 3) + 1 + 2) ' + 2 - дата выд от посл. куска
+    S = Round(CDbl(tbWorktime.Text), 1)
+    I = -(Int((CDbl(S) - 0.05) / 3) + 1 + 2) ' + 2 - дата выд от посл. куска
     getWorkDay I, tbReadyDate.Text ' дает tmpDate
     If tmpDate < curDate Then tmpDate = curDate
     tbDateRS.Text = Format(tmpDate, "dd.mm.yy")
@@ -1909,15 +1872,15 @@ End If
 End Sub
 
 Private Sub tbWorktime_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim s As Double, I As Integer
+Dim S As Double, I As Integer
 
 If KeyCode = vbKeyReturn Then
 
   If isNumericTbox(tbWorktime, 0, 2000) Then
      If cbStatus.Text = "в работе" Then
-        s = Round(CDbl(tbWorktime.Text), 1)
-        tbWorktime.Text = s
-        I = Int((CDbl(s) - 0.05) / 3)
+        S = Round(CDbl(tbWorktime.Text), 1)
+        tbWorktime.Text = S
+        I = Int((CDbl(S) - 0.05) / 3)
         getWorkDay 3 + I ' дает tmpDate
         tbReadyDate.Text = Format(tmpDate, "dd.mm.yy")
      Else
@@ -1947,7 +1910,7 @@ End Sub
 
 Public Function startParams() As Boolean
 Dim I As Integer, str As String, J As Integer ', sumSroch As Double
-Dim item As ListItem, v As Variant, s As Double
+Dim item As ListItem, v As Variant, S As Double
 startParams = False
 
 maxDay = 0

@@ -1294,8 +1294,21 @@ update	OrdersEquip set outDatetime = convert(int, outDatetime)
 		<sqlFile path="triggers/OrdersEquip.wf_lastModified.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="triggers/OrdersEquip.wf_lastModified_delete.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="triggers/OrdersEquip.wf_lastModified_insert.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="triggers/OrdersInCeh.wf_lastModified.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="triggers/OrdersInCeh.wf_lastModified_delete.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="triggers/OrdersInCeh.wf_lastModified_insert.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="32" author="mantis-125" runOnChange="true">
+		<comment>процедура выставления ид менеджера в переменную сессии</comment>
 		<sqlFile path="procedures/setManagerId.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<rollback/>
+	</changeSet>
+
+	<changeSet id="33" author="mantis-125" runOnChange="false">
+		<comment>последний менеджер, изменивший запись по заказу, может быть пустым</comment>
+		<dropNotNullConstraint tableName="Orders" columnName="lastManagId"/>
 	</changeSet>
 
 

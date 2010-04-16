@@ -272,7 +272,7 @@ Public Const ColWidthForRuble As Single = 1.3
 
 
 Function tuneCurencyAndGranularity(tunedValue, currentRate, valueCurrency As Integer, Optional quantity As Double = 1, Optional perlist As Long = 1) As Double
-    Dim Left As String, StatusId As String, Outdatetime As String, Rollback As String
+    Dim Left As String, StatusId As String, Outdatetime As String, Rollback As String, IsEmpty As String, ExeName As String
     '
     Dim totalInRubles As Double
     Dim singleInRubles As Double
@@ -446,9 +446,9 @@ ReDim Preserve Mass(newLen + 20)
 End Sub
 
 Sub delay(tau As Double)
-Dim s As Double
-    s = Timer
-    While Timer - s < tau ' 1 сек
+Dim S As Double
+    S = Timer
+    While Timer - S < tau ' 1 сек
         DoEvents
     Wend
 
@@ -596,7 +596,7 @@ gNzak = Left$(str, I - 1)
 End Function
 '$odbc10$
 Function getResurs() As Integer
-Dim I As Integer, J As Integer, rMaxDay As Integer, s As Double
+Dim I As Integer, J As Integer, rMaxDay As Integer, S As Double
 ' rMaxDay - Resource max day - максимальное значение из таблицы ResursCEH (CO2, etc)
 
 Set tbSystem = myOpenRecordSet("##93", "System", dbOpenForwardOnly)
@@ -664,15 +664,15 @@ Next I
 'table.Close
 
 '*********************** убывающий ресурс **************************
-s = Timer / 3600:
-I = Int(s)
+S = Timer / 3600:
+I = Int(S)
 If I < 9 Then
 ElseIf I < 13 Then
-    nr = Round(nomRes(1) - s + 9, 1)
+    nr = Round(nomRes(1) - S + 9, 1)
 ElseIf I < 14 Then
     nr = Round(nomRes(1) - 4, 1)
 Else
-    nr = Round(nomRes(1) - s + 10, 1)
+    nr = Round(nomRes(1) - S + 10, 1)
 End If
 If nr < 0 Then
     nr = 0
@@ -893,7 +893,7 @@ End Sub
 
 '$odbc10$
 Sub Main()
-Dim I As Integer, s As Double, str As String, str1 As String, str2 As String
+Dim I As Integer, S As Double, str As String, str1 As String, str2 As String
 Dim isXP As Boolean
 If App.PrevInstance = True Then
     MsgBox "Программа уже запущена", , "Error"
@@ -998,7 +998,7 @@ checkNextYear '$$3 если сменился год - пересчет статистики посещений
 'If Not (dostup = "c" Or dostup = "y") Then
 If dostup = "a" Or dostup = "m" Or dostup = "" Or dostup = "b" Then
  'logFile = "C:\Windows\Orders" ' без расширения
- logFile = App.path & "\" & App.exeName
+ logFile = App.path & "\" & App.ExeName
  str2 = logFile & "$.log" ' временный файл
  logFile = logFile & ".log"
  
@@ -1174,7 +1174,7 @@ EN1:
 End Function
 '$NOodbc$
 Sub checkNextYear()
-Dim I As Integer, s As Double
+Dim I As Integer, S As Double
 
 I = Format(Now, "yyyy")
 If I <= lastYear Then Exit Sub
@@ -1524,26 +1524,8 @@ Grid.MousePointer = flexDefault
 End Sub
 
 
-Function synchOrderRow() As String
-    'обновить информацию по заказу в главном реестре
-    sql = "SELECT o.StatusId, o.DateRS, o.numOrder" & _
-    ", oe.outDateTime, o.outTime, oe.workTime, p.Problem" & _
-    ", oc.DateTimeMO, oc.StatM, oc.StatO, oc.workTimeMO " & _
-    ", convert(int, (oe.maxStatusId - oe.minStatusId) + abs(oe.maxStatusId - o.statusId)) as equipStatusSync " & vbCr & _
-    " FROM Orders o " _
-    & " INNER JOIN GuideProblem p  ON p.ProblemId = o.ProblemId" _
-    & " INNER JOIN vw_OrdersEquipSummary  oe  ON oe.numOrder = o.numOrder " _
-    & " LEFT JOIN vw_OrdersMOSummary      oc ON o.numOrder = oc.numOrder" _
-    & " WHERE o.numOrder = " & gNzak
-    
-    Set tqOrders = myOpenRecordSet("##16", sql, dbOpenForwardOnly)
-    synchOrderRow = StatParamsLoad(Orders.mousRow, True)
-    tqOrders.Close
-
-End Function
-
 Function StatParamsLoad(row As Long, Optional redraw As Boolean = False)
-Dim s As Double, log As String, str As String
+Dim S As Double, log As String, str As String
 Dim Grid As MSFlexGrid
 
 Set Grid = Orders.Grid
@@ -2181,12 +2163,12 @@ End Sub
 
 Function beNaklads(Optional reg As String = "") As Boolean
 beNaklads = True
-Dim s As Double
+Dim S As Double
 'отпущено
 sql = "SELECT Sum(sDMC.quant) AS Sum_quant From sDMC " & _
 "WHERE (((sDMC.numExt)< 254) AND ((sDMC.numDoc)=" & numDoc & "));"
-If Not byErrSqlGetValues("##140", sql, s) Then Exit Function
-If s > 0.005 Then ' что-то отпущено
+If Not byErrSqlGetValues("##140", sql, S) Then Exit Function
+If S > 0.005 Then ' что-то отпущено
     If reg = "" Then
         MsgBox "По этому заказу выписывались накладные, поэтому изменять " & _
         "предметы нельзя. Если изменения все-же требуются, то прежде надо " & _
@@ -2195,8 +2177,8 @@ If s > 0.005 Then ' что-то отпущено
 Else
     sql = "SELECT Sum(curQuant) AS Sum_curQuant " & _
     "From sDMCrez WHERE (((numDoc)=" & numDoc & "));"
-    If Not byErrSqlGetValues("##367", sql, s) Then Exit Function
-    If s > 0.005 Then ' что-то отпущено
+    If Not byErrSqlGetValues("##367", sql, S) Then Exit Function
+    If S > 0.005 Then ' что-то отпущено
         If reg = "" Then
             MsgBox "По этому заказу в Цеху уже выписана накладная (заполнена " & _
             "колонка 'Кол-во') и возможно она уже распечатана. Прежде чем " & _
@@ -2278,7 +2260,7 @@ End Function
 'reg = "prev" - проверка, что списано ровно по пред.этапу, не больше
 'иначе - проверка, что списано по этапу, не менее
 Function predmetiIsClose(Optional reg As String = "") As Boolean
-Dim I As Integer, s As Double
+Dim I As Integer, S As Double
 
 #If onErrorOtlad Then
     On Error GoTo errMsg
@@ -2295,13 +2277,13 @@ If Not sProducts.zakazNomenkToNNQQ() Then Exit Function
 For I = 1 To UBound(NN)
     sql = "SELECT Sum(quant) AS Sum_quant From sDMC " & _
     "WHERE (((sDMC.numDoc)=" & gNzak & ") AND ((nomNom)='" & NN(I) & "'));"
-    If Not byErrSqlGetValues("##164", sql, s) Then Exit Function
+    If Not byErrSqlGetValues("##164", sql, S) Then Exit Function
     If reg = "prev" Then
-        If Abs(QQ3(I) - s) > 0.005 Then Exit Function
+        If Abs(QQ3(I) - S) > 0.005 Then Exit Function
     ElseIf reg = "" Or QQ2(0) = 0 Then 'вызов не из цеха или для неэтапного заказа
-        If QQ(I) - s > 0.005 Then Exit Function
+        If QQ(I) - S > 0.005 Then Exit Function
     Else
-        If QQ2(I) - s > 0.005 Then Exit Function
+        If QQ2(I) - S > 0.005 Then Exit Function
     End If
 Next I
 predmetiIsClose = True
@@ -2309,7 +2291,7 @@ End Function
 
 
 Function PrihodRashod(reg As String, skladId As Integer) As Double
-Dim qWhere As String, s As Double
+Dim qWhere As String, S As Double
 
 PrihodRashod = 0
 

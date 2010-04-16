@@ -47,7 +47,7 @@ MsgBox "База переведена на новую дату!"
 Exit Sub
 
 ER1:
-wrkDefault.Rollback
+wrkDefault.rollback
 End Sub
 
 
