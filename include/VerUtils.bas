@@ -92,15 +92,6 @@ Type VS_FIXEDFILEINFO
 End Type
 
 
-Type VersionInfo
-    path As String
-    maj As Long
-    min As Long
-    rev As Long
-    bld As Long
-End Type
-
-
 
 Function GetDllVersion(ByVal supFile As String, _
                     ByRef info As VersionInfo _

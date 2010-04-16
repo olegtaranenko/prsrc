@@ -7,6 +7,14 @@ Type MapEntry
 End Type
 
 
+Type VersionInfo
+    path As String
+    maj As Long
+    min As Long
+    rev As Long
+    bld As Long
+End Type
+
 
 Sub fatalError(msg As String, Optional lookAdmin As String)
     Dim adminMsg As String

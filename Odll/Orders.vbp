@@ -28,7 +28,6 @@ Module=CommonUtils; ..\include\CommonUtils.bas
 Module=AppUtils; ..\include\AppUtils.bas
 Module=DbUtils; ..\include\DbUbils.bas
 Module=LogUtils; ..\include\LogUtils.bas
-Module=VerUtils; ..\include\VerUtils.bas
 Class=Numorder; ..\include\Numorder.cls
 Module=OrderUtils; ..\include\OrderUtils.bas
 Form=Equipment.frm
