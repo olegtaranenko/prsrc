@@ -23,12 +23,12 @@ begin
 			end if;
 		end if;
 		if do_correction = 1 then
-			raiserror 17000 'test raiserror!';
+			//raiserror 17000 'test raiserror!';
 			set new_name.lastModified = now();
 			begin
 				set new_name.lastManagId = @managerId;
 			exception when others then
-				set new_name.lastManagId = null;
+				set new_name.lastManagId = 0;
 			end;
 		end if;
 	end if;

@@ -95,14 +95,14 @@ Dim resetToCurrentEquip As Boolean
         Dim currentLastModified As Date
         If Not IsNull(tbOrders!lastModified) Then
             currentLastModified = tbOrders!lastModified
-            If Not IsNull(Me.m_lastModified) And Me.m_lastModified < currentLastModified Then
+            If IsNull(Me.m_lastModified) Or (Not IsNull(Me.m_lastModified) And Me.m_lastModified < currentLastModified) Then
                 Me.m_lastModified = currentLastModified
                 resetToCurrentEquip = True
             End If
         End If
         If Not IsNull(tbOrders!lastModifiedEquip) Then
             currentLastModified = tbOrders!lastModifiedEquip
-            If Not IsNull(Me.m_lastModified) And Me.m_lastModified < currentLastModified Then
+            If IsNull(Me.m_lastModified) Or (Not IsNull(Me.m_lastModified) And Me.m_lastModified < currentLastModified) Then
                 m_lastModifiedEquip = currentLastModified
                 resetToCurrentEquip = True
             End If
@@ -149,7 +149,9 @@ Public Sub initFromDb()
     End If
 
     Numorder = tbOrders!Numorder
-    cehId = tbOrders!cehId
+    If Not IsNull(tbOrders!cehId) Then
+        cehId = tbOrders!cehId
+    End If
     StatusId = tbOrders!StatusId
     m_lastModified = tbOrders!lastModified
     m_lastManagId = tbOrders!lastManagId

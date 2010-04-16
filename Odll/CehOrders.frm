@@ -254,7 +254,7 @@ End If
 End Sub
 
 Sub cehBegin()
-Dim str As String, I As Integer, j As Integer, il As Long, tmpTopRow As Long
+Dim str As String, I As Integer, J As Integer, il As Long, tmpTopRow As Long
 tmpTopRow = Grid.TopRow
 
 #If onErrorOtlad Then
@@ -286,7 +286,7 @@ colWdth(chFirma) = Grid.ColWidth(chFirma)
 colWdth(chLogo) = Grid.ColWidth(chLogo) + Grid.ColWidth(chDataRes)
 
 Grid.Visible = False
-For il = Grid.rows To 3 Step -1
+For il = Grid.Rows To 3 Step -1
     Grid.removeItem (il)
 Next il
 Grid.row = 1
@@ -363,7 +363,7 @@ Frame1.Visible = False
 End Sub
 
 Sub toCehFromStr(Optional isMO As String = "")
-Dim str As String, I As Integer, j As Integer, k As Integer, s As Variant
+Dim str As String, I As Integer, J As Integer, k As Integer, s As Variant
 Dim color As Long, str1 As String  ', is100 As Boolean
 
 #If onErrorOtlad Then
@@ -694,15 +694,15 @@ Dim I As Integer
 
 If noClick Then Exit Sub
 
-sql = "SELECT StatM From OrdersMO WHERE (((numOrder)=" & gNzak & "));"
+sql = "SELECT StatM From OrdersInCeh WHERE (((numOrder)=" & gNzak & "));"
 If Not byErrSqlGetValues("##312", sql, tmpStr) Then Exit Sub
 If tmpStr = "утвержден" Then
     msgZakazDeleted "макет уже утвержден"
     GoTo EN1
 ElseIf lbMaket.Text = "готов" Then
-    I = ValueToTableField("W##37", "'готов'", "OrdersMO", "StatM")
+    I = ValueToTableField("W##37", "'готов'", "OrdersInCeh", "StatM")
 Else
-    I = ValueToTableField("W##37", "'в работе'", "OrdersMO", "StatM")
+    I = ValueToTableField("W##37", "'в работе'", "OrdersInCeh", "StatM")
 End If
 If I = 0 Then
     Grid.TextMatrix(mousRow, chStatus) = lbMaket.Text
@@ -719,7 +719,7 @@ If KeyCode = vbKeyReturn Then lbMaket_DblClick
 End Sub
 
 Private Sub lbObrazec_DblClick()
-Dim j As Integer, str As String, old As String, v As Variant
+Dim J As Integer, str As String, old As String, v As Variant
 Dim proc As String, status As String
 'sChr As String, dChr As String,
 If noClick Then Exit Sub
@@ -740,7 +740,7 @@ v = makeProcReady(proc, "obraz")
 If IsNull(v) Then ' образец утвержден
     msgZakazDeleted "образец уже утвержден"
 ElseIf v Then
-    If ValueToTableField("##54", status, "OrdersMO", "StatO") = 0 Then
+    If ValueToTableField("##54", status, "OrdersInCeh", "StatO") = 0 Then
         wrkDefault.CommitTrans
         cehBegin
     Else
@@ -937,9 +937,9 @@ AA:
  
   If obraz <> "" Then
     obraz = "o"
-    sql = "SELECT mo.workTimeMO, mo.StatO " _
-    & " from OrdersMO mo " _
-    & " WHERE numOrder =" & gNzak & " and mo.cehId = " & gCehId
+    sql = "SELECT oc.workTimeMO, oc.StatO " _
+    & " from OrdersInCeh oc " _
+    & " WHERE numOrder =" & gNzak & " and oc.cehId = " & gCehId
     If Not byErrSqlGetValues("##386", sql, virabotka, StatO) Then Exit Function
     If s = 0 Then ' 100%
     Else

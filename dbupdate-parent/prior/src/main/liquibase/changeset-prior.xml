@@ -1104,7 +1104,14 @@ where	GuideCeh.cehId = orders.cehId
 		<comment>Добавить поле Оборудование в таблицу OrdersInCeh</comment>
 		<addColumn tableName="OrdersInCeh">
 			<column name="cehId" type="integer"><constraints nullable="true"/></column>
+			<column name="DateTimeMO" type="datetime"><constraints nullable="true"/></column>
+			<column name="workTimeMO" type="float"><constraints nullable="true"/></column>
+			<column name="StatM" type="varchar(20)"><constraints nullable="true"/></column>
+			<column name="StatO" type="varchar(20)"><constraints nullable="true"/></column>
+			<column name="lastModified" type="datetime"><constraints nullable="true"/></column>
+			<column name="lastManagId" type="tinyint"><constraints nullable="true"/></column>
 		</addColumn>
+		
 	</changeSet>
 
 	<changeSet id="6" author="mantis-125" runOnChange="false">
@@ -1130,16 +1137,21 @@ where	OrdersInCeh.numorder = Orders.numorder
 
 	<changeSet id="9" author="mantis-125" runOnChange="false">
 		<sql>
-update	OrdersMO set cehId = Orders.cehId
-from	Orders 
-where	OrdersMO.numorder = Orders.numorder
+update	OrdersInCeh
+	set 
+		 DateTimeMO	= OrdersMO.DateTimeMO
+		,workTimeMO	= OrdersMO.workTimeMO
+		,StatM		= OrdersMO.StatM
+		,StatO		= OrdersMO.StatO
+from	OrdersMO
+where	OrdersMO.numorder = OrdersInCeh.numorder
 		</sql>
 
 		<rollback/>
 	</changeSet>
 
 	<changeSet id="10" author="mantis-125" runOnChange="false">
-		<addNotNullConstraint tableName="OrdersMO" columnName="cehId"/>
+		<dropTable tableName="OrdersMO"/>
 	</changeSet>
 
 
@@ -1195,11 +1207,9 @@ update	OrdersEquip set outDatetime = convert(int, outDatetime)
 		<comment>Саммари вьюха</comment>
 		<sqlFile path="procedures/enumEquip.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="views/vw_OrdersEquipSummary.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
-		<sqlFile path="views/vw_OrdersMOSummary.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="views/vw_OrdersInCehSummary.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<rollback>
 			<sqlFile path="rollback/vw_OrdersEquipSummary.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
-			<sqlFile path="rollback/vw_OrdersMOSummary.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 			<sqlFile path="rollback/vw_OrdersInCehSummary.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		</rollback>
 	</changeSet>
@@ -1262,20 +1272,7 @@ update	OrdersEquip set outDatetime = convert(int, outDatetime)
 
 	<changeSet id="26" author="mantis-125" runOnChange="false">
 		<comment>Застарелый ненужный мусор из производственных таблиц</comment>
-		<dropColumn tableName="OrdersMO" columnName="id_jscet"/>
 		<dropColumn tableName="OrdersInCeh" columnName="id_jscet"/>
-		<rollback/>
-	</changeSet>
-
-	<changeSet id="27" author="mantis-125" runOnChange="false">
-		<comment>Добавить цех в первичные ключи производственных таблиц</comment>
-		<dropPrimaryKey tableName="OrdersMO"/>
-		<rollback/>
-	</changeSet>
-
-	<changeSet id="28" author="mantis-125" runOnChange="false">
-		<comment>Добавить цех в первичные ключи производственных таблиц</comment>
-		<addPrimaryKey tableName="OrdersMO" columnNames="numorder,cehId" constraintName="pk_OrdersMO"/>
 		<rollback/>
 	</changeSet>
 
@@ -1295,6 +1292,8 @@ update	OrdersEquip set outDatetime = convert(int, outDatetime)
 		<comment>Перенести логику lastModified на сервер в триггера</comment>
 		<sqlFile path="triggers/Orders.wf_lastModified.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="triggers/OrdersEquip.wf_lastModified.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="triggers/OrdersEquip.wf_lastModified_delete.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="triggers/OrdersEquip.wf_lastModified_insert.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="procedures/setManagerId.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<rollback/>
 	</changeSet>

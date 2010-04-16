@@ -5,8 +5,8 @@ Option Explicit
 Sub nextDay()  'возможен прыжок на неск дней
 Dim Ceh As String
 
-Dim I As Integer, str As String, str1 As String, j As Integer, s As Double
-Dim ch As String
+Dim I As Integer, str As String, str1 As String, J As Integer, S As Double
+Dim ch As String, tenOclock As String, Midnight As String
 'MsgBox "переход на новую дату"
 
 'wrkDefault.BeginTrans
@@ -14,30 +14,32 @@ Dim ch As String
 sql = "DELETE from OrdersInCeh WHERE Stat = 'готов'"
 If myExecute("##63", sql, 0) > 0 Then GoTo ER1
 
-sql = "UPDATE Orders INNER JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder " & _
-"SET Orders.DateRS = '" & Format(curDate, "yyyy-mm-dd 10:00:00") & _
-"' WHERE Orders.DateRS  < '" & Format(curDate, "yyyy-mm-dd 00:00:00") & _
-"' And Not Orders.DateRS Is Null"
-'MsgBox sql
+tenOclock = "'" & Format(curDate, "yyyy-mm-dd 10:00:00") & "'"
+Midnight = "'" & Format(curDate, "yyyy-mm-dd 00:00:00") & "'"
+
+sql = "UPDATE Orders INNER JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder " _
+& " SET Orders.DateRS = " & tenOclock & ", OrdersInCeh.DateTimeMO = " & tenOclock _
+& " WHERE Orders.DateRS  < " & Midnight & " And Orders.DateRS Is Not Null"
+
+'Debug.Print sql
 If myExecute("##11", sql, 0) > 0 Then GoTo ER1
 
 sql = "UPDATE OrdersEquip " _
-& " INNER JOIN OrdersInCeh ON OrdersEquip.numOrder = OrdersInCeh.numOrder " _
-& "SET OrdersEquip.outDateTime = '" & Format(curDate, "yyyy-mm-dd 10:00:00") & _
-"' WHERE OrdersEquip.outDateTime <'" & Format(curDate, "yyyy-mm-dd 0:0:0") & "'"
+& " SET OrdersEquip.outDateTime = " & tenOclock _
+& " WHERE OrdersEquip.outDateTime < " & Midnight
 
 If myExecute("##404", sql, 0) > 0 Then GoTo ER1
 
-sql = "UPDATE OrdersMO SET DateTimeMO = '" & Format(curDate, "yyyy-mm-dd 10:00:00") & _
-"' WHERE DateTimeMO < '" & Format(curDate, "yyyy-mm-dd 00:00:00") & "'"
-If myExecute("##405", sql, 0) > 0 Then GoTo ER1
+'sql = "UPDATE OrdersInCeh SET DateTimeMO = '" & Format(curDate, "yyyy-mm-dd 10:00:00") & "'" _
+& " WHERE DateTimeMO < '" & Format(curDate, "yyyy-mm-dd 00:00:00") & "'"
+'If myExecute("##405", sql, 0) > 0 Then GoTo ER1
 
 
 If Not replaceResurs(1) Then GoTo ER1
 If Not replaceResurs(2) Then GoTo ER1
 If Not replaceResurs(3) Then GoTo ER1  '$$ceh
 
-sql = "UPDATE System SET resursLock = '', Kurs = -Abs([Kurs]);"
+sql = "UPDATE System SET resursLock = '', Kurs = -Abs(Kurs)"
 If myExecute("##90", sql, 0) > 0 Then GoTo ER1
 
 wrkDefault.CommitTrans
@@ -45,12 +47,12 @@ MsgBox "База переведена на новую дату!"
 Exit Sub
 
 ER1:
-wrkDefault.rollback
+wrkDefault.Rollback
 End Sub
 
 
 Function replaceResurs(id As Integer) As Boolean
-Dim oldRes As Double, s As Double, n As Double, I As Integer, j As Integer
+Dim oldRes As Double, S As Double, n As Double, I As Integer, J As Integer
 Dim newRes As Double
 
 replaceResurs = False
@@ -66,14 +68,14 @@ For I = 1 To befDays
     sql = "SELECT 1, nomRes FROM Resurs" & Ceh(id) & _
     " WHERE xDate = '" & Format(tmpDate, "yy.mm.dd") & "'"
     
-    If Not byErrSqlGetValues("W##12", sql, j, s) Then Exit Function
-    If j = 0 Then ' нет этого дня
+    If Not byErrSqlGetValues("W##12", sql, J, S) Then Exit Function
+    If J = 0 Then ' нет этого дня
         day = Weekday(tmpDate)
         If Not (day = vbSunday Or day = vbSaturday) Then
             oldRes = oldRes + newRes
         End If
     Else
-        oldRes = oldRes + s
+        oldRes = oldRes + S
     End If
 Next I
 
@@ -97,16 +99,16 @@ sql = "SELECT Sum(oe.workTime * oc.Nevip) AS nevip " & _
 & " WHERE o.StatusId = 1 AND oc.CehId = " & id
 byErrSqlGetValues "##372", sql, tmpSng
 
-s = 0 ' плюс неготовые образцы
-sql = "SELECT Sum(mo.workTimeMO) AS Sum_workTimeMO " _
-& " FROM OrdersMO mo" _
-& " JOIN Orders o ON o.numOrder = mo.numOrder " _
-& " WHERE mo.StatO = 'в работе' AND mo.CehId = " & id
-byErrSqlGetValues "##378", sql, s
-tmpSng = tmpSng + s
+S = 0 ' плюс неготовые образцы
+sql = "SELECT Sum(oc.workTimeMO) AS Sum_workTimeMO " _
+& " FROM OrdersInCeh oc" _
+& " JOIN Orders o ON o.numOrder = oc.numOrder " _
+& " WHERE oc.StatO = 'в работе' AND oc.CehId = " & id
+byErrSqlGetValues "##378", sql, S
+tmpSng = tmpSng + S
 
 sql = "SELECT Nstan" & Ceh(id) & ", KPD_" & Ceh(id) & " FROM System"
-byErrSqlGetValues "##379", sql, n, s
+byErrSqlGetValues "##379", sql, n, S
 
 On Error GoTo EN1
 'записываем ресурс и КПД в пред.день
@@ -125,7 +127,7 @@ sql = "INSERT INTO Itogi_" & Ceh(id) & " ( [xDate], numOrder, Virabotka ) " & _
 myExecute "##408", sql
 
 sql = "INSERT INTO Itogi_" & Ceh(id) & " ( [xDate], numOrder, Virabotka ) " & _
-"SELECT '" & tmpStr & "', 1, " & s & ";"
+"SELECT '" & tmpStr & "', 1, " & S & ";"
 myExecute "##409", sql
 
 'записываем сумму невыполнено живых(относятся к сегодня)

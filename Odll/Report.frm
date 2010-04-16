@@ -152,7 +152,7 @@ Const rtZakazano = 9
 Const rtOplacheno = 10
 
 Private Sub cmExel_Click()
-Dim Ceh As String, left As String, X As String
+Dim Ceh As String, Left As String, X As String
     GridToExcel Grid, laHeader.Caption
 End Sub
 
@@ -238,10 +238,10 @@ AA:
 'делаем обычный вид даты
 tmpStr = Right$(curDay, 2)
 tmpStr = tmpStr & Mid$(curDay, 3, 4)
-tmpStr = tmpStr & left$(curDay, 2)
+tmpStr = tmpStr & Left$(curDay, 2)
 laHeader.Caption = "Выработка по цеху " & Ceh(gCehId) & " на " & tmpStr
 
-Grid.rows = 2
+Grid.Rows = 2
 Grid.Cols = 13
 Grid.Clear
     Grid.ColWidth(0) = 0
@@ -332,7 +332,7 @@ For I = 2 To crVirab - 1
 Next I
 Grid.AddItem ""
 Grid.MergeRow(6) = True
-I = Grid.rows - 1
+I = Grid.Rows - 1
 Grid.row = I: Grid.col = 1: Grid.CellFontBold = True
 quantity = I + 1
 For I = 1 To Grid.Cols - 1
@@ -376,12 +376,12 @@ If sum > 0 Then
         & "WHERE Orders.numOrder = " & NN(I)
     Else 'образец
         Grid.TextMatrix(quantity + I, crNomZak) = NN(I) & "o"
-        sql = "SELECT Orders.ManagId, Orders.Logo, mo.StatO As Stat, " & _
-        "Orders.Product, Orders.ProblemId, mo.DateTimeMO As outDateTime, " _
-        & " GuideFirms.Name, mo.workTimeMO As workTime" _
+        sql = "SELECT Orders.ManagId, Orders.Logo, oc.StatO As Stat, " & _
+        "Orders.Product, Orders.ProblemId, oc.DateTimeMO As outDateTime, " _
+        & " GuideFirms.Name, oc.workTimeMO As workTime" _
         & " FROM Orders" _
         & " JOIN GuideFirms ON GuideFirms.FirmId = Orders.FirmId" _
-        & " LEFT JOIN OrdersMO mo ON Orders.numOrder = mo.numOrder" _
+        & " LEFT JOIN OrdersInCeh oc ON Orders.numOrder = oc.numOrder" _
         & " WHERE Orders.numOrder = " & NN(I)
     End If
     Grid.TextMatrix(quantity + I, crVirab) = Round(QQ(I), 2)
@@ -433,12 +433,12 @@ End Sub
 
 
 Sub managStat()
-Dim l As Long, I As Integer, j As Integer, line As Integer, id  As Integer
+Dim l As Long, I As Integer, J As Integer, line As Integer, id  As Integer
 Dim str As String, strFrom As String, strWhere As String
 
 laRecCount.Visible = False
 laCount.Visible = False
-Grid.rows = 3
+Grid.Rows = 3
 Grid.FixedRows = 2
 Grid.MergeRow(0) = True
 str = "|Кол-во фирм по Справочнику"
@@ -526,7 +526,7 @@ table.Close
 End Sub
 '$odbc15$
 Function getCountAndSumm(id As Integer, stat As String) As Integer
-Dim strWhere As String, statId As String, str As String, I As Integer, j As Integer
+Dim strWhere As String, statId As String, str As String, I As Integer, J As Integer
 getCountAndSumm = 0
 workSum = 0
 paidSum = 0
@@ -538,15 +538,15 @@ End If
 
 str = Reports.tbStartDate2.Text
 'strWhere = Left$(str, 2) & "/1/" & Right$(str, 4)
-strWhere = "'" & Right$(str, 4) & "-" & left$(str, 2) & "-01'"
+strWhere = "'" & Right$(str, 4) & "-" & Left$(str, 2) & "-01'"
 str = Reports.tbEndDate2.Text
 ' формируем самое начало след месяца
-I = left$(str, 2) ' месяц
-j = Right$(str, 4) 'год
+I = Left$(str, 2) ' месяц
+J = Right$(str, 4) 'год
 I = I + 1:
-If I > 12 Then I = 1: j = j + 1
+If I > 12 Then I = 1: J = J + 1
 'strWhere = strWhere & "# And (Orders.inDate)<#" & i & "/1/" & j
-strWhere = strWhere & " And (Orders.inDate)< '" & Format(j, "0000") & _
+strWhere = strWhere & " And (Orders.inDate)< '" & Format(J, "0000") & _
 "-" & Format(I, "00") & "-01'"
 
 sql = "SELECT Count(Orders.numOrder) AS Kolvo, Sum(Orders.workTime) " & _
@@ -596,7 +596,7 @@ End Function
 'Regim = "allOrdersByFirmName" 'Отчет "Все заказы Фирмы"'
 'Regim = "OrdersByFirmName"    'Отчет "Незакрытые заказы"'
 Sub firmOrders()
-Dim l As Long, str As String, I As Integer, j As Integer
+Dim l As Long, str As String, I As Integer, J As Integer
 Dim strFirm As String, strFrom As String, strWhere As String
 Grid.FormatString = "|<№ заказа|^M |<Статус|<Проблемы|" & _
 "<Дата выдачи|<Время выдачи|<Лого|<Изделия|Заказано|Оплачено|Отгружено"
@@ -644,22 +644,22 @@ If tqOrders Is Nothing Then GoTo ENs
 If Not tqOrders.BOF Then
   While Not tqOrders.EOF
     Grid.TextMatrix(l, rpNomZak) = tqOrders!Numorder
-    j = tqOrders!StatusId
-    If j = 2 Or j = 3 Or j = 9 Then
+    J = tqOrders!StatusId
+    If J = 2 Or J = 3 Or J = 9 Then
         Grid.MergeRow(l) = True
-        str = status(j) & " на " & tqOrders!DateRS
+        str = status(J) & " на " & tqOrders!DateRS
         Grid.TextMatrix(l, rpStatus) = str
         Grid.row = l
         Grid.col = rpStatus
         Grid.CellFontBold = True
-        If j = 2 Then
+        If J = 2 Then
            Grid.CellForeColor = vbBlue
         Else
            Grid.CellForeColor = &HAA00& ' т.зел.
         End If
         Grid.TextMatrix(l, rpProblem) = str
     Else
-        Grid.TextMatrix(l, rpStatus) = status(j)
+        Grid.TextMatrix(l, rpStatus) = status(J)
         Grid.TextMatrix(l, rpProblem) = Problems(tqOrders!ProblemId)
     End If
     LoadDate Grid, l, rpDataVid, tqOrders!Outdatetime, "dd.mm.yy"
@@ -708,7 +708,7 @@ End Sub
 Sub fitFormToGrid()
 Dim I As Long, delta As Long
 
-I = 350 + (Grid.CellHeight + 17) * Grid.rows
+I = 350 + (Grid.CellHeight + 17) * Grid.Rows
 delta = I - Grid.Height
 If Me.Height + delta > (Screen.Height - 400) Then _
     delta = (Screen.Height - 400) - Me.Height
@@ -754,9 +754,9 @@ laHeader.Width = laHeader.Width + w
 cmExel.Top = cmExel.Top + h
 cmPrint.Top = cmPrint.Top + h
 cmExit.Top = cmExit.Top + h
-cmExit.left = cmExit.left + w
-cmPrev.left = cmPrev.left + w
-cmNext.left = cmNext.left + w
+cmExit.Left = cmExit.Left + w
+cmPrev.Left = cmPrev.Left + w
+cmNext.Left = cmNext.Left + w
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
@@ -945,7 +945,7 @@ Grid.ColWidth(2) = 5000
 While Not tbProduct.EOF
   Grid.AddItem Chr(9) & tbProduct!prName & Chr(9) & tbProduct!prDescript & _
   Chr(9) & "<--Изделие"
-  Grid.row = Grid.rows - 1: Grid.col = 1: Grid.CellFontBold = True
+  Grid.row = Grid.Rows - 1: Grid.col = 1: Grid.CellFontBold = True
   Grid.col = 2: Grid.CellFontBold = True
   ReDim NN(0): ReDim QQ(0)
   gProductId = tbProduct!prId
@@ -960,10 +960,10 @@ While Not tbProduct.EOF
 NXT:
   tbProduct.MoveNext
 Wend
-Grid.removeItem Grid.rows
+Grid.removeItem Grid.Rows
 Grid.removeItem 1
 
-I = 350 + (Grid.CellHeight + 17) * Grid.rows
+I = 350 + (Grid.CellHeight + 17) * Grid.Rows
 delta = I - Grid.Height
 If Me.Height + delta > (Screen.Height - 400) Then _
     delta = (Screen.Height - 400) - Me.Height

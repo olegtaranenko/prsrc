@@ -706,12 +706,12 @@ sql = "SELECT o.numOrder, oe.workTime, " & _
 " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder and oc.cehId = oe.cehId " & _
 " Where (((o.StatusId) = 2 Or (o.StatusId) = 3) AND ((oe.CehId)= " & gCehId & ")) " & _
 " UNION ALL " & _
-" SELECT o.numOrder, mo.workTimeMO, DateDiff(day,Now(),mo.DateTimeMO) AS endDay, " & _
-" DateDiff(day,Now(),o.inDate) AS begDay, mo.DateTimeMO, " & _
+" SELECT o.numOrder, oc.workTimeMO, DateDiff(day,Now(),oc.DateTimeMO) AS endDay, " & _
+" DateDiff(day,Now(),o.inDate) AS begDay, oc.DateTimeMO, " & _
 " o.inDate, 1 AS StatusId, -1 AS Nevip, '' AS urgent " & _
 " FROM Orders o " & _
-" JOIN OrdersMO mo ON o.numOrder = mo.numOrder " & _
-" Where mo.statO = 'в работе' AND mo.CehId= " & gCehId & _
+" JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder " & _
+" Where oc.statO = 'в работе' AND oc.CehId= " & gCehId & _
 " ORDER BY "
 
 If isMzagruz Then
@@ -1229,7 +1229,7 @@ If myExecute("##391", sql) <> 0 Then GoTo ER1
 
 
 ' согласование или из согласования в работу
-sql = "SELECT * from OrdersMO WHERE numOrder =" & gNzak
+sql = "SELECT * from OrdersInCeh WHERE numOrder =" & gNzak
 Set table = myOpenRecordSet("##02", sql, dbOpenForwardOnly)
 'If Not table Is Nothing Then '
  bilo = Not table.BOF
@@ -1272,11 +1272,11 @@ table.Close
   End If
 '  table.Update
   If bilo Then      '
-    sql = "UPDATE OrdersMO SET StatM = '" & cbM.Text & "', StatO = '" & cbO.Text & _
+    sql = "UPDATE OrdersInCeh SET StatM = '" & cbM.Text & "', StatO = '" & cbO.Text & _
     "', DateTimeMO = " & str & ", workTimeMO = " & Worktime & _
     " WHERE numOrder = " & gNzak & " AND cehId = " & gCehId
   Else
-    sql = "INSERT INTO OrdersMO ( numOrder, StatM, StatO, WorktimeMO, DatetimeMO, cehId ) " & _
+    sql = "INSERT INTO OrdersInCeh ( numOrder, StatM, StatO, WorktimeMO, DatetimeMO, cehId ) " & _
     "SELECT " & gNzak & ", '" & _
     cbM.Text & "', '" & cbO.Text & "', " & str & "," & Worktime & "," & gCehId
   End If
@@ -1967,12 +1967,11 @@ Else
     
     sql = "SELECT o.numorder, o.StatusId, o.DateRS" _
     & ", oe.outDateTime, oe.statusEquipId, oe.cehId, oe.worktime" _
-    & ", om.DateTimeMO, om.workTimeMO, om.StatM, om.StatO" _
+    & ", oc.DateTimeMO, oc.workTimeMO, oc.StatM, oc.StatO" _
     & ", oc.stat as statusInCeh, oc.nevip, oc.urgent, o.outTime" _
     & ", o.lastModified, o.lastManagId, 0 as presentationFormat" _
     & " from Orders o" _
     & " JOIN OrdersEquip oe on oe.numorder = o.numorder " _
-    & " LEFT JOIN OrdersMO om on om.numorder = o.numorder AND om.cehId = oe.cehId" _
     & " LEFT JOIN OrdersInCeh oc on oc.numorder = o.numorder AND oc.cehId = oe.cehId" _
     & " WHERE o.numOrder =" & gNzak & " AND oe.cehId = " & CStr(gCehId)
     Set tbOrders = myOpenRecordSet("##402", sql, dbOpenForwardOnly)

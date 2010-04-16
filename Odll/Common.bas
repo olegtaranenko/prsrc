@@ -370,10 +370,10 @@ End Function
 
 Sub clearGrid(Grid As MSFlexGrid, Optional fixed As Integer = 1)
 If fixed = 1 Then
-    Grid.rows = 2
+    Grid.Rows = 2
     clearGridRow Grid, 1
 Else
-    Grid.rows = 3
+    Grid.Rows = 3
     clearGridRow Grid, 2
 End If
 End Sub
@@ -455,12 +455,7 @@ Dim s As Double
 End Sub
 
 Sub delZakazFromReplaceRS()
-
-'sql = "DELETE ReplaceRS.* From ReplaceRS " & _
-"WHERE (((ReplaceRS.numOrder)=" & gNzak & "));"
-sql = "DELETE From ReplaceRS " & _
-"WHERE (((numOrder)=" & gNzak & "));"
-'MsgBox sql
+sql = "DELETE From ReplaceRS " & "WHERE numOrder = " & gNzak
 myExecute "##79", sql, 0 ' удаляем, если есть
 End Sub
 
@@ -482,7 +477,7 @@ End Sub
 Function findValInCol(Grid As MSFlexGrid, value, col As Integer) As Boolean
 Dim il As Long
 findValInCol = False
-For il = 1 To Grid.rows - 1
+For il = 1 To Grid.Rows - 1
     If value = Grid.TextMatrix(il, orNomZak) Then
         Grid.TopRow = il
         Grid.row = il
@@ -503,7 +498,7 @@ Else
     beg = pos
 End If
 value = UCase(value)
-For il = beg To Grid.rows - 1
+For il = beg To Grid.Rows - 1
     str = UCase(Grid.TextMatrix(il, col))
     If InStr(str, value) > 0 Then
         Grid.TopRow = il
@@ -542,12 +537,12 @@ yymmdd = Right$(dateStr, 2) & "." & Mid$(dateStr, 4, 2) & "." & Left$(dateStr, 2
 End Function
 
 
-Function getValueFromTable(tabl As String, field As String, where As String) As Variant
+Function getValueFromTable(tabl As String, field As String, Where As String) As Variant
 Dim table As Recordset
 
 getValueFromTable = Null
 sql = "SELECT " & field & " as fff  From " & tabl & _
-      " WHERE " & where
+      " WHERE " & Where
 Set table = myOpenRecordSet("##59.1", sql, dbOpenForwardOnly)
 If table Is Nothing Then Exit Function
 If Not table.BOF Then getValueFromTable = table!fff
@@ -952,7 +947,7 @@ baseOpen
     
 mainTitle = getMainTitle
 
-If Not isEmpty(otlad) Then '
+If Not IsEmpty(otlad) Then '
   webSvodkaPath = "C:\WINDOWS\TEMP\svodkaW."
   webLoginsPath = "C:\WINDOWS\TEMP\logins."
 
@@ -1414,7 +1409,7 @@ Else
     str = tbSystem!lastPrivatNum
     Dim valueorder As Numorder
     Set valueorder = newNumorder(str)
-    If Not valueorder.isEmpty Then
+    If Not valueorder.IsEmpty Then
         tmpDate = valueorder.dat
         If tmpDate < dNow Then
             befDays = DateDiff("d", tmpDate, Now)
@@ -1533,12 +1528,12 @@ Function synchOrderRow() As String
     'обновить информацию по заказу в главном реестре
     sql = "SELECT o.StatusId, o.DateRS, o.numOrder" & _
     ", oe.outDateTime, o.outTime, oe.workTime, p.Problem" & _
-    ", mo.DateTimeMO, mo.StatM, mo.StatO, mo.workTimeMO " & _
+    ", oc.DateTimeMO, oc.StatM, oc.StatO, oc.workTimeMO " & _
     ", convert(int, (oe.maxStatusId - oe.minStatusId) + abs(oe.maxStatusId - o.statusId)) as equipStatusSync " & vbCr & _
     " FROM Orders o " _
     & " INNER JOIN GuideProblem p  ON p.ProblemId = o.ProblemId" _
     & " INNER JOIN vw_OrdersEquipSummary  oe  ON oe.numOrder = o.numOrder " _
-    & " LEFT JOIN vw_OrdersMOSummary      mo ON o.numOrder = mo.numOrder" _
+    & " LEFT JOIN vw_OrdersMOSummary      oc ON o.numOrder = oc.numOrder" _
     & " WHERE o.numOrder = " & gNzak
     
     Set tqOrders = myOpenRecordSet("##16", sql, dbOpenForwardOnly)
@@ -1829,8 +1824,8 @@ While Not tbFirms.EOF '                         *******************
     If visits > 0 And year = "" Then
         If Not bilo Then
             Report.Grid.TextMatrix(nRow, 1) = tbFirms!name
-            If Not IsNull(tbFirms!managId) Then _
-                    Report.Grid.TextMatrix(nRow, 2) = Manag(tbFirms!managId)
+            If Not IsNull(tbFirms!ManagId) Then _
+                    Report.Grid.TextMatrix(nRow, 2) = Manag(tbFirms!ManagId)
             Report.Grid.TextMatrix(nRow, 3) = tbFirms!Kategor
             If Not IsNull(tbFirms!Sale) Then _
                     Report.Grid.TextMatrix(nRow, 4) = tbFirms!Sale
@@ -2588,7 +2583,7 @@ Function searchZakRow(ByRef Grid As MSFlexGrid, nzak As String) As Long
 Dim irow As Long
 
     searchZakRow = -1
-    For irow = 1 To Grid.rows - 1
+    For irow = 1 To Grid.Rows - 1
         If Grid.TextMatrix(irow, orNomZak) = nzak Then
             searchZakRow = irow
             Exit Function
@@ -2649,12 +2644,12 @@ ERR2: bilo = True: Resume NXT
 
 End Sub
 
-Public Function getManagById(managId As Variant) As String
+Public Function getManagById(ManagId As Variant) As String
 Dim I As Integer
     getManagById = ""
-    If Not IsNull(managId) Then
+    If Not IsNull(ManagId) Then
         Dim imanagId As String
-        imanagId = CStr(managId)
+        imanagId = CStr(ManagId)
         If imanagId <> "" Then
             For I = 0 To UBound(Managers)
                 If Managers(I).Key = imanagId Then

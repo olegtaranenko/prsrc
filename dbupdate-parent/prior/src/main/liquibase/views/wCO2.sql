@@ -33,17 +33,16 @@ SELECT
 	f.Name, 
 	o.Logo, 
 	o.Product,
-	c.rowLock, 
-	c.Stat, 
-	c.Nevip, 
-	mo.DateTimeMO, 
-	mo.workTimeMO, 
-	mo.StatM, 
-	mo.StatO
+	oc.rowLock, 
+	oc.Stat, 
+	oc.Nevip, 
+	oc.DateTimeMO, 
+	oc.workTimeMO, 
+	oc.StatM, 
+	oc.StatO
 FROM Orders o
 	JOIN OrdersEquip      oe ON o.numOrder = oe.numOrder
 	JOIN GuideFirms       f  ON f.FirmId = o.FirmId
 	JOIN GuideManag       m  ON m.ManagId = o.ManagId
-	JOIN OrdersInCeh c  ON o.numOrder = c.numOrder  and oe.cehId = c.cehId
-	LEFT JOIN OrdersMO    mo ON o.numOrder = mo.numOrder and oe.cehId = c.cehId
+	JOIN OrdersInCeh oc  ON o.numOrder = oc.numOrder  and oe.cehId = oc.cehId
 WHERE oe.CehId = 2
