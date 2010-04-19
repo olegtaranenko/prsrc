@@ -1408,7 +1408,7 @@ Private Sub mnNomenc_Click()
 Dim n1 As Nomenklatura
     Set n1 = New Nomenklatura
     n1.Regim = ""
-    n1.Show
+    n1.Show vbModeless
     n1.setRegim
 End Sub
 
@@ -1416,7 +1416,7 @@ Private Sub mnOborot_Click()
 Dim n1 As Nomenklatura
     Set n1 = New Nomenklatura
     n1.Regim = "asOborot"
-    n1.Show
+    n1.Show vbModeless
     n1.setRegim
 End Sub
 'проверка на отрицат.остатки
@@ -1519,8 +1519,8 @@ Private Sub mnProdCategory_Click()
 End Sub
 
 Private Sub mnProducts_Click()
-Products.Regim = "" ' Просто Справочник
-Products.Show vbModal
+    Products.Regim = "" ' Просто Справочник
+    Products.Show vbModeless
 End Sub
 
 Private Sub mnReservedAll_Click()

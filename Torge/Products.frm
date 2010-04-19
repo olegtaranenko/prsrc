@@ -17,6 +17,7 @@ Begin VB.Form Products
    ScaleWidth      =   11880
    StartUpPosition =   2  'CenterScreen
    WhatsThisHelp   =   -1  'True
+   WindowState     =   2  'Maximized
    Begin VB.CommandButton cmSostavExcel 
       Caption         =   "ѕечать в Excel"
       Height          =   315

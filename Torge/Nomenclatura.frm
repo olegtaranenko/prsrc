@@ -15,6 +15,7 @@ Begin VB.Form Nomenklatura
    ScaleWidth      =   14256
    StartUpPosition =   1  'CenterOwner
    Visible         =   0   'False
+   WindowState     =   2  'Maximized
    Begin VB.TextBox tbBetweenPostav 
       Height          =   285
       Left            =   9840
@@ -1077,7 +1078,7 @@ Else
     initCol nkSource, "Поставшик", 945, flexAlignLeftCenter
     
     initCol nkMargin, "Маржа", 450
-    initCol nkKodel, "К/Дел", 400
+    initCol nkKodel, "%Скидки", 400
     initCol nkKolonok, "Колонок", 400
     initCol nkCena1W, "Ц_Продажи", 700
     initCol nkCena2W, "CenaSale", 700
@@ -2793,7 +2794,7 @@ CC: cenaFreight = Grid.TextMatrix(mousRow, nkCenaFreight)
         End If
     End If
     
-    baseCena = cena2W * (1 - margin / 100)
+    baseCena = cena2W
     
     If mousCol >= nkKolon2 And mousCol <= nkKolon4 Then
         If manualOpt Then
@@ -2807,13 +2808,13 @@ CC: cenaFreight = Grid.TextMatrix(mousRow, nkCenaFreight)
             End If
             GoTo EN2
         Else
-            If Not checkNumeric(str, baseCena, cena2W) Then
+            If Not checkNumeric(str, 0, cena2W) Then
                 Exit Sub
             End If
             Dim kolonVal As Double
             kolonVal = CDbl(str)
-            kodel = (kolonVal - baseCena) / (cena2W - baseCena)
-            If Not valueToNomencField("##kodel", kodel, "kodel") Then
+            kodel = (cena2W - kolonVal) / cena2W * 100
+            If Not valueToNomencField("##kodel", kodel, "rabbat") Then
                 GoTo EN1
             Else
                 Grid.TextMatrix(mousRow, nkKodel) = Format(kodel, "0.0#")
@@ -2872,7 +2873,7 @@ Function getChangedField(iCol As Long) As String
     If iCol = nkMargin Then
         getChangedField = "margin"
     ElseIf iCol = nkKodel Then
-        getChangedField = "kodel"
+        getChangedField = "rabbat"
     ElseIf iCol = nkKolonok Then
         getChangedField = "Kolonok"
     ElseIf iCol = nkCena2W Then
@@ -2900,7 +2901,7 @@ Function getMaxValue(iCol As Long) As Double
     If iCol = nkMargin Then
         getMaxValue = 99
     ElseIf iCol = nkKodel Then
-        getMaxValue = 1
+        getMaxValue = 100
     ElseIf iCol = nkKolonok Then
         getMaxValue = 4
     ElseIf iCol = nkCena2W Then
@@ -3375,9 +3376,9 @@ If Not tbNomenk.BOF Then
             
             Grid.TextMatrix(quantity, nkCena2W) = Format(tbNomenk!CENA_W, "0.00")
             Dim optBasePrice As Double
-            optBasePrice = tbNomenk!CENA_W * (1 - tbNomenk!margin / 100)
+            optBasePrice = tbNomenk!CENA_W
             Grid.TextMatrix(quantity, nkMargin) = tbNomenk!margin
-            Grid.TextMatrix(quantity, nkKodel) = Format(tbNomenk!kodel, "0.0#")
+            Grid.TextMatrix(quantity, nkKodel) = Format(tbNomenk!rabbat, "0.0#")
             Grid.TextMatrix(quantity, nkKolonok) = tbNomenk!kolonok
             Dim kolonok As Integer, manualOpt As Boolean
             kolonok = tbNomenk!kolonok
@@ -3392,7 +3393,7 @@ If Not tbNomenk.BOF Then
                 If manualOpt Then
                     Grid.TextMatrix(quantity, nkKolon2 + I - 1) = Format(tbNomenk("CenaOpt" & CStr(I + 1)), "0.00")
                 Else
-                    Grid.TextMatrix(quantity, nkKolon2 + I - 1) = Format(calcKolonValue(optBasePrice, tbNomenk!margin, tbNomenk!kodel, Abs(kolonok), I + 1), "0.00")
+                    Grid.TextMatrix(quantity, nkKolon2 + I - 1) = Format(calcKolonValue(optBasePrice, tbNomenk!margin, tbNomenk!rabbat, Abs(kolonok), I + 1), "0.00")
                 End If
             Next I
             

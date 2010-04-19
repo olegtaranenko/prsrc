@@ -237,13 +237,14 @@ end;
 		<rollback/>
 	</changeSet>
 
-
+<!--
 	<changeSet id="code-1" author="mantis-33" runOnChange="false">
 		<comment>Курс заказа: триггеры для orders</comment>
 		<sqlFile path="mantis-33.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 
 		<rollback/>
 	</changeSet>
+-->
 
 	<changeSet id="ddl-3" author="mantis-33">
 		<comment>Колонка курс в таблице проводок.</comment>
@@ -1029,6 +1030,42 @@ where pc.sysname = sGuideProducts.web
 		<sqlFile path="procedures/put_jdog.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="procedures/put_jscet.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 	</changeSet>
+
+	<changeSet id="1" author="mantis-133" runOnChange="false">
+		<comment>Вместо коэффициента деления - скидка по последней колонке</comment>
+		<sql>ALTER TABLE sGuideNomenk RENAME [kodel] TO [rabbat]</sql>
+	</changeSet>
+
+<!--
+	<changeSet id="1" author="mantis-133" runOnChange="false">
+		<comment>Добавить столбец "Скидка" к таблице номенклатуры</comment>
+		<addColumn tableName="sGuideNomenk">
+			<column name="rabbatTmp" type="float"><constraints nullable="true"/></column>
+		</addColumn>
+	</changeSet>
+-->
+
+<!--
+	<changeSet id="2" author="mantis-133" runOnChange="true">
+		<comment>Конвертировать данные по алгоритму из Коэф/деления в Скидку</comment>
+		<executeCommand executable="dbisqlc.exe">
+			<arg value="-c"/>
+			<arg value="DSN=prior;UID=dba;PWD=sql"/>
+			<arg value="-q"/>
+			<arg value="${basedir}\target\classes\mainteinance\kodel2rabbat.sql"/>
+		</executeCommand>
+		<rollback/>
+	</changeSet>
+-->
+
+	<changeSet id="2" author="mantis-133" runOnChange="true">
+		<comment>Скидка по всем позициям - 10 %</comment>
+		<update tableName="sGuideNomenk">
+			<column name="rabbat" value="10"/>
+			<where>kolonok >= 0</where>
+		</update>
+	</changeSet>
+
 
 	<changeSet id="1" author="mantis-83" runOnChange="true">
 		<comment>Некорректное перемещение гот.изделия</comment>

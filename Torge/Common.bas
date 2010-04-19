@@ -1092,7 +1092,7 @@ End Function
 
 Public Sub quickSort(varArray As Variant, _
  Optional lngLeft As Long = dhcMissing, Optional lngRight As Long = dhcMissing)
-Dim I As Long, j As Long, varTestVal As Variant, lngMid As Long
+Dim I As Long, J As Long, varTestVal As Variant, lngMid As Long
 
     If lngLeft = dhcMissing Then lngLeft = LBound(varArray)
     If lngRight = dhcMissing Then lngRight = UBound(varArray)
@@ -1101,28 +1101,28 @@ Dim I As Long, j As Long, varTestVal As Variant, lngMid As Long
         lngMid = (lngLeft + lngRight) \ 2
         varTestVal = varArray(lngMid)
         I = lngLeft
-        j = lngRight
+        J = lngRight
         Do
             Do While varArray(I) < varTestVal
                 I = I + 1
             Loop
-            Do While varArray(j) > varTestVal
-                j = j - 1
+            Do While varArray(J) > varTestVal
+                J = J - 1
             Loop
-            If I <= j Then
-                Call SwapElements(varArray, I, j)
+            If I <= J Then
+                Call SwapElements(varArray, I, J)
                 I = I + 1
-                j = j - 1
+                J = J - 1
             End If
-        Loop Until I > j
+        Loop Until I > J
         ' To optimize the sort, always sort the
         ' smallest segment first.
-        If j <= lngMid Then
-            Call quickSort(varArray, lngLeft, j)
+        If J <= lngMid Then
+            Call quickSort(varArray, lngLeft, J)
             Call quickSort(varArray, I, lngRight)
         Else
             Call quickSort(varArray, I, lngRight)
-            Call quickSort(varArray, lngLeft, j)
+            Call quickSort(varArray, lngLeft, J)
         End If
     End If
 End Sub
@@ -1229,16 +1229,16 @@ End Function
 Function calcKolonValue(ByVal freight As Double, ByVal marginProc As Double, ByVal kodel As Double, ByVal kolonok As Double, ByVal curentKolon As Integer)
     Dim marginRate As Double, MarginValue As Double, maxUstupka As Double, stepUstupka As Double
     
-    marginRate = marginProc / 100
-    MarginValue = freight * marginRate / (1 - marginRate)
-    maxUstupka = MarginValue * (1 - kodel)
+    'marginRate = marginProc / 100
+    'maxUstupka =
+    MarginValue = freight * kodel / 100
     If kolonok > 1 Then
-        stepUstupka = maxUstupka / (kolonok - 1)
+        stepUstupka = MarginValue / (kolonok - 1)
     Else
         stepUstupka = 0
     End If
     
-    calcKolonValue = freight + MarginValue - stepUstupka * (curentKolon - 1)
+    calcKolonValue = freight - stepUstupka * (curentKolon - 1)
     
 End Function
 
@@ -1492,12 +1492,12 @@ sql = "SELECT prId, prName, prDescript, prSize, Cena4, page, rabbat " _
                     objExel.ActiveSheet.Cells(exRow, 7).value = " " & head4
                 End If
             ElseIf Regim = "combi" Then
-                Dim j As Integer
-                For j = 0 To 2
-                    With objExel.ActiveSheet.Cells(exRow, 4 + j)
-                        .value = ChrB(Asc("A") + j)
+                Dim J As Integer
+                For J = 0 To 2
+                    With objExel.ActiveSheet.Cells(exRow, 4 + J)
+                        .value = ChrB(Asc("A") + J)
                     End With
-                Next j
+                Next J
             End If
             
             objExel.ActiveSheet.Cells(exRow, lastColInt).value = "    стр."
