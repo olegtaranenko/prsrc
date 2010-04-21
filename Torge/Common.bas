@@ -1226,12 +1226,12 @@ If Not table.BOF Then getValueFromTable = table!fff
 table.Close
 End Function
 
-Function calcKolonValue(ByVal freight As Double, ByVal marginProc As Double, ByVal kodel As Double, ByVal kolonok As Double, ByVal curentKolon As Integer)
+Function calcKolonValue(ByVal freight As Double, ByVal marginProc As Double, ByVal rabbat As Double, ByVal kolonok As Double, ByVal curentKolon As Integer)
     Dim marginRate As Double, MarginValue As Double, maxUstupka As Double, stepUstupka As Double
     
     'marginRate = marginProc / 100
     'maxUstupka =
-    MarginValue = freight * kodel / 100
+    MarginValue = freight * rabbat / 100
     If kolonok > 1 Then
         stepUstupka = MarginValue / (kolonok - 1)
     Else

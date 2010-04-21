@@ -634,7 +634,7 @@ Dim nkPack As Integer
 Dim nkCod As Integer
 'Dim nkObrez As Integer
 Dim nkMargin As Integer
-Dim nkKodel As Integer
+Dim nkRabbat As Integer
 Dim nkKolonok As Integer
 Dim nkCena1W As Integer
 Dim nkCena2W As Integer
@@ -865,7 +865,7 @@ If curCol = -99 Then
     nkCod = -1
 '    nkObrez = -1
     nkMargin = -1
-    nkKodel = -1
+    nkRabbat = -1
     nkKolonok = -1
     nkCena1W = -1
     nkCena2W = -1
@@ -1078,7 +1078,7 @@ Else
     initCol nkSource, "Поставшик", 945, flexAlignLeftCenter
     
     initCol nkMargin, "Маржа", 450
-    initCol nkKodel, "%Скидки", 400
+    initCol nkRabbat, "%Скидки", 400
     initCol nkKolonok, "Колонок", 400
     initCol nkCena1W, "Ц_Продажи", 700
     initCol nkCena2W, "CenaSale", 700
@@ -1620,6 +1620,8 @@ BB:     If GuideFormuls.isLoad Then Unload GuideFormuls
         listBoxInGridCell lbSource, Grid, "select"
      ElseIf mousCol = nkWeb Then
         listBoxInGridCell lbWeb, Grid, "select"
+     ElseIf mousCol = nkDostup Then
+        showRezerv nomencDostupOstatki, FO, Grid.TextMatrix(mousRow, nkEdIzm2), Me
      Else
      'ElseIf Products.Regim <> "onlyGuide" Then !!! Зачем это было(оно мешает - если открывалось окно справочника Гот.изделий
         textBoxInGridCell tbMobile, Grid
@@ -1633,26 +1635,12 @@ AA:
      If mousCol = nkMark Then
         listBoxInGridCell lbMark, Grid, "select"
      ElseIf mousCol = nkDostup Then
-        dOst = Round(nomencDostupOstatki, 2)
-        If Round(FO, 2) > dOst Then
-            If MsgBox("Если Вы хотите просмотреть список всех заказов, под " & _
-            "которые была зарезервирована эта номенклатура, нажмите <Да>.", _
-            vbYesNo Or vbDefaultButton2, "Посмотреть, кто резервировал? '" & _
-            gNomNom & "' ?") = vbYes Then
-                Report.Regim = "whoRezerved"
-                Set Report.Caller = Me
-                Report.Sortable = True
-                Report.Show vbModal
-            End If
+        showRezerv nomencDostupOstatki, FO, Grid.TextMatrix(mousRow, nkEdIzm), Me
         Else
-            MsgBox "Эта номенклатура никем не резервировалась.", , ""
-        End If
-     Else
         textBoxInGridCell tbMobile, Grid
      End If
 End If
 End Sub
-
 
 Private Function inKolonYellow() As Boolean
     Dim kolonok As Integer, kolonokStr As String
@@ -2117,7 +2105,7 @@ Grid.TextMatrix(mousRow, nkPerList) = 1
 Grid.TextMatrix(mousRow, nkCena1W) = "error: Формула не задана"
 Grid.TextMatrix(mousRow, nkCenaFreight) = "error: Формула не задана"
 Grid.TextMatrix(mousRow, nkMargin) = 20
-Grid.TextMatrix(mousRow, nkKodel) = 0.5
+Grid.TextMatrix(mousRow, nkRabbat) = 0.5
 Grid.TextMatrix(mousRow, nkKolonok) = 1
 If obraz <> "" Then
     Grid.TextMatrix(mousRow, nkName) = Grid.TextMatrix(obrazRow, nkName)
@@ -2134,7 +2122,7 @@ If obraz <> "" Then
     Grid.TextMatrix(mousRow, nkCenaFreight) = Grid.TextMatrix(obrazRow, nkCenaFreight)
 '    Grid.TextMatrix(mousRow, nkWebFormula) = Grid.TextMatrix(obrazRow, nkWebFormula)
     Grid.TextMatrix(mousRow, nkMargin) = Grid.TextMatrix(obrazRow, nkMargin)
-    Grid.TextMatrix(mousRow, nkKodel) = Grid.TextMatrix(obrazRow, nkKodel)
+    Grid.TextMatrix(mousRow, nkRabbat) = Grid.TextMatrix(obrazRow, nkRabbat)
     Grid.TextMatrix(mousRow, nkKolonok) = Grid.TextMatrix(obrazRow, nkKolonok)
     Grid.TextMatrix(mousRow, nkCena1W) = Grid.TextMatrix(obrazRow, nkCena1W)
     Grid.TextMatrix(mousRow, nkCena2W) = Grid.TextMatrix(obrazRow, nkCena2W)
@@ -2665,7 +2653,7 @@ If KeyCode = vbKeyReturn Then
     tbNomenk!nomnom = str
     tbNomenk!KlassId = gKlassId
     tbNomenk!margin = Grid.TextMatrix(mousRow, nkMargin)
-    tbNomenk!kodel = Grid.TextMatrix(mousRow, nkKodel)
+    tbNomenk!rabbat = Grid.TextMatrix(mousRow, nkRabbat)
     tbNomenk!kolonok = Grid.TextMatrix(mousRow, nkKolonok)
     tbNomenk.Update
     tbNomenk.Close
@@ -2707,8 +2695,23 @@ AA: Grid.TextMatrix(mousRow, mousCol) = str
 '        Grid.TextMatrix(mousRow, nkDostup) = Round(s, 2)
 '    End If
  ElseIf mousCol = nkCENA1 Then
-    If Not isNumericTbox(tbMobile, 0) Then Exit Sub
+    Dim newCena1 As Double
+    
+    If isNumericTbox(tbMobile, 0) Then
+        newCena1 = CDbl(tbMobile)
+    Else
+        Exit Sub
+    End If
+    
     If Not valueToNomencField("##104", CSng(str), "CENA1") Then GoTo EN1
+    
+    'пересчитать цену продажи опираясь на имеющуюся маржу
+    Dim margin As Double
+    If IsNumeric(Grid.TextMatrix(mousRow, nkMargin)) Then
+        margin = CDbl(Grid.TextMatrix(mousRow, nkMargin))
+        Grid.TextMatrix(mousRow, nkCena1W) = newCena1 * margin
+    End If
+    
     GoTo BB
  ElseIf mousCol = nkVES Then
     If Not isNumericTbox(tbMobile, 0) Then Exit Sub
@@ -2764,7 +2767,7 @@ CC: cenaFreight = Grid.TextMatrix(mousRow, nkCenaFreight)
         Grid.TextMatrix(mousRow, nkCena1W) = Format(CDbl(Grid.TextMatrix(mousRow, nkCenaFreight)) / (1 - margin / 100), "0.00")
     End If
     
-    Dim kolonok As Integer, kodel As Double
+    Dim kolonok As Integer, rabbat As Double
     If mousCol = nkKolonok Then
         kolonok = CInt(str)
     Else
@@ -2783,14 +2786,14 @@ CC: cenaFreight = Grid.TextMatrix(mousRow, nkCenaFreight)
     End If
     
     kolonok = Abs(kolonok)
-    If mousCol = nkKodel Then
-        kodel = CDbl(str)
+    If mousCol = nkRabbat Then
+        rabbat = CDbl(str)
     Else
-        tmpStr = Grid.TextMatrix(mousRow, nkKodel)
+        tmpStr = Grid.TextMatrix(mousRow, nkRabbat)
         If IsNumeric(tmpStr) Then
-            kodel = CInt(tmpStr)
+            rabbat = CInt(tmpStr)
         Else
-            kodel = 0.5
+            rabbat = 0.5
         End If
     End If
     
@@ -2813,11 +2816,11 @@ CC: cenaFreight = Grid.TextMatrix(mousRow, nkCenaFreight)
             End If
             Dim kolonVal As Double
             kolonVal = CDbl(str)
-            kodel = (cena2W - kolonVal) / cena2W * 100
-            If Not valueToNomencField("##kodel", kodel, "rabbat") Then
+            rabbat = (cena2W - kolonVal) / cena2W * 100
+            If Not valueToNomencField("##rabbat", rabbat, "rabbat") Then
                 GoTo EN1
             Else
-                Grid.TextMatrix(mousRow, nkKodel) = Format(kodel, "0.0#")
+                Grid.TextMatrix(mousRow, nkRabbat) = Format(rabbat, "0.0#")
             End If
         End If
         
@@ -2837,7 +2840,7 @@ CC: cenaFreight = Grid.TextMatrix(mousRow, nkCenaFreight)
             If manualOpt Then
                 Grid.TextMatrix(mousRow, nkKolon2 + I - 1) = Format(cenaOpt(I), "0.00")
             Else
-                Grid.TextMatrix(mousRow, nkKolon2 + I - 1) = Format(calcKolonValue(baseCena, margin, kodel, kolonok, I + 1), "0.00")
+                Grid.TextMatrix(mousRow, nkKolon2 + I - 1) = Format(calcKolonValue(baseCena, margin, rabbat, kolonok, I + 1), "0.00")
             End If
         End If
     Next I
@@ -2872,7 +2875,7 @@ End Sub
 Function getChangedField(iCol As Long) As String
     If iCol = nkMargin Then
         getChangedField = "margin"
-    ElseIf iCol = nkKodel Then
+    ElseIf iCol = nkRabbat Then
         getChangedField = "rabbat"
     ElseIf iCol = nkKolonok Then
         getChangedField = "Kolonok"
@@ -2885,7 +2888,7 @@ End Function
 Function getMinValue(iCol As Long) As Double
     If iCol = nkMargin Then
         getMinValue = 1
-    ElseIf iCol = nkKodel Then
+    ElseIf iCol = nkRabbat Then
         getMinValue = 0
     ElseIf iCol = nkKolonok Then
         getMinValue = -4
@@ -2900,7 +2903,7 @@ End Function
 Function getMaxValue(iCol As Long) As Double
     If iCol = nkMargin Then
         getMaxValue = 99
-    ElseIf iCol = nkKodel Then
+    ElseIf iCol = nkRabbat Then
         getMaxValue = 100
     ElseIf iCol = nkKolonok Then
         getMaxValue = 4
@@ -2914,7 +2917,7 @@ End Function
 Function getRefreshIndex(iCol As Long) As Long
     If iCol = nkMargin Then
         getRefreshIndex = nkCena1W
-    ElseIf iCol = nkKodel Then
+    ElseIf iCol = nkRabbat Then
         getRefreshIndex = nkKolon2
     ElseIf iCol = nkKolonok Then
         getRefreshIndex = nkKolon2
@@ -3378,7 +3381,7 @@ If Not tbNomenk.BOF Then
             Dim optBasePrice As Double
             optBasePrice = tbNomenk!CENA_W
             Grid.TextMatrix(quantity, nkMargin) = tbNomenk!margin
-            Grid.TextMatrix(quantity, nkKodel) = Format(tbNomenk!rabbat, "0.0#")
+            Grid.TextMatrix(quantity, nkRabbat) = Format(tbNomenk!rabbat, "0.0#")
             Grid.TextMatrix(quantity, nkKolonok) = tbNomenk!kolonok
             Dim kolonok As Integer, manualOpt As Boolean
             kolonok = tbNomenk!kolonok
@@ -3538,13 +3541,13 @@ FO = PrihodRashod("+", -1001) - PrihodRashod("-", -1001)
 'зарезервировано для производства и  для продажи
 sql = "SELECT Sum(quantity) AS Sum_quantity, " & _
 "Sum(Sum_quant) AS Sum_Sum_quant From wCloseNomenk " & _
-"WHERE (((nomNom)='" & gNomNom & "'));"
+"WHERE nomNom = '" & gNomNom & "'"
 
 'Debug.Print sql
 If Not byErrSqlGetValues("##469", sql, z, s) Then myBase.Close: End
 nomencDostupOstatki = FO - (z - s) ' минус, что несписано
 If intQuant <> "" Or Regim = "" Then
-    sql = "SELECT perList from sGuideNomenk WHERE (((nomNom)='" & gNomNom & "'));"
+    sql = "SELECT perList from sGuideNomenk WHERE nomNom = '" & gNomNom & "'"
     If Not byErrSqlGetValues("##436", sql, s) Then myBase.Close: End
     nomencDostupOstatki = nomencDostupOstatki / s
     FO = FO / s

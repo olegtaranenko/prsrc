@@ -68,11 +68,11 @@ Begin VB.Form Report
       Width           =   1215
    End
    Begin MSFlexGridLib.MSFlexGrid Grid 
-      Height          =   7455
-      Left            =   60
+      Height          =   7452
+      Left            =   120
       TabIndex        =   0
       Top             =   240
-      Width           =   11655
+      Width           =   11652
       _ExtentX        =   20553
       _ExtentY        =   13145
       _Version        =   393216
@@ -91,11 +91,11 @@ Begin VB.Form Report
       BackColor       =   &H8000000E&
       BorderStyle     =   1  'Fixed Single
       Caption         =   " "
-      Height          =   255
-      Left            =   6600
+      Height          =   252
+      Left            =   8040
       TabIndex        =   7
-      Top             =   6720
-      Width           =   495
+      Top             =   7800
+      Width           =   492
    End
    Begin VB.Label laRecSum 
       Alignment       =   1  'Right Justify
@@ -134,6 +134,7 @@ Attribute VB_Exposed = False
 Option Explicit
 Public Regim As String, param1 As String, param2 As String, param3 As String
 Public Caller As Form
+Public Edizm2 As String
 
 
 Dim oldHeight As Integer, oldWidth As Integer ' нач размер формы
@@ -151,18 +152,6 @@ Const rrFirm = 3
 Const rrProduct = 4
 Const rrMater = 5
 Const rrReliz = 6
-
-'константы для whoReserved
-Const rtNomZak = 1
-Const rtReserv = 2
-Const rtCeh = 3
-Const rtData = 4
-Const rtMen = 5
-Const rtStatus = 6
-Const rtFirma = 7
-Const rtProduct = 8
-Const rtZakazano = 9
-Const rtOplacheno = 10
 
 Const rzZatratName = 1
 Const rzMainCosts = 2
@@ -413,7 +402,10 @@ ElseIf Regim = "aReportDetail" Then
 ElseIf Regim = "whoRezerved" Then
     clearGrid Me.Grid
     quantity = 0
-    whoRezerved whoRezervedIndex
+    laHeader.Caption = "Список заказов, кот. резервировали ном-ру '" & gNomNom & "' [" & Me.Edizm2 & "]."
+    Me.MousePointer = flexHourglass
+    laCount.Caption = whoRezerved(Me.Grid, whoRezervedIndex)
+    Me.MousePointer = flexDefault
     
 ElseIf Regim = "reservedAll" Then
     cbReserveTerm.Visible = True
@@ -744,7 +736,7 @@ Dim whereToken As String
     If Not tbOrders.BOF Then
         While Not tbOrders.EOF
             quantity = quantity + 1
-            Grid.TextMatrix(quantity, rrNumOrder) = tbOrders!numorder
+            Grid.TextMatrix(quantity, rrNumOrder) = tbOrders!Numorder
             Grid.TextMatrix(quantity, rrDate) = Format(tbOrders!outDate, "dd/mm/yy hh:nn:ss")
             Grid.TextMatrix(quantity, rrFirm) = tbOrders!firmName
             'Grid.TextMatrix(quantity, rrProduct) = tbOrders!Text
@@ -835,98 +827,6 @@ Dim p_days_start As Integer, p_days_end As Integer
     If quantity > 1 Then
         Grid.RemoveItem (1)
     End If
-End Sub
-
-Sub whoRezerved(p_term_index As Integer)
-Dim groupklassid As Integer, rowStr As String
-Dim p_days_start As Integer, p_days_end As Integer
-
-    Grid.Visible = False
-    
-    laHeader.Caption = "Список заказов, кот. резервировали ном-ру '" & gNomNom & "' [" & "]."
-    
-    Grid.FormatString = "|<№ заказа|>кол-во|^Цех |^Дата |^ М|Статус" & _
-    "|<Название Фирмы|<Изделия|>Заказано|>Согласовано"
-    Grid.colWidth(0) = 0
-    'Grid.ColWidth(rtNomZak) =
-    Grid.colWidth(rtReserv) = 765
-    Grid.colWidth(rtCeh) = 765
-    Grid.colWidth(rtData) = 1600
-    'Grid.ColWidth(rtMen) =
-    Grid.colWidth(rtStatus) = 930
-    Grid.colWidth(rtFirma) = 3270
-    Grid.colWidth(rtProduct) = 1950
-    'Grid.ColWidth(rtZakazano) =
-    Grid.colWidth(rtOplacheno) = 810
-
-    If p_term_index = 0 Then
-        p_days_start = 10000
-        p_days_end = 0
-    ElseIf p_term_index = 1 Then
-        p_days_start = 30
-        p_days_end = 0
-    ElseIf p_term_index = 2 Then
-        p_days_start = 60
-        p_days_end = 30
-    ElseIf p_term_index = 3 Then
-        p_days_start = 120
-        p_days_end = 60
-    ElseIf p_term_index = 4 Then
-        p_days_start = 180
-        p_days_end = 120
-    ElseIf p_term_index = 5 Then
-        p_days_start = 10000
-        p_days_end = 120
-    End If
-    
-    
-    sql = "call wf_order_reserved ('" & gNomNom & "', " & p_days_start & ", " & p_days_end & ")"
-    
-    Set tbOrders = myOpenRecordSet("##350", sql, dbOpenForwardOnly)
-    If tbOrders Is Nothing Then Exit Sub
-    If Not tbOrders.BOF Then
-        While Not tbOrders.EOF
-
-            quantity = quantity + 1
-            Grid.TextMatrix(quantity, rtNomZak) = tbOrders!numorder
-            Grid.TextMatrix(quantity, rtReserv) = Format(tbOrders!quant, "# ##0.00")
-            If Not IsNull(tbOrders!ceh) Then _
-                Grid.TextMatrix(quantity, rtCeh) = tbOrders!ceh
-            
-            Grid.TextMatrix(quantity, rtData) = tbOrders!date1
-            If Not IsNull(tbOrders!Manager) Then _
-                Grid.TextMatrix(quantity, rtMen) = tbOrders!Manager
-            
-            If Not IsNull(tbOrders!Status) Then _
-                Grid.TextMatrix(quantity, rtStatus) = tbOrders!Status
-            
-            If Not IsNull(tbOrders!client) Then _
-                Grid.TextMatrix(quantity, rtFirma) = tbOrders!client
-            
-            If Not IsNull(tbOrders!note) Then _
-                Grid.TextMatrix(quantity, rtProduct) = tbOrders!note
-            
-            If Not IsNull(tbOrders!sm_zakazano) Then _
-                Grid.TextMatrix(quantity, rtZakazano) = Format(tbOrders!sm_zakazano, "# ##0.00")
-                
-            If Not IsNull(tbOrders!sm_paid) Then _
-                Grid.TextMatrix(quantity, rtOplacheno) = Format(tbOrders!sm_paid, "# ##0.00")
-                
-            Grid.AddItem ""
-            tbOrders.MoveNext
-        Wend
-    End If
-  tbOrders.Close
-
-laCount.Caption = quantity
-'laRecSum.Caption = Round(sum, 2)
-If quantity > 0 Then
-    Grid.RemoveItem quantity + 1
-End If
-trigger = False
-Grid.Visible = True
-Me.MousePointer = flexDefault
-
 End Sub
 
 Sub gridAutoWidth(pGrid As MSFlexGrid)
@@ -1100,7 +1000,7 @@ If p_rowid = 1 Then
             
 ElseIf p_rowid = 2 Then
             rowStr = tbOrders!scope _
-                & Chr(9) & tbOrders!numorder _
+                & Chr(9) & tbOrders!Numorder _
                 & Chr(9) & tbOrders!firmName _
                 & Chr(9) & tbOrders!ceh _
                 & Chr(9) & tbOrders!Manag _
@@ -1110,7 +1010,7 @@ ElseIf p_rowid = 2 Then
 
 ElseIf p_rowid = 7 Then
             rowStr = tbOrders!Type _
-                & Chr(9) & tbOrders!numorder _
+                & Chr(9) & tbOrders!Numorder _
                 & Chr(9) & Format(tbOrders!name, "## ##0.00") _
                 & Chr(9) & Format(tbOrders!debit, "## ##0.00") _
                 & Chr(9) & Format(tbOrders!kredit, "## ##0.00") _
@@ -1320,20 +1220,20 @@ End Sub
 
 
 Sub nomenkToNNQQ(pQuant As Single, eQuant As Single, prQuant As Single)
-Dim j As Integer, leng As Integer
+Dim J As Integer, leng As Integer
 
 leng = UBound(NN)
 
-    For j = 1 To leng
-        If NN(j) = tbNomenk!nomnom Then
-            QQ(j) = QQ(j) + pQuant * tbNomenk!quantity
+    For J = 1 To leng
+        If NN(J) = tbNomenk!nomnom Then
+            QQ(J) = QQ(J) + pQuant * tbNomenk!quantity
             If eQuant > 0 Then _
-                QQ2(j) = QQ2(j) + eQuant * tbNomenk!quantity
+                QQ2(J) = QQ2(J) + eQuant * tbNomenk!quantity
             If prQuant > 0 Then _
-                QQ3(j) = QQ3(j) + prQuant * tbNomenk!quantity
+                QQ3(J) = QQ3(J) + prQuant * tbNomenk!quantity
             Exit Sub
         End If
-    Next j
+    Next J
     leng = leng + 1
     ReDim Preserve NN(leng): NN(leng) = tbNomenk!nomnom
     ReDim Preserve Cena(leng): Cena(leng) = tbNomenk!cost
@@ -1359,7 +1259,7 @@ Set tbProduct = myOpenRecordSet("##384", sql, dbOpenForwardOnly)
 If tbProduct Is Nothing Then Exit Function
 
 While Not tbProduct.EOF
-    gNzak = tbProduct!numorder
+    gNzak = tbProduct!Numorder
     gProductId = tbProduct!prId
     prExt = tbProduct!prExt
     productNomenkToNNQQ 0, tbProduct!quant '2
@@ -1515,9 +1415,9 @@ Grid.colWidth(rrMater) = 1005
 
 quantity = 0
 While Not tbProduct.EOF
-  gNzak = tbProduct!numorder
+  gNzak = tbProduct!Numorder
   Grid.AddItem _
-    Chr(9) & tbProduct!numorder _
+    Chr(9) & tbProduct!Numorder _
     & Chr(9) _
     & Chr(9) & tbProduct!name _
     & Chr(9) _
@@ -1574,7 +1474,7 @@ Grid.colWidth(rrMater) = 0 '1005
 'prevDate = 0: prevNom = 0: quantity = 0: prevReliz = 0: prevMater = 0
 quantity = 0: prevName = "$$$$#####@@@@"
 While Not tbProduct.EOF
-  gNzak = tbProduct!numorder
+  gNzak = tbProduct!Numorder
   If statistic = "" Or tbProduct!name <> prevName Then
   'If 1 = 1 Then
     quantity = quantity + 1
@@ -1651,7 +1551,7 @@ Grid.colWidth(rrMater) = 1005
 prevDate = 0: prevNom = 0: quantity = 0: prevReliz = 0: prevMater = 0
 While Not tbProduct.EOF
     
-  gNzak = tbProduct!numorder
+  gNzak = tbProduct!Numorder
   If tbProduct!costI = -1 Then ' готовое изделие
         gProductId = tbProduct!prId
         prExt = tbProduct!prExt
@@ -1742,7 +1642,8 @@ cbReserveTerm.left = cbAnormal.left
 
 ckSubtitle.Top = laSum.Top
 laRecCount.Top = laSum.Top
-
+laCount.Top = laRecCount.Top
+laCount.left = laRecCount.left + laRecCount.Width
 End Sub
 
 Private Function determineColType(colIndex As Long) As String

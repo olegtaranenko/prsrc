@@ -120,20 +120,17 @@ Const rpWorkNoClose = 7
 Const rpWorkAll = 8
 Const rpPaidNoClose = 9
 Const rpPaidAll = 10
-'константы для whoReserved
-Const rtNomZak = 1
-Const rtReserv = 2
-'Const rtEdIzm = 2
-Const rtCeh = 3
-Const rtData = 4
-Const rtMen = 5
-Const rtStatus = 6
-Const rtFirma = 7
-Const rtProduct = 8
-Const rtZakazano = 9
-Const rtOplacheno = 10
+
+Public Caller As Form
+Public Edizm2 As String
+
+Public Sortable As Boolean
+    'Приватная переменная - может или нет отчет сортироваться.
+
+
 
 Private Sub cmExel_Click()
+Dim Note As String
 'If InStr(Regim, "Orders") > 0 Then
     GridToExcel Grid, laHeader.Caption
 'ElseIf Regim = "KK" Or Regim = "RA" Then
@@ -158,7 +155,10 @@ oldWidth = Me.Width
 If Regim = "stat" Then
     statistic
 ElseIf Regim = "whoRezerved" Then
-    whoRezerved
+    
+    laHeader.Caption = "Список заказов, кот. резервировали ном-ру '" & gNomNom & "' [" & Me.Edizm2 & "]."
+    laCount.Caption = whoRezerved(Grid)
+    laRecCount.Caption = "Сумма резервов:"
 Else
     firmOrders
 End If
@@ -180,7 +180,7 @@ If year = "" Then
  Report.laHeader.Caption = "Статистика посещений фирм за период с " & str & _
                 " по " & Reports.tbEndDate.Text
  nMonth = left$(str, 2)
- nYear = right$(str, 4)
+ nYear = Right$(str, 4)
  mCount = DateDiff("m", str, Reports.tbEndDate.Text) + 1
 
  str = "|<Название фирмы|^М |Регион|Скидки"
@@ -197,9 +197,9 @@ If year = "" Then
  Loop While iCount > 0
  str = str & "|Итого|Вр.вып|Заказано|Оплачено"
  Report.Grid.FormatString = str
- Report.Grid.colWidth(0) = 0
- Report.Grid.colWidth(1) = 1875
- Report.Grid.colWidth(3) = 1605
+ Report.Grid.ColWidth(0) = 0
+ Report.Grid.ColWidth(1) = 1875
+ Report.Grid.ColWidth(3) = 1605
 'Grid.ColWidth(lastCol + 2) = 795
  Report.nCols = lastCol + 2
   
@@ -262,7 +262,7 @@ While Not tbFirms.EOF '                         *******************
                     paidSum = paidSum + tbOrders!paid
 '             If Not IsNull(tbOrders!ordered) Then _
                     orderSum = orderSum + tbOrders!ordered'$$6
-               orderSum = orderSum + getOrdered(tbOrders!numorder) '$$6 tbOrders!ordered
+               orderSum = orderSum + getOrdered(tbOrders!Numorder) '$$6 tbOrders!ordered
           Else
             If iYear = lastYear - 3 Then
                 year01 = year01 + 1 'не исп-ся
@@ -346,157 +346,6 @@ Else
 End If
 End Sub
 
-'3052715
-Sub whoRezerved()
-Dim v, s As Double, ed2 As String, per As Double, sum As Double  ', ed1 As String, obr As String
-'obrez, ed_Izmer, obr, ed1,
-sql = "SELECT  ed_Izmer2, perList From sGuideNomenk " & _
-"WHERE (((nomNom)='" & gNomNom & "'));"
-'MsgBox sql
-If Not byErrSqlGetValues("##349", sql, ed2, per) Then Exit Sub
-'If obr <> "" Then ed1 = ed2
-laHeader.Caption = "Список заказов, кот. резервировали ном-ру '" & gNomNom & _
-"' [" & ed2 & "]."
-Grid.FormatString = "|>№ заказа|кол-во|^Цех |^Дата |^ М" & _
-"|<Статус|<Название Фирмы|<Изделия|заказано|согласовано"
-Grid.colWidth(0) = 0
-'Grid.ColWidth(rtNomZak) =
-'Grid.ColWidth(rtReserv) = 765
-'Grid.ColWidth(rtEdIzm)=
-Grid.colWidth(rtCeh) = 765
-Grid.colWidth(rtData) = 870
-'Grid.ColWidth(rtMen) =
-Grid.colWidth(rtStatus) = 930
-Grid.colWidth(rtFirma) = 3270
-Grid.colWidth(rtProduct) = 1950
-'Grid.ColWidth(rtZakazano) =
-Grid.colWidth(rtOplacheno) = 810
-
-'******************************* Prior заказы
-quantity = 0: sum = 0
-sql = "SELECT Orders.numOrder, GuideCeh.Ceh, Orders.inDate, " & _
-"GuideManag.Manag, Orders.Product, " & _
-"GuideStatus.Status, GuideFirms.Name, Orders.ordered, Orders.paid, " & _
-"sDMCrez.quantity, Sum(sDMC.quant) AS Sum_quant " & _
-"FROM GuideStatus INNER JOIN (GuideManag INNER JOIN (GuideFirms INNER " & _
-"JOIN (GuideCeh INNER JOIN (sDMC RIGHT JOIN (sDMCrez INNER JOIN Orders " & _
-"ON sDMCrez.numDoc = Orders.numOrder) ON (sDMC.nomNom = sDMCrez.nomNom) " & _
-"AND (sDMC.numDoc = sDMCrez.numDoc)) ON GuideCeh.CehId = Orders.CehId) " & _
-"ON GuideFirms.FirmId = Orders.FirmId) ON GuideManag.ManagId = " & _
-"Orders.ManagId) ON GuideStatus.StatusId = Orders.StatusId " & _
-"Where(((sDMCrez.nomNom) = '" & gNomNom & "')) and orders.statusId <> 6" & _
-"GROUP BY Orders.numOrder, GuideCeh.Ceh, Orders.inDate, GuideManag.Manag, " & _
-"GuideStatus.Status, GuideFirms.Name, Orders.Product, Orders.ordered, Orders.paid, sDMCrez.quantity;"
-'MsgBox sql
-Set tbOrders = myOpenRecordSet("##139", sql, dbOpenForwardOnly) ', dbOpenDynaset)
-If tbOrders Is Nothing Then Exit Sub
-If Not tbOrders.BOF Then
- While Not tbOrders.EOF
-    v = tbOrders!Sum_quant: If IsNull(v) Then v = 0
-    s = Round((tbOrders!quantity - v) / per, 2)
-    If s > 0 Then
-        quantity = quantity + 1
-        Grid.TextMatrix(quantity, rtNomZak) = tbOrders!numorder
-        Grid.TextMatrix(quantity, rtCeh) = tbOrders!Ceh
-    '    Grid.TextMatrix(quantity, rtData) = tbOrders!inDate
-        LoadDate Grid, quantity, rtData, tbOrders!inDate, "dd.mm.yy"
-        Grid.TextMatrix(quantity, rtMen) = tbOrders!Manag
-        Grid.TextMatrix(quantity, rtStatus) = tbOrders!status
-        Grid.TextMatrix(quantity, rtFirma) = tbOrders!Name
-        
-        If Not IsNull(tbOrders!Product) Then _
-            Grid.TextMatrix(quantity, rtProduct) = tbOrders!Product
-        If Not IsNull(tbOrders!ordered) Then _
-            Grid.TextMatrix(quantity, rtZakazano) = Round(tbOrders!ordered, 2) 'Prior
-        If Not IsNull(tbOrders!paid) Then _
-            Grid.TextMatrix(quantity, rtOplacheno) = Round(tbOrders!paid, 2)
-        Grid.TextMatrix(quantity, rtReserv) = s
-    
-        Grid.AddItem ""
-        sum = sum + s
-    End If
-    tbOrders.MoveNext
- Wend
-End If
-tbOrders.Close
-
-'выписанные в цеху накладные но не межскладские
-sql = "SELECT sDMCrez.numDoc, sDMCrez.quantity, sDocs.Note, sDocs.xDate " & _
-"FROM sDocs INNER JOIN sDMCrez ON sDocs.numDoc = sDMCrez.numDoc " & _
-"Where (((sDMCrez.nomNom) = '" & gNomNom & "') And ((sDocs.numExt) = 0));"
-
-Set tbOrders = myOpenRecordSet("##342", sql, dbOpenForwardOnly) ', dbOpenDynaset)
-If Not tbOrders Is Nothing Then
-  If Not tbOrders.BOF Then
-    While Not tbOrders.EOF
-        quantity = quantity + 1
-        Grid.TextMatrix(quantity, rtNomZak) = tbOrders!numDoc
-        Grid.TextMatrix(quantity, rtCeh) = tbOrders!Note
-        LoadDate Grid, quantity, rtData, tbOrders!xDate, "dd.mm.yy"
-'        Grid.TextMatrix(quantity, rtStatus) = tbOrders!status
-        Grid.TextMatrix(quantity, rtFirma) = "Выписанная в Цеху накладная"
-        Grid.TextMatrix(quantity, rtReserv) = Round(tbOrders!quantity / per, 2)
-        Grid.AddItem ""
-        tbOrders.MoveNext
-    Wend
-  End If
-End If
-tbOrders.Close
-
-'заказы на продажу
-'"BayOrders.ordered, BayOrders.paid, sDMCrez.quantity, sDMC.quant " & $$6
-sql = "SELECT BayOrders.numOrder, BayOrders.inDate, BayOrders.ManagId, " & _
-"BayOrders.StatusId, BayGuideProblem.Problem, BayGuideFirms.Name, " & _
-"BayOrders.paid, sDMCrez.quantity, sDMC.quant " & _
-"FROM BayGuideFirms INNER JOIN (BayGuideProblem INNER JOIN ((sDMCrez LEFT JOIN sDMC ON (sDMCrez.nomNom = sDMC.nomNom) AND (sDMCrez.numDoc = " & _
-"sDMC.numDoc)) INNER JOIN BayOrders ON sDMCrez.numDoc = BayOrders.numOrder) " & _
-"ON BayGuideProblem.ProblemId = " & _
-"BayOrders.ProblemId) ON BayGuideFirms.FirmId = BayOrders.FirmId " & _
-"WHERE sDMCrez.nomNom ='" & gNomNom & "'  and BayOrders.statusId <> 6"
-
-Set tbOrders = myOpenRecordSet("##351", sql, dbOpenForwardOnly) ', dbOpenDynaset)
-If Not tbOrders Is Nothing Then
-  If Not tbOrders.BOF Then
-    While Not tbOrders.EOF
-      v = tbOrders!quant: If IsNull(v) Then v = 0
-      s = Round((tbOrders!quantity - v) / per, 2)
-      If s > 0 Then
-        quantity = quantity + 1
-        Grid.TextMatrix(quantity, rtNomZak) = tbOrders!numorder
-        Grid.TextMatrix(quantity, rtCeh) = "Продажа"
-        LoadDate Grid, quantity, rtData, tbOrders!inDate, "dd.mm.yy"
-        Grid.TextMatrix(quantity, rtMen) = Manag(tbOrders!managId)
-        Grid.TextMatrix(quantity, rtStatus) = status(tbOrders!StatusId)
-        Grid.TextMatrix(quantity, rtFirma) = tbOrders!Name
-        Grid.TextMatrix(quantity, rtReserv) = s
-'        If Not IsNull(tbOrders!ordered) Then _
-            Grid.TextMatrix(quantity, rtZakazano) = tbOrders!ordered  $$6
-        Grid.TextMatrix(quantity, rtZakazano) = Round(getOrdered(tbOrders!numorder), 2) '$$6
-            
-        If Not IsNull(tbOrders!paid) Then _
-            Grid.TextMatrix(quantity, rtOplacheno) = Round(tbOrders!paid, 2)
-        Grid.AddItem ""
-      End If
-      tbOrders.MoveNext
-    Wend
-  End If
-  tbOrders.Close
-End If
-
-
-laCount.Caption = Round(sum, 2)
-laRecCount.Caption = "Сумма резервов:"
-
-If quantity > 0 Then
-    Grid.RemoveItem quantity + 1
-End If
-trigger = False
-SortCol Grid, rtReserv, "numeric"
-Grid.Visible = True
-Me.MousePointer = flexDefault
-
-End Sub
-
 'Regim = "Orders"       FindFirm    <Отчет "Незакрытые заказы">
 'Regim = "allOrders"    FindFirm    <Отч."Все заказы фирмы">
 'Regim = "FromFirms"    GuideFirms  <Отчет "Незакрытые заказы">
@@ -511,12 +360,12 @@ Dim strFirm As String, strFrom As String, strWhere As String
 Grid.FormatString = "|<№ заказа|^M |<Статус|<Проблемы|" & _
 "<Дата выдачи|<Время выдачи|Заказано|Оплачено|Отгружено"
 
-Grid.colWidth(0) = 0
+Grid.ColWidth(0) = 0
 'Grid.ColWidth(rpNomZak) = 840
-Grid.colWidth(rpStatus) = 720
-Grid.colWidth(rpProblem) = 975
-Grid.colWidth(rpDataVid) = 1095
-Grid.colWidth(rpVrVid) = 615
+Grid.ColWidth(rpStatus) = 720
+Grid.ColWidth(rpProblem) = 975
+Grid.ColWidth(rpDataVid) = 1095
+Grid.ColWidth(rpVrVid) = 615
 
 If Regim = "Orders" Or Regim = "allOrders" Then 'из FindFirm
     strFirm = FindFirm.lb.Text
@@ -559,7 +408,7 @@ If Not tqOrders.BOF Then
     
 '  Grid.MergeRow(2) = True
 
-    Grid.TextMatrix(l, rpNomZak) = tqOrders!numorder
+    Grid.TextMatrix(l, rpNomZak) = tqOrders!Numorder
     J = tqOrders!StatusId
     If J = 2 Or J = 3 Or J = 9 Then
         Grid.MergeRow(l) = True
@@ -582,10 +431,10 @@ If Not tqOrders.BOF Then
     LoadDate Grid, l, rpVrVid, tqOrders!outDateTime, "hh"
     Grid.TextMatrix(l, rpM) = tqOrders!Manag
     'zakazano = zakazano + numericToReport(l, rpZakazano, tqOrders!ordered) '$$6
-    zakazano = zakazano + numericToReport(l, rpZakazano, getOrdered(tqOrders!numorder)) '$$6
+    zakazano = zakazano + numericToReport(l, rpZakazano, getOrdered(tqOrders!Numorder)) '$$6
     Oplacheno = Oplacheno + numericToReport(l, rpOplacheno, tqOrders!paid)
     'Otgrugeno = Otgrugeno + numericToReport(l, rpOtgrugeno, tqOrders!shipped) '$$6
-    Otgrugeno = Otgrugeno + numericToReport(l, rpOtgrugeno, getShipped(tqOrders!numorder)) '$$6
+    Otgrugeno = Otgrugeno + numericToReport(l, rpOtgrugeno, getShipped(tqOrders!Numorder)) '$$6
     l = l + 1
     Grid.AddItem ""
     tqOrders.MoveNext
@@ -679,6 +528,6 @@ End Sub
 
 Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then _
-        MsgBox "ColWidth = " & Grid.colWidth(Grid.MouseCol)
+        MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
 End Sub
 

@@ -1,12 +1,29 @@
 Attribute VB_Name = "AppUtils"
 Option Explicit
 
+Dim quantity As Long
+
+'константы для whoReserved
+Public Const rtNomZak = 1
+Public Const rtReserv = 2
+Public Const rtCeh = 3
+Public Const rtData = 4
+Public Const rtMen = 5
+Public Const rtStatus = 6
+Public Const rtFirma = 7
+Public Const rtProduct = 8
+Public Const rtZakazano = 9
+Public Const rtOplacheno = 10
+
+
+
 ' Этот файл разделяется между prior, stime и rowmat.
 ' не использовать в cfg
 
 
 Sub GridToExcel(Grid As MSFlexGrid, Optional title As String = "")
 Dim Rows As String, Count As String, Numorder As String
+Dim ColWidth As String
 
 
 Dim objExel As Excel.Application, c As Long, r As Long
@@ -113,5 +130,118 @@ Dim valueorder As Numorder
     getNextDocNum = valueorder.val
     
 End Function
+
+Sub showRezerv(ByVal dostupOstatki As Double, ByVal factOstatki As Double, ByVal Edizm2 As String, ByRef f As Form)
+    If Round(factOstatki, 2) > Round(dostupOstatki, 2) Then
+        If MsgBox("Если Вы хотите просмотреть список всех заказов, под " & _
+        "которые была зарезервирована эта номенклатура, нажмите <Да>.", _
+        vbYesNo Or vbDefaultButton2, "Посмотреть, кто резервировал? '" & _
+        gNomNom & "' ?") = vbYes Then
+            Report.Edizm2 = Edizm2
+            Report.Regim = "whoRezerved"
+            Set Report.Caller = f
+            Report.Sortable = True
+            Report.Show vbModal
+        End If
+    Else
+        MsgBox "Эта номенклатура никем не резервировалась.", , ""
+    End If
+
+End Sub
+
+
+
+Function whoRezerved(ByRef Grid As MSFlexGrid, Optional p_term_index As Integer = 0) As Integer
+Dim groupklassid As Integer, rowStr As String
+Dim p_days_start As Integer, p_days_end As Integer
+    
+
+    Grid.Visible = False
+    
+    Grid.FormatString = "|<№ заказа|>кол-во|^Цех |^Дата |^ М|Статус" & _
+    "|<Название Фирмы|<Изделия|>Заказано|>Согласовано"
+    Grid.ColWidth(0) = 0
+    'Grid.ColWidth(rtNomZak) =
+    Grid.ColWidth(rtReserv) = 765
+    Grid.ColWidth(rtCeh) = 765
+    Grid.ColWidth(rtData) = 1600
+    'Grid.ColWidth(rtMen) =
+    Grid.ColWidth(rtStatus) = 930
+    Grid.ColWidth(rtFirma) = 3270
+    Grid.ColWidth(rtProduct) = 1950
+    'Grid.ColWidth(rtZakazano) =
+    Grid.ColWidth(rtOplacheno) = 810
+
+    If p_term_index = 0 Then
+        p_days_start = 10000
+        p_days_end = 0
+    ElseIf p_term_index = 1 Then
+        p_days_start = 30
+        p_days_end = 0
+    ElseIf p_term_index = 2 Then
+        p_days_start = 60
+        p_days_end = 30
+    ElseIf p_term_index = 3 Then
+        p_days_start = 120
+        p_days_end = 60
+    ElseIf p_term_index = 4 Then
+        p_days_start = 180
+        p_days_end = 120
+    ElseIf p_term_index = 5 Then
+        p_days_start = 10000
+        p_days_end = 120
+    End If
+    
+    
+    sql = "call wf_order_reserved ('" & gNomNom & "', " & p_days_start & ", " & p_days_end & ")"
+    
+    Set tbOrders = myOpenRecordSet("##350", sql, dbOpenForwardOnly)
+    If tbOrders Is Nothing Then Exit Function
+    quantity = 0
+    If Not tbOrders.BOF Then
+        While Not tbOrders.EOF
+
+            quantity = quantity + 1
+            Grid.TextMatrix(quantity, rtNomZak) = tbOrders!Numorder
+            Grid.TextMatrix(quantity, rtReserv) = Format(tbOrders!quant, "# ##0.00")
+            If Not IsNull(tbOrders!Ceh) Then _
+                Grid.TextMatrix(quantity, rtCeh) = tbOrders!Ceh
+            
+            Grid.TextMatrix(quantity, rtData) = tbOrders!date1
+            If Not IsNull(tbOrders!Manager) Then _
+                Grid.TextMatrix(quantity, rtMen) = tbOrders!Manager
+            
+            If Not IsNull(tbOrders!status) Then _
+                Grid.TextMatrix(quantity, rtStatus) = tbOrders!status
+            
+            If Not IsNull(tbOrders!client) Then _
+                Grid.TextMatrix(quantity, rtFirma) = tbOrders!client
+            
+            If Not IsNull(tbOrders!Note) Then _
+                Grid.TextMatrix(quantity, rtProduct) = tbOrders!Note
+            
+            If Not IsNull(tbOrders!sm_zakazano) Then _
+                Grid.TextMatrix(quantity, rtZakazano) = Format(tbOrders!sm_zakazano, "# ##0.00")
+                
+            If Not IsNull(tbOrders!sm_paid) Then _
+                Grid.TextMatrix(quantity, rtOplacheno) = Format(tbOrders!sm_paid, "# ##0.00")
+                
+            Grid.AddItem ""
+            tbOrders.MoveNext
+        Wend
+    End If
+  tbOrders.Close
+
+'laRecSum.Caption = Round(sum, 2)
+If quantity > 0 Then
+    Grid.RemoveItem quantity + 1
+End If
+trigger = False
+Grid.Visible = True
+whoRezerved = quantity
+
+
+End Function
+
 
 

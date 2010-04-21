@@ -814,13 +814,11 @@ Dim il As Long, curRow As Long
 
 grColor = Grid.CellBackColor
 If grColor = &H88FF88 Then
-    If MsgBox("Если Вы хотите просмотреть список всех заказов, под " & _
-    "которые была зарезервирована эта номенклатура, нажмите <Да>.", _
-    vbYesNo Or vbDefaultButton2, "Посмотреть, кто резервировал? '" & _
-    gNomNom & "' ?") = vbYes Then
-        Report.Regim = "whoRezerved"
-        Report.Show vbModal
-    End If
+    
+    Me.MousePointer = flexHourglass
+    showRezerv 1, 2, Grid.TextMatrix(mousRow, nkEdIzm), Me
+    Me.MousePointer = flexDefault
+
 Else
     cmSel_Click
 End If

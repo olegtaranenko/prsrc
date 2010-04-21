@@ -1733,7 +1733,7 @@ For I = 1 To UBound(NN) ' перебор всех групп
 'Номер  Код  Описание Размер  Ед.измерения  Коэф.производства  CenaSale web
 'nomNom cod  nomName  Size    ed_Izmer2     perList            CENA_W   Web
   sql = "SELECT n.nomNom, n.nomName, n.ed_Izmer2, n.CENA_W, n.perList" _
-  & ", n.cod, n.Size, n.kodel, n.margin, n.kolonok" _
+  & ", n.cod, n.Size, n.rabbat, n.margin, n.kolonok" _
   & ", n.cenaOpt2, n.cenaOpt3, n.cenaOpt4" _
   & ", k.kolon1, k.kolon2, k.kolon3, k.kolon4" _
   & " From sGuideNomenk n " _
@@ -1847,7 +1847,7 @@ End If
                         Chr(160) & Format(tbNomenk("CenaOpt" & CStr(iKolon)) * RubRate, "0.00")
                 Else
                     objExel.ActiveSheet.Cells(exRow, 5 + iKolon).value = _
-                        Chr(160) & Format(calcKolonValue(optBasePrice, margin, tbNomenk!kodel, Abs(kolonok), iKolon), "0.00")
+                        Chr(160) & Format(calcKolonValue(optBasePrice, margin, tbNomenk!rabbat, Abs(kolonok), iKolon), "0.00")
                 End If
             Next iKolon
             

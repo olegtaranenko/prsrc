@@ -445,20 +445,20 @@ Dim Dragging As Boolean
 Dim DraggingX As Single, DraggingY As Single
 
 Sub nomenkToNNQQ(pQuant As Double, eQuant As Double, prQuant As Double)
-Dim j As Integer, leng As Integer
+Dim J As Integer, leng As Integer
 
     leng = UBound(NN)
 
-    For j = 1 To leng
-        If NN(j) = tbNomenk!nomNom Then
-            QQ(j) = QQ(j) + pQuant * tbNomenk!quantity
+    For J = 1 To leng
+        If NN(J) = tbNomenk!nomNom Then
+            QQ(J) = QQ(J) + pQuant * tbNomenk!quantity
             If eQuant > 0 Then _
-                QQ2(j) = QQ2(j) + eQuant * tbNomenk!quantity
+                QQ2(J) = QQ2(J) + eQuant * tbNomenk!quantity
             If prQuant > 0 Then _
-                QQ3(j) = QQ3(j) + prQuant * tbNomenk!quantity
+                QQ3(J) = QQ3(J) + prQuant * tbNomenk!quantity
             Exit Sub
         End If
-    Next j
+    Next J
     leng = leng + 1
     ReDim Preserve NN(leng): NN(leng) = tbNomenk!nomNom
     ReDim Preserve QQ(leng): QQ(leng) = pQuant * tbNomenk!quantity
@@ -1109,13 +1109,7 @@ Dim il As Long, curRow As Long
 
 grColor = Grid.CellBackColor
 If grColor = &H88FF88 Then
-    If MsgBox("Если Вы хотите просмотреть список всех заказов, под " & _
-    "которые была зарезервирована эта номенклатура, нажмите <Да>.", _
-    vbYesNo Or vbDefaultButton2, "Посмотреть, кто резервировал? '" & _
-    gNomNom & "' ?") = vbYes Then
-        Report.Regim = "whoRezerved"
-        Report.Show vbModal
-    End If
+    showRezerv 1, 2, Grid.TextMatrix(mousRow, nkEdIzm), Me
 ElseIf grColor = groupColor1 Or grColor = groupColor2 Then
     If Me.Regim <> "ostat" Then
         curRow = Grid.row
@@ -1550,7 +1544,7 @@ End Sub
 
 
 Private Sub cleanSelection(Grd As MSFlexGrid)
-Dim I As Integer, j As Integer
+Dim I As Integer, J As Integer
 Dim currentRow As Integer, currentCol As Integer
 
 ReDim selectedItems(0)
@@ -1559,11 +1553,11 @@ currentRow = Grd.row
 
 For I = Grd.rows - 1 To 1 Step -1
     Grd.row = I
-    For j = Grd.Cols - 1 To 1 Step -1
-        Grd.col = j
+    For J = Grd.Cols - 1 To 1 Step -1
+        Grd.col = J
         Grd.CellBackColor = Grd.BackColor
         Grd.CellForeColor = Grd.ForeColor
-    Next j
+    Next J
 Next I
 Grd.row = currentRow
 Grd.col = currentCol
@@ -1732,7 +1726,7 @@ Dim pQuant As Double, I As Integer, str  As String, str2 As String
 Dim comma As String
 Dim hasEtap As Boolean
 Dim gIndex As Integer
-Dim j As Integer
+Dim J As Integer
 Dim lIndex As Long
 
 comma = ""
@@ -1781,14 +1775,14 @@ wrkDefault.CommitTrans
 Grid5.TextMatrix(Grid5.rows - 1, prSumm) = tmpVar
 Orders.openOrdersRowToGrid "##220":    tqOrders.Close
     
-For j = 1 To UBound(selectedItems)
+For J = 1 To UBound(selectedItems)
     lIndex = useMaxSelection()
     quantity5 = quantity5 - 1
     Grid5.removeItem lIndex
     If quantity5 <= 0 Then
         clearGridRow Grid5, lIndex
     End If
-Next j
+Next J
 
 If Not convertToIzdelie Then
     loadProducts ' ном-ра заказа
@@ -1803,11 +1797,11 @@ MsgBox "Удаление не прошло", , "Error 196" '##196
 End Sub
 
 Private Sub deleteSelected()
-Dim I As Integer, j As Integer
+Dim I As Integer, J As Integer
 Dim pQuant As Double
 
-    For j = 1 To UBound(selectedItems)
-        mousRow5 = CInt(selectedItems(j))
+    For J = 1 To UBound(selectedItems)
+        mousRow5 = CInt(selectedItems(J))
         getIdFromGrid5Row Me
         If Grid5.TextMatrix(mousRow5, prType) = "изделие" Then
             'удаление изд-я с возм.вариантной ном-рой (т.к.каскадное удаление)
@@ -1864,7 +1858,7 @@ Dim pQuant As Double
             'удаления ном-ры из DMCrez
             If Not nomenkToDMCrez(-pQuant) Then Exit Sub
         End If
-    Next j
+    Next J
 
 End Sub
 
@@ -2715,7 +2709,7 @@ End Function
 'такого изд-я нет) если вариант поставки, заданный в NN() есть, то дает номер
 'его расширения, иначе возвращает отриц.  макс.номер варианта поставки
 Function getPrExtByNomenk() As Integer
-Dim I As Integer, j As Integer, prevExt As Integer
+Dim I As Integer, J As Integer, prevExt As Integer
 
 getPrExtByNomenk = 0 '
 sql = "SELECT xVariantNomenc.prExt, xVariantNomenc.nomNom " & _
@@ -2725,17 +2719,17 @@ sql = "SELECT xVariantNomenc.prExt, xVariantNomenc.nomNom " & _
 Set tbNomenk = myOpenRecordSet("##187", sql, dbOpenDynaset)
 If tbNomenk Is Nothing Then myBase.Close: End
 If Not tbNomenk.BOF Then
-    j = 0: ReDim NN2(UBound(NN))
+    J = 0: ReDim NN2(UBound(NN))
 
-CC: j = j + 1
-    If j <= UBound(NN) Then
-        NN2(j) = tbNomenk!nomNom
+CC: J = J + 1
+    If J <= UBound(NN) Then
+        NN2(J) = tbNomenk!nomNom
     End If
     prevExt = tbNomenk!prExt
     tbNomenk.MoveNext
     If tbNomenk.EOF Then GoTo AA:
     If prevExt <> tbNomenk!prExt Then
-AA:     If j = UBound(NN) Then ' совпадает-ли кол-во(Нет - если поменяли состав)
+AA:     If J = UBound(NN) Then ' совпадает-ли кол-во(Нет - если поменяли состав)
             quickSort NN2, 1
             For I = 1 To UBound(NN)
                 If NN(I) <> NN2(I) Then GoTo BB
@@ -2743,7 +2737,7 @@ AA:     If j = UBound(NN) Then ' совпадает-ли кол-во(Нет - если поменяли состав)
             getPrExtByNomenk = prevExt
             GoTo EN
         End If
-BB:     j = 0
+BB:     J = 0
     End If
     If Not tbNomenk.EOF Then GoTo CC
 
