@@ -952,7 +952,7 @@ Set tbNomenk = myOpenRecordSet("##407", sql, dbOpenForwardOnly)
 If tbNomenk.BOF Then msgOfEnd ("##406")
     
 tbNomenk.Edit
-tbNomenk!web = newVal
+tbNomenk!Web = newVal
 tbNomenk.Update
 
 setWebFlags = True
@@ -2694,7 +2694,7 @@ AA: Grid.TextMatrix(mousRow, mousCol) = str
 '        s = Grid.TextMatrix(mousRow, nkDostup) + tmpSingle
 '        Grid.TextMatrix(mousRow, nkDostup) = Round(s, 2)
 '    End If
- ElseIf mousCol = nkCENA1 Then
+ ElseIf mousCol = -1 Then 'nkCENA1
     Dim newCena1 As Double
     
     If isNumericTbox(tbMobile, 0) Then
@@ -2709,7 +2709,7 @@ AA: Grid.TextMatrix(mousRow, mousCol) = str
     Dim margin As Double
     If IsNumeric(Grid.TextMatrix(mousRow, nkMargin)) Then
         margin = CDbl(Grid.TextMatrix(mousRow, nkMargin))
-        Grid.TextMatrix(mousRow, nkCena1W) = newCena1 * margin
+        Grid.TextMatrix(mousRow, nkCena1W) = newCena1 * (1 + margin / 100)
     End If
     
     GoTo BB
@@ -2735,7 +2735,7 @@ CC: cenaFreight = Grid.TextMatrix(mousRow, nkCenaFreight)
     iKolon = mousCol - nkKolon2 + 2
     ValueToTableField "##mr0", "'" & str & "'", "sGuideKlass", "kolon" & CStr(iKolon), "byKlassId"
  
- ElseIf Regim = "" And (mousCol >= nkMargin And mousCol <= nkKolon4) Then
+ ElseIf Regim = "" And ((mousCol >= nkMargin And mousCol <= nkKolon4) Or nkCENA1 = mousCol) Then
     If Not isNumericTbox(tbMobile) Then Exit Sub
     If Not checkNumeric(str, getMinValue(mousCol), getMaxValue(mousCol)) Then
         GoTo EN1
@@ -2744,7 +2744,7 @@ CC: cenaFreight = Grid.TextMatrix(mousRow, nkCenaFreight)
     Dim refreshGridCell As Long
     refreshGridCell = getRefreshIndex(mousCol)
     
-    Dim margin As Double, baseCena As Double, cena2W As Double, manualOpt As Boolean
+    Dim baseCena As Double, cena2W As Double, manualOpt As Boolean
     If mousCol = nkCena2W Then
         cena2W = CDbl(str)
     Else
@@ -2763,8 +2763,14 @@ CC: cenaFreight = Grid.TextMatrix(mousRow, nkCenaFreight)
         
     End If
     
+    If mousCol = nkCENA1 Then
+        cenaFreight = nomenkFormula(, , CDbl(tbMobile.Text))
+        Grid.TextMatrix(mousRow, nkCenaFreight) = Format(cenaFreight, "0.00")
+    Else
+        cenaFreight = Grid.TextMatrix(mousRow, nkCenaFreight)
+    End If
     If refreshGridCell = nkCena1W Then
-        Grid.TextMatrix(mousRow, nkCena1W) = Format(CDbl(Grid.TextMatrix(mousRow, nkCenaFreight)) / (1 - margin / 100), "0.00")
+        Grid.TextMatrix(mousRow, nkCena1W) = Format(CDbl(cenaFreight) / (1 - margin / 100), "0.00")
     End If
     
     Dim kolonok As Integer, rabbat As Double
@@ -2881,6 +2887,8 @@ Function getChangedField(iCol As Long) As String
         getChangedField = "Kolonok"
     ElseIf iCol = nkCena2W Then
         getChangedField = "CENA_W"
+    ElseIf iCol = nkCENA1 Then
+        getChangedField = "CENA1"
     End If
     
 End Function
@@ -2893,6 +2901,8 @@ Function getMinValue(iCol As Long) As Double
     ElseIf iCol = nkKolonok Then
         getMinValue = -4
     ElseIf iCol = nkCena2W Then
+        getMinValue = 0
+    ElseIf iCol = nkCENA1 Then
         getMinValue = 0
     ElseIf iCol >= nkKolon2 And iCol <= nkKolon4 Then
         getMinValue = 0
@@ -2909,6 +2919,8 @@ Function getMaxValue(iCol As Long) As Double
         getMaxValue = 4
     ElseIf iCol = nkCena2W Then
         getMaxValue = 1000000
+    ElseIf iCol = nkCENA1 Then
+        getMaxValue = 1000000
     ElseIf iCol >= nkKolon2 And iCol <= nkKolon4 Then
         getMaxValue = 1000000
     End If
@@ -2921,7 +2933,8 @@ Function getRefreshIndex(iCol As Long) As Long
         getRefreshIndex = nkKolon2
     ElseIf iCol = nkKolonok Then
         getRefreshIndex = nkKolon2
-    ElseIf iCol = nkCena2W Then
+    ElseIf iCol = nkCENA1 Then
+        getRefreshIndex = nkCena1W
     End If
 End Function
 
@@ -3407,7 +3420,7 @@ If Not tbNomenk.BOF Then
                 Grid.TextMatrix(quantity, nkPack) = tbNomenk!Pack
 
 BB:
-            Grid.TextMatrix(quantity, nkWeb) = tbNomenk!web
+            Grid.TextMatrix(quantity, nkWeb) = tbNomenk!Web
         End If
     End If
     Grid.AddItem ""

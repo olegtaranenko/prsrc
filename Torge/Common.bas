@@ -704,14 +704,15 @@ If newLen < maxLen Then Exit Sub
 ReDim Preserve Mass(newLen + 20)
 End Sub
 
-Function nomenkFormula(Optional noOpen As String = "", Optional web As String = "")
+Function nomenkFormula(Optional noOpen As String = "", Optional Web As String = "", Optional Cena1 As Double = -1)
 Dim str As String
+Dim vCena1 As Double
 
 If noOpen = "" Then
-    sql = "SELECT sGuideNomenk.formulaNom" & web & " , sGuideNomenk.CENA1, " & _
-    "sGuideNomenk.VES, sGuideNomenk.STAVKA, sGuideFormuls.Formula as formula" & web & _
+    sql = "SELECT sGuideNomenk.formulaNom" & Web & " , sGuideNomenk.CENA1, " & _
+    "sGuideNomenk.VES, sGuideNomenk.STAVKA, sGuideFormuls.Formula as formula" & Web & _
     " FROM sGuideFormuls INNER JOIN sGuideNomenk ON sGuideFormuls.nomer = " & _
-    "sGuideNomenk.formulaNom" & web & _
+    "sGuideNomenk.formulaNom" & Web & _
     " WHERE (((sGuideNomenk.nomNom)='" & gNomNom & "'));"
 'MsgBox sql
     Set tbNomenk = myOpenRecordSet("##317", sql, dbOpenDynaset)
@@ -719,14 +720,22 @@ If noOpen = "" Then
     If tbNomenk.BOF Then tbNomenk.Close: Exit Function
 End If
 tmpStr = tbNomenk!formula
-tmpStr = tbNomenk.fields("formula" & web)
+tmpStr = tbNomenk.fields("formula" & Web)
 'If tbNomenk!formula = "" Then
 If tmpStr = "" Then
     nomenkFormula = "error: Формула не задана"
     Exit Function
 End If
-If web = "" Then
-    str = "CENA1=" & tbNomenk!Cena1 & ": VES=" & _
+
+If Cena1 < 0 Then
+    vCena1 = tbNomenk!Cena1
+Else
+    vCena1 = Cena1
+End If
+
+
+If Web = "" Then
+    str = "CENA1=" & vCena1 & ": VES=" & _
     tbNomenk!ves & ": STAVKA=" & tbNomenk!STAVKA
     sc.ExecuteStatement (str)
 Else
