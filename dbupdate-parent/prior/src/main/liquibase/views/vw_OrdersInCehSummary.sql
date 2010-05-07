@@ -6,19 +6,18 @@ end if;
 CREATE VIEW vw_OrdersInCehSummary (
 	  numorder
 	, urgent
-	, worktimeMO
 	, dateTimeMO
 	, statM
 	, statO
+	, werk
 ) as
 select
 	  numorder
-	, max(urgent)
-	, sum(isnull(worktimeMO, 0.0))
-	, max(dateTimeMO)
-	, max(statM)
-	, max(statO)
+	, urgent
+	, dateTimeMO
+	, statM
+	, statO
+	, gw.werkCode
 from
-	OrdersInCeh
-group by 
-	numorder
+	OrdersInCeh oc
+	join GuideWerk gw on oc.werkId = gw.werkId

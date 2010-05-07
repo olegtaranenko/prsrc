@@ -490,7 +490,7 @@ numDoc = getNextDocNum()
 
 If Regim = "fromCeh" Then
     numExt = 0 ' виртуальные накладные(зарезервир-е предметы)
-    tbDocsNote = Ceh(gCehId)
+    tbDocsNote = Equip(gEquipId)
 Else
     numExt = 254
 End If
@@ -549,7 +549,7 @@ cmBay.Enabled = True
 End Sub
 
 Function sqlDeficitToNNQQ(sklad As String, Optional reg As String = "") As Boolean
-Static I As Integer, s As Double
+Static I As Integer, S As Double
 
 sqlDeficitToNNQQ = False
     
@@ -561,20 +561,20 @@ ReDim NN(0): ReDim QQ(0): I = 0
 While Not tbDMC.EOF
     I = I + 1
     gNomNom = tbDMC!nomNom
-    s = PrihodRashod("+", skladId) - PrihodRashod("-", skladId) 'Ф. остатки по складу
+    S = PrihodRashod("+", skladId) - PrihodRashod("-", skladId) 'Ф. остатки по складу
     ReDim Preserve NN(I): NN(I) = gNomNom
     ReDim Preserve QQ(I)
     If reg = "bay" Then
         QQ(I) = tbDMC!curQuant * tbDMC!perlist
-        s = Round((s - QQ(I)) / tbDMC!perlist, 2)
+        S = Round((S - QQ(I)) / tbDMC!perlist, 2)
     Else
         QQ(I) = tbDMC!quantity
-        s = Round(s - QQ(I), 2)
+        S = Round(S - QQ(I), 2)
     End If
     
-    If s < 0 Then
+    If S < 0 Then
       If MsgBox("Дефицит товара '" & tbDMC!nomNom & "' по подразделению '" & _
-      sklad & "'" & " составит (" & s & "), продолжить?", _
+      sklad & "'" & " составит (" & S & "), продолжить?", _
       vbOKCancel Or vbDefaultButton2, "Подтвердите") = vbCancel Then Exit Function
     End If
     tbDMC.MoveNext
@@ -592,7 +592,7 @@ End If
 End Function
 
 Private Sub cmClose_Click()
-Dim s  As Double, str  As String, I As Integer
+Dim S  As Double, str  As String, I As Integer
 
 If Not lockSklad Then Exit Sub
   
@@ -640,8 +640,8 @@ EN1: lockSklad "un"
 End Sub
 '$odbc15$
 Private Sub cmDel_Click()
-Dim str As String, isZakaz As Integer, count As Integer
-Dim s As Double, sId As Integer, dId As Integer, I  As Integer
+Dim str As String, isZakaz As Integer, Count As Integer
+Dim S As Double, sId As Integer, dId As Integer, I  As Integer
 
 If MsgBox("Удалить накладную № '" & getStrDocExtNum(numDoc, numExt) & _
 "', Вы уверены?", vbYesNo Or vbDefaultButton2, "Подтвердите удаление") _
@@ -831,15 +831,15 @@ Sub workZakazi()
 'по закрытию Nakladna.frm
 cmOrder.Enabled = True
 sql = "SELECT enumEquip (" & numDoc & ")"
-Dim equip As String
-If Not byErrSqlGetValues("##98", sql, equip) Then Exit Sub
+Dim Equip As String
+If Not byErrSqlGetValues("##98", sql, Equip) Then Exit Sub
  
 cmDel.Enabled = True
 If isDateTbox(tbDocDate, , False) Then
     Nakladna.docDate = tmpDate
 End If
 Nakladna.Regim = "toNaklad"
-Nakladna.prvoCaption = "Пр-во " & equip
+Nakladna.prvoCaption = "Пр-во " & Equip
 Nakladna.Show vbModal
 
 End Sub
@@ -893,7 +893,7 @@ End If
 End Sub
 
 Private Sub Form_Load()
-Dim I As Integer, j As Integer
+Dim I As Integer, J As Integer
 oldHeight = Me.Height
 oldWidth = Me.Width
 
@@ -933,7 +933,7 @@ sql = "SELECT sGuideSource.sourceId, sGuideSource.sourceName From sGuideSource "
 "WHERE (((sGuideSource.sourceId)<0)) ORDER BY sGuideSource.sourceId DESC;"
 Set table = myOpenRecordSet("##95", sql, dbOpenDynaset)
 If table Is Nothing Then myBase.Close: End
-ReDim insideId(0): ReDim statiaId(0): I = 0: j = 0
+ReDim insideId(0): ReDim statiaId(0): I = 0: J = 0
 While Not table.EOF
     If table!sourceId < -1000 Then 'внутр подр-я
         If Regim = "fromCeh" And table!sourceId < -1002 Then GoTo NX1
@@ -942,11 +942,11 @@ While Not table.EOF
         insideId(I) = table!sourceId
         I = I + 1
     Else
-        If Regim = "fromCeh" And j > 4 Then GoTo NX1
+        If Regim = "fromCeh" And J > 4 Then GoTo NX1
         lbStatia.AddItem table!SourceName
-        ReDim Preserve statiaId(j)
-        statiaId(j) = table!sourceId
-        j = j + 1
+        ReDim Preserve statiaId(J)
+        statiaId(J) = table!sourceId
+        J = J + 1
     End If
 NX1: table.MoveNext
 Wend
@@ -977,7 +977,7 @@ Dim strWhere As String, moveWhere As String, I As Integer, str As String
 '    str = strWhereByStEndDateBox(Me)
     str = getWhereByDateBoxes(Me, "sDocs.xDate", begDate)
     If Regim = "fromCeh" Then
-        strWhere = "((sDocs.numExt) = 0) AND ((sDocs.Note)='" & Ceh(gCehId) & "')" 'вирт. накладные
+        strWhere = "((sDocs.numExt) = 0) AND ((sDocs.Note)='" & Equip(gEquipId) & "')" 'вирт. накладные
     ElseIf ckCeh.value = 1 Then
         strWhere = "((sDocs.numExt) = 0)" 'вирт. накладные
     Else

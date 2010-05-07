@@ -19,7 +19,7 @@ Begin VB.Form Orders
       Appearance      =   0  'Flat
       Height          =   600
       Left            =   5500
-      TabIndex        =   41
+      TabIndex        =   39
       Top             =   1000
       Width           =   1095
    End
@@ -27,16 +27,8 @@ Begin VB.Form Orders
       Caption         =   "SUB"
       Height          =   315
       Left            =   6540
-      TabIndex        =   40
+      TabIndex        =   38
       Top             =   5700
-      Width           =   495
-   End
-   Begin VB.CommandButton cmCehSUB 
-      Caption         =   "SUB"
-      Height          =   315
-      Left            =   6540
-      TabIndex        =   39
-      Top             =   5400
       Width           =   495
    End
    Begin VB.ListBox lbAnnul 
@@ -44,7 +36,7 @@ Begin VB.Form Orders
       ItemData        =   "Orders.frx":030A
       Left            =   240
       List            =   "Orders.frx":031A
-      TabIndex        =   37
+      TabIndex        =   36
       Top             =   1980
       Visible         =   0   'False
       Width           =   1212
@@ -58,7 +50,7 @@ Begin VB.Form Orders
       ForeColor       =   &H8000000F&
       Height          =   315
       Left            =   11460
-      TabIndex        =   36
+      TabIndex        =   35
       TabStop         =   0   'False
       Top             =   5460
       Visible         =   0   'False
@@ -86,7 +78,7 @@ Begin VB.Form Orders
       ItemData        =   "Orders.frx":0342
       Left            =   240
       List            =   "Orders.frx":034C
-      TabIndex        =   35
+      TabIndex        =   34
       Top             =   3180
       Visible         =   0   'False
       Width           =   1212
@@ -94,7 +86,7 @@ Begin VB.Form Orders
    Begin VB.ListBox lbTema 
       Height          =   2352
       Left            =   3960
-      TabIndex        =   34
+      TabIndex        =   33
       Top             =   1020
       Visible         =   0   'False
       Width           =   1575
@@ -102,7 +94,7 @@ Begin VB.Form Orders
    Begin VB.Frame Frame1 
       Height          =   555
       Left            =   0
-      TabIndex        =   30
+      TabIndex        =   29
       Top             =   -75
       Width           =   11835
       Begin VB.CheckBox cbStartDate 
@@ -170,7 +162,7 @@ Begin VB.Form Orders
          Caption         =   "Период с  "
          Height          =   195
          Left            =   60
-         TabIndex        =   17
+         TabIndex        =   16
          Top             =   240
          Width           =   795
       End
@@ -178,7 +170,7 @@ Begin VB.Form Orders
          Caption         =   "пос"
          Height          =   195
          Left            =   2160
-         TabIndex        =   18
+         TabIndex        =   17
          Top             =   240
          Width           =   195
       End
@@ -186,7 +178,7 @@ Begin VB.Form Orders
          Caption         =   ",  в т. ч. закрытые"
          Height          =   195
          Left            =   3600
-         TabIndex        =   33
+         TabIndex        =   32
          Top             =   240
          Visible         =   0   'False
          Width           =   1395
@@ -195,7 +187,7 @@ Begin VB.Form Orders
          Caption         =   "Противоречия"
          Height          =   195
          Left            =   8040
-         TabIndex        =   32
+         TabIndex        =   31
          Top             =   240
          Visible         =   0   'False
          Width           =   1095
@@ -214,7 +206,7 @@ Begin VB.Form Orders
          ForeColor       =   &H000000FF&
          Height          =   195
          Left            =   5880
-         TabIndex        =   31
+         TabIndex        =   30
          Top             =   240
          Visible         =   0   'False
          Width           =   1635
@@ -225,7 +217,7 @@ Begin VB.Form Orders
       ItemData        =   "Orders.frx":0369
       Left            =   1560
       List            =   "Orders.frx":037C
-      TabIndex        =   29
+      TabIndex        =   28
       Top             =   3840
       Visible         =   0   'False
       Width           =   372
@@ -235,7 +227,7 @@ Begin VB.Form Orders
       ItemData        =   "Orders.frx":0391
       Left            =   240
       List            =   "Orders.frx":039B
-      TabIndex        =   28
+      TabIndex        =   27
       Top             =   3900
       Visible         =   0   'False
       Width           =   1212
@@ -244,14 +236,14 @@ Begin VB.Form Orders
       Caption         =   "Печать в Excel"
       Height          =   315
       Left            =   9660
-      TabIndex        =   16
+      TabIndex        =   15
       Top             =   5580
       Width           =   1515
    End
    Begin VB.ListBox lbM 
       Height          =   240
       Left            =   1500
-      TabIndex        =   27
+      TabIndex        =   26
       Top             =   1020
       Visible         =   0   'False
       Width           =   555
@@ -260,7 +252,7 @@ Begin VB.Form Orders
       Caption         =   "Файлы для WEB"
       Height          =   315
       Left            =   7920
-      TabIndex        =   15
+      TabIndex        =   14
       Top             =   5580
       Visible         =   0   'False
       Width           =   1515
@@ -269,28 +261,19 @@ Begin VB.Form Orders
       Caption         =   "CO2"
       Height          =   315
       Left            =   6060
-      TabIndex        =   14
+      TabIndex        =   13
       Top             =   5700
-      Width           =   495
-   End
-   Begin VB.CommandButton cmCehCO2 
-      Caption         =   "CO2"
-      Height          =   315
-      Left            =   6060
-      TabIndex        =   12
-      Top             =   5400
-      Visible         =   0   'False
       Width           =   495
    End
    Begin VB.CommandButton cmZagrYAG 
       Caption         =   "YAG"
       Height          =   315
       Left            =   5580
-      TabIndex        =   13
+      TabIndex        =   12
       Top             =   5700
       Width           =   495
    End
-   Begin VB.CommandButton cmCehYAG 
+   Begin VB.CommandButton cmWerk 
       Caption         =   "YAG"
       Height          =   315
       Left            =   5580
@@ -304,7 +287,7 @@ Begin VB.Form Orders
       ItemData        =   "Orders.frx":03B5
       Left            =   240
       List            =   "Orders.frx":03C2
-      TabIndex        =   24
+      TabIndex        =   23
       Top             =   4440
       Visible         =   0   'False
       Width           =   1212
@@ -312,7 +295,7 @@ Begin VB.Form Orders
    Begin VB.TextBox tbMobile 
       Height          =   315
       Left            =   240
-      TabIndex        =   23
+      TabIndex        =   22
       Text            =   "tbMobile"
       Top             =   1620
       Visible         =   0   'False
@@ -321,17 +304,17 @@ Begin VB.Form Orders
    Begin VB.ListBox lbProblem 
       Height          =   2736
       Left            =   2460
-      TabIndex        =   22
+      TabIndex        =   21
       Top             =   1020
       Visible         =   0   'False
       Width           =   1332
    End
-   Begin VB.ListBox lbCeh 
+   Begin VB.ListBox lbWerk 
       Height          =   816
       ItemData        =   "Orders.frx":03DD
       Left            =   2100
       List            =   "Orders.frx":03EA
-      TabIndex        =   21
+      TabIndex        =   20
       Top             =   3960
       Visible         =   0   'False
       Width           =   732
@@ -382,7 +365,7 @@ Begin VB.Form Orders
       Align           =   1  'Align Top
       Height          =   612
       Left            =   0
-      TabIndex        =   38
+      TabIndex        =   37
       Top             =   0
       Width           =   11880
       _ExtentX        =   20955
@@ -396,15 +379,15 @@ Begin VB.Form Orders
       Caption         =   "Загрузка:"
       Height          =   195
       Left            =   4680
-      TabIndex        =   26
+      TabIndex        =   25
       Top             =   5760
       Width           =   735
    End
-   Begin VB.Label laCeh 
+   Begin VB.Label laWerk 
       Caption         =   "Цех.реестр:"
       Height          =   195
       Left            =   4680
-      TabIndex        =   25
+      TabIndex        =   24
       Top             =   5460
       Visible         =   0   'False
       Width           =   915
@@ -413,7 +396,7 @@ Begin VB.Form Orders
       Caption         =   "Менеджер:"
       Height          =   195
       Left            =   10320
-      TabIndex        =   20
+      TabIndex        =   19
       Top             =   120
       Width           =   855
    End
@@ -422,7 +405,7 @@ Begin VB.Form Orders
       ForeColor       =   &H00000000&
       Height          =   315
       Left            =   1260
-      TabIndex        =   19
+      TabIndex        =   18
       Top             =   5580
       Width           =   1575
    End
@@ -567,7 +550,7 @@ Dim minut As Integer
 Dim objExel As Excel.Application, exRow As Long
 Dim head1 As String, head2 As String, head3 As String, head4 As String
 Dim gain2 As Double, gain3 As Double, gain4 As Double
-Dim tbCeh As Recordset
+Dim tbWerk As Recordset
 Dim OrdersEquipStat() As ZakazVO
 Public refreshCurrentRow As Boolean
 
@@ -578,25 +561,23 @@ Const t17_00 = 61200 ' в секундах
 
 Const ShortSelectSqlStr = "" _
     & vbCr & "     1 as presentationFormat" _
-    & vbCr & "   , o.Numorder, o.inDate, o.StatusId" _
-    & vbCr & "   , o.lastModified, o.lastManagId" _
-    & vbCr & "   , oe.CehId, oe.statusEquipId " _
+    & vbCr & "   , o.Numorder, o.inDate, o.StatusId, o.werkId" _
+    & vbCr & "   , o.lastModified, o.lastManagId, oe.equipId" _
     & vbCr & "   , oe.lastModified as lastModifiedEquip, oe.lastManagId as lastManagEquipId" _
 
 
 Const MainSelectSqlStr = "" _
     & vbCr & "     0 as presentationFormat" _
-    & vbCr & "   , o.Numorder, o.equip as Ceh, o.inDate" _
+    & vbCr & "   , o.Numorder, o.equip as Equip, o.inDate, o.werkId" _
     & vbCr & "   , o.StatusId, o.DateRS, o.outTime, o.Type" _
     & vbCr & "   , o.Logo, o.Product, o.ordered" _
     & vbCr & "   , o.temaId, o.paid, o.shipped,  o.Invoice, o.id_bill" _
     & vbCr & "   , o.zalog, o.nal, o.rate" _
     & vbCr & "   , f.id_voc_names, f.Name" _
-    & vbCr & "   , m.Manag, s.Status, p.Problem" _
+    & vbCr & "   , m.Manag, s.Status, p.Problem, oc.werk" _
     & vbCr & "   , v.venturename as venture, v.sysname as servername" _
-    & vbCr & "   , oc.DateTimeMO, oc.workTimeMO, oc.StatM, oc.StatO" _
-    & vbCr & "   , oc.urgent" _
-    & vbCr & "   , oe.outDateTime, oe.workTime" _
+    & vbCr & "   , oc.DateTimeMO, oc.StatM, oc.StatO, oc.urgent" _
+    & vbCr & "   , oe.outDateTime, oe.workTime, oe.workTimeMO, 0 as equipId" _
     & vbCr & "   , convert(int, (oe.maxStatusId - oe.minStatusId) + abs(oe.maxStatusId - o.statusId)) as equipStatusSync " _
 
 Const FixedJoinSqlStr = "" _
@@ -622,15 +603,19 @@ Const countFromOrdersSQL = "select count(*)" _
 Const rowFromOrdersEquip = "select " _
     & vbCr & ShortSelectSqlStr _
     & vbCr & FixedJoinSqlStr _
+    & vbCr & " LEFT JOIN OrdersInCeh oc ON oc.Numorder = o.Numorder" _
     & vbCr & " LEFT JOIN OrdersEquip oe ON oe.Numorder = o.Numorder " _
-    & vbCr & " LEFT JOIN OrdersInCeh oc ON oc.Numorder = oe.Numorder and oc.cehId = oe.cehId" _
 
+
+Private Sub changeCaseOfTheVariables()
+Dim IsEmpty As String, Numorder As String, StatusId As String, Rollback As String, Outdatetime As String, p_Numorder As String
+Dim tbWorktime As String, Left As String
+Dim Equip As String, Worktime As String, ManagId As String
+
+End Sub
 
 ' нужно вызывать уже после того, как новая Валюта сменена.
 Private Sub adjustHotMoney()
-Dim Numorder As String, StatusId As String, Rollback As String, Outdatetime As String
-Dim tbWorktime As String, Left As String
-Dim Ceh As String, Worktime As String, ManagId As String
 Dim I As Long, J As Integer
 
     For I = 1 To Grid.Rows - 1
@@ -773,21 +758,22 @@ Dim strNow As String, dNow As Date, valueorder As Numorder
 BB:
 wrkDefault.CommitTrans
 
-Dim baseCehId As Integer, isBaseOrder As Boolean
+Dim baseWerkId As Integer, isBaseOrder As Boolean
 Dim baseFirmId As Integer, baseFirm As String
 Dim baseProblemId As Integer, baseProblem As String, begPubNum As Long
 
 gNzak = Grid.TextMatrix(Orders.mousRow, orNomZak)
 If InStr(Orders.cmAdd.Caption, "+") > 0 Then
-  ''sql = "SELECT Orders.CehId, Orders.ProblemId, Orders.FirmId, " & _
-        "GuideCeh.Ceh, p.Problem, f.Name " & _
-        "FROM GuideProblem INNER JOIN (GuideFirms INNER JOIN " & _
-        "(GuideCeh INNER JOIN Orders ON GuideCeh.CehId = Orders.CehId) " & _
-        "ON f.FirmId = Orders.FirmId) ON p.ProblemId " & _
-        "= Orders.ProblemId WHERE Orders.Numorder = " & gNzak
+  'sql = "SELECT o.WerkId, o.ProblemId, o.FirmId" _
+        & ", p.Problem, f.Name " _
+        & " FROM Orders o " _
+        & " JOIN GuideEquip e   ON e.Numorder  = o.Numorder" _
+        & " JOIN GuideProblem p ON p.ProblemId = o.ProblemId" _
+        & " JOIN GuideFirms f   ON f.FirmId    = o.FirmId" _
+        & " WHERE o.Numorder = " & gNzak
 '  On Error GoTo NXT1
   Set tbOrders = myBase.OpenRecordset(sql, dbOpenForwardOnly)
-  baseCehId = tbOrders!cehId
+  baseWerkId = tbOrders!werkId
   baseFirmId = tbOrders!firmId
   baseProblemId = tbOrders!ProblemId
   baseFirm = tbOrders!name
@@ -850,7 +836,7 @@ tbOrders.Close
 syncOrderByEquipment 1, valueorder.val
 
 Grid.row = zakazNum
-Grid.col = orCeh
+Grid.col = orWerk
 Grid.LeftCol = orNomZak
 Grid.SetFocus
 'wrkDefault.CommitTrans
@@ -861,26 +847,10 @@ ERR1:
 
 End Sub
 
-
-Private Sub cmCehCO2_Click()
-If gCehId <> 2 And isCehOrders Then Unload CehOrders
-gCehId = 2
-CehOrders.Show 'vbModal
-
-End Sub
-
-
-Private Sub cmCehSUB_Click()
-If gCehId <> 3 And isCehOrders Then Unload CehOrders
-gCehId = 3
-CehOrders.Show
-End Sub
-
-
-Private Sub cmCehYAG_Click()
-If gCehId <> 1 And isCehOrders Then Unload CehOrders
-gCehId = 1
-CehOrders.Show 'vbModal
+Private Sub cmWerk_Click()
+If gEquipId <> 1 And isWerkOrders Then Unload WerkOrders
+gEquipId = 1
+WerkOrders.Show 'vbModal
 End Sub
 
 
@@ -1152,28 +1122,27 @@ GoTo ENs
 End Sub
 
 
+Private Sub cmZagrYAG_Click()
+gEquipId = 1
+Zagruz.Show
+End Sub
+
+
 Private Sub cmZagrCO2_Click()
-gCehId = 2
+gEquipId = 2
 Zagruz.Show
 End Sub
 
 
 Private Sub cmZagrSUB_Click()
-gCehId = 3
-Zagruz.Show
-
-End Sub
-
-
-Private Sub cmZagrYAG_Click()
-gCehId = 1
+gEquipId = 3
 Zagruz.Show
 End Sub
 
 
 Sub lbHide(Optional noFocus As String = "")
 tbMobile.Visible = False
-lbCeh.Visible = False
+lbWerk.Visible = False
 lbStat.Visible = False
 lbProblem.Visible = False
 lbM.Visible = False
@@ -1184,14 +1153,13 @@ lbClose.Visible = False
 lbAnnul.Visible = False
 lbVenture.Visible = False
 
- 
-
 Grid.Enabled = True
 If noFocus = "" Then
     Grid.SetFocus
     Grid_EnterCell
 End If
 End Sub
+
 
 Private Sub Form_Activate()
 Static beStart As Boolean
@@ -1400,7 +1368,7 @@ mousCol = 1
 initOrCol orNomZak, "no.Numorder"
 initOrCol orInvoice, "so.Invoice"
 initOrCol orVenture, "sv.ventureName"
-initOrCol orCeh, "sGuideCeh.Ceh"
+initOrCol orWerk, "sGuideWerk.Werk"
 initOrCol orData, "do.inDate"
 initOrCol orMen, "sm.Manag"
 initOrCol orStatus, "ss.Status"
@@ -1434,10 +1402,8 @@ initOrCol orServername, "so.servername"
 
 ReDim Preserve orSqlWhere(orColNumber)
 
-laCeh.Visible = True
-cmCehYAG.Visible = True
-cmCehCO2.Visible = True
-cmCehSUB.Visible = True '$$ceh
+laWerk.Visible = True
+cmWerk.Visible = True
 
 zakazNum = 0
 tbStartDate.Text = Format(DateAdd("d", -7, curDate), "dd/mm/yy")
@@ -1526,7 +1492,7 @@ lbVenture.Height = 225 * lbVenture.ListCount
 
 End Sub
  
-Public Sub managLoad(Optional fromCeh As String = "")
+Public Sub managLoad(Optional fromWerk As String = "")
 Dim I As Integer, str As String, J As String
 
 sql = "SELECT * From GuideManag where manag <> '' ORDER BY forSort"
@@ -1544,7 +1510,7 @@ While Not table.EOF
     If str = "not" Then
         GoTo AA
     ElseIf LCase(table!forSort) <> "unused" Then
-        If fromCeh = "" Then
+        If fromWerk = "" Then
           If table!ManagId <> 0 Then cbM.AddItem str
           lbM.AddItem str
           Filtr.lbM.AddItem str
@@ -1642,10 +1608,8 @@ cmRefr.Top = cmRefr.Top + h
 laInform.Top = laInform.Top + h
 cmAdd.Top = cmAdd.Top + h
 cmToWeb.Top = cmToWeb.Top + h
-laCeh.Top = laCeh.Top + h
-cmCehYAG.Top = cmCehYAG.Top + h
-cmCehCO2.Top = cmCehCO2.Top + h
-cmCehSUB.Top = cmCehSUB.Top + h '$$ceh
+laWerk.Top = laWerk.Top + h
+cmWerk.Top = cmWerk.Top + h
 laZagruz.Top = laZagruz.Top + h
 cmZagrYAG.Top = cmZagrYAG.Top + h
 cmZagrCO2.Top = cmZagrCO2.Top + h
@@ -1881,7 +1845,7 @@ If mousRow = 0 Then Exit Sub
 
 gNzak = Grid.TextMatrix(mousRow, orNomZak)
 
-'    gCehId = 2
+'    gEquipId = 2
 
 
 sql = "SELECT O.StatusId, o.lastModified, o.lastManagId " _
@@ -2071,7 +2035,7 @@ ElseIf mousCol = orFirma Then
         
     
     Me.PopupMenu mnContext
-ElseIf mousCol = orCeh Then
+ElseIf mousCol = orWerk Then
     ' есть ли накладные
     'sql = "SELECT sDocs.numDoc From sDocs WHERE (((sDocs.numDoc)=" & gNzak & "));"
     'If Not byErrSqlGetValues("W##175", sql, numDoc) Then Exit Sub
@@ -2082,7 +2046,7 @@ ElseIf mousCol = orCeh Then
     'Equipment.orderStatusStr = Grid.TextMatrix(mousRow, orStatus)
     Equipment.readonlyFlag = StatusId > 0
     Equipment.Show vbModal, Me
-    'listBoxInGridCell lbCeh, Grid
+    'listBoxInGridCell lbWerk, Grid
 ElseIf mousCol = orStatus Then
 
 '$odbs?$ в этом блоке мы должны найти опред.запись, =========================
@@ -2131,28 +2095,28 @@ ElseIf mousCol = orStatus Then
      GoTo ALL 'сюда только для dostup='a', т.к. для других - поле желтое
    ElseIf StatusId = 7 Then ' "аннулирован"
      listBoxInGridCell lbDel, Grid, "select"
-   ElseIf Grid.TextMatrix(mousRow, orCeh) <> "" Then
+   ElseIf Grid.TextMatrix(mousRow, orWerk) <> "" Then
         If StatusId = 1 Then 'в работе                                 $$1
           sql = "SELECT sum(isnull(oc.Nevip, 0) * isnull(oe.worktime, 0)) as nevip from OrdersInCeh oc " _
             & " LEFT JOIN OrdersEquip oe on oe.Numorder = oc.Numorder and oc.cehId = oe.cehId" _
           & " WHERE oc.Numorder = " & gNzak _
           & " group by oc.Numorder "
-          Set tbCeh = myOpenRecordSet("##373", sql, dbOpenForwardOnly)
-           If tbCeh.BOF Then
+          Set tbWerk = myOpenRecordSet("##373", sql, dbOpenForwardOnly)
+           If tbWerk.BOF Then
             neVipolnen = 0
-            tbCeh.Close
+            tbWerk.Close
             MsgBox "Заказа № " & gNzak & " нет в цеховой сводке поэтому " & _
             "текущий статус считается сбойным. Измените статус либо " & _
             "обратитесь к Администратору.", , "Error"             '
             GoTo ALL                              '
           Else
-              neVipolnen = Round(tbCeh!nevip, 2)   '$$1
-              tbCeh.Close
+              neVipolnen = Round(tbWerk!nevip, 2)   '$$1
+              tbWerk.Close
           End If
         End If
         
         Zakaz.Regim = ""
-        Zakaz.idCeh = 0
+        Zakaz.idWerk = 0
         Zakaz.Show vbModal
         If Zakaz.isUpdated Then
             refreshTimestamp gNzak
@@ -2197,7 +2161,7 @@ ElseIf mousCol = orOtgrugeno Then
         Grid.LeftCol = orInvoice
         Grid.SetFocus
     Else
-        If (Grid.TextMatrix(mousRow, orCeh) = "" Or _
+        If (Grid.TextMatrix(mousRow, orWerk) = "" Or _
         Grid.TextMatrix(mousRow, orStatus) = "готов") And _
         Grid.TextMatrix(mousRow, orInvoice) = "счет ?" Then ' в 2х местах
             flDelRowInMobile = Not tbEnable.Visible 'спрятать заказ, если мы не в арх. зоне
@@ -2246,7 +2210,7 @@ If (dostup = "a" Or Grid.TextMatrix(mousRow, orStatus) <> "закрыт") _
        mousCol = orFirma _
        Or mousCol = orProblem _
        Or mousCol = orType _
-       Or (mousCol = orCeh) _
+       Or (mousCol = orWerk) _
        Or mousCol = orMen _
        Or mousCol = orVrVid _
        Or mousCol = orStatus _
@@ -2344,8 +2308,8 @@ BB: wrkDefault.BeginTrans
     If orderUpdate("##50", id, "Orders", "StatusId") = 0 Then
         Grid.TextMatrix(mousRow, mousCol) = lbAnnul.Text
 '        If lbAnnul.Text = "принят" Then - !!! если открыт этап этого не надо
-'            orderUpdate "##329", 0, "Orders", "CehId" 'нужно при откате
-'            Grid.TextMatrix(mousRow, orCeh) = "" ' это незаметно поэтому опасно
+'            orderUpdate "##329", 0, "Orders", "WerkId" 'нужно при откате
+'            Grid.TextMatrix(mousRow, orWerk) = "" ' это незаметно поэтому опасно
 '        End If
         wrkDefault.CommitTrans
     Else
@@ -2360,18 +2324,18 @@ Private Sub lbAnnul_KeyDown(KeyCode As Integer, Shift As Integer)
 If KeyCode = vbKeyReturn Then lbAnnul_DblClick
 End Sub
 
-Private Sub lbCeh_DblClick()
+Private Sub lbWerk_DblClick()
 If noClick Then Exit Sub
-If lbCeh.Visible = False Then Exit Sub
+If lbWerk.Visible = False Then Exit Sub
 
-Grid.Text = lbCeh.Text
-If orderUpdate("##21", lbCeh.ListIndex + 1, "Orders", "CehId") Then _
-    Grid.Text = lbCeh.Text
+Grid.Text = lbWerk.Text
+If orderUpdate("##21", lbWerk.ListIndex + 1, "Orders", "WerkId") Then _
+    Grid.Text = lbWerk.Text
 lbHide
 End Sub
 
-Private Sub lbCeh_KeyDown(KeyCode As Integer, Shift As Integer)
-If KeyCode = vbKeyReturn Then lbCeh_DblClick
+Private Sub lbWerk_KeyDown(KeyCode As Integer, Shift As Integer)
+If KeyCode = vbKeyReturn Then lbWerk_DblClick
 End Sub
 
 Private Sub lbClose_DblClick()
@@ -2557,7 +2521,7 @@ If Not bilo Then
         str = manId(cbM.ListIndex)
         orderUpdate "##45", 6, "Orders", "StatusId"
         '''orderUpdate "##48", str, "Orders", "lastManagId"
-        delZakazFromCeh
+        delZakazFromEquip
         sql = "DELETE From sDMCrez WHERE numDoc =" & gNzak
         myExecute "##326", sql, 0
         sql = "DELETE From xEtapByIzdelia WHERE Numorder =" & gNzak
@@ -2582,7 +2546,7 @@ End If
   End If
 End Function
 
-Sub delZakazFromCeh()
+Sub delZakazFromEquip()
         
   '$'
     sql = "DELETE From OrdersInCeh  WHERE " & _
@@ -2616,7 +2580,7 @@ ElseIf lbStat.Text = "принят" Then
         "невозможно!", , "Недопустимый статус!"
     Else
         wrkDefault.BeginTrans
-        delZakazFromCeh
+        delZakazFromEquip
         
         
         sql = "UPDATE Orders SET StatusId = 0, DateRS = Null, " _
@@ -2898,21 +2862,21 @@ End Sub
 Private Sub mnSetkaY_Click()
     'Zakaz.startParams (1)
     Zakaz.Regim = "setka"
-    Zakaz.idCeh = 1
+    Zakaz.idEquip = 1
     Zakaz.Show vbModal
 End Sub
 
 Private Sub mnSetkaC_Click()
     'Zakaz.startParams (2)
     Zakaz.Regim = "setka"
-    Zakaz.idCeh = 2
+    Zakaz.idEquip = 2
     Zakaz.Show vbModal
 End Sub
 
 Private Sub mnSetkaS_Click()
     'Zakaz.startParams (3)
     Zakaz.Regim = "setka"
-    Zakaz.idCeh = 3
+    Zakaz.idEquip = 3
     Zakaz.Show vbModal
 End Sub
 
@@ -3162,7 +3126,7 @@ DNM = Format(Now(), "dd.mm.yy hh:nn") & vbTab & cbM.Text & " " & gNzak ' именно 
         If InStr(tbMobile.Text, "счет") > 0 Or tbMobile.Text = "0" Then
             str = Grid.TextMatrix(mousRow, orOtgrugeno)
             If IsNumeric(str) And dostup <> "a" Then
-              If Grid.TextMatrix(mousRow, orCeh) = "" Or _
+              If Grid.TextMatrix(mousRow, orWerk) = "" Or _
               Grid.TextMatrix(mousRow, orStatus) = "готов" Then ' в 2х местах
                 delZakazFromGrid
               Else
@@ -3328,8 +3292,8 @@ End Sub
 
 Sub prepareOrderByEquipment(Where As String)
 
-    'Debug.Print sqlEquip
     sql = rowFromOrdersEquip & Where & " ORDER BY o.inDate"
+    'Debug.Print sql
     
     Set tbOrders = myOpenRecordSet("##08.prep", sql, dbOpenForwardOnly)
     If tbOrders Is Nothing Then myBase.Close: End
@@ -3417,7 +3381,7 @@ While Not tqOrders.EOF
      End If
    Next I
    If tqOrders!urgent = "y" Then 'срочный
-        Grid.col = orCeh
+        Grid.col = orWerk
         Grid.row = zakazNum
         Grid.CellForeColor = 200
    End If
@@ -3606,8 +3570,8 @@ Function copyRowToGrid(row As Long, ByVal Numorder As Long) As String
 
  If Not IsNull(tqOrders!invoice) Then _
      Grid.TextMatrix(row, orInvoice) = tqOrders!invoice
-If Not IsNull(tqOrders!Ceh) Then
- Grid.TextMatrix(row, orCeh) = tqOrders!Ceh
+If Not IsNull(tqOrders!Werk) Then
+ Grid.TextMatrix(row, orWerk) = tqOrders!Werk
 End If
  Grid.TextMatrix(row, orMen) = tqOrders!Manag
  Grid.TextMatrix(row, orFirma) = tqOrders!name

@@ -469,7 +469,7 @@ Option Explicit
 
 Public urgent As Variant ' As String '"y" - срочный заказ
 Public Regim As String
-Public idCeh As Integer
+Public idEquip As Integer
 Public isUpdated As Boolean ' выставлен в true если что-то в статусе заказа действительно поменялось
 Dim isTimeZakaz As Boolean ' тождественен "заказ передается в цех"
 Dim oldHeight As Integer, oldWidth As Integer
@@ -561,7 +561,7 @@ End If
 End Sub
 
 Private Sub cmCeh_Click(Index As Integer)
-    gCehId = Index + 1
+    gEquipId = Index + 1
     'statusIdOld = statusIdNew
     startParams
     'newZagruz ' вызывается в startParams (!?)
@@ -696,7 +696,7 @@ sql = "SELECT o.numOrder, oe.workTime, " & _
 " FROM Orders o " & _
 " JOIN OrdersEquip oe ON oe.numorder = o.numorder " & _
 " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder and oc.cehId = oe.cehId" & _
-" Where (((o.StatusId) = 1 Or (o.StatusId) = 5) AND ((oe.CehId)= " & gCehId & ")) " & _
+" Where (((o.StatusId) = 1 Or (o.StatusId) = 5) AND ((oe.CehId)= " & gEquipId & ")) " & _
 " UNION ALL " & _
 " SELECT o.numOrder, oe.workTime, DateDiff(day,Now(),oe.outDateTime) AS endDay, " & _
 " DateDiff(day,Now(),o.DateRS) AS begDay, oe.outDateTime, " & _
@@ -704,14 +704,14 @@ sql = "SELECT o.numOrder, oe.workTime, " & _
 " FROM Orders o " & _
 " JOIN OrdersEquip oe ON oe.numorder = o.numorder " & _
 " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder and oc.cehId = oe.cehId " & _
-" Where (((o.StatusId) = 2 Or (o.StatusId) = 3) AND ((oe.CehId)= " & gCehId & ")) " & _
+" Where (((o.StatusId) = 2 Or (o.StatusId) = 3) AND ((oe.CehId)= " & gEquipId & ")) " & _
 " UNION ALL " & _
 " SELECT o.numOrder, oc.workTimeMO, DateDiff(day,Now(),oc.DateTimeMO) AS endDay, " & _
 " DateDiff(day,Now(),o.inDate) AS begDay, oc.DateTimeMO, " & _
 " o.inDate, 1 AS StatusId, -1 AS Nevip, '' AS urgent " & _
 " FROM Orders o " & _
 " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder " & _
-" Where oc.statO = 'в работе' AND oc.CehId= " & gCehId & _
+" Where oc.statO = 'в работе' AND oc.CehId= " & gEquipId & _
 " ORDER BY "
 
 If isMzagruz Then
@@ -1099,7 +1099,7 @@ Timer1.Enabled = False
 
 sql = "SELECT o.statusId, oe.worktime " _
 & " from Orders o" _
-& " left join OrdersEquip oe on oe.numorder = o.numorder and oe.cehId = " & gCehId _
+& " left join OrdersEquip oe on oe.numorder = o.numorder and oe.cehId = " & gEquipId _
 & " WHERE o.numOrder = " & gNzak
 Set tbOrders = myOpenRecordSet("##30", sql, dbOpenForwardOnly) '$#$
 
@@ -1168,7 +1168,7 @@ sql = "UPDATE Orders SET dateRS = " & str & " WHERE Orders.numOrder = " & gNzak
 'MsgBox sql
 If myExecute("##392", sql) <> 0 Then GoTo ER1
 
-sql = "SELECT * from OrdersInCeh WHERE numOrder = " & gNzak & " and cehId = " & gCehId
+sql = "SELECT * from OrdersInCeh WHERE numOrder = " & gNzak & " and cehId = " & gEquipId
 Set tbOrders = myOpenRecordSet("##01", sql, dbOpenForwardOnly)
 
 Worktime = workTimeOld ' для случая, если не менялось
@@ -1178,18 +1178,18 @@ If Not tbOrders.BOF Then
          If (statusIdNew = 1 Or statusIdNew = 5) And editWorkTime Then 'остается в работе или отложен
             Worktime = Round(workTimeOld + tbWorktime.Text - neVipolnen, 1) 'время с учетом коррекции
             sql = "UPDATE OrdersInCeh SET Nevip = " & tbWorktime.Text / Worktime _
-             & " WHERE numOrder =" & gNzak & " and cehId = " & gCehId
+             & " WHERE numOrder =" & gNzak & " and cehId = " & gEquipId
             If myExecute("##393", sql) <> 0 Then GoTo ER1
          Else
             Worktime = tbWorktime.Text
          End If
        End If
        sql = "UPDATE OrdersInCeh SET urgent = '" & urgent & _
-       "' WHERE OrdersInCeh.numOrder = " & gNzak & " and cehId = " & gCehId
+       "' WHERE OrdersInCeh.numOrder = " & gNzak & " and cehId = " & gEquipId
        If myExecute("##403", sql) <> 0 Then GoTo ER1
        GoTo DD
     Else
-        sql = "DELETE from OrdersInCeh WHERE numOrder = " & gNzak & " and cehId = " & gCehId
+        sql = "DELETE from OrdersInCeh WHERE numOrder = " & gNzak & " and cehId = " & gEquipId
         If myExecute("##394", sql) <> 0 Then GoTo ER1
         Worktime = 0
     End If
@@ -1197,7 +1197,7 @@ Else
     If isTimeZakaz Then
         Worktime = tbWorktime.Text
         sql = "INSERT INTO OrdersInCeh ( numOrder, urgent, cehId )" & _
-        "SELECT " & gNzak & ",'" & urgent & "', " & gCehId
+        "SELECT " & gNzak & ",'" & urgent & "', " & gEquipId
         If myExecute("##395", sql) <> 0 Then GoTo ER1
 DD:     noClick = True
         Orders.Grid.col = orCeh
@@ -1214,7 +1214,7 @@ End If
 sql = "UPDATE OrdersEquip SET outDateTime = " & v_outDateTime _
     & ", workTime = " & Worktime _
     & ", statusEquipId = " & statusIdNew _
-    & " WHERE numOrder = " & gNzak & " and cehId =" & gCehId
+    & " WHERE numOrder = " & gNzak & " and cehId =" & gEquipId
 'Debug.Print sql
 If myExecute("##391", sql) <> 0 Then GoTo ER1
 
@@ -1251,11 +1251,11 @@ table.Close
   If bilo Then      '
     sql = "UPDATE OrdersInCeh SET StatM = '" & cbM.Text & "', StatO = '" & cbO.Text & _
     "', DateTimeMO = " & str & ", workTimeMO = " & Worktime & _
-    " WHERE numOrder = " & gNzak & " AND cehId = " & gCehId
+    " WHERE numOrder = " & gNzak & " AND cehId = " & gEquipId
   Else
     sql = "INSERT INTO OrdersInCeh ( numOrder, StatM, StatO, WorktimeMO, DatetimeMO, cehId ) " & _
     "SELECT " & gNzak & ", '" & _
-    cbM.Text & "', '" & cbO.Text & "', " & str & "," & Worktime & "," & gCehId
+    cbM.Text & "', '" & cbO.Text & "', " & str & "," & Worktime & "," & gEquipId
   End If
   'Debug.Print sql
   If myExecute("##397", sql) <> 0 Then GoTo ER1
@@ -1308,14 +1308,14 @@ Print #2, str
 Close #2
 
 Dim nextCehId As Integer
-ckCehDone(gCehId - 1).Tag = statusIdNew
+ckCehDone(gEquipId - 1).Tag = statusIdNew
  
 If Not chooseTheEquipment(statusIdNew, nextCehId) Then
     ' refresh the Orders.Grid row
     
     Unload Me
 Else
-    gCehId = nextCehId
+    gEquipId = nextCehId
     startParams
 End If
 
@@ -1795,7 +1795,7 @@ Private Function InitZagruz() As Integer
     Else
         Dim newCehId As Integer
         chooseTheEquipment statusIdOld, newCehId
-        gCehId = newCehId
+        gEquipId = newCehId
         
     End If
     
@@ -1915,10 +1915,10 @@ startParams = False
 
 maxDay = 0
 
-If idCeh > 0 Then ' вызов в режиме Сетки заказов
+If idWerk > 0 Then ' вызов в режиме Сетки заказов
     Me.cmAdd.Visible = False
     Me.cmRepit.Visible = False
-    gCehId = idCeh
+    gEquipId = idWerk
     gNzak = ""
     statusIdOld = 0
     Me.urgent = ""
@@ -1936,7 +1936,7 @@ Else
     & " from Orders o" _
     & " JOIN OrdersEquip oe on oe.numorder = o.numorder " _
     & " LEFT JOIN OrdersInCeh oc on oc.numorder = o.numorder AND oc.cehId = oe.cehId" _
-    & " WHERE o.numOrder =" & gNzak & " AND oe.cehId = " & CStr(gCehId)
+    & " WHERE o.numOrder =" & gNzak & " AND oe.cehId = " & CStr(gEquipId)
     Set tbOrders = myOpenRecordSet("##402", sql, dbOpenForwardOnly)
     
     Set zakazBean = New ZakazVO
@@ -1976,16 +1976,16 @@ End If
 If statusIdOld = 0 Or statusIdOld = 7 Then 'принят или аннулир
     neVipolnen = 0
     neVipolnen_O = 0
-    If idCeh > 0 Then
-        Me.Caption = "Сетка заказов " & Ceh(gCehId)
+    If idWerk > 0 Then
+        Me.Caption = "Сетка заказов " & Equip(gEquipId)
     ElseIf statusIdOld = 0 Then
-        Me.Caption = "Перемещение заказа в цех " & Ceh(gCehId)
+        Me.Caption = "Перемещение заказа в цех " & Equip(gEquipId)
     End If
     
     'tbWorktime.Text = ""
     'tbReadyDate.Text = ""
 Else
-    Me.Caption = "Редактирование заказа [" & Ceh(gCehId) & "]"
+    Me.Caption = "Редактирование заказа [" & Equip(gEquipId) & "]"
     If Not IsNull(zakazBean.DateRS) Then
         Me.tbDateRS.Text = Format(zakazBean.DateRS, "dd.mm.yy")
     End If
@@ -2026,7 +2026,7 @@ Next I
 str = "DateDiff(day, now(), oe.outDateTime)"
 sql = "SELECT " & str & " AS day, o.FirmId" _
 & " From Orders o" _
-& " join OrdersEquip oe on oe.numorder = o.numorder and oe.cehId = " & gCehId _
+& " join OrdersEquip oe on oe.numorder = o.numorder and oe.cehId = " & gEquipId _
 & " Where o.StatusId < 4" _
 & " GROUP BY " & str & ", o.FirmId" _
 & " HAVING " & str & " >= 0"

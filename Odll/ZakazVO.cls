@@ -14,7 +14,8 @@ Attribute VB_Exposed = False
 Option Explicit
 
 Public Numorder As Long
-Public cehId As Integer
+Public werkId As Integer
+Public equipId As Integer
 Public StatusId As Integer
 Public outTime As Variant ' Integer (may be null)
 
@@ -110,7 +111,8 @@ Dim resetToCurrentEquip As Boolean
     End If
     
     If resetToCurrentEquip Then
-        cehId = tbOrders!cehId
+        werkId = tbOrders!werkId
+        equipId = tbOrders!equipId
         If tbOrders!presentationFormat = 1 Then
         ElseIf tbOrders!presentationFormat = 0 Then
             outTime = tbOrders!outTime
@@ -149,8 +151,11 @@ Public Sub initFromDb()
     End If
 
     Numorder = tbOrders!Numorder
-    If Not IsNull(tbOrders!cehId) Then
-        cehId = tbOrders!cehId
+    If Not IsNull(tbOrders!werkId) Then
+        werkId = tbOrders!werkId
+    End If
+    If Not IsNull(tbOrders!equipId) Then
+        equipId = tbOrders!equipId
     End If
     StatusId = tbOrders!StatusId
     m_lastModified = tbOrders!lastModified
@@ -190,7 +195,8 @@ End Property
 
 Public Sub clean()
     Numorder = 0
-    cehId = 0
+    werkId = 0
+    equipId = 0
     StatusId = -1
     outTime = 0
     

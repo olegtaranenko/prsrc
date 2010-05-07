@@ -465,8 +465,8 @@ Dim J As Integer, leng As Integer
     ReDim Preserve QQ2(leng): QQ2(leng) = eQuant * tbNomenk!quantity
     ReDim Preserve QQ3(leng): QQ3(leng) = prQuant * tbNomenk!quantity
 '    ReDim Preserve equip(leng)
-'    If Not IsNull(tbNomenk!Ceh) Then
-'        equip(leng) = tbNomenk!Ceh
+'    If Not IsNull(tbNomenk!Equip) Then
+'        equip(leng) = tbNomenk!Equip
 '    End If
 
 End Sub
@@ -638,7 +638,7 @@ If opProduct.value Then
   'проверка комплектации изделия ***********
   befColor = 0: bilo = False
   Grid.col = nkQuant
-  For il = Grid.rows - 1 To 0 Step -1 'так в цикле м. выявить концы всех групп т.к. всегда есть Row=0 c другим цветом
+  For il = Grid.Rows - 1 To 0 Step -1 'так в цикле м. выявить концы всех групп т.к. всегда есть Row=0 c другим цветом
      Grid.row = il
      grColor = Grid.CellBackColor
      If grColor <> befColor Then
@@ -751,7 +751,7 @@ AA: Me.Caption = "Ведомость остатков"
     Me.Width = Grid.Width + 2527
     Grid3.Width = Grid.Width
     laGrid.Width = Grid.Width
-    cmExit.left = Me.Width - cmExit.Width - 200
+    cmExit.Left = Me.Width - cmExit.Width - 200
     
     sql = "SELECT sourceId, sourceName From sGuideSource " & _
     "WHERE (((sourceId)<-1000)) ORDER BY sourceId DESC;"
@@ -893,7 +893,7 @@ If Regim = "ostatP" Or Regim = "ostat" Then Exit Sub
 If begWidth = 0 Then ' т.е. только один раз
     begWidth = Grid.Width
     begWidth2 = Grid2.Width
-    begLeft = Grid2.left
+    begLeft = Grid2.Left
 End If
 If opProduct.value Then
     delta = 2000 ' Product
@@ -904,11 +904,11 @@ End If
 If reg = "r" Then
     Grid.Width = begWidth
     Grid2.Width = begWidth2
-    Grid2.left = begLeft
+    Grid2.Left = begLeft
 ElseIf reg = "l" Then
     Grid.Width = begWidth + delta
     Grid2.Width = begWidth2 - delta
-    Grid2.left = begLeft + delta
+    Grid2.Left = begLeft + delta
 End If
 
 Grid3.Width = Grid.Width
@@ -916,7 +916,7 @@ Grid3.Width = Grid.Width
 End Sub
 
 
-Private Sub Form_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Form_MouseMove(Button As Integer, Shift As Integer, X As Single, y As Single)
     If Dragging Then
         Dragging = True
     End If
@@ -924,7 +924,7 @@ Private Sub Form_MouseMove(Button As Integer, Shift As Integer, x As Single, y A
 End Sub
 
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer, hh As Double, ww As Double, left As Long
+Dim h As Integer, w As Integer, hh As Double, ww As Double, Left As Long
 
 If Not isLoad Then Exit Sub
 If Me.WindowState = vbMinimized Then Exit Sub
@@ -946,57 +946,57 @@ oldWidth = Me.Width
 tv.Height = tv.Height + h
 tv.Width = tv.Width + w * tvVes
 
-Grid.left = Grid.left + w * tvVes
-laGrid.left = Grid.left
-cbInside.left = laGrid1.left + laGrid1.Width
+Grid.Left = Grid.Left + w * tvVes
+laGrid.Left = Grid.Left
+cbInside.Left = laGrid1.Left + laGrid1.Width
 Grid.Height = Grid.Height + h
 Grid.Width = Grid.Width + w * gridVes
-Grid3.left = Grid.left
-laGrid1.left = Grid3.left
-laBegin.left = tv.left + tv.Width + 100
+Grid3.Left = Grid.Left
+laGrid1.Left = Grid3.Left
+laBegin.Left = tv.Left + tv.Width + 100
 Grid3.Width = Grid.Width
 
-Grid2.left = Grid2.left + w * (tvVes + gridVes)
-laGrid2.left = Grid2.left
+Grid2.Left = Grid2.Left + w * (tvVes + gridVes)
+laGrid2.Left = Grid2.Left
 laGrid2.Top = laGrid2.Top + h / 2
 
 Grid2.Top = Grid2.Top + h / 2
 Grid2.Height = Grid2.Height + h / 2
 Grid2.Width = Grid2.Width + w * grid2Ves
-Grid5.left = Grid2.left
+Grid5.Left = Grid2.Left
 Grid5.Height = Grid5.Height + h / 2
 
-laGrid5.left = laGrid5.left + w * (tvVes + gridVes)
+laGrid5.Left = laGrid5.Left + w * (tvVes + gridVes)
 Grid5.Width = Grid2.Width
 
 splLeftV.Top = Grid5.Top
-splLeftV.left = tv.left + tv.Width + 15
+splLeftV.Left = tv.Left + tv.Width + 15
 splLeftV.Height = tv.Top + tv.Height
 
 splRightV.Top = splLeftV.Top
-splRightV.left = Grid5.left - 15 - splRightV.Width
+splRightV.Left = Grid5.Left - 15 - splRightV.Width
 splRightV.Height = splLeftV.Height
 
 splLeftH.Top = Grid5.Top + Grid5.Height + 5
-splLeftH.left = splLeftV.left + splLeftV.Width
+splLeftH.Left = splLeftV.Left + splLeftV.Width
 splLeftH.Width = Grid3.Width
 
 splRightH.Top = Grid5.Top + Grid5.Height + 5
-splRightH.left = splRightV.left + splRightV.Width
+splRightH.Left = splRightV.Left + splRightV.Width
 splRightH.Width = Grid5.Width
 
 
 
 cmSel.Top = cmSel.Top + h
-cmSel.left = cmSel.left + w
+cmSel.Left = cmSel.Left + w
 tbQuant.Top = tbQuant.Top + h
-tbQuant.left = tbQuant.left + w
+tbQuant.Left = tbQuant.Left + w
 laQuant.Top = laQuant.Top + h
-laQuant.left = laQuant.left + w
+laQuant.Left = laQuant.Left + w
 cmExit.Top = cmExit.Top + h
-cmExit.left = cmExit.left + w
+cmExit.Left = cmExit.Left + w
 cmExel2.Top = cmExel2.Top + h
-cmExel2.left = cmExel2.left + w
+cmExel2.Left = cmExel2.Left + w
 cmExel.Top = cmExel.Top + h
 cmHide.Top = cmHide.Top + h
 laBegin.Top = tv.Top
@@ -1018,7 +1018,7 @@ End If
 End Sub
 
 Sub dostupOstatkiToGrid(Optional reg As String)
-Dim s As Double, sum As Double, rr As Long, il As Long
+Dim S As Double, sum As Double, rr As Long, il As Long
 
 Me.MousePointer = flexHourglass
 If numExt = 254 Or (Regim = "fromDocs" And sDocs.Regim = "fromCeh") Then
@@ -1036,7 +1036,7 @@ Grid4.ColWidth(frOstat) = 885
 
 If reg = "multiN" Then
     Grid.col = nkQuant: il = 0
-    For rr = 1 To Grid.rows - 1
+    For rr = 1 To Grid.Rows - 1
         Grid.row = rr
         If Grid.CellFontBold Then
             il = il + 1
@@ -1045,7 +1045,7 @@ If reg = "multiN" Then
             Grid4.AddItem ""
         End If
     Next rr
-    Grid4.removeItem Grid4.rows - 1
+    Grid4.removeItem Grid4.Rows - 1
 Else
     nomencOstatkiToGrid 1
 End If
@@ -1059,7 +1059,7 @@ End Sub
 'ед.измер зависит от складов
 'заголововок Grid4 формируется в dostupOstatkiToGrid
 Public Function nomencOstatkiToGrid(row As Long) As Double
-Dim s As Double, str As String, str2 As String, str3 As String, z As Double
+Dim S As Double, str As String, str2 As String, str3 As String, z As Double
 
 'Ф.остатки
 sql = "SELECT  nomName, Ed_Izmer, Ed_Izmer2, perList From sGuideNomenk " & _
@@ -1088,8 +1088,8 @@ Else
     "Sum(Sum_quant) AS Sum_Sum_quant From wCloseNomenk " & _
     "WHERE (((nomNom)='" & gNomNom & "'));"
 '    Debug.Print sql
-    If Not byErrSqlGetValues("##145", sql, z, s) Then myBase.Close: End
-    nomencOstatkiToGrid = FO - (z - s) ' минус, что несписано
+    If Not byErrSqlGetValues("##145", sql, z, S) Then myBase.Close: End
+    nomencOstatkiToGrid = FO - (z - S) ' минус, что несписано
 End If
 End If
 If row > 0 Then _
@@ -1120,7 +1120,7 @@ ElseIf grColor = groupColor1 Or grColor = groupColor2 Then
             If Grid.CellBackColor <> grColor Then Exit For
             Grid.CellFontBold = False
         Next il
-        For il = curRow + 1 To Grid.rows - 1 'вниз от клика
+        For il = curRow + 1 To Grid.Rows - 1 'вниз от клика
             Grid.row = il
             If Grid.CellBackColor <> grColor Then Exit For
             Grid.CellFontBold = False
@@ -1184,7 +1184,7 @@ If Grid.col <> 0 And Grid.col <> buntColumn Then Grid.CellBackColor = Grid.BackC
 End Sub
 
 
-Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
 End Sub
@@ -1207,7 +1207,7 @@ End If
 End Sub
 
 
-Private Sub Grid2_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid2_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
 If Grid2.MouseRow = 0 And Shift = 2 Then
         MsgBox "ColWidth = " & Grid2.ColWidth(Grid2.MouseCol)
 ElseIf Button = 2 And Regim = "fromDocs" And quantity2 > 0 Then
@@ -1238,8 +1238,8 @@ Else '                обе присутствуют
     Dim gHeightMax As Double, g3HeightMax As Double
     Dim fullHeight As Double
     
-    gHeightMax = Grid.rows * (Grid.CellHeight + 13) + 95
-    g3HeightMax = Grid3.rows * (Grid3.CellHeight + 13) + 95
+    gHeightMax = Grid.Rows * (Grid.CellHeight + 13) + 95
+    g3HeightMax = Grid3.Rows * (Grid3.CellHeight + 13) + 95
     fullHeight = gHeightMax + g3HeightMax + laGrid.Height
     
     If fullHeight > formHeight Then
@@ -1282,7 +1282,7 @@ Else '                обе присутствуют
         Grid.Top = laGrid.Top + laGrid.Height
         Grid.Height = tv.Top + tv.Height - Grid.Top
     End If
-    If mousRow3 < Grid3.rows Then
+    If mousRow3 < Grid3.Rows Then
         If Not Grid3.RowIsVisible(mousRow3) Then rowViem mousRow3, Grid3
     End If
     If Not Grid.ColIsVisible(1) Then
@@ -1341,7 +1341,7 @@ Private Sub Grid3_LeaveCell()
 Grid3.CellBackColor = Grid3.BackColor
 End Sub
 
-Private Sub Grid3_MouseDown(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid3_MouseDown(Button As Integer, Shift As Integer, X As Single, y As Single)
 'не выносить это в Grid3_Click
 
 If Grid3.MouseRow = 0 Then
@@ -1360,7 +1360,7 @@ End If
 
 End Sub
 
-Private Sub Grid3_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid3_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
 
 If Grid3.MouseRow = 0 And Shift = 2 Then MsgBox "ColWidth = " & Grid3.ColWidth(Grid3.MouseCol)
 
@@ -1376,7 +1376,7 @@ Private Sub Grid4_GotFocus()
     tbQuant.SetFocus
 End Sub
 
-Private Sub Grid4_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid4_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
 If Grid4.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid4.ColWidth(Grid4.MouseCol)
 
@@ -1486,7 +1486,7 @@ If Grid5.TextMatrix(mousRow5, prType) = "изделие" Then
         quantity2 = quantity2 + 1
         Grid2.AddItem ""
         Grid2.TextMatrix(il, fnNomNom) = NN(il)
-        Dim ceh As String
+        Dim Equip As String
         sql = "SELECT n.Size, n.ed_Izmer, n.cod, n.nomName" _
             & " from sGuideNomenk n " _
             & " WHERE nomNom ='" & NN(il) & "'"
@@ -1497,7 +1497,7 @@ If Grid5.TextMatrix(mousRow5, prType) = "изделие" Then
         Grid2.TextMatrix(il, fnQuant) = Round(QQ(il), 2)
     Next il
     
-    If quantity2 > 0 Then Grid2.removeItem Grid2.rows - 1
+    If quantity2 > 0 Then Grid2.removeItem Grid2.Rows - 1
   End If
 Else
     laGrid2.Caption = "Отдельная номенклатура"
@@ -1551,7 +1551,7 @@ ReDim selectedItems(0)
 currentCol = Grd.col
 currentRow = Grd.row
 
-For I = Grd.rows - 1 To 1 Step -1
+For I = Grd.Rows - 1 To 1 Step -1
     Grd.row = I
     For J = Grd.Cols - 1 To 1 Step -1
         Grd.col = J
@@ -1657,10 +1657,10 @@ Dim currentCol As Integer, currentLeft As Integer
 End Sub
 
 
-Private Sub Grid5_MouseDown(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid5_MouseDown(Button As Integer, Shift As Integer, X As Single, y As Single)
 Dim I As Integer
 
-    If isCtrlDown And Button = 1 And Grid5.row <> 0 And Grid5.row <> Grid5.rows - 1 Then
+    If isCtrlDown And Button = 1 And Grid5.row <> 0 And Grid5.row <> Grid5.Rows - 1 Then
         'Подсветить всю строку
         If Grid5.CellBackColor = vbRed Then
             mark Grid5, False
@@ -1684,7 +1684,7 @@ Dim I As Integer
     
 End Sub
 
-Private Sub Grid5_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid5_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
     If isCtrlDown Then
     Else
         If hasSelection(Grid5) And Button = 1 Then
@@ -1692,7 +1692,7 @@ Private Sub Grid5_MouseUp(Button As Integer, Shift As Integer, x As Single, y As
         End If
         If Grid5.MouseRow = 0 Then
             If Shift = 2 Then MsgBox "ColWidth = " & Grid5.ColWidth(Grid5.MouseCol)
-        ElseIf Button = 2 And 0 < Grid5.MouseRow And Grid5.MouseRow < Grid5.rows - 1 _
+        ElseIf Button = 2 And 0 < Grid5.MouseRow And Grid5.MouseRow < Grid5.Rows - 1 _
         And quantity5 > 0 And Regim <> "closeZakaz" Then
 '            Grid5.row = Grid5.MouseRow
 '            Grid5.col = prName
@@ -1772,7 +1772,7 @@ tmpVar = saveOrdered(orderRate)
 If Not IsNumeric(tmpVar) Then GoTo ER1
 wrkDefault.CommitTrans
 
-Grid5.TextMatrix(Grid5.rows - 1, prSumm) = tmpVar
+Grid5.TextMatrix(Grid5.Rows - 1, prSumm) = tmpVar
 Orders.openOrdersRowToGrid "##220":    tqOrders.Close
     
 For J = 1 To UBound(selectedItems)
@@ -1864,7 +1864,7 @@ End Sub
 
 '$odbc15$
 Private Sub mnDel2_Click()
-Dim s As Double, str As String
+Dim S As Double, str As String
  
 If Not (Regim = "fromDocs" And sDocs.Regim = "fromCeh") Then _
     If beNaklads() Then Exit Sub
@@ -1892,11 +1892,11 @@ Set tbDMC = myOpenRecordSet("##123", sql, dbOpenForwardOnly)
 cErr = 179 '##179
 'If tbDMC.NoMatch Then GoTo ER1
 If tbDMC.BOF Then GoTo ER1
-s = tbDMC!quant
+S = tbDMC!quant
 tbDMC.Delete
 tbDMC.Close
 
-If ostatCorr(-s) Then
+If ostatCorr(-S) Then
     wrkDefault.CommitTrans
 Else
     cErr = 125 '##125
@@ -2034,7 +2034,7 @@ End If
 End Sub
 '$odbc15$
 Function nomenkToDMC(delta As Double, Optional noLock As String = "") As Boolean
-Dim s As Double, I As Integer
+Dim S As Double, I As Integer
 
 nomenkToDMC = False
 
@@ -2081,14 +2081,14 @@ If noLock = "" Then lockSklad "un"
 End Function
 
 Sub nomenkToPredmeti(ByRef needToRefresh As Boolean)
-Dim delta As Double, s As Double, quant As Double
+Dim delta As Double, S As Double, quant As Double
 
     quant = tbQuant.Text
-    s = nomencOstatkiToGrid(1) - quant ' одновременно обновляем таблицу
+    S = nomencOstatkiToGrid(1) - quant ' одновременно обновляем таблицу
   
-    If s < -0.005 Then 'в 2х местах
+    If S < -0.005 Then 'в 2х местах
         If MsgBox("Дефицит товара '" & gNomNom & "' в доступных остатках " & _
-        "составит (" & s & "), продолжить?", vbOKCancel Or vbDefaultButton2, _
+        "составит (" & S & "), продолжить?", vbOKCancel Or vbDefaultButton2, _
         "Подтвердите") = vbCancel Then
             Exit Sub
         End If
@@ -2132,13 +2132,13 @@ End Sub
 
 
 
-Private Sub splLeftH_MouseDown(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub splLeftH_MouseDown(Button As Integer, Shift As Integer, X As Single, y As Single)
     Dragging = True
     DraggingY = y
 End Sub
 
 
-Private Sub splLeftH_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub splLeftH_MouseMove(Button As Integer, Shift As Integer, X As Single, y As Single)
     If Dragging Then
         Dim DraggingShift As Single
         DraggingShift = y
@@ -2156,21 +2156,21 @@ Private Sub splLeftH_MouseMove(Button As Integer, Shift As Integer, x As Single,
     End If
 End Sub
 
-Private Sub splLeftH_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub splLeftH_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
     Dragging = False
 End Sub
 
 
 
-Private Sub splLeftV_MouseDown(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub splLeftV_MouseDown(Button As Integer, Shift As Integer, X As Single, y As Single)
     Dragging = True
-    DraggingX = x
+    DraggingX = X
 End Sub
 
-Private Sub splLeftV_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub splLeftV_MouseMove(Button As Integer, Shift As Integer, X As Single, y As Single)
     If Dragging Then
         Dim DraggingShift As Single
-        DraggingShift = x
+        DraggingShift = X
         If tv.Width + DraggingShift > 100 Then
         Else
             Exit Sub
@@ -2182,30 +2182,30 @@ Private Sub splLeftV_MouseMove(Button As Integer, Shift As Integer, x As Single,
         End If
             Grid3.Width = Grid3.Width - DraggingShift
             tv.Width = tv.Width + DraggingShift
-        splLeftV.left = splLeftV.left + DraggingShift
-        Grid3.left = Grid3.left + DraggingShift
-        laGrid.left = Grid3.left
+        splLeftV.Left = splLeftV.Left + DraggingShift
+        Grid3.Left = Grid3.Left + DraggingShift
+        laGrid.Left = Grid3.Left
         laGrid.Width = Grid3.Width
-        Grid.left = Grid3.left
+        Grid.Left = Grid3.Left
         Grid.Width = Grid3.Width
-        laBegin.left = Grid3.left
+        laBegin.Left = Grid3.Left
         If laBegin.Width > DraggingShift Then _
             laBegin.Width = Grid3.Width
-        splLeftH.left = Grid3.left
+        splLeftH.Left = Grid3.Left
         splLeftH.Width = Grid3.Width
     End If
 End Sub
 
-Private Sub splLeftV_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub splLeftV_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
     Dragging = False
 End Sub
 
-Private Sub splRightH_MouseDown(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub splRightH_MouseDown(Button As Integer, Shift As Integer, X As Single, y As Single)
     Dragging = True
     DraggingY = y
 End Sub
 
-Private Sub splRightH_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub splRightH_MouseMove(Button As Integer, Shift As Integer, X As Single, y As Single)
     If Dragging Then
         Dim DraggingShift As Single
         DraggingShift = y
@@ -2223,20 +2223,20 @@ Private Sub splRightH_MouseMove(Button As Integer, Shift As Integer, x As Single
     End If
 End Sub
 
-Private Sub splRightH_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub splRightH_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
     Dragging = False
 End Sub
 
 
-Private Sub splRightV_MouseDown(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub splRightV_MouseDown(Button As Integer, Shift As Integer, X As Single, y As Single)
     Dragging = True
-    DraggingX = x
+    DraggingX = X
 End Sub
 
-Private Sub splRightV_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub splRightV_MouseMove(Button As Integer, Shift As Integer, X As Single, y As Single)
     If Dragging Then
         Dim DraggingShift As Single
-        DraggingShift = x
+        DraggingShift = X
         If Not (Grid3.Width + DraggingShift > 100) Then
             Exit Sub
         End If
@@ -2246,26 +2246,26 @@ Private Sub splRightV_MouseMove(Button As Integer, Shift As Integer, x As Single
             
         Grid3.Width = Grid3.Width + DraggingShift
         Grid.Width = Grid3.Width
-        splRightV.left = splRightV.left + DraggingShift
+        splRightV.Left = splRightV.Left + DraggingShift
         splLeftH.Width = Grid3.Width
-        Grid5.left = Grid5.left + DraggingShift
+        Grid5.Left = Grid5.Left + DraggingShift
         Grid5.Width = Grid5.Width - DraggingShift
-        laGrid2.left = Grid5.left
+        laGrid2.Left = Grid5.Left
         laGrid2.Width = Grid5.Width
-        Grid2.left = Grid5.left
+        Grid2.Left = Grid5.Left
         Grid2.Width = Grid5.Width
-        splRightH.left = Grid5.left
+        splRightH.Left = Grid5.Left
         splRightH.Width = Grid5.Width
     End If
 End Sub
 
-Private Sub splRightV_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub splRightV_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
     Dragging = False
 End Sub
 
 '$odbc15$
 Public Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim c As Double, s As Double, str As String
+Dim c As Double, S As Double, str As String
 
 If KeyCode = vbKeyReturn Then
     getIdFromGrid5Row Me
@@ -2293,10 +2293,10 @@ If KeyCode = vbKeyReturn Then
             "(xEtapByNomenk.numOrder = xPredmetyByNomenk.numOrder) " & strWhere
 '            tmpStr = "xEtapByNomenk"
         End If
-        If Not byErrSqlGetValues("##315", sql, c, s) Then Exit Sub
-        If Not isNumericTbox(tbMobile, 0, Round(s - c, 2)) Then Exit Sub
+        If Not byErrSqlGetValues("##315", sql, c, S) Then Exit Sub
+        If Not isNumericTbox(tbMobile, 0, Round(S - c, 2)) Then Exit Sub
         
-        s = tbMobile.Text: s = Round(s + c, 2)
+        S = tbMobile.Text: S = Round(S + c, 2)
         
 '        Set tbProduct = myOpenRecordSet("##316", tmpStr, dbOpenTable)
 '        If tbProduct Is Nothing Then myBase.Close: End
@@ -2313,7 +2313,7 @@ If KeyCode = vbKeyReturn Then
         Set tbProduct = myOpenRecordSet("##316", sql, dbOpenTable)
 '        If Not tbProduct.NoMatch Then
         If Not tbProduct.BOF Then
-            If s < 0.005 Then
+            If S < 0.005 Then
                 tbProduct.Delete
                 Grid5.TextMatrix(mousRow5, prEtap) = ""
                 Grid5.TextMatrix(mousRow5, prEQuant) = ""
@@ -2321,7 +2321,7 @@ If KeyCode = vbKeyReturn Then
                 tbProduct.Edit
                 GoTo AA
             End If
-        ElseIf s > 0.005 Then
+        ElseIf S > 0.005 Then
             tbProduct.AddNew
             tbProduct!Numorder = gNzak
             If str = "изделие" Then
@@ -2330,9 +2330,9 @@ If KeyCode = vbKeyReturn Then
             Else
                 tbProduct!nomNom = gNomNom
             End If
-AA:         tbProduct!eQuant = s
+AA:         tbProduct!eQuant = S
             tbProduct.update
-            Grid5.TextMatrix(mousRow5, prEtap) = s
+            Grid5.TextMatrix(mousRow5, prEtap) = S
             Grid5.TextMatrix(mousRow5, prEQuant) = tbMobile.Text
         End If
         tbProduct.Close
@@ -2346,11 +2346,11 @@ AA:         tbProduct!eQuant = s
     
         Dim tunedCenaEd As Double
         If mousCol5 = prSumm Then
-            s = tuneCurencyAndGranularity(tbMobile.Text, orderRate, sessionCurrency, Grid5.TextMatrix(mousRow5, prQuant))
-            tunedCenaEd = s / CDbl(Grid5.TextMatrix(mousRow5, prQuant)) 'не округлять
+            S = tuneCurencyAndGranularity(tbMobile.Text, orderRate, sessionCurrency, Grid5.TextMatrix(mousRow5, prQuant))
+            tunedCenaEd = S / CDbl(Grid5.TextMatrix(mousRow5, prQuant)) 'не округлять
         Else
             tunedCenaEd = tuneCurencyAndGranularity(tbMobile.Text, orderRate, sessionCurrency, 1)
-            s = tunedCenaEd * CDbl(Grid5.TextMatrix(mousRow5, prQuant))
+            S = tunedCenaEd * CDbl(Grid5.TextMatrix(mousRow5, prQuant))
         End If
         
         If str = "изделие" Then
@@ -2365,10 +2365,10 @@ AA:         tbProduct!eQuant = s
         
         If myExecute("##205", sql) = 0 Then
             Grid5.TextMatrix(mousRow5, prCenaEd) = Round(rated(tunedCenaEd, orderRate), 2)
-            Grid5.TextMatrix(mousRow5, prSumm) = Round(rated(s, orderRate), 2)
+            Grid5.TextMatrix(mousRow5, prSumm) = Round(rated(S, orderRate), 2)
             tmpVar = saveOrdered(orderRate)
             If IsNumeric(tmpVar) Then
-                Grid5.TextMatrix(Grid5.rows - 1, prSumm) = Round(rated(tmpVar, orderRate), 2)
+                Grid5.TextMatrix(Grid5.Rows - 1, prSumm) = Round(rated(tmpVar, orderRate), 2)
                 Otgruz.saveShipped 'цена влияет и на отгрузку
                 Orders.openOrdersRowToGrid "##212"
                 tqOrders.Close
@@ -2392,19 +2392,19 @@ End Sub
 'ед.измер delta и Дефицита зависит от наличия в накладной целых складов
 'т.о. значение для delta может напрямую браться из tbQuant
 Function deficitAndNoIgnore(delta As Double) As Boolean
-Dim s As Double, il As Long
+Dim S As Double, il As Long
 
 
 deficitAndNoIgnore = False
-s = nomencOstatkiToGrid(il) - delta ' одновременно обновляем таблицу
-If s < -0.005 Then
+S = nomencOstatkiToGrid(il) - delta ' одновременно обновляем таблицу
+If S < -0.005 Then
     If numExt = 254 Or numExt = 0 Then ' накладная или выпис. из Цеха
         tmpStr = "' по подразделению '" & sDocs.getGridColSour() & "'"
     Else
         tmpStr = "' в доступных остатках"
     End If
     If MsgBox("Дефицит товара '" & gNomNom & tmpStr & " составит (" & _
-    s & "), продолжить?", vbOKCancel Or vbDefaultButton2, "Подтвердите") _
+    S & "), продолжить?", vbOKCancel Or vbDefaultButton2, "Подтвердите") _
     = vbOK Then Exit Function
     deficitAndNoIgnore = True
 End If
@@ -2412,7 +2412,7 @@ End Function
 
 '$odbc15$
 Private Sub tbQuant_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim rr As Long, il As Long, pQuant As Double, s As Double, str As String
+Dim rr As Long, il As Long, pQuant As Double, S As Double, str As String
 Dim I As Integer, NN2() As String
 Dim needToRefresh As Boolean ' показывает, нужно ли обновить сумму в поле ordered
 If KeyCode = vbKeyReturn Then
@@ -2421,8 +2421,8 @@ If KeyCode = vbKeyReturn Then
  
 If opNomenk.value Then
   If Not isNumericTbox(tbQuant, 0.01) Then Exit Sub
-  s = Round(tbQuant.Text, 2)
-  If s <> tbQuant.Text Then
+  S = Round(tbQuant.Text, 2)
+  If S <> tbQuant.Text Then
     MsgBox "Число знаков после запятой - не больше двух!", , "Повторите ввод"
     tbQuant.SetFocus
     Exit Sub
@@ -2430,29 +2430,29 @@ If opNomenk.value Then
   If Regim = "" Then 'предметы к заказу т.е 0<numExt<254
     nomenkToPredmeti False
   Else
-    s = Round(tbQuant.Text, 2)
+    S = Round(tbQuant.Text, 2)
     If sDocs.isIntMove() Then
-        I = Round(s, 0)
-        If s <> I Then
+        I = Round(S, 0)
+        If S <> I Then
             MsgBox "Количество должно быть целым!", , "Повторите ввод"
             tbQuant.Text = "1": Exit Sub
         End If
   
         sql = "SELECT perList From sGuideNomenk " & _
         "WHERE (((sGuideNomenk.nomNom)='" & gNomNom & "'));"
-        byErrSqlGetValues "##343", sql, s
-        s = Round(I * s, 2)
+        byErrSqlGetValues "##343", sql, S
+        S = Round(I * S, 2)
     End If
     If deficitAndNoIgnore(tbQuant.Text) Then Exit Sub
     If numExt = 0 And sDocs.reservNoNeed Then
         ' выписанные из цеха со скл.Обрезков и межскладские -  не резервируем
-        nomenkToDMCrez s, "mov"
+        nomenkToDMCrez S, "mov"
     Else 'из sDocs
 '        If deficitAndNoIgnore(tbQuant.Text) Then Exit Sub
         If numExt = 254 Then
-            nomenkToDMC s
+            nomenkToDMC S
         Else ' выписанная из цеха (со Скл.Целых)
-            nomenkToDMCrez s
+            nomenkToDMCrez S
         End If
     End If
   End If
@@ -2464,13 +2464,13 @@ Else ' здесь только предметы заказы, поэтому всегда в одной(мелкой) ed.izmer
   If Not lockSklad Then Exit Sub
   
   Grid.col = nkQuant: il = 0
-  For rr = 1 To Grid.rows - 1
+  For rr = 1 To Grid.Rows - 1
     Grid.row = rr
     If Grid.CellFontBold Then
       il = il + 1
       gNomNom = Grid.TextMatrix(rr, nkNomer)
-      s = CDbl(Grid.TextMatrix(rr, nkQuant)) * pQuant
-      If deficitAndNoIgnore(s) Then GoTo ER2
+      S = CDbl(Grid.TextMatrix(rr, nkQuant)) * pQuant
+      If deficitAndNoIgnore(S) Then GoTo ER2
     End If
   Next rr
   
@@ -2485,7 +2485,7 @@ Else ' здесь только предметы заказы, поэтому всегда в одной(мелкой) ed.izmer
   
   Grid.col = nkQuant
   I = 0: ReDim NN(0)
-  For rr = 1 To Grid.rows - 1
+  For rr = 1 To Grid.Rows - 1
     Grid.row = rr
     If Grid.CellFontBold Then
       gNomNom = Grid.TextMatrix(rr, nkNomer)
@@ -2493,11 +2493,11 @@ Else ' здесь только предметы заказы, поэтому всегда в одной(мелкой) ed.izmer
 '      If Grid.CellBackColor <> Grid.BackColor Then
         I = I + 1: ReDim Preserve NN(I): NN(I) = gNomNom 'вариантная ном-ра
       End If
-      s = CDbl(Grid.TextMatrix(rr, nkQuant)) * pQuant
+      S = CDbl(Grid.TextMatrix(rr, nkQuant)) * pQuant
       If numExt = 254 Then ' номенклатура  накладной
-        If Not nomenkToDMC(s, "noLock") Then GoTo ER0 '
+        If Not nomenkToDMC(S, "noLock") Then GoTo ER0 '
       Else '   резервирование заказа либо предметов накладной из для цеха(межскладские здесь невозможны)
-        If Not nomenkToDMCrez(s) Then GoTo ER0
+        If Not nomenkToDMCrez(S) Then GoTo ER0
       End If
     End If
   Next rr
@@ -2547,7 +2547,7 @@ End Sub
 '$odbc15$
 'при delta < 0 - возм. удаление
 Function nomenkToDMCrez(ByVal delta As Double, Optional mov As String = "") As Boolean
-Dim s As Double, I As Integer
+Dim S As Double, I As Integer
 
 nomenkToDMCrez = False
 '    If mov = "mov" Then ' выписанные межскладские не резервируем
@@ -2582,16 +2582,16 @@ strWhere = " WHERE (((numDoc)=" & numDoc & ") AND ((nomNom)='" & gNomNom & "'));
 If mov = "" Then mov = "rez"
 
 sql = "SELECT quantity FROM sDMC" & mov & strWhere
-If Not byErrSqlGetValues("W##423", sql, s) Then Exit Function
+If Not byErrSqlGetValues("W##423", sql, S) Then Exit Function
 
-If s = 0 Then ' такой ном-ры нет
+If S = 0 Then ' такой ном-ры нет
   If delta >= 0.01 Then
     sql = "INSERT INTO sDMC" & mov & " ( numDoc, nomNom, quantity ) " & _
     "SELECT " & numDoc & ", '" & gNomNom & "', " & delta & ";"
     If myExecute("##195", sql) <> 0 Then Exit Function
   End If
 Else
-    delta = s + delta
+    delta = S + delta
 
     If Round(delta, 2) > 0 Then
         sql = "UPDATE sDMC" & mov & " SET quantity = " & delta & strWhere
@@ -2684,24 +2684,24 @@ End Function
 
 'обновляет поле ordered в Orders
 Function saveOrdered(orderRate As Double, Optional update As Boolean = True) As Variant
-Dim s As Double, s1 As Double
+Dim S As Double, s1 As Double
 
     saveOrdered = Null
     sql = "SELECT Sum([quant]*[cenaEd]) From xPredmetyByIzdelia GROUP BY numOrder " & _
     "HAVING (((numOrder)=" & gNzak & "));"
-    If Not byErrSqlGetValues("W##368", sql, s) Then Exit Function
+    If Not byErrSqlGetValues("W##368", sql, S) Then Exit Function
     
     sql = "SELECT Sum([quant]*[cenaEd]) From xPredmetyByNomenk GROUP BY numOrder " & _
     "HAVING (((numOrder)=" & gNzak & "));"
     'MsgBox sql
     If Not byErrSqlGetValues("W##210", sql, s1) Then Exit Function
     
-    s = s + s1
+    S = S + s1
     If update Then
-        orderUpdate "##211", CStr(s), "orders", "ordered"
-        Orders.Grid.TextMatrix(Orders.mousRow, orZakazano) = Round(s, 2)
+        orderUpdate "##211", CStr(S), "orders", "ordered"
+        Orders.Grid.TextMatrix(Orders.mousRow, orZakazano) = Round(S, 2)
     End If
-    saveOrdered = s
+    saveOrdered = S
 
 End Function
 
@@ -2812,7 +2812,7 @@ ERR2: bilo = True: Resume NXT
 End Sub
 
 Sub loadProductNomenk(ByVal v_productId As Integer)
-Dim s As Double, grBef As String
+Dim S As Double, grBef As String
 If Me.Regim = "" Then
     buntColumn = nkQuant
 ElseIf Me.Regim = "fromDocs" Then
@@ -2893,7 +2893,7 @@ Me.MousePointer = flexDefault
 End Sub
 
 Sub loadKlassNomenk()
-Dim il As Long, s As Double, strWhere As String
+Dim il As Long, S As Double, strWhere As String
 Dim beg As Double, prih As Double, rash As Double, oldNow As Double
 buntColumn = 0
 
@@ -2941,14 +2941,14 @@ If Not tbNomenk.BOF Then
     Grid.TextMatrix(quantity, nkName) = tbNomenk!cod & " " & _
         tbNomenk!nomName & " " & tbNomenk!Size
     
-    s = nomencOstatkiToGrid(-1) 'доступные остатки
+    S = nomencOstatkiToGrid(-1) 'доступные остатки
     Grid.TextMatrix(quantity, nkEdIzm) = tbNomenk!ed_Izmer
     If Regim = "fromDocs" Then
         If sDocs.isIntMove() Then GoTo AA
         GoTo NXT:
     End If
     Grid.TextMatrix(quantity, nkCurOstat) = Round(FO, 2)
-    Grid.TextMatrix(quantity, nkDostup) = Round(s, 2)
+    Grid.TextMatrix(quantity, nkDostup) = Round(S, 2)
     If Regim = "ostat" Then
       If cbInside.ListIndex = 0 Then 'склад1
         Grid.TextMatrix(quantity, nkDostup) = Round(nomencOstatkiToGrid(-1) / tbNomenk!perlist, 2)
@@ -3029,7 +3029,7 @@ End If
 End Sub
 
 
-Private Sub tv_MouseDown(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub tv_MouseDown(Button As Integer, Shift As Integer, X As Single, y As Single)
 beShift = False
 If Shift = 2 Then beShift = True
 

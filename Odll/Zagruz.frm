@@ -270,7 +270,7 @@ Dim oldHeight As Integer, oldWidth As Integer ' нач размер формы
 Private Sub cmDel_Click()
 If MsgBox("Если нажать <Да>, то на все дни будет установлен ресурс по " & _
 "умолчанию.", vbYesNo Or vbDefaultButton2, "Сбросить ресурсы?") = vbYes Then
-    sql = "DELETE FROM Resurs" & Ceh(gCehId) & ";"
+    sql = "DELETE FROM Resurs" & Equip(gEquipId) & ";"
 'MsgBox sql
     myExecute "##137", sql, 0
     valueToSystemField "##361", "", "resursLock"
@@ -305,7 +305,7 @@ Else
     tbStanki.Locked = True
     chDopView.Enabled = False
 End If
-Me.Caption = "загрузка цеха " & Ceh(gCehId)
+Me.Caption = "загрузка цеха " & Equip(gEquipId)
 
 If dostup <> "" Then cmDel.Visible = True
 ZagruzLoad
@@ -320,7 +320,7 @@ isZagruz = True
 End Sub
 
 Sub ZagruzLoad() ' бывшая begZagruz
- Dim I As Integer, Key As String, tekDate As String, s As Double
+ Dim I As Integer, Key As String, tekDate As String, S As Double
 
 maxDay = 0
 zagruzFromCeh ' в delta
@@ -353,21 +353,21 @@ For I = 1 To maxDay
 
     lv.ListItems(Key).SubItems(zgNomRes) = nomRes(I)
     
-    s = Round(nomRes(I) * kpd * Nstan, 1)
-    lv.ListItems(Key).SubItems(zgResurs) = s
-    lv.ListItems(Key).SubItems(zgZagruz) = Round(s - ost(I), 1)
+    S = Round(nomRes(I) * kpd * Nstan, 1)
+    lv.ListItems(Key).SubItems(zgResurs) = S
+    lv.ListItems(Key).SubItems(zgZagruz) = Round(S - ost(I), 1)
     lv.ListItems(Key).SubItems(zgOstatki) = Round(ost(I), 1)
-    lv.ListItems(Key).SubItems(zgLive) = Round(s - befOst(I), 1)
+    lv.ListItems(Key).SubItems(zgLive) = Round(S - befOst(I), 1)
     If ost(I) < 0 Then
         lv.ListItems(Key).ListSubItems(zgOstatki).Bold = True
         lv.ListItems(Key).ListSubItems(zgOstatki).ForeColor = 200
     End If
 Next I
 
-s = Round(nr * Nstan * kpd, 1)
-lv.ListItems("k1").SubItems(zgResurs) = s
-lv.ListItems("k1").SubItems(zgZagruz) = Round(s - ost(1), 1)
-lv.ListItems("k1").SubItems(zgLive) = Round(s - befOst(1), 1)
+S = Round(nr * Nstan * kpd, 1)
+lv.ListItems("k1").SubItems(zgResurs) = S
+lv.ListItems("k1").SubItems(zgZagruz) = Round(S - ost(1), 1)
+lv.ListItems("k1").SubItems(zgLive) = Round(S - befOst(1), 1)
 
 lv.ListItems("k" & stDay).ForeColor = &HBB00&
 lv.ListItems("k" & stDay).Bold = True
@@ -386,10 +386,10 @@ laZagAll.Caption = Round(zagAll, 1) & "  "
 laZagLive.Caption = Round(zagLive, 1) & "  "
 laUsed.Caption = Round((nomRes(1) - nr) * Nstan * kpd, 2)
 
-sql = "SELECT Sum(Virabotka) AS Sum_V From Itogi_" & Ceh(gCehId) & _
+sql = "SELECT Sum(Virabotka) AS Sum_V From Itogi_" & Equip(gEquipId) & _
 " WHERE (((numOrder)>10) AND ((xDate)='" & Format(curDate, "yy.mm.dd") & "'));"
 'Debug.Print sql
-If byErrSqlGetValues("##375", sql, s) Then laVirab.Caption = Round(s, 2)
+If byErrSqlGetValues("##375", sql, S) Then laVirab.Caption = Round(S, 2)
 
 End Sub
 
@@ -468,15 +468,15 @@ Set tbSystem = myOpenRecordSet("##182", sql, dbOpenForwardOnly)
 If tbSystem Is Nothing Then myBase.Close: End
  tbSystem.Edit
  ' сохраняем параметры по умолчанию
- If gCehId = 1 Then
+ If gEquipId = 1 Then
     tbSystem!KPD_YAG = tbKPD.Text
     tbSystem!NstanYAG = tbStanki.Text
     tbSystem!newResYAG = tbNomRes.Text
- ElseIf gCehId = 2 Then
+ ElseIf gEquipId = 2 Then
     tbSystem!KPD_CO2 = tbKPD.Text
     tbSystem!NstanCO2 = tbStanki.Text
     tbSystem!newResCO2 = tbNomRes.Text
- ElseIf gCehId = 3 Then                  '$$ceh
+ ElseIf gEquipId = 3 Then                  '$$ceh
     tbSystem!KPD_SUB = tbKPD.Text       '
     tbSystem!NstanSUB = tbStanki.Text   '
     tbSystem!newResSUB = tbNomRes.Text  '
@@ -496,7 +496,7 @@ End Sub
 
 '$odbc14$
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim s As Double, dayMax As Integer, str As String, I As Integer
+Dim S As Double, dayMax As Integer, str As String, I As Integer
 
 If KeyCode = vbKeyReturn Then
   If isNumericTbox(tbMobile, 0, 22) Then
@@ -506,8 +506,8 @@ If KeyCode = vbKeyReturn Then
     nomRes(day) = tbMobile.Text
     
     ' макс дата в таблице ресурса
-'    sql = "SELECT Max(xDate) AS MD from Resurs" & Ceh(gCehId) & ";"
-    sql = "SELECT Count(xDate) AS Count_Date FROM Resurs" & Ceh(gCehId) & ";"
+'    sql = "SELECT Max(xDate) AS MD from Resurs" & Equip(gEquipId) & ";"
+    sql = "SELECT Count(xDate) AS Count_Date FROM Resurs" & Equip(gEquipId) & ";"
 '    MsgBox sql
     If Not byErrSqlGetValues("##411", sql, dayMax) Then Exit Sub
 '    If dayMax = 0 Then dayMax = 1
@@ -515,7 +515,7 @@ If KeyCode = vbKeyReturn Then
     wrkDefault.BeginTrans
     
     If day <= dayMax Then ' если день есть в табл.ресурса
-        sql = "UPDATE Resurs" & Ceh(gCehId) & " SET nomRes = " & tbMobile.Text & _
+        sql = "UPDATE Resurs" & Equip(gEquipId) & " SET nomRes = " & tbMobile.Text & _
         " WHERE (((xDate)='" & yymmdd(lv.SelectedItem.Text) & "'));"
 'Debug.Print sql
 
@@ -523,7 +523,7 @@ If KeyCode = vbKeyReturn Then
         If myExecute("##66", sql) <> 0 Then Exit Sub
     Else ' иначе обавляем дни
         For I = dayMax + 1 To day
-            sql = "INSERT INTO Resurs" & Ceh(gCehId) & " ( xDate, nomRes ) " & _
+            sql = "INSERT INTO Resurs" & Equip(gEquipId) & " ( xDate, nomRes ) " & _
             "SELECT '" & yymmdd(lv.ListItems("k" & I).Text) & "', " & nomRes(I) & ";"
 '            MsgBox sql
             If myExecute("##413", sql) <> 0 Then Exit Sub

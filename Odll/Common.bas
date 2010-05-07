@@ -9,7 +9,7 @@ Option Explicit
 Public gCfgOrderPageSize As Integer
 
 Public isOrders As Boolean
-Public isCehOrders As Boolean
+Public isWerkOrders As Boolean
 Public isZagruz As Boolean
 Public isFindFirm As Boolean
 Public mainTitle As String
@@ -30,9 +30,9 @@ Public isAdmin As Boolean
 
 
 Public isBlock As Boolean
-Public Const lenCeh = 3
-Public Ceh(10) As String
-Public gCehId As Integer
+Public Const lenWerk = 3
+Public Equip(10) As String
+Public gEquipId As Integer
 Public Const lenStatus = 20
 Public statId(lenStatus) As Integer
 Public status(lenStatus) As String
@@ -43,7 +43,7 @@ Public Manag() As String  '
 Public Managers() As MapEntry
 
 Public insideId() As String
-Public Const begCehProblemId = 10 ' начало цеховых проблем в справочнике
+Public Const begWerkProblemId = 10 ' начало цеховых проблем в справочнике
 Public neVipolnen As Double, neVipolnen_O As Double
 Public maxDay As Integer ' число дней в реестре
 Public befDays As Integer ' число дней до даты реестра (когда сменилась дата)
@@ -120,7 +120,7 @@ Public gridIsLoad As Boolean
 Public orColNumber As Integer ' число колонок в Orders
 Public orSqlWhere() As String
 Public orSqlFields() As String  '
-Public orNomZak As Integer, orCeh As Integer, orData As Integer, orTema As Integer
+Public orNomZak As Integer, orWerk As Integer, orData As Integer, orTema As Integer
 Public orMen As Integer, orStatus As Integer, orProblem As Integer
 Public orDataRS As Integer, orFirma As Integer, orDataVid As Integer
 Public orVrVid As Integer, orVrVip As Integer, orM As Integer, orO As Integer
@@ -462,7 +462,7 @@ End Sub
 
 Sub exitAll()
 If isOrders Then Unload Orders
-If isCehOrders Then Unload CehOrders
+If isWerkOrders Then Unload WerkOrders
 If isZagruz Then Unload Zagruz
 If isFindFirm Then Unload FindFirm
 
@@ -601,15 +601,15 @@ Dim I As Integer, J As Integer, rMaxDay As Integer, S As Double
 
 Set tbSystem = myOpenRecordSet("##93", "System", dbOpenForwardOnly)
 If tbSystem Is Nothing Then myBase.Close: End
-If gCehId = 1 Then
+If gEquipId = 1 Then
     kpd = tbSystem!KPD_YAG
     Nstan = tbSystem!NstanYAG
     newRes = tbSystem!newResYAG
-ElseIf gCehId = 2 Then
+ElseIf gEquipId = 2 Then
     kpd = tbSystem!KPD_CO2
     Nstan = tbSystem!NstanCO2
     newRes = tbSystem!newResCO2
-ElseIf gCehId = 3 Then           '$$ceh
+ElseIf gEquipId = 3 Then           '$$ceh
     kpd = tbSystem!KPD_SUB      '
     Nstan = tbSystem!NstanSUB   '
     newRes = tbSystem!newResSUB '
@@ -619,7 +619,7 @@ Else
 End If
 tbSystem.Close
 
-sql = "SELECT nomRes from Resurs" & Ceh(gCehId) & " ORDER BY xDate"
+sql = "SELECT nomRes from Resurs" & Equip(gEquipId) & " ORDER BY xDate"
 Set table = myOpenRecordSet("##10", sql, dbOpenForwardOnly)
 'If table Is Nothing Then Exit Function
 
@@ -983,9 +983,9 @@ Else
 End If
 tbSystem.Close
 
-Ceh(1) = "YAG"
-Ceh(2) = "CO2"
-Ceh(3) = "SUB" '$$ceh
+Equip(1) = "YAG"
+Equip(2) = "CO2"
+Equip(3) = "SUB" '$$ceh
 
 'не менять порядок след. 3х строчек
 nextDayDetect ' здесь определ-ся CurDate
@@ -1056,11 +1056,11 @@ table.Close
 CheckIntegration
 
 If dostup = "y" Then
-    gCehId = 1: CehOrders.Show
+    gEquipId = 1: WerkOrders.Show
 ElseIf dostup = "c" Then
-    gCehId = 2: CehOrders.Show
+    gEquipId = 2: WerkOrders.Show
 ElseIf dostup = "s" Then        '$$$ceh
-    gCehId = 3: CehOrders.Show   '
+    gEquipId = 3: WerkOrders.Show   '
 Else
     Orders.Show
 End If
@@ -1995,7 +1995,7 @@ ElseIf by = "bySeriaId" Then
 ElseIf by = "byProductId" Then
     byStr = ".prId = " & gProductId
 ElseIf by = "byCehId" Then
-    byStr = ".numOrder = " & gNzak & " and " & table & ".cehId = " & gCehId
+    byStr = ".numOrder = " & gNzak & " and " & table & ".cehId = " & gEquipId
 ElseIf by = "byNumDoc" Then
     sql = "UPDATE " & table & " SET " & table & "." & field & "=" & value _
         & " WHERE " & table & ".numDoc =" & numDoc & " AND " & table & _
@@ -2053,7 +2053,7 @@ sql = "SELECT Sum(oe.workTime * oc.Nevip) AS wSum " & _
 "FROM OrdersEquip oe " & _
 "JOIN OrdersInCeh oc ON oe.numOrder = oc.numOrder AND oc.cehId = oe.cehId " & _
 "WHERE DateDiff(day,'" & Format(curDate, "yyyy-mm-dd") & "',oe.outDateTime) =" & day - 1 _
-& " AND oe.CehId =" & gCehId
+& " AND oe.CehId =" & gEquipId
 'MsgBox sql
 getNevip = 0
 byErrSqlGetValues "W##382", sql, getNevip
@@ -2137,7 +2137,7 @@ sql = "SELECT oe.outDateTime, o.StatusId, o.numOrder " _
     & " FROM Orders o " _
     & " JOIN OrdersEquip oe ON oe.numOrder = o.numOrder " _
     & " JOIN OrdersInCeh oc ON oc.numOrder = o.numOrder AND oc.cehId = oe.cehId " _
-    & " WHERE oe.CehId = " & gCehId & passSql
+    & " WHERE oe.CehId = " & gEquipId & passSql
 
 'Debug.Print sql
 
@@ -2218,7 +2218,7 @@ While Not tbDMC.EOF
   Else
 AA:     gNzak = tbDMC!numDoc
     
-    If from = "ceh" Then ' для цеха проверяем еще и этапность
+    If from = "werk" Then ' для цеха проверяем еще и этапность
       sql = "SELECT numOrder From xEtapByNomenk Where (((numOrder) = " & gNzak & _
       ")) UNION ALL SELECT numOrder From xEtapByIzdelia " & _
       "WHERE (((numOrder)= " & gNzak & "));"

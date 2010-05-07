@@ -434,7 +434,7 @@ Dim I As Long
         Exit Sub
     End If
 
-    For I = 1 To Grid2(0).rows - 1
+    For I = 1 To Grid2(0).Rows - 1
         Dim nomRequest As Double: nomRequest = 0
         Dim nomCheckouted As Double: nomCheckouted = 0
         Dim treb As Integer, already As Integer
@@ -470,14 +470,14 @@ End Sub
 
 '$odbc15$
 Private Sub cmClose_Click()
-Dim I As Integer, j As Integer, NN2() As String, k As Integer
-Dim numExtO As Integer, id As Integer, l As Long, s As Double
+Dim I As Integer, J As Integer, NN2() As String, k As Integer
+Dim numExtO As Integer, id As Integer, l As Long, S As Double
 Dim mov As Double, moveNum As String, per As Double, str As String, str2 As String
 
 If Not lockSklad Then Exit Sub
 
 ReDim NN(0): ReDim NN2(0): ReDim NN3(0): ReDim QQ(0): ReDim QQ2(0): ReDim QQ3(0)
-I = 0: j = 0: moveNum = ""
+I = 0: J = 0: moveNum = ""
 For l = 1 To quantity2
   str = Grid2(0).TextMatrix(l, nkQuant)
   If IsNumeric(str) Then
@@ -488,37 +488,37 @@ For l = 1 To quantity2
         NN(I) = gNomNom: QQ(I) = str
         skladId = -1001: GoTo AA
     Else ' обрезную списываем со склада обрезков
-        j = j + 1: ReDim Preserve NN2(j)
-        ReDim Preserve QQ2(j): ReDim Preserve QQ3(j)
-        NN2(j) = gNomNom: QQ2(j) = str: QQ3(j) = 0
+        J = J + 1: ReDim Preserve NN2(J)
+        ReDim Preserve QQ2(J): ReDim Preserve QQ3(J)
+        NN2(J) = gNomNom: QQ2(J) = str: QQ3(J) = 0
         skladId = -1002
         If IsNumeric(Grid2(0).TextMatrix(l, nkIntQuant)) Then 'нужна межскладская
             sql = "SELECT perList, ed_izmer2 from sGuideNomenk " & _
             "WHERE (((sGuideNomenk.nomNom)='" & gNomNom & "'));"
             If Not byErrSqlGetValues("##366", sql, per, str2) Then Exit Sub
             
-            QQ3(j) = per * Grid2(0).TextMatrix(l, nkIntQuant)
-            s = PrihodRashod("+", -1001) - PrihodRashod("-", -1001) 'Ф. остатки по складу
-            s = Round(s - QQ3(j), 2)
-            If s < 0 Then
+            QQ3(J) = per * Grid2(0).TextMatrix(l, nkIntQuant)
+            S = PrihodRashod("+", -1001) - PrihodRashod("-", -1001) 'Ф. остатки по складу
+            S = Round(S - QQ3(J), 2)
+            If S < 0 Then
               If MsgBox("Дефицит товара '" & gNomNom & "' в факт. остатках " & _
               "в подразделении '" & sDocs.lbInside.List(0) & _
-              "' составит (" & Round(s / per, 2) & " " & str2 & "), продолжить?", _
+              "' составит (" & Round(S / per, 2) & " " & str2 & "), продолжить?", _
               vbOKCancel Or vbDefaultButton2, "Подтвердите") = vbCancel Then
                 lockSklad "un"
                 GoTo EN1
               End If
             End If
-            mov = QQ3(j)
+            mov = QQ3(J)
             moveNum = "yes"
         End If
         
-AA:     s = PrihodRashod("+", skladId) - PrihodRashod("-", skladId) 'Ф. остатки по складу
-        s = Round(mov + s - str, 2)
-        If s < 0 Then
+AA:     S = PrihodRashod("+", skladId) - PrihodRashod("-", skladId) 'Ф. остатки по складу
+        S = Round(mov + S - str, 2)
+        If S < 0 Then
           If MsgBox("Дефицит товара '" & gNomNom & "' в факт. остатках " & _
           "в подразделении '" & sDocs.lbInside.List(-1001 - skladId) & _
-          "' составит (" & s & "), продолжить?", _
+          "' составит (" & S & "), продолжить?", _
           vbOKCancel Or vbDefaultButton2, "Подтвердите") = vbCancel Then
             lockSklad "un"
             GoTo EN1
@@ -527,7 +527,7 @@ AA:     s = PrihodRashod("+", skladId) - PrihodRashod("-", skladId) 'Ф. остатки 
     End If
   End If
 Next l
-If I + j = 0 Then
+If I + J = 0 Then
   If Regim = "predmeti" Then
     MsgBox "Проставте количества для тех позиций, которые Вы хотите списать.", , "Нечего списывать!"
   Else
@@ -537,12 +537,12 @@ EN1: Grid2(0).SetFocus
     Exit Sub
 End If
 
-If gCehId = 0 Then
+If gEquipId = 0 Then
   id = -6 'заказчик без работы
-ElseIf gCehId = 3 Then           '$ceh$
+ElseIf gEquipId = 3 Then           '$ceh$
   id = getStatiaId("Пр-во SUB") '
 Else
-  id = -gCehId
+  id = -gEquipId
 End If
 
 wrkDefault.BeginTrans
@@ -557,7 +557,7 @@ Else
 End If
 
 numExtO = 0
-If j > 0 Then numExtO = getNextNumExt()
+If J > 0 Then numExtO = getNextNumExt()
 If moveNum = "yes" Then
     numDoc = getNextDocNum()
     moveNum = numDoc
@@ -570,7 +570,7 @@ If moveNum = "yes" Then
     tbDocs!sourId = -1001
     tbDocs!destId = -1002
     tbDocs.update
-    For k = 1 To j
+    For k = 1 To J
       If QQ3(k) > 0 Then
         gNomNom = NN2(k)
         If Not sProducts.nomenkToDMC(QQ3(k), "noLock") Then GoTo ER2
@@ -580,7 +580,7 @@ If moveNum = "yes" Then
 End If
 
 numDoc = gNzak
-If j > 0 Then
+If J > 0 Then
   tbDocs.AddNew
   tbDocs!numDoc = numDoc
   tbDocs!numExt = numExtO
@@ -589,7 +589,7 @@ If j > 0 Then
   tbDocs!sourId = -1002
   tbDocs!destId = id
   tbDocs.update
-  For k = 1 To j
+  For k = 1 To J
     gNomNom = NN2(k): numExt = numExtO
     If Not sProducts.nomenkToDMC(QQ2(k), "noLock") Then GoTo ER2
     If Not clrCehQuant Then GoTo ER2
@@ -783,7 +783,7 @@ laPlatel.Visible = False
 laFirm.Visible = False
 If Regim = "" And numExt = 0 Then
         laFirm.Visible = True
-        laFirm.Caption = "(несписанная из " & Ceh(gCehId) & ")"
+        laFirm.Caption = "(несписанная из " & Equip(gEquipId) & ")"
 ElseIf numExt <> 254 Then  'к заказу
     sql = "SELECT Orders.numOrder, GuideFirms.Name " & _
     "FROM GuideFirms INNER JOIN Orders ON GuideFirms.FirmId = Orders.FirmId " & _
@@ -838,8 +838,8 @@ Dim stdPageRows As Integer
     End If
 End Sub
 
-Function getPageSize(ByVal rows As Integer) As Long
-    getPageSize = 350 + (Grid2(0).CellHeight + 25) * rows
+Function getPageSize(ByVal Rows As Integer) As Long
+    getPageSize = 350 + (Grid2(0).CellHeight + 25) * Rows
 End Function
 
 Sub setPage(pageNo As Integer)
@@ -895,7 +895,7 @@ End Sub
 
 'ind=1 м.б. только при Regim = ""
 Sub loadToGrid(ind As Integer)
-Dim I As Integer, s As Double, s2 As Double, str As String, str2 As String
+Dim I As Integer, S As Double, s2 As Double, str As String, str2 As String
 
 
 ReDim NN(0): ReDim QQ(0): ReDim QQ2(0): QQ2(0) = 0: ReDim QQ3(0)
@@ -934,11 +934,11 @@ ElseIf Regim = "" Then
   End If
 ElseIf Regim = "predmeti" Then
   laSours(0).Caption = "Склад1"
-  If gCehId = 1 Then
+  If gEquipId = 1 Then
       laDest(ind).Caption = "Пр-во YAG"
-  ElseIf gCehId = 2 Then
+  ElseIf gEquipId = 2 Then
       laDest(ind).Caption = "Пр-во CO2"
-  ElseIf gCehId = 3 Then                 '$$ceh
+  ElseIf gEquipId = 3 Then                 '$$ceh
       laDest(ind).Caption = "Пр-во SUB" '
   End If
   If Not sProducts.zakazNomenkToNNQQ Then GoTo EN1
@@ -980,21 +980,21 @@ For I = 1 To UBound(NN)
             
             sql = "SELECT Sum(quant) AS Sum_quant From sDMC WHERE " & _
             "(((sDMC.numDoc)=" & numDoc & ") AND ((sDMC.nomNom)='" & NN(I) & "'));"
-            If byErrSqlGetValues("##194", sql, s) Then
-                Grid2(ind).TextMatrix(quantity2, nkClos) = Round(s, 2)
-                Grid2(ind).TextMatrix(quantity2, nkEClos) = Round(s - QQ3(I), 2)
+            If byErrSqlGetValues("##194", sql, S) Then
+                Grid2(ind).TextMatrix(quantity2, nkClos) = Round(S, 2)
+                Grid2(ind).TextMatrix(quantity2, nkEClos) = Round(S - QQ3(I), 2)
             End If
             If Regim <> "" Then
               If tbNomenk!perlist <> 1 Then 'для обрезной доп. колонка для целых
                 beSUO = True
                 Grid2(ind).TextMatrix(quantity2, nkIntEdIzm) = tbNomenk!ed_Izmer2
               End If
-              s = 0: s2 = 0
+              S = 0: s2 = 0
               sql = "SELECT curQuant, intQuant from sDMCrez " & _
               "WHERE (((numDoc)=" & gNzak & ") AND ((nomNom)='" & NN(I) & "'));"
-              byErrSqlGetValues "##362", sql, s, s2
-              If s > 0 Then _
-                Grid2(ind).TextMatrix(quantity2, nkQuant) = Round(s, 2)
+              byErrSqlGetValues "##362", sql, S, s2
+              If S > 0 Then _
+                Grid2(ind).TextMatrix(quantity2, nkQuant) = Round(S, 2)
               If s2 > 0 Then _
                 Grid2(ind).TextMatrix(quantity2, nkIntQuant) = s2
             End If
@@ -1128,7 +1128,7 @@ End If '*************************************************************
 End Sub
 
 Private Sub Grid2_EnterCell(Index As Integer)
-Dim t As Double, s As Double
+Dim t As Double, S As Double
 If Index > 0 Then Exit Sub
 mousRow2 = Grid2(Index).row
 mousCol2 = Grid2(Index).col
@@ -1173,7 +1173,7 @@ If Grid4.MouseRow = 0 And Shift = 2 Then _
 End Sub
 
 Private Sub tbMobile2_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim delta As Double, quant As Double, s As Double, str As String
+Dim delta As Double, quant As Double, S As Double, str As String
 
 If KeyCode = vbKeyReturn Then
   

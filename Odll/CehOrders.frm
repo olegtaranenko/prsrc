@@ -1,6 +1,6 @@
 VERSION 5.00
 Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
-Begin VB.Form CehOrders 
+Begin VB.Form WerkOrders 
    BackColor       =   &H8000000A&
    Caption         =   " "
    ClientHeight    =   5724
@@ -172,14 +172,14 @@ Begin VB.Form CehOrders
       End
    End
 End
-Attribute VB_Name = "CehOrders"
+Attribute VB_Name = "WerkOrders"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
 
-Dim cehRows As Long, cehRowsOld As Long
+Dim werkRows As Long, werkRowsOld As Long
 Dim sum As Single
 Dim marker As String ' символ в 0 колонке определяет тип lb, выз-го по muose
 Dim oldHeight As Integer, oldWidth As Integer ' нач размер формы
@@ -193,9 +193,9 @@ Dim tbCeh As Recordset
 
 
 Private Sub chDetail_Click()
-Dim StatusId As String, Worktime As String, Left As String, Numorder As String, Outdatetime As String
+Dim StatusId As String, Worktime As String, Left As String, Numorder As String, Outdatetime As String, Rollback As String
 
-cehBegin
+werkBegin
 gridIsLoad = True
 Grid.col = chKey
 Grid.col = 1
@@ -208,7 +208,7 @@ If chSingl.value = 1 And Not IsNumeric(tbNomZak.Text) Then
     chSingl.value = 0
     Exit Sub
 End If
-cehBegin
+werkBegin
 gridIsLoad = True
 Grid.col = chKey
 Grid.col = 1
@@ -233,7 +233,7 @@ Me.PrintForm
 End Sub
 
 Private Sub cmRefresh_Click()
-cehBegin
+werkBegin
 gridIsLoad = True
 Grid.col = 1
 End Sub
@@ -253,7 +253,7 @@ If KeyCode = vbKeyF1 Then
 End If
 End Sub
 
-Sub cehBegin()
+Sub werkBegin()
 Dim str As String, I As Integer, J As Integer, il As Long, tmpTopRow As Long
 tmpTopRow = Grid.TopRow
 
@@ -261,7 +261,7 @@ tmpTopRow = Grid.TopRow
     On Error GoTo errMsg
     GoTo START
 errMsg:
-    MsgBox Error, , "Ошибка  " & Err & " в п\п cehBegin" '
+    MsgBox Error, , "Ошибка  " & Err & " в п\п werkBegin" '
     End
 START:
 #End If
@@ -269,7 +269,7 @@ START:
 gridIsLoad = False
 Screen.MousePointer = flexHourglass
 
-getNakladnieList "ceh"
+getNakladnieList "werk"
 
 ' запоминаем настройки столбцов
 colWdth(chNomZak) = Grid.ColWidth(chNomZak)
@@ -314,13 +314,13 @@ Grid.ColWidth(chVrVid) = colWdth(chVrVid)
 Grid.ColWidth(chFirma) = colWdth(chFirma)
 Grid.ColWidth(chLogo) = colWdth(chLogo) - Grid.ColWidth(chDataRes)
 
-Me.Caption = Ceh(gCehId) & mainTitle
-sql = "select * from w" & Ceh(gCehId)
-'Set myQuery = myBase.Connection.QueryDefs("w" & Ceh(gCehId))
+Me.Caption = Equip(gEquipId) & mainTitle
+sql = "select * from vw_Reestr where werkId = " & werkId
+'Set myQuery = myBase.Connection.QueryDefs("w" & Equip(gEquipId))
 Set tbCeh = myOpenRecordSet("##34", sql, dbOpenDynaset)
 If tbCeh Is Nothing Then myQuery.Close: myBase.Close: End
 
-cehRows = 0
+werkRows = 0
 If Not tbCeh.BOF Then
   
   tbCeh.MoveFirst
@@ -352,8 +352,8 @@ tbCeh.Close
 Grid.col = chKey: Grid.Sort = 3 'числовое возр.
 Grid.row = 1
 
-If cehRows = cehRowsOld Then Grid.TopRow = tmpTopRow
-cehRowsOld = cehRows
+If werkRows = werkRowsOld Then Grid.TopRow = tmpTopRow
+werkRowsOld = werkRows
 
 Grid.Visible = True
 On Error Resume Next
@@ -363,7 +363,7 @@ Frame1.Visible = False
 End Sub
 
 Sub toCehFromStr(Optional isMO As String = "")
-Dim str As String, I As Integer, J As Integer, k As Integer, s As Variant
+Dim str As String, I As Integer, J As Integer, K As Integer, S As Variant
 Dim color As Long, str1 As String  ', is100 As Boolean
 
 #If onErrorOtlad Then
@@ -375,7 +375,7 @@ errMsg:
 START:
 #End If
 
-k = 0
+K = 0
 marker = ""
 color = vbBlack
 'If sampl = "" Then
@@ -397,89 +397,89 @@ Else
 End If
 
 If isMO = "m" Then ' макет
-    If cehRows > 0 Then Grid.AddItem ("")
+    If werkRows > 0 Then Grid.AddItem ("")
     str = "м"
-    cehRows = cehRows + 1
+    werkRows = werkRows + 1
     If tbCeh!StatM = "готов" Then
-        Grid.TextMatrix(cehRows, chStatus) = tbCeh!StatM
+        Grid.TextMatrix(werkRows, chStatus) = tbCeh!StatM
     Else
-        Grid.TextMatrix(cehRows, chStatus) = ""
+        Grid.TextMatrix(werkRows, chStatus) = ""
     End If
     marker = "м"
     LoadDateKey tbCeh!DateTimeMO, "##38"
-    LoadDate Grid, cehRows, chVrVid, tbCeh!DateTimeMO, "hh"
+    LoadDate Grid, werkRows, chVrVid, tbCeh!DateTimeMO, "hh"
     GoTo MN
 End If
 
-    If cehRows > 0 Then Grid.AddItem ("") 'кусок оформляем как осн.часть
-    cehRows = cehRows + 1
+    If werkRows > 0 Then Grid.AddItem ("") 'кусок оформляем как осн.часть
+    werkRows = werkRows + 1
     Grid.col = chNomZak
-    Grid.row = cehRows
+    Grid.row = werkRows
     Grid.CellForeColor = color
  
     If str = "" Then 'осн.часть заказа
-        s = Round(100 * (1 - tbCeh!nevip), 1)
-        If s > 0 Then Grid.TextMatrix(cehRows, chProcVip) = s
+        S = Round(100 * (1 - tbCeh!nevip), 1)
+        If S > 0 Then Grid.TextMatrix(werkRows, chProcVip) = S
         
-        s = tbCeh!Worktime
+        S = tbCeh!Worktime
         LoadDateKey tbCeh!Outdatetime, "##36"
-        LoadDate Grid, cehRows, chVrVid, tbCeh!Outdatetime, "hh"
+        LoadDate Grid, werkRows, chVrVid, tbCeh!Outdatetime, "hh"
     Else
         If tbCeh!StatO = "готов" Then _
-            Grid.TextMatrix(cehRows, chProcVip) = "100"
-        s = tbCeh!workTimeMO
-        If s < 0 Then s = -s
+            Grid.TextMatrix(werkRows, chProcVip) = "100"
+        S = tbCeh!workTimeMO
+        If S < 0 Then S = -S
         LoadDateKey tbCeh!DateTimeMO, "##36"
-        LoadDate Grid, cehRows, chVrVid, tbCeh!DateTimeMO, "hh"
+        LoadDate Grid, werkRows, chVrVid, tbCeh!DateTimeMO, "hh"
     End If
-    If IsNull(s) Then
+    If IsNull(S) Then
         msgOfZakaz ("##36"), , tbCeh!Manag
-        Grid.TextMatrix(cehRows, chVrVip) = "(??) "
+        Grid.TextMatrix(werkRows, chVrVip) = "(??) "
     Else
       If chDetail.value = 1 Then '
-        Grid.TextMatrix(cehRows, chVrVip) = "(" & s & ")"
+        Grid.TextMatrix(werkRows, chVrVip) = "(" & S & ")"
       Else
-        Grid.TextMatrix(cehRows, chVrVip) = Round(s, 2)
+        Grid.TextMatrix(werkRows, chVrVip) = Round(S, 2)
       End If
     End If
 If isMO = "o" Then
    If tbCeh!StatO = "готов" Then
-     Grid.TextMatrix(cehRows, chStatus) = tbCeh!StatO 'образец
+     Grid.TextMatrix(werkRows, chStatus) = tbCeh!StatO 'образец
    Else
-     Grid.TextMatrix(cehRows, chStatus) = "" 'образец
+     Grid.TextMatrix(werkRows, chStatus) = "" 'образец
    End If
 ElseIf (tbCeh!StatusId = 1 Or tbCeh!StatusId = 8) And Not IsNumeric(tbCeh!stat) Then
-    Grid.TextMatrix(cehRows, chStatus) = tbCeh!stat
+    Grid.TextMatrix(werkRows, chStatus) = tbCeh!stat
 ElseIf tbCeh!StatusId = 2 Then ' резерв
     str1 = "Р": GoTo AA
 ElseIf tbCeh!StatusId = 3 Or tbCeh!StatusId = 9 Then  ' согласов
     str1 = "С"
 AA: Grid.col = chStatus
     Grid.CellForeColor = color
-    Grid.TextMatrix(cehRows, chStatus) = str1 & " на " & Format(tbCeh!DateRS, "dd.mm.yy")
+    Grid.TextMatrix(werkRows, chStatus) = str1 & " на " & Format(tbCeh!DateRS, "dd.mm.yy")
 Else
-    Grid.TextMatrix(cehRows, chStatus) = status(tbCeh!StatusId)
+    Grid.TextMatrix(werkRows, chStatus) = status(tbCeh!StatusId)
 End If
 MN:
 #If Not COMTEC = 1 Then '----------------------------------------------
  For I = 1 To UBound(tmpL) 'отмечаем заказы с выписанными накладными
     If tmpL(I) = gNzak Then
         Grid.col = chIzdelia
-        Grid.row = cehRows
+        Grid.row = werkRows
         Grid.CellForeColor = 200
         Exit For
     End If
  Next I
 #End If '--------------------------------------------------------------
-Grid.TextMatrix(cehRows, 0) = marker
-Grid.TextMatrix(cehRows, chNomZak) = gNzak & str
-If str <> "" Then colorGridRow Grid, cehRows, &HCCCCCC 'маркируем МО
-Grid.TextMatrix(cehRows, chM) = tbCeh!Manag
-Grid.TextMatrix(cehRows, chFirma) = tbCeh!name
-Grid.TextMatrix(cehRows, chLogo) = tbCeh!Logo
-Grid.TextMatrix(cehRows, chIzdelia) = tbCeh!Product
+Grid.TextMatrix(werkRows, 0) = marker
+Grid.TextMatrix(werkRows, chNomZak) = gNzak & str
+If str <> "" Then colorGridRow Grid, werkRows, &HCCCCCC 'маркируем МО
+Grid.TextMatrix(werkRows, chM) = tbCeh!Manag
+Grid.TextMatrix(werkRows, chFirma) = tbCeh!name
+Grid.TextMatrix(werkRows, chLogo) = tbCeh!Logo
+Grid.TextMatrix(werkRows, chIzdelia) = tbCeh!Product
 If tbCeh!StatusId = 5 Then ' отложен
-        Grid.TextMatrix(cehRows, chProblem) = Problems(tbCeh!ProblemId)
+        Grid.TextMatrix(werkRows, chProblem) = Problems(tbCeh!ProblemId)
 End If
 
 End Sub
@@ -489,9 +489,9 @@ Dim I As Integer
 
 If Not IsNull(val) Then
   If IsDate(val) Then
-    Grid.TextMatrix(cehRows, chDataVid) = Format(val, "dd.mm.yy")
+    Grid.TextMatrix(werkRows, chDataVid) = Format(val, "dd.mm.yy")
     I = DateDiff("d", curDate, val) + 1 'здесь
-    Grid.TextMatrix(cehRows, chKey) = I
+    Grid.TextMatrix(werkRows, chKey) = I
 '    If i = stDay Then
 '        Grid.col = chDataVid
 '        Grid.CellForeColor = &H8800&
@@ -501,8 +501,8 @@ If Not IsNull(val) Then
   End If
 End If
 msgOfZakaz myErr, , tbCeh!Manag
-Grid.TextMatrix(cehRows, chDataRes) = "??"
-Grid.TextMatrix(cehRows, chKey) = 0
+Grid.TextMatrix(werkRows, chDataRes) = "??"
+Grid.TextMatrix(werkRows, chKey) = 0
 End Sub
 
 Private Sub Form_Load()
@@ -547,7 +547,7 @@ Grid.ColWidth(chNomZak) = 1000
 Grid.ColWidth(chIzdelia) = 2450
 
 Timer1.Interval = 500
-Timer1.Enabled = True 'вызов cehBegin
+Timer1.Enabled = True 'вызов werkBegin
 
 End Sub
 
@@ -576,7 +576,7 @@ Private Sub Form_Unload(Cancel As Integer)
 If Not (dostup = "a" Or dostup = "m" Or dostup = "" Or dostup = "b") Then
     exitAll 'для цехов
 End If
-isCehOrders = False
+isWerkOrders = False
 End Sub
 
 
@@ -742,7 +742,7 @@ If IsNull(v) Then ' образец утвержден
 ElseIf v Then
     If ValueToTableField("##54", status, "OrdersInCeh", "StatO") = 0 Then
         wrkDefault.CommitTrans
-        cehBegin
+        werkBegin
     Else
         wrkDefault.Rollback
     End If
@@ -765,14 +765,14 @@ If noClick Then Exit Sub
 
 wrkDefault.BeginTrans   ' начало транзакции
 
-I = ValueToTableField("W##41", "'в работе'", "OrdersInCeh", "Stat", "cehId") 'т.к если оставить Stat=готов, то на завтра он удалиться
+I = ValueToTableField("W##41", "'в работе'", "OrdersInCeh", "Stat", "werkId") 'т.к если оставить Stat=готов, то на завтра он удалиться
 If I = 0 Then
     If ValueToTableField("##41", "5", "Orders", "StatusId") <> 0 Then GoTo ER1
 
     str = lbProblem.ListIndex + begCehProblemId
     If ValueToTableField("##41", str, "Orders", "ProblemId") = 0 Then
         wrkDefault.CommitTrans  ' подтверждение транзакции
-        cehBegin
+        werkBegin
     Else
 ER1:    wrkDefault.Rollback    ' отммена транзакции
     End If
@@ -870,7 +870,7 @@ ElseIf str = "готов" Then
             If Not newEtap("xEtapByNomenk") Then GoTo ER1
 #End If
             wrkDefault.CommitTrans
-            cehBegin
+            werkBegin
         ElseIf I = -1 Then
             GoTo ER2
         Else
@@ -894,7 +894,7 @@ Else '  пусто, "*" и "в работе"
         If ValueToTableField("##39", "1", "Orders", "StatusId") <> 0 Then GoTo ER1
 AA:     If ValueToTableField("##39", "0", "Orders", "ProblemId") = 0 Then
             wrkDefault.CommitTrans
-            cehBegin
+            werkBegin
         Else
 ER1:        wrkDefault.Rollback
         End If
@@ -914,51 +914,51 @@ End Sub
 '$odbc14$
 'Для образца, кот. Утвержден возвращает Null
 Function makeProcReady(stat As String, Optional obraz As String = "") As Variant
-Dim s As Single, t As Single, n As Single, virabotka As Single, str As String
+Dim S As Single, t As Single, n As Single, virabotka As Single, str As String
 Dim StatO As String
 
 makeProcReady = False
 
 If stat = "25%" Then
-    s = 0.75 ' невыполнено
+    S = 0.75 ' невыполнено
     GoTo AA
 ElseIf stat = "50%" Then
-    s = 0.5
+    S = 0.5
     GoTo AA
 ElseIf stat = "75%" Then
-    s = 0.25
+    S = 0.25
     GoTo AA
 ElseIf stat = "100%" Then
-    s = 0
+    S = 0
     GoTo AA
 Else
-    s = 1
+    S = 1
 AA:
  
   If obraz <> "" Then
     obraz = "o"
     sql = "SELECT oc.workTimeMO, oc.StatO " _
     & " from OrdersInCeh oc " _
-    & " WHERE numOrder =" & gNzak & " and oc.cehId = " & gCehId
+    & " WHERE numOrder =" & gNzak & " and oc.werkId = " & gEquipId
     If Not byErrSqlGetValues("##386", sql, virabotka, StatO) Then Exit Function
-    If s = 0 Then ' 100%
+    If S = 0 Then ' 100%
     Else
         virabotka = -virabotka
     End If
   Else
     sql = "SELECT oe.workTime, oc.Nevip " & _
     " FROM OrdersEquip oe " & _
-    " JOIN OrdersInCeh oc ON oe.numOrder = oc.numOrder AND oc.cehId = oe.cehId" & _
-    " WHERE oc.numOrder =" & gNzak & " and oe.cehId = " & gCehId
+    " JOIN OrdersInCeh oc ON oe.numOrder = oc.numOrder AND oc.werkId = oe.werkId" & _
+    " WHERE oc.numOrder =" & gNzak & " and oe.werkId = " & gEquipId
     If Not byErrSqlGetValues("##421", sql, t, n) Then Exit Function
-    virabotka = Round((n - s) * t, 2)
+    virabotka = Round((n - S) * t, 2)
   End If
 
 
 'гот-ть может изменится к примеру с 75% до 0%
   str = Format(curDate, "yy.mm.dd")
 
-  sql = "SELECT xDate, Virabotka, numOrder, obrazec from Itogi_" & Ceh(gCehId) & _
+  sql = "SELECT xDate, Virabotka, numOrder, obrazec from Itogi_" & Equip(gEquipId) & _
   " WHERE (((xDate)='" & str & "') AND ((numOrder)=" & gNzak & ") AND " & _
   "((obrazec)='" & obraz & "'));"
   Set tbOrders = myOpenRecordSet("##374", sql, dbOpenTable)
@@ -1004,10 +1004,10 @@ End Sub
 Private Sub Timer1_Timer()
 Timer1.Enabled = False
 
-cehBegin
+werkBegin
 gridIsLoad = True
 Grid.col = 1
-isCehOrders = True
+isWerkOrders = True
 trigger = True
 
 End Sub

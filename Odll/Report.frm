@@ -159,7 +159,7 @@ Const rtZakazano = 9
 Const rtOplacheno = 10
 
 Private Sub cmExel_Click()
-Dim Ceh As String, Left As String, X As String
+Dim Equip As String, Left As String, X As String
     GridToExcel Grid, laHeader.Caption
 End Sub
 
@@ -249,7 +249,7 @@ AA:
 tmpStr = Right$(curDay, 2)
 tmpStr = tmpStr & Mid$(curDay, 3, 4)
 tmpStr = tmpStr & Left$(curDay, 2)
-laHeader.Caption = "Выработка по цеху " & Ceh(gCehId) & " на " & tmpStr
+laHeader.Caption = "Выработка по цеху " & Equip(gEquipId) & " на " & tmpStr
 
 Grid.Rows = 2
 Grid.Cols = 13
@@ -268,7 +268,7 @@ Grid.Clear
     Grid.ColWidth(crLogo) = 870
     Grid.ColWidth(crIzdelia) = 2450
 
-sql = "SELECT numOrder, obrazec, Virabotka From Itogi_" & Ceh(gCehId) & _
+sql = "SELECT numOrder, obrazec, Virabotka From Itogi_" & Equip(gEquipId) & _
 " WHERE (((xDate)='" & curDay & "')) ORDER BY numOrder, obrazec DESC;"
 'MsgBox sql
 Set tbOrders = myOpenRecordSet("##377", sql, dbOpenForwardOnly)
@@ -428,12 +428,12 @@ End If
 
 NXT1:
 'есть ли соседние дни
-sql = "SELECT Max(xDate) AS Prev From Itogi_" & Ceh(gCehId) & _
+sql = "SELECT Max(xDate) AS Prev From Itogi_" & Equip(gEquipId) & _
 " WHERE (((xDate)<'" & curDay & "'));"
 If Not byErrSqlGetValues("##376", sql, prevDay) Then Exit Sub
 cmPrev.Enabled = (prevDay <> "")
 
-sql = "SELECT Min(xDate) AS Next From Itogi_" & Ceh(gCehId) & _
+sql = "SELECT Min(xDate) AS Next From Itogi_" & Equip(gEquipId) & _
 " WHERE (((xDate)>'" & curDay & "'));"
 If Not byErrSqlGetValues("##376", sql, nextDay) Then Exit Sub
 cmNext.Enabled = (nextDay <> "")
@@ -795,15 +795,15 @@ End Sub
 
 
 Function getOrdered(numZak As String) As Double
-Dim s As Double
+Dim S As Double
 
 getOrdered = -1
 
 sql = "SELECT Sum([sDMCrez].[quantity]*[sDMCrez].[intQuant]/[sGuideNomenk].[perList]) AS cSum " & _
 "FROM sGuideNomenk INNER JOIN sDMCrez ON sGuideNomenk.nomNom = sDMCrez.nomNom " & _
 "WHERE (((sDMCrez.numDoc)=" & numZak & "));"
-If Not byErrSqlGetValues("W##209", sql, s) Then Exit Function
-getOrdered = Round(s, 2)
+If Not byErrSqlGetValues("W##209", sql, S) Then Exit Function
+getOrdered = Round(S, 2)
 End Function
 
 

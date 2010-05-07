@@ -500,8 +500,8 @@ End Sub
 Private Sub putOrderEquip(Index As Integer)
     Dim Worktime As Single
     Dim DateOut As String
-    Dim cehId As Integer
-    cehId = Index + 1
+    Dim equipId As Integer
+    equipId = Index + 1
     If IsNumeric(tbWorktime(Index).Text) Then
         Worktime = tbWorktime(Index).Text
     Else
@@ -513,23 +513,23 @@ Private Sub putOrderEquip(Index As Integer)
     Else
         DateOut = "null"
     End If
-    sql = "call putOrderEquip (" & gNzak & "," & cehId & "," & Worktime & "," & DateOut & ")"
+    sql = "call putOrderEquip (" & gNzak & "," & equipId & "," & Worktime & "," & DateOut & ")"
     myExecute "W#eq.2", sql
     
 End Sub
 
 Private Sub deleteOrderEquip(Index As Integer)
-    Dim cehId As Integer
-    cehId = Index + 1
+    Dim equipId As Integer
+    equipId = Index + 1
     
-    sql = "call deleteOrderEquip (" & gNzak & "," & cehId & ")"
+    sql = "call deleteOrderEquip (" & gNzak & "," & equipId & ")"
     myExecute "W#eq.3", sql, -1
     
 End Sub
 
 Private Sub cmSetOutDate_Click(Index As Integer)
-    Dim cehId As Integer
-    cehId = Index + 1
+    Dim equipId As Integer
+    equipId = Index + 1
     
 End Sub
 
@@ -581,27 +581,27 @@ Private Sub loadEquipment()
             '
             While Not tbOrders.EOF
                 If Not tbOrders("cehId") Is Nothing Then
-                    Dim cehId As Integer
-                    cehId = tbOrders!cehId - 1
-                    cbEquipment(cehId).value = 1
+                    Dim equipId As Integer
+                    equipId = tbOrders!equipId - 1
+                    cbEquipment(equipId).value = 1
                     If tbOrders!urgent <> "" Then
-                        cbUrgent(cehId).value = 1
+                        cbUrgent(equipId).value = 1
                     End If
                     
                     If Not IsNull(tbOrders!Worktime) Then
-                        tbWorktime(cehId).Text = tbOrders!Worktime
+                        tbWorktime(equipId).Text = tbOrders!Worktime
                     End If
                     
                     If Not IsNull(tbOrders!Outdatetime) Then
-                        lbDateOut(cehId).Caption = tbOrders!Outdatetime
+                        lbDateOut(equipId).Caption = tbOrders!Outdatetime
                     Else
-                        lbDateOut(cehId).Caption = "N/A"
+                        lbDateOut(equipId).Caption = "N/A"
                     End If
                     
                     If Not IsNull(tbOrders!status) Then
-                        lbEquipStatus(cehId).Caption = tbOrders!status
+                        lbEquipStatus(equipId).Caption = tbOrders!status
                     Else
-                        lbDateOut(cehId).Caption = " "
+                        lbDateOut(equipId).Caption = " "
                     End If
                 End If
                 tbOrders.MoveNext

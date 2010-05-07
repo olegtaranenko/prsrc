@@ -6,6 +6,7 @@ end if;
 CREATE VIEW vw_OrdersEquipSummary (
 	  numorder
 	, worktime
+	, worktimeMO
 	, outDateTime
 	, minOutDateTime
 	, maxStatusId
@@ -15,11 +16,12 @@ CREATE VIEW vw_OrdersEquipSummary (
 select
 	  numorder
 	, sum(isnull(worktime, 0.0))
-	, max(outDateTime)
-	, min(outDateTime)
-	, max(statusEquipId)
-	, min(statusEquipId)
-	, max(lastModified)
+	, sum(isnull(worktimeMO, 0.0))
+	, max(isnull(outDateTime, '20000101'))
+	, min(isnull(outDateTime, '20000101'))
+	, max(isnull(statusEquipId, 0))
+	, min(isnull(statusEquipId, 0))
+	, max(isnull(lastModified, '20000101'))
 from
 	OrdersEquip
 group by 
