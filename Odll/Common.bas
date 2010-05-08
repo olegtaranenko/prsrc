@@ -30,7 +30,7 @@ Public isAdmin As Boolean
 
 
 Public isBlock As Boolean
-Public Const lenWerk = 3
+Public Const lenEquip = 3
 Public Equip(10) As String
 Public gEquipId As Integer
 Public Const lenStatus = 20
@@ -120,7 +120,7 @@ Public gridIsLoad As Boolean
 Public orColNumber As Integer ' число колонок в Orders
 Public orSqlWhere() As String
 Public orSqlFields() As String  '
-Public orNomZak As Integer, orWerk As Integer, orData As Integer, orTema As Integer
+Public orNomZak As Integer, orWerk As Integer, orEquip As Integer, orData As Integer, orTema As Integer
 Public orMen As Integer, orStatus As Integer, orProblem As Integer
 Public orDataRS As Integer, orFirma As Integer, orDataVid As Integer
 Public orVrVid As Integer, orVrVip As Integer, orM As Integer, orO As Integer
@@ -1636,7 +1636,7 @@ tmpDate = DateAdd("d", I, tmpDate)
 End Function
 
 Function startDays() As Integer
-Dim I As Integer, J  As Integer, K   As Integer
+Dim I As Integer, J  As Integer, K As Integer
 ReDim Preserve stDays(befDays + 1)
 
 For K = 0 To befDays '    *********************************************
@@ -2050,10 +2050,10 @@ End Sub
 
 Function getNevip(day As Integer)
 sql = "SELECT Sum(oe.workTime * oc.Nevip) AS wSum " & _
-"FROM OrdersEquip oe " & _
-"JOIN OrdersInCeh oc ON oe.numOrder = oc.numOrder AND oc.cehId = oe.cehId " & _
+"FROM OrdersInCeh oc " & _
+"JOIN OrdersEquip oe ON oe.numOrder = oc.numOrder " & _
 "WHERE DateDiff(day,'" & Format(curDate, "yyyy-mm-dd") & "',oe.outDateTime) =" & day - 1 _
-& " AND oe.CehId =" & gEquipId
+& " AND oe.equipId =" & gEquipId
 'MsgBox sql
 getNevip = 0
 byErrSqlGetValues "W##382", sql, getNevip
@@ -2133,11 +2133,11 @@ Else
 End If
 
 '    "OrdersInCeh.numOrder, OrdersInCeh.VrVipParts, OrdersInCeh.rowLock "
-sql = "SELECT oe.outDateTime, o.StatusId, o.numOrder " _
+sql = "SELECT oe.outDateTime, o.StatusId, o.numOrder" _
     & " FROM Orders o " _
-    & " JOIN OrdersEquip oe ON oe.numOrder = o.numOrder " _
-    & " JOIN OrdersInCeh oc ON oc.numOrder = o.numOrder AND oc.cehId = oe.cehId " _
-    & " WHERE oe.CehId = " & gEquipId & passSql
+    & " JOIN OrdersEquip oe ON oe.numOrder = o.numOrder" _
+    & " JOIN OrdersInCeh oc ON oc.numOrder = o.numOrder" _
+    & " WHERE oe.EquipId = " & gEquipId & passSql
 
 'Debug.Print sql
 

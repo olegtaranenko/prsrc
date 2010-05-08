@@ -470,6 +470,7 @@ Option Explicit
 Public urgent As Variant ' As String '"y" - срочный заказ
 Public Regim As String
 Public idEquip As Integer
+Public idWerk As Integer
 Public isUpdated As Boolean ' выставлен в true если что-то в статусе заказа действительно поменялось
 Dim isTimeZakaz As Boolean ' тождественен "заказ передается в цех"
 Dim oldHeight As Integer, oldWidth As Integer
@@ -693,25 +694,26 @@ sql = "SELECT o.numOrder, oe.workTime, " & _
 " DateDiff(day,Now(),oe.outDateTime) AS endDay, " & _
 " DateDiff(day,Now(),o.inDate) AS begDay, oe.outDateTime, " & _
 " o.inDate, o.StatusId, oc.Nevip, oc.urgent " & _
-" FROM Orders o " & _
-" JOIN OrdersEquip oe ON oe.numorder = o.numorder " & _
-" JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder and oc.cehId = oe.cehId" & _
-" Where (((o.StatusId) = 1 Or (o.StatusId) = 5) AND ((oe.CehId)= " & gEquipId & ")) " & _
-" UNION ALL " & _
+vbCr & " FROM Orders o " & _
+" JOIN OrdersEquip oe ON oe.numorder = o.numorder AND oe.equipId = " & gEquipId & _
+" JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder " & _
+" Where (o.StatusId = 1 Or o.StatusId = 5) " & _
+vbCr & " UNION ALL " & _
 " SELECT o.numOrder, oe.workTime, DateDiff(day,Now(),oe.outDateTime) AS endDay, " & _
 " DateDiff(day,Now(),o.DateRS) AS begDay, oe.outDateTime, " & _
 " o.DateRS, o.StatusId, oc.Nevip, oc.urgent " & _
-" FROM Orders o " & _
-" JOIN OrdersEquip oe ON oe.numorder = o.numorder " & _
-" JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder and oc.cehId = oe.cehId " & _
-" Where (((o.StatusId) = 2 Or (o.StatusId) = 3) AND ((oe.CehId)= " & gEquipId & ")) " & _
-" UNION ALL " & _
-" SELECT o.numOrder, oc.workTimeMO, DateDiff(day,Now(),oc.DateTimeMO) AS endDay, " & _
+vbCr & " FROM Orders o " & _
+" JOIN OrdersEquip oe ON oe.numorder = o.numorder AND oe.equipId = " & gEquipId & _
+" JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder " & _
+" Where (o.StatusId = 2 Or o.StatusId = 3) " & _
+vbCr & " UNION ALL " & _
+" SELECT o.numOrder, oe.workTimeMO, DateDiff(day,Now(),oc.DateTimeMO) AS endDay, " & _
 " DateDiff(day,Now(),o.inDate) AS begDay, oc.DateTimeMO, " & _
 " o.inDate, 1 AS StatusId, -1 AS Nevip, '' AS urgent " & _
-" FROM Orders o " & _
+vbCr & " FROM Orders o " & _
 " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder " & _
-" Where oc.statO = 'в работе' AND oc.CehId= " & gEquipId & _
+" JOIN OrdersEquip oe ON oe.numorder = o.numorder AND oe.equipId = " & gEquipId & _
+" Where oc.statO = 'в работе' " & _
 " ORDER BY "
 
 If isMzagruz Then
@@ -989,7 +991,7 @@ Private Sub Grid_LostFocus()
 Grid_LeaveCell
 End Sub
 
-Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
 
@@ -1019,7 +1021,7 @@ statusIdNew = statId(cbStatus.ListIndex)
 
 cmZapros.Enabled = statusIdOld <> statusIdNew
 
-For I = 0 To lenCeh - 1
+For I = 0 To lenEquip - 1
     If ckCehDone(I).Tag = CStr(statusIdNew) Then
         ckCehDone(I).value = 1
     Else
@@ -1200,7 +1202,7 @@ Else
         "SELECT " & gNzak & ",'" & urgent & "', " & gEquipId
         If myExecute("##395", sql) <> 0 Then GoTo ER1
 DD:     noClick = True
-        Orders.Grid.col = orCeh
+        Orders.Grid.col = orWerk
         If urgent = "y" Then
             Orders.Grid.CellForeColor = 200
         Else
@@ -1725,7 +1727,7 @@ End Sub
 
 Private Sub cehSelectorsInit(action As Boolean)
 Dim I As Integer
-    For I = 0 To lenCeh - 1
+    For I = 0 To lenEquip - 1
         ckCehDone(I).Visible = False
         'ckCehDone(I).Enabled = False
         cmCeh(I).Visible = False
@@ -1741,7 +1743,7 @@ Private Function chooseTheEquipment(orderStatusId As Integer, ByRef suggestedCeh
     Dim firstVisibleId As Integer
     firstVisibleId = -1
     chooseTheEquipment = True
-    For I = 0 To lenCeh - 1
+    For I = 0 To lenEquip - 1
         If ckCehDone(I).Tag <> CStr(orderStatusId) And ckCehDone(I).Tag <> "" Then
             suggestedCehId = I + 1
             Exit Function

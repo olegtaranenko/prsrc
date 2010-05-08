@@ -15,12 +15,12 @@ CREATE VIEW vw_Reestr (
 	,Name
 	,Logo
 	,Product
---	Stat, 
---	Nevip, 
---	DateTimeMO, 
---	workTimeMO, 
---	StatM, 
---	StatO
+--	,Stat
+--	,Nevip
+	,DateTimeMO
+	,workTimeMO
+	,StatM
+	,StatO
 ) as
 SELECT 
 	o.numOrder
@@ -34,12 +34,12 @@ SELECT
 	,f.Name
 	,o.Logo
 	,o.Product
---	oc.Stat, 
---	oc.Nevip, 
---	oc.DateTimeMO, 
---	oc.workTimeMO, 
---	oc.StatM, 
---	oc.StatO
+--	,oc.Stat
+--	,oc.Nevip
+	,oc.DateTimeMO
+	,oe.workTimeMO
+	,oc.StatM
+	,oc.StatO
 FROM Orders o
 	JOIN vw_OrdersEquipSummary oe ON o.numOrder = oe.numOrder
 	JOIN GuideFirms            f  ON f.FirmId = o.FirmId

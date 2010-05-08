@@ -572,7 +572,7 @@ Private Sub loadEquipment()
     & " , isnull(oc.urgent, '') as urgent " _
     & " from OrdersEquip oe " _
     & " join guideStatus s on s.statusId = oe.statusEquipId " _
-    & " left join OrdersInCeh oc on oe.numorder = oc.numorder and oe.cehId = oc.cehId " _
+    & " left join OrdersInCeh oc on oe.numorder = oc.numorder" _
     & " where oe.numorder = " & gNzak
 
     Set tbOrders = myOpenRecordSet("##eq02", sql, dbOpenForwardOnly)
@@ -580,7 +580,7 @@ Private Sub loadEquipment()
         If Not tbOrders.BOF Then
             '
             While Not tbOrders.EOF
-                If Not tbOrders("cehId") Is Nothing Then
+                If Not tbOrders("equipId") Is Nothing Then
                     Dim equipId As Integer
                     equipId = tbOrders!equipId - 1
                     cbEquipment(equipId).value = 1
@@ -619,7 +619,7 @@ End Sub
 
 Private Sub CleanupEquip()
 Dim I As Integer
-    For I = 0 To lenCeh - 1
+    For I = 0 To lenEquip - 1
         cbEquipment(I).value = 0
         tbWorktime(I).Visible = False
         tbVrVipO(I).Visible = False

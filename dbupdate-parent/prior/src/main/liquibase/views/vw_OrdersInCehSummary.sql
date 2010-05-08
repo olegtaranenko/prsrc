@@ -9,7 +9,6 @@ CREATE VIEW vw_OrdersInCehSummary (
 	, dateTimeMO
 	, statM
 	, statO
-	, werk
 ) as
 select
 	  numorder
@@ -17,7 +16,5 @@ select
 	, dateTimeMO
 	, statM
 	, statO
-	, gw.werkCode
 from
 	OrdersInCeh oc
-	join GuideWerk gw on oc.werkId = gw.werkId

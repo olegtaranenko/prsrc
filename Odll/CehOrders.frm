@@ -187,6 +187,7 @@ Dim colWdth(20) As Integer
 Public Regim As String ' режим окна
 Public mousRow As Long    '
 Public mousCol As Long    '
+Public werkId As Integer
 Dim maxExt
 Dim tbCeh As Recordset
 
@@ -524,7 +525,7 @@ If dostup = "" Then cmNaklad.Visible = False
 Screen.MousePointer = flexHourglass
 
 Dim I As Integer
-For I = begCehProblemId To lenProblem
+For I = begWerkProblemId To lenProblem
     lbProblem.AddItem Problems(I)
 Next I
 
@@ -769,7 +770,7 @@ I = ValueToTableField("W##41", "'в работе'", "OrdersInCeh", "Stat", "werkId") 'т
 If I = 0 Then
     If ValueToTableField("##41", "5", "Orders", "StatusId") <> 0 Then GoTo ER1
 
-    str = lbProblem.ListIndex + begCehProblemId
+    str = lbProblem.ListIndex + begWerkProblemId
     If ValueToTableField("##41", str, "Orders", "ProblemId") = 0 Then
         wrkDefault.CommitTrans  ' подтверждение транзакции
         werkBegin

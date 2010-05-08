@@ -384,7 +384,7 @@ Begin VB.Form Orders
       Width           =   735
    End
    Begin VB.Label laWerk 
-      Caption         =   "Цех.реестр:"
+      Caption         =   "Раб.реестр: "
       Height          =   195
       Left            =   4680
       TabIndex        =   24
@@ -574,7 +574,7 @@ Const MainSelectSqlStr = "" _
     & vbCr & "   , o.temaId, o.paid, o.shipped,  o.Invoice, o.id_bill" _
     & vbCr & "   , o.zalog, o.nal, o.rate" _
     & vbCr & "   , f.id_voc_names, f.Name" _
-    & vbCr & "   , m.Manag, s.Status, p.Problem, oc.werk" _
+    & vbCr & "   , m.Manag, s.Status, p.Problem, w.WerkCode as Werk" _
     & vbCr & "   , v.venturename as venture, v.sysname as servername" _
     & vbCr & "   , oc.DateTimeMO, oc.StatM, oc.StatO, oc.urgent" _
     & vbCr & "   , oe.outDateTime, oe.workTime, oe.workTimeMO, 0 as equipId" _
@@ -586,6 +586,7 @@ Const FixedJoinSqlStr = "" _
     & vbCr & " JOIN GuideProblem p ON p.ProblemId = o.ProblemId " _
     & vbCr & " JOIN GuideManag m ON m.ManagId = o.ManagId " _
     & vbCr & " JOIN GuideFirms f ON f.FirmId = o.FirmId " _
+    & vbCr & " LEFT JOIN GuideWerk  w ON w.WerkId = o.WerkId " _
     & vbCr & " LEFT JOIN guideventure v on v.ventureId = o.ventureid "
 
 Const MainJoinSqlStr = "" _
@@ -850,6 +851,7 @@ End Sub
 Private Sub cmWerk_Click()
 If gEquipId <> 1 And isWerkOrders Then Unload WerkOrders
 gEquipId = 1
+WerkOrders.werkId = 1
 WerkOrders.Show 'vbModal
 End Sub
 
@@ -1369,6 +1371,7 @@ initOrCol orNomZak, "no.Numorder"
 initOrCol orInvoice, "so.Invoice"
 initOrCol orVenture, "sv.ventureName"
 initOrCol orWerk, "sGuideWerk.Werk"
+initOrCol orEquip, "so.Equip"
 initOrCol orData, "do.inDate"
 initOrCol orMen, "sm.Manag"
 initOrCol orStatus, "ss.Status"
@@ -1409,7 +1412,7 @@ zakazNum = 0
 tbStartDate.Text = Format(DateAdd("d", -7, curDate), "dd/mm/yy")
 tbEndDate.Text = Format(curDate, "dd/mm/yy")
 
-Grid.FormatString = "|>№ заказа|>№ счета|<Предпр| Цех |^Дата |^ М|<Статус |<Проблемы|" & _
+Grid.FormatString = "|>№ заказа|>№ счета|<Предпр|Цех|Оборуд.|^Дата |^ М|<Статус |<Проблемы|" & _
 "<ДатаРС|<Название Фирмы|<Дата выдачи|Вр.выдачи|Вр.выполнения|Макет|Образец|" & _
 "<дата выдачи MO|<вр.выдачи MO|O в.выполнения|<Лого|<Изделия|" & _
 "Категория|<Тема|Залог|Нал.опл.|Курс|заказано|согласовано|отгружено|^ M"
@@ -1465,32 +1468,36 @@ Next I
 
 isOrders = True
 trigger = True
-initVentureLB
+
+initListbox "select * from GuideVenture where standalone = 0", lbVenture, "VentureId", "VentureName"
+
+initListbox "select werkId, werkCode from GuideWerk order by 1", lbWerk, "werkId", "werkCode"
 
 End Sub
 
 
-Public Sub initVentureLB()
-' Сначала удаляем старые значения
-While lbVenture.ListCount
-    lbVenture.removeItem (0)
-Wend
+Public Sub initListbox(InitSql As String, lb As listBox, keyField As String, valueField As String)
 
-sql = "select * from GuideVenture where standalone = 0"
+    ' Сначала удаляем старые значения
+    While lb.ListCount
+        lb.removeItem (0)
+    Wend
 
-Set table = myOpenRecordSet("##72", sql, dbOpenForwardOnly)
-If table Is Nothing Then myBase.Close: End
-
-lbVenture.AddItem "", 0
-While Not table.EOF
-    lbVenture.AddItem "" & table!ventureName & ""
-    lbVenture.ItemData(lbVenture.ListCount - 1) = table!ventureId
-    table.MoveNext
-Wend
-table.Close
-lbVenture.Height = 225 * lbVenture.ListCount
+    Set table = myOpenRecordSet("##72.0", InitSql, dbOpenForwardOnly)
+    If table Is Nothing Then myBase.Close: End
+    
+    lb.AddItem "", 0
+    While Not table.EOF
+        lb.AddItem "" & table(valueField) & ""
+        lb.ItemData(lb.ListCount - 1) = table(keyField)
+        table.MoveNext
+    Wend
+    table.Close
+    lb.Height = 225 * lb.ListCount
 
 End Sub
+
+
  
 Public Sub managLoad(Optional fromWerk As String = "")
 Dim I As Integer, str As String, J As String
@@ -2035,18 +2042,17 @@ ElseIf mousCol = orFirma Then
         
     
     Me.PopupMenu mnContext
-ElseIf mousCol = orWerk Then
     ' есть ли накладные
-    'sql = "SELECT sDocs.numDoc From sDocs WHERE (((sDocs.numDoc)=" & gNzak & "));"
-    'If Not byErrSqlGetValues("W##175", sql, numDoc) Then Exit Sub
-    'If numDoc > 0 Then
-    '    MsgBox "По этому заказу выписаны накладные.", , "Изменение цеха недопустимо!"
-    '    Exit Sub
-    'End If
+ElseIf mousCol = orWerk Then
+    If StatusId > 0 Then
+        MsgBox "Цех можно менять только для заказа в состоянии ""принят"".", , "Изменение цеха недопустимо!"
+        Exit Sub
+    End If
+    listBoxInGridCell lbWerk, Grid, "Склад"
+ElseIf mousCol = orEquip Then
     'Equipment.orderStatusStr = Grid.TextMatrix(mousRow, orStatus)
     Equipment.readonlyFlag = StatusId > 0
     Equipment.Show vbModal, Me
-    'listBoxInGridCell lbWerk, Grid
 ElseIf mousCol = orStatus Then
 
 '$odbs?$ в этом блоке мы должны найти опред.запись, =========================
@@ -2210,7 +2216,7 @@ If (dostup = "a" Or Grid.TextMatrix(mousRow, orStatus) <> "закрыт") _
        mousCol = orFirma _
        Or mousCol = orProblem _
        Or mousCol = orType _
-       Or (mousCol = orWerk) _
+       Or (mousCol = orWerk) Or (mousCol = orEquip) _
        Or mousCol = orMen _
        Or mousCol = orVrVid _
        Or mousCol = orStatus _
@@ -2329,7 +2335,7 @@ If noClick Then Exit Sub
 If lbWerk.Visible = False Then Exit Sub
 
 Grid.Text = lbWerk.Text
-If orderUpdate("##21", lbWerk.ListIndex + 1, "Orders", "WerkId") Then _
+If orderUpdate("##21", lbWerk.ItemData(lbWerk.ListIndex), "Orders", "WerkId") Then _
     Grid.Text = lbWerk.Text
 lbHide
 End Sub
