@@ -13,7 +13,15 @@ Public settings() As MapEntry
 Public appCfgFile As String
 Public siteCfgFile As String
 
+Type MapEntry
+    Key As String
+    Value As Variant
+End Type
 
+
+Sub dummy()
+Dim IsEmpty As String
+End Sub
 
 Sub parseCommandLine(Optional MaxArgs)
     Dim IsEmpty As String
@@ -92,8 +100,8 @@ Dim argSnippet As String
     For I = 1 To UBound(rawCmdArguments)
         If rawCmdArguments(I) = "-" & Key Then
             argTokens = tokenizeKeyValue(rawCmdArguments(I + 1))
-            If argTokens.value <> "" Then
-                argSnippet = separator & "-" & argTokens.Key & " " & argTokens.value
+            If argTokens.Value <> "" Then
+                argSnippet = separator & "-" & argTokens.Key & " " & argTokens.Value
             Else
                 argSnippet = separator & argTokens.Key
             End If
@@ -114,15 +122,27 @@ End Function
 Function tokenize(match As String, delimiter As String) As MapEntry
 Dim result As MapEntry
 Dim equalPos As Long
+Dim rawValue As String
+Dim castValue As Variant
+Dim booleanValue As Boolean
 
     equalPos = InStr(1, match, delimiter, vbTextCompare)
     If equalPos <> 0 Then
         result.Key = trimAll(Left(match, equalPos - 1))
-        result.value = trimAll(Mid(match, equalPos + 1))
+        rawValue = trimAll(Mid(match, equalPos + 1))
     Else
         result.Key = match
-        result.value = ""
+        rawValue = ""
     End If
+    
+    If rawValue = "истина" Or rawValue = "true" Or rawValue = "Истина" Or rawValue = "True" Then
+        castValue = True
+    ElseIf rawValue = "Ложь" Or rawValue = "ложь" Or rawValue = "False" Or rawValue = "false" Then
+        castValue = False
+    Else
+        castValue = rawValue
+    End If
+    result.Value = castValue
     tokenize = result
     
 End Function
@@ -218,7 +238,7 @@ Dim doSave As Boolean
     On Error GoTo EN1
     Open str For Output As #1
     For I = 1 To UBound(curSettings)
-        Print #1, curSettings(I).Key & " = " & curSettings(I).value
+        Print #1, curSettings(I).Key & " = " & curSettings(I).Value
     Next I
 EN1:
     On Error Resume Next
@@ -237,7 +257,7 @@ Function getCurrentSetting(Key As String, ByRef curSettings() As MapEntry) As Va
 Dim I As Integer
     For I = 1 To UBound(curSettings)
         If curSettings(I).Key = Key Then
-            getCurrentSetting = curSettings(I).value
+            getCurrentSetting = curSettings(I).Value
             Exit Function
         End If
     Next I
@@ -298,28 +318,32 @@ Public Sub cleanSettings(curSetting() As MapEntry)
 End Sub
 
 
+Public Sub setAppSetting(Key As String, Value)
+    setCurrentSetting appSettings, Key, Value
+    setCurrentSetting settings, Key, Value
+End Sub
 
 Public Sub setCurrentSetting(curSettings() As MapEntry, Key As String, paramVal)
 Dim I As Integer
     
     I = getMapEntry(curSettings, Key)
     If I > 0 Then
-        curSettings(I).value = paramVal
+        curSettings(I).Value = paramVal
     Else
         Dim entry As MapEntry
         entry.Key = Key
-        entry.value = paramVal
+        entry.Value = paramVal
         append curSettings, entry
     End If
     
 End Sub
 
 Function getEffectiveSetting(Key As String, Optional defaultValue) As Variant
-Dim entry As MapEntry, value
+Dim entry As MapEntry, Value
 
-    value = getCurrentSetting(Key, settings)
-    If Not IsEmpty(value) Then
-        getEffectiveSetting = value
+    Value = getCurrentSetting(Key, settings)
+    If Not IsEmpty(Value) Then
+        getEffectiveSetting = Value
         Exit Function
     End If
     If Not IsMissing(defaultValue) Then
@@ -337,26 +361,26 @@ Function loadCmdSettings(curSettings() As MapEntry) As Boolean
 
 Dim I As Integer
 Dim entry As MapEntry, exists As Variant
-Dim value As Variant
+Dim Value As Variant
 
     ReDim argumentSettings(0)
     For I = 1 To UBound(rawCmdArguments)
-        entry.value = Null
+        entry.Value = Null
         If isKey(rawCmdArguments(I)) Then
             entry.Key = Mid(rawCmdArguments(I), 2)
             If isNotKey(I + 1) Then
-                value = Null
+                Value = Null
                 If I + 1 <= UBound(rawCmdArguments) Then
-                    value = rawCmdArguments(I + 1)
+                    Value = rawCmdArguments(I + 1)
                     I = I + 1
                 End If
                 
                 exists = getCurrentSetting(entry.Key, curSettings)
                 If Not IsEmpty(exists) Then
-                    exists = exists & " " & value
-                    appendValue curSettings, entry.Key, value, " "
+                    exists = exists & " " & Value
+                    appendValue curSettings, entry.Key, Value, " "
                 Else
-                    entry.value = value
+                    entry.Value = Value
                     append argumentSettings, entry
                 End If
             Else
@@ -402,22 +426,22 @@ Dim ln As Integer
     curSettings(ln) = entry
 End Sub
 
-Sub appendValue(curSettings() As MapEntry, Key As String, value As Variant, separator As String)
+Sub appendValue(curSettings() As MapEntry, Key As String, Value As Variant, separator As String)
 Dim sz As Integer, I As Integer
 
     sz = UBound(curSettings)
     For I = 1 To sz
         If curSettings(I).Key = Key Then
-            curSettings(I).value = curSettings(I).value & separator & value
+            curSettings(I).Value = curSettings(I).Value & separator & Value
             Exit Sub
         End If
     Next I
 End Sub
 
-Sub setAndSave(scope As String, Key As String, ByRef value As Variant)
+Sub setAndSave(scope As String, Key As String, ByRef Value As Variant)
 
     If scope = "app" Then
-        setCurrentSetting appSettings, Key, value
+        setCurrentSetting appSettings, Key, Value
         saveFileSettings appCfgFile, appSettings
     End If
 

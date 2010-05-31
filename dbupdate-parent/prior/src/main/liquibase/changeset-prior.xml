@@ -1031,6 +1031,12 @@ where pc.sysname = sGuideProducts.web
 		<sqlFile path="procedures/put_jscet.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 	</changeSet>
 
+	<changeSet id="1" author="mantis-139" runOnChange="true">
+		<comment>M139 процедура для отчета по остаткам ном-ры, входящей в каталог BrightAwards.</comment>
+		<sqlFile path="procedures/wf_report_bright_ostat.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+	</changeSet>
+
+
 	<changeSet id="1" author="mantis-133" runOnChange="false">
 		<comment>Вместо коэффициента деления - скидка по последней колонке</comment>
 		<sql>ALTER TABLE sGuideNomenk RENAME [kodel] TO [rabbat]</sql>

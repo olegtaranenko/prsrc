@@ -22,8 +22,7 @@ Public Const rtOplacheno = 10
 
 
 Sub GridToExcel(Grid As MSFlexGrid, Optional title As String = "")
-Dim Rows As String, Count As String, Numorder As String
-Dim ColWidth As String
+Dim ColWidth As String, Note As String
 
 
 Dim objExel As Excel.Application, c As Long, r As Long
@@ -211,8 +210,8 @@ Dim p_days_start As Integer, p_days_end As Integer
             If Not IsNull(tbOrders!Manager) Then _
                 Grid.TextMatrix(quantity, rtMen) = tbOrders!Manager
             
-            If Not IsNull(tbOrders!status) Then _
-                Grid.TextMatrix(quantity, rtStatus) = tbOrders!status
+            If Not IsNull(tbOrders!Status) Then _
+                Grid.TextMatrix(quantity, rtStatus) = tbOrders!Status
             
             If Not IsNull(tbOrders!client) Then _
                 Grid.TextMatrix(quantity, rtFirma) = tbOrders!client
@@ -242,6 +241,5 @@ whoRezerved = quantity
 
 
 End Function
-
 
 

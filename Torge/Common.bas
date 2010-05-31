@@ -428,7 +428,7 @@ Function LoadNumeric(Grid As MSFlexGrid, row As Long, col As Integer, _
 End Function
 
 
-Function findExValInCol(Grid As MSFlexGrid, value As String, _
+Function findExValInCol(Grid As MSFlexGrid, Value As String, _
             col As Integer, Optional pos As Long = -1) As Long
 Dim il As Long, str  As String, beg As Long
 
@@ -437,10 +437,10 @@ If pos < 1 Then
 Else
     beg = pos
 End If
-value = UCase(value)
+Value = UCase(Value)
 For il = beg To Grid.Rows - 1
     str = UCase(Grid.TextMatrix(il, col))
-    If InStr(str, value) > 0 Then
+    If InStr(str, Value) > 0 Then
         Grid.TopRow = il
         Grid.row = il
         findExValInCol = il
@@ -569,7 +569,7 @@ Private Function initFomulConstats() As Boolean
     If tbGuide Is Nothing Then GoTo er
     While Not tbGuide.EOF
         Dim initStr As String
-        initStr = tbGuide!Constants & "=" & CDbl(tbGuide!value)
+        initStr = tbGuide!Constants & "=" & CDbl(tbGuide!Value)
         sc.ExecuteStatement (initStr)
         tbGuide.MoveNext
     Wend
@@ -639,13 +639,13 @@ Else
 End If
 End Function
 
-Function ValueToGuideSourceField(myErrCod As String, value As String, _
+Function ValueToGuideSourceField(myErrCod As String, Value As String, _
 field As String, Optional passErr As Integer = -11111) As Integer
 Dim I As Integer
 
 ValueToGuideSourceField = False
 sql = "UPDATE sGuideSource SET [" & field & _
-"] = '" & value & "' WHERE (((sourceId)=" & gSourceId & "));"
+"] = '" & Value & "' WHERE (((sourceId)=" & gSourceId & "));"
 'MsgBox "sql = " & sql
 
 ValueToGuideSourceField = myExecute(myErrCod, sql, passErr)
@@ -905,8 +905,8 @@ getWhereByDateBoxes = "": str = "":
 
 ckStart = False: ckEnd = False
 On Error Resume Next ' на случай, если в этой форме у дат нет флажков
-If frm.ckEndDate.value > 0 Then ckEnd = True  'то они как бы установлены
-If frm.ckStartDate.value > 0 And frm.ckStartDate.Visible Then ckStart = True
+If frm.ckEndDate.Value > 0 Then ckEnd = True  'то они как бы установлены
+If frm.ckStartDate.Value > 0 And frm.ckStartDate.Visible Then ckStart = True
 On Error GoTo 0
 
 If ckStart Then
@@ -1146,7 +1146,7 @@ Private Sub SwapElements(varItems As Variant, _
 End Sub
 
 
-Sub textBoxInGridCell(tb As TextBox, Grid As MSFlexGrid, Optional value As String = "", Optional pRow As Long = -1)
+Sub textBoxInGridCell(tb As TextBox, Grid As MSFlexGrid, Optional Value As String = "", Optional pRow As Long = -1)
     Dim vRow As Long
     If pRow = -1 Then
         vRow = Grid.row
@@ -1155,10 +1155,10 @@ Sub textBoxInGridCell(tb As TextBox, Grid As MSFlexGrid, Optional value As Strin
     End If
     tb.Width = Grid.CellWidth + 50
 '    tb.Text = Grid.TextMatrix(mousRow, mousCol)
-    If value = "" Then
+    If Value = "" Then
         tb.Text = Grid.TextMatrix(vRow, Grid.col)
     Else
-        tb.Text = value
+        tb.Text = Value
     End If
     tb.left = Grid.CellLeft + Grid.left
     If pRow = 0 Then
@@ -1176,12 +1176,12 @@ End Sub
 
 'не записыват неуникальное значение, для полей, где такие
 'значения запрещены. А  генерит при этом error?
-Function ValueToTableField(myErrCod As String, value As String, table As String, _
+Function ValueToTableField(myErrCod As String, Value As String, table As String, _
 field As String, Optional by As String = "") As Boolean
 Dim sql As String, byStr As String  ', numOrd As String
 
 ValueToTableField = False
-If value = "" Then value = "''"
+If Value = "" Then Value = "''"
 If by = "" Then
     byStr = ".numOrder)= " & gNzak
 ElseIf by = "byFirmId" Then
@@ -1197,7 +1197,7 @@ ElseIf by = "byProductId" Then
 'ElseIf by = "bySourceId" Then
 '    byStr = ".sourceId)= " & gSourceId
 ElseIf by = "byNumDoc" Then
-    sql = "UPDATE " & table & " SET " & table & "." & field & "=" & value _
+    sql = "UPDATE " & table & " SET " & table & "." & field & "=" & Value _
         & " WHERE (((" & table & ".numDoc)=" & numDoc & " AND (" & table & _
         ".numExt)=" & numExt & " ));"
     GoTo AA
@@ -1206,7 +1206,7 @@ Else
     'Exit Function
 End If
 sql = "UPDATE " & table & " SET " & table & "." & field & _
-" = " & value & " WHERE (((" & table & byStr & " ));"
+" = " & Value & " WHERE (((" & table & byStr & " ));"
 AA:
 'MsgBox "sql = " & sql
 'Debug.Print sql
@@ -1251,36 +1251,36 @@ Function calcKolonValue(ByVal freight As Double, ByVal marginProc As Double, ByV
     
 End Function
 
-Function excelCombiSchapka(ByRef objExel, ByVal RubRate As Double, ByVal mainTitle As String, ByVal leftBound As String) As Integer
+Function excelDealerSchapka(ByRef objExel, ByVal RubRate As Double, ByVal mainTitle As String, ByVal leftBound As String) As Integer
     Dim I As Integer
     Const ret As Integer = 16
-    excelCombiSchapka = ret
+    excelDealerSchapka = ret
     With objExel.ActiveSheet.Cells(1, 1)
-        .value = Format(Now(), "dd.mm.yyyy")
+        .Value = Format(Now(), "dd.mm.yyyy")
         .HorizontalAlignment = xlHAlignCenter
         .Font.Bold = True
     End With
     
     With objExel.ActiveSheet.Range("D1:" & leftBound & "1")
         .Merge (True)
-        .value = "ПЕТРОВСКИЕ МАСТЕРСКИЕ"
+        .Value = "ПЕТРОВСКИЕ МАСТЕРСКИЕ"
         .HorizontalAlignment = xlHAlignCenter
     End With
     
     With objExel.ActiveSheet.Range("A2:" & leftBound & "2")
         .Merge (True)
-        .value = "www.petmas.ru, e-mail: petmas@dol.ru"
+        .Value = "www.petmas.ru, e-mail: petmas@dol.ru"
         .HorizontalAlignment = xlHAlignCenter
     End With
     With objExel.ActiveSheet.Range("A3:" & leftBound & "3")
         .Merge (True)
-        .value = "тел.: (495) 333-02-78, (499) 743-00-70, (499) 788-73-64; Факс: (495) 720-54-56"
+        .Value = "тел.: (495) 333-02-78, (499) 743-00-70, (499) 788-73-64; Факс: (495) 720-54-56"
         .HorizontalAlignment = xlHAlignCenter
     End With
     
     With objExel.ActiveSheet.Range("A5:" & leftBound & "5")
         .Merge (True)
-        .value = "ОБЗОРНЫЙ ПРАЙС-ЛИСТ ДЛЯ РАБОТЫ  ПО КАТАЛОГУ ""ПЕТРОВСКИХ МАСТЕРСКИХ"""
+        .Value = "ОБЗОРНЫЙ ПРАЙС-ЛИСТ ДЛЯ РАБОТЫ  ПО КАТАЛОГУ ""ПЕТРОВСКИХ МАСТЕРСКИХ"""
         .Font.Bold = True
         .HorizontalAlignment = xlHAlignCenter
         .Borders(xlEdgeRight).Weight = xlMedium
@@ -1291,21 +1291,21 @@ Function excelCombiSchapka(ByRef objExel, ByVal RubRate As Double, ByVal mainTit
     
     With objExel.ActiveSheet.Range("A7:" & leftBound & "7")
         .Merge (True)
-        .value = mainTitle
+        .Value = mainTitle
         .Font.Bold = True
         .HorizontalAlignment = xlHAlignCenter
     End With
 
     For I = 0 To 2
         With objExel.ActiveSheet.Cells(9 + I, 1)
-            .value = "Колонка"
+            .Value = "Колонка"
         End With
         With objExel.ActiveSheet.Cells(9 + I, 2)
-            .value = ChrB(Asc("A") + I)
+            .Value = ChrB(Asc("A") + I)
             .Font.Bold = True
         End With
         With objExel.ActiveSheet.Cells(9 + I, 3)
-            .value = Choose(I + 1, _
+            .Value = Choose(I + 1, _
                 "Цена готового изделия с нанесением, в Москве - для конечного клиента", _
                 "Цена готового изделия с нанесением - для РА", _
                 "Суммарная цена комплектующих")
@@ -1314,7 +1314,7 @@ Function excelCombiSchapka(ByRef objExel, ByVal RubRate As Double, ByVal mainTit
     
     With objExel.ActiveSheet.Range("A13:" & leftBound & "13")
         .Merge (True)
-        .value = "Для запроса по наличию комплектующих достаточно указать код изделия и количество"
+        .Value = "Для запроса по наличию комплектующих достаточно указать код изделия и количество"
         .Font.Bold = True
         .HorizontalAlignment = xlHAlignCenter
     End With
@@ -1322,58 +1322,62 @@ Function excelCombiSchapka(ByRef objExel, ByVal RubRate As Double, ByVal mainTit
     With objExel.ActiveSheet.Range("A" & CStr(ret - 1) & ":" & leftBound & CStr(ret - 1))
         .Merge (True)
         If RubRate = 1 Then
-            .value = "Цены указаны в у.е., исчисляются в USD по курсу ЦБ и включают НДС"
+            .Value = "Цены указаны в у.е., исчисляются в USD по курсу ЦБ и включают НДС"
         Else
-            .value = "Цены указаны рублях и включают НДС"
+            .Value = "Цены указаны рублях и включают НДС"
         End If
         .HorizontalAlignment = xlHAlignRight
     End With
     
 End Function
 
-Function excelStdSchapka(ByRef objExel, ByVal RubRate As Double, ByVal mainTitle As String, ByVal leftBound As String) As Integer
+
+Function excelStdSchapka(ByRef objExel, ByVal RubRate As Double, ByVal mainTitle As String, ByVal leftBound As String, Optional ventureName As String = "ПЕТРОВСКИЕ МАСТЕРСКИЕ") As Integer
 
     excelStdSchapka = 6
     With objExel.ActiveSheet.Cells(1, 1)
-        .value = Format(Now(), "dd.mm.yyyy")
+        .Value = Format(Now(), "dd.mm.yyyy")
         .HorizontalAlignment = xlHAlignCenter
     End With
     
-    With objExel.ActiveSheet.Range("E1:" & leftBound & "1")
+    With objExel.ActiveSheet.Range("B1:" & leftBound & "1")
         .Merge (True)
-        .value = "ПЕТРОВСКИЕ МАСТЕРСКИЕ"
-        .HorizontalAlignment = xlHAlignCenter
+        .Value = ventureName
+        .HorizontalAlignment = xlHAlignRight
     End With
     
     With objExel.ActiveSheet.Range("A2:" & leftBound & "2")
         .Merge (True)
-        .value = mainTitle
+        .Value = mainTitle
         .Font.Bold = True
         .HorizontalAlignment = xlHAlignCenter
     End With
     With objExel.ActiveSheet.Range("A3:" & leftBound & "3")
         .Merge (True)
-        .value = "www.petmas.ru, e-mail: petmas@dol.ru"
+        .Value = "www.petmas.ru, e-mail: petmas@dol.ru"
         .HorizontalAlignment = xlHAlignCenter
     End With
     With objExel.ActiveSheet.Range("A4:" & leftBound & "4")
         .Merge (True)
-        .value = "тел.: (495) 333-02-78, (499) 743-00-70, (499) 788-73-64; Факс: (495) 720-54-56"
+        .Value = "тел.: (495) 333-02-78, (499) 743-00-70, (499) 788-73-64; Факс: (495) 720-54-56"
         .HorizontalAlignment = xlHAlignCenter
     End With
-    With objExel.ActiveSheet.Range("A5:" & leftBound & "5")
-        .Merge (True)
-        If RubRate = 1 Then
-            .value = "Цены указаны в у.е., исчисляются в USD по курсу ЦБ и включают НДС"
-        Else
-            .value = "Цены указаны рублях и включают НДС"
-        End If
-        .HorizontalAlignment = xlHAlignRight
-        .Font.Bold = True
-    End With
+    'With objExel.ActiveSheet.Range("A5:" & leftBound & "5")
+    '    .Merge (True)
+    '    If RubRate = 1 Then
+    '        .value = "Цены указаны в у.е., исчисляются в USD по курсу ЦБ и включают НДС"
+    '    Else
+    '        .value = "Цены указаны рублях и включают НДС"
+    '    End If
+    '    .HorizontalAlignment = xlHAlignRight
+    '    .Font.Bold = True
+    'End With
 End Function
 
-Sub PriceToExcel(Regim As String, curRate As Double, mainReportTitle As String, kegl As Integer, Optional prodCategoryId As Integer = 1)
+
+
+
+Sub PriceToExcel(Regim As String, curRate As Double, mainReportTitle As String, kegl As Integer, Optional prodCategoryId As Integer = 1, Optional commonRabbat As Single = 1)
 Dim I As Integer, findId As Integer, str As String
 
 ' столбец - последний. В зависимости от режима - разный
@@ -1418,147 +1422,156 @@ quickSort NN, 1
 
 On Error GoTo ERR2
 
-    Set objExel = New Excel.Application
-    objExel.Visible = True
-    objExel.SheetsInNewWorkbook = 1
-    objExel.Workbooks.Add
-    objExel.ActiveSheet.Cells.Font.Size = kegl
+Set objExel = New Excel.Application
+objExel.Visible = True
+objExel.SheetsInNewWorkbook = 1
+objExel.Workbooks.Add
+With objExel.ActiveSheet
+        .Cells.Font.Size = kegl
     
-    If Regim = "default" Then
-        lastCol = "H"
-        ' печать стандартной шапки
-        exRow = excelStdSchapka(objExel, curRate, mainReportTitle, lastCol)
-    ElseIf Regim = "combi" Then
-        lastCol = "G"
-        exRow = excelCombiSchapka(objExel, curRate, mainReportTitle, lastCol)
-    End If
+    lastCol = "H"
+    exRow = excelStdSchapka(objExel, curRate, mainReportTitle, lastCol)
     
     lastColInt = Asc(lastCol) - Asc("A") + 1
     
-    objExel.ActiveSheet.Columns(1).columnWidth = 10
-    objExel.ActiveSheet.Columns(2).columnWidth = 10
-    objExel.ActiveSheet.Columns(3).columnWidth = 50
-    objExel.ActiveSheet.Columns(4).HorizontalAlignment = xlHAlignRight
-    objExel.ActiveSheet.Columns(5).HorizontalAlignment = xlHAlignRight
-    objExel.ActiveSheet.Columns(6).HorizontalAlignment = xlHAlignRight
-    objExel.ActiveSheet.Columns(7).HorizontalAlignment = xlHAlignRight
+        .Columns(1).columnWidth = 10
+        .Columns(2).columnWidth = 10
+        .Columns(3).columnWidth = 50
+        .Columns(4).HorizontalAlignment = xlHAlignRight
+        .Columns(5).HorizontalAlignment = xlHAlignRight
+        .Columns(6).HorizontalAlignment = xlHAlignRight
+        .Columns(7).HorizontalAlignment = xlHAlignRight
 
 '------------------------------------------------------------------------
 
-For I = 1 To UBound(NN) ' перебор всех групп
-  str = NN(I)
-  findId = Right$(str, 4) ' извлекаем из имен группы id группы
-
-'$comtec$  Далее ссылки на табл.sGuideProducts и на ее поля надо заменить на
-'эквиваленты из базы Comtec исходя из след.соответствия с колонками
-'Справ-ка Готовых изделий из программы stime:
-'"Номер"    "Код"   "web"   "Описание"    Размер   "1-5"   "Стр."
-'SortNom   prName    web    prDescript    prSize   Cena4    page
-
-sql = "SELECT prId, prName, prDescript, prSize, Cena4, page, rabbat " _
-    & " From sGuideProducts " _
-    & " Where prSeriaId = " & findId & " AND prodCategoryId = " & prodCategoryId _
-    & " ORDER BY SortNom"
-
-  Set tbProduct = myOpenRecordSet("##415", sql, dbOpenDynaset)
-  If Not tbProduct Is Nothing Then
-    If Not tbProduct.BOF Then
-      bilo = False
-      While Not tbProduct.EOF
-
-'Этот блок не требует изменения (здесь выдаются заголовки групп)------------
-        If Not bilo Then
-            bilo = True
-            
-            With objExel.ActiveSheet.Range("A" & exRow & ":" & lastCol & exRow)
-                .Borders(xlEdgeTop).Weight = xlMedium
-                .Borders(xlEdgeBottom).Weight = xlThin
-            End With
-            
-            str = left$(str, Len(str) - 6)
-            With objExel.ActiveSheet.Cells(exRow, 2)
-                .value = str
-                .Font.Bold = True
-            End With
-            objExel.ActiveSheet.Cells(exRow, lastColInt).Borders(xlEdgeRight).Weight = xlMedium
-            
-            exRow = exRow + 1
-            objExel.ActiveSheet.Range("A" & exRow & ":" & lastCol & exRow). _
-            Borders(xlEdgeBottom).Weight = xlThin
-            
-            objExel.ActiveSheet.Cells(exRow, 1).value = "Код"
-            objExel.ActiveSheet.Cells(exRow, 2).value = "Размер[см]"
-            objExel.ActiveSheet.Cells(exRow, 3).value = "Описание"
-            
-            gain2 = 0
-            gSeriaId = findId
-            
-            If Regim = "default" Then
-                If getGainAndHead Then
-                    objExel.ActiveSheet.Cells(exRow, 4).value = " " & head1
-                    objExel.ActiveSheet.Cells(exRow, 5).value = " " & head2
-                    objExel.ActiveSheet.Cells(exRow, 6).value = " " & head3
-                    objExel.ActiveSheet.Cells(exRow, 7).value = " " & head4
-                End If
-            ElseIf Regim = "combi" Then
-                Dim J As Integer
-                For J = 0 To 2
-                    With objExel.ActiveSheet.Cells(exRow, 4 + J)
-                        .value = ChrB(Asc("A") + J)
-                    End With
-                Next J
-            End If
-            
-            objExel.ActiveSheet.Cells(exRow, lastColInt).value = "    стр."
-            cErr = setVertBorders(objExel, xlThin, lastColInt)
-            exRow = exRow + 1
-        End If
-
-'---------------------------------------------------------------------------
-'Далее выдаются параметры по каждому изделию группы
-        
-        objExel.ActiveSheet.Cells(exRow, 1).value = tbProduct!prName
-        objExel.ActiveSheet.Cells(exRow, 2).value = tbProduct!prSize
-        objExel.ActiveSheet.Cells(exRow, 3).value = tbProduct!prDescript
-        objExel.ActiveSheet.Cells(exRow, 4).value = Chr(160) & Format(tbProduct!Cena4 * curRate, "0.00")
-        
-        If Regim = "default" Then
-            If gain4 > 0 Then
-                objExel.ActiveSheet.Cells(exRow, 5).value = Chr(160) & Format(Round(tbProduct!Cena4 * curRate * gain2, 1), "0.00")
-                objExel.ActiveSheet.Cells(exRow, 6).value = Chr(160) & Format(Round(tbProduct!Cena4 * curRate * gain3, 1), "0.00")
-                objExel.ActiveSheet.Cells(exRow, 7).value = Chr(160) & Format(Round(tbProduct!Cena4 * curRate * gain4, 1), "0.00")
-            End If
-        ElseIf Regim = "combi" Then
-            gain2 = getRabbat(tbProduct!Cena4, tbProduct!rabbat)
-            objExel.ActiveSheet.Cells(exRow, 5).value = Chr(160) & Format(Round(curRate * gain2, 1), "0.00")
-            gain3 = getCenaSale(tbProduct!prId)
-            objExel.ActiveSheet.Cells(exRow, 6).value = Chr(160) & Format(Round(curRate * gain3, 1), "0.00")
-        End If
-        
-        
-        objExel.ActiveSheet.Cells(exRow, lastColInt).value = " " & tbProduct!Page
-        cErr = setVertBorders(objExel, xlThin, lastColInt)
-        If cErr <> 0 Then GoTo ERR2
-        exRow = exRow + 1:
+    For I = 1 To UBound(NN) ' перебор всех групп
+      str = NN(I)
+      findId = Right$(str, 4) ' извлекаем из имен группы id группы
     
-        tbProduct.MoveNext
-      Wend
+    '$comtec$  Далее ссылки на табл.sGuideProducts и на ее поля надо заменить на
+    'эквиваленты из базы Comtec исходя из след.соответствия с колонками
+    'Справ-ка Готовых изделий из программы stime:
+    '"Номер"    "Код"   "web"   "Описание"    Размер   "1-5"   "Стр."
+    'SortNom   prName    web    prDescript    prSize   Cena4    page
+    
+    sql = "SELECT p.prId, p.prName, p.prDescript, p.prSize, p.Cena4, p.page, p.rabbat, f.formula " _
+        & " From sGuideProducts p " _
+        & " left JOIN sGuideFormuls f on f.nomer = p.formulaNom" _
+        & " Where p.prSeriaId = " & findId & " AND p.prodCategoryId = " & prodCategoryId
+        
+    If Not Regim = "pricePM" Then
+        sql = sql & " and isnumeric(p.page) = 1"
     End If
-    tbProduct.Close
-  End If
-Next I
-With objExel.ActiveSheet.Range("A" & exRow & ":" & lastCol & exRow)
-    .Borders(xlEdgeTop).Weight = xlMedium
+    
+    sql = sql & " ORDER BY p.SortNom"
+    
+      Set tbProduct = myOpenRecordSet("##415", sql, dbOpenDynaset)
+      If Not tbProduct Is Nothing Then
+        If Not tbProduct.BOF Then
+          bilo = False
+          While Not tbProduct.EOF
+    
+    'Этот блок не требует изменения (здесь выдаются заголовки групп)------------
+            If Not bilo Then
+                bilo = True
+                
+                With .Range("A" & exRow & ":" & lastCol & exRow)
+                    .Borders(xlEdgeTop).Weight = xlMedium
+                    .Borders(xlEdgeBottom).Weight = xlThin
+                End With
+                
+                str = left$(str, Len(str) - 6)
+                With .Cells(exRow, 2)
+                    .Value = str
+                    .Font.Bold = True
+                End With
+                .Cells(exRow, lastColInt).Borders(xlEdgeRight).Weight = xlMedium
+                
+                exRow = exRow + 1
+                .Range("A" & exRow & ":" & lastCol & exRow). _
+                Borders(xlEdgeBottom).Weight = xlThin
+                
+                .Cells(exRow, 1).Value = "Код"
+                .Cells(exRow, 2).Value = "Размер[см]"
+                .Cells(exRow, 3).Value = "Описание"
+                
+                gain2 = 0
+                gSeriaId = findId
+                
+                If getGainAndHead Then
+                    .Cells(exRow, 4).Value = " " & head1
+                    .Cells(exRow, 5).Value = " " & head2
+                    .Cells(exRow, 6).Value = " " & head3
+                    .Cells(exRow, 7).Value = " " & head4
+                End If
+                
+                .Cells(exRow, lastColInt).Value = "    стр."
+                cErr = setVertBorders(objExel, xlThin, lastColInt)
+                exRow = exRow + 1
+            End If
+    
+    '---------------------------------------------------------------------------
+    'Далее выдаются параметры по каждому изделию группы
+            
+            .Cells(exRow, 1).Value = tbProduct!prName
+            .Cells(exRow, 2).Value = tbProduct!prSize
+            .Cells(exRow, 3).Value = tbProduct!prDescript
+            
+            ExcelProductPrices Regim, curRate, exRow, 4, commonRabbat
+            
+            .Cells(exRow, lastColInt).Value = " " & tbProduct!Page
+            cErr = setVertBorders(objExel, xlThin, lastColInt)
+            If cErr <> 0 Then GoTo ERR2
+            exRow = exRow + 1:
+        
+            tbProduct.MoveNext
+          Wend
+        End If
+        tbProduct.Close
+      End If
+    Next I
+    With .Range("A" & exRow & ":" & lastCol & exRow)
+        .Borders(xlEdgeTop).Weight = xlMedium
+    End With
+
 End With
 
 Set objExel = Nothing
 Exit Sub
 
 ERR2:
-If cErr <> 424 And Err <> 424 Then  ' 424 - не дождались конца вывода закрыли док-т
+If cErr <> "424" And Err <> 424 Then  ' 424 - не дождались конца вывода закрыли док-т
     MsgBox Error, , "Ошибка 421-" & cErr '##421
 End If
 Set objExel = Nothing
+
+End Sub
+
+Public Sub ExcelProductPrices(Regim As String, curRate As Double, exRow As Long, exCol As Long, Optional commonRabbat As Single)
+    
+    Dim baseCena As String, SumCenaFreight As String
+    Dim rbt As Single
+    If Regim = "dealer" Then
+        productFormula SumCenaFreight, baseCena, "noOpen"
+    ElseIf Regim = "agency" Then
+        If tbProduct!rabbat = 0 Then
+            rbt = commonRabbat
+        Else
+            rbt = tbProduct!rabbat
+        End If
+        baseCena = tbProduct!Cena4 * (1 - rbt / 100)
+    Else 'Regim = "default" Or Regim = "pricePM"
+        baseCena = tbProduct!Cena4
+    End If
+        
+    With objExel.ActiveSheet
+        .Cells(exRow, exCol).Value = Chr(160) & Format(baseCena * curRate, "0.00")
+        If gain4 > 0 Then
+            .Cells(exRow, exCol + 1).Value = Chr(160) & Format(Round(baseCena * curRate * gain2, 1), "0.00")
+            .Cells(exRow, exCol + 2).Value = Chr(160) & Format(Round(baseCena * curRate * gain3, 1), "0.00")
+            .Cells(exRow, exCol + 3).Value = Chr(160) & Format(Round(baseCena * curRate * gain4, 1), "0.00")
+        End If
+    End With
 
 End Sub
 
@@ -1596,6 +1609,60 @@ Dim I As Integer
         End If
     Next I
 End Function
+
+
+Function productFormula(ByRef SumCenaFreight As String, ByRef SumCenaSale As String, Optional noOpen As String = "")
+Dim str As String
+
+If noOpen = "" Then
+    sql = "SELECT sGuideProducts.*, sGuideFormuls.Formula FROM sGuideFormuls " & _
+    "INNER JOIN sGuideProducts ON sGuideFormuls.nomer = sGuideProducts.formulaNom " & _
+    "WHERE (((sGuideProducts.prId)=" & gProductId & "));"
+    'MsgBox sql
+    Set tbProduct = myOpenRecordSet("##316", sql, dbOpenDynaset)
+    If tbProduct Is Nothing Then Exit Function
+    If tbProduct.BOF Then tbProduct.Close: Exit Function
+End If
+
+SumCenaFreight = getSumCena(tbProduct!prId)
+If InStr(tbProduct!formula, "SumCenaFreight") > 0 Then
+  If IsNumeric(SumCenaFreight) Then
+    sc.ExecuteStatement "SumCenaFreight=" & SumCenaFreight
+    SumCenaFreight = Round(CSng(SumCenaFreight), 2)
+  Else
+    productFormula = "error СумЦ.доставка" 'текст ошибки
+    'tbProduct.Close
+    GoTo EN1
+  End If
+End If
+
+SumCenaSale = getSumCena(tbProduct!prId, "Sale")
+If InStr(tbProduct!formula, "SumCenaSale") > 0 Then
+  If IsNumeric(SumCenaSale) Then
+    sc.ExecuteStatement "SumCenaSale=" & SumCenaSale
+    SumCenaSale = Round(CSng(SumCenaSale), 2)
+  Else
+    'tbProduct.Close
+    productFormula = "error СумЦоПродажа" 'текст ошибки
+    GoTo EN1
+  End If
+End If
+
+On Error GoTo ERR2
+sc.ExecuteStatement "VremObr = " & tbProduct!VremObr
+productFormula = Round(sc.Eval(tbProduct!formula), 2)
+GoTo EN1
+ERR2:
+    productFormula = "error: " & Error
+'    MsgBox Error & " - при выполнении формулы '" & tbProduct!formula & _
+'    "' для изделия '" & tbProduct!prName & "' (" & tmpStr & ")", , _
+'    "Ошибка 316 - " & Err & ":  " '##316
+EN1:
+tmpStr = tbProduct!formula
+If noOpen = "" Then tbProduct.Close
+End Function
+
+
 
 'reg = "" => SumCenaFreight
 'reg <> "" => SumCenaSale

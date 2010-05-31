@@ -1,0 +1,125 @@
+if exists (select '*' from sysprocedure where proc_name like 'wf_report_bright_ostat') then  
+	drop procedure wf_report_bright_ostat;
+end if;
+
+create procedure wf_report_bright_ostat (
+)
+begin
+
+	
+	declare v_ord_table varchar(64);
+	declare p_table_name varchar(64);    
+	declare p_id_name varchar(64);       
+	declare p_parent_id_name varchar(64);
+	declare p_order_by_name varchar(256);
+--	create table #klass_ordered (id integer, ord integer);
+	set p_table_name = 'sGuideKlass';
+	set v_ord_table = get_tmp_ord_table_name(p_table_name);
+	execute immediate get_tmp_ord_create_sql(v_ord_table);
+
+	set p_id_name = 'klassId';
+	set p_parent_id_name = 'parentKlassId';
+	set p_order_by_name = 'klassName';
+	call wf_sort_klassificator(p_table_name, p_id_name, p_parent_id_name, p_order_by_name);
+
+
+	set p_table_name = 'sGuideSeries';
+	set v_ord_table = get_tmp_ord_table_name(p_table_name);
+	execute immediate get_tmp_ord_create_sql(v_ord_table);
+
+	set p_id_name = 'seriaId';
+	set p_parent_id_name = 'parentSeriaId';
+	set p_order_by_name = 'seriaName';
+	call wf_sort_klassificator(p_table_name, p_id_name, p_parent_id_name, p_order_by_name);
+
+
+	delete
+	from #sGuideSeries_ord 
+	where not exists (
+		select 1 from sGuideSeries ss, sGuideProducts p where ss.seriaId = #sGuideSeries_ord.id and p.prSeriaId = ss.seriaId and p.prodCategoryId = 2
+	);
+
+
+	create table #nomenk(nomnom varchar(20), quant double null, perList integer null, primary key(nomnom));
+	
+	create table #saldo(nomnom varchar(20), debit float null, kredit float null);
+
+	create table #itogo(nomnom varchar(20), debit float null, kredit float null);
+
+	insert into #nomenk(nomnom, perList)
+	select distinct
+		p.nomnom, k.perList
+	from sGuideProducts ph
+	join #sGuideSeries_ord os on os.id = ph.prSeriaId
+	join sProducts          p on p.productId = ph.prId
+	join sGuideNomenk       k on k.nomnom = p.nomnom
+	where ph.prodCategoryId = 2 and isnumeric(ph.page) = 1;
+--select * from #nomenk;
+
+
+	insert into #saldo (nomnom, debit)
+    select m.nomnom, sum(isnull(m.quant, 0)) 
+    from sdocs n
+	join sdmc m on n.numdoc = m.numdoc and n.numext = m.numext
+	join #nomenk k on k.nomnom = m.nomnom
+    where n.destId = -1001
+	group by m.nomnom;
+
+
+	insert into #saldo (nomnom, kredit)
+    select m.nomnom, sum(isnull(m.quant, 0)) 
+    from sdocs n
+	join sdmc m on n.numdoc = m.numdoc and n.numext = m.numext
+	join #nomenk k on k.nomnom = m.nomnom
+    where n.sourId = -1001
+	group by m.nomnom;
+
+--select * from #saldo;
+
+	insert into #itogo (nomnom, debit, kredit)
+    select nomnom, sum(isnull(debit,0)), sum(isnull(kredit,0))
+	from #saldo 
+    group by nomnom;
+
+
+--select * from #itogo;
+
+	update #nomenk set quant = #itogo.debit - #itogo.kredit
+	from #itogo
+	where #itogo.nomnom = #nomenk.nomnom;
+
+
+
+	update #nomenk set quant = #nomenk.quant - isumBranRsrv.quant
+	from isumBranRsrv 
+	where isumBranRsrv.nomnom = #nomenk.nomnom;
+--select * from #nomenk;
+	
+	select 
+		ph.*
+    	, wf_breadcrump_seria(ph.prseriaid) as serianame
+		, n.nomnom, trim(n.cod + ' ' + n.nomname + ' ' + n.size) as nomenk, ed_izmer2 
+		, n.cod as ncod, n.nomname, n.size as nsize
+		, round(n.nowOstatki / n.perlist - 0.499, 0) as qty_fact
+		, round(k.quant / n.perlist, 2) as qty_dost
+		, wf_breadcrump_klass(n.klassid) as klassname, n.klassid
+		, n.cena_W, n.rabbat, n.margin,  n.kolonok, n.CenaOpt2, n.CenaOpt3, n.CenaOpt4
+		, s.gain2, s.gain3, s.gain4
+	from sGuideProducts ph
+	join #sGuideSeries_ord os on os.id = ph.prSeriaId
+	join sProducts          p on p.productId = ph.prId
+	join sGuideNomenk       n on n.nomnom = p.nomnom
+	join sGuideSeries       s on s.seriaId =  ph.prSeriaId
+	left join #nomenk       k on k.nomnom = p.nomnom
+	where 
+			ph.prodCategoryId = 2 
+		and isnumeric(ph.page) = 1
+	order by os.ord, ph.sortNom, n.nomnom;
+
+
+	drop table #sGuideKlass_ord;
+	drop table #sGuideSeries_ord;
+
+
+
+end;

@@ -649,22 +649,22 @@ Sub controlGridsWidth(Optional reg As String = "")
 Grid.MergeCells = flexMergeNever
 If reg = "left" Then
     Grid2.Visible = False
-    Grid.colWidth(gpCol1) = 700
-    Grid.colWidth(gpCol2) = 700
-    Grid.colWidth(gpCol3) = 700
-    Grid.colWidth(gpCol4) = 700
-    Grid.colWidth(gpPage) = 405
-    Grid.colWidth(gpVremObr) = 630
-    Grid.colWidth(gpFormulaNom) = 420
+    Grid.ColWidth(gpCol1) = 700
+    Grid.ColWidth(gpCol2) = 700
+    Grid.ColWidth(gpCol3) = 700
+    Grid.ColWidth(gpCol4) = 700
+    Grid.ColWidth(gpPage) = 405
+    Grid.ColWidth(gpVremObr) = 630
+    Grid.ColWidth(gpFormulaNom) = 420
 Else
     Grid2.Visible = True
-    Grid.colWidth(gpCol1) = 0
-    Grid.colWidth(gpCol2) = 0
-    Grid.colWidth(gpCol3) = 0
-    Grid.colWidth(gpCol4) = 0
-    Grid.colWidth(gpPage) = 0
-    Grid.colWidth(gpVremObr) = 0
-    Grid.colWidth(gpFormulaNom) = 0
+    Grid.ColWidth(gpCol1) = 0
+    Grid.ColWidth(gpCol2) = 0
+    Grid.ColWidth(gpCol3) = 0
+    Grid.ColWidth(gpCol4) = 0
+    Grid.ColWidth(gpPage) = 0
+    Grid.ColWidth(gpVremObr) = 0
+    Grid.ColWidth(gpFormulaNom) = 0
 End If
 setGridsWidth ' в завис-ти от Grid2.Visible
 End Sub
@@ -754,7 +754,7 @@ End Sub
 
 
 Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim value As String, str As String
+Dim Value As String, str As String
 
 If Shift = vbCtrlMask And KeyCode = vbKeyF Then
     If mousCol = gpDescript Then
@@ -762,11 +762,11 @@ If Shift = vbCtrlMask And KeyCode = vbKeyF Then
     Else
         str = "Номер"
     End If
-    value = InputBox("Укажите " & str & " или фрагмент.", _
-    "Поиск готового изделия", value)
-    If value = "" Then Exit Sub
+    Value = InputBox("Укажите " & str & " или фрагмент.", _
+    "Поиск готового изделия", Value)
+    If Value = "" Then Exit Sub
     controlGridsWidth "left"
-    loadSeriaProduct value
+    loadSeriaProduct Value
     On Error Resume Next
     Grid.SetFocus 'чтобы избежать vbKeyEnter(от InputBox) на tv
 End If
@@ -794,30 +794,30 @@ gSeriaId = 0 'необходим  для добавления класса
     Grid.FormatString = "см.Входящие|id|<Номер|<Код|web|Скид.|<Описание|<Размер|Время обработки" & _
     "|SumCenaFreight|SumCenaSale|№ формулы|Формула|Цена 3|кол1|кол2|кол3|кол4|Стр." _
     & "|"
-    Grid.colWidth(gpNomenk) = 0 '300
-    Grid.colWidth(gpId) = 0
-    Grid.colWidth(gpUsed) = 0
-    Grid.colWidth(gpSortNom) = 700
-    Grid.colWidth(gpName) = 1065
-    Grid.colWidth(gpDescript) = 3720
-    Grid.colWidth(gpPrWeb) = 405
-    Grid.colWidth(gpRabbat) = 405
-    Grid.colWidth(gpFormula) = 0
-    Grid.colWidth(gpSumCenaFreight) = 1275
-    Grid.colWidth(gpSumCenaSale) = 1275
-    Grid.colWidth(gpCena3) = 1275
+    Grid.ColWidth(gpNomenk) = 0 '300
+    Grid.ColWidth(gpId) = 0
+    Grid.ColWidth(gpUsed) = 0
+    Grid.ColWidth(gpSortNom) = 700
+    Grid.ColWidth(gpName) = 1065
+    Grid.ColWidth(gpDescript) = 3720
+    Grid.ColWidth(gpPrWeb) = 405
+    Grid.ColWidth(gpRabbat) = 405
+    Grid.ColWidth(gpFormula) = 0
+    Grid.ColWidth(gpSumCenaFreight) = 1275
+    Grid.ColWidth(gpSumCenaSale) = 1275
+    Grid.ColWidth(gpCena3) = 1275
     
 
 
 'Grid2.FormatString = "|<Номер|Web|<Название|Ц.доставка|Ц.продажа|Кол-во|<Ед.измерения|<Группа"
 Grid2.FormatString = "|<Номер|Web|<Название|CenaFreight|CenaSale|Кол-во|<Ед.измерения|<Группа"
-Grid2.colWidth(0) = 0
-Grid2.colWidth(gpNomNom) = 870
-Grid2.colWidth(gpNomName) = 4005 '1800 '2370
-Grid2.colWidth(gpEdIzm) = 435
-Grid2.colWidth(gpCenaFreight) = 615
-Grid2.colWidth(gpCENA_W) = 615
-Grid2.colWidth(gpGroup) = 540
+Grid2.ColWidth(0) = 0
+Grid2.ColWidth(gpNomNom) = 870
+Grid2.ColWidth(gpNomName) = 4005 '1800 '2370
+Grid2.ColWidth(gpEdIzm) = 435
+Grid2.ColWidth(gpCenaFreight) = 615
+Grid2.ColWidth(gpCENA_W) = 615
+Grid2.ColWidth(gpGroup) = 540
 
 
 Grid.Visible = False
@@ -963,7 +963,7 @@ End If
 End Sub
 Sub refrProductCenaToGrid()
 Dim str As String
-        str = productFormula
+        str = productFormula(SumCenaFreight, SumCenaSale)
         Grid.TextMatrix(mousRow, gpCena3) = str
         Grid.TextMatrix(mousRow, gpSumCenaFreight) = Format(SumCenaFreight, "0.00") ' только после
         Grid.TextMatrix(mousRow, gpSumCenaSale) = SumCenaSale 'Format(SumCenaSale, "0.00")
@@ -1124,7 +1124,7 @@ Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As 
 Dim I As Integer
 
 If Grid.MouseRow = 0 And Shift = 2 Then _
-        MsgBox "ColWidth = " & Grid.colWidth(Grid.MouseCol)
+        MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
 
 If Regim = "select" Or Grid.MouseRow = 0 Then Exit Sub
 mousCol = Grid.MouseCol
@@ -1259,7 +1259,7 @@ End Function
 
 Private Sub Grid2_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
 If Grid2.MouseRow = 0 And Shift = 2 Then _
-        MsgBox "ColWidth = " & Grid2.colWidth(Grid2.MouseCol)
+        MsgBox "ColWidth = " & Grid2.ColWidth(Grid2.MouseCol)
 If Regim = "select" Then Exit Sub
 
 If Button = 2 And frmMode = "" Then
@@ -1413,58 +1413,6 @@ errorCodAndMsg ("##461")
 
 
 End Sub
-
-Function productFormula(Optional noOpen As String = "")
-Dim str As String
-
-If noOpen = "" Then
-    sql = "SELECT sGuideProducts.*, sGuideFormuls.Formula FROM sGuideFormuls " & _
-    "INNER JOIN sGuideProducts ON sGuideFormuls.nomer = sGuideProducts.formulaNom " & _
-    "WHERE (((sGuideProducts.prId)=" & gProductId & "));"
-    'MsgBox sql
-    Set tbProduct = myOpenRecordSet("##316", sql, dbOpenDynaset)
-    If tbProduct Is Nothing Then Exit Function
-    If tbProduct.BOF Then tbProduct.Close: Exit Function
-End If
-
-SumCenaFreight = getSumCena(tbProduct!prId)
-If InStr(tbProduct!formula, "SumCenaFreight") > 0 Then
-  If IsNumeric(SumCenaFreight) Then
-    sc.ExecuteStatement "SumCenaFreight=" & SumCenaFreight
-    SumCenaFreight = Round(CSng(SumCenaFreight), 2)
-  Else
-    productFormula = "error СумЦ.доставка" 'текст ошибки
-    'tbProduct.Close
-    GoTo EN1
-  End If
-End If
-
-SumCenaSale = getSumCena(tbProduct!prId, "Sale")
-If InStr(tbProduct!formula, "SumCenaSale") > 0 Then
-  If IsNumeric(SumCenaSale) Then
-    sc.ExecuteStatement "SumCenaSale=" & SumCenaSale
-    SumCenaSale = Round(CSng(SumCenaSale), 2)
-  Else
-    'tbProduct.Close
-    productFormula = "error СумЦоПродажа" 'текст ошибки
-    GoTo EN1
-  End If
-End If
-
-On Error GoTo ERR2
-sc.ExecuteStatement "VremObr = " & tbProduct!VremObr
-productFormula = Round(sc.Eval(tbProduct!formula), 2)
-GoTo EN1
-ERR2:
-    productFormula = "error: " & Error
-'    MsgBox Error & " - при выполнении формулы '" & tbProduct!formula & _
-'    "' для изделия '" & tbProduct!prName & "' (" & tmpStr & ")", , _
-'    "Ошибка 316 - " & Err & ":  " '##316
-EN1:
-tmpStr = tbProduct!formula
-If noOpen = "" Then tbProduct.Close
-End Function
-
 
 
 Sub productAdd(Optional obraz As String = "")
@@ -1979,8 +1927,8 @@ If Not tbNomenk.BOF Then
 '        Grid2.TextMatrix(quantity2, gpCENA_W) = str
 '    End If
     Grid2.TextMatrix(quantity2, gpGroup) = tbNomenk!xgroup
-    If Not IsNull(tbNomenk!web) Then
-        Grid2.TextMatrix(quantity2, gpWeb) = tbNomenk!web
+    If Not IsNull(tbNomenk!Web) Then
+        Grid2.TextMatrix(quantity2, gpWeb) = tbNomenk!Web
     End If
     
     Grid2.AddItem ""
@@ -2138,7 +2086,7 @@ If Not tbProduct.BOF Then
     If Not IsNull(tbProduct!prDescript) Then _
             Grid.TextMatrix(quantity, gpDescript) = tbProduct!prDescript
 'If tbProduct!prName = "штучки22" Then
-    Grid.TextMatrix(quantity, gpCena3) = Format(productFormula("noOpen"), "0.00")
+    Grid.TextMatrix(quantity, gpCena3) = Format(productFormula(SumCenaFreight, SumCenaSale, "noOpen"), "0.00")
     Grid.TextMatrix(quantity, gpSumCenaFreight) = Format(SumCenaFreight, "0.00") ' только после
     Grid.TextMatrix(quantity, gpSumCenaSale) = Format(SumCenaSale, "0.00") ' только после
     Grid.TextMatrix(quantity, gpFormula) = tmpStr                    ' productFormula
@@ -2149,8 +2097,8 @@ If Not tbProduct.BOF Then
     Grid.TextMatrix(quantity, gpCol3) = Format(Round(tbProduct!Cena4 * gain3, 1), "0.00")
     Grid.TextMatrix(quantity, gpCol4) = Format(Round(tbProduct!Cena4 * gain4, 1), "0.00")
     Grid.TextMatrix(quantity, gpPage) = tbProduct!Page
-    If Not IsNull(tbProduct!web) Then
-        Grid.TextMatrix(quantity, gpPrWeb) = tbProduct!web
+    If Not IsNull(tbProduct!Web) Then
+        Grid.TextMatrix(quantity, gpPrWeb) = tbProduct!Web
     End If
     If Not IsNull(tbProduct!used) Then
         Grid.TextMatrix(quantity, gpUsed) = tbProduct!used
