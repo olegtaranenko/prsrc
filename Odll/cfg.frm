@@ -303,11 +303,11 @@ Sub setRegim()
 Dim I As Integer
 
 If Regim = "comtexAdmin" Then
-    Grid.rows = 2: Grid.Cols = 5: Grid.Clear
+    Grid.Rows = 2: Grid.Cols = 5: Grid.Clear
     Grid.FormatString = "|<Бухгалтерская база|<Cервер|<Совместная работа|<Префикс|>НДС"
     MsgBox "Будьте уверены, что вы знаете, что вы делаете. В противном случае изменения сделанные в открывающеммся окне могут повлечь за собой проблемы в режиме совместной работы Prior и Comtex", , "Предупреждение"
 Else
-    Grid.rows = 2: Grid.Cols = 2: Grid.Clear
+    Grid.Rows = 2: Grid.Cols = 2: Grid.Clear
     Grid.FormatString = "|<Усл.название|<Полный путь к файлу|Рабочая|Текущая"
 End If
 
@@ -346,7 +346,7 @@ ElseIf Regim = "comtexAdmin" Then
     Grid.Width = Grid.ColWidth(bsDbName) + Grid.ColWidth(bsServer) + Grid.ColWidth(bsActive) + Grid.ColWidth(bsPrefix) + Grid.ColWidth(bsNds) + 350
     I = Grid.Width - I
     Me.Width = Me.Width + I
-    cmExit.left = cmExit.left + I
+    cmExit.Left = cmExit.Left + I
     cmExit.Top = Grid.Top + Grid.Height + 100
     sql = "GuideVenture"
     
@@ -370,7 +370,7 @@ ElseIf Regim = "comtexAdmin" Then
         I = I + 1
     Wend
     table.Close
-    Grid.removeItem Grid.rows - 1
+    Grid.removeItem Grid.Rows - 1
 End If
   
 
@@ -450,7 +450,8 @@ Dim success As Integer
         End If
 
         Grid.Text = lbActive.Text
-        Orders.initVentureLB
+        Orders.initListbox "select * from GuideVenture where standalone = 0", Orders.lbVenture, "VentureId", "VentureName"
+        
         clickedRow = -1
     End If
     lbHide

@@ -13,11 +13,6 @@ Public settings() As MapEntry
 Public appCfgFile As String
 Public siteCfgFile As String
 
-Type MapEntry
-    Key As String
-    Value As Variant
-End Type
-
 
 Sub dummy()
 Dim IsEmpty As String
