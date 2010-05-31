@@ -96,7 +96,9 @@ begin
 --select * from #nomenk;
 	
 	select 
-		ph.*
+		  ph.prId, ph.prName, ph.prSeriaId, ph.prSize, ph.prDescript 
+		, ph.vremObr, ph.formulaNom, ph.cena4, ph.page, ph.sortNom
+		, ph.rabbat as productRabbat
     	, wf_breadcrump_seria(ph.prseriaid) as serianame
 		, n.nomnom, trim(n.cod + ' ' + n.nomname + ' ' + n.size) as nomenk, ed_izmer2 
 		, n.cod as ncod, n.nomname, n.size as nsize
@@ -105,12 +107,14 @@ begin
 		, wf_breadcrump_klass(n.klassid) as klassname, n.klassid
 		, n.cena_W, n.rabbat, n.margin,  n.kolonok, n.CenaOpt2, n.CenaOpt3, n.CenaOpt4
 		, s.gain2, s.gain3, s.gain4
+		, f.formula
 	from sGuideProducts ph
 	join #sGuideSeries_ord os on os.id = ph.prSeriaId
 	join sProducts          p on p.productId = ph.prId
 	join sGuideNomenk       n on n.nomnom = p.nomnom
 	join sGuideSeries       s on s.seriaId =  ph.prSeriaId
 	left join #nomenk       k on k.nomnom = p.nomnom
+	left join sGuideFormuls f on f.nomer = ph.formulaNom
 	where 
 			ph.prodCategoryId = 2 
 		and isnumeric(ph.page) = 1
@@ -119,7 +123,6 @@ begin
 
 	drop table #sGuideKlass_ord;
 	drop table #sGuideSeries_ord;
-
 
 
 end;

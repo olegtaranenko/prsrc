@@ -1036,6 +1036,10 @@ where pc.sysname = sGuideProducts.web
 		<sqlFile path="procedures/wf_report_bright_ostat.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 	</changeSet>
 
+	<changeSet id="2" author="mantis-139" runOnChange="true">
+		<comment>Рефакторинг отчета остатки по материалам</comment>
+		<sqlFile path="procedures/wf_report_mat_ost.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+	</changeSet>
 
 	<changeSet id="1" author="mantis-133" runOnChange="false">
 		<comment>Вместо коэффициента деления - скидка по последней колонке</comment>

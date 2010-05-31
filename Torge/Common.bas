@@ -1382,7 +1382,7 @@ Dim I As Integer, findId As Integer, str As String
 
 ' столбец - последний. В зависимости от режима - разный
 Dim lastCol As String, lastColInt As Integer
-
+Dim RPF_Rate As Single
 'Из Спарвочника Готовых изделий получаем Список Id всех групп(серий),
 'в которых есть хотя бы одно изделие.
 sql = "SELECT DISTINCT prSeriaId from sGuideProducts"
@@ -1454,7 +1454,7 @@ With objExel.ActiveSheet
     '"Номер"    "Код"   "web"   "Описание"    Размер   "1-5"   "Стр."
     'SortNom   prName    web    prDescript    prSize   Cena4    page
     
-    sql = "SELECT p.prId, p.prName, p.prDescript, p.prSize, p.Cena4, p.page, p.rabbat, f.formula " _
+    sql = "SELECT p.prId, p.prName, p.prDescript, p.prSize, p.Cena4, p.page, p.rabbat as productRabbat, f.formula " _
         & " From sGuideProducts p " _
         & " left JOIN sGuideFormuls f on f.nomer = p.formulaNom" _
         & " Where p.prSeriaId = " & findId & " AND p.prodCategoryId = " & prodCategoryId
@@ -1517,7 +1517,7 @@ With objExel.ActiveSheet
             .Cells(exRow, 2).Value = tbProduct!prSize
             .Cells(exRow, 3).Value = tbProduct!prDescript
             
-            ExcelProductPrices Regim, curRate, exRow, 4, commonRabbat
+            ExcelProductPrices RPF_Rate, Regim, curRate, exRow, 4, commonRabbat
             
             .Cells(exRow, lastColInt).Value = " " & tbProduct!Page
             cErr = setVertBorders(objExel, xlThin, lastColInt)
@@ -1547,20 +1547,24 @@ Set objExel = Nothing
 
 End Sub
 
-Public Sub ExcelProductPrices(Regim As String, curRate As Double, exRow As Long, exCol As Long, Optional commonRabbat As Single)
+Public Sub ExcelProductPrices(ByRef RPF_Rate As Single, Regim As String, curRate As Double, exRow As Long, exCol As Long, Optional commonRabbat As Single)
     
     Dim baseCena As String, SumCenaFreight As String
     Dim rbt As Single
-    If Regim = "dealer" Then
+    RPF_Rate = 1
+    If Regim = "dealer" Or Regim = "agency" Then
         productFormula SumCenaFreight, baseCena, "noOpen"
-    ElseIf Regim = "agency" Then
-        If tbProduct!rabbat = 0 Then
+    End If
+    If Regim = "agency" Then
+        RPF_Rate = baseCena 'temp storage
+        If tbProduct!productRabbat = 0 Then
             rbt = commonRabbat
         Else
-            rbt = tbProduct!rabbat
+            rbt = tbProduct!productRabbat
         End If
         baseCena = tbProduct!Cena4 * (1 - rbt / 100)
-    Else 'Regim = "default" Or Regim = "pricePM"
+        RPF_Rate = baseCena / RPF_Rate
+    ElseIf Regim = "default" Or Regim = "pricePM" Then
         baseCena = tbProduct!Cena4
     End If
         
