@@ -1941,12 +1941,6 @@ Dim lastCol As String, lastColInt As Integer
 Dim minusQuant   As Integer
 minusQuant = 0
 
-'Из Спарвочника номенллатуры получаем Список Id всех групп(классов),
-' в которых есть хотя бы одна номенклатура.
-sql = "SELECT klassId from sGuideNomenk GROUP BY klassId"
-Set tbProduct = myOpenRecordSet("##408", sql, dbOpenDynaset)
-If tbProduct Is Nothing Then Exit Sub
-
     On Error GoTo ERR2
     Set objExel = New Excel.Application
     objExel.Visible = True
@@ -1996,7 +1990,7 @@ With objExel.ActiveSheet
 
 
     
-  If Not toExel = "toExcelWeb" Then
+  If toExel = "toExcelWeb" Then
     withOstat = 1
   End If
   sql = "call wf_report_mat_ost(" & withOstat & ")"
@@ -2062,10 +2056,6 @@ With objExel.ActiveSheet
 '---------------------------------------------------------------------------
 'Далее выдаются параметры по каждой номенклатуре группы
         str = tbProduct!ed_Izmer2
-        tmpSng = Round(tbProduct!qty_dost - 0.499)
-        If tmpSng < -0.01 Then
-            minusQuant = minusQuant + 1 '************************
-        End If
         .Cells(exRow, 1).Value = tbProduct!cod
         .Cells(exRow, 2).Value = tbProduct!Nomname
         .Cells(exRow, 3).Value = tbProduct!Size
@@ -2073,6 +2063,10 @@ With objExel.ActiveSheet
         If Not toExel = "toExcelWeb" Then
             ExcelKolonPrices exRow, exCol, RubRate
         Else
+            tmpSng = Round(tbProduct!qty_dost - 0.499)
+            If tmpSng < -0.01 Then
+                minusQuant = minusQuant + 1 '************************
+            End If
             .Cells(exRow, 5).Value = Round(tmpSng, 2)
         End If
         cErr = setVertBorders(objExel, xlThin, lastColInt)
@@ -2139,7 +2133,7 @@ Private Sub ExcelKolonPrices(exRow As Long, exCol As Long, RubRate As Double, Op
                 Chr(160) & Format(RPF_Rate * tbProduct("CenaOpt" & CStr(iKolon)) * RubRate, "0.00")
         Else
             objExel.ActiveSheet.Cells(exRow, exCol - 1 + iKolon).Value = _
-                Chr(160) & Format(RPF_Rate * calcKolonValue(optBasePrice, margin, tbProduct!rabbat, Abs(kolonok), iKolon), "0.00")
+                Chr(160) & Format(RPF_Rate * RubRate * calcKolonValue(optBasePrice, margin, tbProduct!rabbat, Abs(kolonok), iKolon), "0.00")
         End If
     Next iKolon
 

@@ -121,10 +121,12 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
 Dim isOn As Boolean, isSinhro As Boolean ', baseIsOpen As Boolean
-
+Sub dummy()
+Dim IsEmpty, Table, ManagId
+End Sub
 Sub nextWindow()
 Dim str As String
-Dim i As Integer
+Dim I As Integer
 
     
     cmSklad.Visible = True
@@ -167,20 +169,20 @@ If IsNull(begDate) Then End
 sql = "SELECT * From GuideManag WHERE Manag <>'not'  ORDER BY forSort;"
 Set Table = myOpenRecordSet("##03", sql, dbOpenForwardOnly)
 If Table Is Nothing Then myBase.Close: End
-i = 0: ReDim manId(0):
+I = 0: ReDim manId(0):
 Dim imax As Integer: imax = 0: ReDim Manag(0)
 While Not Table.EOF
     If LCase(Table!ForSort) <> "unused" Then
         str = Table!Manag
         If Table!ManagId <> 0 Then cbM.AddItem str
-        manId(i) = Table!ManagId
+        manId(I) = Table!ManagId
         If imax < Table!ManagId Then
             imax = Table!ManagId
             ReDim Preserve Manag(imax)
         End If
         Manag(Table!ManagId) = str
-        i = i + 1
-        ReDim Preserve manId(i):
+        I = I + 1
+        ReDim Preserve manId(I):
     End If
     Table.MoveNext
 Wend
@@ -192,11 +194,11 @@ ReDim Status(0)
 Set Table = myOpenRecordSet("##05", "GuideStatus", dbOpenForwardOnly)
 If Table Is Nothing Then myBase.Close: End
 'Table.MoveFirst
-i = 0 'макс индекс
+I = 0 'макс индекс
 While Not Table.EOF
-    If i < Table!StatusId Then
-        i = Table!StatusId
-        ReDim Preserve Status(i)
+    If I < Table!StatusId Then
+        I = Table!StatusId
+        ReDim Preserve Status(I)
     End If
     Status(Table!StatusId) = Table!Status
     Table.MoveNext
@@ -313,15 +315,15 @@ Private Sub tbEnable_KeyDown(KeyCode As Integer, Shift As Integer)
 End Sub
 
 Private Sub Timer1_Timer()
-Dim i As Long
+Dim I As Long
 Static sek As Integer
 
 'If sek > 32000 Then End
 sek = sek + 1
 If sek = 10 Then
   If isSinhro Then
-    i = DateDiff("s", tmpDate, Now()) - 1
-    laInform.Caption = "Синхронизация прошла успешно (коррекция  " & i & " сек.)"
+    I = DateDiff("s", tmpDate, Now()) - 1
+    laInform.Caption = "Синхронизация прошла успешно (коррекция  " & I & " сек.)"
   Else
     laInform.Caption = "Система не смогла синхронизировать часы!"
   End If
