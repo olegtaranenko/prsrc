@@ -592,7 +592,7 @@ Const FixedJoinSqlStr = "" _
 Const MainJoinSqlStr = "" _
            & FixedJoinSqlStr _
     & vbCr & " LEFT JOIN vw_OrdersEquipSummary oe ON oe.Numorder = o.Numorder " _
-    & vbCr & " LEFT JOIN vw_OrdersInCehSummary oc ON o.Numorder = oc.Numorder" _
+    & vbCr & " LEFT JOIN OrdersInCeh oc ON o.Numorder = oc.Numorder" _
 
 Const rowFromOrdersSQL = "select " _
            & MainSelectSqlStr _
@@ -765,12 +765,12 @@ Dim baseProblemId As Integer, baseProblem As String, begPubNum As Long
 
 gNzak = Grid.TextMatrix(Orders.mousRow, orNomZak)
 If InStr(Orders.cmAdd.Caption, "+") > 0 Then
-  'sql = "SELECT o.WerkId, o.ProblemId, o.FirmId" _
-        & ", p.Problem, f.Name " _
+  sql = "SELECT o.WerkId, o.ProblemId, o.FirmId" _
+        & ", p.Problem, f.Name, w.werkName " _
         & " FROM Orders o " _
-        & " JOIN GuideEquip e   ON e.Numorder  = o.Numorder" _
         & " JOIN GuideProblem p ON p.ProblemId = o.ProblemId" _
         & " JOIN GuideFirms f   ON f.FirmId    = o.FirmId" _
+        & " LEFT JOIN GuideWerk w   ON w.werkId  = o.WerkId" _
         & " WHERE o.Numorder = " & gNzak
 '  On Error GoTo NXT1
   Set tbOrders = myBase.OpenRecordset(sql, dbOpenForwardOnly)
@@ -817,6 +817,7 @@ End If
 tbOrders.update
 wrkDefault.CommitTrans
 
+
 If zakazNum > 0 Then Grid.AddItem ""
 zakazNum = zakazNum + 1
 Grid.TextMatrix(zakazNum, 0) = zakazNum
@@ -847,6 +848,7 @@ ERR1:
 'errorCodAndMsg "##419"
 
 End Sub
+
 
 Private Sub cmWerk_Click()
 If gEquipId <> 1 And isWerkOrders Then Unload WerkOrders
@@ -904,6 +906,7 @@ Else
     strToWeb = strToWeb & chTab & val
 End If
 End Sub
+
 
 ' возвращает информацию для местного (на компе пользователя) лога
 Public Function openOrdersRowToGrid(myErr As String) As String

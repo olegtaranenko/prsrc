@@ -1301,10 +1301,10 @@ update	OrdersEquip set outDatetime = convert(int, outDatetime)
 		<comment>Саммари вьюхи</comment>
 		<sqlFile path="procedures/enumEquip.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="views/vw_OrdersEquipSummary.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
-		<sqlFile path="views/vw_OrdersInCehSummary.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="rollback/vw_OrdersInCehSummary.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<rollback>
 			<sqlFile path="rollback/vw_OrdersEquipSummary.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
-			<sqlFile path="rollback/vw_OrdersInCehSummary.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+			<sqlFile path="views/vw_OrdersInCehSummary.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		</rollback>
 	</changeSet>
 
