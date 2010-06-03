@@ -90,7 +90,7 @@ Public begDayMO As Integer ' день первого куска ћќ заказа
 Public endDayMO As Integer ' день последнего куска ћќ заказа
 Public flEdit As String ' редактируетс€ ресурс
 Public Nstan As Double
-Public kpd As Double
+Public KPD As Double
 Public newRes As Double ' смена по умолчанию
 Public nr As Double ', dr As Double 'убываощие ном. и доп. ресурсы
 Public isLive As Boolean ' флаг - заказ живой
@@ -595,31 +595,18 @@ gNzak = Left$(str, I - 1)
 
 End Function
 '$odbc10$
-Function getResurs() As Integer
+Function getResurs(equipId As Integer) As Integer
 Dim I As Integer, J As Integer, rMaxDay As Integer, S As Double
 ' rMaxDay - Resource max day - максимальное значение из таблицы ResursCEH (CO2, etc)
 
-Set tbSystem = myOpenRecordSet("##93", "System", dbOpenForwardOnly)
+Set tbSystem = myOpenRecordSet("##93", "select * from GuideResurs where equipId = " & equipId, dbOpenForwardOnly)
 If tbSystem Is Nothing Then myBase.Close: End
-If gEquipId = 1 Then
-    kpd = tbSystem!KPD_YAG
-    Nstan = tbSystem!NstanYAG
-    newRes = tbSystem!newResYAG
-ElseIf gEquipId = 2 Then
-    kpd = tbSystem!KPD_CO2
-    Nstan = tbSystem!NstanCO2
-    newRes = tbSystem!newResCO2
-ElseIf gEquipId = 3 Then           '$$ceh
-    kpd = tbSystem!KPD_SUB      '
-    Nstan = tbSystem!NstanSUB   '
-    newRes = tbSystem!newResSUB '
-Else
-    getResurs = 1
-    Exit Function
-End If
+KPD = tbSystem!KPD
+Nstan = tbSystem!Nstan
+newRes = tbSystem!newRes
 tbSystem.Close
 
-sql = "SELECT nomRes from Resurs" & Equip(gEquipId) & " ORDER BY xDate"
+sql = "SELECT nomRes from Resurs where equipId = " & equipId & " ORDER BY xDate"
 Set table = myOpenRecordSet("##10", sql, dbOpenForwardOnly)
 'If table Is Nothing Then Exit Function
 
@@ -983,10 +970,6 @@ Else
 End If
 tbSystem.Close
 
-Equip(1) = "YAG"
-Equip(2) = "CO2"
-Equip(3) = "SUB" '$$ceh
-
 'не мен€ть пор€док след. 3х строчек
 nextDayDetect ' здесь определ-с€ CurDate
 stDay = startDays() ' в т.ч. устанавливаем начальные размерности dayMassLenght
@@ -1057,10 +1040,8 @@ CheckIntegration
 
 If dostup = "y" Then
     WerkOrders.idWerk = 1: WerkOrders.Show
-ElseIf dostup = "c" Then
+ElseIf dostup = "c" Then    '$$$ceh
     WerkOrders.idWerk = 2: WerkOrders.Show
-ElseIf dostup = "s" Then        '$$$ceh
-    WerkOrders.idWerk = 3: WerkOrders.Show   '
 Else
     Orders.Show
 End If
@@ -2121,7 +2102,7 @@ End If
 End Sub
 
 
-Sub zagruzFromCeh(Optional passZakazNom As String = "")
+Sub zagruzFromCeh(equipId As Integer, Optional passZakazNom As String = "")
 Dim outDay As Integer, J As Integer, passSql As String, str As String
 Dim tbCeh As Recordset
 
@@ -2137,7 +2118,7 @@ sql = "SELECT oe.outDateTime, o.StatusId, o.numOrder" _
     & " FROM Orders o " _
     & " JOIN OrdersEquip oe ON oe.numOrder = o.numOrder" _
     & " JOIN OrdersInCeh oc ON oc.numOrder = o.numOrder" _
-    & " WHERE oe.EquipId = " & gEquipId & passSql
+    & " WHERE oe.EquipId = " & equipId & passSql
 
 'Debug.Print sql
 

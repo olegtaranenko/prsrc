@@ -19,26 +19,24 @@ CREATE VIEW wEbSvodka (
 	DateRS
 ) as
 SELECT 
-	GuideFirms.xLogin, 
-	Orders.numOrder, 
-	Orders.StatusId, 
-	Orders.outDateTime, 
-	GuideProblem.Problem, 
-	Orders.Logo, 
-	Orders.Product, 
-	Orders.ordered, 
-	Orders.paid, 
-	Orders.shipped, 
-	GuideFirms.Name, 
-	GuideManag.Manag, 
-	Orders.DateRS
+	f.xLogin, 
+	o.numOrder, 
+	o.StatusId, 
+	oe.outDateTime, 
+	p.Problem, 
+	o.Logo, 
+	o.Product, 
+	o.ordered, 
+	o.paid, 
+	o.shipped, 
+	f.Name, 
+	m.Manag, 
+	o.DateRS
 FROM 
-	GuideStatus 
-	INNER JOIN (GuideProblem 
-		INNER JOIN (GuideFirms 
-			INNER JOIN (GuideManag 
-				INNER JOIN Orders ON GuideManag.ManagId = Orders.ManagId) 
-			ON GuideFirms.FirmId = Orders.FirmId) 
-		ON GuideProblem.ProblemId = Orders.ProblemId) 
-	ON GuideStatus.StatusId = Orders.StatusId
-WHERE Orders.StatusId not in (6, 7)
+	Orders o 
+	JOIN GuideStatus  s ON s.StatusId = o.StatusId
+	JOIN GuideProblem p ON p.ProblemId = o.ProblemId
+	JOIN GuideFirms   f ON f.FirmId = o.FirmId
+	JOIN GuideManag   m ON m.ManagId = o.ManagId
+	LEFT JOIN vw_OrdersEquipSummary oe on oe.numorder = o.numorder
+WHERE o.StatusId not in (6, 7)

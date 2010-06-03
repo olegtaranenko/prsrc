@@ -188,7 +188,7 @@ Dim colWdth(20) As Integer
 Public Regim As String ' режим окна
 Public mousRow As Long    '
 Public mousCol As Long    '
-Public werkId As Integer
+'Public werkId As Integer
 Dim maxExt
 Dim tbCeh As Recordset
 
@@ -317,7 +317,7 @@ Grid.ColWidth(chFirma) = colWdth(chFirma)
 Grid.ColWidth(chLogo) = colWdth(chLogo) - Grid.ColWidth(chDataRes)
 
 Me.Caption = Equip(gEquipId) & mainTitle
-sql = "select * from vw_Reestr where werkId = " & werkId
+sql = "select * from vw_Reestr where werkId = " & idWerk
 'Set myQuery = myBase.Connection.QueryDefs("w" & Equip(gEquipId))
 Set tbCeh = myOpenRecordSet("##34", sql, dbOpenDynaset)
 If tbCeh Is Nothing Then myQuery.Close: myBase.Close: End
@@ -913,10 +913,12 @@ Sub msgZakazDeleted(Optional str As String = "")
     MsgBox "Похоже этот " & str & " менеджером из цеха. Нажмите " & _
     "кнопку 'Обновить'.", , "Предупреждение"
 End Sub
+
+
 '$odbc14$
 'Для образца, кот. Утвержден возвращает Null
 Function makeProcReady(stat As String, Optional obraz As String = "") As Variant
-Dim S As Single, t As Single, n As Single, virabotka As Single, str As String
+Dim S As Single, T As Single, N As Single, virabotka As Single, str As String
 Dim StatO As String
 
 makeProcReady = False
@@ -941,9 +943,9 @@ AA:
     obraz = "o"
     ''TODO
     sql = "SELECT o.workTimeMO, oc.StatO " _
-    & " FROM vw_OrdersEquipSummary o " _
-    & " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder" _
-    & " WHERE o.numOrder =" & gNzak
+    & " FROM OrdersInCeh oc " _
+    & " JOIN vw_OrdersEquipSummary o ON o.numOrder = oc.numOrder" _
+    & " WHERE oc.numOrder =" & gNzak
     If Not byErrSqlGetValues("##386", sql, virabotka, StatO) Then Exit Function
     If S = 0 Then ' 100%
     Else
@@ -954,17 +956,20 @@ AA:
     " FROM vw_OrdersEquipSummary o " & _
     " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder" & _
     " WHERE o.numOrder =" & gNzak
-    If Not byErrSqlGetValues("##421", sql, t, n) Then Exit Function
-    virabotka = Round((n - S) * t, 2)
+    If Not byErrSqlGetValues("##421", sql, T, N) Then Exit Function
+    virabotka = Round((N - S) * T, 2)
   End If
 
 
 'гот-ть может изменится к примеру с 75% до 0%
   str = Format(curDate, "yy.mm.dd")
 
-  sql = "SELECT xDate, Virabotka, numOrder, obrazec from Itogi_" & Equip(gEquipId) & _
-  " WHERE (((xDate)='" & str & "') AND ((numOrder)=" & gNzak & ") AND " & _
-  "((obrazec)='" & obraz & "'));"
+  sql = "call pubWerkOrderReady(" & gNzak & ", '" & str & "', '" & obraz & "', " & virabotka & ")"
+  
+  sql = "SELECT xDate, Virabotka, numOrder, obrazec from Itogi" _
+  & " WHERE xDate ='" & str & "' AND numOrder =" & gNzak & " AND " _
+  & "obrazec = '" & obraz & "' AND werkId = " & idWerk
+  
   Set tbOrders = myOpenRecordSet("##374", sql, dbOpenTable)
     If tbOrders.BOF Then
         tbOrders.AddNew
@@ -986,9 +991,6 @@ AA:
       End If
    Else 'obraz = ""
      ValueToTableField "##422", "'в работе'", "OrdersInCeh", "Stat", "byWerkId"
-'     sql = "UPDATE OrdersInCeh SET Stat = 'в работе', " & _
-     "Nevip = " & s & " WHERE (((numOrder)=" & gNzak & "));"
-'     If myExecute("##422", sql) <> 0 Then Exit Function
    End If
 End If 'If stat
 makeProcReady = True
@@ -1018,8 +1020,7 @@ End Sub
 
 Function newEtap(table As String) As Boolean
 newEtap = False
-sql = "UPDATE " & table & " SET prevQuant = [eQuant] " & _
-"WHERE (((numOrder)=" & gNzak & "));"
+sql = "UPDATE " & table & " SET prevQuant = eQuant WHERE numOrder =" & gNzak
 If myExecute("##193", sql, 0) > 0 Then Exit Function
 newEtap = True
 End Function

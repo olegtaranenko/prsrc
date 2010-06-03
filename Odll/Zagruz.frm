@@ -263,6 +263,8 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
+
+Public idEquip As Integer
 Dim oldHeight As Integer, oldWidth As Integer ' нач размер формы
 
 
@@ -270,7 +272,7 @@ Dim oldHeight As Integer, oldWidth As Integer ' нач размер формы
 Private Sub cmDel_Click()
 If MsgBox("Если нажать <Да>, то на все дни будет установлен ресурс по " & _
 "умолчанию.", vbYesNo Or vbDefaultButton2, "Сбросить ресурсы?") = vbYes Then
-    sql = "DELETE FROM Resurs" & Equip(gEquipId) & ";"
+    sql = "DELETE FROM Resurs where equipId = " & idEquip
 'MsgBox sql
     myExecute "##137", sql, 0
     valueToSystemField "##361", "", "resursLock"
@@ -285,6 +287,7 @@ End Sub
 
 Private Sub cmHistory_Click()
 Report.Regim = "Virabotka"
+Report.idEquip = idEquip
 Report.Show vbModal
 End Sub
 
@@ -305,7 +308,7 @@ Else
     tbStanki.Locked = True
     chDopView.Enabled = False
 End If
-Me.Caption = "загрузка цеха " & Equip(gEquipId)
+Me.Caption = "загрузка цеха " & Equip(idEquip)
 
 If dostup <> "" Then cmDel.Visible = True
 ZagruzLoad
@@ -323,10 +326,10 @@ Sub ZagruzLoad() ' бывшая begZagruz
  Dim I As Integer, Key As String, tekDate As String, S As Double
 
 maxDay = 0
-zagruzFromCeh ' в delta
-getResurs  ' выч-е nomRes()
+zagruzFromCeh idEquip ' в delta
+getResurs idEquip  ' выч-е nomRes()
 
-tbKPD.Text = kpd
+tbKPD.Text = KPD
 tbStanki.Text = Nstan
 tbNomRes.Text = newRes
 cmRefr.Caption = "Обновить"
@@ -353,7 +356,7 @@ For I = 1 To maxDay
 
     lv.ListItems(Key).SubItems(zgNomRes) = nomRes(I)
     
-    S = Round(nomRes(I) * kpd * Nstan, 1)
+    S = Round(nomRes(I) * KPD * Nstan, 1)
     lv.ListItems(Key).SubItems(zgResurs) = S
     lv.ListItems(Key).SubItems(zgZagruz) = Round(S - ost(I), 1)
     lv.ListItems(Key).SubItems(zgOstatki) = Round(ost(I), 1)
@@ -364,7 +367,7 @@ For I = 1 To maxDay
     End If
 Next I
 
-S = Round(nr * Nstan * kpd, 1)
+S = Round(nr * Nstan * KPD, 1)
 lv.ListItems("k1").SubItems(zgResurs) = S
 lv.ListItems("k1").SubItems(zgZagruz) = Round(S - ost(1), 1)
 lv.ListItems("k1").SubItems(zgLive) = Round(S - befOst(1), 1)
@@ -372,7 +375,7 @@ lv.ListItems("k1").SubItems(zgLive) = Round(S - befOst(1), 1)
 lv.ListItems("k" & stDay).ForeColor = &HBB00&
 lv.ListItems("k" & stDay).Bold = True
 I = getNextDay(1)
-laZapas.Caption = Round(nomRes(I) * kpd * Nstan + ost(1), 1)
+laZapas.Caption = Round(nomRes(I) * KPD * Nstan + ost(1), 1)
 
 zagAll = 0
 zagLive = 0
@@ -384,10 +387,10 @@ Next I
 
 laZagAll.Caption = Round(zagAll, 1) & "  "
 laZagLive.Caption = Round(zagLive, 1) & "  "
-laUsed.Caption = Round((nomRes(1) - nr) * Nstan * kpd, 2)
+laUsed.Caption = Round((nomRes(1) - nr) * Nstan * KPD, 2)
 
-sql = "SELECT Sum(Virabotka) AS Sum_V From Itogi_" & Equip(gEquipId) & _
-" WHERE (((numOrder)>10) AND ((xDate)='" & Format(curDate, "yy.mm.dd") & "'));"
+sql = "SELECT Sum(Virabotka) AS Sum_V From Itogi" _
+& " WHERE numOrder >10  AND xDate ='" & Format(curDate, "yy.mm.dd") & "' AND equipId = " & idEquip
 'Debug.Print sql
 If byErrSqlGetValues("##375", sql, S) Then laVirab.Caption = Round(S, 2)
 
@@ -435,11 +438,11 @@ Private Sub lv_DblClick()
 flClickDouble = True
 End Sub
 
-Private Sub lv_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub lv_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
 
 If Not (dostup = "m" Or dostup = "a") Then Exit Sub
 
-Set ClickItem = lv.HitTest(X, y)
+Set ClickItem = lv.HitTest(X, Y)
 If ClickItem Is Nothing Then Exit Sub
     
     If Not flClickDouble Then Exit Sub
@@ -463,24 +466,14 @@ End Sub
 Private Sub cmRefr_Click()
 cmRefr.Caption = "Обновить"
 
-sql = "select * from System"
+sql = "select * from GuideResurs where equipId = " & idEquip
 Set tbSystem = myOpenRecordSet("##182", sql, dbOpenForwardOnly)
 If tbSystem Is Nothing Then myBase.Close: End
  tbSystem.Edit
  ' сохраняем параметры по умолчанию
- If gEquipId = 1 Then
-    tbSystem!KPD_YAG = tbKPD.Text
-    tbSystem!NstanYAG = tbStanki.Text
-    tbSystem!newResYAG = tbNomRes.Text
- ElseIf gEquipId = 2 Then
-    tbSystem!KPD_CO2 = tbKPD.Text
-    tbSystem!NstanCO2 = tbStanki.Text
-    tbSystem!newResCO2 = tbNomRes.Text
- ElseIf gEquipId = 3 Then                  '$$ceh
-    tbSystem!KPD_SUB = tbKPD.Text       '
-    tbSystem!NstanSUB = tbStanki.Text   '
-    tbSystem!newResSUB = tbNomRes.Text  '
- End If
+    tbSystem!KPD = tbKPD.Text
+    tbSystem!Nstan = tbStanki.Text
+    tbSystem!newRes = tbNomRes.Text
 tbSystem.update
 tbSystem.Close
 ZagruzLoad
@@ -506,8 +499,8 @@ If KeyCode = vbKeyReturn Then
     nomRes(day) = tbMobile.Text
     
     ' макс дата в таблице ресурса
-'    sql = "SELECT Max(xDate) AS MD from Resurs" & Equip(gEquipId) & ";"
-    sql = "SELECT Count(xDate) AS Count_Date FROM Resurs" & Equip(gEquipId) & ";"
+'    sql = "SELECT Max(xDate) AS MD from Resurs" & Equip(idEquip) & ";"
+    sql = "SELECT Count(xDate) AS Count_Date FROM Resurs where equipId = " & idEquip
 '    MsgBox sql
     If Not byErrSqlGetValues("##411", sql, dayMax) Then Exit Sub
 '    If dayMax = 0 Then dayMax = 1
@@ -515,16 +508,16 @@ If KeyCode = vbKeyReturn Then
     wrkDefault.BeginTrans
     
     If day <= dayMax Then ' если день есть в табл.ресурса
-        sql = "UPDATE Resurs" & Equip(gEquipId) & " SET nomRes = " & tbMobile.Text & _
-        " WHERE (((xDate)='" & yymmdd(lv.SelectedItem.Text) & "'));"
+        sql = "UPDATE Resurs SET nomRes = " & tbMobile.Text & _
+        " WHERE xDate ='" & yymmdd(lv.SelectedItem.Text) & "' and equipId = " & idEquip
 'Debug.Print sql
 
 '        MsgBox sql
         If myExecute("##66", sql) <> 0 Then Exit Sub
     Else ' иначе обавляем дни
         For I = dayMax + 1 To day
-            sql = "INSERT INTO Resurs" & Equip(gEquipId) & " ( xDate, nomRes ) " & _
-            "SELECT '" & yymmdd(lv.ListItems("k" & I).Text) & "', " & nomRes(I) & ";"
+            sql = "INSERT INTO Resurs (equipId, xDate, nomRes ) " & _
+            "SELECT " & idEquip & ", '" & yymmdd(lv.ListItems("k" & I).Text) & "', " & nomRes(I) & ";"
 '            MsgBox sql
             If myExecute("##413", sql) <> 0 Then Exit Sub
         Next I

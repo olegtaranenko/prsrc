@@ -15,28 +15,30 @@ Begin VB.Form Orders
    ScaleHeight     =   6216
    ScaleWidth      =   11880
    StartUpPosition =   2  'CenterScreen
+   Begin VB.ListBox lbEquip 
+      Height          =   816
+      ItemData        =   "Orders.frx":030A
+      Left            =   3120
+      List            =   "Orders.frx":0317
+      TabIndex        =   38
+      Top             =   3960
+      Visible         =   0   'False
+      Width           =   732
+   End
    Begin VB.ListBox lbVenture 
       Appearance      =   0  'Flat
       Height          =   600
       Left            =   5500
-      TabIndex        =   39
+      TabIndex        =   37
       Top             =   1000
       Width           =   1095
    End
-   Begin VB.CommandButton cmZagrSUB 
-      Caption         =   "SUB"
-      Height          =   315
-      Left            =   6540
-      TabIndex        =   38
-      Top             =   5700
-      Width           =   495
-   End
    Begin VB.ListBox lbAnnul 
       Height          =   1008
-      ItemData        =   "Orders.frx":030A
+      ItemData        =   "Orders.frx":032A
       Left            =   240
-      List            =   "Orders.frx":031A
-      TabIndex        =   36
+      List            =   "Orders.frx":033A
+      TabIndex        =   35
       Top             =   1980
       Visible         =   0   'False
       Width           =   1212
@@ -50,7 +52,7 @@ Begin VB.Form Orders
       ForeColor       =   &H8000000F&
       Height          =   315
       Left            =   11460
-      TabIndex        =   35
+      TabIndex        =   34
       TabStop         =   0   'False
       Top             =   5460
       Visible         =   0   'False
@@ -75,10 +77,10 @@ Begin VB.Form Orders
    End
    Begin VB.ListBox lbClose 
       Height          =   432
-      ItemData        =   "Orders.frx":0342
+      ItemData        =   "Orders.frx":0362
       Left            =   240
-      List            =   "Orders.frx":034C
-      TabIndex        =   34
+      List            =   "Orders.frx":036C
+      TabIndex        =   33
       Top             =   3180
       Visible         =   0   'False
       Width           =   1212
@@ -86,7 +88,7 @@ Begin VB.Form Orders
    Begin VB.ListBox lbTema 
       Height          =   2352
       Left            =   3960
-      TabIndex        =   33
+      TabIndex        =   32
       Top             =   1020
       Visible         =   0   'False
       Width           =   1575
@@ -94,7 +96,7 @@ Begin VB.Form Orders
    Begin VB.Frame Frame1 
       Height          =   555
       Left            =   0
-      TabIndex        =   29
+      TabIndex        =   28
       Top             =   -75
       Width           =   11835
       Begin VB.CheckBox cbStartDate 
@@ -133,9 +135,9 @@ Begin VB.Form Orders
       End
       Begin VB.ComboBox cbM 
          Height          =   315
-         ItemData        =   "Orders.frx":0365
+         ItemData        =   "Orders.frx":0385
          Left            =   11160
-         List            =   "Orders.frx":0367
+         List            =   "Orders.frx":0387
          Style           =   2  'Dropdown List
          TabIndex        =   0
          Top             =   180
@@ -162,7 +164,7 @@ Begin VB.Form Orders
          Caption         =   "Период с  "
          Height          =   195
          Left            =   60
-         TabIndex        =   16
+         TabIndex        =   15
          Top             =   240
          Width           =   795
       End
@@ -170,7 +172,7 @@ Begin VB.Form Orders
          Caption         =   "пос"
          Height          =   195
          Left            =   2160
-         TabIndex        =   17
+         TabIndex        =   16
          Top             =   240
          Width           =   195
       End
@@ -178,7 +180,7 @@ Begin VB.Form Orders
          Caption         =   ",  в т. ч. закрытые"
          Height          =   195
          Left            =   3600
-         TabIndex        =   32
+         TabIndex        =   31
          Top             =   240
          Visible         =   0   'False
          Width           =   1395
@@ -187,7 +189,7 @@ Begin VB.Form Orders
          Caption         =   "Противоречия"
          Height          =   195
          Left            =   8040
-         TabIndex        =   31
+         TabIndex        =   30
          Top             =   240
          Visible         =   0   'False
          Width           =   1095
@@ -206,7 +208,7 @@ Begin VB.Form Orders
          ForeColor       =   &H000000FF&
          Height          =   195
          Left            =   5880
-         TabIndex        =   30
+         TabIndex        =   29
          Top             =   240
          Visible         =   0   'False
          Width           =   1635
@@ -214,20 +216,20 @@ Begin VB.Form Orders
    End
    Begin VB.ListBox lbType 
       Height          =   1200
-      ItemData        =   "Orders.frx":0369
+      ItemData        =   "Orders.frx":0389
       Left            =   1560
-      List            =   "Orders.frx":037C
-      TabIndex        =   28
+      List            =   "Orders.frx":039C
+      TabIndex        =   27
       Top             =   3840
       Visible         =   0   'False
       Width           =   372
    End
    Begin VB.ListBox lbDel 
       Height          =   432
-      ItemData        =   "Orders.frx":0391
+      ItemData        =   "Orders.frx":03B1
       Left            =   240
-      List            =   "Orders.frx":039B
-      TabIndex        =   27
+      List            =   "Orders.frx":03BB
+      TabIndex        =   26
       Top             =   3900
       Visible         =   0   'False
       Width           =   1212
@@ -236,14 +238,14 @@ Begin VB.Form Orders
       Caption         =   "Печать в Excel"
       Height          =   315
       Left            =   9660
-      TabIndex        =   15
+      TabIndex        =   14
       Top             =   5580
       Width           =   1515
    End
    Begin VB.ListBox lbM 
       Height          =   240
       Left            =   1500
-      TabIndex        =   26
+      TabIndex        =   25
       Top             =   1020
       Visible         =   0   'False
       Width           =   555
@@ -252,22 +254,15 @@ Begin VB.Form Orders
       Caption         =   "Файлы для WEB"
       Height          =   315
       Left            =   7920
-      TabIndex        =   14
+      TabIndex        =   13
       Top             =   5580
       Visible         =   0   'False
       Width           =   1515
    End
-   Begin VB.CommandButton cmZagrCO2 
-      Caption         =   "CO2"
-      Height          =   315
-      Left            =   6060
-      TabIndex        =   13
-      Top             =   5700
-      Width           =   495
-   End
-   Begin VB.CommandButton cmZagrYAG 
+   Begin VB.CommandButton cmEquip 
       Caption         =   "YAG"
       Height          =   315
+      Index           =   0
       Left            =   5580
       TabIndex        =   12
       Top             =   5700
@@ -276,18 +271,19 @@ Begin VB.Form Orders
    Begin VB.CommandButton cmWerk 
       Caption         =   "YAG"
       Height          =   315
+      Index           =   0
       Left            =   5580
       TabIndex        =   11
       Top             =   5400
       Visible         =   0   'False
-      Width           =   495
+      Width           =   732
    End
    Begin VB.ListBox lbStat 
       Height          =   816
-      ItemData        =   "Orders.frx":03B5
+      ItemData        =   "Orders.frx":03D5
       Left            =   240
-      List            =   "Orders.frx":03C2
-      TabIndex        =   23
+      List            =   "Orders.frx":03E2
+      TabIndex        =   22
       Top             =   4440
       Visible         =   0   'False
       Width           =   1212
@@ -295,7 +291,7 @@ Begin VB.Form Orders
    Begin VB.TextBox tbMobile 
       Height          =   315
       Left            =   240
-      TabIndex        =   22
+      TabIndex        =   21
       Text            =   "tbMobile"
       Top             =   1620
       Visible         =   0   'False
@@ -304,17 +300,17 @@ Begin VB.Form Orders
    Begin VB.ListBox lbProblem 
       Height          =   2736
       Left            =   2460
-      TabIndex        =   21
+      TabIndex        =   20
       Top             =   1020
       Visible         =   0   'False
       Width           =   1332
    End
    Begin VB.ListBox lbWerk 
       Height          =   816
-      ItemData        =   "Orders.frx":03DD
+      ItemData        =   "Orders.frx":03FD
       Left            =   2100
-      List            =   "Orders.frx":03EA
-      TabIndex        =   20
+      List            =   "Orders.frx":040A
+      TabIndex        =   19
       Top             =   3960
       Visible         =   0   'False
       Width           =   732
@@ -334,7 +330,7 @@ Begin VB.Form Orders
       ForeColorSel    =   -2147483630
       GridLines       =   2
       AllowUserResizing=   1
-      FormatString    =   $"Orders.frx":03FD
+      FormatString    =   $"Orders.frx":041D
       BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
          Name            =   "MS Sans Serif"
          Size            =   9.6
@@ -365,7 +361,7 @@ Begin VB.Form Orders
       Align           =   1  'Align Top
       Height          =   612
       Left            =   0
-      TabIndex        =   37
+      TabIndex        =   36
       Top             =   0
       Width           =   11880
       _ExtentX        =   20955
@@ -379,7 +375,7 @@ Begin VB.Form Orders
       Caption         =   "Загрузка:"
       Height          =   195
       Left            =   4680
-      TabIndex        =   25
+      TabIndex        =   24
       Top             =   5760
       Width           =   735
    End
@@ -387,7 +383,7 @@ Begin VB.Form Orders
       Caption         =   "Раб.реестр: "
       Height          =   195
       Left            =   4680
-      TabIndex        =   24
+      TabIndex        =   23
       Top             =   5460
       Visible         =   0   'False
       Width           =   915
@@ -396,7 +392,7 @@ Begin VB.Form Orders
       Caption         =   "Менеджер:"
       Height          =   195
       Left            =   10320
-      TabIndex        =   19
+      TabIndex        =   18
       Top             =   120
       Width           =   855
    End
@@ -405,7 +401,7 @@ Begin VB.Form Orders
       ForeColor       =   &H00000000&
       Height          =   315
       Left            =   1260
-      TabIndex        =   18
+      TabIndex        =   17
       Top             =   5580
       Width           =   1575
    End
@@ -850,12 +846,6 @@ ERR1:
 End Sub
 
 
-Private Sub cmWerk_Click()
-If gEquipId <> 1 And isWerkOrders Then Unload WerkOrders
-gEquipId = 1
-WerkOrders.werkId = 1
-WerkOrders.Show 'vbModal
-End Sub
 
 
 Private Sub cmExvel_Click()
@@ -1127,22 +1117,28 @@ GoTo ENs
 End Sub
 
 
-Private Sub cmZagrYAG_Click()
-gEquipId = 1
-Zagruz.Show
+Private Sub cmWerk_Click(Index As Integer)
+    Dim currentWerkId As Integer, newWerkId As Integer
+    currentWerkId = WerkOrders.idWerk
+    newWerkId = Index + 1
+    If currentWerkId <> newWerkId And isWerkOrders Then
+        Unload WerkOrders
+    End If
+    WerkOrders.idWerk = newWerkId
+    WerkOrders.Show 'vbModal
 End Sub
 
-
-Private Sub cmZagrCO2_Click()
-gEquipId = 2
-Zagruz.Show
+Private Sub cmEquip_Click(Index As Integer)
+    Dim currentEquipId As Integer, newEquipId As Integer
+    currentEquipId = Zagruz.idEquip
+    newEquipId = Index + 1
+    If currentEquipId <> newEquipId And isZagruz Then
+        Unload Zagruz
+    End If
+    Zagruz.idEquip = newEquipId
+    Zagruz.Show 'vbModal
 End Sub
 
-
-Private Sub cmZagrSUB_Click()
-gEquipId = 3
-Zagruz.Show
-End Sub
 
 
 Sub lbHide(Optional noFocus As String = "")
@@ -1409,7 +1405,7 @@ initOrCol orServername, "so.servername"
 ReDim Preserve orSqlWhere(orColNumber)
 
 laWerk.Visible = True
-cmWerk.Visible = True
+cmWerk(0).Visible = True
 
 zakazNum = 0
 tbStartDate.Text = Format(DateAdd("d", -7, curDate), "dd/mm/yy")
@@ -1475,6 +1471,30 @@ trigger = True
 initListbox "select * from GuideVenture where standalone = 0", lbVenture, "VentureId", "VentureName"
 
 initListbox "select werkId, werkCode from GuideWerk order by 1", lbWerk, "werkId", "werkCode"
+
+For I = 1 To lbWerk.ListCount - 2
+    Load cmWerk(I)
+    cmWerk(I).Left = cmWerk(I - 1).Left + cmWerk(I - 1).Width + 10
+    cmWerk(I).Visible = True
+Next I
+
+For I = 0 To lbWerk.ListCount - 2
+    cmWerk(I).Caption = lbWerk.List(I + 1)
+Next I
+
+initListbox "select equipId, equipName from Guideequip where equipName <> '' order by 1", lbEquip, "equipId", "equipName"
+
+For I = 1 To lbEquip.ListCount - 2
+    Load cmEquip(I)
+    cmEquip(I).Left = cmEquip(I - 1).Left + cmEquip(I - 1).Width + 10
+    cmEquip(I).Visible = True
+Next I
+
+For I = 0 To lbEquip.ListCount - 2
+    Equip(I + 1) = lbEquip.List(I + 1)
+    cmEquip(I).Caption = Equip(I + 1)
+Next I
+
 
 End Sub
 
@@ -1601,7 +1621,7 @@ Sub getWhereInvoice()
  End If
 End Sub
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer
+Dim h As Integer, w As Integer, I As Integer
 lbHide "noFocus"
 
 
@@ -1619,14 +1639,17 @@ laInform.Top = laInform.Top + h
 cmAdd.Top = cmAdd.Top + h
 cmToWeb.Top = cmToWeb.Top + h
 laWerk.Top = laWerk.Top + h
-cmWerk.Top = cmWerk.Top + h
 laZagruz.Top = laZagruz.Top + h
-cmZagrYAG.Top = cmZagrYAG.Top + h
-cmZagrCO2.Top = cmZagrCO2.Top + h
-cmZagrSUB.Top = cmZagrSUB.Top + h '$$ceh
 cmExvel.Top = cmExvel.Top + h
 tbEnable.Top = tbEnable.Top + h
 tbEnable.Left = tbEnable.Left + w
+For I = 0 To cmWerk.UBound
+    cmWerk(I).Top = cmWerk(I).Top + h
+Next I
+
+For I = 0 To cmEquip.UBound
+    cmEquip(I).Top = cmEquip(I).Top + h
+Next I
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
@@ -2936,10 +2959,10 @@ cmRefr.Caption = "Загрузить"
 End Sub
 
 Function DateFromMobileVrVid(col As Integer) As String
-Dim n As Integer
+Dim N As Integer
 
 If checkNumeric(tbMobile.Text, 9, 21) Then
-    n = tbMobile.Text
+    N = tbMobile.Text
     DateFromMobileVrVid = Grid.TextMatrix(mousRow, col)
     If DateFromMobileVrVid = "" Then
         MsgBox "Время можно будет задать после того, как будет определен дата!", , ""
@@ -2947,8 +2970,8 @@ If checkNumeric(tbMobile.Text, 9, 21) Then
         Exit Function
     End If
     DateFromMobileVrVid = "'" & Format(DateFromMobileVrVid & " " & _
-                          n & ":00:00", "yyyy-mm-dd hh:nn:ss") & "'"
-    Grid.TextMatrix(mousRow, mousCol) = n
+                          N & ":00:00", "yyyy-mm-dd hh:nn:ss") & "'"
+    Grid.TextMatrix(mousRow, mousCol) = N
 Else
     tbMobile.SelStart = 0
     tbMobile.SelLength = Len(tbMobile.Text)

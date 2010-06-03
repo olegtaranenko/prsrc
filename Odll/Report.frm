@@ -109,7 +109,7 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
 Public Regim As String
-'Public Regim As String
+Public idEquip As Integer
 Dim oldHeight As Integer, oldWidth As Integer ' нач размер формы
 Dim zakazano As Double, Oplacheno As Double, Otgrugeno As Double
 Public nCols As Integer ' общее кол-во колонок
@@ -171,11 +171,11 @@ Private Sub Command1_Click()
 End Sub
 
 Private Sub cmNext_Click()
-virabotka "next"
+doVirabotka "next"
 End Sub
 
 Private Sub cmPrev_Click()
-virabotka "prev"
+doVirabotka "prev"
 End Sub
 
 Private Sub cmPrint_Click()
@@ -190,7 +190,6 @@ If Regim = "KK" Or Regim = "RA" Then
     statistic
 ElseIf Regim = "Manag" Then
     managStat
-#If Not COMTEC = 1 Then '----------------------------------------------------
 ElseIf Regim = "whoRezerved" Then
     laHeader.Caption = "Список заказов, кот. резервировали ном-ру '" & gNomNom & "' [" & Me.Edizm2 & "]."
     Me.MousePointer = flexHourglass
@@ -198,22 +197,21 @@ ElseIf Regim = "whoRezerved" Then
     Me.MousePointer = flexDefault
 ElseIf Regim = "fromCehNaklad" Then
     productSostav
-#End If '--------------------------------------------------------------
 ElseIf Regim = "Virabotka" Then
     cmPrev.Visible = True
     cmNext.Visible = True
     laRecCount.Visible = False
     laCount.Visible = False
     cmExel.Visible = False
-    virabotka
+    doVirabotka
 Else
     firmOrders
 End If
 End Sub
 'str As String,
-Sub virabotka(Optional direct As String = "")
+Sub doVirabotka(Optional direct As String = "")
 Static prevDay As String, nextDay As String, str As String
-Dim curDay As String, resurs As Double, live As Double, sum As Double
+Dim curDay As String, Resurs As Double, live As Double, sum As Double
 Dim kpd_ As Double, res As Double, I As Integer
 Const crNomZak = 1
 Const crM = 2
@@ -249,7 +247,7 @@ AA:
 tmpStr = Right$(curDay, 2)
 tmpStr = tmpStr & Mid$(curDay, 3, 4)
 tmpStr = tmpStr & Left$(curDay, 2)
-laHeader.Caption = "Выработка по цеху " & Equip(gEquipId) & " на " & tmpStr
+laHeader.Caption = "Выработка по цеху " & Equip(idEquip) & " на " & tmpStr
 
 Grid.Rows = 2
 Grid.Cols = 13
@@ -268,20 +266,20 @@ Grid.Clear
     Grid.ColWidth(crLogo) = 870
     Grid.ColWidth(crIzdelia) = 2450
 
-sql = "SELECT numOrder, obrazec, Virabotka From Itogi_" & Equip(gEquipId) & _
-" WHERE (((xDate)='" & curDay & "')) ORDER BY numOrder, obrazec DESC;"
+sql = "SELECT numOrder, obrazec, Virabotka From Itogi" _
+& " WHERE xDate ='" & curDay & "' AND equipId = " & idEquip & " ORDER BY numOrder, obrazec DESC;"
 'MsgBox sql
 Set tbOrders = myOpenRecordSet("##377", sql, dbOpenForwardOnly)
 If tbOrders Is Nothing Then Exit Sub
 If tbOrders.BOF Then GoTo EN1
-resurs = -1: live = -1
+Resurs = -1: live = -1
 If tbOrders!Numorder = 0 Then
-    resurs = Round(tbOrders!virabotka, 2)
+    Resurs = Round(tbOrders!virabotka, 2)
     tbOrders.MoveNext
 End If
 If tbOrders.EOF Then GoTo EN2
 
-kpd = -1
+KPD = -1
 If tbOrders!Numorder = 1 Then
     kpd_ = Round(tbOrders!virabotka, 2)
     tbOrders.MoveNext
@@ -312,9 +310,9 @@ EN2:
 
 If direct = "" Then
     res = Zagruz.laUsed.Caption ' с учетом КПД
-    resurs = Round(res / Zagruz.tbKPD.Text, 2)
+    Resurs = Round(res / Zagruz.tbKPD.Text, 2)
 Else
-    res = Round(resurs * kpd_, 2) ' с учетом КПД(из хронологии)
+    res = Round(Resurs * kpd_, 2) ' с учетом КПД(из хронологии)
 End If
 sum = Round(sum, 2)
 
@@ -353,11 +351,11 @@ Grid.ColAlignment(crNomZak) = flexAlignLeftCenter 'flexAlignCenterCenter 'crStat
 
 Grid.TextMatrix(0, crVirab) = "значение"
 Grid.TextMatrix(1, crVirab) = Round(sum, 2)
-If resurs > -1 Then
+If Resurs > -1 Then
     Grid.TextMatrix(2, crVirab) = res
-    Grid.TextMatrix(3, crVirab) = resurs
+    Grid.TextMatrix(3, crVirab) = Resurs
 End If
-If resurs > 0.01 Then Grid.TextMatrix(4, crVirab) = Round(sum / resurs, 2)
+If Resurs > 0.01 Then Grid.TextMatrix(4, crVirab) = Round(sum / Resurs, 2)
 If live > -1 Then Grid.TextMatrix(5, crVirab) = Round(live, 2)
 
 If sum > 0 Then
@@ -428,13 +426,14 @@ End If
 
 NXT1:
 'есть ли соседние дни
-sql = "SELECT Max(xDate) AS Prev From Itogi_" & Equip(gEquipId) & _
-" WHERE (((xDate)<'" & curDay & "'));"
+sql = "SELECT Max(xDate) AS Prev From Itogi" _
+& " WHERE xDate <'" & curDay & "' AND equipId = " & idEquip
+
 If Not byErrSqlGetValues("##376", sql, prevDay) Then Exit Sub
 cmPrev.Enabled = (prevDay <> "")
 
-sql = "SELECT Min(xDate) AS Next From Itogi_" & Equip(gEquipId) & _
-" WHERE (((xDate)>'" & curDay & "'));"
+sql = "SELECT Min(xDate) AS Next From Itogi" & _
+" WHERE xDate > '" & curDay & "' AND equipId = " & idEquip
 If Not byErrSqlGetValues("##376", sql, nextDay) Then Exit Sub
 cmNext.Enabled = (nextDay <> "")
 
@@ -788,7 +787,7 @@ If mousRow = 0 And (Regim = "KK" Or Regim = "RA") Then
 End If
 
 End Sub
-Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
 End Sub

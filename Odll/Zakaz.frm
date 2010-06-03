@@ -1686,9 +1686,9 @@ wrkDefault.CommitTrans
 'tbSystem.Close
 laMess.Caption = ""
 
-zagruzFromCeh gNzak ' в delta(), Ostatki()  !!!кроме gNzak
+zagruzFromCeh idEquip, gNzak ' в delta(), Ostatki()  !!!кроме gNzak
 
-tmpMaxDay = getResurs ' выч-е nomRes()
+tmpMaxDay = getResurs(idEquip)  ' выч-е nomRes()
 Zakaz.lvAddDays tmpMaxDay 'удаляем или добавляем последние строки(дни) в
 'таблице загрузки т.к. Менеджер м. пробывать разные даты выдачи
     
@@ -1964,8 +1964,8 @@ Else
     
 End If
     
-    zagruzFromCeh gNzak '              1| в delta(), Ostatki() !!! кроме текущего
-    getResurs
+    zagruzFromCeh idEquip, gNzak '              1| в delta(), Ostatki() !!! кроме текущего
+    getResurs idEquip
     Me.lvAddDays  ' добавляем стороки и даты
     For I = 1 To maxDay
         Me.lv.ListItems("k" & I).SubItems(zkPrinato) = Round(getNevip(I), 1)

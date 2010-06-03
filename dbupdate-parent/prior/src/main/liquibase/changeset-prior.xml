@@ -1325,6 +1325,7 @@ update	OrdersEquip set outDatetime = convert(int, outDatetime)
 		<sqlFile path="views/wSUB_plus.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="views/wSUB.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="views/wYAG.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="views/wEbSvodka.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<rollback/>
 	</changeSet>
 
@@ -1394,6 +1395,188 @@ update	OrdersEquip set outDatetime = convert(int, outDatetime)
 		<dropNotNullConstraint tableName="Orders" columnName="lastManagId"/>
 	</changeSet>
 
+	<changeSet id="35" author="mantis-125" runOnChange="false">
+		<insert tableName="GuideEquip">
+			<column name="equipId" valueNumeric="4"/>
+			<column name="equipName" value="RAW"/>
+		</insert>
+		<rollback><delete tableName="GuideEquip"><where>equipId = 4</where></delete></rollback>
+	</changeSet>
+
+	<changeSet id="36" author="mantis-125" runOnChange="false">
+		<comment>Настройки для Оборудования</comment>
+		<createTable tableName="GuideResurs">
+			<column name="equipId" type="integer" >
+				<constraints nullable="false" primaryKey="true" primaryKeyName="pk_GuideResurs"/>
+			</column>
+			<column name="KPD" type="float" defaultValueNumeric="0.9">
+				<constraints nullable="false"/>
+			</column>
+			<column name="Nstan" type="float" defaultValueNumeric="1">
+				<constraints nullable="false"/>
+			</column>
+			<column name="NewRes" type="float" defaultValueNumeric="8">
+				<constraints nullable="false"/>
+			</column>
+		</createTable>
+	</changeSet>
+
+	<changeSet id="37" author="mantis-125" runOnChange="true">
+		<comment>Системные настройки из таблицы System -> GuideResurs</comment>
+		<sql>
+insert into GuideResurs (equipId, KPD, Nstan, NewRes)
+select 1, KPD_YAG, NstanYAG, newResYAG
+from system
+		</sql>
+		<sql>
+insert into GuideResurs (equipId, KPD, Nstan, NewRes)
+select 2, KPD_CO2, NstanCO2, newResCO2
+from system
+		</sql>
+		<sql>
+insert into GuideResurs (equipId, KPD, Nstan, NewRes)
+select 3, KPD_SUB, NstanSUB, newResSUB
+from system
+		</sql>
+		<sql>
+insert into GuideResurs (equipId)
+select 4
+		</sql>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="38" author="mantis-52" runOnChange="true">
+		<comment>Системные настройки из таблицы System -> GuideResurs</comment>
+		<dropColumn tableName="System" columnName="KPD_YAG"/>
+		<dropColumn tableName="System" columnName="NstanYAG"/>
+		<dropColumn tableName="System" columnName="NewResYAG"/>
+		<dropColumn tableName="System" columnName="KPD_CO2"/>
+		<dropColumn tableName="System" columnName="NstanCO2"/>
+		<dropColumn tableName="System" columnName="NewResCO2"/>
+		<dropColumn tableName="System" columnName="KPD_SUB"/>
+		<dropColumn tableName="System" columnName="NstanSUB"/>
+		<dropColumn tableName="System" columnName="NewResSUB"/>
+	</changeSet>
+
+	<changeSet id="39" author="mantis-125" runOnChange="false">
+		<comment>Общая таблица Resurs</comment>
+		<renameTable oldTableName="ResursYAG" newTableName="Resurs"/>
+	</changeSet>
+
+	<changeSet id="40" author="mantis-125" runOnChange="false">
+		<comment>Общая таблица Resurs</comment>
+		<addColumn tableName="Resurs">
+			<column name="equipId" type="integer"><constraints nullable="true"/></column>
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="41" author="mantis-125" runOnChange="true">
+		<comment>Общая таблица Resurs</comment>
+		<update tableName="Resurs">
+			<column name="equipId" value="1"/>
+		</update>
+	</changeSet>
+
+	<changeSet id="42" author="mantis-125" runOnChange="true">
+		<comment>Общая таблица Resurs</comment>
+		<sql>
+insert into Resurs (equipId, xDate, nomRes)
+select 2, xDate, nomRes
+from ResursCO2
+		</sql>
+		<sql>
+insert into Resurs (equipId, xDate, nomRes)
+select 3, xDate, nomRes
+from ResursSUB
+		</sql>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="43" author="mantis-125" runOnChange="false">
+		<comment>Удаляем мусор из таблицы Ресурсов</comment>
+		<dropColumn tableName="Resurs" columnName="dopRes_"/>
+		<dropColumn tableName="Resurs" columnName="dopEndDay_"/>
+	</changeSet>
+
+	<changeSet id="44" author="mantis-125" runOnChange="false">
+		<addNotNullConstraint tableName="Resurs" columnName="xDate"/>
+		<addNotNullConstraint tableName="Resurs" columnName="equipId"/>
+	</changeSet>
+
+	<changeSet id="45" author="mantis-125">
+		<comment>Создать первичный ключ для таблицы проводок</comment>
+		<addPrimaryKey tableName="Resurs" constraintName="pk_resurs" columnNames="equipId, xDate"/>
+	</changeSet>
+
+	<changeSet id="46" author="mantis-125" runOnChange="false">
+		<dropTable tableName="ResursCO2"/>
+	</changeSet>
+	<changeSet id="47" author="mantis-125" runOnChange="false">
+		<dropTable tableName="ResursSUB"/>
+	</changeSet>
+
+
+	<changeSet id="48" author="mantis-125" runOnChange="false">
+		<comment>Общая таблица Itogi</comment>
+		<renameTable oldTableName="Itogi_YAG" newTableName="Itogi"/>
+	</changeSet>
+
+	<changeSet id="49" author="mantis-125" runOnChange="false">
+		<comment>Общая таблица Itogi</comment>
+		<addColumn tableName="Itogi">
+			<column name="equipId" type="integer"><constraints nullable="true"/></column>
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="50" author="mantis-125" runOnChange="true">
+		<comment>Общая таблица Itogi</comment>
+		<update tableName="Itogi">
+			<column name="equipId" value="1"/>
+		</update>
+	</changeSet>
+
+	<changeSet id="51" author="mantis-125" runOnChange="false">
+		<comment>Сбросить первичный ключ для переименования столбца</comment>
+		<dropPrimaryKey tableName="Itogi"/>
+	</changeSet>
+
+	<changeSet id="52" author="mantis-125" runOnChange="false">
+		<comment>Общая таблица Itogi</comment>
+		<sql>
+insert into Itogi (equipId, xDate, numOrder, obrazec, Virabotka)
+select 2, xDate, numOrder, obrazec, Virabotka
+from Itogi_CO2
+		</sql>
+		<sql>
+insert into Itogi (equipId, xDate, numOrder, obrazec, Virabotka)
+select 3, xDate, numOrder, obrazec, Virabotka
+from Itogi_SUB
+		</sql>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="53" author="mantis-125" runOnChange="false">
+		<addNotNullConstraint tableName="Itogi" columnName="equipId"/>
+	</changeSet>
+
+	<changeSet id="54" author="mantis-125">
+		<comment>Создать первичный ключ для таблицы проводок</comment>
+		<addPrimaryKey tableName="Itogi" constraintName="pk_Itogi" columnNames="equipId, numorder, xDate, obrazec"/>
+	</changeSet>
+
+	<changeSet id="55" author="mantis-125" runOnChange="false">
+		<dropTable tableName="Itogi_CO2"/>
+	</changeSet>
+
+	<changeSet id="56" author="mantis-125" runOnChange="false">
+		<dropTable tableName="Itogi_SUB"/>
+	</changeSet>
+
+	<changeSet id="57" author="mantis-125" runOnChange="true">
+		<comment>Процедура: Выставить процент готовности заказа</comment>
+		<sqlFile path="procedures/putWerkOrderReady.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback/>
+	</changeSet>
 
 </databaseChangeLog>
 
