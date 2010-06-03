@@ -2104,7 +2104,7 @@ ElseIf mousCol = orStatus Then
    ElseIf Grid.TextMatrix(mousRow, orWerk) <> "" Then
         If StatusId = 1 Then 'в работе                                 $$1
           sql = "SELECT sum(isnull(oc.Nevip, 0) * isnull(oe.worktime, 0)) as nevip from OrdersInCeh oc " _
-            & " LEFT JOIN OrdersEquip oe on oe.Numorder = oc.Numorder and oc.cehId = oe.cehId" _
+            & " LEFT JOIN vw_OrdersEquipSummary oe on oe.Numorder = oc.Numorder" _
           & " WHERE oc.Numorder = " & gNzak _
           & " group by oc.Numorder "
           Set tbWerk = myOpenRecordSet("##373", sql, dbOpenForwardOnly)

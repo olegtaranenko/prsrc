@@ -1101,7 +1101,7 @@ Timer1.Enabled = False
 
 sql = "SELECT o.statusId, oe.worktime " _
 & " from Orders o" _
-& " left join OrdersEquip oe on oe.numorder = o.numorder and oe.cehId = " & gEquipId _
+& " left join OrdersEquip oe on oe.numorder = o.numorder and oe.equipId = " & gEquipId _
 & " WHERE o.numOrder = " & gNzak
 Set tbOrders = myOpenRecordSet("##30", sql, dbOpenForwardOnly) '$#$
 
@@ -1170,7 +1170,7 @@ sql = "UPDATE Orders SET dateRS = " & str & " WHERE Orders.numOrder = " & gNzak
 'MsgBox sql
 If myExecute("##392", sql) <> 0 Then GoTo ER1
 
-sql = "SELECT * from OrdersInCeh WHERE numOrder = " & gNzak & " and werkId = " & gWerkId
+sql = "SELECT * from OrdersInCeh WHERE numOrder = " & gNzak & " and werkId = " & zakazBean.werkId
 Set tbOrders = myOpenRecordSet("##01", sql, dbOpenForwardOnly)
 
 Worktime = workTimeOld ' для случая, если не менялось
@@ -1930,14 +1930,14 @@ Else
     Me.cmAdd.Visible = True
     Me.cmRepit.Visible = True
     
-    sql = "SELECT o.numorder, o.StatusId, o.DateRS" _
-    & ", oe.outDateTime, oe.statusEquipId, oe.cehId, oe.worktime" _
-    & ", oc.DateTimeMO, oc.workTimeMO, oc.StatM, oc.StatO" _
-    & ", oc.stat as statusInCeh, oc.nevip, oc.urgent, o.outTime" _
+    sql = "SELECT o.numorder, o.StatusId, o.DateRS, o.outTime, o.werkId" _
+    & ", oe.outDateTime, oe.statusEquipId, oe.equipId, oe.worktime, oe.workTimeMO" _
+    & ", oc.DateTimeMO, oc.StatM, oc.StatO" _
+    & ", oc.stat as statusInCeh, oc.nevip, oc.urgent" _
     & ", o.lastModified, o.lastManagId, 0 as presentationFormat" _
     & " from Orders o" _
     & " JOIN OrdersEquip oe on oe.numorder = o.numorder " _
-    & " LEFT JOIN OrdersInCeh oc on oc.numorder = o.numorder AND oc.cehId = oe.cehId" _
+    & " LEFT JOIN OrdersInCeh oc on oc.numorder = o.numorder AND oc.werkId = o.werkId" _
     & " WHERE o.numOrder =" & gNzak & " AND oe.equipId = " & CStr(gEquipId)
     Set tbOrders = myOpenRecordSet("##402", sql, dbOpenForwardOnly)
     
@@ -2028,7 +2028,7 @@ Next I
 str = "DateDiff(day, now(), oe.outDateTime)"
 sql = "SELECT " & str & " AS day, o.FirmId" _
 & " From Orders o" _
-& " join OrdersEquip oe on oe.numorder = o.numorder and oe.cehId = " & gEquipId _
+& " join OrdersEquip oe on oe.numorder = o.numorder and oe.equipId = " & gEquipId _
 & " Where o.StatusId < 4" _
 & " GROUP BY " & str & ", o.FirmId" _
 & " HAVING " & str & " >= 0"
