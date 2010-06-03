@@ -940,17 +940,17 @@ AA:
     obraz = "o"
     sql = "SELECT oc.workTimeMO, oc.StatO " _
     & " from OrdersInCeh oc " _
-    & " WHERE numOrder =" & gNzak & " and oc.werkId = " & gEquipId
+    & " WHERE numOrder =" & gNzak & " and oc.werkId = " & gWerkId
     If Not byErrSqlGetValues("##386", sql, virabotka, StatO) Then Exit Function
     If S = 0 Then ' 100%
     Else
         virabotka = -virabotka
     End If
   Else
-    sql = "SELECT oe.workTime, oc.Nevip " & _
-    " FROM OrdersEquip oe " & _
-    " JOIN OrdersInCeh oc ON oe.numOrder = oc.numOrder AND oc.werkId = oe.werkId" & _
-    " WHERE oc.numOrder =" & gNzak & " and oe.werkId = " & gEquipId
+    sql = "SELECT o.workTime, oc.Nevip " & _
+    " FROM Orders o " & _
+    " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder AND oc.werkId = o.werkId" & _
+    " WHERE o.numOrder =" & gNzak & " and o.werkId = " & gWerkId
     If Not byErrSqlGetValues("##421", sql, t, n) Then Exit Function
     virabotka = Round((n - S) * t, 2)
   End If
