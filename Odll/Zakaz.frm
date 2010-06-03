@@ -1180,26 +1180,26 @@ If Not tbOrders.BOF Then
          If (statusIdNew = 1 Or statusIdNew = 5) And editWorkTime Then 'остается в работе или отложен
             Worktime = Round(workTimeOld + tbWorktime.Text - neVipolnen, 1) 'время с учетом коррекции
             sql = "UPDATE OrdersInCeh SET Nevip = " & tbWorktime.Text / Worktime _
-             & " WHERE numOrder =" & gNzak & " and werkId = " & gWerkId
+             & " WHERE numOrder =" & gNzak
             If myExecute("##393", sql) <> 0 Then GoTo ER1
          Else
             Worktime = tbWorktime.Text
          End If
        End If
        sql = "UPDATE OrdersInCeh SET urgent = '" & urgent & _
-       "' WHERE OrdersInCeh.numOrder = " & gNzak & " and werkId = " & gWerkId
+       "' WHERE OrdersInCeh.numOrder = " & gNzak
        If myExecute("##403", sql) <> 0 Then GoTo ER1
        GoTo DD
     Else
-        sql = "DELETE from OrdersInCeh WHERE numOrder = " & gNzak & " and werkId = " & gWerkId
+        sql = "DELETE from OrdersInCeh WHERE numOrder = " & gNzak
         If myExecute("##394", sql) <> 0 Then GoTo ER1
         Worktime = 0
     End If
 Else
     If isTimeZakaz Then
         Worktime = tbWorktime.Text
-        sql = "INSERT INTO OrdersInCeh ( numOrder, urgent, werkId )" & _
-        "SELECT " & gNzak & ",'" & urgent & "', " & gWerkId
+        sql = "INSERT INTO OrdersInCeh ( numOrder, urgent)" & _
+        "SELECT " & gNzak & ",'" & urgent & "'"
         If myExecute("##395", sql) <> 0 Then GoTo ER1
 DD:     noClick = True
         Orders.Grid.col = orWerk
@@ -1253,11 +1253,11 @@ table.Close
   If bilo Then      '
     sql = "UPDATE OrdersInCeh SET StatM = '" & cbM.Text & "', StatO = '" & cbO.Text & _
     "', DateTimeMO = " & str & ", workTimeMO = " & Worktime & _
-    " WHERE numOrder = " & gNzak & " AND werkId = " & gWerkId
+    " WHERE numOrder = " & gNzak
   Else
-    sql = "INSERT INTO OrdersInCeh ( numOrder, StatM, StatO, WorktimeMO, DatetimeMO, werkId ) " & _
+    sql = "INSERT INTO OrdersInCeh ( numOrder, StatM, StatO, DatetimeMO , WorktimeMO) " & _
     "SELECT " & gNzak & ", '" & _
-    cbM.Text & "', '" & cbO.Text & "', " & str & "," & Worktime & "," & gWerkId
+    cbM.Text & "', '" & cbO.Text & "', " & str & "," & Worktime
   End If
   'Debug.Print sql
   If myExecute("##397", sql) <> 0 Then GoTo ER1
@@ -1920,7 +1920,6 @@ maxDay = 0
 If idWerk > 0 Then ' вызов в режиме Сетки заказов
     Me.cmAdd.Visible = False
     Me.cmRepit.Visible = False
-    gWerkId = idWerk
     gNzak = ""
     statusIdOld = 0
     Me.urgent = ""

@@ -32,7 +32,6 @@ Public isAdmin As Boolean
 Public isBlock As Boolean
 Public Const lenEquip = 3
 Public Equip(10) As String
-Public gWerkId As Integer
 Public gEquipId As Integer
 Public Const lenStatus = 20
 Public statId(lenStatus) As Integer
@@ -1057,11 +1056,11 @@ table.Close
 CheckIntegration
 
 If dostup = "y" Then
-    gWerkId = 1: WerkOrders.Show
+    WerkOrders.idWerk = 1: WerkOrders.Show
 ElseIf dostup = "c" Then
-    gWerkId = 2: WerkOrders.Show
+    WerkOrders.idWerk = 2: WerkOrders.Show
 ElseIf dostup = "s" Then        '$$$ceh
-    gWerkId = 3: WerkOrders.Show   '
+    WerkOrders.idWerk = 3: WerkOrders.Show   '
 Else
     Orders.Show
 End If
@@ -1995,8 +1994,8 @@ ElseIf by = "bySeriaId" Then
     byStr = ".seriaId = " & gSeriaId
 ElseIf by = "byProductId" Then
     byStr = ".prId = " & gProductId
-ElseIf by = "byCehId" Then
-    byStr = ".numOrder = " & gNzak & " and " & table & ".werkId = " & gWerkId
+ElseIf by = "byWerkId" Then
+    byStr = ".numOrder = " & gNzak
 ElseIf by = "byNumDoc" Then
     sql = "UPDATE " & table & " SET " & table & "." & field & "=" & value _
         & " WHERE " & table & ".numDoc =" & numDoc & " AND " & table & _

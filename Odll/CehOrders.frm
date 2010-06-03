@@ -179,6 +179,7 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
 
+Public idWerk As Integer
 Dim werkRows As Long, werkRowsOld As Long
 Dim sum As Single
 Dim marker As String ' символ в 0 колонке определяет тип lb, выз-го по muose
@@ -861,7 +862,7 @@ ElseIf str = "готов" Then
     If 1 = 1 Then
 #End If '-------------------------------------------------------------------
         wrkDefault.BeginTrans
-        I = ValueToTableField("W##41", "'" & str & "'", "OrdersInCeh", "Stat", "byCehId")
+        I = ValueToTableField("W##41", "'" & str & "'", "OrdersInCeh", "Stat", "byWerkId")
         If I = 0 Then
             If ValueToTableField("##39", "4", "Orders", "StatusId") <> 0 Then GoTo ER1
             If ValueToTableField("##39", "0", "Orders", "ProblemId") <> 0 Then GoTo ER1
@@ -891,7 +892,7 @@ Else '  пусто, "*" и "в работе"
     lbStatus.Visible = False
     wrkDefault.BeginTrans
     If makeProcReady("0%") Then
-        If ValueToTableField("##41", "'" & str & "'", "OrdersInCeh", "Stat", "byCehId") <> 0 Then GoTo ER1
+        If ValueToTableField("##41", "'" & str & "'", "OrdersInCeh", "Stat", "byWerkId") <> 0 Then GoTo ER1
         If ValueToTableField("##39", "1", "Orders", "StatusId") <> 0 Then GoTo ER1
 AA:     If ValueToTableField("##39", "0", "Orders", "ProblemId") = 0 Then
             wrkDefault.CommitTrans
@@ -938,9 +939,11 @@ AA:
  
   If obraz <> "" Then
     obraz = "o"
-    sql = "SELECT oc.workTimeMO, oc.StatO " _
-    & " from OrdersInCeh oc " _
-    & " WHERE numOrder =" & gNzak & " and oc.werkId = " & gWerkId
+    ''TODO
+    sql = "SELECT o.workTimeMO, oc.StatO " _
+    & " FROM vw_OrdersEquipSummary o " _
+    & " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder" _
+    & " WHERE o.numOrder =" & gNzak
     If Not byErrSqlGetValues("##386", sql, virabotka, StatO) Then Exit Function
     If S = 0 Then ' 100%
     Else
@@ -948,9 +951,9 @@ AA:
     End If
   Else
     sql = "SELECT o.workTime, oc.Nevip " & _
-    " FROM Orders o " & _
-    " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder AND oc.werkId = o.werkId" & _
-    " WHERE o.numOrder =" & gNzak & " and o.werkId = " & gWerkId
+    " FROM vw_OrdersEquipSummary o " & _
+    " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder" & _
+    " WHERE o.numOrder =" & gNzak
     If Not byErrSqlGetValues("##421", sql, t, n) Then Exit Function
     virabotka = Round((n - S) * t, 2)
   End If
@@ -982,7 +985,7 @@ AA:
         Exit Function
       End If
    Else 'obraz = ""
-     ValueToTableField "##422", "'в работе'", "OrdersInCeh", "Stat", "byCehId"
+     ValueToTableField "##422", "'в работе'", "OrdersInCeh", "Stat", "byWerkId"
 '     sql = "UPDATE OrdersInCeh SET Stat = 'в работе', " & _
      "Nevip = " & s & " WHERE (((numOrder)=" & gNzak & "));"
 '     If myExecute("##422", sql) <> 0 Then Exit Function

@@ -1160,7 +1160,6 @@ where	GuideCeh.cehId = orders.cehId
 	<changeSet id="5" author="mantis-125" runOnChange="false">
 		<comment>Добавить поле Оборудование в таблицу OrdersInCeh, некоторые поля из основной таблицы Orders, а также все поля из OrdersMO</comment>
 		<addColumn tableName="OrdersInCeh">
-			<column name="werkId" type="integer"><constraints nullable="true"/></column>
 			<column name="DateTimeMO" type="datetime"><constraints nullable="true"/></column>
 			<column name="StatM" type="varchar(20)"><constraints nullable="true"/></column>
 			<column name="StatO" type="varchar(20)"><constraints nullable="true"/></column>
@@ -1168,14 +1167,6 @@ where	GuideCeh.cehId = orders.cehId
 			<column name="lastManagId" type="tinyint"><constraints nullable="true"/></column>
 		</addColumn>
 
-	</changeSet>
-
-	<changeSet id="6" author="mantis-125" runOnChange="true">
-		<sql>
-update	OrdersInCeh set werkId = 2
-		</sql>
-
-		<rollback/>
 	</changeSet>
 
 	<changeSet id="7" author="mantis-125" runOnChange="false">
@@ -1199,10 +1190,6 @@ update	OrdersInCeh set werkId = 2
 	<changeSet id="10" author="mantis-125" runOnChange="false">
 		<comment>Первичный ключ для таблицы оборудования</comment>
 		<addPrimaryKey tableName="GuideEquip" columnNames="equipId" constraintName="pk_GuideEquip"/>
-	</changeSet>
-
-	<changeSet id="11" author="mantis-125" runOnChange="false">
-		<addNotNullConstraint tableName="OrdersInCeh" columnName="werkId"/>
 	</changeSet>
 
 	<changeSet id="12" author="mantis-125" runOnChange="false">
@@ -1381,18 +1368,6 @@ update	OrdersEquip set outDatetime = convert(int, outDatetime)
 	<changeSet id="29" author="mantis-125" runOnChange="false">
 		<comment>Застарелый ненужный мусор из производственных таблиц</comment>
 		<dropColumn tableName="OrdersInCeh" columnName="id_jscet"/>
-		<rollback/>
-	</changeSet>
-
-	<changeSet id="30" author="mantis-125" runOnChange="false">
-		<comment>Добавить цех в первичные ключи производственных таблиц</comment>
-		<dropPrimaryKey tableName="OrdersInCeh"/>
-		<rollback/>
-	</changeSet>
-
-	<changeSet id="31" author="mantis-125" runOnChange="false">
-		<comment>Добавить цех в первичные ключи производственных таблиц</comment>
-		<addPrimaryKey tableName="OrdersInCeh" columnNames="numorder,werkId" constraintName="pk_OrdersInCeh"/>
 		<rollback/>
 	</changeSet>
 
