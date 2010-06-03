@@ -13,10 +13,10 @@ begin
 	update OrdersEquip set worktime = p_worktime
 		, outDatetime = p_outDatetime
 	where numorder = p_numorder
-		and cehId = p_equipId;
+		and equipId = p_equipId;
 
 	if @@rowcount = 0 then
-		insert into OrdersEquip (numorder, cehId, worktime, outDatetime)
+		insert into OrdersEquip (numorder, equipId, worktime, outDatetime)
 		values (p_numorder, p_equipId, p_worktime, p_outDatetime);
 	end if;
 

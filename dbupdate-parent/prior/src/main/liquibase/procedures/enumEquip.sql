@@ -13,7 +13,7 @@ begin
 	set v_first = 0; set v_second = 0;
 
 	for x as xc dynamic scroll cursor for
-		select h.equip as r_equip
+		select h.equipName as r_equip
 		from OrdersEquip oe
 		join GuideEquip h on h.equipId = oe.equipId
 		where oe.numorder = p_numorder

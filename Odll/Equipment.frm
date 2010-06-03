@@ -514,6 +514,7 @@ Private Sub putOrderEquip(Index As Integer)
         DateOut = "null"
     End If
     sql = "call putOrderEquip (" & gNzak & "," & equipId & "," & Worktime & "," & DateOut & ")"
+    'Debug.Print sql
     myExecute "W#eq.2", sql
     
 End Sub

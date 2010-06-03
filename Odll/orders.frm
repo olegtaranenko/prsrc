@@ -2274,7 +2274,7 @@ If noClick Then Exit Sub
 Grid.CellBackColor = Grid.BackColor
 End Sub
 
-Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then
         MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
 End If
@@ -3575,10 +3575,16 @@ End Sub
 Function copyRowToGrid(row As Long, ByVal Numorder As Long) As String
 
  If Not IsNull(tqOrders!invoice) Then _
-     Grid.TextMatrix(row, orInvoice) = tqOrders!invoice
-If Not IsNull(tqOrders!Werk) Then
- Grid.TextMatrix(row, orWerk) = tqOrders!Werk
-End If
+    Grid.TextMatrix(row, orInvoice) = tqOrders!invoice
+    If Not IsNull(tqOrders!Werk) Then
+     Grid.TextMatrix(row, orWerk) = tqOrders!Werk
+    End If
+    
+    If Not IsNull(tqOrders!Equip) Then
+     Grid.TextMatrix(row, orEquip) = tqOrders!Equip
+     
+    End If
+ 
  Grid.TextMatrix(row, orMen) = tqOrders!Manag
  Grid.TextMatrix(row, orFirma) = tqOrders!name
  LoadDate Grid, row, orData, tqOrders!inDate, "dd.mm.yy"

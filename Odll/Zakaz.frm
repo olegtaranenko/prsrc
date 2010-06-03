@@ -991,7 +991,7 @@ Private Sub Grid_LostFocus()
 Grid_LeaveCell
 End Sub
 
-Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
 
@@ -1170,7 +1170,7 @@ sql = "UPDATE Orders SET dateRS = " & str & " WHERE Orders.numOrder = " & gNzak
 'MsgBox sql
 If myExecute("##392", sql) <> 0 Then GoTo ER1
 
-sql = "SELECT * from OrdersInCeh WHERE numOrder = " & gNzak & " and cehId = " & gEquipId
+sql = "SELECT * from OrdersInCeh WHERE numOrder = " & gNzak & " and werkId = " & gWerkId
 Set tbOrders = myOpenRecordSet("##01", sql, dbOpenForwardOnly)
 
 Worktime = workTimeOld ' для случая, если не менялось
@@ -1180,26 +1180,26 @@ If Not tbOrders.BOF Then
          If (statusIdNew = 1 Or statusIdNew = 5) And editWorkTime Then 'остается в работе или отложен
             Worktime = Round(workTimeOld + tbWorktime.Text - neVipolnen, 1) 'время с учетом коррекции
             sql = "UPDATE OrdersInCeh SET Nevip = " & tbWorktime.Text / Worktime _
-             & " WHERE numOrder =" & gNzak & " and cehId = " & gEquipId
+             & " WHERE numOrder =" & gNzak & " and werkId = " & gWerkId
             If myExecute("##393", sql) <> 0 Then GoTo ER1
          Else
             Worktime = tbWorktime.Text
          End If
        End If
        sql = "UPDATE OrdersInCeh SET urgent = '" & urgent & _
-       "' WHERE OrdersInCeh.numOrder = " & gNzak & " and cehId = " & gEquipId
+       "' WHERE OrdersInCeh.numOrder = " & gNzak & " and werkId = " & gWerkId
        If myExecute("##403", sql) <> 0 Then GoTo ER1
        GoTo DD
     Else
-        sql = "DELETE from OrdersInCeh WHERE numOrder = " & gNzak & " and cehId = " & gEquipId
+        sql = "DELETE from OrdersInCeh WHERE numOrder = " & gNzak & " and werkId = " & gWerkId
         If myExecute("##394", sql) <> 0 Then GoTo ER1
         Worktime = 0
     End If
 Else
     If isTimeZakaz Then
         Worktime = tbWorktime.Text
-        sql = "INSERT INTO OrdersInCeh ( numOrder, urgent, cehId )" & _
-        "SELECT " & gNzak & ",'" & urgent & "', " & gEquipId
+        sql = "INSERT INTO OrdersInCeh ( numOrder, urgent, werkId )" & _
+        "SELECT " & gNzak & ",'" & urgent & "', " & gWerkId
         If myExecute("##395", sql) <> 0 Then GoTo ER1
 DD:     noClick = True
         Orders.Grid.col = orWerk
@@ -1216,7 +1216,7 @@ End If
 sql = "UPDATE OrdersEquip SET outDateTime = " & v_outDateTime _
     & ", workTime = " & Worktime _
     & ", statusEquipId = " & statusIdNew _
-    & " WHERE numOrder = " & gNzak & " and cehId =" & gEquipId
+    & " WHERE numOrder = " & gNzak & " and equipId =" & gEquipId
 'Debug.Print sql
 If myExecute("##391", sql) <> 0 Then GoTo ER1
 
@@ -1253,11 +1253,11 @@ table.Close
   If bilo Then      '
     sql = "UPDATE OrdersInCeh SET StatM = '" & cbM.Text & "', StatO = '" & cbO.Text & _
     "', DateTimeMO = " & str & ", workTimeMO = " & Worktime & _
-    " WHERE numOrder = " & gNzak & " AND cehId = " & gEquipId
+    " WHERE numOrder = " & gNzak & " AND werkId = " & gWerkId
   Else
-    sql = "INSERT INTO OrdersInCeh ( numOrder, StatM, StatO, WorktimeMO, DatetimeMO, cehId ) " & _
+    sql = "INSERT INTO OrdersInCeh ( numOrder, StatM, StatO, WorktimeMO, DatetimeMO, werkId ) " & _
     "SELECT " & gNzak & ", '" & _
-    cbM.Text & "', '" & cbO.Text & "', " & str & "," & Worktime & "," & gEquipId
+    cbM.Text & "', '" & cbO.Text & "', " & str & "," & Worktime & "," & gWerkId
   End If
   'Debug.Print sql
   If myExecute("##397", sql) <> 0 Then GoTo ER1
@@ -1309,15 +1309,15 @@ Open logFile For Append As #2
 Print #2, str
 Close #2
 
-Dim nextCehId As Integer
+Dim nextEquipId As Integer
 ckCehDone(gEquipId - 1).Tag = statusIdNew
  
-If Not chooseTheEquipment(statusIdNew, nextCehId) Then
+If Not chooseTheEquipment(statusIdNew, nextEquipId) Then
     ' refresh the Orders.Grid row
     
     Unload Me
 Else
-    gEquipId = nextCehId
+    gEquipId = nextEquipId
     startParams
 End If
 
@@ -1774,7 +1774,7 @@ Private Function InitZagruz() As Integer
     statusIdOld = 0
     If tbOrders Is Nothing Then Exit Function
     While Not tbOrders.EOF
-        myCehId = tbOrders("cehId")
+        myCehId = tbOrders("equipId")
         cehCtlIndex = myCehId - 1
         statusIdOld = tbOrders!StatusId
         If Not IsNull(tbOrders!statusEquipID) Then
@@ -1795,9 +1795,9 @@ Private Function InitZagruz() As Integer
     If Not atLeastOne Then
         ' warning: no ceh assigned
     Else
-        Dim newCehId As Integer
-        chooseTheEquipment statusIdOld, newCehId
-        gEquipId = newCehId
+        Dim newEquipId As Integer
+        chooseTheEquipment statusIdOld, newEquipId
+        gEquipId = newEquipId
         
     End If
     
@@ -1920,7 +1920,7 @@ maxDay = 0
 If idWerk > 0 Then ' вызов в режиме Сетки заказов
     Me.cmAdd.Visible = False
     Me.cmRepit.Visible = False
-    gEquipId = idWerk
+    gWerkId = idWerk
     gNzak = ""
     statusIdOld = 0
     Me.urgent = ""
@@ -1938,7 +1938,7 @@ Else
     & " from Orders o" _
     & " JOIN OrdersEquip oe on oe.numorder = o.numorder " _
     & " LEFT JOIN OrdersInCeh oc on oc.numorder = o.numorder AND oc.cehId = oe.cehId" _
-    & " WHERE o.numOrder =" & gNzak & " AND oe.cehId = " & CStr(gEquipId)
+    & " WHERE o.numOrder =" & gNzak & " AND oe.equipId = " & CStr(gEquipId)
     Set tbOrders = myOpenRecordSet("##402", sql, dbOpenForwardOnly)
     
     Set zakazBean = New ZakazVO

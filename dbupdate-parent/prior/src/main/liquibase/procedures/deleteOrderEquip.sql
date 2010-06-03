@@ -10,7 +10,7 @@ CREATE procedure deleteOrderEquip (
 begin
 	delete from  OrdersEquip 
 	where numorder = p_numorder
-		and cehId = p_equipId;
+		and equipId = p_equipId;
 
 end;
 
