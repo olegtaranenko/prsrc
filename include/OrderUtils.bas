@@ -25,13 +25,13 @@ sql = "UPDATE Orders INNER JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.num
 If myExecute("##11", sql, 0) > 0 Then GoTo ER1
 
 sql = "UPDATE OrdersEquip " _
-& " SET OrdersEquip.outDateTime = " & tenOclock _
-& " WHERE OrdersEquip.outDateTime < " & Midnight
+& " SET outDateTime = " & tenOclock _
+& " WHERE outDateTime < " & Midnight
 If myExecute("##404", sql, 0) > 0 Then GoTo ER1
 
 
-sql = "UPDATE OrdersInCeh SET DateTimeMO = '" & Format(curDate, "yyyy-mm-dd 10:00:00") & "'" _
-& " WHERE DateTimeMO < '" & Format(curDate, "yyyy-mm-dd 00:00:00") & "'"
+sql = "UPDATE OrdersInCeh SET DateTimeMO = " & tenOclock _
+& " WHERE DateTimeMO < " & Midnight
 If myExecute("##405", sql, 0) > 0 Then GoTo ER1
 
 
@@ -62,12 +62,13 @@ sql = "select equipId, newRes, Nstan, KPD  from GuideResurs"
 
 Set tbOrders = myOpenRecordSet("##newRes", sql, dbOpenForwardOnly)
 
-If tbOrders Is Nothing Then Exit Sub
+If tbOrders Is Nothing Then Exit Function
 While Not tbOrders.EOF
     equipId = tbOrders!equipId
     newRes = tbOrders!newRes
     N = tbOrders!Nstan
     KPD = tbOrders!KPD
+    oldRes = 0
     
     For I = 1 To befDays
         tmpDate = DateAdd("d", -I, curDate)
@@ -86,10 +87,6 @@ While Not tbOrders.EOF
         End If
     Next I
     
-    sql = "SELECT Sum(nomRes) AS rSum from Resurs" _
-    & " WHERE xDate < '" & Format(curDate, "yy.mm.dd") & "' AND equipId = " & equipId
-    'Debug.Print sql
-    If Not byErrSqlGetValues("W##12", sql, oldRes) Then Exit Function
     
     sql = "DELETE from Resurs" _
     & " WHERE xDate < '" & Format(curDate, "yy.mm.dd") & "' and equipId = " & equipId
@@ -120,7 +117,7 @@ While Not tbOrders.EOF
     
     'numOrder = 0 ' признак ресурса
     sql = "INSERT INTO Itogi ( equipId, [xDate], numOrder, Virabotka ) " & _
-    "SELECT " & equipId & ", '" & tmpStr & "', 0, " & Round(oldRes * N, 2) & ";"
+    "SELECT " & equipId & ", '" & tmpStr & "', 0, " & Round(oldRes * N, 2)
     'MsgBox sql
     myExecute "##408", sql
     

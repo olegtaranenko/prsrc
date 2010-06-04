@@ -1490,6 +1490,8 @@ For I = 1 To lbEquip.ListCount - 2
     cmEquip(I).Visible = True
 Next I
 
+ReDim Equip(lbEquip.ListCount - 1)
+
 For I = 0 To lbEquip.ListCount - 2
     Equip(I + 1) = lbEquip.List(I + 1)
     cmEquip(I).Caption = Equip(I + 1)

@@ -30,8 +30,7 @@ Public isAdmin As Boolean
 
 
 Public isBlock As Boolean
-Public Const lenEquip = 3
-Public Equip(10) As String
+Public Equip() As String
 Public gEquipId As Integer
 Public Const lenStatus = 20
 Public statId(lenStatus) As Integer
@@ -46,7 +45,7 @@ Public insideId() As String
 Public Const begWerkProblemId = 10 ' начало цеховых проблем в справочнике
 Public neVipolnen As Double, neVipolnen_O As Double
 Public maxDay As Integer ' число дней в реестре
-Public befDays As Integer ' число дней до даты реестра (когда сменилась дата)
+Public befDays As Integer ' число дней до даты реестра (когда сменилась дата), вычисляется как разница между текущим днем, и днем из последнего сохраненного System.lastNumorder
 Public webSvodkaPath As String
 Public webLoginsPath As String
 Public webNomenks As String '- есть и в sTime
@@ -195,17 +194,18 @@ Public Const gfId = 22
 
 Public Const chNomZak = 1
 Public Const chM = 2
-Public Const chStatus = 3
-Public Const chVrVip = 4
-Public Const chProcVip = 5
-Public Const chProblem = 6
-Public Const chDataVid = 7
-Public Const chVrVid = 8
-Public Const chDataRes = 9
-Public Const chFirma = 10
-Public Const chLogo = 11
-Public Const chIzdelia = 12
-Public Const chKey = 13
+Public Const chEquip = 3
+Public Const chStatus = 4
+Public Const chVrVip = 5
+Public Const chProcVip = 6
+Public Const chProblem = 7
+Public Const chDataVid = 8
+Public Const chVrVid = 9
+Public Const chDataRes = 10
+Public Const chFirma = 11
+Public Const chLogo = 12
+Public Const chIzdelia = 13
+Public Const chKey = 14
 
 Public Const zgPrinato = 1
 Public Const zgNomRes = 2
@@ -2118,7 +2118,7 @@ sql = "SELECT oe.outDateTime, o.StatusId, o.numOrder" _
     & " FROM Orders o " _
     & " JOIN OrdersEquip oe ON oe.numOrder = o.numOrder" _
     & " JOIN OrdersInCeh oc ON oc.numOrder = o.numOrder" _
-    & " WHERE oe.EquipId = " & equipId & passSql
+    & " WHERE oe.EquipId = " & equipId & " AND (isnull(worktime, 0) > 0 OR isnull(worktimeMO, 0) > 0 ) " & passSql
 
 'Debug.Print sql
 
@@ -2129,7 +2129,9 @@ If tbCeh Is Nothing Then Exit Sub
 If Not tbCeh.BOF Then
     While Not tbCeh.EOF
         isLive = False ' неживой заказ
-        If tbCeh!StatusId = 1 Then isLive = True
+        If tbCeh!StatusId = 1 Then
+            isLive = True
+        End If
         outDay = DateDiff("d", curDate, tbCeh!Outdatetime) + 1
         If outDay < 1 Then outDay = 1
                 
@@ -2182,9 +2184,12 @@ Dim I As Integer, str As String, l As Long
 'pusto=-1 если хотя бы одного предмета нет ни в одной накладной (иначе pusto=0)
 'нужно, т.к. при этом delta=Null а не quantity
 If from = "Buh" Then str = "3" Else str = "2" 'для буха только те prior_заказы, где проставлены кол-ва в Цеху
-sql = "SELECT numDoc, Max([quantity]-" & _
-"IsNull([Sum_quant],0)) AS delta, Min(IsNull(" & _
-"[Sum_quant],0)) AS pusto  From wCloseNomenk" & str & " GROUP BY numDoc ORDER BY numDoc;"
+
+sql = "SELECT numDoc, Max(quantity - IsNull( Sum_quant, 0)) AS delta, " _
+& " Min(IsNull(Sum_quant,0)) AS pusto  " _
+& " From wCloseNomenk" & str _
+& " GROUP BY numDoc ORDER BY numDoc;"
+
 'Debug.Print sql
 Set tbDMC = myOpenRecordSet("##142", sql, dbOpenDynaset)
 If tbDMC Is Nothing Then Exit Sub
@@ -2200,10 +2205,12 @@ While Not tbDMC.EOF
 AA:     gNzak = tbDMC!numDoc
     
     If from = "werk" Then ' для цеха проверяем еще и этапность
-      sql = "SELECT numOrder From xEtapByNomenk Where (((numOrder) = " & gNzak & _
-      ")) UNION ALL SELECT numOrder From xEtapByIzdelia " & _
-      "WHERE (((numOrder)= " & gNzak & "));"
+      sql = "SELECT numOrder From xEtapByNomenk Where numOrder = " _
+      & gNzak _
+      & " UNION ALL SELECT numOrder From xEtapByIzdelia " & _
+      "WHERE numOrder = " & gNzak
       If Not byErrSqlGetValues("W##352", sql, l) Then GoTo NXT
+      
       If l > 0 Then 'для убыстрения делаем только для этапных
           If predmetiIsClose("etap") Then GoTo NXT 'закрытые по этапу пропускаем
       End If

@@ -4,21 +4,55 @@ end if;
 
 
 CREATE procedure putWerkOrderReady (
-	p_numorder integer
-	, p_xDate varchar(10)
-	, p_obrazec double
-	) 
+	  p_numorder  integer
+	, p_xDate     varchar(10)
+	, p_obrazec   varchar(1)
+	, p_virabotka float
+	)
 begin
 	
-	update OrderInCeh set worktime = p_worktime
-		, outDatetime = p_outDatetime
-	where numorder = p_numorder
-		and equipId = p_equipId;
+	declare v_totalByEquip float;
+	declare v_worktime float;
+	declare v_worktimeMO float;
+	declare v_koef float;
 
-	if @@rowcount = 0 then
-		insert into OrdersEquip (numorder, equipId, worktime, outDatetime)
-		values (p_numorder, p_equipId, p_worktime, p_outDatetime);
-	end if;
+	set v_totalByEquip = 0;
+
+	select sum(isnull(oe.worktime, 0)), sum(isnull(oe.worktimeMO,0))
+		into v_worktime, v_worktimeMO
+	from OrdersEquip oe
+	where oe.numorder = p_numorder;
+
+	for o as oc dynamic scroll cursor for
+		select 
+			  oe.equipId  as r_equipId
+			, r.equipId   as r_equipIdRes
+			, r.virabotka as r_virabotka
+			, oe.worktime as r_worktime
+			, oe.worktimeMO as r_worktimeMO
+		from OrdersEquip oe 
+		left join Itogi r on 
+				r.equipId = oe.equipId 
+			and r.xdate = p_xDate 
+			and r.obrazec = p_obrazec
+		where oe.numorder = p_numorder
+	do
+
+		if isnull(p_obrazec, '') <> '' then
+			set v_koef = r_worktimeMO / v_worktimeMO;
+		else
+			set v_koef = r_worktime / v_worktime;
+		end if;
+
+		if r_equipIdRes is null then
+			insert Itogi (equipId, xDate, obrazec, virabotka) 
+			select r_equipId, p_xDate, p_obrazec, p_virabotka * v_koef;
+		else
+			update Itogi set virabotka = virabotka + p_virabotka * v_koef
+			where equipId = r_equipId and xdate = p_xDate and obrazec = p_obrazec;
+		end if;
+
+	end for;
 
 end;
 

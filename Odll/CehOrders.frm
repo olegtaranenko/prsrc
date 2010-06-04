@@ -275,16 +275,17 @@ getNakladnieList "werk"
 
 ' запоминаем настройки столбцов
 colWdth(chNomZak) = Grid.ColWidth(chNomZak)
-colWdth(chIzdelia) = Grid.ColWidth(chIzdelia)
 colWdth(chM) = Grid.ColWidth(chM)
-colWdth(chVrVip) = Grid.ColWidth(chVrVip)
+colWdth(chEquip) = Grid.ColWidth(chEquip)
 colWdth(chStatus) = Grid.ColWidth(chStatus)
+colWdth(chVrVip) = Grid.ColWidth(chVrVip)
 colWdth(chProcVip) = Grid.ColWidth(chProcVip)
 colWdth(chProblem) = Grid.ColWidth(chProblem)
 colWdth(chDataVid) = Grid.ColWidth(chDataVid)
 'colWdth(chDataRes) = Grid.ColWidth(chDataRes)
 colWdth(chVrVid) = Grid.ColWidth(chVrVid)
 colWdth(chFirma) = Grid.ColWidth(chFirma)
+colWdth(chIzdelia) = Grid.ColWidth(chIzdelia)
 colWdth(chLogo) = Grid.ColWidth(chLogo) + Grid.ColWidth(chDataRes)
 
 Grid.Visible = False
@@ -298,15 +299,18 @@ For il = 0 To Grid.Cols - 1
     Grid.CellForeColor = vbBlack
     Grid.TextMatrix(1, il) = ""
 Next il
+
 ' восстанавливаем настройки столбцов
 Grid.ColWidth(chNomZak) = colWdth(chNomZak)
-Grid.ColWidth(chIzdelia) = colWdth(chIzdelia)
 Grid.ColWidth(chM) = colWdth(chM)
+Grid.ColWidth(chEquip) = colWdth(chEquip)
 Grid.ColWidth(chVrVip) = colWdth(chVrVip)
 Grid.ColWidth(chStatus) = colWdth(chStatus)
 Grid.ColWidth(chProcVip) = colWdth(chProcVip)
 Grid.ColWidth(chProblem) = colWdth(chProblem)
 Grid.ColWidth(chDataVid) = colWdth(chDataVid)
+Grid.ColWidth(chIzdelia) = colWdth(chIzdelia)
+
 If chDetail.value = 1 Then
     Grid.ColWidth(chDataRes) = 740
 Else
@@ -318,7 +322,7 @@ Grid.ColWidth(chLogo) = colWdth(chLogo) - Grid.ColWidth(chDataRes)
 
 Me.Caption = Equip(gEquipId) & mainTitle
 sql = "select * from vw_Reestr where werkId = " & idWerk
-'Set myQuery = myBase.Connection.QueryDefs("w" & Equip(gEquipId))
+
 Set tbCeh = myOpenRecordSet("##34", sql, dbOpenDynaset)
 If tbCeh Is Nothing Then myQuery.Close: myBase.Close: End
 
@@ -332,12 +336,13 @@ If Not tbCeh.BOF Then
     If chSingl.value = 1 And gNzak <> tbNomZak.Text Then GoTo NXT
     If IsDate(tbCeh!DateTimeMO) Then
       If tbCeh!DateTimeMO < CDate("01.01.2000") _
-      Or tbCeh!DateTimeMO > CDate("01.01.2050") Then
-            msgOfZakaz "##308", "Недопустимая дата МО. Обратитесь к менеджеру. ", tbCeh!Manag
-            GoTo NXT
+        Or tbCeh!DateTimeMO > CDate("01.01.2050") _
+      Then
+        msgOfZakaz "##308", "Недопустимая дата МО. Обратитесь к менеджеру. ", tbCeh!Manag
+        GoTo NXT
       End If
       If IsNull(tbCeh!workTimeMO) Then
-            toCehFromStr "m" 'макет
+        toCehFromStr "m" 'макет
       Else  ' образец
         toCehFromStr "o" 'макет
       End If ' образец
@@ -349,7 +354,6 @@ NXT:
   Wend
 End If
 tbCeh.Close
-'myQuery.Close
 
 Grid.col = chKey: Grid.Sort = 3 'числовое возр.
 Grid.row = 1
@@ -415,6 +419,8 @@ End If
 
     If werkRows > 0 Then Grid.AddItem ("") 'кусок оформляем как осн.часть
     werkRows = werkRows + 1
+    
+    Grid.TextMatrix(werkRows, chEquip) = tbCeh!Equip
     Grid.col = chNomZak
     Grid.row = werkRows
     Grid.CellForeColor = color
@@ -530,11 +536,12 @@ For I = begWerkProblemId To lenProblem
     lbProblem.AddItem Problems(I)
 Next I
 
-Grid.FormatString = "    |<№ заказа|^М|Статус |>Вр.вып|>%вы|Проблемы|" & _
+Grid.FormatString = "    |<№ заказа|^М|Оборуд|Статус |>Вр.вып|>%вы|Проблемы|" & _
 "<Дата выдачи|<Вр.выд|<дата ресурса|<Заказчик|<Лого|<Изделия|№Дня"
 
 Grid.ColWidth(chM) = 270
 Grid.ColWidth(chVrVip) = 388
+Grid.ColWidth(chEquip) = 570
 Grid.ColWidth(chStatus) = 870
 Grid.ColWidth(chProcVip) = 420
 Grid.ColWidth(chProblem) = 900
@@ -941,7 +948,7 @@ AA:
  
   If obraz <> "" Then
     obraz = "o"
-    ''TODO
+    ''??TODO
     sql = "SELECT o.workTimeMO, oc.StatO " _
     & " FROM OrdersInCeh oc " _
     & " JOIN vw_OrdersEquipSummary o ON o.numOrder = oc.numOrder" _
@@ -957,41 +964,27 @@ AA:
     " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder" & _
     " WHERE o.numOrder =" & gNzak
     If Not byErrSqlGetValues("##421", sql, T, N) Then Exit Function
+    
     virabotka = Round((N - S) * T, 2)
   End If
 
 
 'гот-ть может изменится к примеру с 75% до 0%
-  str = Format(curDate, "yy.mm.dd")
-
-  sql = "call pubWerkOrderReady(" & gNzak & ", '" & str & "', '" & obraz & "', " & virabotka & ")"
+    str = Format(curDate, "yy.mm.dd")
+    
+    sql = "call putWerkOrderReady(" & gNzak & ", '" & str & "', '" & obraz & "', " & virabotka & ")"
   
-  sql = "SELECT xDate, Virabotka, numOrder, obrazec from Itogi" _
-  & " WHERE xDate ='" & str & "' AND numOrder =" & gNzak & " AND " _
-  & "obrazec = '" & obraz & "' AND werkId = " & idWerk
-  
-  Set tbOrders = myOpenRecordSet("##374", sql, dbOpenTable)
-    If tbOrders.BOF Then
-        tbOrders.AddNew
-        tbOrders!xDate = str
-        tbOrders!Numorder = gNzak
-        tbOrders!obrazec = obraz
-    Else
-        virabotka = virabotka + tbOrders!virabotka
-        tbOrders.Edit
+    myExecute "##374", sql
+    
+    If obraz = "o" Then '          это образец
+        If StatO = "утвержден" Then
+            makeProcReady = Null
+            Exit Function
+        End If
+    Else 'obraz = ""
+        ValueToTableField "##422", "'в работе'", "OrdersInCeh", "Stat", "byWerkId"
     End If
-    tbOrders!virabotka = virabotka
-    tbOrders.update
-    tbOrders.Close
-
-   If obraz = "o" Then '          это образец
-      If StatO = "утвержден" Then
-        makeProcReady = Null
-        Exit Function
-      End If
-   Else 'obraz = ""
-     ValueToTableField "##422", "'в работе'", "OrdersInCeh", "Stat", "byWerkId"
-   End If
+    
 End If 'If stat
 makeProcReady = True
 

@@ -1536,7 +1536,7 @@ from ResursSUB
 	</changeSet>
 
 	<changeSet id="51" author="mantis-125" runOnChange="false">
-		<comment>Сбросить первичный ключ для переименования столбца</comment>
+		<comment>Изменить первичный ключ</comment>
 		<dropPrimaryKey tableName="Itogi"/>
 	</changeSet>
 

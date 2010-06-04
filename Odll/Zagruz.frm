@@ -308,7 +308,7 @@ Else
     tbStanki.Locked = True
     chDopView.Enabled = False
 End If
-Me.Caption = "загрузка цеха " & Equip(idEquip)
+Me.Caption = "Загрузка по оборудованию " & Equip(idEquip)
 
 If dostup <> "" Then cmDel.Visible = True
 ZagruzLoad

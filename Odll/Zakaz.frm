@@ -21,28 +21,10 @@ Begin VB.Form Zakaz
       Caption         =   "YAG"
       Height          =   315
       Index           =   0
-      Left            =   3360
-      TabIndex        =   32
-      Top             =   5520
-      Width           =   495
-   End
-   Begin VB.CommandButton cmCeh 
-      Caption         =   "CO2"
-      Height          =   315
-      Index           =   1
-      Left            =   4560
-      TabIndex        =   31
-      Top             =   5520
-      Width           =   495
-   End
-   Begin VB.CommandButton cmCeh 
-      Caption         =   "SUB"
-      Height          =   315
-      Index           =   2
-      Left            =   5640
+      Left            =   360
       TabIndex        =   30
       Top             =   5520
-      Width           =   495
+      Width           =   510
    End
    Begin VB.CheckBox ckCeh 
       BackColor       =   &H8000000A&
@@ -292,30 +274,8 @@ Begin VB.Form Zakaz
       Enabled         =   0   'False
       Height          =   252
       Index           =   0
-      Left            =   3120
-      TabIndex        =   33
-      Top             =   5520
-      Width           =   252
-   End
-   Begin VB.CheckBox ckCehDone 
-      BackColor       =   &H8000000A&
-      Caption         =   "Check1"
-      Enabled         =   0   'False
-      Height          =   252
-      Index           =   1
-      Left            =   4320
-      TabIndex        =   34
-      Top             =   5520
-      Width           =   252
-   End
-   Begin VB.CheckBox ckCehDone 
-      BackColor       =   &H8000000A&
-      Caption         =   "Check1"
-      Enabled         =   0   'False
-      Height          =   252
-      Index           =   2
-      Left            =   5400
-      TabIndex        =   35
+      Left            =   120
+      TabIndex        =   31
       Top             =   5520
       Width           =   252
    End
@@ -453,11 +413,11 @@ Begin VB.Form Zakaz
    End
    Begin VB.Label laMess 
       BackColor       =   &H8000000A&
-      Height          =   555
+      Height          =   432
       Left            =   420
       TabIndex        =   16
-      Top             =   5100
-      Width           =   5835
+      Top             =   4980
+      Width           =   5832
    End
 End
 Attribute VB_Name = "Zakaz"
@@ -562,7 +522,7 @@ End If
 End Sub
 
 Private Sub cmCeh_Click(Index As Integer)
-    gEquipId = Index + 1
+    idEquip = Index + 1
     'statusIdOld = statusIdNew
     startParams
     'newZagruz ' вызывается в startParams (!?)
@@ -679,12 +639,12 @@ End If
 ReDim ost(maxDay): ReDim befOst(maxDay)
 Dim firstRes As Double
 'firstRes = Round(nr * Nstan * kpd, 1)  '23.11.04
-firstRes = nr * Nstan * kpd             '
+firstRes = nr * Nstan * KPD             '
 ost(1) = firstRes
 befOst(1) = firstRes
 For I = 2 To maxDay
-    ost(I) = nomRes(I) * kpd * Nstan                '23.11.04
-    befOst(I) = nomRes(I) * kpd * Nstan             '
+    ost(I) = nomRes(I) * KPD * Nstan                '23.11.04
+    befOst(I) = nomRes(I) * KPD * Nstan             '
 '    ost(i) = Round(nomRes(i) * kpd * Nstan, 1)     '
 '    befOst(i) = Round(nomRes(i) * kpd * Nstan, 1)  '
 Next I
@@ -695,7 +655,7 @@ sql = "SELECT o.numOrder, oe.workTime, " & _
 " DateDiff(day,Now(),o.inDate) AS begDay, oe.outDateTime, " & _
 " o.inDate, o.StatusId, oc.Nevip, oc.urgent " & _
 vbCr & " FROM Orders o " & _
-" JOIN OrdersEquip oe ON oe.numorder = o.numorder AND oe.equipId = " & gEquipId & _
+" JOIN OrdersEquip oe ON oe.numorder = o.numorder AND oe.equipId = " & idEquip & _
 " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder " & _
 " Where (o.StatusId = 1 Or o.StatusId = 5) " & _
 vbCr & " UNION ALL " & _
@@ -703,7 +663,7 @@ vbCr & " UNION ALL " & _
 " DateDiff(day,Now(),o.DateRS) AS begDay, oe.outDateTime, " & _
 " o.DateRS, o.StatusId, oc.Nevip, oc.urgent " & _
 vbCr & " FROM Orders o " & _
-" JOIN OrdersEquip oe ON oe.numorder = o.numorder AND oe.equipId = " & gEquipId & _
+" JOIN OrdersEquip oe ON oe.numorder = o.numorder AND oe.equipId = " & idEquip & _
 " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder " & _
 " Where (o.StatusId = 2 Or o.StatusId = 3) " & _
 vbCr & " UNION ALL " & _
@@ -712,7 +672,7 @@ vbCr & " UNION ALL " & _
 " o.inDate, 1 AS StatusId, -1 AS Nevip, '' AS urgent " & _
 vbCr & " FROM Orders o " & _
 " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder " & _
-" JOIN OrdersEquip oe ON oe.numorder = o.numorder AND oe.equipId = " & gEquipId & _
+" JOIN OrdersEquip oe ON oe.numorder = o.numorder AND oe.equipId = " & idEquip & _
 " Where oc.statO = 'в работе' " & _
 " ORDER BY "
 
@@ -833,7 +793,7 @@ If ckCeh.value = 0 Then
   For I = 1 To maxDay
     lv.ListItems("k" & I).SubItems(zkMbef) = Round(befOst(I), 1) '23.11.04
     lv.ListItems("k" & I).SubItems(zkMzagr) = _
-               Round(nomRes(I) * kpd * Nstan - befOst(I), 1)
+               Round(nomRes(I) * KPD * Nstan - befOst(I), 1)
     lv.ListItems("k" & I).ListSubItems(zkMbef).Bold = False
     lv.ListItems("k" & I).ListSubItems(zkMbef).ForeColor = 0
     If reg = "setka" Then
@@ -863,9 +823,9 @@ Else
   For I = 1 To maxDay
    lv.ListItems("k" & I).SubItems(zkCost) = Round(ost(I), 1) '23.11.04
    lv.ListItems("k" & I).SubItems(zkCliv) = _
-            Round(nomRes(I) * kpd * Nstan - befOst(I), 1)
+            Round(nomRes(I) * KPD * Nstan - befOst(I), 1)
    lv.ListItems("k" & I).SubItems(zkCzagr) = _
-            Round(nomRes(I) * kpd * Nstan - ost(I), 1)
+            Round(nomRes(I) * KPD * Nstan - ost(I), 1)
   Next I
   lv.ListItems("k1").SubItems(zkCzagr) = Round(firstRes - ost(1), 1) '23.11.04
   lv.ListItems("k1").SubItems(zkCliv) = Round(firstRes - befOst(1), 1) '23.11.04
@@ -1021,7 +981,7 @@ statusIdNew = statId(cbStatus.ListIndex)
 
 cmZapros.Enabled = statusIdOld <> statusIdNew
 
-For I = 0 To lenEquip - 1
+For I = 0 To UBound(Equip) - 1
     If ckCehDone(I).Tag = CStr(statusIdNew) Then
         ckCehDone(I).value = 1
     Else
@@ -1091,7 +1051,7 @@ End Sub
 
 '$odbc08$
 Private Sub cmAdd_Click()
-Dim I As Integer, str As String, item As ListItem, S As Double, t As Double
+Dim I As Integer, str As String, item As ListItem, S As Double, T As Double
 Dim VrVip As String, VrVipO As String, editWorkTime As Boolean
 Dim Worktime As String
 
@@ -1101,7 +1061,7 @@ Timer1.Enabled = False
 
 sql = "SELECT o.statusId, oe.worktime " _
 & " from Orders o" _
-& " left join OrdersEquip oe on oe.numorder = o.numorder and oe.equipId = " & gEquipId _
+& " left join OrdersEquip oe on oe.numorder = o.numorder and oe.equipId = " & idEquip _
 & " WHERE o.numOrder = " & gNzak
 Set tbOrders = myOpenRecordSet("##30", sql, dbOpenForwardOnly) '$#$
 
@@ -1216,7 +1176,7 @@ End If
 sql = "UPDATE OrdersEquip SET outDateTime = " & v_outDateTime _
     & ", workTime = " & Worktime _
     & ", statusEquipId = " & statusIdNew _
-    & " WHERE numOrder = " & gNzak & " and equipId =" & gEquipId
+    & " WHERE numOrder = " & gNzak & " and equipId =" & idEquip
 'Debug.Print sql
 If myExecute("##391", sql) <> 0 Then GoTo ER1
 
@@ -1310,14 +1270,14 @@ Print #2, str
 Close #2
 
 Dim nextEquipId As Integer
-ckCehDone(gEquipId - 1).Tag = statusIdNew
+ckCehDone(idEquip - 1).Tag = statusIdNew
  
 If Not chooseTheEquipment(statusIdNew, nextEquipId) Then
     ' refresh the Orders.Grid row
     
     Unload Me
 Else
-    gEquipId = nextEquipId
+    idEquip = nextEquipId
     startParams
 End If
 
@@ -1693,7 +1653,7 @@ Zakaz.lvAddDays tmpMaxDay 'удаляем или добавляем последние строки(дни) в
 'таблице загрузки т.к. Менеджер м. пробывать разные даты выдачи
     
 For I = 1 To tmpMaxDay
-    lv.ListItems("k" & I).SubItems(zkResurs) = Round(nomRes(I) * kpd * Nstan, 1)
+    lv.ListItems("k" & I).SubItems(zkResurs) = Round(nomRes(I) * KPD * Nstan, 1)
 Next I
 
 newZagruz
@@ -1701,7 +1661,7 @@ newZagruz
 v = lv.ListItems("k1").SubItems(zkMost)
 If Not IsNumeric(v) Then v = 0
 I = getNextDay(1)
-laZapas.Caption = Round(nomRes(I) * kpd * Nstan + v, 1)
+laZapas.Caption = Round(nomRes(I) * KPD * Nstan + v, 1)
 
 If cmRepit.Visible Then '  не по <F1> <F2>
     tiki = 11
@@ -1727,7 +1687,7 @@ End Sub
 
 Private Sub cehSelectorsInit(action As Boolean)
 Dim I As Integer
-    For I = 0 To lenEquip - 1
+    For I = 0 To UBound(Equip) - 1
         ckCehDone(I).Visible = False
         'ckCehDone(I).Enabled = False
         cmCeh(I).Visible = False
@@ -1743,7 +1703,7 @@ Private Function chooseTheEquipment(orderStatusId As Integer, ByRef suggestedCeh
     Dim firstVisibleId As Integer
     firstVisibleId = -1
     chooseTheEquipment = True
-    For I = 0 To lenEquip - 1
+    For I = 0 To UBound(Equip) - 1
         If ckCehDone(I).Tag <> CStr(orderStatusId) And ckCehDone(I).Tag <> "" Then
             suggestedCehId = I + 1
             Exit Function
@@ -1797,7 +1757,7 @@ Private Function InitZagruz() As Integer
     Else
         Dim newEquipId As Integer
         chooseTheEquipment statusIdOld, newEquipId
-        gEquipId = newEquipId
+        idEquip = newEquipId
         
     End If
     
@@ -1815,12 +1775,24 @@ oldWidth = Me.Width
 
 lv.ColumnHeaders(zkHide + 1).Width = 0
 
+    For I = 1 To UBound(Equip) - 1
+        Const HShift = 960
+        Load ckCehDone(I)
+        Load cmCeh(I)
+        ckCehDone(I).Left = ckCehDone(I - 1).Left + HShift
+        cmCeh(I).Left = cmCeh(I - 1).Left + HShift
+        cmCeh(I).Caption = Equip(I + 1)
+    Next I
+
+
 cehSelectorsInit False
 statusIdNew = -1
 If Regim = "" Then
     If InitZagruz Then
     End If
 End If
+
+
 startParams
 
 End Sub
@@ -1937,7 +1909,7 @@ Else
     & " from Orders o" _
     & " JOIN OrdersEquip oe on oe.numorder = o.numorder" _
     & " LEFT JOIN OrdersInCeh oc on oc.numorder = o.numorder" _
-    & " WHERE o.numOrder =" & gNzak & " AND oe.equipId = " & CStr(gEquipId)
+    & " WHERE o.numOrder =" & gNzak & " AND oe.equipId = " & CStr(idEquip)
     Set tbOrders = myOpenRecordSet("##402", sql, dbOpenForwardOnly)
     
     Set zakazBean = New ZakazVO
@@ -1969,24 +1941,20 @@ End If
     Me.lvAddDays  ' добавляем стороки и даты
     For I = 1 To maxDay
         Me.lv.ListItems("k" & I).SubItems(zkPrinato) = Round(getNevip(I), 1)
-        Me.lv.ListItems("k" & I).SubItems(zkResurs) = Round(nomRes(I) * kpd * Nstan, 1)
+        Me.lv.ListItems("k" & I).SubItems(zkResurs) = Round(nomRes(I) * KPD * Nstan, 1)
     Next I
-    Me.lv.ListItems("k1").SubItems(zkResurs) = Round(nr * Nstan * kpd, 1)
+    Me.lv.ListItems("k1").SubItems(zkResurs) = Round(nr * Nstan * KPD, 1)
 
    
 If statusIdOld = 0 Or statusIdOld = 7 Then 'принят или аннулир
     neVipolnen = 0
     neVipolnen_O = 0
-    If idWerk > 0 Then
-        Me.Caption = "Сетка заказов " & Equip(gEquipId)
-    ElseIf statusIdOld = 0 Then
-        Me.Caption = "Перемещение заказа в цех " & Equip(gEquipId)
-    End If
+    Me.Caption = "Сетка по оборудованию " & Equip(idEquip)
     
     'tbWorktime.Text = ""
     'tbReadyDate.Text = ""
 Else
-    Me.Caption = "Редактирование заказа [" & Equip(gEquipId) & "]"
+    Me.Caption = "Редактирование заказа [" & Equip(idEquip) & "]"
     If Not IsNull(zakazBean.DateRS) Then
         Me.tbDateRS.Text = Format(zakazBean.DateRS, "dd.mm.yy")
     End If
@@ -2018,7 +1986,7 @@ End If
 I = getNextDay(1)
 v = Me.lv.ListItems("k1").SubItems(zkMost)
 If Not IsNumeric(v) Then v = 0
-Me.laZapas.Caption = Round(nomRes(I) * kpd * Nstan + v, 1)
+Me.laZapas.Caption = Round(nomRes(I) * KPD * Nstan + v, 1)
 
 'количесво фирм по дням выдачи
 For I = 1 To maxDay
@@ -2027,7 +1995,7 @@ Next I
 str = "DateDiff(day, now(), oe.outDateTime)"
 sql = "SELECT " & str & " AS day, o.FirmId" _
 & " From Orders o" _
-& " join OrdersEquip oe on oe.numorder = o.numorder and oe.equipId = " & gEquipId _
+& " join OrdersEquip oe on oe.numorder = o.numorder and oe.equipId = " & idEquip _
 & " Where o.StatusId < 4" _
 & " GROUP BY " & str & ", o.FirmId" _
 & " HAVING " & str & " >= 0"

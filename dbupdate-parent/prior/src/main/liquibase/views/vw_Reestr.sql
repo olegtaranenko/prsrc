@@ -21,6 +21,7 @@ CREATE VIEW vw_Reestr (
 	,workTimeMO
 	,StatM
 	,StatO
+	,equip
 ) as
 SELECT 
 	o.numOrder
@@ -40,9 +41,9 @@ SELECT
 	,oe.workTimeMO
 	,oc.StatM
 	,oc.StatO
+	,o.equip
 FROM Orders o
 	JOIN vw_OrdersEquipSummary oe ON o.numOrder = oe.numOrder
 	JOIN GuideFirms             f ON f.FirmId = o.FirmId
 	JOIN GuideManag             m ON m.ManagId = o.ManagId
 	JOIN OrdersInCeh           oc ON o.numOrder = oc.numOrder
-
