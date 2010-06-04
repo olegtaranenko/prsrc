@@ -153,3 +153,47 @@ On Error Resume Next
 End Function
 
 
+Private Sub addToCbStatus(ByRef statusComboBox As ComboBox, id, Optional begin As String = "")
+
+    Static I As Integer
+    If begin <> "" Then I = 0
+    If id > lenStatus Then
+        MsgBox "Err в Orders\addToCbStatus"
+    End If
+
+    statusComboBox.AddItem status(id)
+    statId(I) = id
+    I = I + 1
+
+End Sub
+    
+    
+Public Sub cbBuildStatuses(ByRef statusComboBox As ComboBox, ByRef statusIdOld As Integer)
+    
+    statusComboBox.Clear
+    
+    If statusIdOld = 4 Then
+        addToCbStatus statusComboBox, 6 '"закрыт"
+    End If
+    
+    addToCbStatus statusComboBox, 7, "b" '"аннулир."
+    If statusIdOld = 5 Then
+        addToCbStatus statusComboBox, 5    '"отложен"
+    ElseIf statusIdOld = 8 Then
+        statusIdOld = 1
+        addToCbStatus statusComboBox, 1 '"в работе"
+    ElseIf statusIdOld = 4 Then '"готов"
+        addToCbStatus statusComboBox, 0
+        addToCbStatus statusComboBox, 4
+    Else
+        addToCbStatus statusComboBox, 0 '"принят"  'не разрешены в т.ч. для
+        addToCbStatus statusComboBox, 1 '"в работе"
+        addToCbStatus statusComboBox, 2 '"резерв"  'соглас-я с готовым образцом
+        addToCbStatus statusComboBox, 3 '"согласов."
+    End If
+    
+
+
+End Sub
+
+

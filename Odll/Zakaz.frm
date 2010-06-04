@@ -2023,7 +2023,7 @@ For I = 1 To maxDay
     Me.lv.ListItems("k" & I).SubItems(zkFirmKolvo) = Round(delta(I), 1)
 Next I
 
-cbBuildStatuses
+cbBuildStatuses Me.cbStatus, statusIdOld
 
 For I = 0 To Me.cbStatus.ListCount
     If statId(I) = statusIdOld Then
@@ -2073,40 +2073,4 @@ Dim I As Integer, txt As String
     End If
 
 End Function
-
-Sub addToCbStatus(id, Optional begin As String = "")
-
-Static I As Integer
-If begin <> "" Then I = 0
-If id > lenStatus Then
-    MsgBox "Err в Orders\addToCbStatus"
-End If
-
-Equipment.cbStatus.AddItem status(id)
-Me.cbStatus.AddItem status(id)
-statId(I) = id
-I = I + 1
-
-End Sub
-    
-    
-Private Sub cbBuildStatuses()
-Me.cbStatus.Clear
-Equipment.cbStatus.Clear
-
-addToCbStatus 7, "b" '"аннулир."
-If statusIdOld = 5 Then
-    addToCbStatus 5   '"отложен"
-ElseIf statusIdOld = 8 Then
-    statusIdOld = 1
-    addToCbStatus 1 '"в работе"
-Else
-    addToCbStatus 0 '"принят"  'не разрешены в т.ч. для
-    addToCbStatus 1 '"в работе"
-    addToCbStatus 2 '"резерв"  'соглас-я с готовым образцом
-    addToCbStatus 3 '"согласов."
-End If
-
-
-End Sub
 

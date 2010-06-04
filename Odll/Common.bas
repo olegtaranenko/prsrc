@@ -357,7 +357,7 @@ For I = 2 To maxi
         val(I) = 0
     ElseIf str = "String" And IsNull(tabl.fields(I - 2)) Then
         val(I) = ""
-    ElseIf str = "Date" And IsNull(tabl.fields(I - 2)) Then
+'    ElseIf str = "Date" And IsNull(tabl.fields(I - 2)) Then
 '        val(I) = tabl.Fil
     Else
         val(I) = tabl.fields(I - 2)

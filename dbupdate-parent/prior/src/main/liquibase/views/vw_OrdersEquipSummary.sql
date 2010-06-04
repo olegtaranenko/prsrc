@@ -17,8 +17,8 @@ select
 	  numorder
 	, sum(isnull(worktime, 0.0))
 	, sum(worktimeMO)
-	, max(isnull(outDateTime, '20000101'))
-	, min(isnull(outDateTime, '20000101'))
+	, max(outDateTime)
+	, min(outDateTime)
 	, max(isnull(statusEquipId, 0))
 	, min(isnull(statusEquipId, 0))
 	, max(isnull(lastModified, '20000101'))

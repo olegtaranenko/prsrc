@@ -267,6 +267,8 @@ Option Explicit
 
 Public orderStatusStr As String
 Public readonlyFlag As Boolean
+Public originalStatusId As Integer
+
 Dim Err As String ' чтобы не прыгал регистр
 Dim currStatusId As Integer, urgent As String
 
@@ -466,6 +468,9 @@ Dim I As Integer, VShift As Integer, LowLinie As Long
         LowLinie = cbEquipment(I).Top + cbEquipment(I).Height
     Next I
     
+    cbBuildStatuses Me.cbStatus, Me.originalStatusId
+    cbStatus.Text = status(Me.originalStatusId)
+    
     EquipFrame.Height = LowLinie + 50
     LowLinie = EquipFrame.Top + EquipFrame.Height + 100
     cmExit.Top = LowLinie
@@ -478,7 +483,7 @@ End Sub
 Private Sub loadEquipment()
     If gNzak = "" Then Exit Sub
     
-    Dim Outdate As Date
+    Dim Outdate As Variant
     
     sql = "select o.StatusId, oe.Outdatetime, oc.urgent" _
     & " from orders o " _

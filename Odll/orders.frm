@@ -359,15 +359,15 @@ Begin VB.Form Orders
    End
    Begin MSComctlLib.Toolbar Toolbar1 
       Align           =   1  'Align Top
-      Height          =   612
+      Height          =   636
       Left            =   0
       TabIndex        =   36
       Top             =   0
       Width           =   11880
       _ExtentX        =   20955
-      _ExtentY        =   1080
-      ButtonWidth     =   614
-      ButtonHeight    =   953
+      _ExtentY        =   1122
+      ButtonWidth     =   487
+      ButtonHeight    =   995
       Appearance      =   1
       _Version        =   393216
    End
@@ -605,7 +605,7 @@ Const rowFromOrdersEquip = "select " _
 
 
 Private Sub changeCaseOfTheVariables()
-Dim IsEmpty As String, Numorder As String, StatusId As String, Rollback As String, Outdatetime As String, p_Numorder As String
+Dim IsEmpty As String, Numorder As String, StatusId As String, Rollback As String, Outdatetime As String, p_numOrder As String
 Dim tbWorktime As String, Left As String
 Dim Equip As String, Worktime As String, ManagId As String
 
@@ -1736,10 +1736,10 @@ Function stopOrderAtVenture() As Boolean
 End Function
 
 
-Function checkInvoiceBusy(p_Numorder As String, p_newInvoice As String) As Integer
+Function checkInvoiceBusy(p_numOrder As String, p_newInvoice As String) As Integer
 Dim ret As Integer
 
-    sql = "select wf_jscet_check_busy (" & p_Numorder & ", '" & p_newInvoice & "')"
+    sql = "select wf_jscet_check_busy (" & p_numOrder & ", '" & p_newInvoice & "')"
 On Error GoTo sqle
     byErrSqlGetValues "##100.2", sql, checkInvoiceBusy
     
@@ -1750,10 +1750,10 @@ sqle:
 End Function
 
 
-Function checkInvoiceMerge(p_Numorder As String, p_newInvoice As String) As Integer
+Function checkInvoiceMerge(p_numOrder As String, p_newInvoice As String) As Integer
 Dim ret As Integer
 
-    sql = "select wf_check_jscet_merge (" & p_Numorder & ", '" & p_newInvoice & "')"
+    sql = "select wf_check_jscet_merge (" & p_numOrder & ", '" & p_newInvoice & "')"
 On Error GoTo sqle
     byErrSqlGetValues "##100.2", sql, checkInvoiceMerge
 '    If checkInvoiceMerge < 0 Then
@@ -1769,8 +1769,8 @@ sqle:
 End Function
 
 
-Function checkInvoiceSplit(p_Numorder As String, p_newInvoice As String) As Integer
-    sql = "select wf_check_jscet_split (" & p_Numorder & ")"
+Function checkInvoiceSplit(p_numOrder As String, p_newInvoice As String) As Integer
+    sql = "select wf_check_jscet_split (" & p_numOrder & ")"
 On Error GoTo sqle
     byErrSqlGetValues "##100.1", sql, checkInvoiceSplit
     Exit Function
@@ -1779,13 +1779,13 @@ sqle:
 End Function
 
 
-Function tryInvoiceMove(p_Numorder As String, p_Invoice As String, id_jscet_new As Integer, p_newInvoice As String) As Boolean
+Function tryInvoiceMove(p_numOrder As String, p_Invoice As String, id_jscet_new As Integer, p_newInvoice As String) As Boolean
 Dim mText As String
     tryInvoiceMove = True
 On Error GoTo sqle
     mText = "Подтвердите, что вы хотите " _
         & "перенести заказ из счета " & p_Invoice & " в счет " & p_newInvoice
-    sql = "call wf_move_jscet (" & p_Numorder & ", " & CStr(id_jscet_new) & ")"
+    sql = "call wf_move_jscet (" & p_numOrder & ", " & CStr(id_jscet_new) & ")"
     'Debug.Print sql
     If MsgBox(mText, vbOKCancel, "Вы уверены?") = vbOK Then
         myBase.Execute sql
@@ -1801,7 +1801,7 @@ sqle:
 End Function
 
 
-Function tryInvoiceSplit(p_Numorder As String, p_Invoice As String) As Boolean
+Function tryInvoiceSplit(p_numOrder As String, p_Invoice As String) As Boolean
 Dim mText As String
     
     tryInvoiceSplit = True
@@ -1809,7 +1809,7 @@ On Error GoTo sqle
     mText = "Подтвердите, что вы хотите " _
         & "выделить заказ из счета " & p_Invoice & " в отдельный счет"
     If MsgBox(mText, vbOKCancel, "Вы уверены?") = vbOK Then
-        sql = "call wf_split_jscet (" & p_Numorder & ")"
+        sql = "call wf_split_jscet (" & p_numOrder & ")"
         myBase.Execute sql
     Else
         wrkDefault.Rollback
@@ -1823,14 +1823,14 @@ sqle:
 End Function
 
 
-Function tryInvoiceMerge(p_Numorder As String, id_jscet_new As Integer, p_newInvoice As String) As Boolean
+Function tryInvoiceMerge(p_numOrder As String, id_jscet_new As Integer, p_newInvoice As String) As Boolean
 Dim mText As String
     
     tryInvoiceMerge = True
 On Error GoTo sqle
     If id_jscet_new > 0 Then
         If MsgBox("Подтвердите, что вы хотите присоединить предметы заказа к счету " & p_newInvoice, vbOKCancel, "Вы уверены?") = vbOK Then
-            sql = "call wf_merge_jscet (" & p_Numorder & ", " & CStr(id_jscet_new) & ", " & p_newInvoice & ")"
+            sql = "call wf_merge_jscet (" & p_numOrder & ", " & CStr(id_jscet_new) & ", " & p_newInvoice & ")"
             Debug.Print sql
             myBase.Execute sql
         Else
@@ -2083,6 +2083,7 @@ ElseIf mousCol = orWerk Then
 ElseIf mousCol = orEquip Then
     'Equipment.orderStatusStr = Grid.TextMatrix(mousRow, orStatus)
     Equipment.readonlyFlag = StatusId > 0
+    Equipment.originalStatusId = StatusId
     Equipment.Show vbModal, Me
 ElseIf mousCol = orStatus Then
 
@@ -2132,7 +2133,7 @@ ElseIf mousCol = orStatus Then
      GoTo ALL 'сюда только для dostup='a', т.к. для других - поле желтое
    ElseIf StatusId = 7 Then ' "аннулирован"
      listBoxInGridCell lbDel, Grid, "select"
-   ElseIf Grid.TextMatrix(mousRow, orWerk) <> "" Then
+   ElseIf Grid.TextMatrix(mousRow, orEquip) <> "" Then
         If StatusId = 1 Then 'в работе                                 $$1
           sql = "SELECT sum(isnull(oc.Nevip, 0) * isnull(oe.worktime, 0)) as nevip from OrdersInCeh oc " _
             & " LEFT JOIN vw_OrdersEquipSummary oe on oe.Numorder = oc.Numorder" _
