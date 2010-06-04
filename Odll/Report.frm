@@ -247,7 +247,7 @@ AA:
 tmpStr = Right$(curDay, 2)
 tmpStr = tmpStr & Mid$(curDay, 3, 4)
 tmpStr = tmpStr & Left$(curDay, 2)
-laHeader.Caption = "Выработка по цеху " & Equip(idEquip) & " на " & tmpStr
+laHeader.Caption = "Выработка по оборудованию " & Equip(idEquip) & " на " & tmpStr
 
 Grid.Rows = 2
 Grid.Cols = 13
@@ -379,7 +379,7 @@ If sum > 0 Then
         & "GuideFirms.Name, oe.workTime, Orders.StatusId, OrdersInCeh.Nevip " _
         & " FROM Orders " _
         & " JOIN GuideFirms ON GuideFirms.FirmId = Orders.FirmId " _
-        & " JOIN vw_OrdersEquipSummary oe ON Orders.numOrder = oe.numOrder " _
+        & " JOIN OrdersEquip oe ON Orders.numOrder = oe.numOrder AND oe.equipId = " & idEquip _
         & " LEFT JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder " _
         & "WHERE Orders.numOrder = " & NN(I)
     Else 'образец
@@ -389,7 +389,7 @@ If sum > 0 Then
         & " GuideFirms.Name, oe.workTimeMO As workTime" _
         & " FROM Orders" _
         & " JOIN GuideFirms ON GuideFirms.FirmId = Orders.FirmId" _
-        & " JOIN vw_OrdersEquipSummary oe ON Orders.numOrder = oe.numOrder " _
+        & " JOIN OrdersEquip oe ON Orders.numOrder = oe.numOrder AND oe.equipId = " & idEquip _
         & " LEFT JOIN OrdersInCeh oc ON Orders.numOrder = oc.numOrder" _
         & " WHERE Orders.numOrder = " & NN(I)
     End If

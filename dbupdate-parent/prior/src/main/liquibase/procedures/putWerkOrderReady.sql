@@ -33,6 +33,7 @@ begin
 		from OrdersEquip oe 
 		left join Itogi r on 
 				r.equipId = oe.equipId 
+			and r.numorder = oe.numorder
 			and r.xdate = p_xDate 
 			and r.obrazec = p_obrazec
 		where oe.numorder = p_numorder
@@ -45,11 +46,11 @@ begin
 		end if;
 
 		if r_equipIdRes is null then
-			insert Itogi (equipId, xDate, obrazec, virabotka) 
-			select r_equipId, p_xDate, p_obrazec, p_virabotka * v_koef;
+			insert Itogi (equipId, xDate, obrazec, virabotka, numorder) 
+			select r_equipId, p_xDate, p_obrazec, p_virabotka * v_koef, p_numorder;
 		else
 			update Itogi set virabotka = virabotka + p_virabotka * v_koef
-			where equipId = r_equipId and xdate = p_xDate and obrazec = p_obrazec;
+			where equipId = r_equipId and xdate = p_xDate and obrazec = p_obrazec and numorder = p_numorder;
 		end if;
 
 	end for;

@@ -856,7 +856,6 @@ If str = "отложен" Then
 ElseIf str = "готов" Then
     lbStatus.Visible = False
     If Not procReadyIs100() Then Exit Sub
-#If Not COMTEC = 1 Then '----------------------------------------------------
     If Not predmetiIsClose("etap") Then '
         str = "текущего этапа "
         If QQ2(0) = 0 Then str = ""
@@ -865,19 +864,16 @@ ElseIf str = "готов" Then
         "Ќедопустимый статус дл€ «аказа є " & gNzak
 '        Grid.SetFocus
     Else
-#Else
-    If 1 = 1 Then
-#End If '-------------------------------------------------------------------
         wrkDefault.BeginTrans
         I = ValueToTableField("W##41", "'" & str & "'", "OrdersInCeh", "Stat", "byWerkId")
         If I = 0 Then
             If ValueToTableField("##39", "4", "Orders", "StatusId") <> 0 Then GoTo ER1
             If ValueToTableField("##39", "0", "Orders", "ProblemId") <> 0 Then GoTo ER1
-#If Not COMTEC = 1 Then '----------------------------------------------------
 'раз все списано, отстегиваем текущ.этап, несмотр€, что цех м. и сн€ть гот-ть
             If Not newEtap("xEtapByIzdelia") Then GoTo ER1
             If Not newEtap("xEtapByNomenk") Then GoTo ER1
-#End If
+            If ValueToTableField("##39", "4", "OrdersEquip", "StatusEquipId") <> 0 Then GoTo ER1
+            
             wrkDefault.CommitTrans
             werkBegin
         ElseIf I = -1 Then
@@ -982,7 +978,8 @@ AA:
             Exit Function
         End If
     Else 'obraz = ""
-        ValueToTableField "##422", "'в работе'", "OrdersInCeh", "Stat", "byWerkId"
+        sql = "UPDATE OrdersInCeh SET Stat = 'в работе', Nevip = " & S & " WHERE numOrder =" & gNzak
+         If myExecute("##422", sql) <> 0 Then Exit Function
     End If
     
 End If 'If stat
