@@ -30,7 +30,7 @@ SELECT
 	,o.StatusId
 	,o.ProblemId
 	,o.DateRS
-	,oe.outDateTime
+	,dateadd(hour, isnull(o.outtime, 0), oe.outDateTime)
 	,oe.workTime
 	,f.Name
 	,o.Logo

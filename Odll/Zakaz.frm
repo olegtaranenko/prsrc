@@ -658,29 +658,28 @@ Next I
 'VrVipParts заменнили на Nevip
 sql = "SELECT o.numOrder, oe.workTime, " & _
 " DateDiff(day,Now(),oe.outDateTime) AS endDay, " & _
-" DateDiff(day,Now(),o.inDate) AS begDay, oe.outDateTime, " & _
+" DateDiff(day,Now(),o.inDate) AS begDay, dateadd(hour, isnull(o.outtime, 12), oe.outDateTime) as outdatetime, " & _
 " o.inDate, o.StatusId, oc.Nevip, oc.urgent " & _
 vbCr & " FROM Orders o " & _
 " JOIN OrdersEquip oe ON oe.numorder = o.numorder AND oe.equipId = " & vEquipId & _
 " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder " & _
 " Where (o.StatusId = 1 Or o.StatusId = 5) " & _
-vbCr & " UNION ALL " & _
-" SELECT o.numOrder, oe.workTime, DateDiff(day,Now(),oe.outDateTime) AS endDay, " & _
-" DateDiff(day,Now(),o.DateRS) AS begDay, oe.outDateTime, " & _
+vbCr & " UNION ALL " _
+& vbCr & " SELECT o.numOrder, oe.workTime, DateDiff(day,Now(),oe.outDateTime) AS endDay, " & _
+" DateDiff(day,Now(),o.DateRS) AS begDay, dateadd(hour, isnull(o.outtime, 12), oe.outDateTime) as outdatetime, " & _
 " o.DateRS, o.StatusId, oc.Nevip, oc.urgent " & _
 vbCr & " FROM Orders o " & _
 " JOIN OrdersEquip oe ON oe.numorder = o.numorder AND oe.equipId = " & vEquipId & _
 " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder " & _
 " Where (o.StatusId = 2 Or o.StatusId = 3) " & _
-vbCr & " UNION ALL " & _
-" SELECT o.numOrder, oe.workTimeMO, DateDiff(day,Now(),oc.DateTimeMO) AS endDay, " & _
-" DateDiff(day,Now(),o.inDate) AS begDay, oc.DateTimeMO, " & _
+vbCr & " UNION ALL " _
+& vbCr & " SELECT o.numOrder, oe.workTimeMO, DateDiff(day,Now(),oc.DateTimeMO) AS endDay, " & _
+" DateDiff(day,Now(),o.inDate) AS begDay, dateadd(hour, isnull(o.outtime, 12), oc.DateTimeMO) as outdatetime, " & _
 " o.inDate, 1 AS StatusId, -1 AS Nevip, '' AS urgent " & _
 vbCr & " FROM Orders o " & _
 " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder " & _
 " JOIN OrdersEquip oe ON oe.numorder = o.numorder AND oe.equipId = " & vEquipId & _
-" Where oc.statO = 'в работе' " & _
-" ORDER BY "
+" Where oc.statO = 'в работе' " & " ORDER BY "
 
 If isMzagruz Then
     sql = sql & "4 DESC" ' в порядке уменьшения Даты Начала

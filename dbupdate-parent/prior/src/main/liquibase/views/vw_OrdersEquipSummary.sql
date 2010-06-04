@@ -16,7 +16,7 @@ CREATE VIEW vw_OrdersEquipSummary (
 select
 	  numorder
 	, sum(isnull(worktime, 0.0))
-	, sum(isnull(worktimeMO, 0.0))
+	, sum(worktimeMO)
 	, max(isnull(outDateTime, '20000101'))
 	, min(isnull(outDateTime, '20000101'))
 	, max(isnull(statusEquipId, 0))

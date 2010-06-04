@@ -1112,8 +1112,8 @@ where pc.sysname = sGuideProducts.web
 			<column name="worktime" type="float" defaultValueNumeric="0.0">
 				<constraints nullable="false"/>
 			</column>
-			<column name="worktimeMO" type="float" defaultValueNumeric="0.0">
-				<constraints nullable="false"/>
+			<column name="worktimeMO" type="float">
+				<constraints nullable="true"/>
 			</column>
 			<column name="outDateTime" type="datetime">
 				<constraints nullable="true"/>
@@ -1131,7 +1131,7 @@ where pc.sysname = sGuideProducts.web
 	<changeSet id="2" author="mantis-125" runOnChange="false">
 		<sql><![CDATA[
 insert	into OrdersEquip (numorder, equipId, worktime, worktimeMO, outDateTime, statusEquipId)
-select	o.numorder, o.cehId, o.worktime, isnull(mo.worktimeMO, 0.0), o.outDateTime, o.StatusId
+select	o.numorder, o.cehId, o.worktime, mo.worktimeMO, o.outDateTime, o.StatusId
 from	  orders o
 left join ordersMO mo on mo.numorder = o.numorder
 where	cehId > 0
