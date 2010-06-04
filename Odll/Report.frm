@@ -379,16 +379,17 @@ If sum > 0 Then
         & "GuideFirms.Name, oe.workTime, Orders.StatusId, OrdersInCeh.Nevip " _
         & " FROM Orders " _
         & " JOIN GuideFirms ON GuideFirms.FirmId = Orders.FirmId " _
-        & " JOIN OrdersEquip oe ON Orders.numOrder = oe.numOrder " _
+        & " JOIN vw_OrdersEquipSummary oe ON Orders.numOrder = oe.numOrder " _
         & " LEFT JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder " _
         & "WHERE Orders.numOrder = " & NN(I)
     Else 'образец
         Grid.TextMatrix(quantity + I, crNomZak) = NN(I) & "o"
         sql = "SELECT Orders.ManagId, Orders.Logo, oc.StatO As Stat, " & _
         "Orders.Product, Orders.ProblemId, oc.DateTimeMO As outDateTime, " _
-        & " GuideFirms.Name, oc.workTimeMO As workTime" _
+        & " GuideFirms.Name, oe.workTimeMO As workTime" _
         & " FROM Orders" _
         & " JOIN GuideFirms ON GuideFirms.FirmId = Orders.FirmId" _
+        & " JOIN vw_OrdersEquipSummary oe ON Orders.numOrder = oe.numOrder " _
         & " LEFT JOIN OrdersInCeh oc ON Orders.numOrder = oc.numOrder" _
         & " WHERE Orders.numOrder = " & NN(I)
     End If
@@ -442,7 +443,7 @@ End Sub
 
 
 Sub managStat()
-Dim l As Long, I As Integer, J As Integer, line As Integer, id  As Integer
+Dim L As Long, I As Integer, J As Integer, line As Integer, id  As Integer
 Dim str As String, strFrom As String, strWhere As String
 
 laRecCount.Visible = False
@@ -605,7 +606,7 @@ End Function
 'Regim = "allOrdersByFirmName" 'Отчет "Все заказы Фирмы"'
 'Regim = "OrdersByFirmName"    'Отчет "Незакрытые заказы"'
 Sub firmOrders()
-Dim l As Long, str As String, I As Integer, J As Integer
+Dim L As Long, str As String, I As Integer, J As Integer
 Dim strFirm As String, strFrom As String, strWhere As String
 Grid.FormatString = "|<№ заказа|^M |<Статус|<Проблемы|" & _
 "<Дата выдачи|<Время выдачи|<Лого|<Изделия|Заказано|Оплачено|Отгружено"
@@ -645,20 +646,20 @@ sql = "SELECT Orders.numOrder, Orders.StatusId, Orders.ProblemId, " & _
 strFrom & " WHERE (" & strWhere & ") ORDER BY Orders.outDateTime;"
 
 Set tqOrders = myOpenRecordSet("##65", sql, dbOpenDynaset)
-l = 1
+L = 1
 zakazano = 0
 Oplacheno = 0
 Otgrugeno = 0
 If tqOrders Is Nothing Then GoTo ENs
 If Not tqOrders.BOF Then
   While Not tqOrders.EOF
-    Grid.TextMatrix(l, rpNomZak) = tqOrders!Numorder
+    Grid.TextMatrix(L, rpNomZak) = tqOrders!Numorder
     J = tqOrders!StatusId
     If J = 2 Or J = 3 Or J = 9 Then
-        Grid.MergeRow(l) = True
+        Grid.MergeRow(L) = True
         str = status(J) & " на " & tqOrders!DateRS
-        Grid.TextMatrix(l, rpStatus) = str
-        Grid.row = l
+        Grid.TextMatrix(L, rpStatus) = str
+        Grid.row = L
         Grid.col = rpStatus
         Grid.CellFontBold = True
         If J = 2 Then
@@ -666,42 +667,42 @@ If Not tqOrders.BOF Then
         Else
            Grid.CellForeColor = &HAA00& ' т.зел.
         End If
-        Grid.TextMatrix(l, rpProblem) = str
+        Grid.TextMatrix(L, rpProblem) = str
     Else
-        Grid.TextMatrix(l, rpStatus) = status(J)
-        Grid.TextMatrix(l, rpProblem) = Problems(tqOrders!ProblemId)
+        Grid.TextMatrix(L, rpStatus) = status(J)
+        Grid.TextMatrix(L, rpProblem) = Problems(tqOrders!ProblemId)
     End If
-    LoadDate Grid, l, rpDataVid, tqOrders!Outdatetime, "dd.mm.yy"
-    LoadDate Grid, l, rpVrVid, tqOrders!Outdatetime, "hh"
-    Grid.TextMatrix(l, rpM) = tqOrders!Manag
-    Grid.TextMatrix(l, rpLogo) = tqOrders!Logo
-    Grid.TextMatrix(l, rpIzdelia) = tqOrders!Product
-    zakazano = zakazano + numericToReport(l, rpZakazano, tqOrders!ordered)
-    Oplacheno = Oplacheno + numericToReport(l, rpOplacheno, tqOrders!paid)
-    Otgrugeno = Otgrugeno + numericToReport(l, rpOtgrugeno, tqOrders!shipped)
-    l = l + 1
+    LoadDate Grid, L, rpDataVid, tqOrders!Outdatetime, "dd.mm.yy"
+    LoadDate Grid, L, rpVrVid, tqOrders!Outdatetime, "hh"
+    Grid.TextMatrix(L, rpM) = tqOrders!Manag
+    Grid.TextMatrix(L, rpLogo) = tqOrders!Logo
+    Grid.TextMatrix(L, rpIzdelia) = tqOrders!Product
+    zakazano = zakazano + numericToReport(L, rpZakazano, tqOrders!ordered)
+    Oplacheno = Oplacheno + numericToReport(L, rpOplacheno, tqOrders!paid)
+    Otgrugeno = Otgrugeno + numericToReport(L, rpOtgrugeno, tqOrders!shipped)
+    L = L + 1
     Grid.AddItem ""
     tqOrders.MoveNext
   Wend
 End If
 tqOrders.Close
 ENs:
-Grid.MergeRow(l) = True
+Grid.MergeRow(L) = True
 str = "Итого:"
-Grid.TextMatrix(l, rpNomZak) = str
-Grid.TextMatrix(l, rpStatus) = str
-Grid.TextMatrix(l, rpProblem) = str
-Grid.TextMatrix(l, rpStatus) = str
-Grid.TextMatrix(l, rpProblem) = str
-Grid.TextMatrix(l, rpDataVid) = str
-Grid.TextMatrix(l, rpVrVid) = str
-Grid.TextMatrix(l, rpLogo) = str
-Grid.TextMatrix(l, rpIzdelia) = str
-Grid.TextMatrix(l, rpZakazano) = Round(zakazano, 2)
-Grid.TextMatrix(l, rpOplacheno) = Round(Oplacheno, 2) & " "
-Grid.TextMatrix(l, rpOtgrugeno) = Round(Otgrugeno, 2)
+Grid.TextMatrix(L, rpNomZak) = str
+Grid.TextMatrix(L, rpStatus) = str
+Grid.TextMatrix(L, rpProblem) = str
+Grid.TextMatrix(L, rpStatus) = str
+Grid.TextMatrix(L, rpProblem) = str
+Grid.TextMatrix(L, rpDataVid) = str
+Grid.TextMatrix(L, rpVrVid) = str
+Grid.TextMatrix(L, rpLogo) = str
+Grid.TextMatrix(L, rpIzdelia) = str
+Grid.TextMatrix(L, rpZakazano) = Round(zakazano, 2)
+Grid.TextMatrix(L, rpOplacheno) = Round(Oplacheno, 2) & " "
+Grid.TextMatrix(L, rpOtgrugeno) = Round(Otgrugeno, 2)
 
-Grid.row = l
+Grid.row = L
 Grid.col = 1
 Grid.CellFontBold = True
 Grid.col = rpZakazano
@@ -710,7 +711,7 @@ Grid.col = rpOplacheno
 Grid.CellFontBold = True
 Grid.col = rpOtgrugeno
 Grid.CellFontBold = True
-laCount.Caption = l - 1
+laCount.Caption = L - 1
 Grid.col = 0
 End Sub
 

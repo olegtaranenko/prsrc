@@ -405,6 +405,7 @@ Public mousRow2 As Long
 Public Regim As String
 Public docDate As Date
 Public prvoCaption As String
+Public idEquip As Integer
 
 Dim secondNaklad As String, beSUO As Boolean ' была листовая ном-ра
 
@@ -470,7 +471,7 @@ End Sub
 
 '$odbc15$
 Private Sub cmClose_Click()
-Dim I As Integer, J As Integer, NN2() As String, k As Integer
+Dim I As Integer, J As Integer, NN2() As String, K As Integer
 Dim numExtO As Integer, id As Integer, l As Long, S As Double
 Dim mov As Double, moveNum As String, per As Double, str As String, str2 As String
 
@@ -537,12 +538,13 @@ EN1: Grid2(0).SetFocus
     Exit Sub
 End If
 
-If gEquipId = 0 Then
+'' TODO equip
+If idEquip = 0 Then
   id = -6 'заказчик без работы
-ElseIf gEquipId = 3 Then           '$ceh$
+ElseIf idEquip = 3 Then           '$ceh$
   id = getStatiaId("Пр-во SUB") '
 Else
-  id = -gEquipId
+  id = -idEquip
 End If
 
 wrkDefault.BeginTrans
@@ -570,12 +572,12 @@ If moveNum = "yes" Then
     tbDocs!sourId = -1001
     tbDocs!destId = -1002
     tbDocs.update
-    For k = 1 To J
-      If QQ3(k) > 0 Then
-        gNomNom = NN2(k)
-        If Not sProducts.nomenkToDMC(QQ3(k), "noLock") Then GoTo ER2
+    For K = 1 To J
+      If QQ3(K) > 0 Then
+        gNomNom = NN2(K)
+        If Not sProducts.nomenkToDMC(QQ3(K), "noLock") Then GoTo ER2
       End If
-    Next k
+    Next K
     tmpDate = DateAdd("S", 1, tmpDate)
 End If
 
@@ -589,11 +591,11 @@ If J > 0 Then
   tbDocs!sourId = -1002
   tbDocs!destId = id
   tbDocs.update
-  For k = 1 To J
-    gNomNom = NN2(k): numExt = numExtO
-    If Not sProducts.nomenkToDMC(QQ2(k), "noLock") Then GoTo ER2
+  For K = 1 To J
+    gNomNom = NN2(K): numExt = numExtO
+    If Not sProducts.nomenkToDMC(QQ2(K), "noLock") Then GoTo ER2
     If Not clrCehQuant Then GoTo ER2
-  Next k
+  Next K
   tmpDate = DateAdd("S", 1, tmpDate)
 End If
 
@@ -607,11 +609,11 @@ If I > 0 Then
   tbDocs!sourId = -1001
   tbDocs!destId = id
   tbDocs.update
-  For k = 1 To I
-    gNomNom = NN(k)
-    If Not sProducts.nomenkToDMC(QQ(k), "noLock") Then GoTo ER2
+  For K = 1 To I
+    gNomNom = NN(K)
+    If Not sProducts.nomenkToDMC(QQ(K), "noLock") Then GoTo ER2
     If Not clrCehQuant Then GoTo ER2
-  Next k
+  Next K
 End If
 'tbDMC.Close
 tbDocs.Close
@@ -627,7 +629,7 @@ ER2:
 ER1:
 tbDocs.Close
 ER3:
-wrkDefault.rollback
+wrkDefault.Rollback
 lockSklad "un"
 MsgBox "Списание не прошло. Сообщите администратору.", , "Error - " & cErr
 
@@ -783,7 +785,7 @@ laPlatel.Visible = False
 laFirm.Visible = False
 If Regim = "" And numExt = 0 Then
         laFirm.Visible = True
-        laFirm.Caption = "(несписанная из " & Equip(gEquipId) & ")"
+        laFirm.Caption = "(несписанная из " & Werk(gWerkId) & ")"
 ElseIf numExt <> 254 Then  'к заказу
     sql = "SELECT Orders.numOrder, GuideFirms.Name " & _
     "FROM GuideFirms INNER JOIN Orders ON GuideFirms.FirmId = Orders.FirmId " & _
@@ -1128,7 +1130,7 @@ End If '*************************************************************
 End Sub
 
 Private Sub Grid2_EnterCell(Index As Integer)
-Dim t As Double, S As Double
+Dim T As Double, S As Double
 If Index > 0 Then Exit Sub
 mousRow2 = Grid2(Index).row
 mousCol2 = Grid2(Index).col
@@ -1152,7 +1154,7 @@ Grid2(Index).CellBackColor = Grid2(Index).BackColor
 
 End Sub
 
-Private Sub Grid2_MouseUp(Index As Integer, Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub Grid2_MouseUp(Index As Integer, Button As Integer, Shift As Integer, X As Single, Y As Single)
 If Grid2(Index).MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid2(Index).ColWidth(Grid2(Index).MouseCol)
 
@@ -1166,7 +1168,7 @@ Grid2(0).SetFocus
 Grid2_EnterCell 0
 End Sub
 
-Private Sub Grid4_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub Grid4_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
 If Grid4.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid4.ColWidth(Grid4.MouseCol)
 

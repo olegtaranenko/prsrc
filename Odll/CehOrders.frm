@@ -320,7 +320,7 @@ Grid.ColWidth(chVrVid) = colWdth(chVrVid)
 Grid.ColWidth(chFirma) = colWdth(chFirma)
 Grid.ColWidth(chLogo) = colWdth(chLogo) - Grid.ColWidth(chDataRes)
 
-Me.Caption = Equip(gEquipId) & mainTitle
+Me.Caption = mainTitle & "[" & Werk(idWerk) & "]"
 sql = "select * from vw_Reestr where werkId = " & idWerk
 
 Set tbCeh = myOpenRecordSet("##34", sql, dbOpenDynaset)

@@ -490,7 +490,7 @@ numDoc = getNextDocNum()
 
 If Regim = "fromCeh" Then
     numExt = 0 ' виртуальные накладные(зарезервир-е предметы)
-    tbDocsNote = Equip(gEquipId)
+    tbDocsNote = Werk(gWerkId)
 Else
     numExt = 254
 End If
@@ -509,7 +509,7 @@ loadDocs "add" ' не загружать все док-ты
 Exit Sub
 ER1:
 errorCodAndMsg ("Добавить расход")
-wrkDefault.rollback
+wrkDefault.Rollback
 End Sub
 
 Private Sub cmAdd2_Click()
@@ -634,7 +634,7 @@ MsgBox "Списание прошло успешно!", , ""
 GoTo EN1
 
 ER2: tbDMC.Close
-ER1: wrkDefault.rollback
+ER1: wrkDefault.Rollback
 EN1: lockSklad "un"
 
 End Sub
@@ -663,7 +663,7 @@ If numExt = 0 Then
   I = myExecute("##338", sql, 0)
   If I = 0 Or I = -1 Then GoTo CC ' документ м.б. и пустым
 ER1:
-  wrkDefault.rollback ' отммена транзакции
+  wrkDefault.Rollback ' отммена транзакции
   Exit Sub
 End If
 
@@ -740,7 +740,7 @@ Grid.SetFocus
 Exit Sub
 
 ERR1:
-wrkDefault.rollback ' отммена транзакции
+wrkDefault.Rollback ' отммена транзакции
 On Error Resume Next
 tbDMC.Close
 tbDocs.Close
@@ -822,7 +822,7 @@ ER2:
 ER1:
 'tbDocs.Close
 ER3:
-wrkDefault.rollback
+wrkDefault.Rollback
 lockSklad "un"
 End Sub
 
@@ -977,7 +977,7 @@ Dim strWhere As String, moveWhere As String, I As Integer, str As String
 '    str = strWhereByStEndDateBox(Me)
     str = getWhereByDateBoxes(Me, "sDocs.xDate", begDate)
     If Regim = "fromCeh" Then
-        strWhere = "((sDocs.numExt) = 0) AND ((sDocs.Note)='" & Equip(gEquipId) & "')" 'вирт. накладные
+        strWhere = "((sDocs.numExt) = 0) AND ((sDocs.Note)='" & Werk(gWerkId) & "')" 'вирт. накладные
     ElseIf ckCeh.value = 1 Then
         strWhere = "((sDocs.numExt) = 0)" 'вирт. накладные
     Else
@@ -1364,7 +1364,7 @@ Private Sub Grid_LeaveCell()
 Grid.CellBackColor = Grid.BackColor
 End Sub
 
-Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then
         MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
 Else
@@ -1378,7 +1378,7 @@ End If
 End Sub
 
 
-Private Sub Grid2_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub Grid2_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
 If Grid2.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid2.ColWidth(Grid2.MouseCol)
 

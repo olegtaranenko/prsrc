@@ -335,7 +335,7 @@ tbNomRes.Text = newRes
 cmRefr.Caption = "Обновить"
 lv.ListItems.Clear
 
-Zakaz.newZagruz "fromCehZagruz"
+Zakaz.newZagruz "fromCehZagruz", idEquip
 
 For I = 1 To maxDay
     tekDate = Format(DateAdd("d", I - 1, curDate), "dd/mm/yy")
@@ -352,7 +352,7 @@ For I = 1 To maxDay
         lv.ListItems(Key).Bold = True
     End If
     
-    lv.ListItems(Key).SubItems(zgPrinato) = Round(getNevip(I), 1)
+    lv.ListItems(Key).SubItems(zgPrinato) = Round(getNevip(I, idEquip), 1)
 
     lv.ListItems(Key).SubItems(zgNomRes) = nomRes(I)
     

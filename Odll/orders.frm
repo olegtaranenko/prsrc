@@ -1478,8 +1478,11 @@ For I = 1 To lbWerk.ListCount - 2
     cmWerk(I).Visible = True
 Next I
 
+ReDim Werk(lbWerk.ListCount - 1)
+
 For I = 0 To lbWerk.ListCount - 2
-    cmWerk(I).Caption = lbWerk.List(I + 1)
+    Werk(I + 1) = lbWerk.List(I + 1)
+    cmWerk(I).Caption = Werk(I + 1)
 Next I
 
 initListbox "select equipId, equipName from Guideequip where equipName <> '' order by 1", lbEquip, "equipId", "equipName"

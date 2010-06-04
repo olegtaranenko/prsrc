@@ -31,7 +31,8 @@ Public isAdmin As Boolean
 
 Public isBlock As Boolean
 Public Equip() As String
-Public gEquipId As Integer
+Public Werk() As String
+'Public gEquipId As Integer
 Public Const lenStatus = 20
 Public statId(lenStatus) As Integer
 Public status(lenStatus) As String
@@ -2029,12 +2030,12 @@ Else
 End If
 End Sub
 
-Function getNevip(day As Integer)
+Function getNevip(day As Integer, equipId As Integer)
 sql = "SELECT Sum(oe.workTime * oc.Nevip) AS wSum " & _
 "FROM OrdersInCeh oc " & _
 "JOIN OrdersEquip oe ON oe.numOrder = oc.numOrder " & _
 "WHERE DateDiff(day,'" & Format(curDate, "yyyy-mm-dd") & "',oe.outDateTime) =" & day - 1 _
-& " AND oe.equipId =" & gEquipId
+& " AND oe.equipId =" & equipId
 'MsgBox sql
 getNevip = 0
 byErrSqlGetValues "W##382", sql, getNevip

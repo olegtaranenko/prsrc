@@ -16,14 +16,14 @@ Begin VB.Form Equipment
       Caption         =   "Заказ"
       Height          =   2412
       Left            =   240
-      TabIndex        =   13
+      TabIndex        =   12
       Top             =   0
       Width           =   5892
       Begin VB.CheckBox cbUrgent 
          Enabled         =   0   'False
          Height          =   252
          Left            =   960
-         TabIndex        =   28
+         TabIndex        =   27
          Top             =   1920
          Width           =   252
       End
@@ -31,7 +31,7 @@ Begin VB.Form Equipment
          Height          =   288
          Left            =   1440
          Style           =   2  'Dropdown List
-         TabIndex        =   18
+         TabIndex        =   17
          Top             =   720
          Width           =   1452
       End
@@ -41,7 +41,7 @@ Begin VB.Form Equipment
          Left            =   4380
          List            =   "Equipment.frx":000D
          Style           =   2  'Dropdown List
-         TabIndex        =   17
+         TabIndex        =   16
          Top             =   720
          Width           =   1035
       End
@@ -51,7 +51,7 @@ Begin VB.Form Equipment
          Left            =   3120
          List            =   "Equipment.frx":0033
          Style           =   2  'Dropdown List
-         TabIndex        =   16
+         TabIndex        =   15
          Top             =   720
          Width           =   1035
       End
@@ -59,7 +59,7 @@ Begin VB.Form Equipment
          Enabled         =   0   'False
          Height          =   285
          Left            =   3960
-         TabIndex        =   15
+         TabIndex        =   14
          Top             =   1440
          Width           =   1152
       End
@@ -67,7 +67,7 @@ Begin VB.Form Equipment
          Enabled         =   0   'False
          Height          =   285
          Left            =   2040
-         TabIndex        =   14
+         TabIndex        =   13
          Top             =   1440
          Width           =   1152
       End
@@ -75,7 +75,7 @@ Begin VB.Form Equipment
          Caption         =   "Сроч-ть"
          Height          =   252
          Left            =   120
-         TabIndex        =   27
+         TabIndex        =   26
          Top             =   1920
          Width           =   612
       End
@@ -83,7 +83,7 @@ Begin VB.Form Equipment
          Caption         =   "Н/А"
          Height          =   252
          Left            =   120
-         TabIndex        =   26
+         TabIndex        =   25
          Top             =   1440
          Width           =   1692
       End
@@ -91,7 +91,7 @@ Begin VB.Form Equipment
          Caption         =   "Дата выд."
          Height          =   252
          Left            =   120
-         TabIndex        =   25
+         TabIndex        =   24
          Top             =   1080
          Width           =   972
       End
@@ -99,7 +99,7 @@ Begin VB.Form Equipment
          Caption         =   "Номер заказа"
          Height          =   252
          Left            =   120
-         TabIndex        =   24
+         TabIndex        =   23
          Top             =   360
          Width           =   1212
       End
@@ -116,7 +116,7 @@ Begin VB.Form Equipment
          EndProperty
          Height          =   252
          Left            =   120
-         TabIndex        =   23
+         TabIndex        =   22
          Top             =   720
          Width           =   1212
       End
@@ -124,7 +124,7 @@ Begin VB.Form Equipment
          Caption         =   "Статус"
          Height          =   252
          Left            =   1560
-         TabIndex        =   22
+         TabIndex        =   21
          Top             =   360
          Width           =   852
       End
@@ -132,7 +132,7 @@ Begin VB.Form Equipment
          Caption         =   "Макет                    Образец"
          Height          =   252
          Left            =   3180
-         TabIndex        =   21
+         TabIndex        =   20
          Top             =   360
          Width           =   2112
       End
@@ -141,7 +141,7 @@ Begin VB.Form Equipment
          Enabled         =   0   'False
          Height          =   252
          Left            =   3960
-         TabIndex        =   20
+         TabIndex        =   19
          Top             =   1128
          Width           =   1272
       End
@@ -150,19 +150,10 @@ Begin VB.Form Equipment
          Enabled         =   0   'False
          Height          =   192
          Left            =   2040
-         TabIndex        =   19
+         TabIndex        =   18
          Top             =   1128
          Width           =   1692
       End
-   End
-   Begin VB.CommandButton Command1 
-      Caption         =   "По умолчанию"
-      Height          =   315
-      Left            =   2040
-      TabIndex        =   2
-      Top             =   4440
-      Visible         =   0   'False
-      Width           =   1332
    End
    Begin VB.CommandButton cmApply 
       Caption         =   "Применить"
@@ -185,7 +176,7 @@ Begin VB.Form Equipment
       Caption         =   "По оборудованию"
       Height          =   1932
       Left            =   240
-      TabIndex        =   3
+      TabIndex        =   2
       Top             =   2400
       Width           =   5892
       Begin VB.CheckBox cbEquipment 
@@ -193,7 +184,7 @@ Begin VB.Form Equipment
          Height          =   372
          Index           =   0
          Left            =   240
-         TabIndex        =   6
+         TabIndex        =   5
          Top             =   660
          Width           =   732
       End
@@ -201,7 +192,7 @@ Begin VB.Form Equipment
          Height          =   288
          Index           =   0
          Left            =   1200
-         TabIndex        =   5
+         TabIndex        =   4
          Top             =   720
          Visible         =   0   'False
          Width           =   492
@@ -210,7 +201,7 @@ Begin VB.Form Equipment
          Height          =   285
          Index           =   0
          Left            =   1800
-         TabIndex        =   4
+         TabIndex        =   3
          Top             =   720
          Visible         =   0   'False
          Width           =   552
@@ -219,7 +210,7 @@ Begin VB.Form Equipment
          Caption         =   "Вр. изг."
          Height          =   252
          Left            =   1200
-         TabIndex        =   12
+         TabIndex        =   11
          Top             =   360
          Width           =   612
       End
@@ -228,7 +219,7 @@ Begin VB.Form Equipment
          Height          =   252
          Index           =   0
          Left            =   2520
-         TabIndex        =   11
+         TabIndex        =   10
          Top             =   720
          Visible         =   0   'False
          Width           =   1572
@@ -237,7 +228,7 @@ Begin VB.Form Equipment
          Caption         =   "Дата Изгот."
          Height          =   252
          Left            =   2520
-         TabIndex        =   10
+         TabIndex        =   9
          Top             =   360
          Width           =   1092
       End
@@ -245,7 +236,7 @@ Begin VB.Form Equipment
          Caption         =   "MO"
          Height          =   252
          Left            =   1920
-         TabIndex        =   9
+         TabIndex        =   8
          Top             =   360
          Width           =   252
       End
@@ -253,7 +244,7 @@ Begin VB.Form Equipment
          Caption         =   "Статус"
          Height          =   252
          Left            =   4200
-         TabIndex        =   8
+         TabIndex        =   7
          Top             =   360
          Width           =   972
       End
@@ -261,7 +252,7 @@ Begin VB.Form Equipment
          Height          =   252
          Index           =   0
          Left            =   4200
-         TabIndex        =   7
+         TabIndex        =   6
          Top             =   720
          Width           =   996
       End
@@ -454,24 +445,33 @@ End Sub
 
 
 Private Sub loadEnv()
-Dim I As Integer, HShift As Integer
+Dim I As Integer, VShift As Integer, LowLinie As Long
+
     For I = 1 To UBound(Equip) - 1
-        HShift = cbEquipment(I - 1).Top + 360
+        VShift = cbEquipment(I - 1).Top + 330
         Load cbEquipment(I)
         Load tbWorktime(I)
         Load lbDateOut(I)
         Load lbEquipStatus(I)
         Load tbVrVipO(I)
         
-        cbEquipment(I).Top = HShift
-        tbWorktime(I).Top = HShift
-        lbDateOut(I).Top = HShift
-        lbEquipStatus(I).Top = HShift
-        tbVrVipO(I).Top = HShift
+        cbEquipment(I).Top = VShift
+        tbWorktime(I).Top = VShift
+        lbDateOut(I).Top = VShift
+        lbEquipStatus(I).Top = VShift
+        tbVrVipO(I).Top = VShift
         
         cbEquipment(I).Caption = Equip(I + 1)
         cbEquipment(I).Visible = True
+        LowLinie = cbEquipment(I).Top + cbEquipment(I).Height
     Next I
+    
+    EquipFrame.Height = LowLinie + 50
+    LowLinie = EquipFrame.Top + EquipFrame.Height + 100
+    cmExit.Top = LowLinie
+    cmApply.Top = LowLinie
+    LowLinie = cmApply.Top + cmApply.Height + 100
+    Me.Height = LowLinie + 700
 End Sub
 
 

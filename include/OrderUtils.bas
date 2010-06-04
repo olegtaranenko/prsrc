@@ -92,16 +92,24 @@ While Not tbOrders.EOF
     & " WHERE xDate < '" & Format(curDate, "yy.mm.dd") & "' and equipId = " & equipId
     If myExecute("##406", sql, 0) > 0 Then Exit Function
     
+  
     
     '****** отстреливаем итоги ***********
     tmpSng = 0 'сумма невыполнено живых
-    S = 0 ' плюс неготовые образцы
-    sql = "SELECT Sum(oe.workTime * oc.Nevip) AS nevip, sum(oe.worktimeMO) as Sum_worktimeMO " & _
-    "FROM Orders o " _
+    sql = "SELECT Sum(oe.workTime * oc.Nevip) AS nevip" _
+    & " FROM Orders o " _
     & " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder " _
     & " JOIN OrdersEquip oe ON oe.numOrder = oc.numOrder" _
     & " WHERE o.StatusId = 1 AND oe.equipId = " & equipId
-    byErrSqlGetValues "##372", sql, tmpSng, S
+    byErrSqlGetValues "##372", sql, tmpSng
+    
+    S = 0 ' плюс неготовые образцы
+    sql = "SELECT sum(oe.worktimeMO) as Sum_worktimeMO " _
+    & " FROM Orders o " _
+    & " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder " _
+    & " JOIN OrdersEquip oe ON oe.numOrder = oc.numOrder" _
+    & " WHERE oc.StatO ='в работе' AND oe.equipId = " & equipId
+    byErrSqlGetValues "##372", sql, S
     
     tmpSng = tmpSng + S
     

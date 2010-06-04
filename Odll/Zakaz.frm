@@ -608,9 +608,15 @@ End Function
 'reg = "setka" по F1,F2 - т.е. первый раз
 'reg = "" - double click at status cell
 
-Sub newZagruz(Optional reg As String = "")
+Sub newZagruz(Optional reg As String = "", Optional equipId As Integer)
 Dim S As Double, nevip As Double, I As Integer
-Dim bDay As Integer, eDay As Integer, stat As String
+Dim bDay As Integer, eDay As Integer, stat As String, vEquipId As Integer
+
+If equipId <> 0 Then
+    vEquipId = equipId
+Else
+    vEquipId = Me.idEquip
+End If
 
 'isMzagruz - true: если вызвали загрузку НЕ из цеха, то есть Менеджер.
 If reg = "fromCehZagruz" Then
@@ -655,7 +661,7 @@ sql = "SELECT o.numOrder, oe.workTime, " & _
 " DateDiff(day,Now(),o.inDate) AS begDay, oe.outDateTime, " & _
 " o.inDate, o.StatusId, oc.Nevip, oc.urgent " & _
 vbCr & " FROM Orders o " & _
-" JOIN OrdersEquip oe ON oe.numorder = o.numorder AND oe.equipId = " & idEquip & _
+" JOIN OrdersEquip oe ON oe.numorder = o.numorder AND oe.equipId = " & vEquipId & _
 " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder " & _
 " Where (o.StatusId = 1 Or o.StatusId = 5) " & _
 vbCr & " UNION ALL " & _
@@ -663,7 +669,7 @@ vbCr & " UNION ALL " & _
 " DateDiff(day,Now(),o.DateRS) AS begDay, oe.outDateTime, " & _
 " o.DateRS, o.StatusId, oc.Nevip, oc.urgent " & _
 vbCr & " FROM Orders o " & _
-" JOIN OrdersEquip oe ON oe.numorder = o.numorder AND oe.equipId = " & idEquip & _
+" JOIN OrdersEquip oe ON oe.numorder = o.numorder AND oe.equipId = " & vEquipId & _
 " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder " & _
 " Where (o.StatusId = 2 Or o.StatusId = 3) " & _
 vbCr & " UNION ALL " & _
@@ -672,7 +678,7 @@ vbCr & " UNION ALL " & _
 " o.inDate, 1 AS StatusId, -1 AS Nevip, '' AS urgent " & _
 vbCr & " FROM Orders o " & _
 " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder " & _
-" JOIN OrdersEquip oe ON oe.numorder = o.numorder AND oe.equipId = " & idEquip & _
+" JOIN OrdersEquip oe ON oe.numorder = o.numorder AND oe.equipId = " & vEquipId & _
 " Where oc.statO = 'в работе' " & _
 " ORDER BY "
 
@@ -1940,7 +1946,7 @@ End If
     getResurs idEquip
     Me.lvAddDays  ' добавляем стороки и даты
     For I = 1 To maxDay
-        Me.lv.ListItems("k" & I).SubItems(zkPrinato) = Round(getNevip(I), 1)
+        Me.lv.ListItems("k" & I).SubItems(zkPrinato) = Round(getNevip(I, idEquip), 1)
         Me.lv.ListItems("k" & I).SubItems(zkResurs) = Round(nomRes(I) * KPD * Nstan, 1)
     Next I
     Me.lv.ListItems("k1").SubItems(zkResurs) = Round(nr * Nstan * KPD, 1)
