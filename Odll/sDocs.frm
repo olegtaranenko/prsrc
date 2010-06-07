@@ -831,16 +831,16 @@ Sub workZakazi()
 'сделать, чтобы по "Ok" сразу не по€вл€лись пока  накладные(пустые), а только
 'по закрытию Nakladna.frm
 cmOrder.Enabled = True
-sql = "SELECT enumEquip (" & numDoc & ")"
-Dim Equip As String
-If Not byErrSqlGetValues("##98", sql, Equip) Then Exit Sub
+sql = "SELECT werkId from orders where numorder = " & numDoc
+If Not byErrSqlGetValues("##98", sql, idWerk) Then Exit Sub
  
 cmDel.Enabled = True
 If isDateTbox(tbDocDate, , False) Then
     Nakladna.docDate = tmpDate
 End If
 Nakladna.Regim = "toNaklad"
-Nakladna.prvoCaption = "ѕр-во " & Equip
+Nakladna.prvoCaption = Werk(idWerk)
+Nakladna.idWerk = idWerk
 Nakladna.Show vbModal
 
 End Sub
@@ -1143,21 +1143,21 @@ If numExt = 0 And sDocs.reservNoNeed Then ' межскладска€ выписанна€ из цеха -  н
   sql = "SELECT sGuideNomenk.ed_Izmer, sGuideNomenk.nomName, sDMCmov.nomNom, " & _
   "sGuideNomenk.Size, sGuideNomenk.cod, sGuideNomenk.ed_Izmer2, " & _
   "sGuideNomenk.perList, sDMCmov.numDoc, sDMCmov.quantity as quant " & _
-  "FROM sGuideNomenk INNER JOIN sDMCmov ON sGuideNomenk.nomNom = sDMCmov.nomNom  " & _
-  "WHERE (((sDMCmov.numDoc) = " & numDoc & ")) ORDER BY sDMCmov.nomNom;"
+  " FROM sGuideNomenk INNER JOIN sDMCmov ON sGuideNomenk.nomNom = sDMCmov.nomNom  " & _
+  " WHERE sDMCmov.numDoc  = " & numDoc & " ORDER BY sDMCmov.nomNom"
 ElseIf numExt = 0 Then ' из цеха со —клад1
   sql = "SELECT sGuideNomenk.ed_Izmer, sGuideNomenk.nomName, sDMCrez.nomNom, " & _
-  "sGuideNomenk.Size, sGuideNomenk.cod, sGuideNomenk.ed_Izmer2, " & _
-  "sGuideNomenk.perList, sDMCrez.numDoc, sDMCrez.quantity as quant " & _
-  "FROM sGuideNomenk INNER JOIN sDMCrez ON sGuideNomenk.nomNom = sDMCrez.nomNom  " & _
-  "WHERE (((sDMCrez.numDoc) = " & numDoc & ")) ORDER BY sDMCrez.nomNom;"
+  " sGuideNomenk.Size, sGuideNomenk.cod, sGuideNomenk.ed_Izmer2, " & _
+  " sGuideNomenk.perList, sDMCrez.numDoc, sDMCrez.quantity as quant " & _
+  " FROM sGuideNomenk INNER JOIN sDMCrez ON sGuideNomenk.nomNom = sDMCrez.nomNom  " & _
+  " WHERE sDMCrez.numDoc = " & numDoc & " ORDER BY sDMCrez.nomNom;"
 Else
   sql = "SELECT sGuideNomenk.ed_Izmer, sGuideNomenk.nomName, sDMC.nomNom, " & _
-  "sGuideNomenk.Size, sGuideNomenk.cod, sGuideNomenk.ed_Izmer2, " & _
-  "sGuideNomenk.perList, sDMC.numDoc, sDMC.numExt, sDMC.quant " & _
-  "FROM sGuideNomenk INNER JOIN sDMC ON sGuideNomenk.nomNom = sDMC.nomNom  " & _
-  "WHERE (((sDMC.numDoc) = " & numDoc & " AND (sDMC.numExt) = " & numExt & _
-  ")) ORDER BY sGuideNomenk.nomNom;"
+  " sGuideNomenk.Size, sGuideNomenk.cod, sGuideNomenk.ed_Izmer2, " & _
+  " sGuideNomenk.perList, sDMC.numDoc, sDMC.numExt, sDMC.quant " & _
+  " FROM sGuideNomenk INNER JOIN sDMC ON sGuideNomenk.nomNom = sDMC.nomNom  " & _
+  " WHERE sDMC.numDoc = " & numDoc & " AND (sDMC.numExt) = " & numExt & _
+  " ORDER BY sGuideNomenk.nomNom"
 End If
 'MsgBox sql
    

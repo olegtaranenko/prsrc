@@ -1448,8 +1448,6 @@ Filtr.lbM.Height = Filtr.lbM.Height + 195 * (Filtr.lbM.ListCount - 1)
 
 If Not IsEmpty(otlad) Then cbM.ListIndex = cbM.ListCount - 1
 
-
-
 Set table = myOpenRecordSet("##72", "GuideTema", dbOpenForwardOnly)
 If table Is Nothing Then myBase.Close: End
 
@@ -1470,7 +1468,9 @@ trigger = True
 
 initListbox "select * from GuideVenture where standalone = 0", lbVenture, "VentureId", "VentureName"
 
-initListbox "select werkId, werkCode from GuideWerk order by 1", lbWerk, "werkId", "werkCode"
+sql = "select werkId, werkCode, werkSourceId from GuideWerk order by 1"
+
+initListbox sql, lbWerk, "werkId", "werkCode"
 
 For I = 1 To lbWerk.ListCount - 2
     Load cmWerk(I)
@@ -1484,6 +1484,18 @@ For I = 0 To lbWerk.ListCount - 2
     Werk(I + 1) = lbWerk.List(I + 1)
     cmWerk(I).Caption = Werk(I + 1)
 Next I
+
+Set table = myOpenRecordSet("##72.2", sql, dbOpenForwardOnly)
+If table Is Nothing Then myBase.Close: End
+ReDim werkSourceId(lbWerk.ListCount - 1)
+I = 1
+While Not table.EOF
+    werkSourceId(I) = table!werkSourceId
+    table.MoveNext
+    I = I + I
+Wend
+table.Close
+
 
 initListbox "select equipId, equipName from Guideequip where equipName <> '' order by 1", lbEquip, "equipId", "equipName"
 
@@ -3308,7 +3320,11 @@ Sub syncOrderByEquipment(operation As Integer, Optional ByVal Numorder As Long =
     If operation <> 1 Then
         idxOrder = getZakazVOIndex(Numorder)
     Else
-        idxOrder = UBound(OrdersEquipStat) + 1
+        If UBound(OrdersEquipStat) > -1 Then
+            idxOrder = UBound(OrdersEquipStat) + 1
+        Else
+            idxOrder = 0
+        End If
     End If
     
     If operation = 1 Then

@@ -32,6 +32,8 @@ Public isAdmin As Boolean
 Public isBlock As Boolean
 Public Equip() As String
 Public Werk() As String
+Public werkSourceId() As Integer
+
 'Public gEquipId As Integer
 Public Const lenStatus = 20
 Public statId(lenStatus) As Integer

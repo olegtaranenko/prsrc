@@ -1243,19 +1243,24 @@ where	OrdersMO.numorder = OrdersInCeh.numorder
 			<column name="werkName" type="varchar(32)" >
 				<constraints nullable="false"/>
 			</column>
+			<column name="werkSourceId" type="integer" >
+				<constraints nullable="true"/>
+			</column>
 		</createTable>
 	</changeSet>
 	
 	<changeSet id="17" author="mantis-125" runOnChange="false">
 		<insert tableName="GuideWerk">
-			<column name="werkId" valueNumeric="2"/>
-			<column name="werkCode" value="Цех"/>
-			<column name="werkName" value="Основное производство"/>
-		</insert>
-		<insert tableName="GuideWerk">
 			<column name="werkId" valueNumeric="1"/>
 			<column name="werkCode" value="Склад"/>
 			<column name="werkName" value="Подготовка продажи"/>
+			<column name="werkSourceId" valueNumeric="-8"/>
+		</insert>
+		<insert tableName="GuideWerk">
+			<column name="werkId" valueNumeric="2"/>
+			<column name="werkCode" value="Цех"/>
+			<column name="werkName" value="Основное производство"/>
+			<column name="werkSourceId" valueNumeric="-6"/>
 		</insert>
 		<rollback/>
 	</changeSet>

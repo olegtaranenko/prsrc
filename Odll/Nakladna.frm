@@ -405,7 +405,7 @@ Public mousRow2 As Long
 Public Regim As String
 Public docDate As Date
 Public prvoCaption As String
-Public idEquip As Integer
+'Public idEquip As Integer
 Public idWerk As Integer
 
 Dim secondNaklad As String, beSUO As Boolean ' была листовая ном-ра
@@ -539,14 +539,7 @@ EN1: Grid2(0).SetFocus
     Exit Sub
 End If
 
-'' TODO equip
-If idEquip = 0 Then
-  id = -6 'заказчик без работы
-ElseIf idEquip = 3 Then           '$ceh$
-  id = getStatiaId("Пр-во SUB") '
-Else
-  id = -idEquip
-End If
+id = werkSourceId(idWerk)
 
 wrkDefault.BeginTrans
 
@@ -999,8 +992,8 @@ For I = 1 To UBound(NN)
         End If
         Grid2(ind).AddItem ""
     End If
+    tbNomenk.Close
 Next I
-tbNomenk.Close
 If quantity2 > 0 Then
     Grid2(ind).removeItem quantity2 + 1
 End If
