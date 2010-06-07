@@ -406,6 +406,7 @@ Public Regim As String
 Public docDate As Date
 Public prvoCaption As String
 Public idEquip As Integer
+Public idWerk As Integer
 
 Dim secondNaklad As String, beSUO As Boolean ' была листовая ном-ра
 
@@ -620,6 +621,7 @@ tbDocs.Close
 wrkDefault.CommitTrans
 lockSklad "un"
 Unload Me
+sDocs.idWerk = idWerk
 sDocs.loadDocs CStr(numExtO) & " " & moveNum ' показать 1-3 накладных
 
 Exit Sub
@@ -785,7 +787,7 @@ laPlatel.Visible = False
 laFirm.Visible = False
 If Regim = "" And numExt = 0 Then
         laFirm.Visible = True
-        laFirm.Caption = "(несписанная из " & Werk(gWerkId) & ")"
+        laFirm.Caption = "(несписанная из " & Werk(Me.idWerk) & ")"
 ElseIf numExt <> 254 Then  'к заказу
     sql = "SELECT Orders.numOrder, GuideFirms.Name " & _
     "FROM GuideFirms INNER JOIN Orders ON GuideFirms.FirmId = Orders.FirmId " & _
@@ -897,7 +899,7 @@ End Sub
 
 'ind=1 м.б. только при Regim = ""
 Sub loadToGrid(ind As Integer)
-Dim I As Integer, S As Double, s2 As Double, str As String, str2 As String
+Dim I As Integer, S As Double, S2 As Double, str As String, str2 As String
 
 
 ReDim NN(0): ReDim QQ(0): ReDim QQ2(0): QQ2(0) = 0: ReDim QQ3(0)
@@ -936,13 +938,7 @@ ElseIf Regim = "" Then
   End If
 ElseIf Regim = "predmeti" Then
   laSours(0).Caption = "Склад1"
-  If gEquipId = 1 Then
-      laDest(ind).Caption = "Пр-во YAG"
-  ElseIf gEquipId = 2 Then
-      laDest(ind).Caption = "Пр-во CO2"
-  ElseIf gEquipId = 3 Then                 '$$ceh
-      laDest(ind).Caption = "Пр-во SUB" '
-  End If
+  laDest(ind).Caption = Werk(idWerk)
   If Not sProducts.zakazNomenkToNNQQ Then GoTo EN1
 End If
 
@@ -958,7 +954,7 @@ beSUO = False
 For I = 1 To UBound(NN)
 '    tbNomenk.Seek "=", NN(i)
     sql = "SELECT nomName, ed_Izmer, perList, Size, ed_Izmer2, cod " & _
-    "from sGuideNomenk WHERE (((nomNom)='" & NN(I) & "'));"
+    "from sGuideNomenk WHERE nomNom = '" & NN(I) & "'"
     Set tbNomenk = myOpenRecordSet("##129", sql, dbOpenForwardOnly)
 '    If Not tbNomenk.NoMatch Then
     If Not tbNomenk.BOF Then
@@ -981,7 +977,7 @@ For I = 1 To UBound(NN)
             Grid2(ind).TextMatrix(quantity2, nkEtap) = Round(QQ2(I) - QQ3(I), 2)
             
             sql = "SELECT Sum(quant) AS Sum_quant From sDMC WHERE " & _
-            "(((sDMC.numDoc)=" & numDoc & ") AND ((sDMC.nomNom)='" & NN(I) & "'));"
+            "sDMC.numDoc = " & numDoc & " AND sDMC.nomNom = '" & NN(I) & "'"
             If byErrSqlGetValues("##194", sql, S) Then
                 Grid2(ind).TextMatrix(quantity2, nkClos) = Round(S, 2)
                 Grid2(ind).TextMatrix(quantity2, nkEClos) = Round(S - QQ3(I), 2)
@@ -991,14 +987,14 @@ For I = 1 To UBound(NN)
                 beSUO = True
                 Grid2(ind).TextMatrix(quantity2, nkIntEdIzm) = tbNomenk!ed_Izmer2
               End If
-              S = 0: s2 = 0
+              S = 0: S2 = 0
               sql = "SELECT curQuant, intQuant from sDMCrez " & _
-              "WHERE (((numDoc)=" & gNzak & ") AND ((nomNom)='" & NN(I) & "'));"
-              byErrSqlGetValues "##362", sql, S, s2
+              "WHERE numDoc =" & gNzak & " AND nomNom = '" & NN(I) & "'"
+              byErrSqlGetValues "##362", sql, S, S2
               If S > 0 Then _
                 Grid2(ind).TextMatrix(quantity2, nkQuant) = Round(S, 2)
-              If s2 > 0 Then _
-                Grid2(ind).TextMatrix(quantity2, nkIntQuant) = s2
+              If S2 > 0 Then _
+                Grid2(ind).TextMatrix(quantity2, nkIntQuant) = S2
             End If
         End If
         Grid2(ind).AddItem ""

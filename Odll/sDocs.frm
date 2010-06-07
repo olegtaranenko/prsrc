@@ -334,6 +334,7 @@ Dim statiaId() As String
 Dim destId As Integer
 Dim byClick As Boolean
 Public isLoad As Boolean
+Public idWerk As Integer
 
 Dim typeId As Integer
 Const dnNomNom = 1
@@ -490,7 +491,7 @@ numDoc = getNextDocNum()
 
 If Regim = "fromCeh" Then
     numExt = 0 ' виртуальные накладные(зарезервир-е предметы)
-    tbDocsNote = Werk(gWerkId)
+    tbDocsNote = Werk(idWerk)
 Else
     numExt = 254
 End If
@@ -977,7 +978,7 @@ Dim strWhere As String, moveWhere As String, I As Integer, str As String
 '    str = strWhereByStEndDateBox(Me)
     str = getWhereByDateBoxes(Me, "sDocs.xDate", begDate)
     If Regim = "fromCeh" Then
-        strWhere = "((sDocs.numExt) = 0) AND ((sDocs.Note)='" & Werk(gWerkId) & "')" 'вирт. накладные
+        strWhere = "((sDocs.numExt) = 0) AND ((sDocs.Note)='" & Werk(idWerk) & "')" 'вирт. накладные
     ElseIf ckCeh.value = 1 Then
         strWhere = "((sDocs.numExt) = 0)" 'вирт. накладные
     Else

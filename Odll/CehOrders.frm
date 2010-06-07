@@ -223,10 +223,9 @@ Unload Me
 End Sub
 
 Private Sub cmNaklad_Click()
-#If Not COMTEC = 1 Then '----------------------------------------------------
 sDocs.Regim = "fromCeh"
+sDocs.idWerk = idWerk
 sDocs.Show vbModal
-#End If '--------------------------------------------------------------
 End Sub
 
 Private Sub cmPrint_Click()
@@ -651,6 +650,7 @@ If mousCol = chIzdelia And Grid.CellForeColor = 200 Then
     numDoc = gNzak
     numExt = 0
     Nakladna.Regim = "predmeti"
+    Nakladna.idWerk = Me.idWerk
     Nakladna.Show vbModal
 End If
 #End If '--------------------------------------------------------------

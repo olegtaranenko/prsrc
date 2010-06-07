@@ -342,6 +342,8 @@ If tabl.BOF Then
     If c = "W" Then
         For I = 2 To maxi: val(I) = 0: Next I
         GoTo EN1
+    ElseIf c = "w" Then
+        GoTo EN1
     Else
 '        msgOfEnd CStr(val(0)), "Нет записей удовлетворяющих Where."
         wrkDefault.Rollback
@@ -357,7 +359,8 @@ For I = 2 To maxi
         val(I) = 0
     ElseIf str = "String" And IsNull(tabl.fields(I - 2)) Then
         val(I) = ""
-'    ElseIf str = "Date" And IsNull(tabl.fields(I - 2)) Then
+    ElseIf str = "Date" And IsNull(tabl.fields(I - 2)) Then
+        'do nothing the date remain quasi-null
 '        val(I) = tabl.Fil
     Else
         val(I) = tabl.fields(I - 2)

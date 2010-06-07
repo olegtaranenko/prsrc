@@ -191,9 +191,37 @@ Public Sub cbBuildStatuses(ByRef statusComboBox As ComboBox, ByRef statusIdOld A
         addToCbStatus statusComboBox, 2 '"резерв"  'соглас-я с готовым образцом
         addToCbStatus statusComboBox, 3 '"согласов."
     End If
-    
-
 
 End Sub
+
+Public Function cbMOsetByText(cb As ComboBox, stat As Variant, Optional baseIndex As Integer = 1) As Boolean
+    cbMOsetByText = False
+Dim I As Integer, txt As String
+    txt = ""
+    If Not IsNull(stat) Then txt = CStr(stat)
+    If txt = "готов" Then
+        If cb.List(baseIndex + 2) <> "готов" Then cb.AddItem "готов", baseIndex + 2
+        If cb.List(baseIndex + 3) <> "утвержден" Then cb.AddItem "утвержден", baseIndex + 3
+        cb.ListIndex = baseIndex + 2
+        cbMOsetByText = True
+    ElseIf txt = "утвержден" Then
+        If cb.List(baseIndex + 2) = "готов" Then
+            I = baseIndex + 3
+        Else
+            I = baseIndex + 2
+        End If
+        If cb.List(I) <> "утвержден" Then cb.AddItem "утвержден", I
+        cb.ListIndex = I
+    ElseIf txt = "в работе" Then
+        cb.ListIndex = baseIndex + 1
+        cbMOsetByText = True
+    ElseIf txt = "макет" Or txt = "образец" Then
+        cb.ListIndex = 1
+    Else
+        cb.ListIndex = 0
+    End If
+
+End Function
+
 
 

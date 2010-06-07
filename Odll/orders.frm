@@ -265,7 +265,7 @@ Begin VB.Form Orders
       Index           =   0
       Left            =   5580
       TabIndex        =   12
-      Top             =   5700
+      Top             =   5710
       Width           =   495
    End
    Begin VB.CommandButton cmWerk 
@@ -1648,13 +1648,24 @@ laZagruz.Top = laZagruz.Top + h
 cmExvel.Top = cmExvel.Top + h
 tbEnable.Top = tbEnable.Top + h
 tbEnable.Left = tbEnable.Left + w
+Dim RightLine As Integer
 For I = 0 To cmWerk.UBound
     cmWerk(I).Top = cmWerk(I).Top + h
+    If RightLine < cmWerk(I).Left + cmWerk(I).Width Then
+        RightLine = cmWerk(I).Left + cmWerk(I).Width
+    End If
 Next I
 
 For I = 0 To cmEquip.UBound
     cmEquip(I).Top = cmEquip(I).Top + h
+    If RightLine < cmEquip(I).Left + cmEquip(I).Width Then
+        RightLine = cmEquip(I).Left + cmEquip(I).Width
+    End If
 Next I
+cmToWeb.Left = RightLine + 200
+RightLine = cmToWeb.Left + cmToWeb.Width
+cmExvel.Left = RightLine + 200
+
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
@@ -3609,12 +3620,15 @@ Function copyRowToGrid(row As Long, ByVal Numorder As Long) As String
  If Not IsNull(tqOrders!invoice) Then _
     Grid.TextMatrix(row, orInvoice) = tqOrders!invoice
     If Not IsNull(tqOrders!Werk) Then
-     Grid.TextMatrix(row, orWerk) = tqOrders!Werk
+        Grid.TextMatrix(row, orWerk) = tqOrders!Werk
+    Else
+        Grid.TextMatrix(row, orWerk) = ""
     End If
     
     If Not IsNull(tqOrders!Equip) Then
-     Grid.TextMatrix(row, orEquip) = tqOrders!Equip
-     
+        Grid.TextMatrix(row, orEquip) = tqOrders!Equip
+    Else
+        Grid.TextMatrix(row, orEquip) = ""
     End If
  
  Grid.TextMatrix(row, orMen) = tqOrders!Manag

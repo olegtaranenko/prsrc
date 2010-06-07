@@ -36,20 +36,22 @@ Begin VB.Form Equipment
          Width           =   1452
       End
       Begin VB.ComboBox cbO 
+         Enabled         =   0   'False
          Height          =   288
          ItemData        =   "Equipment.frx":0000
          Left            =   4380
-         List            =   "Equipment.frx":000D
+         List            =   "Equipment.frx":0010
          Style           =   2  'Dropdown List
          TabIndex        =   16
          Top             =   720
          Width           =   1035
       End
       Begin VB.ComboBox cbM 
+         Enabled         =   0   'False
          Height          =   288
-         ItemData        =   "Equipment.frx":0026
+         ItemData        =   "Equipment.frx":0032
          Left            =   3120
-         List            =   "Equipment.frx":0033
+         List            =   "Equipment.frx":0042
          Style           =   2  'Dropdown List
          TabIndex        =   15
          Top             =   720
@@ -197,7 +199,7 @@ Begin VB.Form Equipment
          Visible         =   0   'False
          Width           =   492
       End
-      Begin VB.TextBox tbVrVipO 
+      Begin VB.TextBox tbWorktimeO 
          Height          =   285
          Index           =   0
          Left            =   1800
@@ -225,12 +227,12 @@ Begin VB.Form Equipment
          Width           =   1572
       End
       Begin VB.Label Label2 
-         Caption         =   "Дата Изгот."
+         Caption         =   "Дата"
          Height          =   252
          Left            =   2520
          TabIndex        =   9
          Top             =   360
-         Width           =   1092
+         Width           =   732
       End
       Begin VB.Label laVrVipO 
          Caption         =   "MO"
@@ -282,14 +284,14 @@ Private Function setVisibleByEquipment(Index As Integer) As Boolean
     tbWorktime(Index).Visible = visibleFlag
     'cmSetOutDate(Index).Visible = visibleFlag
     lbDateOut(Index).Visible = visibleFlag
-    tbVrVipO(Index).Visible = False
+    tbWorktimeO(Index).Visible = False
     lbEquipStatus(Index).Visible = visibleFlag
     
     If visibleFlag Then
         If currStatusId = 3 Then '"согласов"
-            tbVrVipO(Index).Visible = True
+            tbWorktimeO(Index).Visible = True
         Else
-            tbVrVipO(Index).Visible = False
+            tbWorktimeO(Index).Visible = False
         End If
     
     End If
@@ -332,8 +334,8 @@ Dim I As Integer
         laDateRS.Enabled = True
         tbDateRS.Enabled = True
     ElseIf currStatusId = 3 Then ' "согласов"
-        cbM.Enabled = True
-        cbO.Enabled = True
+'        cbM.Enabled = True
+'        cbO.Enabled = True
         laMO.Enabled = True
         laDateRS.Enabled = True
         tbDateRS.Enabled = True
@@ -353,9 +355,9 @@ Dim I As Integer
     Next I
     
     'If hasVisible Then
-    '    laVrVipO.Visible = True
+    '    laWorktimeO.Visible = True
     'Else
-    '    laVrVipO.Visible = False
+    '    laWorktimeO.Visible = False
     'End If
     
 End Sub
@@ -427,7 +429,7 @@ Private Sub setReadonly()
     For I = 0 To cbEquipment.UBound
         cbEquipment(I).Enabled = Not Me.readonlyFlag
         tbWorktime(I).Enabled = Not Me.readonlyFlag
-        tbVrVipO(I).Enabled = Not Me.readonlyFlag
+        tbWorktimeO(I).Enabled = Not Me.readonlyFlag
         
     Next I
     cmApply.Enabled = Not readonlyFlag
@@ -449,29 +451,31 @@ End Sub
 Private Sub loadEnv()
 Dim I As Integer, VShift As Integer, LowLinie As Long
 
+    LowLinie = tbWorktime(0).Top + tbWorktime(I).Height
     For I = 1 To UBound(Equip) - 1
-        VShift = cbEquipment(I - 1).Top + 330
+    
+        VShift = LowLinie + 15
         Load cbEquipment(I)
         Load tbWorktime(I)
         Load lbDateOut(I)
         Load lbEquipStatus(I)
-        Load tbVrVipO(I)
+        Load tbWorktimeO(I)
         
         cbEquipment(I).Top = VShift
         tbWorktime(I).Top = VShift
         lbDateOut(I).Top = VShift
         lbEquipStatus(I).Top = VShift
-        tbVrVipO(I).Top = VShift
+        tbWorktimeO(I).Top = VShift
         
         cbEquipment(I).Caption = Equip(I + 1)
         cbEquipment(I).Visible = True
-        LowLinie = cbEquipment(I).Top + cbEquipment(I).Height
+        LowLinie = tbWorktime(I).Top + tbWorktime(I).Height
     Next I
     
     cbBuildStatuses Me.cbStatus, Me.originalStatusId
     cbStatus.Text = status(Me.originalStatusId)
     
-    EquipFrame.Height = LowLinie + 50
+    EquipFrame.Height = LowLinie + 150
     LowLinie = EquipFrame.Top + EquipFrame.Height + 100
     cmExit.Top = LowLinie
     cmApply.Top = LowLinie
@@ -483,15 +487,18 @@ End Sub
 Private Sub loadEquipment()
     If gNzak = "" Then Exit Sub
     
-    Dim Outdate As Variant
+    Dim Outdate As Variant, StatO, StatM, DateTimeMO, DateRS
     
-    sql = "select o.StatusId, oe.Outdatetime, oc.urgent" _
+    sql = "select o.StatusId, oe.Outdatetime" _
+    & ", oc.urgent, oc.StatO, oc.StatM, oc.Stat, oc.DateTimeMO" _
+    & ", o.DateRS" _
     & " from orders o " _
     & " join vw_OrdersEquipSummary oe on o.numorder = oe.numorder " _
     & " left join OrdersInCeh oc on oc.numorder = o.numorder " _
     & " where o.numorder = " & gNzak
     
-    byErrSqlGetValues "W#eq01", sql, currStatusId, Outdate, urgent
+    byErrSqlGetValues "w#eq01", sql, currStatusId, Outdate, urgent _
+        , StatO, StatM, DateTimeMO, DateRS
     
     
     lbZakazDateOut.Caption = Format(Outdate, "dd.mm.yyyy")
@@ -502,10 +509,37 @@ Private Sub loadEquipment()
         cbUrgent.value = 0
     End If
     
+    If IsNull(StatO) Or StatO = "" Then
+        cbO.ListIndex = 0
+    Else
+        cbO.Text = StatO
+    End If
+
+    cbMOsetByText cbO, StatO, 0
+    
+    If IsNull(StatM) Or StatM = "" Then
+        cbM.ListIndex = 0
+    Else
+        cbM.Text = StatM
+    End If
+    
+    cbMOsetByText cbM, StatM, 0
+    
+    If Not IsNull(DateRS) Then
+        tbDateRS = Format(DateRS, "dd.mm.yy")
+    Else
+        tbDateRS = ""
+    End If
+    
+    If Not IsNull(DateTimeMO) Then
+        tbDateMO = Format(DateRS, "dd.mm.yy")
+    Else
+        tbDateMO = ""
+    End If
     
     sql = "select oe.* " _
     & " , s.status " _
-    & " , isnull(oc.urgent, '') as urgent " _
+    & " , isnull(oc.urgent, '') as urgent" _
     & " from OrdersEquip oe " _
     & " join guideStatus s on s.statusId = oe.statusEquipId " _
     & " left join OrdersInCeh oc on oe.numorder = oc.numorder" _
@@ -525,10 +559,16 @@ Private Sub loadEquipment()
                         tbWorktime(equipId).Text = tbOrders!Worktime
                     End If
                     
+                    If Not IsNull(tbOrders!workTimeMO) Then
+                        tbWorktimeO(equipId).Text = tbOrders!workTimeMO
+                    Else
+                        tbWorktimeO(equipId).Text = ""
+                    End If
+                    
                     If Not IsNull(tbOrders!Outdatetime) Then
                         lbDateOut(equipId).Caption = tbOrders!Outdatetime
                     Else
-                        lbDateOut(equipId).Caption = "N/A"
+                        lbDateOut(equipId).Caption = ""
                     End If
                     
                     If Not IsNull(tbOrders!status) Then
@@ -555,7 +595,7 @@ Dim I As Integer
     For I = 0 To UBound(Equip) - 1
         cbEquipment(I).value = 0
         tbWorktime(I).Visible = False
-        tbVrVipO(I).Visible = False
+        tbWorktimeO(I).Visible = False
         lbDateOut(I).Visible = False
     Next I
     tbDateMO.Text = ""

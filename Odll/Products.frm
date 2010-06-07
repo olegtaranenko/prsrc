@@ -477,15 +477,15 @@ zakazNomenkToNNQQ = False
 ReDim NN(0): ReDim QQ(0): ReDim QQ2(0): QQ2(0) = 0: ReDim QQ3(0)
 
 'ном-ра входящих изделий
-sql = "SELECT xPredmetyByIzdelia.prId, " & _
-"xPredmetyByIzdelia.prExt, " & _
-"xPredmetyByIzdelia.quant, " & _
-"xEtapByIzdelia.eQuant, " & _
-"xEtapByIzdelia.prevQuant, " & _
-"xEtapByIzdelia.prevQuant " & _
-"FROM xPredmetyByIzdelia " & _
-"LEFT JOIN xEtapByIzdelia ON (xPredmetyByIzdelia.prExt = xEtapByIzdelia.prExt) AND (xPredmetyByIzdelia.prId = xEtapByIzdelia.prId) AND (xPredmetyByIzdelia.numOrder = xEtapByIzdelia.numOrder)" & _
-"WHERE (((xPredmetyByIzdelia.numOrder)=" & gNzak & "));"
+sql = "SELECT pi.prId, " & _
+" pi.prExt, " & _
+" pi.quant, " & _
+" ei.eQuant, " & _
+" ei.prevQuant, " & _
+" ei.prevQuant " & _
+" FROM xPredmetyByIzdelia pi" & _
+" LEFT JOIN xEtapByIzdelia ei ON pi.prExt = ei.prExt AND pi.prId = ei.prId AND pi.numOrder = ei.numOrder" & _
+" WHERE pi.numOrder = " & gNzak
 
 Set tbProduct = myOpenRecordSet("##319", sql, dbOpenForwardOnly)
 If tbProduct Is Nothing Then Exit Function
@@ -504,10 +504,10 @@ Wend
 tbProduct.Close
 
 'отдельная ном-ра
-sql = "SELECT xPredmetyByNomenk.nomNom, xPredmetyByNomenk.quant as quantity, " & _
-"xEtapByNomenk.eQuant, xEtapByNomenk.prevQuant FROM xPredmetyByNomenk " & _
-"LEFT JOIN xEtapByNomenk ON (xPredmetyByNomenk.nomNom = xEtapByNomenk.nomNom) AND (xPredmetyByNomenk.numOrder = xEtapByNomenk.numOrder) " & _
-"WHERE (((xPredmetyByNomenk.numOrder)=" & gNzak & "));"
+sql = "SELECT pn.nomNom, pn.quant as quantity, " & _
+"en.eQuant, en.prevQuant FROM xPredmetyByNomenk pn " & _
+"LEFT JOIN xEtapByNomenk en ON pn.nomNom = en.nomNom AND pn.numOrder = en.numOrder " & _
+" WHERE pn.numOrder =" & gNzak
 Set tbNomenk = myOpenRecordSet("##320", sql, dbOpenDynaset)
 If tbNomenk Is Nothing Then Exit Function
 While Not tbNomenk.EOF
@@ -607,7 +607,7 @@ Grid_EnterCell
 End Sub
 
 Private Sub cmSel_Click() '<Добавить>
-Dim befColor As Long, il As Long, nl As Long, n As Integer, str As String
+Dim befColor As Long, il As Long, nl As Long, N As Integer, str As String
 Dim per As Double
 
 sql = "SELECT perList From sGuideNomenk " & _
@@ -916,7 +916,7 @@ Grid3.Width = Grid.Width
 End Sub
 
 
-Private Sub Form_MouseMove(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub Form_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
     If Dragging Then
         Dragging = True
     End If
@@ -1184,7 +1184,7 @@ If Grid.col <> 0 And Grid.col <> buntColumn Then Grid.CellBackColor = Grid.BackC
 End Sub
 
 
-Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
 End Sub
@@ -1207,7 +1207,7 @@ End If
 End Sub
 
 
-Private Sub Grid2_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub Grid2_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
 If Grid2.MouseRow = 0 And Shift = 2 Then
         MsgBox "ColWidth = " & Grid2.ColWidth(Grid2.MouseCol)
 ElseIf Button = 2 And Regim = "fromDocs" And quantity2 > 0 Then
@@ -1341,7 +1341,7 @@ Private Sub Grid3_LeaveCell()
 Grid3.CellBackColor = Grid3.BackColor
 End Sub
 
-Private Sub Grid3_MouseDown(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub Grid3_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
 'не выносить это в Grid3_Click
 
 If Grid3.MouseRow = 0 Then
@@ -1360,7 +1360,7 @@ End If
 
 End Sub
 
-Private Sub Grid3_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub Grid3_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
 
 If Grid3.MouseRow = 0 And Shift = 2 Then MsgBox "ColWidth = " & Grid3.ColWidth(Grid3.MouseCol)
 
@@ -1376,7 +1376,7 @@ Private Sub Grid4_GotFocus()
     tbQuant.SetFocus
 End Sub
 
-Private Sub Grid4_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub Grid4_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
 If Grid4.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid4.ColWidth(Grid4.MouseCol)
 
@@ -1657,7 +1657,7 @@ Dim currentCol As Integer, currentLeft As Integer
 End Sub
 
 
-Private Sub Grid5_MouseDown(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub Grid5_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
 Dim I As Integer
 
     If isCtrlDown And Button = 1 And Grid5.row <> 0 And Grid5.row <> Grid5.Rows - 1 Then
@@ -1684,7 +1684,7 @@ Dim I As Integer
     
 End Sub
 
-Private Sub Grid5_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub Grid5_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
     If isCtrlDown Then
     Else
         If hasSelection(Grid5) And Button = 1 Then
@@ -1792,7 +1792,7 @@ Exit Sub
 ER0:
 tbDMC.Close
 ER1:
-wrkDefault.rollback
+wrkDefault.Rollback
 MsgBox "Удаление не прошло", , "Error 196" '##196
 End Sub
 
@@ -1900,7 +1900,7 @@ If ostatCorr(-S) Then
     wrkDefault.CommitTrans
 Else
     cErr = 125 '##125
-ER1: wrkDefault.rollback
+ER1: wrkDefault.Rollback
     MsgBox "Не прошла коррекция остатков. " & _
     "Сообщите администратору.", , "Error " & cErr
     GoTo EN1
@@ -2119,7 +2119,7 @@ On Error GoTo errr
 
     wrkDefault.CommitTrans
   GoTo EN2
-ER1: wrkDefault.rollback
+ER1: wrkDefault.Rollback
 EN2: tbNomenk.Close
 
 Exit Sub
@@ -2132,16 +2132,16 @@ End Sub
 
 
 
-Private Sub splLeftH_MouseDown(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub splLeftH_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
     Dragging = True
-    DraggingY = y
+    DraggingY = Y
 End Sub
 
 
-Private Sub splLeftH_MouseMove(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub splLeftH_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
     If Dragging Then
         Dim DraggingShift As Single
-        DraggingShift = y
+        DraggingShift = Y
         If Not (Grid3.Height + DraggingShift > 100) Then
             Exit Sub
         End If
@@ -2156,18 +2156,18 @@ Private Sub splLeftH_MouseMove(Button As Integer, Shift As Integer, X As Single,
     End If
 End Sub
 
-Private Sub splLeftH_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub splLeftH_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
     Dragging = False
 End Sub
 
 
 
-Private Sub splLeftV_MouseDown(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub splLeftV_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
     Dragging = True
     DraggingX = X
 End Sub
 
-Private Sub splLeftV_MouseMove(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub splLeftV_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
     If Dragging Then
         Dim DraggingShift As Single
         DraggingShift = X
@@ -2196,19 +2196,19 @@ Private Sub splLeftV_MouseMove(Button As Integer, Shift As Integer, X As Single,
     End If
 End Sub
 
-Private Sub splLeftV_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub splLeftV_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
     Dragging = False
 End Sub
 
-Private Sub splRightH_MouseDown(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub splRightH_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
     Dragging = True
-    DraggingY = y
+    DraggingY = Y
 End Sub
 
-Private Sub splRightH_MouseMove(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub splRightH_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
     If Dragging Then
         Dim DraggingShift As Single
-        DraggingShift = y
+        DraggingShift = Y
         If Not (Grid5.Height + DraggingShift > 100) Then
             Exit Sub
         End If
@@ -2223,17 +2223,17 @@ Private Sub splRightH_MouseMove(Button As Integer, Shift As Integer, X As Single
     End If
 End Sub
 
-Private Sub splRightH_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub splRightH_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
     Dragging = False
 End Sub
 
 
-Private Sub splRightV_MouseDown(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub splRightV_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
     Dragging = True
     DraggingX = X
 End Sub
 
-Private Sub splRightV_MouseMove(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub splRightV_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
     If Dragging Then
         Dim DraggingShift As Single
         DraggingShift = X
@@ -2259,7 +2259,7 @@ Private Sub splRightV_MouseMove(Button As Integer, Shift As Integer, X As Single
     End If
 End Sub
 
-Private Sub splRightV_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub splRightV_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
     Dragging = False
 End Sub
 
@@ -2530,7 +2530,7 @@ GoTo ES2
 ER0:
 'tbDMC.Close
 ER1:
-wrkDefault.rollback
+wrkDefault.Rollback
 ER2:
 lockSklad "un"
 GoTo ESC
@@ -2758,7 +2758,7 @@ ValueToTableField "##115", "'" & NewString & "'", "sGuideSeries", "seriaName", "
 End Sub
 
 Sub loadKlass()
-Dim Key As String, pKey As String, k() As String, pK()  As String
+Dim Key As String, pKey As String, K() As String, pK()  As String
 Dim I As Integer, iErr As Integer
 bilo = False
 sql = "SELECT sGuideKlass.*  From sGuideKlass ORDER BY sGuideKlass.parentKlassId;"
@@ -2770,7 +2770,7 @@ If Not tbKlass.BOF Then
  Node.Sorted = True
  Set Node = tv.Nodes.Add("k0", tvwChild, "all", "              ")
 
- ReDim k(0): ReDim pK(0): ReDim NN(0): iErr = 0
+ ReDim K(0): ReDim pK(0): ReDim NN(0): iErr = 0
  While Not tbKlass.EOF
     If tbKlass!klassId = 0 Then GoTo NXT1
     Key = "k" & tbKlass!klassId
@@ -2788,12 +2788,12 @@ tbKlass.Close
 
 While bilo ' необходимы еще проходы
   bilo = False
-  For I = 1 To UBound(k())
-    If k(I) <> "" Then
+  For I = 1 To UBound(K())
+    If K(I) <> "" Then
         On Error GoTo ERR2 ' назначить еще проход
-        Set Node = tv.Nodes.Add(pK(I), tvwChild, k(I), NN(I))
+        Set Node = tv.Nodes.Add(pK(I), tvwChild, K(I), NN(I))
         On Error GoTo 0
-        k(I) = ""
+        K(I) = ""
         Node.Sorted = True
     End If
 NXT:
@@ -2803,8 +2803,8 @@ tv.Nodes.item("k0").Expanded = True
 Exit Sub
 ERR1:
  iErr = iErr + 1: bilo = True
- ReDim Preserve k(iErr): ReDim Preserve pK(iErr): ReDim Preserve NN(iErr)
- k(iErr) = Key: pK(iErr) = pKey: NN(iErr) = tbKlass!klassName
+ ReDim Preserve K(iErr): ReDim Preserve pK(iErr): ReDim Preserve NN(iErr)
+ K(iErr) = Key: pK(iErr) = pKey: NN(iErr) = tbKlass!klassName
  Resume Next
 
 ERR2: bilo = True: Resume NXT
@@ -3029,7 +3029,7 @@ End If
 End Sub
 
 
-Private Sub tv_MouseDown(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub tv_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
 beShift = False
 If Shift = 2 Then beShift = True
 

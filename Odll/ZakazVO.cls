@@ -112,7 +112,11 @@ Dim resetToCurrentEquip As Boolean
     
     If resetToCurrentEquip Then
         werkId = tbOrders!werkId
-        equipId = tbOrders!equipId
+        If IsNull(tbOrders!equipId) Then
+            equipId = 0
+        Else
+            equipId = tbOrders!equipId
+        End If
         If tbOrders!presentationFormat = 1 Then
         ElseIf tbOrders!presentationFormat = 0 Then
             outTime = tbOrders!outTime
