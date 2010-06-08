@@ -2181,8 +2181,6 @@ End If
 
 End Function
 
-'$odbc08$ Function docLock не исп-ся
-'--------------------------------------------------------------------------
 
 Sub getNakladnieList(Optional from As String = "") '
 Dim I As Integer, str As String, l As Long
@@ -2194,7 +2192,7 @@ If from = "Buh" Then str = "3" Else str = "2" 'для буха только те prior_заказы, 
 sql = "SELECT numDoc, Max(quantity - IsNull( Sum_quant, 0)) AS delta, " _
 & " Min(IsNull(Sum_quant,0)) AS pusto  " _
 & " From wCloseNomenk" & str _
-& " GROUP BY numDoc ORDER BY numDoc;"
+& " GROUP BY numDoc ORDER BY numDoc"
 
 'Debug.Print sql
 Set tbDMC = myOpenRecordSet("##142", sql, dbOpenDynaset)
@@ -2636,5 +2634,77 @@ Dim I As Integer
         End If
     End If
 End Function
+
+Private Sub addToCbStatus(ByRef statusComboBox As ComboBox, id, Optional begin As String = "")
+
+    Static I As Integer
+    If begin <> "" Then I = 0
+    If id > lenStatus Then
+        MsgBox "Err в Orders\addToCbStatus"
+    End If
+
+    statusComboBox.AddItem status(id)
+    statId(I) = id
+    I = I + 1
+
+End Sub
+    
+
+
+Public Sub cbBuildStatuses(ByRef statusComboBox As ComboBox, ByRef statusIdOld As Integer)
+    
+    statusComboBox.Clear
+    
+    If statusIdOld = 4 Then
+        addToCbStatus statusComboBox, 6 '"закрыт"
+    End If
+    
+    addToCbStatus statusComboBox, 7, "b" '"аннулир."
+    If statusIdOld = 5 Then
+        addToCbStatus statusComboBox, 5    '"отложен"
+    ElseIf statusIdOld = 8 Then
+        statusIdOld = 1
+        addToCbStatus statusComboBox, 1 '"в работе"
+    ElseIf statusIdOld = 4 Then '"готов"
+        addToCbStatus statusComboBox, 0
+        addToCbStatus statusComboBox, 4
+    Else
+        addToCbStatus statusComboBox, 0 '"принят"  'не разрешены в т.ч. для
+        addToCbStatus statusComboBox, 1 '"в работе"
+        addToCbStatus statusComboBox, 2 '"резерв"  'соглас-я с готовым образцом
+        addToCbStatus statusComboBox, 3 '"согласов."
+    End If
+
+End Sub
+
+Public Function cbMOsetByText(cb As ComboBox, stat As Variant, Optional baseIndex As Integer = 1) As Boolean
+    cbMOsetByText = False
+Dim I As Integer, txt As String
+    txt = ""
+    If Not IsNull(stat) Then txt = CStr(stat)
+    If txt = "готов" Then
+        If cb.List(baseIndex + 2) <> "готов" Then cb.AddItem "готов", baseIndex + 2
+        If cb.List(baseIndex + 3) <> "утвержден" Then cb.AddItem "утвержден", baseIndex + 3
+        cb.ListIndex = baseIndex + 2
+        cbMOsetByText = True
+    ElseIf txt = "утвержден" Then
+        If cb.List(baseIndex + 2) = "готов" Then
+            I = baseIndex + 3
+        Else
+            I = baseIndex + 2
+        End If
+        If cb.List(I) <> "утвержден" Then cb.AddItem "утвержден", I
+        cb.ListIndex = I
+    ElseIf txt = "в работе" Then
+        cb.ListIndex = baseIndex + 1
+        cbMOsetByText = True
+    ElseIf txt = "макет" Or txt = "образец" Then
+        cb.ListIndex = 1
+    Else
+        cb.ListIndex = 0
+    End If
+
+End Function
+
 
 

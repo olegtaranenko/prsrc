@@ -842,7 +842,7 @@ ElseIf numExt = 0 And sDocs.reservNoNeed Then ' без резервирования
     & " ,n.Size, n.cod" _
     & " FROM sGuideNomenk n" _
     & " JOIN sDMCmov d ON n.nomNom = d.nomNom" _
-    & "WHERE d.numDoc =" & numDoc
+    & " WHERE d.numDoc =" & numDoc
 Else ' ном-ра заказа или выписанная из Цеха с Целого склада
 AA: sql = "SELECT n.nomNom, n.nomName, n.perList " _
     & " ,n.ed_Izmer, n.ed_Izmer2, d.quantity" _

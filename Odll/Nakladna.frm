@@ -541,6 +541,7 @@ End If
 
 id = werkSourceId(idWerk)
 
+
 wrkDefault.BeginTrans
 
 Set tbDocs = myOpenRecordSet("##357", "select * from sDocs where 1 = 0", dbOpenForwardOnly) 'dbOpenForwardOnly)

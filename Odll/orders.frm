@@ -831,7 +831,7 @@ End If
 rowViem Grid.Rows - 1, Grid
 tbOrders.Close
 
-syncOrderByEquipment 1, valueorder.val
+syncOrderByEquipment 1, valueorder.val, zakazNum
 
 Grid.row = zakazNum
 Grid.col = orWerk
@@ -3311,7 +3311,7 @@ Private Sub tbStartDate_LostFocus()
     isDateTbox tbStartDate
 End Sub
 
-Sub syncOrderByEquipment(operation As Integer, Optional ByVal Numorder As Long = 0)
+Sub syncOrderByEquipment(operation As Integer, Optional ByVal Numorder As Long = 0, Optional zakazNum As Long)
     Dim idxOrder As Integer
     If operation = 2 Then
         Numorder = CLng(Grid.TextMatrix(mousRow, orNomZak))
@@ -3320,7 +3320,7 @@ Sub syncOrderByEquipment(operation As Integer, Optional ByVal Numorder As Long =
     If operation <> 1 Then
         idxOrder = getZakazVOIndex(Numorder)
     Else
-        If UBound(OrdersEquipStat) > -1 Then
+        If zakazNum > 1 Then 'UBound(OrdersEquipStat) >= 0 Then почему-то здесь ошибка, если массив пустой
             idxOrder = UBound(OrdersEquipStat) + 1
         Else
             idxOrder = 0

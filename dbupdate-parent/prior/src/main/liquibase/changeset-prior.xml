@@ -1258,7 +1258,7 @@ where	OrdersMO.numorder = OrdersInCeh.numorder
 		</insert>
 		<insert tableName="GuideWerk">
 			<column name="werkId" valueNumeric="2"/>
-			<column name="werkCode" value="Цех"/>
+			<column name="werkCode" value="Цех1"/>
 			<column name="werkName" value="Основное производство"/>
 			<column name="werkSourceId" valueNumeric="-6"/>
 		</insert>
