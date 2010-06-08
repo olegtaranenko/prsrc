@@ -45,7 +45,7 @@ MsgBox "База переведена на новую дату!"
 Exit Sub
 
 ER1:
-wrkDefault.rollback
+wrkDefault.Rollback
 End Sub
 
 
@@ -96,10 +96,9 @@ While Not tbOrders.EOF
     
     '****** отстреливаем итоги ***********
     tmpSng = 0 'сумма невыполнено живых
-    sql = "SELECT Sum(oe.workTime * oc.Nevip) AS nevip" _
+    sql = "SELECT Sum(oe.workTime * oe.Nevip) AS nevip" _
     & " FROM Orders o " _
-    & " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder " _
-    & " JOIN OrdersEquip oe ON oe.numOrder = oc.numOrder" _
+    & " JOIN OrdersEquip oe ON oe.numOrder = o.numOrder" _
     & " WHERE o.StatusId = 1 AND oe.equipId = " & equipId
     byErrSqlGetValues "##372", sql, tmpSng
     

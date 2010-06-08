@@ -28,6 +28,7 @@ Begin VB.Form Equipment
          Width           =   252
       End
       Begin VB.ComboBox cbStatus 
+         Enabled         =   0   'False
          Height          =   288
          Left            =   1440
          Style           =   2  'Dropdown List

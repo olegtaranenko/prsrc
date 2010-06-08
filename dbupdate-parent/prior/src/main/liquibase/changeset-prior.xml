@@ -1115,6 +1115,9 @@ where pc.sysname = sGuideProducts.web
 			<column name="worktimeMO" type="float">
 				<constraints nullable="true"/>
 			</column>
+			<column name="nevip" type="float">
+				<constraints nullable="true"/>
+			</column>
 			<column name="outDateTime" type="datetime">
 				<constraints nullable="true"/>
 			</column>
@@ -1139,6 +1142,21 @@ where	cehId > 0
 		<rollback>truncate table OrdersEquip</rollback>
 	</changeSet>
 
+	<changeSet id="2a" author="mantis-125" runOnChange="false">
+		<sql><![CDATA[
+update OrdersEquip 
+	set nevip = OrdersInCeh.nevip
+from	  ordersInCeh 
+where	OrdersInCeh.numorder = OrdersEquip.numOrder
+		]]></sql>
+		<rollback>truncate table OrdersEquip</rollback>
+	</changeSet>
+
+	<changeSet id="2b" author="mantis-125" runOnChange="false">
+		<comment>Nevip перенесена из OrdersInCeh в OrdersEquip</comment>
+		<dropColumn tableName="OrdersInCeh" columnName="nevip"/>
+	</changeSet>
+
 	<changeSet id="3" author="mantis-125" runOnChange="false">
 		<comment>ƒенормализованное поле equip в таблице «аказов. »наче очень долго делаетс€ обновление списка заказов</comment>
 		<addColumn tableName="Orders">
@@ -1154,7 +1172,6 @@ where	GuideCeh.cehId = orders.cehId
 		</sql>
 		<rollback>truncate table OrdersEquip</rollback>
 	</changeSet>
-
 
 
 	<changeSet id="5" author="mantis-125" runOnChange="false">
@@ -1403,9 +1420,13 @@ update	OrdersEquip set outDatetime = convert(int, outDatetime)
 	<changeSet id="35" author="mantis-125" runOnChange="false">
 		<insert tableName="GuideEquip">
 			<column name="equipId" valueNumeric="4"/>
-			<column name="equipName" value="RAW"/>
+			<column name="equipName" value="PCK"/>
 		</insert>
-		<rollback><delete tableName="GuideEquip"><where>equipId = 4</where></delete></rollback>
+		<insert tableName="GuideEquip">
+			<column name="equipId" valueNumeric="5"/>
+			<column name="equipName" value="GLU"/>
+		</insert>
+		<rollback><delete tableName="GuideEquip"><where>equipId in (4,5)</where></delete></rollback>
 	</changeSet>
 
 	<changeSet id="36" author="mantis-125" runOnChange="false">
@@ -1414,7 +1435,7 @@ update	OrdersEquip set outDatetime = convert(int, outDatetime)
 			<column name="equipId" type="integer" >
 				<constraints nullable="false" primaryKey="true" primaryKeyName="pk_GuideResurs"/>
 			</column>
-			<column name="KPD" type="float" defaultValueNumeric="0.9">
+			<column name="KPD" type="float" defaultValueNumeric="1">
 				<constraints nullable="false"/>
 			</column>
 			<column name="Nstan" type="float" defaultValueNumeric="1">
@@ -1445,7 +1466,7 @@ from system
 		</sql>
 		<sql>
 insert into GuideResurs (equipId)
-select 4
+select 4 union select 5
 		</sql>
 		<rollback/>
 	</changeSet>
@@ -1612,6 +1633,14 @@ from Itogi_SUB
 		<insert tableName="WerkEquip">
 			<column name="werkId" valueNumeric="2"/>
 			<column name="equipId" valueNumeric="3"/>
+		</insert>
+		<insert tableName="WerkEquip">
+			<column name="werkId" valueNumeric="1"/>
+			<column name="equipId" valueNumeric="5"/>
+		</insert>
+		<insert tableName="WerkEquip">
+			<column name="werkId" valueNumeric="2"/>
+			<column name="equipId" valueNumeric="5"/>
 		</insert>
 		<rollback/>
 	</changeSet>

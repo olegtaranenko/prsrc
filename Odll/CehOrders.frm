@@ -340,7 +340,7 @@ If Not tbCeh.BOF Then
         msgOfZakaz "##308", "Недопустимая дата МО. Обратитесь к менеджеру. ", tbCeh!Manag
         GoTo NXT
       End If
-      If IsNull(tbCeh!workTimeMO) Then
+      If IsNull(tbCeh!WorktimeMO) Then
         toCehFromStr "m" 'макет
       Else  ' образец
         toCehFromStr "o" 'макет
@@ -434,7 +434,7 @@ End If
     Else
         If tbCeh!StatO = "готов" Then _
             Grid.TextMatrix(werkRows, chProcVip) = "100"
-        S = tbCeh!workTimeMO
+        S = tbCeh!WorktimeMO
         If S < 0 Then S = -S
         LoadDateKey tbCeh!DateTimeMO, "##36"
         LoadDate Grid, werkRows, chVrVid, tbCeh!DateTimeMO, "hh"
@@ -455,8 +455,8 @@ If isMO = "o" Then
    Else
      Grid.TextMatrix(werkRows, chStatus) = "" 'образец
    End If
-ElseIf (tbCeh!StatusId = 1 Or tbCeh!StatusId = 8) And Not IsNumeric(tbCeh!stat) Then
-    Grid.TextMatrix(werkRows, chStatus) = tbCeh!stat
+ElseIf (tbCeh!StatusId = 1 Or tbCeh!StatusId = 8) And Not IsNumeric(tbCeh!Stat) Then
+    Grid.TextMatrix(werkRows, chStatus) = tbCeh!Stat
 ElseIf tbCeh!StatusId = 2 Then ' резерв
     str1 = "Р": GoTo AA
 ElseIf tbCeh!StatusId = 3 Or tbCeh!StatusId = 9 Then  ' согласов
@@ -920,22 +920,22 @@ End Sub
 
 '$odbc14$
 'Для образца, кот. Утвержден возвращает Null
-Function makeProcReady(stat As String, Optional obraz As String = "") As Variant
+Function makeProcReady(Stat As String, Optional obraz As String = "") As Variant
 Dim S As Single, T As Single, N As Single, virabotka As Single, str As String
 Dim StatO As String
 
 makeProcReady = False
 
-If stat = "25%" Then
+If Stat = "25%" Then
     S = 0.75 ' невыполнено
     GoTo AA
-ElseIf stat = "50%" Then
+ElseIf Stat = "50%" Then
     S = 0.5
     GoTo AA
-ElseIf stat = "75%" Then
+ElseIf Stat = "75%" Then
     S = 0.25
     GoTo AA
-ElseIf stat = "100%" Then
+ElseIf Stat = "100%" Then
     S = 0
     GoTo AA
 Else
@@ -945,20 +945,21 @@ AA:
   If obraz <> "" Then
     obraz = "o"
     ''??TODO
-    sql = "SELECT o.workTimeMO, oc.StatO " _
+    sql = "SELECT oe.workTimeMO, oc.StatO " _
     & " FROM OrdersInCeh oc " _
-    & " JOIN vw_OrdersEquipSummary o ON o.numOrder = oc.numOrder" _
-    & " WHERE oc.numOrder =" & gNzak
+    & " JOIN OrdersEquip oe ON oe.numOrder = oc.numOrder" _
+    & " JOIN GuideEquip   e ON e.equipId = oe.equipId and e.equipName = '" & Grid.TextMatrix(mousRow, chEquip) & "'" _
+    & " WHERE oc.numOrder = " & gNzak
     If Not byErrSqlGetValues("##386", sql, virabotka, StatO) Then Exit Function
     If S = 0 Then ' 100%
     Else
         virabotka = -virabotka
     End If
   Else
-    sql = "SELECT o.workTime, oc.Nevip " & _
-    " FROM vw_OrdersEquipSummary o " & _
-    " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder" & _
-    " WHERE o.numOrder =" & gNzak
+    sql = "SELECT oe.workTime, oe.Nevip " _
+    & " FROM OrdersEquip oe " _
+    & " JOIN GuideEquip   e ON e.equipId = oe.equipId and e.equipName = '" & Grid.TextMatrix(mousRow, chEquip) & "'" _
+    & " WHERE oe.numOrder = " & gNzak
     If Not byErrSqlGetValues("##421", sql, T, N) Then Exit Function
     
     virabotka = Round((N - S) * T, 2)
@@ -968,7 +969,7 @@ AA:
 'гот-ть может изменится к примеру с 75% до 0%
     str = Format(curDate, "yy.mm.dd")
     
-    sql = "call putWerkOrderReady(" & gNzak & ", '" & str & "', '" & obraz & "', " & virabotka & ")"
+    sql = "call putWerkOrderReady(" & gNzak & ", '" & str & "', '" & obraz & "', " & virabotka & ", '" & Grid.TextMatrix(mousRow, chEquip) & "', " & S & ")"
   
     myExecute "##374", sql
     
@@ -978,7 +979,7 @@ AA:
             Exit Function
         End If
     Else 'obraz = ""
-        sql = "UPDATE OrdersInCeh SET Stat = 'в работе', Nevip = " & S & " WHERE numOrder =" & gNzak
+        sql = "UPDATE OrdersInCeh SET Stat = 'в работе' WHERE numOrder =" & gNzak
          If myExecute("##422", sql) <> 0 Then Exit Function
     End If
     

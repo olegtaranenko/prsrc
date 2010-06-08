@@ -2158,18 +2158,19 @@ ElseIf mousCol = orStatus Then
      listBoxInGridCell lbDel, Grid, "select"
    ElseIf Grid.TextMatrix(mousRow, orEquip) <> "" Then
         If StatusId = 1 Then 'в работе                                 $$1
-            Dim hasRecord As Integer, Worktime As Double, werkId As Integer
-            sql = "SELECT 1, isnull(oc.Nevip, 1) as nevip, oe.worktime, o.werkId " _
-                & "   from vw_OrdersEquipSummary oe " _
-                & " JOIN Orders o on oe.Numorder = o.Numorder" _
-                & " LEFT JOIN OrdersInCeh oc on oe.Numorder = oc.Numorder" _
-                & " WHERE oc.Numorder = " & gNzak
+            Dim hasRecord As Integer, werkId As Integer
+            sql = "SELECT 1, sum(isnull(oe.Nevip, 1) * oe.worktime) as nevip, o.werkId " _
+                & "   from Orders o " _
+                & " JOIN OrdersEquip oe on oe.Numorder = o.Numorder" _
+                & " WHERE o.Numorder = " & gNzak _
+                & " GROUP BY o.numorder, o.werkId"
+                
             
-            byErrSqlGetValues "W#373", sql, hasRecord, neVipolnen, Worktime
+            byErrSqlGetValues "W#373", sql, hasRecord, neVipolnen
             If hasRecord = 1 Then
-                neVipolnen = Round(neVipolnen * Worktime, 2)    '$$1
+                neVipolnen = Round(neVipolnen, 2)    '$$1
             Else
-                neVipolnen = 1
+                neVipolnen = 0
             End If
             
         End If

@@ -1575,11 +1575,11 @@ End If
             str = " !Нет Даты MO! "
         End If
         log = log & " Oб(" & tqOrders!StatO & "):" & str ' Дата выд
-        If IsNull(tqOrders!workTimeMO) Then
+        If IsNull(tqOrders!WorktimeMO) Then
             msgOfZakaz "##314", "Отсутствует 'Время выполнения MO'."
         Else
-            Orders.Grid.TextMatrix(row, orOVrVip) = tqOrders!workTimeMO
-            str = LoadNumeric(Orders.Grid, row, orOVrVip, tqOrders!workTimeMO)
+            Orders.Grid.TextMatrix(row, orOVrVip) = tqOrders!WorktimeMO
+            str = LoadNumeric(Orders.Grid, row, orOVrVip, tqOrders!WorktimeMO)
             log = log & "=" & str
         End If
     End If
@@ -2036,9 +2036,8 @@ End If
 End Sub
 
 Function getNevip(day As Integer, equipId As Integer)
-sql = "SELECT Sum(oe.workTime * oc.Nevip) AS wSum " & _
-"FROM OrdersInCeh oc " & _
-"JOIN OrdersEquip oe ON oe.numOrder = oc.numOrder " & _
+sql = "SELECT Sum(oe.workTime * oe.Nevip) AS wSum " & _
+"FROM OrdersEquip oe " & _
 "WHERE DateDiff(day,'" & Format(curDate, "yyyy-mm-dd") & "',oe.outDateTime) =" & day - 1 _
 & " AND oe.equipId =" & equipId
 'MsgBox sql
@@ -2677,11 +2676,11 @@ Public Sub cbBuildStatuses(ByRef statusComboBox As ComboBox, ByRef statusIdOld A
 
 End Sub
 
-Public Function cbMOsetByText(cb As ComboBox, stat As Variant, Optional baseIndex As Integer = 1) As Boolean
+Public Function cbMOsetByText(cb As ComboBox, Stat As Variant, Optional baseIndex As Integer = 1) As Boolean
     cbMOsetByText = False
 Dim I As Integer, txt As String
     txt = ""
-    If Not IsNull(stat) Then txt = CStr(stat)
+    If Not IsNull(Stat) Then txt = CStr(Stat)
     If txt = "готов" Then
         If cb.List(baseIndex + 2) <> "готов" Then cb.AddItem "готов", baseIndex + 2
         If cb.List(baseIndex + 3) <> "утвержден" Then cb.AddItem "утвержден", baseIndex + 3

@@ -376,7 +376,7 @@ If sum > 0 Then
         Grid.TextMatrix(quantity + I, crNomZak) = NN(I)
         sql = "SELECT Orders.ManagId, Orders.Logo, OrdersInCeh.Stat, " _
         & "Orders.Product, Orders.ProblemId, oe.outDateTime, " _
-        & "GuideFirms.Name, oe.workTime, Orders.StatusId, OrdersInCeh.Nevip " _
+        & "GuideFirms.Name, oe.workTime, Orders.StatusId, oe.Nevip " _
         & " FROM Orders " _
         & " JOIN GuideFirms ON GuideFirms.FirmId = Orders.FirmId " _
         & " JOIN OrdersEquip oe ON Orders.numOrder = oe.numOrder AND oe.equipId = " & idEquip _
@@ -402,10 +402,10 @@ If sum > 0 Then
         'образца уже м.не быть, тогда поле IsNull
         If Not IsNull(tbOrders!Worktime) Then _
             Grid.TextMatrix(quantity + I, crVrVip) = Round(tbOrders!Worktime, 1)
-        If IsNull(tbOrders!stat) Then
+        If IsNull(tbOrders!Stat) Then
             Grid.TextMatrix(quantity + I, crStatus) = "нет"
         Else
-            Grid.TextMatrix(quantity + I, crStatus) = tbOrders!stat
+            Grid.TextMatrix(quantity + I, crStatus) = tbOrders!Stat
         End If
         If QQ2(I) = 0 Then ' не образец
             If tbOrders!StatusId = 5 Then
@@ -535,12 +535,12 @@ table.Close
 
 End Sub
 '$odbc15$
-Function getCountAndSumm(id As Integer, stat As String) As Integer
+Function getCountAndSumm(id As Integer, Stat As String) As Integer
 Dim strWhere As String, statId As String, str As String, I As Integer, J As Integer
 getCountAndSumm = 0
 workSum = 0
 paidSum = 0
-If stat = "All" Then
+If Stat = "All" Then
     statId = 7
 Else
     statId = 6

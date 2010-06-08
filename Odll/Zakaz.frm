@@ -664,7 +664,7 @@ Next I
 sql = "SELECT o.numOrder, oe.workTime, " & _
 " DateDiff(day,Now(),oe.outDateTime) AS endDay, " & _
 " DateDiff(day,Now(),o.inDate) AS begDay, dateadd(hour, isnull(o.outtime, 12), oe.outDateTime) as outdatetime, " & _
-" o.inDate, o.StatusId, oc.Nevip, oc.urgent " & _
+" o.inDate, o.StatusId, oe.Nevip, oc.urgent " & _
 vbCr & " FROM Orders o " & _
 " JOIN OrdersEquip oe ON oe.numorder = o.numorder AND oe.equipId = " & vEquipId & _
 " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder " & _
@@ -672,7 +672,7 @@ vbCr & " FROM Orders o " & _
 vbCr & " UNION ALL " _
 & vbCr & " SELECT o.numOrder, oe.workTime, DateDiff(day,Now(),oe.outDateTime) AS endDay, " & _
 " DateDiff(day,Now(),o.DateRS) AS begDay, dateadd(hour, isnull(o.outtime, 12), oe.outDateTime) as outdatetime, " & _
-" o.DateRS, o.StatusId, oc.Nevip, oc.urgent " & _
+" o.DateRS, o.StatusId, oe.Nevip, oc.urgent " & _
 vbCr & " FROM Orders o " & _
 " JOIN OrdersEquip oe ON oe.numorder = o.numorder AND oe.equipId = " & vEquipId & _
 " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder " & _
@@ -1149,8 +1149,8 @@ If Not tbOrders.BOF Then
        If workChange Then
          If (statusIdNew = 1 Or statusIdNew = 5) And editWorkTime Then 'остается в работе или отложен
             Worktime = Round(workTimeOld + tbWorktime.Text - neVipolnen, 1) 'время с учетом коррекции
-            sql = "UPDATE OrdersInCeh SET Nevip = " & tbWorktime.Text / Worktime _
-             & " WHERE numOrder =" & gNzak
+            sql = "UPDATE OrdersEquip SET Nevip = " & tbWorktime.Text / Worktime _
+             & " WHERE numOrder =" & gNzak & " AND equipId = " & idEquip
             If myExecute("##393", sql) <> 0 Then GoTo ER1
          Else
             Worktime = tbWorktime.Text
@@ -1925,7 +1925,7 @@ Else
     sql = "SELECT o.numorder, o.StatusId, o.DateRS, o.outTime, o.werkId" _
     & ", oe.outDateTime, oe.statusEquipId, oe.equipId, oe.worktime, oe.workTimeMO" _
     & ", oc.DateTimeMO, oc.StatM, oc.StatO" _
-    & ", oc.stat as statusInCeh, oc.nevip, oc.urgent" _
+    & ", oc.stat as statusInCeh, oe.nevip, oc.urgent" _
     & ", o.lastModified, o.lastManagId, 0 as presentationFormat" _
     & " from Orders o" _
     & " JOIN OrdersEquip oe on oe.numorder = o.numorder" _
