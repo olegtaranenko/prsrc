@@ -1583,5 +1583,53 @@ from Itogi_SUB
 		<rollback/>
 	</changeSet>
 
+
+	<changeSet id="58" author="mantis-125" runOnChange="false">
+		<comment>Таблица, какое оборудование у цеха</comment>
+		<createTable tableName="WerkEquip">
+			<column name="werkId" type="integer" >
+				<constraints nullable="false" primaryKey="true" primaryKeyName="pk_we"/>
+			</column>
+			<column name="equipId" type="tinyint" >
+				<constraints nullable="false" primaryKey="true" primaryKeyName="pk_we"/>
+			</column>
+		</createTable>
+	</changeSet>
+	
+	<changeSet id="59" author="mantis-125" runOnChange="false">
+		<insert tableName="WerkEquip">
+			<column name="werkId" valueNumeric="1"/>
+			<column name="equipId" valueNumeric="4"/>
+		</insert>
+		<insert tableName="WerkEquip">
+			<column name="werkId" valueNumeric="2"/>
+			<column name="equipId" valueNumeric="1"/>
+		</insert>
+		<insert tableName="WerkEquip">
+			<column name="werkId" valueNumeric="2"/>
+			<column name="equipId" valueNumeric="2"/>
+		</insert>
+		<insert tableName="WerkEquip">
+			<column name="werkId" valueNumeric="2"/>
+			<column name="equipId" valueNumeric="3"/>
+		</insert>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="60" author="mantis-125" runOnChange="false">
+		<addForeignKeyConstraint baseTableName="WerkEquip" constraintName="we_werk" baseColumnNames="werkId"
+			referencedTableName="GuideWerk" referencedColumnNames="werkId"
+			onDelete="CASCADE" onUpdate="CASCADE"
+		/>
+	</changeSet>
+
+	<changeSet id="61" author="mantis-125" runOnChange="false">
+		<addForeignKeyConstraint baseTableName="WerkEquip" constraintName="we_equip" baseColumnNames="equipId"
+			referencedTableName="GuideEquip" referencedColumnNames="equipId"
+			onDelete="CASCADE" onUpdate="CASCADE"
+		/>
+	</changeSet>
+
+
 </databaseChangeLog>
 

@@ -273,7 +273,7 @@ Public originalStatusId As Integer
 
 Dim Err As String ' чтобы не прыгал регистр
 Dim currStatusId As Integer, urgent As String
-
+Private idWerk 'As Integer
 
 
 
@@ -441,14 +441,17 @@ Private Sub Form_Load()
     lbNumorder.Caption = gNzak
     'lbStatus.Caption = orderStatusStr
     setReadonly
+    
     loadEnv
     
     loadEquipment
     
+    tuneEnv
 End Sub
 
 
 Private Sub loadEnv()
+
 Dim I As Integer, VShift As Integer, LowLinie As Long
 
     LowLinie = tbWorktime(0).Top + tbWorktime(I).Height
@@ -466,6 +469,7 @@ Dim I As Integer, VShift As Integer, LowLinie As Long
         lbDateOut(I).Top = VShift
         lbEquipStatus(I).Top = VShift
         tbWorktimeO(I).Top = VShift
+        cbEquipment(I).Top = tbWorktimeO(I).Top
         
         cbEquipment(I).Caption = Equip(I + 1)
         cbEquipment(I).Visible = True
@@ -483,26 +487,50 @@ Dim I As Integer, VShift As Integer, LowLinie As Long
     Me.Height = LowLinie + 700
 End Sub
 
+Private Sub tuneEnv()
+    
+    If idWerk > 0 Then
+        hideEquipAll
+        sql = "select * " _
+            & " from WerkEquip we " _
+            & " where we.werkId = " & idWerk
+    
+        Set tbOrders = myOpenRecordSet("##eq04", sql, dbOpenForwardOnly)
+        If Not tbOrders Is Nothing Then
+            While Not tbOrders.EOF
+                Dim equipIndex As Integer
+                equipIndex = tbOrders!equipId - 1
+                cbEquipment(equipIndex).Visible = True
+                setVisibleByEquipment equipIndex
+                tbOrders.MoveNext
+            Wend
+            tbOrders.Close
+        End If
+    End If
+    
+End Sub
+
 
 Private Sub loadEquipment()
     If gNzak = "" Then Exit Sub
     
-    Dim Outdate As Variant, StatO, StatM, DateTimeMO, DateRS
+    Dim Outdate As Variant, StatO, StatM, Stat, DateTimeMO, DateRS
     
     sql = "select o.StatusId, oe.Outdatetime" _
     & ", oc.urgent, oc.StatO, oc.StatM, oc.Stat, oc.DateTimeMO" _
-    & ", o.DateRS" _
+    & ", o.DateRS, o.werkId" _
     & " from orders o " _
-    & " join vw_OrdersEquipSummary oe on o.numorder = oe.numorder " _
+    & " left join vw_OrdersEquipSummary oe on o.numorder = oe.numorder " _
     & " left join OrdersInCeh oc on oc.numorder = o.numorder " _
     & " where o.numorder = " & gNzak
     
     byErrSqlGetValues "w#eq01", sql, currStatusId, Outdate, urgent _
-        , StatO, StatM, DateTimeMO, DateRS
+        , StatO, StatM, Stat, DateTimeMO, DateRS, idWerk
     
     
     lbZakazDateOut.Caption = Format(Outdate, "dd.mm.yyyy")
-                    
+    'Debug.Print sql
+    
     If urgent <> "" Then
         cbUrgent.value = 1
     Else
@@ -589,6 +617,22 @@ End Sub
 Private Sub Form_Unload(Cancel As Integer)
     CleanupEquip
 End Sub
+
+Private Sub hideEquipAll()
+Dim I As Integer
+    For I = 0 To UBound(Equip) - 1
+        HideEquip I, False
+    Next I
+End Sub
+
+Private Sub HideEquip(equipId As Integer, Show As Boolean)
+    cbEquipment(equipId).Visible = Show
+    tbWorktime(equipId).Visible = Show
+    tbWorktimeO(equipId).Visible = Show
+    lbDateOut(equipId).Visible = Show
+    lbEquipStatus(equipId).Visible = Show
+End Sub
+
 
 Private Sub CleanupEquip()
 Dim I As Integer

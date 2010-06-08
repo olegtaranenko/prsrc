@@ -782,7 +782,7 @@ If Not lockSklad Then Exit Sub
     sql = "SELECT sDMCrez.nomNom, sDMCrez.quantity, sDMCrez.curQuant, " & _
 "sGuideNomenk.perList " & _
 "FROM sGuideNomenk INNER JOIN sDMCrez ON sGuideNomenk.nomNom = sDMCrez.nomNom " & _
-"WHERE (((sDMCrez.numDoc)=" & numDoc & " AND (sDMCrez.curQuant)>0 ));"
+"WHERE sDMCrez.numDoc = " & numDoc & " AND sDMCrez.curQuant > 0 "
 
 skladId = -1001
 If Not sqlDeficitToNNQQ(lbInside.List(0), "bay") Then GoTo EN1
@@ -808,7 +808,7 @@ Next I
 'tbDMC.Close
 'tbDocs.Close
 
-sql = "UPDATE sDMCrez SET curQuant = 0 WHERE (((numDoc)=" & numDoc & "));"
+sql = "UPDATE sDMCrez SET curQuant = 0 WHERE numDoc = " & numDoc
 If myExecute("##367", sql) <> 0 Then GoTo ER3
 
 wrkDefault.CommitTrans
