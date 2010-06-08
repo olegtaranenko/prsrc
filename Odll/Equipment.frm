@@ -375,7 +375,16 @@ Private Sub cmApply_Click()
             deleteOrderEquip (I)
         End If
     Next I
+    
+    If currStatusId <> originalStatusId Then
+        sql = "update orders set statusId = " & currStatusId & " where numorder = " & gNzak
+        myExecute "##eq05", sql
+        'sql = "update ordersEquip set statusEquipId = " & currStatusId & " where numorder = " & gNzak
+        'myExecute "##eq06", sql
+    End If
+    
     Orders.refreshCurrentRow = True
+    
     Unload Me
 End Sub
 
@@ -386,7 +395,7 @@ End Sub
 
 
 Private Sub putOrderEquip(Index As Integer)
-    Dim Worktime As Single
+    Dim Worktime As Double, WorktimeMO As Double
     Dim DateOut As String
     Dim equipId As Integer
     equipId = Index + 1
@@ -401,7 +410,15 @@ Private Sub putOrderEquip(Index As Integer)
     Else
         DateOut = "null"
     End If
-    sql = "call putOrderEquip (" & gNzak & "," & equipId & "," & Worktime & "," & DateOut & ")"
+    
+    If IsNumeric(tbWorktimeO(Index).Text) Then
+        WorktimeMO = tbWorktimeO(Index).Text
+    Else
+        WorktimeMO = 0
+    End If
+    
+    
+    sql = "call putOrderEquip (" & gNzak & "," & equipId & "," & Worktime & "," & DateOut & "," & WorktimeMO & ")"
     'Debug.Print sql
     myExecute "W#eq.2", sql
     
@@ -587,8 +604,8 @@ Private Sub loadEquipment()
                         tbWorktime(equipId).Text = tbOrders!Worktime
                     End If
                     
-                    If Not IsNull(tbOrders!workTimeMO) Then
-                        tbWorktimeO(equipId).Text = tbOrders!workTimeMO
+                    If Not IsNull(tbOrders!WorktimeMO) Then
+                        tbWorktimeO(equipId).Text = tbOrders!WorktimeMO
                     Else
                         tbWorktimeO(equipId).Text = ""
                     End If

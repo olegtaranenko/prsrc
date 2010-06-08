@@ -915,7 +915,7 @@ End Function
 
 
 Function isConflict(Optional msg As String = "") As Boolean
-Dim problem As String, ordered, paid, shipped, stat As String, DateRS As Variant
+Dim problem As String, ordered, paid, shipped, Stat As String, DateRS As Variant
 Dim toClos As Boolean, titl As String, StatM As String, StatO As String
 
 isConflict = False
@@ -927,22 +927,22 @@ problem = tqOrders!problem
 ordered = tqOrders!ordered
 paid = tqOrders!paid
 shipped = tqOrders!shipped
-stat = status(tqOrders!StatusId)
+Stat = status(tqOrders!StatusId)
 
 toClos = False
 If msg = "toClose" Then msg = "": toClos = True
 
-If stat = "резерв" Or stat = "согласов" Then
+If Stat = "резерв" Or Stat = "согласов" Then
   If Timer > t17_00 Then
     If DateDiff("d", tqOrders!DateRS, Now()) >= 0 Then
         isConflict = True
         If msg <> "" Then MsgBox "Просрочена Дата РС", , "Заказ № " & gNzak
     End If
   End If
-ElseIf stat = "готов" Or toClos Then
+ElseIf Stat = "готов" Or toClos Then
     If msg = "msg" Then msg = "Заказ 'Готов' но"
     GoTo EE
-ElseIf stat = "аннулирован" And msg = "msg" Then
+ElseIf Stat = "аннулирован" And msg = "msg" Then
     msg = "Заказ"
 EE:
   If IsNull(ordered) Then GoTo AA
@@ -2158,26 +2158,25 @@ ElseIf mousCol = orStatus Then
      listBoxInGridCell lbDel, Grid, "select"
    ElseIf Grid.TextMatrix(mousRow, orEquip) <> "" Then
         If StatusId = 1 Then 'в работе                                 $$1
-          sql = "SELECT sum(isnull(oc.Nevip, 0) * isnull(oe.worktime, 0)) as nevip from OrdersInCeh oc " _
-            & " LEFT JOIN vw_OrdersEquipSummary oe on oe.Numorder = oc.Numorder" _
-          & " WHERE oc.Numorder = " & gNzak _
-          & " group by oc.Numorder "
-          Set tbWerk = myOpenRecordSet("##373", sql, dbOpenForwardOnly)
-           If tbWerk.BOF Then
-            neVipolnen = 0
-            tbWerk.Close
-            MsgBox "Заказа № " & gNzak & " нет в цеховой сводке поэтому " & _
-            "текущий статус считается сбойным. Измените статус либо " & _
-            "обратитесь к Администратору.", , "Error"             '
-            GoTo ALL                              '
-          Else
-              neVipolnen = Round(tbWerk!nevip, 2)   '$$1
-              tbWerk.Close
-          End If
+            Dim hasRecord As Integer, Worktime As Double, werkId As Integer
+            sql = "SELECT 1, isnull(oc.Nevip, 1) as nevip, oe.worktime, o.werkId " _
+                & "   from vw_OrdersEquipSummary oe " _
+                & " JOIN Orders o on oe.Numorder = o.Numorder" _
+                & " LEFT JOIN OrdersInCeh oc on oe.Numorder = oc.Numorder" _
+                & " WHERE oc.Numorder = " & gNzak
+            
+            byErrSqlGetValues "W#373", sql, hasRecord, neVipolnen, Worktime
+            If hasRecord = 1 Then
+                neVipolnen = Round(neVipolnen * Worktime, 2)    '$$1
+            Else
+                neVipolnen = 1
+            End If
+            
         End If
         
         Zakaz.Regim = ""
-        Zakaz.idWerk = 0
+        Zakaz.idWerk = werkId
+        Zakaz.festStatusId = StatusId
         Zakaz.Show vbModal
         If Zakaz.isUpdated Then
             refreshTimestamp gNzak
@@ -2392,6 +2391,7 @@ If lbWerk.Visible = False Then Exit Sub
 Grid.Text = lbWerk.Text
 If orderUpdate("##21", lbWerk.ItemData(lbWerk.ListIndex), "Orders", "WerkId") Then _
     Grid.Text = lbWerk.Text
+
 lbHide
 End Sub
 
@@ -3577,23 +3577,23 @@ Orders.begFiltrDisable
 
 End Sub
 
-Sub loadFirmOrders(stat As String, Optional ordNom As String = "")
+Sub loadFirmOrders(Stat As String, Optional ordNom As String = "")
 Dim I As Integer
 
 For I = 1 To orColNumber
     orSqlWhere(I) = ""
 Next I
-If stat = "noArhiv" Then
-    stat = ""
+If Stat = "noArhiv" Then
+    Stat = ""
     orSqlWhere(orInvoice) = "isNumeric(o.Invoice) =1 OR " & _
     "(o.Invoice) Is Null OR (o.shipped) Is Null"
 End If
-If stat <> "all" And stat <> "" Then
-    orSqlWhere(orFirma) = "(f.Name) = '" & stat & "'"
+If Stat <> "all" And Stat <> "" Then
+    orSqlWhere(orFirma) = "(f.Name) = '" & Stat & "'"
 Else
     orSqlWhere(orFirma) = "(f.Name) = '" & Grid.Text & "'"
 End If
-If stat <> "all" Then _
+If Stat <> "all" Then _
     orSqlWhere(orStatus) = "(s.Status) <> 'закрыт'"
 
 MousePointer = flexHourglass
