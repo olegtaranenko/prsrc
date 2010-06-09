@@ -34,7 +34,7 @@ Public Equip() As String
 Public Werk() As String
 Public werkSourceId() As Integer
 
-'Public gEquipId As Integer
+Public gEquipId As Integer
 Public Const lenStatus = 20
 Public statId(lenStatus) As Integer
 Public status(lenStatus) As String
@@ -2182,7 +2182,7 @@ End Function
 
 
 Sub getNakladnieList(Optional from As String = "") '
-Dim I As Integer, str As String, l As Long
+Dim I As Integer, str As String, L As Long
 
 'pusto=-1 если хотя бы одного предмета нет ни в одной накладной (иначе pusto=0)
 'нужно, т.к. при этом delta=Null а не quantity
@@ -2212,9 +2212,9 @@ AA:     gNzak = tbDMC!numDoc
       & gNzak _
       & " UNION ALL SELECT numOrder From xEtapByIzdelia " & _
       "WHERE numOrder = " & gNzak
-      If Not byErrSqlGetValues("W##352", sql, l) Then GoTo NXT
+      If Not byErrSqlGetValues("W##352", sql, L) Then GoTo NXT
       
-      If l > 0 Then 'для убыстрения делаем только для этапных
+      If L > 0 Then 'для убыстрения делаем только для этапных
           If predmetiIsClose("etap") Then GoTo NXT 'закрытые по этапу пропускаем
       End If
     End If

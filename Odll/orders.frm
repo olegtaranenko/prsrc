@@ -260,19 +260,18 @@ Begin VB.Form Orders
       Width           =   1515
    End
    Begin VB.CommandButton cmEquip 
-      Caption         =   "YAG"
+      Caption         =   "Загрузка"
       Height          =   315
-      Index           =   0
-      Left            =   5580
+      Left            =   6180
       TabIndex        =   12
       Top             =   5710
-      Width           =   495
+      Width           =   972
    End
    Begin VB.CommandButton cmWerk 
       Caption         =   "YAG"
       Height          =   315
       Index           =   0
-      Left            =   5580
+      Left            =   6180
       TabIndex        =   11
       Top             =   5400
       Visible         =   0   'False
@@ -372,21 +371,21 @@ Begin VB.Form Orders
       _Version        =   393216
    End
    Begin VB.Label laZagruz 
-      Caption         =   "Загрузка:"
-      Height          =   195
+      Caption         =   "Оборудование:"
+      Height          =   192
       Left            =   4680
       TabIndex        =   24
       Top             =   5760
-      Width           =   735
+      Width           =   1332
    End
    Begin VB.Label laWerk 
-      Caption         =   "Раб.реестр: "
-      Height          =   195
+      Caption         =   "Рабочий реестр: "
+      Height          =   192
       Left            =   4680
       TabIndex        =   23
       Top             =   5460
       Visible         =   0   'False
-      Width           =   915
+      Width           =   1392
    End
    Begin VB.Label Label4 
       Caption         =   "Менеджер:"
@@ -1128,15 +1127,8 @@ Private Sub cmWerk_Click(Index As Integer)
     WerkOrders.Show 'vbModal
 End Sub
 
-Private Sub cmEquip_Click(Index As Integer)
-    Dim currentEquipId As Integer, newEquipId As Integer
-    currentEquipId = Zagruz.idEquip
-    newEquipId = Index + 1
-    If currentEquipId <> newEquipId And isZagruz Then
-        Unload Zagruz
-    End If
-    Zagruz.idEquip = newEquipId
-    Zagruz.Show 'vbModal
+Private Sub cmEquip_Click()
+    Zagruz.Show vbModal
 End Sub
 
 
@@ -1499,17 +1491,10 @@ table.Close
 
 initListbox "select equipId, equipName from Guideequip where equipName <> '' order by 1", lbEquip, "equipId", "equipName"
 
-For I = 1 To lbEquip.ListCount - 2
-    Load cmEquip(I)
-    cmEquip(I).Left = cmEquip(I - 1).Left + cmEquip(I - 1).Width + 10
-    cmEquip(I).Visible = True
-Next I
-
 ReDim Equip(lbEquip.ListCount - 1)
 
 For I = 0 To lbEquip.ListCount - 2
     Equip(I + 1) = lbEquip.List(I + 1)
-    cmEquip(I).Caption = Equip(I + 1)
 Next I
 
 
@@ -1638,42 +1623,36 @@ Sub getWhereInvoice()
  End If
 End Sub
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer, I As Integer
+Dim H As Integer, W As Integer, I As Integer
 lbHide "noFocus"
 
 
 If Me.WindowState = vbMinimized Then Exit Sub
 
 On Error Resume Next
-h = Me.Height - oldHeight
+H = Me.Height - oldHeight
 oldHeight = Me.Height
-w = Me.Width - oldWidth
+W = Me.Width - oldWidth
 oldWidth = Me.Width
-Grid.Height = Grid.Height + h
-Grid.Width = Grid.Width + w
-cmRefr.Top = cmRefr.Top + h
-laInform.Top = laInform.Top + h
-cmAdd.Top = cmAdd.Top + h
-cmToWeb.Top = cmToWeb.Top + h
-laWerk.Top = laWerk.Top + h
-laZagruz.Top = laZagruz.Top + h
-cmExvel.Top = cmExvel.Top + h
-tbEnable.Top = tbEnable.Top + h
-tbEnable.Left = tbEnable.Left + w
+Grid.Height = Grid.Height + H
+Grid.Width = Grid.Width + W
+cmRefr.Top = cmRefr.Top + H
+laInform.Top = laInform.Top + H
+cmAdd.Top = cmAdd.Top + H
+cmToWeb.Top = cmToWeb.Top + H
+laWerk.Top = laWerk.Top + H
+laZagruz.Top = laZagruz.Top + H
+cmExvel.Top = cmExvel.Top + H
+tbEnable.Top = tbEnable.Top + H
+tbEnable.Left = tbEnable.Left + W
 Dim RightLine As Integer
 For I = 0 To cmWerk.UBound
-    cmWerk(I).Top = cmWerk(I).Top + h
+    cmWerk(I).Top = cmWerk(I).Top + H
     If RightLine < cmWerk(I).Left + cmWerk(I).Width Then
         RightLine = cmWerk(I).Left + cmWerk(I).Width
     End If
 Next I
 
-For I = 0 To cmEquip.UBound
-    cmEquip(I).Top = cmEquip(I).Top + h
-    If RightLine < cmEquip(I).Left + cmEquip(I).Width Then
-        RightLine = cmEquip(I).Left + cmEquip(I).Width
-    End If
-Next I
 cmToWeb.Left = RightLine + 200
 RightLine = cmToWeb.Left + cmToWeb.Width
 cmExvel.Left = RightLine + 200

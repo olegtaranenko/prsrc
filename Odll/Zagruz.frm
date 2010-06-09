@@ -3,15 +3,24 @@ Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "mscomctl.ocx"
 Begin VB.Form Zagruz 
    BackColor       =   &H8000000A&
    Caption         =   "Загрузка"
-   ClientHeight    =   6096
+   ClientHeight    =   6396
    ClientLeft      =   4668
    ClientTop       =   1656
-   ClientWidth     =   7848
+   ClientWidth     =   8004
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
-   ScaleHeight     =   6096
-   ScaleWidth      =   7848
+   ScaleHeight     =   6396
+   ScaleWidth      =   8004
    StartUpPosition =   2  'CenterScreen
+   Begin VB.CommandButton cmEquip 
+      Caption         =   "YAG"
+      Height          =   315
+      Index           =   0
+      Left            =   2160
+      TabIndex        =   22
+      Top             =   6000
+      Width           =   495
+   End
    Begin VB.CommandButton Command1 
       Caption         =   "Command1"
       Height          =   315
@@ -98,12 +107,12 @@ Begin VB.Form Zagruz
       Width           =   1215
    End
    Begin MSComctlLib.ListView lv 
-      Height          =   4515
+      Height          =   4512
       Left            =   180
       TabIndex        =   0
       Top             =   240
-      Width           =   7455
-      _ExtentX        =   13145
+      Width           =   7692
+      _ExtentX        =   13568
       _ExtentY        =   7959
       View            =   3
       LabelEdit       =   1
@@ -199,18 +208,18 @@ Begin VB.Form Zagruz
       Alignment       =   1  'Right Justify
       BackColor       =   &H8000000E&
       BorderStyle     =   1  'Fixed Single
-      Height          =   255
+      Height          =   252
       Left            =   6360
       TabIndex        =   14
       Top             =   4740
-      Width           =   825
+      Width           =   828
    End
    Begin VB.Label laZagAll 
       Alignment       =   1  'Right Justify
       BackColor       =   &H8000000E&
       BorderStyle     =   1  'Fixed Single
-      Height          =   255
-      Left            =   4610
+      Height          =   252
+      Left            =   4608
       TabIndex        =   13
       Top             =   4740
       Width           =   900
@@ -279,6 +288,11 @@ If MsgBox("Если нажать <Да>, то на все дни будет установлен ресурс по " & _
 End If
 End Sub
 
+Private Sub cmEquip_Click(Index As Integer)
+    idEquip = Index + 1
+    ZagruzLoad
+End Sub
+
 Private Sub cmExAll_Click()
 Unload Me
 '    exitAll
@@ -297,6 +311,7 @@ MsgBox "width=" & laZagLive.Width
 End Sub
 
 Private Sub Form_Activate()
+
 If dostup = "m" Or dostup = "a" Then
     tbKPD.Locked = False
     tbNomRes.Locked = False
@@ -308,7 +323,6 @@ Else
     tbStanki.Locked = True
     chDopView.Enabled = False
 End If
-Me.Caption = "Загрузка по оборудованию " & Equip(idEquip)
 
 If dostup <> "" Then cmDel.Visible = True
 ZagruzLoad
@@ -316,14 +330,38 @@ ZagruzLoad
 End Sub
 
 Private Sub Form_Load()
-oldHeight = Me.Height
-oldWidth = Me.Width
+Dim I As Integer
 
-isZagruz = True
+    oldHeight = Me.Height
+    oldWidth = Me.Width
+    
+    For I = 1 To UBound(Equip) - 1
+        Load cmEquip(I)
+        cmEquip(I).Left = cmEquip(I - 1).Left + cmEquip(I - 1).Width + 10
+        cmEquip(I).Visible = True
+    Next I
+    
+    For I = 0 To UBound(Equip) - 1
+        cmEquip(I).Caption = Equip(I + 1)
+    Next I
+    
+    
+    isZagruz = True
+
 End Sub
 
 Sub ZagruzLoad() ' бывшая begZagruz
- Dim I As Integer, Key As String, tekDate As String, S As Double
+Me.MousePointer = flexHourglass
+
+Dim I As Integer, Key As String, tekDate As String, S As Double
+If idEquip <= 0 Then
+    idEquip = gEquipId
+End If
+If idEquip <= 0 Then
+    idEquip = 1
+End If
+gEquipId = idEquip
+Me.Caption = "Загрузка по оборудованию " & Equip(idEquip)
 
 maxDay = 0
 zagruzFromCeh idEquip ' в delta
@@ -394,32 +432,48 @@ sql = "SELECT Sum(Virabotka) AS Sum_V From Itogi" _
 'Debug.Print sql
 If byErrSqlGetValues("##375", sql, S) Then laVirab.Caption = Round(S, 2)
 
+Me.MousePointer = flexDefault
 End Sub
 
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer
+Dim H As Integer, W As Integer, I As Integer
 
 If Me.WindowState = vbMinimized Then Exit Sub
 On Error Resume Next
 tbMobile.Visible = False
 
-h = Me.Height - oldHeight
+H = Me.Height - oldHeight
 oldHeight = Me.Height
 Me.Width = oldWidth
 
-lv.Height = lv.Height + h
-laKPD.Top = laKPD.Top + h
-tbKPD.Top = tbKPD.Top + h
-laNomRes.Top = laNomRes.Top + h
-tbNomRes.Top = tbNomRes.Top + h
-laStanki.Top = laStanki.Top + h
-tbStanki.Top = tbStanki.Top + h
-cmRefr.Top = cmRefr.Top + h
-chDopView.Top = chDopView.Top + h
-cmExAll.Top = cmExAll.Top + h
-laZagAll.Top = laZagAll.Top + h
-laZagLive.Top = laZagLive.Top + h
-cmDel.Top = cmDel.Top + h
+lv.Height = lv.Height + H
+laKPD.Top = laKPD.Top + H
+tbKPD.Top = tbKPD.Top + H
+laNomRes.Top = laNomRes.Top + H
+tbNomRes.Top = tbNomRes.Top + H
+laStanki.Top = laStanki.Top + H
+tbStanki.Top = tbStanki.Top + H
+cmRefr.Top = cmRefr.Top + H
+chDopView.Top = chDopView.Top + H
+cmExAll.Top = cmExAll.Top + H
+laZagAll.Top = laZagAll.Top + H
+laZagLive.Top = laZagLive.Top + H
+cmDel.Top = cmDel.Top + H
+cmHistory.Top = cmHistory.Top + H
+Label1.Top = Label1.Top + H
+Label2.Top = Label2.Top + H
+laVirab.Top = laVirab.Top + H
+laUsed.Top = laUsed.Top + H
+
+Dim RightLine As Integer
+
+For I = 0 To cmEquip.UBound
+    cmEquip(I).Top = cmEquip(I).Top + H
+    If RightLine < cmEquip(I).Left + cmEquip(I).Width Then
+        RightLine = cmEquip(I).Left + cmEquip(I).Width
+    End If
+Next I
+
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
