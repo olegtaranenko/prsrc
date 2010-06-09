@@ -654,17 +654,15 @@ firstRes = nr * Nstan * KPD             '
 ost(1) = firstRes
 befOst(1) = firstRes
 For I = 2 To maxDay
-    ost(I) = nomRes(I) * KPD * Nstan                '23.11.04
-    befOst(I) = nomRes(I) * KPD * Nstan             '
-'    ost(i) = Round(nomRes(i) * kpd * Nstan, 1)     '
-'    befOst(i) = Round(nomRes(i) * kpd * Nstan, 1)  '
+    ost(I) = nomRes(I) * KPD * Nstan
+    befOst(I) = nomRes(I) * KPD * Nstan
 Next I
 
 'VrVipParts заменнили на Nevip
 sql = "SELECT o.numOrder, oe.workTime, " & _
 " DateDiff(day,Now(),oe.outDateTime) AS endDay, " & _
 " DateDiff(day,Now(),o.inDate) AS begDay, dateadd(hour, isnull(o.outtime, 12), oe.outDateTime) as outdatetime, " & _
-" o.inDate, o.StatusId, oe.Nevip, oc.urgent " & _
+" o.inDate, o.StatusId, isnull(oe.nevip, 1) as nevip, oc.urgent " & _
 vbCr & " FROM Orders o " & _
 " JOIN OrdersEquip oe ON oe.numorder = o.numorder AND oe.equipId = " & vEquipId & _
 " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder " & _
@@ -672,7 +670,7 @@ vbCr & " FROM Orders o " & _
 vbCr & " UNION ALL " _
 & vbCr & " SELECT o.numOrder, oe.workTime, DateDiff(day,Now(),oe.outDateTime) AS endDay, " & _
 " DateDiff(day,Now(),o.DateRS) AS begDay, dateadd(hour, isnull(o.outtime, 12), oe.outDateTime) as outdatetime, " & _
-" o.DateRS, o.StatusId, oe.Nevip, oc.urgent " & _
+" o.DateRS, o.StatusId, isnull(oe.nevip, 1) as nevip, oc.urgent " & _
 vbCr & " FROM Orders o " & _
 " JOIN OrdersEquip oe ON oe.numorder = o.numorder AND oe.equipId = " & vEquipId & _
 " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder " & _
@@ -894,41 +892,41 @@ End If
 End Sub
 
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer
+Dim H As Integer, W As Integer
 
 If Me.WindowState = vbMinimized Then Exit Sub
 'lbHide
 
 On Error Resume Next
-h = Me.Height - oldHeight
+H = Me.Height - oldHeight
 oldHeight = Me.Height
-w = Me.Width - oldWidth
+W = Me.Width - oldWidth
 oldWidth = Me.Width
 
 'lv.Height = lv.Height + h
-lv.Width = lv.Width + w
-laHnomZak.Left = laHnomZak.Left + w
-laNomZak.Left = laNomZak.Left + w
-laStatus.Left = laStatus.Left + w
-cbStatus.Left = cbStatus.Left + w
-laWorkTime.Left = laWorkTime.Left + w
-tbWorktime.Left = tbWorktime.Left + w
-laReadyDate.Left = laReadyDate.Left + w
-tbReadyDate.Left = tbReadyDate.Left + w
-laDateRS.Left = laDateRS.Left + w
-tbDateRS.Left = tbDateRS.Left + w
-laMO.Left = laMO.Left + w
-cbM.Left = cbM.Left + w
-cbO.Left = cbO.Left + w
-laDateMO.Left = laDateMO.Left + w
-tbDateMO.Left = tbDateMO.Left + w
-laVrVipO.Left = laVrVipO.Left + w
-tbVrVipO.Left = tbVrVipO.Left + w
-cmZapros.Left = cmZapros.Left + w
-cmAdd.Left = cmAdd.Left + w
-cmRepit.Left = cmRepit.Left + w
-cmExit.Left = cmExit.Left + w
-cmExit.Top = cmExit.Top + h
+lv.Width = lv.Width + W
+laHnomZak.Left = laHnomZak.Left + W
+laNomZak.Left = laNomZak.Left + W
+laStatus.Left = laStatus.Left + W
+cbStatus.Left = cbStatus.Left + W
+laWorkTime.Left = laWorkTime.Left + W
+tbWorktime.Left = tbWorktime.Left + W
+laReadyDate.Left = laReadyDate.Left + W
+tbReadyDate.Left = tbReadyDate.Left + W
+laDateRS.Left = laDateRS.Left + W
+tbDateRS.Left = tbDateRS.Left + W
+laMO.Left = laMO.Left + W
+cbM.Left = cbM.Left + W
+cbO.Left = cbO.Left + W
+laDateMO.Left = laDateMO.Left + W
+tbDateMO.Left = tbDateMO.Left + W
+laVrVipO.Left = laVrVipO.Left + W
+tbVrVipO.Left = tbVrVipO.Left + W
+cmZapros.Left = cmZapros.Left + W
+cmAdd.Left = cmAdd.Left + W
+cmRepit.Left = cmRepit.Left + W
+cmExit.Left = cmExit.Left + W
+cmExit.Top = cmExit.Top + H
 
 End Sub
 

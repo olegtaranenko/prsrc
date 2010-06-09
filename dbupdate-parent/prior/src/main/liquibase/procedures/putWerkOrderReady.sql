@@ -8,14 +8,14 @@ CREATE procedure putWerkOrderReady (
 	, p_xDate     varchar(10)
 	, p_obrazec   varchar(1)
 	, p_virabotka float
-	, p_equip     varchar(10)
+	, p_equipId   integer
 	, p_nevip     float
 	)
 begin
 	
 	declare v_equipId integer;
 
-	select equipId into v_equipId from guideEquip where equipName = p_equip;
+	set v_equipId = p_equipId;
 
 	update Itogi set virabotka = virabotka + p_virabotka
 	where equipId = v_equipId and xdate = p_xDate and obrazec = p_obrazec and numorder = p_numorder;

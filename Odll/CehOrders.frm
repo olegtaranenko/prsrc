@@ -420,6 +420,8 @@ End If
     werkRows = werkRows + 1
     
     Grid.TextMatrix(werkRows, chEquip) = tbCeh!Equip
+    Grid.TextMatrix(werkRows, chEquipId) = tbCeh!equipId
+    
     Grid.col = chNomZak
     Grid.row = werkRows
     Grid.CellForeColor = color
@@ -536,7 +538,7 @@ For I = begWerkProblemId To lenProblem
 Next I
 
 Grid.FormatString = "    |<№ заказа|^М|Оборуд|Статус |>Вр.вып|>%вы|Проблемы|" & _
-"<Дата выдачи|<Вр.выд|<дата ресурса|<Заказчик|<Лого|<Изделия|№Дня"
+"<Дата выдачи|<Вр.выд|<дата ресурса|<Заказчик|<Лого|<Изделия|№Дня|equipid"
 
 Grid.ColWidth(chM) = 270
 Grid.ColWidth(chVrVip) = 388
@@ -550,6 +552,7 @@ Grid.ColWidth(chDataVid) = 735
 Grid.ColWidth(chFirma) = 2000
 Grid.ColWidth(chLogo) = 1200
 Grid.ColWidth(chKey) = 0 ' ДЛЯ СОРТИРОВКИ по дате
+Grid.ColWidth(chEquipId) = 0
 Grid.ColWidth(0) = 0
 Grid.ColWidth(chNomZak) = 1000
 Grid.ColWidth(chIzdelia) = 2450
@@ -560,24 +563,24 @@ Timer1.Enabled = True 'вызов werkBegin
 End Sub
 
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer
+Dim H As Integer, W As Integer
 
 If Me.WindowState = vbMinimized Then Exit Sub
 On Error Resume Next
 lbHide
-h = Me.Height - oldHeight
+H = Me.Height - oldHeight
 oldHeight = Me.Height
-w = Me.Width - oldWidth
+W = Me.Width - oldWidth
 oldWidth = Me.Width
-Grid.Height = Grid.Height + h
-Grid.Width = Grid.Width + w
-cmRefresh.Top = cmRefresh.Top + h
-cmExAll.Top = cmExAll.Top + h
-cmExAll.Left = cmExAll.Left + w
-cmZagruz.Top = cmZagruz.Top + h
-cmZagruz.Left = cmZagruz.Left + w
-cmPrint.Left = cmPrint.Left + w
-cmNaklad.Top = cmNaklad.Top + h
+Grid.Height = Grid.Height + H
+Grid.Width = Grid.Width + W
+cmRefresh.Top = cmRefresh.Top + H
+cmExAll.Top = cmExAll.Top + H
+cmExAll.Left = cmExAll.Left + W
+cmZagruz.Top = cmZagruz.Top + H
+cmZagruz.Left = cmZagruz.Left + W
+cmPrint.Left = cmPrint.Left + W
+cmNaklad.Top = cmNaklad.Top + H
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
@@ -745,7 +748,7 @@ lbObrazec.Visible = False
 
 wrkDefault.BeginTrans
     
-v = makeProcReady(proc, "obraz")
+v = makeProcReady(proc, Grid.TextMatrix(mousRow, chEquipId), "obraz")
 If IsNull(v) Then ' образец утвержден
     msgZakazDeleted "образец уже утвержден"
 ElseIf v Then
@@ -865,27 +868,37 @@ ElseIf str = "готов" Then
 '        Grid.SetFocus
     Else
         wrkDefault.BeginTrans
-        I = ValueToTableField("W##41", "'" & str & "'", "OrdersInCeh", "Stat", "byWerkId")
-        If I = 0 Then
-            If ValueToTableField("##39", "4", "Orders", "StatusId") <> 0 Then GoTo ER1
-            If ValueToTableField("##39", "0", "Orders", "ProblemId") <> 0 Then GoTo ER1
-'раз все списано, отстегиваем текущ.этап, несмотря, что цех м. и снять гот-ть
-            If Not newEtap("xEtapByIzdelia") Then GoTo ER1
-            If Not newEtap("xEtapByNomenk") Then GoTo ER1
-            If ValueToTableField("##39", "4", "OrdersEquip", "StatusEquipId") <> 0 Then GoTo ER1
-            
-            wrkDefault.CommitTrans
-            werkBegin
-        ElseIf I = -1 Then
-            GoTo ER2
-        Else
-            GoTo ER1
+        ' Сначала меняем статус на Готов для этого оборудования
+        If ValueToTableField("##39.1", "4", "OrdersEquip", "StatusEquipId") <> 0 Then GoTo ER1
+        
+        Dim minId, maxId  'as variant
+        sql = "select max(StatusEquipId) as maxId, mis(StatusEquipId) as minId " _
+        & " FROM OrdersEquip oe" _
+        & " WHERE oe.numorder = " & gNzak & " AND oe.equipId = " & Grid.TextMatrix(mousRow, chEquipId)
+        byErrSqlGetValues "##39.2", sql, maxId, minId
+        
+        If minId = maxId And minId = 4 Then
+            I = ValueToTableField("W##41", "'" & str & "'", "OrdersInCeh", "Stat", "byWerkId")
+            If I = 0 Then
+                If ValueToTableField("##39.2", "4", "Orders", "StatusId") <> 0 Then GoTo ER1
+                If ValueToTableField("##39.3", "0", "Orders", "ProblemId") <> 0 Then GoTo ER1
+    'раз все списано, отстегиваем текущ.этап, несмотря, что цех м. и снять гот-ть
+                If Not newEtap("xEtapByIzdelia") Then GoTo ER1
+                If Not newEtap("xEtapByNomenk") Then GoTo ER1
+                
+            ElseIf I = -1 Then
+                GoTo ER2
+            Else
+                GoTo ER1
+            End If
         End If
+        wrkDefault.CommitTrans
+        werkBegin
     End If
 ElseIf str = "25%" Or str = "50%" Or str = "75%" Or str = "100%" Then
     lbStatus.Visible = False
     wrkDefault.BeginTrans
-    If makeProcReady(str) Then 'М в это время мог удалить заказ из цеха
+    If makeProcReady(str, Grid.TextMatrix(mousRow, chEquipId)) Then 'М в это время мог удалить заказ из цеха
         If ValueToTableField("##39", "1", "Orders", "StatusId") <> 0 Then GoTo ER1 ' "в работе"
         str = "в работе"
         GoTo AA
@@ -894,7 +907,7 @@ ElseIf str = "25%" Or str = "50%" Or str = "75%" Or str = "100%" Then
 Else '  пусто, "*" и "в работе"
     lbStatus.Visible = False
     wrkDefault.BeginTrans
-    If makeProcReady("0%") Then
+    If makeProcReady("0%", Grid.TextMatrix(mousRow, chEquipId)) Then
         If ValueToTableField("##41", "'" & str & "'", "OrdersInCeh", "Stat", "byWerkId") <> 0 Then GoTo ER1
         If ValueToTableField("##39", "1", "Orders", "StatusId") <> 0 Then GoTo ER1
 AA:     If ValueToTableField("##39", "0", "Orders", "ProblemId") = 0 Then
@@ -920,12 +933,12 @@ End Sub
 
 '$odbc14$
 'Для образца, кот. Утвержден возвращает Null
-Function makeProcReady(Stat As String, Optional obraz As String = "") As Variant
+Function makeProcReady(Stat As String, equipId As Integer, Optional obraz As String = "") As Variant
 Dim S As Single, T As Single, N As Single, virabotka As Single, str As String
-Dim StatO As String
+Dim StatO As String, StatusEquipId As Integer
 
 makeProcReady = False
-
+StatusEquipId = 9
 If Stat = "25%" Then
     S = 0.75 ' невыполнено
     GoTo AA
@@ -940,6 +953,7 @@ ElseIf Stat = "100%" Then
     GoTo AA
 Else
     S = 1
+    StatusEquipId = 8
 AA:
  
   If obraz <> "" Then
@@ -948,18 +962,16 @@ AA:
     sql = "SELECT oe.workTimeMO, oc.StatO " _
     & " FROM OrdersInCeh oc " _
     & " JOIN OrdersEquip oe ON oe.numOrder = oc.numOrder" _
-    & " JOIN GuideEquip   e ON e.equipId = oe.equipId and e.equipName = '" & Grid.TextMatrix(mousRow, chEquip) & "'" _
-    & " WHERE oc.numOrder = " & gNzak
+    & " WHERE oc.numOrder = " & gNzak & " AND equipId = " & equipId
     If Not byErrSqlGetValues("##386", sql, virabotka, StatO) Then Exit Function
     If S = 0 Then ' 100%
     Else
         virabotka = -virabotka
     End If
   Else
-    sql = "SELECT oe.workTime, oe.Nevip " _
+    sql = "SELECT oe.workTime, isnull(oe.Nevip, 1) as nevip " _
     & " FROM OrdersEquip oe " _
-    & " JOIN GuideEquip   e ON e.equipId = oe.equipId and e.equipName = '" & Grid.TextMatrix(mousRow, chEquip) & "'" _
-    & " WHERE oe.numOrder = " & gNzak
+    & " WHERE oe.numOrder = " & gNzak & " AND equipId = " & equipId
     If Not byErrSqlGetValues("##421", sql, T, N) Then Exit Function
     
     virabotka = Round((N - S) * T, 2)
@@ -969,7 +981,7 @@ AA:
 'гот-ть может изменится к примеру с 75% до 0%
     str = Format(curDate, "yy.mm.dd")
     
-    sql = "call putWerkOrderReady(" & gNzak & ", '" & str & "', '" & obraz & "', " & virabotka & ", '" & Grid.TextMatrix(mousRow, chEquip) & "', " & S & ")"
+    sql = "call putWerkOrderReady(" & gNzak & ", '" & str & "', '" & obraz & "', " & virabotka & ", " & equipId & ", " & S & ")"
   
     myExecute "##374", sql
     
@@ -979,8 +991,10 @@ AA:
             Exit Function
         End If
     Else 'obraz = ""
-        sql = "UPDATE OrdersInCeh SET Stat = 'в работе' WHERE numOrder =" & gNzak
-         If myExecute("##422", sql) <> 0 Then Exit Function
+        sql = "UPDATE OrdersEquip SET StatusEquipId = 8 WHERE numOrder = " & gNzak & " AND equipId = " & equipId
+        If myExecute("##422", sql) <> 0 Then Exit Function
+        'sql = "UPDATE OrdersInCeh SET Stat = '' WHERE numOrder =" & gNzak
+        'If myExecute("##422", sql) <> 0 Then Exit Function
     End If
     
 End If 'If stat

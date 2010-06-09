@@ -8,6 +8,7 @@ CREATE VIEW vw_Reestr (
 	,werkId
 	,Manag
 	,StatusId
+	,StatusEquipId
 	,ProblemId
 	,DateRS
 	,outDateTime
@@ -16,6 +17,7 @@ CREATE VIEW vw_Reestr (
 	,Logo
 	,Product
 	,Stat
+	,StatEquip
 	,Nevip
 	,DateTimeMO
 	,workTimeMO
@@ -29,6 +31,7 @@ SELECT
 	,o.werkId
 	,m.Manag
 	,o.StatusId
+	,oe.StatusEquipId
 	,o.ProblemId
 	,o.DateRS
 	,dateadd(hour, isnull(o.outtime, 0), oe.outDateTime)
@@ -37,6 +40,7 @@ SELECT
 	,o.Logo
 	,o.Product
 	,oc.Stat
+	,s.Status
 	,isnull(oe.Nevip, 1)
 	,oc.DateTimeMO
 	,oe.workTimeMO
@@ -50,3 +54,5 @@ FROM Orders o
 	JOIN GuideFirms         f ON f.FirmId = o.FirmId
 	JOIN GuideManag         m ON m.ManagId = o.ManagId
 	JOIN OrdersInCeh       oc ON o.numOrder = oc.numOrder
+	LEFT JOIN GuideStatus   s ON s.statusId = oe.statusEquipId
+where outDatetime is not null

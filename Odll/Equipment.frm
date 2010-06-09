@@ -584,12 +584,12 @@ Private Sub loadEquipment()
     End If
     
     sql = "select oe.* " _
-    & " , s.status " _
+    & " , s.status as statusEquip " _
     & " , isnull(oc.urgent, '') as urgent" _
-    & " from OrdersEquip oe " _
-    & " join guideStatus s on s.statusId = oe.statusEquipId " _
-    & " left join OrdersInCeh oc on oe.numorder = oc.numorder" _
-    & " where oe.numorder = " & gNzak
+    & " FROM OrdersEquip oe " _
+    & " LEFT JOIN OrdersInCeh oc on oe.numorder = oc.numorder" _
+    & " LEFT JOIN GuideStatus   s ON s.statusId = oe.statusEquipId " _
+    & " WHERE oe.numorder = " & gNzak
 
     Set tbOrders = myOpenRecordSet("##eq02", sql, dbOpenForwardOnly)
     If Not tbOrders Is Nothing Then
@@ -617,8 +617,8 @@ Private Sub loadEquipment()
                         lbDateOut(equipId).Caption = ""
                     End If
                     
-                    If Not IsNull(tbOrders!status) Then
-                        lbEquipStatus(equipId).Caption = tbOrders!status
+                    If Not IsNull(tbOrders!statusEquip) Then
+                        lbEquipStatus(equipId).Caption = tbOrders!statusEquip
                     Else
                         lbDateOut(equipId).Caption = " "
                     End If

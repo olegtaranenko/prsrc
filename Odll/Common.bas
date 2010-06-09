@@ -209,6 +209,7 @@ Public Const chFirma = 11
 Public Const chLogo = 12
 Public Const chIzdelia = 13
 Public Const chKey = 14
+Public Const chEquipId = 15
 
 Public Const zgPrinato = 1
 Public Const zgNomRes = 2

@@ -1142,7 +1142,7 @@ where	cehId > 0
 		<rollback>truncate table OrdersEquip</rollback>
 	</changeSet>
 
-	<changeSet id="2a" author="mantis-125" runOnChange="false">
+	<changeSet id="62" author="mantis-125" runOnChange="false">
 		<sql><![CDATA[
 update OrdersEquip 
 	set nevip = OrdersInCeh.nevip
@@ -1152,7 +1152,7 @@ where	OrdersInCeh.numorder = OrdersEquip.numOrder
 		<rollback>truncate table OrdersEquip</rollback>
 	</changeSet>
 
-	<changeSet id="2b" author="mantis-125" runOnChange="false">
+	<changeSet id="63" author="mantis-125" runOnChange="false">
 		<comment>Nevip перенесена из OrdersInCeh в OrdersEquip</comment>
 		<dropColumn tableName="OrdersInCeh" columnName="nevip"/>
 	</changeSet>
