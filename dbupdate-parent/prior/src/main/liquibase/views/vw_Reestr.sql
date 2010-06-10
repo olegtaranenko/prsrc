@@ -39,13 +39,13 @@ SELECT
 	,f.Name
 	,o.Logo
 	,o.Product
-	,oc.Stat
+	,oe.Stat
 	,s.Status
 	,isnull(oe.Nevip, 1)
 	,oc.DateTimeMO
 	,oe.workTimeMO
 	,oc.StatM
-	,oc.StatO
+	,oe.StatO
 	,e.equipName
 	,oe.equipId
 FROM Orders o

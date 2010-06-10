@@ -374,24 +374,23 @@ If sum > 0 Then
     Grid.AddItem ""
     If QQ2(I) = 0 Then
         Grid.TextMatrix(quantity + I, crNomZak) = NN(I)
-        sql = "SELECT Orders.ManagId, Orders.Logo, OrdersInCeh.Stat, " _
-        & "Orders.Product, Orders.ProblemId, oe.outDateTime, " _
-        & "GuideFirms.Name, oe.workTime, Orders.StatusId, oe.Nevip " _
-        & " FROM Orders " _
-        & " JOIN GuideFirms ON GuideFirms.FirmId = Orders.FirmId " _
-        & " JOIN OrdersEquip oe ON Orders.numOrder = oe.numOrder AND oe.equipId = " & idEquip _
-        & " LEFT JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder " _
-        & "WHERE Orders.numOrder = " & NN(I)
+        sql = "SELECT o.ManagId, o.Logo, oe.Stat, " _
+        & "o.Product, o.ProblemId, oe.outDateTime, " _
+        & "f.Name, oe.workTime, o.StatusId, oe.Nevip " _
+        & " FROM Orders o" _
+        & " JOIN GuideFirms f ON f.FirmId = o.FirmId " _
+        & " JOIN OrdersEquip oe ON o.numOrder = oe.numOrder AND oe.equipId = " & idEquip _
+        & "WHERE o.numOrder = " & NN(I)
     Else 'образец
         Grid.TextMatrix(quantity + I, crNomZak) = NN(I) & "o"
-        sql = "SELECT Orders.ManagId, Orders.Logo, oc.StatO As Stat, " & _
-        "Orders.Product, Orders.ProblemId, oc.DateTimeMO As outDateTime, " _
-        & " GuideFirms.Name, oe.workTimeMO As workTime" _
-        & " FROM Orders" _
-        & " JOIN GuideFirms ON GuideFirms.FirmId = Orders.FirmId" _
-        & " JOIN OrdersEquip oe ON Orders.numOrder = oe.numOrder AND oe.equipId = " & idEquip _
-        & " LEFT JOIN OrdersInCeh oc ON Orders.numOrder = oc.numOrder" _
-        & " WHERE Orders.numOrder = " & NN(I)
+        sql = "SELECT o.ManagId, o.Logo, oe.StatO As Stat, " & _
+        "o.Product, o.ProblemId, oc.DateTimeMO As outDateTime, " _
+        & " f.Name, oe.workTimeMO As workTime" _
+        & " FROM Orders o" _
+        & " JOIN GuideFirms f ON f.FirmId = o.FirmId" _
+        & " JOIN OrdersEquip oe ON o.numOrder = oe.numOrder AND oe.equipId = " & idEquip _
+        & " LEFT JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder" _
+        & " WHERE o.numOrder = " & NN(I)
     End If
     Grid.TextMatrix(quantity + I, crVirab) = Round(QQ(I), 2)
     'Debug.Print sql
@@ -657,7 +656,7 @@ If Not tqOrders.BOF Then
     J = tqOrders!StatusId
     If J = 2 Or J = 3 Or J = 9 Then
         Grid.MergeRow(L) = True
-        str = status(J) & " на " & tqOrders!DateRS
+        str = Status(J) & " на " & tqOrders!DateRS
         Grid.TextMatrix(L, rpStatus) = str
         Grid.row = L
         Grid.col = rpStatus
@@ -669,7 +668,7 @@ If Not tqOrders.BOF Then
         End If
         Grid.TextMatrix(L, rpProblem) = str
     Else
-        Grid.TextMatrix(L, rpStatus) = status(J)
+        Grid.TextMatrix(L, rpStatus) = Status(J)
         Grid.TextMatrix(L, rpProblem) = Problems(tqOrders!ProblemId)
     End If
     LoadDate Grid, L, rpDataVid, tqOrders!Outdatetime, "dd.mm.yy"
@@ -747,26 +746,26 @@ As Double
 End Function
 
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer
+Dim H As Integer, W As Integer
 
 If Me.WindowState = vbMinimized Then Exit Sub
 On Error Resume Next
 
-h = Me.Height - oldHeight
+H = Me.Height - oldHeight
 oldHeight = Me.Height
-w = Me.Width - oldWidth
+W = Me.Width - oldWidth
 oldWidth = Me.Width
-Grid.Height = Grid.Height + h
-Grid.Width = Grid.Width + w
-laRecCount.Top = laRecCount.Top + h
-laCount.Top = laCount.Top + h
-laHeader.Width = laHeader.Width + w
-cmExel.Top = cmExel.Top + h
-cmPrint.Top = cmPrint.Top + h
-cmExit.Top = cmExit.Top + h
-cmExit.Left = cmExit.Left + w
-cmPrev.Left = cmPrev.Left + w
-cmNext.Left = cmNext.Left + w
+Grid.Height = Grid.Height + H
+Grid.Width = Grid.Width + W
+laRecCount.Top = laRecCount.Top + H
+laCount.Top = laCount.Top + H
+laHeader.Width = laHeader.Width + W
+cmExel.Top = cmExel.Top + H
+cmPrint.Top = cmPrint.Top + H
+cmExit.Top = cmExit.Top + H
+cmExit.Left = cmExit.Left + W
+cmPrev.Left = cmPrev.Left + W
+cmNext.Left = cmNext.Left + W
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)

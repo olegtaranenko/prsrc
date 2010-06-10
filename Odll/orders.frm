@@ -571,7 +571,7 @@ Const MainSelectSqlStr = "" _
     & vbCr & "   , f.id_voc_names, f.Name" _
     & vbCr & "   , m.Manag, s.Status, p.Problem, w.WerkCode as Werk" _
     & vbCr & "   , v.venturename as venture, v.sysname as servername" _
-    & vbCr & "   , oc.DateTimeMO, oc.StatM, oc.StatO, oc.urgent" _
+    & vbCr & "   , oc.DateTimeMO, oc.StatM, oe.StatO, oc.urgent" _
     & vbCr & "   , oe.outDateTime, oe.workTime, oe.workTimeMO, 0 as equipId" _
     & vbCr & "   , convert(int, (oe.maxStatusId - oe.minStatusId) + abs(oe.maxStatusId - o.statusId)) as equipStatusSync " _
 
@@ -820,7 +820,7 @@ Grid.TextMatrix(zakazNum, orInvoice) = "счет ?"
 Grid.TextMatrix(zakazNum, orNomZak) = valueorder.val
 Grid.TextMatrix(zakazNum, orData) = Format(Now, "dd.mm.yy")
 Grid.TextMatrix(zakazNum, orMen) = Orders.cbM.Text
-Grid.TextMatrix(zakazNum, orStatus) = status(0)
+Grid.TextMatrix(zakazNum, orStatus) = Status(0)
 Grid.TextMatrix(zakazNum, orRate) = rate
 Grid.TextMatrix(zakazNum, orlastModified) = Now
 If isBaseOrder Then
@@ -926,7 +926,7 @@ problem = tqOrders!problem
 ordered = tqOrders!ordered
 paid = tqOrders!paid
 shipped = tqOrders!shipped
-Stat = status(tqOrders!StatusId)
+Stat = Status(tqOrders!StatusId)
 
 toClos = False
 If msg = "toClose" Then msg = "": toClos = True
@@ -1005,7 +1005,7 @@ End Function
 
 Private Sub cmToWeb_Click()
 Dim Outdate As String, outTime As String, nbsp As String, tmpFile As String
-Dim v As Variant
+Dim V As Variant
 
 Me.MousePointer = flexHourglass
 'Set myQuery = myBase.QueryDefs("wEbSvodka")
@@ -1038,7 +1038,7 @@ If Not tqOrders.BOF Then
     strToWeb = ""
     valToWeb tqOrders!xLogin
     valToWeb tqOrders!Numorder
-    valToWeb status(tqOrders!StatusId)
+    valToWeb Status(tqOrders!StatusId)
     valToWeb tqOrders!Outdatetime, "dd.mm.yy"
     valToWeb tqOrders!Outdatetime, "hh"
     valToWeb tqOrders!problem
@@ -1270,7 +1270,7 @@ BB:
     If Left$(Filtr.cmAdvan.Caption, 1) = "С" Then Filtr.cmAdvan_Click
     Filtr.lbStatus.Clear
     For I = 0 To 7 ' статусы м. повторятся
-       If tbEnable.Visible Or I <> 6 Then Filtr.lbStatus.AddItem status(I)
+       If tbEnable.Visible Or I <> 6 Then Filtr.lbStatus.AddItem Status(I)
     Next I
     Filtr.laEnable.Visible = tbEnable.Visible
     Filtr.Show
@@ -1656,6 +1656,7 @@ Next I
 cmToWeb.Left = RightLine + 200
 RightLine = cmToWeb.Left + cmToWeb.Width
 cmExvel.Left = RightLine + 200
+cmEquip.Top = cmEquip.Top + H
 
 End Sub
 
@@ -2602,18 +2603,18 @@ End Sub
 
 '$odbc15$
 Private Sub lbStat_DblClick()
-Dim v As Variant
+Dim V As Variant
 
 If noClick Then Exit Sub
         
 If lbStat.Text = "закрыт" Then
   If orderClose Then Grid.TextMatrix(mousRow, mousCol) = lbStat.Text
 ElseIf lbStat.Text = "принят" Then
-    v = isNewEtap
-    If IsNull(v) Then
+    V = isNewEtap
+    If IsNull(V) Then
         MsgBox "Нельзя перевести готовый заказ снова в 'принят', поскольку " & _
         " в  его предметах не был открыт Этап отгрузки.", , "Недопустимый статус!"
-    ElseIf Not v Then
+    ElseIf Not V Then
         MsgBox "Для открытия нового этапа необходимо в Предметах заказа " & _
         "ввести значения в колонке  'Кол-во по текущему этапу'"
     ElseIf predmetiIsClose Then '
@@ -3557,23 +3558,23 @@ Orders.begFiltrDisable
 
 End Sub
 
-Sub loadFirmOrders(Stat As String, Optional ordNom As String = "")
+Sub loadFirmOrders(Status As String, Optional ordNom As String = "")
 Dim I As Integer
 
 For I = 1 To orColNumber
     orSqlWhere(I) = ""
 Next I
-If Stat = "noArhiv" Then
-    Stat = ""
+If Status = "noArhiv" Then
+    Status = ""
     orSqlWhere(orInvoice) = "isNumeric(o.Invoice) =1 OR " & _
     "(o.Invoice) Is Null OR (o.shipped) Is Null"
 End If
-If Stat <> "all" And Stat <> "" Then
-    orSqlWhere(orFirma) = "(f.Name) = '" & Stat & "'"
+If Status <> "all" And Status <> "" Then
+    orSqlWhere(orFirma) = "(f.Name) = '" & Status & "'"
 Else
     orSqlWhere(orFirma) = "(f.Name) = '" & Grid.Text & "'"
 End If
-If Stat <> "all" Then _
+If Status <> "all" Then _
     orSqlWhere(orStatus) = "(s.Status) <> 'закрыт'"
 
 MousePointer = flexHourglass

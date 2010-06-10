@@ -12,6 +12,7 @@ CREATE VIEW vw_OrdersEquipSummary (
 	, maxStatusId
 	, minStatusId
 	, lastModifiedEquip
+	, statO
 ) as
 select
 	  numorder
@@ -22,6 +23,7 @@ select
 	, max(isnull(statusEquipId, 0))
 	, min(isnull(statusEquipId, 0))
 	, max(isnull(lastModified, '20000101'))
+	, max(statO)
 from
 	OrdersEquip
 group by 

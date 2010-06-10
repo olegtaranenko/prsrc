@@ -1112,9 +1112,11 @@ where pc.sysname = sGuideProducts.web
 			<column name="worktime" type="float" defaultValueNumeric="0.0">
 				<constraints nullable="false"/>
 			</column>
+			<column name="Stat" type="varchar(20)"><constraints nullable="true"/></column>
 			<column name="worktimeMO" type="float">
 				<constraints nullable="true"/>
 			</column>
+			<column name="StatO" type="varchar(20)"><constraints nullable="true"/></column>
 			<column name="nevip" type="float">
 				<constraints nullable="true"/>
 			</column>
@@ -1146,7 +1148,8 @@ where	cehId > 0
 		<sql><![CDATA[
 update OrdersEquip 
 	set nevip = OrdersInCeh.nevip
-from	  ordersInCeh 
+		, Stat = OrdersInCeh.Stat
+from	ordersInCeh 
 where	OrdersInCeh.numorder = OrdersEquip.numOrder
 		]]></sql>
 		<rollback>truncate table OrdersEquip</rollback>
@@ -1156,6 +1159,22 @@ where	OrdersInCeh.numorder = OrdersEquip.numOrder
 		<comment>Nevip перенесена из OrdersInCeh в OrdersEquip</comment>
 		<dropColumn tableName="OrdersInCeh" columnName="nevip"/>
 	</changeSet>
+
+	<changeSet id="64" author="mantis-125" runOnChange="false">
+		<comment>Stat перенесена из OrdersInCeh в OrdersEquip</comment>
+		<dropColumn tableName="OrdersInCeh" columnName="Stat"/>
+	</changeSet>
+
+	<changeSet id="65" author="mantis-125" runOnChange="false">
+		<sql><![CDATA[
+update OrdersEquip 
+	set StatO = OrdersMO.StatO
+from	OrdersMO
+where	OrdersMO.numorder = OrdersEquip.numorder
+		]]></sql>
+		<rollback/>
+	</changeSet>
+
 
 	<changeSet id="3" author="mantis-125" runOnChange="false">
 		<comment>ƒенормализованное поле equip в таблице «аказов. »наче очень долго делаетс€ обновление списка заказов</comment>
@@ -1170,7 +1189,7 @@ update	Orders set equip = GuideCeh.ceh
 from	GuideCeh 
 where	GuideCeh.cehId = orders.cehId
 		</sql>
-		<rollback>truncate table OrdersEquip</rollback>
+		<rollback/>
 	</changeSet>
 
 
@@ -1179,7 +1198,6 @@ where	GuideCeh.cehId = orders.cehId
 		<addColumn tableName="OrdersInCeh">
 			<column name="DateTimeMO" type="datetime"><constraints nullable="true"/></column>
 			<column name="StatM" type="varchar(20)"><constraints nullable="true"/></column>
-			<column name="StatO" type="varchar(20)"><constraints nullable="true"/></column>
 			<column name="lastModified" type="datetime"><constraints nullable="true"/></column>
 			<column name="lastManagId" type="tinyint"><constraints nullable="true"/></column>
 		</addColumn>
@@ -1215,13 +1233,13 @@ update	OrdersInCeh
 	set 
 		 DateTimeMO	= OrdersMO.DateTimeMO
 		,StatM		= OrdersMO.StatM
-		,StatO		= OrdersMO.StatO
 from	OrdersMO
 where	OrdersMO.numorder = OrdersInCeh.numorder
 		</sql>
 
 		<rollback/>
 	</changeSet>
+
 
 	<changeSet id="13" author="mantis-125" runOnChange="false">
 		<dropTable tableName="OrdersMO"/>

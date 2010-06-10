@@ -537,7 +537,7 @@ Private Sub cmNewUklad_Click()
     newZagruz
 End Sub
 
-Sub getBegEndDays(Optional Stat As String = "")
+Sub getBegEndDays(Optional Status As String = "")
 Dim priemData As String
 
 If Regim = "setka" Then ' по F1 F2
@@ -545,12 +545,12 @@ If Regim = "setka" Then ' по F1 F2
 Else
     priemData = Orders.Grid.TextMatrix(Orders.Grid.row, orData)
 End If
-If Stat = "образец" Then
+If Status = "образец" Then
     Grid.TextMatrix(quantity, zgInDate) = priemData
     Grid.TextMatrix(quantity, zgOutDate) = tbDateMO.Text
     Grid.TextMatrix(quantity, zgOtlad) = ObDay & " " & OeDay
     Exit Sub
-ElseIf Stat <> "" Then
+ElseIf Status <> "" Then
     Grid.TextMatrix(quantity, zgOtlad) = ZbDay & " " & ZeDay
     If IsDate(tbDateRS.Text) Then
         Grid.TextMatrix(quantity, zgInDate) = tbDateRS.Text
@@ -578,28 +578,28 @@ End If
 
 End Sub
 ' заказ в реестр отладки
-Function zakazToGrid(reg As String, Stat As String, nevip As String) As Boolean
+Function zakazToGrid(reg As String, Status As String, nevip As String) As Boolean
 zakazToGrid = False
 
 If reg = "" Then
     quantity = quantity + 1
     Grid.TextMatrix(quantity, zgNomZak) = laNomZak.Caption
-    Grid.TextMatrix(quantity, zgStatus) = Stat
-    If Stat = "образец" Then
+    Grid.TextMatrix(quantity, zgStatus) = Status
+    If Status = "образец" Then
         Grid.TextMatrix(quantity, zgVrVip) = tbVrVipO.Text
     Else
         Grid.TextMatrix(quantity, zgVrVip) = tbWorktime.Text
     End If
     Grid.TextMatrix(quantity, zgNevip) = nevip
     
-    getBegEndDays Stat
+    getBegEndDays Status
     
     Grid.AddItem ""
 Else
     If laNomZak.Caption = Grid.TextMatrix(Grid.row, zgNomZak) Then
         If Grid.TextMatrix(Grid.row, zgStatus) = "образец" Then
-            If Stat = "образец" Then Exit Function
-        ElseIf Stat <> "образец" Then
+            If Status = "образец" Then Exit Function
+        ElseIf Status <> "образец" Then
             Exit Function ' обрабатываем только до(включит-но) отмеч.заказа
         End If
     End If
@@ -615,7 +615,7 @@ End Function
 
 Sub newZagruz(Optional reg As String = "", Optional equipId As Integer)
 Dim S As Double, nevip As Double, I As Integer
-Dim bDay As Integer, eDay As Integer, Stat As String, vEquipId As Integer
+Dim bDay As Integer, eDay As Integer, vEquipId As Integer
 
 If equipId <> 0 Then
     vEquipId = equipId
@@ -682,7 +682,7 @@ vbCr & " UNION ALL " _
 vbCr & " FROM Orders o " & _
 " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder " & _
 " JOIN OrdersEquip oe ON oe.numorder = o.numorder AND oe.equipId = " & vEquipId & _
-" Where oc.statO = 'в работе' " & " ORDER BY "
+" Where oe.statO = 'в работе' " & " ORDER BY "
 
 If isMzagruz Then
     sql = sql & "4 DESC" ' в порядке уменьшения Даты Начала
@@ -751,7 +751,7 @@ While Not tbOrders.EOF
       If tbOrders!nevip = -1 Then '"образец"
         Grid.TextMatrix(quantity, zgStatus) = "образец"
       Else
-        Grid.TextMatrix(quantity, zgStatus) = status(tbOrders!StatusId)
+        Grid.TextMatrix(quantity, zgStatus) = Status(tbOrders!StatusId)
       End If
       Grid.TextMatrix(quantity, zgVrVip) = tbOrders!Worktime
       Grid.TextMatrix(quantity, zgNevip) = nevip
@@ -1219,19 +1219,19 @@ table.Close
     Worktime = "Null"
   End If
   If bilo Then      '
-    sql = "UPDATE OrdersInCeh SET StatM = '" & cbM.Text & "', StatO = '" & cbO.Text & _
-    "', DateTimeMO = " & str & _
+    sql = "UPDATE OrdersInCeh SET StatM = '" & cbM.Text & "'" _
+    & "', DateTimeMO = " & str & _
     " WHERE numOrder = " & gNzak
   Else
-    sql = "INSERT INTO OrdersInCeh ( numOrder, StatM, StatO, DatetimeMO ) " & _
-    "SELECT " & gNzak & ", '" & _
-    cbM.Text & "', '" & cbO.Text & "', " & str
+    sql = "INSERT INTO OrdersInCeh ( numOrder, StatM, DatetimeMO ) " & _
+    "SELECT " & gNzak & ", '" & cbM.Text & "', " & str
   End If
   'Debug.Print sql
   If myExecute("##397", sql) <> 0 Then GoTo ER1
     
-  sql = "UPDATE OrdersEquip SET workTimeMO = " & Worktime & _
-    " WHERE numOrder = " & gNzak & " and equipId = " & idEquip
+  sql = "UPDATE OrdersEquip SET workTimeMO = " & Worktime _
+    & ", SET statO = '" & cbO.Text & "'" _
+    & " WHERE numOrder = " & gNzak & " and equipId = " & idEquip
     
   If myExecute("##397.2", sql) <> 0 Then GoTo ER1
     
@@ -1423,7 +1423,7 @@ If getPrev2Day < 1 Then getPrev2Day = 1
 End Function
 
 Private Sub cmZapros_Click() ' zagruzFromCeh использует глобальные end(beg)Day(MO)
-Dim I As Integer, str As String, num As Integer, v As Variant
+Dim I As Integer, str As String, num As Integer, V As Variant
 Dim begDay As Integer, endDay As Integer, begDayMO As Integer, endDayMO As Integer
 Dim begDay_ As Integer, endDay_ As Integer ', begDayMO_ As Integer, endDayMO_ As Integer
 Dim title As String, msg As String
@@ -1671,10 +1671,10 @@ Next I
 
 newZagruz
 
-v = lv.ListItems("k1").SubItems(zkMost)
-If Not IsNumeric(v) Then v = 0
+V = lv.ListItems("k1").SubItems(zkMost)
+If Not IsNumeric(V) Then V = 0
 I = getNextDay(1)
-laZapas.Caption = Round(nomRes(I) * KPD * Nstan + v, 1)
+laZapas.Caption = Round(nomRes(I) * KPD * Nstan + V, 1)
 
 If cmRepit.Visible Then '  не по <F1> <F2>
     tiki = 11
@@ -1903,7 +1903,7 @@ End Sub
 
 Public Function startParams() As Boolean
 Dim I As Integer, str As String, J As Integer ', sumSroch As Double
-Dim item As ListItem, v As Variant, S As Double
+Dim item As ListItem, V As Variant, S As Double
 startParams = False
 
 maxDay = 0
@@ -1922,8 +1922,8 @@ Else
     
     sql = "SELECT o.numorder, o.StatusId, o.DateRS, o.outTime, o.werkId" _
     & ", oe.outDateTime, oe.statusEquipId, oe.equipId, oe.worktime, oe.workTimeMO" _
-    & ", oc.DateTimeMO, oc.StatM, oc.StatO" _
-    & ", oc.stat as statusInCeh, oe.nevip, oc.urgent" _
+    & ", oc.DateTimeMO, oc.StatM, oe.StatO" _
+    & ", oe.stat as statusInCeh, oe.nevip, oc.urgent" _
     & ", o.lastModified, o.lastManagId, 0 as presentationFormat" _
     & " from Orders o" _
     & " JOIN OrdersEquip oe on oe.numorder = o.numorder" _
@@ -1980,15 +1980,15 @@ Else
     End If
     Me.tbReadyDate.Text = Format(zakazBean.Outdatetime, "dd.mm.yy")
           
-    v = zakazBean.StatM
-    If cbMOsetByText(Me.cbM, v) Then
+    V = zakazBean.StatM
+    If cbMOsetByText(Me.cbM, V) Then
         Me.tbDateMO.Text = zakazBean.DateTimeMO
     End If
     
     Me.tbWorktime.Text = zakazBean.Worktime
      
-    v = zakazBean.StatO
-    If cbMOsetByText(Me.cbO, v) Then
+    V = zakazBean.StatO
+    If cbMOsetByText(Me.cbO, V) Then
         Me.tbDateMO = zakazBean.DateTimeMO
         If Me.cbO.Text = "готов" Then
             'Me.tbVrVipO.Text = Orders.Grid.TextMatrix(Orders.mousRow, orOVrVip)
@@ -2004,9 +2004,9 @@ Else
 End If
 
 I = getNextDay(1)
-v = Me.lv.ListItems("k1").SubItems(zkMost)
-If Not IsNumeric(v) Then v = 0
-Me.laZapas.Caption = Round(nomRes(I) * KPD * Nstan + v, 1)
+V = Me.lv.ListItems("k1").SubItems(zkMost)
+If Not IsNumeric(V) Then V = 0
+Me.laZapas.Caption = Round(nomRes(I) * KPD * Nstan + V, 1)
 
 'количесво фирм по дням выдачи
 For I = 1 To maxDay

@@ -11,13 +11,13 @@ Dim ch As String, tenOclock As String, Midnight As String
 
 'wrkDefault.BeginTrans
 
-sql = "DELETE from OrdersInCeh WHERE Stat = 'готов'"
+sql = "DELETE from OrdersInCeh WHERE EXISTS (select 1 from OrdersEquip oe where oe.Stat = 'готов' and oe.numorder = OrdersInCeh.numorder)"
 If myExecute("##63", sql, 0) > 0 Then GoTo ER1
 
 tenOclock = "'" & Format(curDate, "yyyy-mm-dd 10:00:00") & "'"
 Midnight = "'" & Format(curDate, "yyyy-mm-dd 00:00:00") & "'"
 
-sql = "UPDATE Orders INNER JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder " _
+sql = "UPDATE Orders JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder " _
 & " SET Orders.DateRS = " & tenOclock & ", OrdersInCeh.DateTimeMO = " & tenOclock _
 & " WHERE Orders.DateRS  < " & Midnight & " And Orders.DateRS Is Not Null"
 
@@ -99,15 +99,15 @@ While Not tbOrders.EOF
     sql = "SELECT Sum(oe.workTime * oe.Nevip) AS nevip" _
     & " FROM Orders o " _
     & " JOIN OrdersEquip oe ON oe.numOrder = o.numOrder" _
-    & " WHERE o.StatusId = 1 AND oe.equipId = " & equipId
+    & " WHERE o.StatusId = 1 AND oe.equipId = " & equipId _
+    & " AND EXISTS (select 1 from OrdersInCeh oc where oc.numorder = oe.numorder) "
     byErrSqlGetValues "##372", sql, tmpSng
     
     S = 0 ' плюс неготовые образцы
     sql = "SELECT sum(oe.worktimeMO) as Sum_worktimeMO " _
-    & " FROM Orders o " _
-    & " JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder " _
-    & " JOIN OrdersEquip oe ON oe.numOrder = oc.numOrder" _
-    & " WHERE oc.StatO ='в работе' AND oe.equipId = " & equipId
+    & " FROM OrdersEquip oe " _
+    & " WHERE oe.StatO ='в работе' AND oe.equipId = " & equipId _
+    & " AND EXISTS (select 1 from OrdersInCeh oc where oc.numorder = oe.numorder) "
     byErrSqlGetValues "##372", sql, S
     
     tmpSng = tmpSng + S

@@ -458,7 +458,7 @@ If isMO = "o" Then
      Grid.TextMatrix(werkRows, chStatus) = "" 'образец
    End If
 ElseIf (tbCeh!StatusId = 1 Or tbCeh!StatusId = 8) And Not IsNumeric(tbCeh!Stat) Then
-    Grid.TextMatrix(werkRows, chStatus) = tbCeh!Stat
+    If Not IsNull(tbCeh!Stat) Then Grid.TextMatrix(werkRows, chStatus) = tbCeh!Stat
 ElseIf tbCeh!StatusId = 2 Then ' резерв
     str1 = "Р": GoTo AA
 ElseIf tbCeh!StatusId = 3 Or tbCeh!StatusId = 9 Then  ' согласов
@@ -467,7 +467,7 @@ AA: Grid.col = chStatus
     Grid.CellForeColor = color
     Grid.TextMatrix(werkRows, chStatus) = str1 & " на " & Format(tbCeh!DateRS, "dd.mm.yy")
 Else
-    Grid.TextMatrix(werkRows, chStatus) = status(tbCeh!StatusId)
+    Grid.TextMatrix(werkRows, chStatus) = Status(tbCeh!StatusId)
 End If
 MN:
 #If Not COMTEC = 1 Then '----------------------------------------------
@@ -731,15 +731,15 @@ If KeyCode = vbKeyReturn Then lbMaket_DblClick
 End Sub
 
 Private Sub lbObrazec_DblClick()
-Dim J As Integer, str As String, old As String, v As Variant
-Dim proc As String, status As String
+Dim J As Integer, str As String, old As String, V As Variant
+Dim proc As String, Status As String
 'sChr As String, dChr As String,
 If noClick Then Exit Sub
 old = Grid.TextMatrix(mousRow, chStatus)
 If lbObrazec.Text = "готов" And lbObrazec.Text <> old Then
-    proc = "100%": status = "'готов'"
+    proc = "100%": Status = "'готов'"
 ElseIf lbObrazec.Text <> old Then '              образец
-    proc = "0%": status = "'в работе'"
+    proc = "0%": Status = "'в работе'"
 Else
     lbHide
     Exit Sub
@@ -748,11 +748,12 @@ lbObrazec.Visible = False
 
 wrkDefault.BeginTrans
     
-v = makeProcReady(proc, Grid.TextMatrix(mousRow, chEquipId), "obraz")
-If IsNull(v) Then ' образец утвержден
+gEquipId = Grid.TextMatrix(mousRow, chEquipId)
+V = makeProcReady(proc, gEquipId, "obraz")
+If IsNull(V) Then ' образец утвержден
     msgZakazDeleted "образец уже утвержден"
-ElseIf v Then
-    If ValueToTableField("##54", status, "OrdersInCeh", "StatO") = 0 Then
+ElseIf V Then
+    If ValueToTableField("##54", Status, "OrdersEquip", "StatO", "byEquipId") = 0 Then
         wrkDefault.CommitTrans
         werkBegin
     Else
@@ -777,7 +778,8 @@ If noClick Then Exit Sub
 
 wrkDefault.BeginTrans   ' начало транзакции
 
-I = ValueToTableField("W##41", "'в работе'", "OrdersInCeh", "Stat", "werkId") 'т.к если оставить Stat=готов, то на завтра он удалиться
+gEquipId = Grid.TextMatrix(mousRow, chEquipId)
+I = ValueToTableField("W##41", "'в работе'", "OrdersEquip", "Stat", "byEquipId") 'т.к если оставить Stat=готов, то на завтра он удалиться
 If I = 0 Then
     If ValueToTableField("##41", "5", "Orders", "StatusId") <> 0 Then GoTo ER1
 
@@ -841,6 +843,9 @@ End Function
 Private Sub lbStatus_DblClick()
 Dim str As String, I As Integer
 
+
+gEquipId = Grid.TextMatrix(mousRow, chEquipId)
+
 #If onErrorOtlad Then
     On Error GoTo errMsg
     GoTo START
@@ -878,7 +883,7 @@ ElseIf str = "готов" Then
         byErrSqlGetValues "##39.2", sql, maxId, minId
         
         If minId = maxId And minId = 4 Then
-            I = ValueToTableField("W##41", "'" & str & "'", "OrdersInCeh", "Stat", "byWerkId")
+            I = ValueToTableField("W##41", "'" & str & "'", "OrdersEquip", "Stat", "byEquipId")
             If I = 0 Then
                 If ValueToTableField("##39.2", "4", "Orders", "StatusId") <> 0 Then GoTo ER1
                 If ValueToTableField("##39.3", "0", "Orders", "ProblemId") <> 0 Then GoTo ER1
@@ -908,7 +913,7 @@ Else '  пусто, "*" и "в работе"
     lbStatus.Visible = False
     wrkDefault.BeginTrans
     If makeProcReady("0%", Grid.TextMatrix(mousRow, chEquipId)) Then
-        If ValueToTableField("##41", "'" & str & "'", "OrdersInCeh", "Stat", "byWerkId") <> 0 Then GoTo ER1
+        If ValueToTableField("##41", "'" & str & "'", "OrdersEquip", "Stat", "byEquipId") <> 0 Then GoTo ER1
         If ValueToTableField("##39", "1", "Orders", "StatusId") <> 0 Then GoTo ER1
 AA:     If ValueToTableField("##39", "0", "Orders", "ProblemId") = 0 Then
             wrkDefault.CommitTrans
@@ -935,10 +940,9 @@ End Sub
 'Для образца, кот. Утвержден возвращает Null
 Function makeProcReady(Stat As String, equipId As Integer, Optional obraz As String = "") As Variant
 Dim S As Single, T As Single, N As Single, virabotka As Single, str As String
-Dim StatO As String, StatusEquipId As Integer
+Dim StatO As String
 
 makeProcReady = False
-StatusEquipId = 9
 If Stat = "25%" Then
     S = 0.75 ' невыполнено
     GoTo AA
@@ -953,16 +957,14 @@ ElseIf Stat = "100%" Then
     GoTo AA
 Else
     S = 1
-    StatusEquipId = 8
 AA:
  
   If obraz <> "" Then
     obraz = "o"
     ''??TODO
-    sql = "SELECT oe.workTimeMO, oc.StatO " _
-    & " FROM OrdersInCeh oc " _
-    & " JOIN OrdersEquip oe ON oe.numOrder = oc.numOrder" _
-    & " WHERE oc.numOrder = " & gNzak & " AND equipId = " & equipId
+    sql = "SELECT oe.workTimeMO, oe.StatO " _
+    & " FROM OrdersEquip oe " _
+    & " WHERE oe.numOrder = " & gNzak & " AND equipId = " & equipId
     If Not byErrSqlGetValues("##386", sql, virabotka, StatO) Then Exit Function
     If S = 0 Then ' 100%
     Else
@@ -991,10 +993,8 @@ AA:
             Exit Function
         End If
     Else 'obraz = ""
-        sql = "UPDATE OrdersEquip SET StatusEquipId = 8 WHERE numOrder = " & gNzak & " AND equipId = " & equipId
-        If myExecute("##422", sql) <> 0 Then Exit Function
-        'sql = "UPDATE OrdersInCeh SET Stat = '' WHERE numOrder =" & gNzak
-        'If myExecute("##422", sql) <> 0 Then Exit Function
+        gEquipId = equipId
+        ValueToTableField "##41", "'в работе'", "OrdersEquip", "Stat", "byEquipId"
     End If
     
 End If 'If stat

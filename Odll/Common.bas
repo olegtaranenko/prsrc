@@ -37,7 +37,7 @@ Public werkSourceId() As Integer
 Public gEquipId As Integer
 Public Const lenStatus = 20
 Public statId(lenStatus) As Integer
-Public status(lenStatus) As String
+Public Status(lenStatus) As String
 Public lenProblem As Integer
 Public Problems(20) As String
 Public manId() As Integer '$$7
@@ -1019,7 +1019,7 @@ While Not table.EOF
         MsgBox "Err в Orders\FormLoad"
         End
     End If
-    status(table!StatusId) = table!status
+    Status(table!StatusId) = table!Status
     table.MoveNext
 Wend
 table.Close
@@ -1529,7 +1529,7 @@ If redraw Then
 End If
 
  log = Format(Now(), "dd.mm.yy hh:nn") & vbTab & Orders.cbM.Text & " " & gNzak ' именно vbTab
- str = status(tqOrders!StatusId): log = log & " " & str
+ str = Status(tqOrders!StatusId): log = log & " " & str
  Orders.Grid.TextMatrix(row, orStatus) = str
  
  str = LoadDate(Orders.Grid, row, orDataVid, tqOrders!Outdatetime, "dd.mm.yy")
@@ -1984,6 +1984,8 @@ ElseIf by = "byProductId" Then
     byStr = ".prId = " & gProductId
 ElseIf by = "byWerkId" Then
     byStr = ".numOrder = " & gNzak
+ElseIf by = "byEquipId" Then
+    byStr = ".numOrder = " & gNzak & " AND " & table & ".equipId = " & gEquipId
 ElseIf by = "byNumDoc" Then
     sql = "UPDATE " & table & " SET " & table & "." & field & "=" & value _
         & " WHERE " & table & ".numDoc =" & numDoc & " AND " & table & _
@@ -2232,15 +2234,15 @@ tbDMC.Close
 End Sub
 
 Function getNextNumExt() As Integer
-Dim v As Variant
+Dim V As Variant
 
 getNextNumExt = 0
 sql = "SELECT Max(sDocs.numExt) AS Max_numExt From sDocs " & _
 "WHERE (((sDocs.numDoc)=" & numDoc & " AND (sDocs.numExt) < 254));"
 
-If Not byErrSqlGetValues("##128", sql, v) Then Exit Function
-If IsNumeric(v) Then
-    getNextNumExt = v + 1
+If Not byErrSqlGetValues("##128", sql, V) Then Exit Function
+If IsNumeric(V) Then
+    getNextNumExt = V + 1
 Else
     getNextNumExt = 1
 End If
@@ -2643,7 +2645,7 @@ Private Sub addToCbStatus(ByRef statusComboBox As ComboBox, id, Optional begin A
         MsgBox "Err в Orders\addToCbStatus"
     End If
 
-    statusComboBox.AddItem status(id)
+    statusComboBox.AddItem Status(id)
     statId(I) = id
     I = I + 1
 
@@ -2677,11 +2679,11 @@ Public Sub cbBuildStatuses(ByRef statusComboBox As ComboBox, ByRef statusIdOld A
 
 End Sub
 
-Public Function cbMOsetByText(cb As ComboBox, Stat As Variant, Optional baseIndex As Integer = 1) As Boolean
+Public Function cbMOsetByText(cb As ComboBox, Status As Variant, Optional baseIndex As Integer = 1) As Boolean
     cbMOsetByText = False
 Dim I As Integer, txt As String
     txt = ""
-    If Not IsNull(Stat) Then txt = CStr(Stat)
+    If Not IsNull(Status) Then txt = CStr(Status)
     If txt = "готов" Then
         If cb.List(baseIndex + 2) <> "готов" Then cb.AddItem "готов", baseIndex + 2
         If cb.List(baseIndex + 3) <> "утвержден" Then cb.AddItem "утвержден", baseIndex + 3

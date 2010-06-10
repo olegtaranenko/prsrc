@@ -495,7 +495,7 @@ Dim I As Integer, VShift As Integer, LowLinie As Long
     Next I
     
     cbBuildStatuses Me.cbStatus, Me.originalStatusId
-    cbStatus.Text = status(Me.originalStatusId)
+    cbStatus.Text = Status(Me.originalStatusId)
     
     EquipFrame.Height = LowLinie + 150
     LowLinie = EquipFrame.Top + EquipFrame.Height + 100
@@ -535,7 +535,7 @@ Private Sub loadEquipment()
     Dim Outdate As Variant, StatO, StatM, Stat, DateTimeMO, DateRS
     
     sql = "select o.StatusId, oe.Outdatetime" _
-    & ", oc.urgent, oc.StatO, oc.StatM, oc.Stat, oc.DateTimeMO" _
+    & ", oc.urgent, oc.StatM, oc.DateTimeMO" _
     & ", o.DateRS, o.werkId" _
     & " from orders o " _
     & " left join vw_OrdersEquipSummary oe on o.numorder = oe.numorder " _
@@ -543,7 +543,7 @@ Private Sub loadEquipment()
     & " where o.numorder = " & gNzak
     
     byErrSqlGetValues "w#eq01", sql, currStatusId, Outdate, urgent _
-        , StatO, StatM, Stat, DateTimeMO, DateRS, idWerk
+        , StatM, DateTimeMO, DateRS, idWerk
     
     
     lbZakazDateOut.Caption = Format(Outdate, "dd.mm.yyyy")
