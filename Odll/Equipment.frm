@@ -4,12 +4,12 @@ Begin VB.Form Equipment
    ClientHeight    =   4968
    ClientLeft      =   48
    ClientTop       =   588
-   ClientWidth     =   6336
+   ClientWidth     =   7488
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
    ScaleHeight     =   4968
-   ScaleWidth      =   6336
+   ScaleWidth      =   7488
    ShowInTaskbar   =   0   'False
    StartUpPosition =   1  'CenterOwner
    Begin VB.Frame OrderFrame 
@@ -18,7 +18,7 @@ Begin VB.Form Equipment
       Left            =   240
       TabIndex        =   12
       Top             =   0
-      Width           =   5892
+      Width           =   7092
       Begin VB.CheckBox cbUrgent 
          Enabled         =   0   'False
          Height          =   252
@@ -170,10 +170,10 @@ Begin VB.Form Equipment
       Cancel          =   -1  'True
       Caption         =   "Отмена"
       Height          =   315
-      Left            =   4560
+      Left            =   6120
       TabIndex        =   0
       Top             =   4440
-      Width           =   795
+      Width           =   1152
    End
    Begin VB.Frame EquipFrame 
       Caption         =   "По оборудованию"
@@ -181,7 +181,7 @@ Begin VB.Form Equipment
       Left            =   240
       TabIndex        =   2
       Top             =   2400
-      Width           =   5892
+      Width           =   7092
       Begin VB.CheckBox cbEquipment 
          Caption         =   " YAG"
          Height          =   372
@@ -209,26 +209,73 @@ Begin VB.Form Equipment
          Visible         =   0   'False
          Width           =   552
       End
-      Begin VB.Label Label1 
-         Caption         =   "Вр. изг."
+      Begin VB.Label Label10 
+         Caption         =   "в цехе"
          Height          =   252
-         Left            =   1200
-         TabIndex        =   11
+         Left            =   4320
+         TabIndex        =   33
          Top             =   360
          Width           =   612
       End
+      Begin VB.Label lbEquipStat 
+         Height          =   252
+         Index           =   0
+         Left            =   4320
+         TabIndex        =   32
+         Top             =   720
+         Width           =   996
+      End
+      Begin VB.Label lbNevip 
+         Height          =   252
+         Index           =   0
+         Left            =   6600
+         TabIndex        =   31
+         Top             =   720
+         Width           =   396
+      End
+      Begin VB.Label Label9 
+         Caption         =   "%Вып."
+         Height          =   252
+         Left            =   6480
+         TabIndex        =   30
+         Top             =   360
+         Width           =   492
+      End
+      Begin VB.Label lbEquipStatusO 
+         Height          =   252
+         Index           =   0
+         Left            =   5400
+         TabIndex        =   29
+         Top             =   720
+         Width           =   996
+      End
+      Begin VB.Label Label8 
+         Caption         =   "обр-ца"
+         Height          =   252
+         Left            =   5400
+         TabIndex        =   28
+         Top             =   360
+         Width           =   612
+      End
+      Begin VB.Label Label1 
+         Caption         =   "Время изг. основ,"
+         Height          =   252
+         Left            =   240
+         TabIndex        =   11
+         Top             =   360
+         Width           =   1452
+      End
       Begin VB.Label lbDateOut 
-         Caption         =   "Н/А"
          Height          =   252
          Index           =   0
          Left            =   2520
          TabIndex        =   10
          Top             =   720
          Visible         =   0   'False
-         Width           =   1572
+         Width           =   732
       End
       Begin VB.Label Label2 
-         Caption         =   "Дата"
+         Caption         =   "К дате"
          Height          =   252
          Left            =   2520
          TabIndex        =   9
@@ -236,28 +283,28 @@ Begin VB.Form Equipment
          Width           =   732
       End
       Begin VB.Label laVrVipO 
-         Caption         =   "MO"
+         Caption         =   "обр-ца"
          Height          =   252
-         Left            =   1920
+         Left            =   1800
          TabIndex        =   8
          Top             =   360
-         Width           =   252
+         Width           =   612
       End
       Begin VB.Label Label5 
          Caption         =   "Статус"
          Height          =   252
-         Left            =   4200
+         Left            =   3360
          TabIndex        =   7
          Top             =   360
-         Width           =   972
+         Width           =   612
       End
       Begin VB.Label lbEquipStatus 
          Height          =   252
          Index           =   0
-         Left            =   4200
+         Left            =   3360
          TabIndex        =   6
          Top             =   720
-         Width           =   996
+         Width           =   876
       End
    End
 End
@@ -279,23 +326,15 @@ Private idWerk 'As Integer
 
 
 
-Private Function setVisibleByEquipment(Index As Integer) As Boolean
-    Dim visibleFlag As Boolean
-    visibleFlag = cbEquipment(Index).value = 1
+Private Function setVisibleByEquipment(Index As Integer, visibleFlag As Boolean) As Boolean
     tbWorktime(Index).Visible = visibleFlag
     'cmSetOutDate(Index).Visible = visibleFlag
     lbDateOut(Index).Visible = visibleFlag
-    tbWorktimeO(Index).Visible = False
+    tbWorktimeO(Index).Visible = visibleFlag
     lbEquipStatus(Index).Visible = visibleFlag
-    
-    If visibleFlag Then
-        If currStatusId = 3 Then '"согласов"
-            tbWorktimeO(Index).Visible = True
-        Else
-            tbWorktimeO(Index).Visible = False
-        End If
-    
-    End If
+    lbEquipStat(Index).Visible = visibleFlag
+    lbEquipStatusO(Index).Visible = visibleFlag
+    lbNevip(Index).Visible = visibleFlag
     setVisibleByEquipment = visibleFlag
     
     
@@ -304,7 +343,7 @@ End Function
 
 Private Sub cbEquipment_Click(Index As Integer)
     
-    setVisibleByEquipment Index
+    setVisibleByEquipment Index, cbEquipment(Index).Visible
     
     If tbWorktime(Index).Visible Then
         tbWorktime(Index).SetFocus
@@ -317,7 +356,7 @@ Private Sub cbM_Change()
 Dim I As Integer
 End Sub
 
-Private Sub cbStatus_Click()
+Private Sub cbStatus_Click_weg()
 Dim I As Integer
 
     
@@ -349,7 +388,7 @@ Dim I As Integer
     
     Dim hasVisible As Boolean, isVisible As Boolean
     For I = 0 To cbEquipment.UBound
-        isVisible = setVisibleByEquipment(I)
+        isVisible = setVisibleByEquipment(I, False)
         If Not hasVisible Then
             hasVisible = isVisible
         End If
@@ -480,14 +519,11 @@ Dim I As Integer, VShift As Integer, LowLinie As Long
         Load tbWorktime(I)
         Load lbDateOut(I)
         Load lbEquipStatus(I)
+        Load lbEquipStat(I)
+        Load lbEquipStatusO(I)
+        Load lbNevip(I)
         Load tbWorktimeO(I)
         
-        cbEquipment(I).Top = VShift
-        tbWorktime(I).Top = VShift
-        lbDateOut(I).Top = VShift
-        lbEquipStatus(I).Top = VShift
-        tbWorktimeO(I).Top = VShift
-        cbEquipment(I).Top = tbWorktimeO(I).Top
         
         cbEquipment(I).Caption = Equip(I + 1)
         cbEquipment(I).Visible = True
@@ -497,17 +533,15 @@ Dim I As Integer, VShift As Integer, LowLinie As Long
     cbBuildStatuses Me.cbStatus, Me.originalStatusId
     cbStatus.Text = Status(Me.originalStatusId)
     
-    EquipFrame.Height = LowLinie + 150
-    LowLinie = EquipFrame.Top + EquipFrame.Height + 100
-    cmExit.Top = LowLinie
-    cmApply.Top = LowLinie
-    LowLinie = cmApply.Top + cmApply.Height + 100
-    Me.Height = LowLinie + 700
 End Sub
 
 Private Sub tuneEnv()
+Dim I As Integer, LowLinie As Long, VShift As Long
+Dim equipIndex As Integer
     
     If idWerk > 0 Then
+        VShift = tbWorktime(0).Height + 15
+        LowLinie = tbWorktime(0).Top
         hideEquipAll
         sql = "select * " _
             & " from WerkEquip we " _
@@ -516,16 +550,35 @@ Private Sub tuneEnv()
         Set tbOrders = myOpenRecordSet("##eq04", sql, dbOpenForwardOnly)
         If Not tbOrders Is Nothing Then
             While Not tbOrders.EOF
-                Dim equipIndex As Integer
                 equipIndex = tbOrders!equipId - 1
                 cbEquipment(equipIndex).Visible = True
-                setVisibleByEquipment equipIndex
+                setVisibleByEquipment equipIndex, True
+                AlignEquipmentControls equipIndex, LowLinie
                 tbOrders.MoveNext
+                LowLinie = LowLinie + VShift
             Wend
             tbOrders.Close
         End If
     End If
     
+    EquipFrame.Height = LowLinie + 150
+    LowLinie = EquipFrame.Top + EquipFrame.Height + 100
+    cmExit.Top = LowLinie
+    cmApply.Top = LowLinie
+    LowLinie = cmApply.Top + cmApply.Height + 100
+    Me.Height = LowLinie + 700
+    
+End Sub
+
+Private Sub AlignEquipmentControls(equipCtlIndex As Integer, VShift As Long)
+    cbEquipment(equipCtlIndex).Top = VShift
+    tbWorktime(equipCtlIndex).Top = VShift
+    lbDateOut(equipCtlIndex).Top = VShift
+    lbEquipStatus(equipCtlIndex).Top = VShift
+    lbEquipStat(equipCtlIndex).Top = VShift
+    lbEquipStatusO(equipCtlIndex).Top = VShift
+    lbNevip(equipCtlIndex).Top = VShift
+    tbWorktimeO(equipCtlIndex).Top = VShift
 End Sub
 
 
@@ -583,7 +636,7 @@ Private Sub loadEquipment()
         tbDateMO = ""
     End If
     
-    sql = "select oe.* " _
+    sql = "select oe.worktime, oe.worktimeMO, oe.Stat, oe.StatO, oe.EquipId, oe.Outdatetime, (1 - isnull(nevip, 1)) * 100 as nevip " _
     & " , s.status as statusEquip " _
     & " , isnull(oc.urgent, '') as urgent" _
     & " FROM OrdersEquip oe " _
@@ -620,7 +673,23 @@ Private Sub loadEquipment()
                     If Not IsNull(tbOrders!statusEquip) Then
                         lbEquipStatus(equipId).Caption = tbOrders!statusEquip
                     Else
-                        lbDateOut(equipId).Caption = " "
+                        lbEquipStatus(equipId).Caption = ""
+                    End If
+                    If Not IsNull(tbOrders!Stat) Then
+                        lbEquipStat(equipId).Caption = tbOrders!Stat
+                    Else
+                        lbEquipStat(equipId).Caption = ""
+                    End If
+                    
+                    If Not IsNull(tbOrders!StatO) Then
+                        lbEquipStatusO(equipId).Caption = tbOrders!StatO
+                    Else
+                        lbEquipStatusO(equipId).Caption = ""
+                    End If
+                    If Not IsNull(tbOrders!nevip) Then
+                        lbNevip(equipId).Caption = tbOrders!nevip
+                    Else
+                        lbNevip(equipId).Caption = ""
                     End If
                 End If
                 tbOrders.MoveNext
@@ -649,13 +718,16 @@ Private Sub HideEquip(equipId As Integer, Show As Boolean)
     tbWorktimeO(equipId).Visible = Show
     lbDateOut(equipId).Visible = Show
     lbEquipStatus(equipId).Visible = Show
+    lbEquipStat(equipId).Visible = Show
+    lbEquipStatusO(equipId).Visible = Show
+    lbNevip(equipId).Visible = Show
 End Sub
 
 
 Private Sub CleanupEquip()
 Dim I As Integer
     For I = 0 To UBound(Equip) - 1
-        cbEquipment(I).value = 0
+        'cbEquipment(I).value = 0
         tbWorktime(I).Visible = False
         tbWorktimeO(I).Visible = False
         lbDateOut(I).Visible = False
