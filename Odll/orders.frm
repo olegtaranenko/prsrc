@@ -76,7 +76,7 @@ Begin VB.Form Orders
       Width           =   9015
    End
    Begin VB.ListBox lbClose 
-      Height          =   432
+      Height          =   450
       ItemData        =   "Orders.frx":0362
       Left            =   240
       List            =   "Orders.frx":036C
@@ -225,7 +225,7 @@ Begin VB.Form Orders
       Width           =   372
    End
    Begin VB.ListBox lbDel 
-      Height          =   432
+      Height          =   450
       ItemData        =   "Orders.frx":03B1
       Left            =   240
       List            =   "Orders.frx":03BB

@@ -132,7 +132,7 @@ Begin VB.Form WerkOrders
       Width           =   1035
    End
    Begin VB.ListBox lbObrazec 
-      Height          =   432
+      Height          =   450
       ItemData        =   "CehOrders.frx":0361
       Left            =   1560
       List            =   "CehOrders.frx":036B
@@ -142,7 +142,7 @@ Begin VB.Form WerkOrders
       Width           =   855
    End
    Begin VB.ListBox lbMaket 
-      Height          =   432
+      Height          =   450
       ItemData        =   "CehOrders.frx":0378
       Left            =   2460
       List            =   "CehOrders.frx":0382
