@@ -122,7 +122,7 @@ Begin VB.Form WerkOrders
       Width           =   915
    End
    Begin VB.ListBox lbStatus 
-      Height          =   1776
+      Height          =   1815
       ItemData        =   "CehOrders.frx":030A
       Left            =   540
       List            =   "CehOrders.frx":0329
