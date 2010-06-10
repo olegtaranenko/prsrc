@@ -898,7 +898,7 @@ End Sub
 
 
 ' возвращает информацию для местного (на компе пользователя) лога
-Public Function openOrdersRowToGrid(myErr As String) As String
+Public Function openOrdersRowToGrid(myErr As String, Optional redraw As Boolean = False) As String
 
 gNzak = Grid.TextMatrix(mousRow, orNomZak)
 sql = rowFromOrdersSQL & " WHERE o.Numorder = " & gNzak
@@ -906,7 +906,7 @@ Set tqOrders = myOpenRecordSet(myErr, sql, dbOpenForwardOnly)
 If tqOrders Is Nothing Then myBase.Close: End
 If tqOrders.BOF Then myBase.Close: End
 
-openOrdersRowToGrid = copyRowToGrid(mousRow, gNzak)
+openOrdersRowToGrid = copyRowToGrid(mousRow, gNzak, redraw)
 
 'tqOrders.Close
 End Function
@@ -1165,7 +1165,7 @@ beStart = True
 If refreshCurrentRow Then
     refreshCurrentRow = False
     syncOrderByEquipment 2
-    openOrdersRowToGrid "##activate"
+    openOrdersRowToGrid "##activate", True
     tqOrders.Close
 End If
 End Sub
@@ -3612,7 +3612,7 @@ Dim I As Integer
 End Sub
 
 
-Function copyRowToGrid(row As Long, ByVal Numorder As Long) As String
+Function copyRowToGrid(row As Long, ByVal Numorder As Long, Optional redraw As Boolean = False) As String
 
  If Not IsNull(tqOrders!invoice) Then _
     Grid.TextMatrix(row, orInvoice) = tqOrders!invoice
@@ -3632,7 +3632,7 @@ Function copyRowToGrid(row As Long, ByVal Numorder As Long) As String
  Grid.TextMatrix(row, orFirma) = tqOrders!name
  LoadDate Grid, row, orData, tqOrders!inDate, "dd.mm.yy"
  
- copyRowToGrid = StatParamsLoad(row)
+ copyRowToGrid = StatParamsLoad(row, redraw)
  
  Grid.TextMatrix(row, orLogo) = tqOrders!Logo
  Grid.TextMatrix(row, orIzdelia) = tqOrders!Product

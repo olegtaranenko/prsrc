@@ -17,7 +17,7 @@ CREATE VIEW vw_Reestr (
 	,Logo
 	,Product
 	,Stat
-	,StatEquip
+--	,StatEquip
 	,Nevip
 	,DateTimeMO
 	,workTimeMO
@@ -40,7 +40,7 @@ SELECT
 	,o.Logo
 	,o.Product
 	,oe.Stat
-	,s.Status
+--	,s.Status
 	,isnull(oe.Nevip, 1)
 	,oc.DateTimeMO
 	,oe.workTimeMO

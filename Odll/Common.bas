@@ -2140,7 +2140,11 @@ If Not tbCeh.BOF Then
         If tbCeh!StatusId = 1 Then
             isLive = True
         End If
-        outDay = DateDiff("d", curDate, tbCeh!Outdatetime) + 1
+        If Not IsNull(tbCeh!Outdatetime) Then
+            outDay = DateDiff("d", curDate, tbCeh!Outdatetime) + 1
+        Else
+            outDay = 0
+        End If
         If outDay < 1 Then outDay = 1
                 
         addDays outDay '1:добавляем дни,  т.к. Дата  Выд тек.заказа может

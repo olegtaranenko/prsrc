@@ -874,28 +874,24 @@ ElseIf str = "готов" Then
     Else
         wrkDefault.BeginTrans
         ' Сначала меняем статус на Готов для этого оборудования
-        If ValueToTableField("##39.1", "4", "OrdersEquip", "StatusEquipId") <> 0 Then GoTo ER1
+        I = ValueToTableField("W##41", "'" & str & "'", "OrdersEquip", "Stat", "byEquipId")
         
         Dim minId, maxId  'as variant
-        sql = "select max(StatusEquipId) as maxId, mis(StatusEquipId) as minId " _
+        sql = "select max(Stat) as maxId, min(Stat) as minId " _
         & " FROM OrdersEquip oe" _
-        & " WHERE oe.numorder = " & gNzak & " AND oe.equipId = " & Grid.TextMatrix(mousRow, chEquipId)
+        & " WHERE oe.numorder = " & gNzak
+        
+        'Debug.Print sql
+        
         byErrSqlGetValues "##39.2", sql, maxId, minId
         
-        If minId = maxId And minId = 4 Then
-            I = ValueToTableField("W##41", "'" & str & "'", "OrdersEquip", "Stat", "byEquipId")
-            If I = 0 Then
-                If ValueToTableField("##39.2", "4", "Orders", "StatusId") <> 0 Then GoTo ER1
-                If ValueToTableField("##39.3", "0", "Orders", "ProblemId") <> 0 Then GoTo ER1
-    'раз все списано, отстегиваем текущ.этап, несмотря, что цех м. и снять гот-ть
-                If Not newEtap("xEtapByIzdelia") Then GoTo ER1
-                If Not newEtap("xEtapByNomenk") Then GoTo ER1
-                
-            ElseIf I = -1 Then
-                GoTo ER2
-            Else
-                GoTo ER1
-            End If
+        If minId = maxId And minId = "готов" Then
+            If ValueToTableField("##39.1", "4", "OrdersEquip", "StatusEquipId") <> 0 Then GoTo ER1
+            If ValueToTableField("##39.3", "4", "Orders", "StatusId") <> 0 Then GoTo ER1
+            If ValueToTableField("##39.4", "0", "Orders", "ProblemId") <> 0 Then GoTo ER1
+            'раз все списано, отстегиваем текущ.этап, несмотря, что цех м. и снять гот-ть
+            If Not newEtap("xEtapByIzdelia") Then GoTo ER1
+            If Not newEtap("xEtapByNomenk") Then GoTo ER1
         End If
         wrkDefault.CommitTrans
         werkBegin

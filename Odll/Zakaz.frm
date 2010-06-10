@@ -933,10 +933,10 @@ End Sub
 Private Sub Form_Unload(Cancel As Integer)
     '≈сли именно мы блокировали:
     If getSystemField("resursLock") = Orders.cbM.Text Then unLockBase
-    Orders.Grid_EnterCell ' подсветка €чейки
+    'Orders.Grid_EnterCell ' подсветка €чейки
     
     Unload Equipment
-    'synchOrderRow
+    Orders.refreshCurrentRow = True
 
 End Sub
 
@@ -1066,6 +1066,9 @@ Dim Worktime As String
 'MaxDay = tmpMaxDay наверно это уже никому не нужно
 
 Timer1.Enabled = False
+cmAdd.Enabled = False
+laMess.Visible = False
+
 
 sql = "SELECT o.statusId, oe.worktime " _
 & " from Orders o" _
@@ -1431,6 +1434,7 @@ Dim title As String, msg As String
 'cmZapros.Enabled = True
 cmAdd.Enabled = False
 laMess.Caption = ""
+laMess.Visible = True
 isTimeZakaz = True
 perenos = 0
 I = statId(cbStatus.ListIndex)
