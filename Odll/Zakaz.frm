@@ -1223,7 +1223,7 @@ table.Close
   End If
   If bilo Then      '
     sql = "UPDATE OrdersInCeh SET StatM = '" & cbM.Text & "'" _
-    & "', DateTimeMO = " & str & _
+    & ", DateTimeMO = " & str & _
     " WHERE numOrder = " & gNzak
   Else
     sql = "INSERT INTO OrdersInCeh ( numOrder, StatM, DatetimeMO ) " & _
@@ -1233,7 +1233,7 @@ table.Close
   If myExecute("##397", sql) <> 0 Then GoTo ER1
     
   sql = "UPDATE OrdersEquip SET workTimeMO = " & Worktime _
-    & ", SET statO = '" & cbO.Text & "'" _
+    & ", statO = '" & cbO.Text & "'" _
     & " WHERE numOrder = " & gNzak & " and equipId = " & idEquip
     
   If myExecute("##397.2", sql) <> 0 Then GoTo ER1
@@ -1978,7 +1978,7 @@ If statusIdOld = 0 Or statusIdOld = 7 Then 'принят или аннулир
     'tbWorktime.Text = ""
     'tbReadyDate.Text = ""
 Else
-    Me.Caption = "Редактирование заказа [" & Equip(idEquip) & "]"
+    Me.Caption = "Заказ " & gNzak & " - " & Equip(idEquip)
     If Not IsNull(zakazBean.DateRS) Then
         Me.tbDateRS.Text = Format(zakazBean.DateRS, "dd.mm.yy")
     End If

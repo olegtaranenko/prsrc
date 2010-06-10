@@ -3,22 +3,31 @@ Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form WerkOrders 
    BackColor       =   &H8000000A&
    Caption         =   " "
-   ClientHeight    =   5724
+   ClientHeight    =   5784
    ClientLeft      =   60
    ClientTop       =   348
    ClientWidth     =   11880
    Icon            =   "CehOrders.frx":0000
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
-   ScaleHeight     =   5724
+   ScaleHeight     =   5784
    ScaleWidth      =   11880
    StartUpPosition =   2  'CenterScreen
+   Begin VB.CommandButton cmEquip 
+      Caption         =   "All"
+      Height          =   315
+      Index           =   0
+      Left            =   3960
+      TabIndex        =   16
+      Top             =   5400
+      Width           =   495
+   End
    Begin VB.CommandButton cmNaklad 
       Caption         =   "Выписанные накладные"
       Height          =   315
-      Left            =   3120
+      Left            =   1440
       TabIndex        =   15
-      Top             =   5340
+      Top             =   5400
       Width           =   2175
    End
    Begin VB.Frame Frame1 
@@ -44,8 +53,8 @@ Begin VB.Form WerkOrders
       End
    End
    Begin VB.Timer Timer1 
-      Left            =   4320
-      Top             =   5280
+      Left            =   7560
+      Top             =   5400
    End
    Begin VB.CommandButton cmPrint 
       Caption         =   "Печать"
@@ -109,7 +118,7 @@ Begin VB.Form WerkOrders
       Height          =   315
       Left            =   180
       TabIndex        =   4
-      Top             =   5340
+      Top             =   5400
       Width           =   915
    End
    Begin VB.ListBox lbStatus 
@@ -190,8 +199,9 @@ Public mousRow As Long    '
 Public mousCol As Long    '
 'Public werkId As Integer
 Dim maxExt
-Dim tbCeh As Recordset
 
+Dim tbCeh As Recordset
+Dim idEquip As Integer
 
 
 Private Sub chDetail_Click()
@@ -216,6 +226,11 @@ Grid.col = chKey
 Grid.col = 1
 Grid.SetFocus
 
+End Sub
+
+Private Sub cmEquip_Click(Index As Integer)
+    idEquip = Index
+    werkBegin
 End Sub
 
 Private Sub cmExAll_Click()
@@ -319,18 +334,39 @@ Grid.ColWidth(chVrVid) = colWdth(chVrVid)
 Grid.ColWidth(chFirma) = colWdth(chFirma)
 Grid.ColWidth(chLogo) = colWdth(chLogo) - Grid.ColWidth(chDataRes)
 
-Me.Caption = Werk(idWerk) & "  " & mainTitle
-sql = "select * from vw_Reestr where werkId = " & idWerk
+Dim EquipTitle As String, EquipSql As String
+If idEquip = 0 Then
+    EquipTitle = "All"
+    EquipSql = ""
+Else
+    EquipTitle = Equip(idEquip)
+    EquipSql = " AND equipId = " & idEquip
+End If
+
+Me.Caption = Werk(idWerk) & " - " & EquipTitle & "  " & mainTitle
+
+' Сортируем, чтобы макет появился только один раз
+sql = "select * from vw_Reestr where werkId = " & idWerk & EquipSql
+
+'& " ORDER BY Numorder "
 
 Set tbCeh = myOpenRecordSet("##34", sql, dbOpenDynaset)
 If tbCeh Is Nothing Then myQuery.Close: myBase.Close: End
 
 werkRows = 0
+Dim MaketFlag As Boolean
+Dim MaketNumorder As Long
+MaketNumorder = 0
+
 If Not tbCeh.BOF Then
   
   tbCeh.MoveFirst
   While Not tbCeh.EOF
     gNzak = tbCeh!Numorder
+    If gNzak <> MaketNumorder Then
+        MaketFlag = True
+        MaketNumorder = gNzak
+    End If
     
     If chSingl.value = 1 And gNzak <> tbNomZak.Text Then GoTo NXT
     If IsDate(tbCeh!DateTimeMO) Then
@@ -341,7 +377,10 @@ If Not tbCeh.BOF Then
         GoTo NXT
       End If
       If IsNull(tbCeh!WorktimeMO) Then
-        toCehFromStr "m" 'макет
+        If MaketFlag Then
+            toCehFromStr "m" 'макет
+            MaketFlag = False
+        End If
       Else  ' образец
         toCehFromStr "o" 'макет
       End If ' образец
@@ -515,6 +554,10 @@ Grid.TextMatrix(werkRows, chKey) = 0
 End Sub
 
 Private Sub Form_Load()
+
+Dim I As Integer
+
+
 oldHeight = Me.Height
 oldWidth = Me.Width
 
@@ -532,7 +575,6 @@ If dostup = "" Then cmNaklad.Visible = False
 
 Screen.MousePointer = flexHourglass
 
-Dim I As Integer
 For I = begWerkProblemId To lenProblem
     lbProblem.AddItem Problems(I)
 Next I
@@ -556,6 +598,37 @@ Grid.ColWidth(chEquipId) = 0
 Grid.ColWidth(0) = 0
 Grid.ColWidth(chNomZak) = 1000
 Grid.ColWidth(chIzdelia) = 2450
+
+Dim RightLinie As Long, HShift As Long
+Dim equipIndex As Integer
+    
+    HShift = cmEquip(0).Width + 20
+    RightLinie = cmEquip(0).Left + HShift
+    
+    sql = "select e.equipId, we.werkId, e.equipName, we.equipId as IsPresent " _
+        & " from GuideEquip e " _
+        & " LEFT JOIN WerkEquip we ON we.equipId = e.equipId AND we.werkId = " & idWerk _
+        & "WHERE e.equipId > 0" _
+        & " order by e.equipId"
+
+    Set tbOrders = myOpenRecordSet("##we.01", sql, dbOpenForwardOnly)
+    If Not tbOrders Is Nothing Then
+        While Not tbOrders.EOF
+            equipIndex = tbOrders!equipId
+            Load cmEquip(equipIndex)
+            If Not IsNull(tbOrders!IsPresent) Then
+                cmEquip(equipIndex).Caption = tbOrders!equipName
+                cmEquip(equipIndex).Visible = True
+                cmEquip(equipIndex).Left = RightLinie
+                RightLinie = RightLinie + HShift
+            Else
+                cmEquip(equipIndex).Visible = False
+            End If
+            tbOrders.MoveNext
+        Wend
+        tbOrders.Close
+    End If
+
 
 Timer1.Interval = 500
 Timer1.Enabled = True 'вызов werkBegin

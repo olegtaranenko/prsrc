@@ -511,7 +511,6 @@ Private Sub loadEnv()
 
 Dim I As Integer, VShift As Integer, LowLinie As Long
 
-    LowLinie = tbWorktime(0).Top + tbWorktime(I).Height
     For I = 1 To UBound(Equip) - 1
     
         VShift = LowLinie + 15
@@ -545,7 +544,8 @@ Dim equipIndex As Integer
         hideEquipAll
         sql = "select * " _
             & " from WerkEquip we " _
-            & " where we.werkId = " & idWerk
+            & " where we.werkId = " & idWerk _
+            & " order by we.werkId"
     
         Set tbOrders = myOpenRecordSet("##eq04", sql, dbOpenForwardOnly)
         If Not tbOrders Is Nothing Then
