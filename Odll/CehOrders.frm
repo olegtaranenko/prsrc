@@ -122,7 +122,7 @@ Begin VB.Form WerkOrders
       Width           =   915
    End
    Begin VB.ListBox lbStatus 
-      Height          =   1815
+      Height          =   1776
       ItemData        =   "CehOrders.frx":030A
       Left            =   540
       List            =   "CehOrders.frx":0329
@@ -132,7 +132,7 @@ Begin VB.Form WerkOrders
       Width           =   1035
    End
    Begin VB.ListBox lbObrazec 
-      Height          =   450
+      Height          =   432
       ItemData        =   "CehOrders.frx":0361
       Left            =   1560
       List            =   "CehOrders.frx":036B
@@ -142,7 +142,7 @@ Begin VB.Form WerkOrders
       Width           =   855
    End
    Begin VB.ListBox lbMaket 
-      Height          =   450
+      Height          =   432
       ItemData        =   "CehOrders.frx":0378
       Left            =   2460
       List            =   "CehOrders.frx":0382
@@ -270,7 +270,7 @@ End If
 End Sub
 
 Sub werkBegin()
-Dim str As String, I As Integer, J As Integer, il As Long, tmpTopRow As Long
+Dim str As String, I As Integer, J As Integer, IL As Long, tmpTopRow As Long
 tmpTopRow = Grid.TopRow
 
 #If onErrorOtlad Then
@@ -303,16 +303,16 @@ colWdth(chIzdelia) = Grid.ColWidth(chIzdelia)
 colWdth(chLogo) = Grid.ColWidth(chLogo) + Grid.ColWidth(chDataRes)
 
 Grid.Visible = False
-For il = Grid.Rows To 3 Step -1
-    Grid.removeItem (il)
-Next il
+For IL = Grid.Rows To 3 Step -1
+    Grid.removeItem (IL)
+Next IL
 Grid.row = 1
-For il = 0 To Grid.Cols - 1
-    Grid.col = il
+For IL = 0 To Grid.Cols - 1
+    Grid.col = IL
     Grid.CellBackColor = Grid.BackColor
     Grid.CellForeColor = vbBlack
-    Grid.TextMatrix(1, il) = ""
-Next il
+    Grid.TextMatrix(1, IL) = ""
+Next IL
 
 ' восстанавливаем настройки столбцов
 Grid.ColWidth(chNomZak) = colWdth(chNomZak)
@@ -376,7 +376,7 @@ If Not tbCeh.BOF Then
         msgOfZakaz "##308", "Недопустимая дата МО. Обратитесь к менеджеру. ", tbCeh!Manag
         GoTo NXT
       End If
-      If IsNull(tbCeh!WorktimeMO) Then
+      If IsNull(tbCeh!workTimeMO) Then
         If MaketFlag Then
             toCehFromStr "m" 'макет
             MaketFlag = False
@@ -475,7 +475,7 @@ End If
     Else
         If tbCeh!StatO = "готов" Then _
             Grid.TextMatrix(werkRows, chProcVip) = "100"
-        S = tbCeh!WorktimeMO
+        S = tbCeh!workTimeMO
         If S < 0 Then S = -S
         LoadDateKey tbCeh!DateTimeMO, "##36"
         LoadDate Grid, werkRows, chVrVid, tbCeh!DateTimeMO, "hh"
@@ -636,7 +636,7 @@ Timer1.Enabled = True 'вызов werkBegin
 End Sub
 
 Private Sub Form_Resize()
-Dim H As Integer, W As Integer
+Dim H As Integer, W As Integer, I As Integer
 
 If Me.WindowState = vbMinimized Then Exit Sub
 On Error Resume Next
@@ -654,6 +654,17 @@ cmZagruz.Top = cmZagruz.Top + H
 cmZagruz.Left = cmZagruz.Left + W
 cmPrint.Left = cmPrint.Left + W
 cmNaklad.Top = cmNaklad.Top + H
+
+Dim RightLine As Integer
+
+For I = 0 To cmEquip.UBound
+    cmEquip(I).Top = cmEquip(I).Top + H
+    If RightLine < cmEquip(I).Left + cmEquip(I).Width Then
+        RightLine = cmEquip(I).Left + cmEquip(I).Width
+    End If
+Next I
+
+
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
