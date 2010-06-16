@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="CP1251"?>
+ 
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
+		 http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd"
+  logicalFilePath="cut-prior.xml"
+>
+ 
+
+	<changeSet id="1" author="cut" runOnChange="true">
+		<comment>Создаем ссылочные таблицы на ремот-серверах</comment>
+		<sql><![CDATA[call build_remote_table('jscet', 1);]]></sql>
+		<sql><![CDATA[call build_table_one_server('jmat', 'accountn', 1);]]></sql>
+		<sql><![CDATA[call build_table_one_server('jmat', 'markmaster', 1);]]></sql>
+	</changeSet>
+
+	<changeSet id="2" author="cut" runOnChange="false">
+		<comment>Изменить название фирмы в комтехе при редактировании имени в справочнике фирм в приоре и продажах.</comment>
+		<sqlFile path="rollback/Orders.wf_delete_orders.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="3" author="cut" runOnChange="true">
+		<comment>улучшить произв-сть для чистки ордеров</comment>
+		<createIndex tableName="Orders" indexName="orders_jscet" unique="false">
+			<column name="id_jscet"/>
+		</createIndex>
+	</changeSet>
+
+	<changeSet id="4" author="cut" runOnChange="true">
+		<comment>улучшить произв-сть для чистки ордеров</comment>
+		<createIndex tableName="BayOrders" indexName="bayorders_jscet" unique="false">
+			<column name="id_jscet"/>
+		</createIndex>
+	</changeSet>
+
+	<changeSet id="5" author="cut" runOnChange="true">
+		<comment>улучшить произв-сть для чистки накладных</comment>
+		<createIndex tableName="sDocs" indexName="docs_jmat" unique="false">
+			<column name="id_jmat"/>
+		</createIndex>
+	</changeSet>
+
+	<changeSet id="20" author="cut" runOnChange="true" context="cut">
+		<comment>orders clean script</comment>
+		<executeCommand executable="dbisqlc.exe">
+			<arg value="-c"/>
+			<arg value="DSN=prior;UID=dba;PWD=sql"/>
+			<arg value="-q"/>
+			<arg value="${basedir}\target\classes\mainteinance\prior-cut-orders.sql"/>
+		</executeCommand>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="21" author="cut" runOnChange="true" context="cut">
+		<comment>docs clean script</comment>
+		<executeCommand executable="dbisqlc.exe">
+			<arg value="-c"/>
+			<arg value="DSN=prior;UID=dba;PWD=sql"/>
+			<arg value="-q"/>
+			<arg value="${basedir}\target\classes\mainteinance\prior-cut-docs.sql"/>
+		</executeCommand>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="99" author="cut" runOnChange="false" context="delete-cut">
+		<comment>Изменить название фирмы в комтехе при редактировании имени в справочнике фирм в приоре и продажах.</comment>
+		<sqlFile path="triggers/Orders.wf_delete_orders.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback/>
+	</changeSet>
+
+
+	<changeSet id="100" author="cut" runOnChange="true" context="delete-cut">
+		<comment>Подчистка: Удалить ссылочные таблицы на ремот-серверах</comment>
+		<sql><![CDATA[call build_remote_table('jscet', 0);]]></sql>
+		<sql><![CDATA[call build_table_one_server('jmat', 'accountn', 0);]]></sql>
+		<sql><![CDATA[call build_table_one_server('jmat', 'markmaster', 0);]]></sql>
+	</changeSet>
+
+</databaseChangeLog>
+

@@ -21,6 +21,16 @@
 				<syb.servicename>dev_prior</syb.servicename>
 			</properties>
 		</profile>
+		<profile>
+			<id>cut</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<changelog.file>${changelog.PATH}/cut-${artifactId}.xml</changelog.file>
+				<changelog.context>cut</changelog.context>
+			</properties>
+		</profile>
 	</profiles>
 	<build>
 		<resources>

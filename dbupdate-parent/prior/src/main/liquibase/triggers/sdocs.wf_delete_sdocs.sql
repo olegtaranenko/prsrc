@@ -32,19 +32,19 @@ begin
 		call delete_remote('stime', 'jmat', 'id = ' + convert(varchar(20), old_name.id_jmat));
 		call unblock_remote('stime', get_server_name(), 'jmat');
 		call unblock_remote('stime', get_server_name(), 'mat');
-	end if;
 
-	select sysname into remoteServer 
-	from  guideventure v 
-	where old_name.ventureId = v.ventureId and v.standalone = 0;
-
---	message 'remoteServer = ', remoteServer to client;
-	if remoteServer is not null and remoteServer != 'stime' then
-		call block_remote(remoteServer, get_server_name(), 'jmat');
-		call block_remote(remoteServer, get_server_name(), 'mat');
-		call delete_remote(remoteServer, 'jmat', 'id = ' + convert(varchar(20), old_name.id_jmat));
-		call unblock_remote(remoteServer, get_server_name(), 'jmat');
-		call unblock_remote(remoteServer, get_server_name(), 'mat');
+		select sysname into remoteServer 
+		from  guideventure v 
+		where old_name.ventureId = v.ventureId and v.standalone = 0;
+	    
+--		message 'remoteServer = ', remoteServer to client;
+		if remoteServer is not null and remoteServer != 'stime' then
+			call block_remote(remoteServer, get_server_name(), 'jmat');
+			call block_remote(remoteServer, get_server_name(), 'mat');
+			call delete_remote(remoteServer, 'jmat', 'id = ' + convert(varchar(20), old_name.id_jmat));
+			call unblock_remote(remoteServer, get_server_name(), 'jmat');
+			call unblock_remote(remoteServer, get_server_name(), 'mat');
+		end if;
 	end if;
 end;
 
