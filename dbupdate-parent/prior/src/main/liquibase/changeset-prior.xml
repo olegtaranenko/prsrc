@@ -1677,41 +1677,42 @@ from Itogi_SUB
 		/>
 	</changeSet>
 
-
-	<changeSet id="1" author="mantis-141" runOnChange="false">
-		<comment>Все аналитически вьюхи из файла transdata/prior_views.sql</comment>
+	<changeSet id="66" author="mantis-125" runOnChange="true">
+		<comment>Вынос всех аналитических вьюхи из файла transdata/prior_views.sql</comment>
+		<sqlFile path="rollback/all_orders.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/isumBranOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="rollback/itemProdProc.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="rollback/itemSellProc.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="rollback/isumSellShip.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="rollback/isumProdShip.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/isumBranProc.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/isumBranRele.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/isumBranRequ.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="rollback/isumProdRsrv.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/isumBranRsrv.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/isumBranShip.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/isumProdOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/isumProdProc.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/isumProdRequ.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
-		<sqlFile path="rollback/isumProdRsrv.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
-		<sqlFile path="rollback/isumProdShip.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/isumSellOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/isumSellProc.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/isumSellRequ.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/isumSellRsrv.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
-		<sqlFile path="rollback/isumSellShip.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/itemBranProc.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/itemBranRele.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/itemBranRequ.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/itemBranShip.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/itemFlawRsrv.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/itemProdOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
-		<sqlFile path="rollback/itemProdProc.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/itemProdRequ.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/itemProdRsrv.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/itemProdShip.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/itemSellOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
-		<sqlFile path="rollback/itemSellProc.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/itemSellRequ.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/itemSellRsrv.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/itemSellShip.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/itemWallShip.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="rollback/itemWareFixe.sql " encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/itemWareShip.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/orderBranProc.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/orderBranRsrv.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
@@ -1721,7 +1722,6 @@ from Itogi_SUB
 		<sqlFile path="rollback/orderWareShip.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/vDebitorKreditor.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 	</changeSet>
-
 
 </databaseChangeLog>
 

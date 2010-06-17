@@ -2,11 +2,11 @@ if exists (select 1 from sysviews where viewname = 'isumSellRsrv' and vcreator =
 	drop view isumSellRsrv;
 end if;
 
-create view isumSellRsrv (numorder, nomnom, quant, status, date1, manager, client, note, ceh, sm_zakazano, sm_paid)
+create view isumSellRsrv (numorder, nomnom, quant, status, date1, manager, client, note, werk, sm_zakazano, sm_paid)
 as
 select
 	r.numorder, r.nomnom, r.quant - r.quant_rele as x_quant, s.status, r.date1
-	, m.manag, f.name, null, 'Продажа', o.ordered, o.paid
+	, m.manag, f.name, null, 'Продажи', o.ordered, o.paid
 from itemSellRsrv r
 join bayorders o on o.numorder = r.numorder
 join guidestatus s on s.statusid = o.statusid

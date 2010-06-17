@@ -2,7 +2,7 @@ if exists (select 1 from sysviews where viewname = 'isumBranRsrv' and vcreator =
 	drop view isumBranRsrv;
 end if;
 
-create view isumBranRsrv (numorder, nomnom, quant, status, date1, manager, client, note, ceh, sm_zakazano, sm_paid, scope)
+create view isumBranRsrv (numorder, nomnom, quant, status, date1, manager, client, note, werk, sm_zakazano, sm_paid, scope)
 as
 select 
 	*, 'p'

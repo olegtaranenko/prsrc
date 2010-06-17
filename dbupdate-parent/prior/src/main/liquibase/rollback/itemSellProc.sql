@@ -2,7 +2,7 @@ if exists (select 1 from sysviews where viewname = 'itemSellProc' and vcreator =
 	drop view itemSellProc;
 end if;
 
-create view itemSellProc (numorder, nomnom, quant, statusid, firmname, ventureid, date1, ceh, manag)
+create view itemSellProc (numorder, nomnom, quant, statusid, firmname, ventureid, date1, werk, manag)
 as 
 select 
 	r.numdoc, r.nomnom, r.quant, o.statusid, f.name, o.ventureid, d.xdate, 'Sell', m.manag
