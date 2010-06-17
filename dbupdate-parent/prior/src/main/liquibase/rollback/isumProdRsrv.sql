@@ -6,7 +6,7 @@ create view isumProdRsrv (numorder, nomnom, quant, status, date1, manager, clien
 as
 select 
 r.numorder, r.nomnom, r.quant - r.quant_rele as x_quant, s.status, o.indate
-, m.manag, f.name, o.product, w.werkName, o.ordered, o.paid
+, m.manag, f.name, o.product, w.werkCodeEN, o.ordered, o.paid
 from itemProdRsrv r
 join orders o on o.numorder = r.numorder
 join guidestatus s on s.statusid = o.statusid

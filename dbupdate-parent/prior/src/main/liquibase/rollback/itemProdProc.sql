@@ -9,7 +9,7 @@ end if;
 create view itemProdProc (numorder, nomnom, quant, statusid, firmname, ventureid, date1, werk, manag)
 as 
 select 
-	r.numdoc, r.nomnom, r.quant, o.statusid, f.name, o.ventureid, d.xdate, werkName, manag
+	r.numdoc, r.nomnom, r.quant, o.statusid, f.name, o.ventureid, d.xdate, werkCodeEN, manag
 from sdmc r
 join sdocs d on r.numdoc = d.numdoc and r.numext = d.numext
 join orders o on o.numorder = r.numdoc

@@ -5,7 +5,7 @@ end if;
 create view itemSellProc (numorder, nomnom, quant, statusid, firmname, ventureid, date1, werk, manag)
 as 
 select 
-	r.numdoc, r.nomnom, r.quant, o.statusid, f.name, o.ventureid, d.xdate, 'Sell', m.manag
+	r.numdoc, r.nomnom, r.quant, o.statusid, f.name, o.ventureid, d.xdate, 'Sell-Old', m.manag
 from sdmc r
 join sdocs d on r.numdoc = d.numdoc and r.numext = d.numext
 join bayorders o on o.numorder = r.numdoc

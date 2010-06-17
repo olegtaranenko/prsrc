@@ -1275,6 +1275,9 @@ where	OrdersMO.numorder = OrdersInCeh.numorder
 			<column name="werkCode" type="varchar(8)" >
 				<constraints nullable="false"/>
 			</column>
+			<column name="werkCodeEN" type="varchar(8)" >
+				<constraints nullable="false"/>
+			</column>
 			<column name="werkName" type="varchar(32)" >
 				<constraints nullable="false"/>
 			</column>
@@ -1288,12 +1291,14 @@ where	OrdersMO.numorder = OrdersInCeh.numorder
 		<insert tableName="GuideWerk">
 			<column name="werkId" valueNumeric="1"/>
 			<column name="werkCode" value="Склад"/>
+			<column name="werkCodeEN" value="Sklad"/>
 			<column name="werkName" value="Подготовка продажи"/>
 			<column name="werkSourceId" valueNumeric="-8"/>
 		</insert>
 		<insert tableName="GuideWerk">
 			<column name="werkId" valueNumeric="2"/>
 			<column name="werkCode" value="Цех1"/>
+			<column name="werkCodeEN" value="Main"/>
 			<column name="werkName" value="Основное производство"/>
 			<column name="werkSourceId" valueNumeric="-6"/>
 		</insert>
@@ -1721,6 +1726,15 @@ from Itogi_SUB
 		<sqlFile path="rollback/orderWallShip.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/orderWareShip.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/vDebitorKreditor.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+	</changeSet>
+
+
+	<changeSet id="67" author="mantis-125" runOnChange="true">
+		<comment>Исправить детализацию по строке "Незавершека" Репорта А</comment>
+		<sql>
+update nTemplateRow set detailSql = 'select r.scope, r.numorder, r.firmname, sm_processed, werk, manag, date2 from orderBranProc r order by numorder' 
+where id = 2
+		</sql>
 	</changeSet>
 
 </databaseChangeLog>

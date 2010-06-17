@@ -234,7 +234,10 @@ Public whoRezervedIndex As Integer
 
 
 
-
+Sub dummyChangeCase()
+Dim ColWidth, Left, Value, H, W, Table, ManagId
+'Dim ColWidth, Left, Value, H, W, Table, ManagId
+End Sub
 
 'otlaDwkdh - отладочная база, дебаг режим
 
@@ -372,7 +375,7 @@ cbAnormal.Visible = False
 
 If Regim = "subDetail" Then
     laHeader.Caption = "Детализация сумм " & param3 & "  по отгрузке от " & _
-    left$(param2, 8) & " по заказу №" & gNzak
+    Left$(param2, 8) & " по заказу №" & gNzak
     subDetail
 ElseIf Regim = "subDetailMat" Then
     laHeader.Caption = "Детализация суммы" & param3 & " по накладной №" & gNzak
@@ -1002,7 +1005,7 @@ ElseIf p_rowid = 2 Then
             rowStr = tbOrders!scope _
                 & Chr(9) & tbOrders!Numorder _
                 & Chr(9) & tbOrders!firmName _
-                & Chr(9) & tbOrders!Ceh _
+                & Chr(9) & tbOrders!Werk _
                 & Chr(9) & tbOrders!Manag _
                 & Chr(9) & Format(tbOrders!date2, "dd.mm.yy hh:nn") _
                 & Chr(9) & Format(tbOrders!sm_processed, "## ##0.00") _
@@ -1074,7 +1077,7 @@ Grid.ColWidth(5) = 420
 Grid.ColWidth(6) = 1080
 
 strWhere = "20" & Mid$(param2, 7, 2) & "-" & Mid$(param2, 4, 2) & "-" & _
-left$(param2, 2) & Mid$(param2, 9)
+Left$(param2, 2) & Mid$(param2, 9)
 
 If param1 = "p" Or param1 = "w" Then 'есть  гот.изделия
   sql = "SELECT r.prId, r.prExt, " & _
@@ -1137,7 +1140,7 @@ If param1 = "n" Or param1 = "w" Then
   While Not tbNomenk.EOF
     Grid.AddItem _
           Chr(9) & tbNomenk!nomnom _
-        & Chr(9) & tbNomenk!cod & " " & tbNomenk!nomName & " " & tbNomenk!Size _
+        & Chr(9) & tbNomenk!cod & " " & tbNomenk!Nomname & " " & tbNomenk!Size _
         & Chr(9) & "<--Номенклатура" _
         & Chr(9) & tbNomenk!quant _
         & Chr(9) & tbNomenk!ed_izmer _
@@ -1204,7 +1207,7 @@ If param1 = "m" Then
   While Not tbNomenk.EOF '!!!
     Grid.AddItem _
           Chr(9) & tbNomenk!nomnom _
-        & Chr(9) & tbNomenk!cod & " " & tbNomenk!nomName & " " & tbNomenk!Size _
+        & Chr(9) & tbNomenk!cod & " " & tbNomenk!Nomname & " " & tbNomenk!Size _
         & Chr(9) _
         & Chr(9) & Format(tbNomenk!quant / tbNomenk!perList, "## ##0.00") _
         & Chr(9) & tbNomenk!ed_Izmer2 _
@@ -1609,33 +1612,33 @@ tbProduct.Close
 End Sub
 
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer
+Dim H As Integer, W As Integer
 
 If WindowState = vbMinimized Then Exit Sub
 On Error Resume Next
 
-h = Me.Height - oldHeight
+H = Me.Height - oldHeight
 oldHeight = Me.Height
-w = Me.Width - oldWidth
+W = Me.Width - oldWidth
 oldWidth = Me.Width
-Grid.Height = Grid.Height + h
-Grid.Width = Grid.Width + w
+Grid.Height = Grid.Height + H
+Grid.Width = Grid.Width + W
 
-laSum.Top = laSum.Top + h
-laRecSum.Top = laRecSum.Top + h
-laHeader.Width = laHeader.Width + w
-cmExel.Top = cmExel.Top + h
-cmExit.Top = cmExit.Top + h
-cmPrint.Top = cmPrint.Top + h
-cbAnormal.Top = cbAnormal.Top + h
+laSum.Top = laSum.Top + H
+laRecSum.Top = laRecSum.Top + H
+laHeader.Width = laHeader.Width + W
+cmExel.Top = cmExel.Top + H
+cmExit.Top = cmExit.Top + H
+cmPrint.Top = cmPrint.Top + H
+cbAnormal.Top = cbAnormal.Top + H
 cbReserveTerm.Top = cbAnormal.Top
 
 
-cmExit.left = cmExit.left + w
-cmExel.left = cmExit.left - 50 - cmExel.Width
-cmPrint.left = cmExel.left - 50 - cmPrint.Width
-cbAnormal.left = ckSubtitle.left + ckSubtitle.Width + 50
-cbReserveTerm.left = cbAnormal.left
+cmExit.Left = cmExit.Left + W
+cmExel.Left = cmExit.Left - 50 - cmExel.Width
+cmPrint.Left = cmExel.Left - 50 - cmPrint.Width
+cbAnormal.Left = ckSubtitle.Left + ckSubtitle.Width + 50
+cbReserveTerm.Left = cbAnormal.Left
 
 
 
@@ -1643,7 +1646,7 @@ cbReserveTerm.left = cbAnormal.left
 ckSubtitle.Top = laSum.Top
 laRecCount.Top = laSum.Top
 laCount.Top = laRecCount.Top
-laCount.left = laRecCount.left + laRecCount.Width
+laCount.Left = laRecCount.Left + laRecCount.Width
 End Sub
 
 Private Function determineColType(colIndex As Long) As String
