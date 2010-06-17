@@ -889,13 +889,13 @@ Private Sub cmSales_Click()
     Report.param1 = laRealiz2.Caption
     Report.param2 = laMaterials2.Caption
     
-    If rbOrders.value = True Then
+    If rbOrders.Value = True Then
         Report.Regim = "bay"
         Report.Sortable = True
-    ElseIf rbStatistic.value = True Then
+    ElseIf rbStatistic.Value = True Then
         Report.Regim = "bayStatistic"
         Report.Sortable = True
-    ElseIf rbNomenk.value = True Then
+    ElseIf rbNomenk.Value = True Then
         Report.Regim = "bayNomenk"
     Else
         Exit Sub
@@ -922,11 +922,11 @@ Private Sub cmDetail1_Click()
     Report.param1 = laProduct.Caption
     Report.param2 = laMaterials1.Caption
     
-    If rbOrders.value = True Then
+    If rbOrders.Value = True Then
         Report.Regim = ""
-    ElseIf rbStatistic.value = True Then
+    ElseIf rbStatistic.Value = True Then
         Report.Regim = "relizStatistic"
-    ElseIf rbNomenk.value = True Then
+    ElseIf rbNomenk.Value = True Then
         Report.Regim = "relizNomenk"
     Else
         Exit Sub
@@ -941,9 +941,9 @@ End Sub
 
 Private Sub cmDetail3_Click()
     Report.param1 = laUslug.Caption
-    If rbOrders.value = True Then
+    If rbOrders.Value = True Then
         Report.Regim = "uslug"
-    ElseIf rbStatistic.value = True Then
+    ElseIf rbStatistic.Value = True Then
         Report.Regim = "uslugStatistic"
     Else
         Exit Sub
@@ -997,9 +997,9 @@ Private Sub cmItogo_Click()
 End Sub
 
 Private Sub setVentureRegim()
-    If rbOrders.value = True Then
+    If rbOrders.Value = True Then
         Report.Regim = "venture"
-    ElseIf rbDetailMode.value = True Then
+    ElseIf rbDetailMode.Value = True Then
         Report.Regim = "ventureZatrat"
     Else
         Exit Sub
@@ -1046,7 +1046,7 @@ oborot = 0: dohod = 0:
 
 If Not tbProduct.BOF Then
  While Not tbProduct.EOF
-    gNzak = tbProduct!numorder
+    gNzak = tbProduct!Numorder
     gProductId = tbProduct!prId
     prExt = tbProduct!prExt
     mat = getProductNomenkSum * tbProduct!quant
@@ -1268,13 +1268,13 @@ EN1:
 Me.MousePointer = flexDefault
 flagSync = True
 
-    If rbDetailMode.value = True Then
+    If rbDetailMode.Value = True Then
         rbDetailMode_Click
-    ElseIf rbNomenk.value = True Then
+    ElseIf rbNomenk.Value = True Then
         rbNomenk_Click
-    ElseIf rbOrders.value = True Then
+    ElseIf rbOrders.Value = True Then
         rbOrders_Click
-    ElseIf rbStatistic.value = True Then
+    ElseIf rbStatistic.Value = True Then
         rbStatistic_Click
     End If
 
@@ -1298,7 +1298,7 @@ tbDocs!subDebit = subDebit
 tbDocs!kredit = kredit
 tbDocs!subKredit = subKredit
 str = tbStartDate.Text & " - " & tbEndDate.Text
-tbDocs!note = str
+tbDocs!Note = str
 tbDocs!purposeId = purposeId
 'tbDocs!detailId = detailId
 

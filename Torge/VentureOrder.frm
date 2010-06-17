@@ -370,11 +370,11 @@ Dim msgOst As String, docProcent As Single, summa_fact As Single, fullNomName As
             If Not IsNull(tbNomenk!id_mat) Then
                 Grid2.TextMatrix(quantity2, dnIdMat) = tbNomenk!id_mat
             End If
-            Grid2.TextMatrix(quantity2, dnNomName) = tbNomenk!nomName
+            Grid2.TextMatrix(quantity2, dnNomName) = tbNomenk!Nomname
             If Not IsNull(tbNomenk!cod) Then
                 fullNomName = tbNomenk!cod & " "
             End If
-            fullNomName = fullNomName & tbNomenk!nomName
+            fullNomName = fullNomName & tbNomenk!Nomname
             If Not IsNull(tbNomenk!Size) Then
                 fullNomName = fullNomName & " " & tbNomenk!Size
             End If
@@ -414,7 +414,7 @@ End Function
 Sub loadVentureOrders(Optional reg As String)
 
 Dim prevRow As Long, rowIndex As Long
-Dim dstRow As Long, i As Integer, j As Integer, k As Integer, itogTxt As String, rowIsFiltered As Integer, rowisAdded As Integer
+Dim dstRow As Long, I As Integer, J As Integer, k As Integer, itogTxt As String, rowIsFiltered As Integer, rowisAdded As Integer
 Dim filterIsApplied As Integer
 
 
@@ -463,7 +463,7 @@ Dim filterIsApplied As Integer
         & "     left join sdocsventure cum on cum.id = v.cumulative_id" _
         & "     where v.cumulative_id is "
         
-    If ckCumulative.value = 0 Then
+    If ckCumulative.Value = 0 Then
         sql = sql & " not "
     End If
         
@@ -494,21 +494,21 @@ Dim filterIsApplied As Integer
     
     filterIsApplied = 0
     
-    For i = 1 To UBound(ventureIds)
-        For j = 1 To UBound(ventureIds)
-            If venturePairFilter(i)(j) = 1 Then
+    For I = 1 To UBound(ventureIds)
+        For J = 1 To UBound(ventureIds)
+            If venturePairFilter(I)(J) = 1 Then
                 filterIsApplied = 1
             End If
             
-        Next j
-    Next i
+        Next J
+    Next I
     
     If Not tbDocs.BOF Then
         While Not tbDocs.EOF
             ' Сюда добавить проверку на то, что строка не отфильтровывается
-            i = vlIndex(tbDocs!sourId)
-            j = vlIndex(tbDocs!destId)
-            If filterIsApplied = 1 And venturePairFilter(i)(j) = 0 Then
+            I = vlIndex(tbDocs!sourId)
+            J = vlIndex(tbDocs!destId)
+            If filterIsApplied = 1 And venturePairFilter(I)(J) = 0 Then
                 rowIsFiltered = 1
             Else
                 rowIsFiltered = 0
@@ -554,13 +554,13 @@ Dim filterIsApplied As Integer
                 End If
                 
                 
-                If Not IsNull(tbDocs!note) Then
-                    Grid.TextMatrix(rowIndex, dcNote) = tbDocs!note
+                If Not IsNull(tbDocs!Note) Then
+                    Grid.TextMatrix(rowIndex, dcNote) = tbDocs!Note
                 End If
                 
-                If Not IsNull(tbDocs!Invalid) Then
-                    Grid.TextMatrix(rowIndex, dcInvalid) = tbDocs!Invalid
-                    If tbDocs!Invalid = "1" Then
+                If Not IsNull(tbDocs!invalid) Then
+                    Grid.TextMatrix(rowIndex, dcInvalid) = tbDocs!invalid
+                    If tbDocs!invalid = "1" Then
                         cmRecalc.Enabled = True
                     End If
                 End If
@@ -569,7 +569,7 @@ Dim filterIsApplied As Integer
                 Grid.TextMatrix(rowIndex, dcCount) = tbDocs!cnt
                 
             End If
-            ventureRests(i)(j) = ventureRests(i)(j) + tbDocs!summa
+            ventureRests(I)(J) = ventureRests(I)(J) + tbDocs!summa
             tbDocs.MoveNext
         Wend
         
@@ -591,9 +591,9 @@ Dim filterIsApplied As Integer
         cmAdd2.Enabled = True
         If reg = "" Then
             
-            For i = 1 To UBound(ventureIds)
-                For j = 1 To UBound(ventureIds)
-                    If i <> j Then
+            For I = 1 To UBound(ventureIds)
+                For J = 1 To UBound(ventureIds)
+                    If I <> J Then
 '                        venturePairFilter(i)(j) = 1
                         Grid.AddItem ""
                         dstRow = Grid.Rows - 1
@@ -603,23 +603,23 @@ Dim filterIsApplied As Integer
                         For k = 1 To Grid.Cols - 1
                             Grid.col = k
                             If k < dcSumma Then
-                                itogTxt = lbVenture.List(i - 1) & " => " & lbVenture.List(j - 1)
+                                itogTxt = lbVenture.List(I - 1) & " => " & lbVenture.List(J - 1)
                             Else
-                                itogTxt = Format(ventureRests(i)(j), "#0.00")
+                                itogTxt = Format(ventureRests(I)(J), "#0.00")
                             End If
                             
                             Grid.Text = itogTxt
                             Grid.CellAlignment = flexAlignRightCenter
                             Grid.CellFontBold = True
-                            If venturePairFilter(i)(j) = 1 Then
+                            If venturePairFilter(I)(J) = 1 Then
                                 Grid.CellForeColor = vbRed
                             End If
                         Next k
 '                        Grid.TextMatrix(dstRow, dcSumma) = Format(ventureRests(i)(j), "#0.00")
 
                     End If
-                Next j
-            Next i
+                Next J
+            Next I
         End If
     
     Else
@@ -635,26 +635,26 @@ Dim filterIsApplied As Integer
 End Sub
 
 Private Sub resetRests()
-Dim i As Integer, j As Integer
+Dim I As Integer, J As Integer
 
-    For i = 1 To UBound(ventureIds)
-        For j = 1 To UBound(ventureIds)
-            ventureRests(i)(j) = CSng(0)
+    For I = 1 To UBound(ventureIds)
+        For J = 1 To UBound(ventureIds)
+            ventureRests(I)(J) = CSng(0)
 '            venturePairFilter(i)(j) = 0
-        Next j
-    Next i
+        Next J
+    Next I
     
 End Sub
 
 Private Function vlIndex(ventureId)
-Dim i As Integer
+Dim I As Integer
 
-    For i = 1 To UBound(ventureIds)
-        If ventureId = ventureIds(i) Then
-            vlIndex = i
+    For I = 1 To UBound(ventureIds)
+        If ventureId = ventureIds(I) Then
+            vlIndex = I
             Exit Function
         End If
-    Next i
+    Next I
     vlIndex = defaultVentureIndex
     
 End Function
@@ -662,7 +662,7 @@ End Function
 
 Private Sub ckCumulative_Click()
     If Not gridIsLoad Then Exit Sub
-    If ckCumulative.value = 1 Then
+    If ckCumulative.Value = 1 Then
         Grid.ColWidth(dcComtec) = 400
     Else
         Grid.ColWidth(dcComtec) = 0
@@ -671,7 +671,7 @@ Private Sub ckCumulative_Click()
 End Sub
 
 Private Sub ckEndDate_Click()
-    If ckEndDate.value = 1 Then
+    If ckEndDate.Value = 1 Then
         tbEndDate.Enabled = True
     Else
         tbEndDate.Enabled = False
@@ -681,7 +681,7 @@ Private Sub ckEndDate_Click()
         tbEndDate.Text = Format(Now, "dd.mm.yy")
     End If
     
-    If ckEndDate.value = 1 And ckStartDate.value = 1 Then
+    If ckEndDate.Value = 1 And ckStartDate.Value = 1 Then
         cmAdd.Enabled = True
     Else
         cmAdd.Enabled = False
@@ -689,13 +689,13 @@ Private Sub ckEndDate_Click()
 End Sub
 
 Private Sub ckStartDate_Click()
-    If ckStartDate.value = 1 Then
+    If ckStartDate.Value = 1 Then
         tbStartDate.Enabled = True
     Else
         tbStartDate.Enabled = False
     End If
     
-    If ckEndDate.value = 1 And ckStartDate.value = 1 Then
+    If ckEndDate.Value = 1 And ckStartDate.Value = 1 Then
         cmAdd.Enabled = True
     Else
         cmAdd.Enabled = False
@@ -818,7 +818,7 @@ Private Sub cmRecalc_Click()
 End Sub
 
 Private Sub Form_Load()
-Dim sz As Integer, docProcent As Single, i As Integer, totalDay As Date
+Dim sz As Integer, docProcent As Single, I As Integer, totalDay As Date
 
 
 
@@ -840,42 +840,42 @@ Dim sz As Integer, docProcent As Single, i As Integer, totalDay As Date
         & " From GuideVenture v" _
         & " left join system s on v.id_analytic = s.id_analytic_default " _
         & "WHERE id_analytic is not null order by ventureName"
-    Set Table = myOpenRecordSet("##144", sql, dbOpenForwardOnly)
-    If Table Is Nothing Then End
+    Set table = myOpenRecordSet("##144", sql, dbOpenForwardOnly)
+    If table Is Nothing Then End
     ReDim ventureIds(0)
     ReDim ventureRests(0)
     ReDim venturePairFilter(0)
     
-    While Not Table.EOF
-        lbVenture.AddItem Table!ventureName
-        lbVenture.ItemData(lbVenture.ListCount - 1) = Table!ventureId
+    While Not table.EOF
+        lbVenture.AddItem table!ventureName
+        lbVenture.ItemData(lbVenture.ListCount - 1) = table!ventureId
         sz = UBound(ventureIds)
         ReDim Preserve ventureIds(sz + 1)
-        ventureIds(sz + 1) = Table!ventureId
+        ventureIds(sz + 1) = table!ventureId
 
-        If Not IsNull(Table!id_analytic_default) Then
+        If Not IsNull(table!id_analytic_default) Then
             defaultVentureIndex = sz + 1
         End If
         
-        Table.MoveNext
+        table.MoveNext
     Wend
     
     ReDim Preserve ventureRests(sz + 1)
     
     ReDim Preserve venturePairFilter(sz + 1)
     
-    For i = 1 To UBound(ventureIds)
+    For I = 1 To UBound(ventureIds)
         fromArr = Array()
         ReDim Preserve fromArr(sz + 1)
-        ventureRests(i) = fromArr
+        ventureRests(I) = fromArr
         
         fromArr = Array()
         ReDim Preserve fromArr(sz + 1)
-        venturePairFilter(i) = fromArr
+        venturePairFilter(I) = fromArr
         
-    Next i
+    Next I
         
-    Table.Close
+    table.Close
     lbVenture.Height = lbVenture.ListCount * 205 + 50
 
     Grid.FormatString = "|<Сформировано|<№ Док-та|Дата накл.|<Откуда|<Куда|<Учет: с|<   по|>Сумма|%|Комтех|<Примечание||"
@@ -910,29 +910,29 @@ Dim sz As Integer, docProcent As Single, i As Integer, totalDay As Date
 End Sub
 
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer
+Dim H As Integer, W As Integer
 
     If WindowState = vbMinimized Then Exit Sub
     On Error Resume Next
-    h = Me.Height - oldHeight
+    H = Me.Height - oldHeight
     oldHeight = Me.Height
-    w = Me.Width - oldWidth
+    W = Me.Width - oldWidth
     oldWidth = Me.Width
-    Grid.Height = Grid.Height + h
-    Grid.Width = Grid.Width + w / 2
+    Grid.Height = Grid.Height + H
+    Grid.Width = Grid.Width + W / 2
     laGrid.Width = Grid.Width
     ckCumulative.Left = Grid.Left + Grid.Width - ckCumulative.Width
 
-    Grid2.Height = Grid2.Height + h
-    Grid2.Width = Grid2.Width + w / 2
-    Grid2.Left = Grid2.Left + w / 2
+    Grid2.Height = Grid2.Height + H
+    Grid2.Width = Grid2.Width + W / 2
+    Grid2.Left = Grid2.Left + W / 2
     laGrid2.Left = Grid2.Left
     laGrid2.Width = Grid2.Width
     laProcent.Left = Grid2.Left
     tbProcent.Left = laProcent.Left + laProcent.Width + 50
     cmRecalc.Left = tbProcent.Left + tbProcent.Width + 50
 
-    cmLoad.Top = cmLoad.Top + h
+    cmLoad.Top = cmLoad.Top + H
     cmAdd.Top = cmLoad.Top
     cmDel.Top = cmLoad.Top
     cmExcel.Top = cmLoad.Top
@@ -1086,7 +1086,7 @@ Private Sub Grid_EnterCell()
     If _
         (Grid.TextMatrix(mousRow, dcComtec) = "" Or mousCol = dcNote Or mousCol = dcComtec) And _
         (mousRow <= quantity) And _
-        (mousCol >= dcProcent Or ckCumulative.value <> 1) And _
+        (mousCol >= dcProcent Or ckCumulative.Value <> 1) And _
         (mousCol >= dcNDate _
             And mousCol <> dcSumma _
             And (Grid.TextMatrix(mousRow, dcIdJmat) = "" Or mousCol >= dcProcent) _
@@ -1120,21 +1120,21 @@ End Sub
 
 
 Sub searchPair(ByVal row As Long, ByRef indexFrom As Integer, ByRef indexTo As Integer)
-Dim i As Integer, j As Integer, curIndex As Long
+Dim I As Integer, J As Integer, curIndex As Long
 
     indexFrom = -1: indexTo = -1
     curIndex = quantity + 1
-    For i = 1 To UBound(ventureIds)
-        For j = 1 To UBound(ventureIds)
-            If i <> j Then
+    For I = 1 To UBound(ventureIds)
+        For J = 1 To UBound(ventureIds)
+            If I <> J Then
                 If curIndex = row Then
-                    indexFrom = i: indexTo = j
+                    indexFrom = I: indexTo = J
                     Exit Sub
                 End If
                 curIndex = curIndex + 1
             End If
-        Next j
-    Next i
+        Next J
+    Next I
 End Sub
 
 Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
@@ -1224,7 +1224,7 @@ Private Sub Grid2_EnterCell()
     Else
         Grid2.CellBackColor = vbYellow
     End If
-    If ckCumulative.value = 1 And mousCol2 = dnQuant Then
+    If ckCumulative.Value = 1 And mousCol2 = dnQuant Then
         Grid2.CellBackColor = vbYellow
     End If
 End Sub
@@ -1369,7 +1369,7 @@ End Sub
 
 Private Sub mnNomHistory_Click()
 Dim selectedRows As Integer
-Dim i As Integer
+Dim I As Integer
 Dim curRow As Integer, startRow As Integer, stopRow As Integer
     
     selectedRows = Abs(Grid2.row - Grid2.RowSel) + 1
@@ -1383,19 +1383,19 @@ Dim curRow As Integer, startRow As Integer, stopRow As Integer
         stopRow = Grid2.RowSel
     End If
     
-    i = 0
+    I = 0
     curRow = Grid2.row
     For curRow = startRow To stopRow
-        DMCnomNom(i + 1) = Grid2.TextMatrix(curRow, dnNomNom)
-        i = i + 1
+        DMCnomNom(I + 1) = Grid2.TextMatrix(curRow, dnNomNom)
+        I = I + 1
     Next curRow
     
     Me.MousePointer = flexHourglass
     VentureHistory.tbStartDate.Text = Grid.TextMatrix(mousRow, dcTermFrom)
     VentureHistory.tbEndDate.Text = Grid.TextMatrix(mousRow, dcTermTo)
     VentureHistory.isLoad = False
-    VentureHistory.ckCumulative.value = Me.ckCumulative.value
-    VentureHistory.ckPerList.value = 1
+    VentureHistory.ckCumulative.Value = Me.ckCumulative.Value
+    VentureHistory.ckPerList.Value = 1
     VentureHistory.fillGrid
     VentureHistory.Show
     Me.MousePointer = flexDefault
@@ -1404,8 +1404,8 @@ End Sub
 
 Private Sub mnAddToHistory_Click()
 
-Dim i As Integer, str As String, newLen As Integer
-Dim j As Integer, l As Long
+Dim I As Integer, str As String, newLen As Integer
+Dim J As Integer, l As Long
 Dim length As Integer
 Dim aStep As Integer
 
@@ -1416,16 +1416,16 @@ Dim aStep As Integer
     Else
         aStep = 1
     End If
-    For i = Grid2.row To Grid2.RowSel Step aStep
-        str = Grid2.TextMatrix(i, dnNomNom)
-        For j = 1 To length ' может этот эл-т был уже добавлен
-            If DMCnomNom(j) = str Then GoTo NXT
-        Next j
+    For I = Grid2.row To Grid2.RowSel Step aStep
+        str = Grid2.TextMatrix(I, dnNomNom)
+        For J = 1 To length ' может этот эл-т был уже добавлен
+            If DMCnomNom(J) = str Then GoTo NXT
+        Next J
         newLen = newLen + 1
         ReDim Preserve DMCnomNom(newLen)
         DMCnomNom(newLen) = str ' чтобы корректно работал перерасчет Карты после правки в документе
 NXT:
-    Next i
+    Next I
     
     Me.MousePointer = flexHourglass
     VentureHistory.Show
@@ -1436,7 +1436,7 @@ End Sub
 
 
 Private Sub mnRecalc_Click()
-Dim i As Integer, preserve_yn As Boolean
+Dim I As Integer, preserve_yn As Boolean
 Dim curRow As Long, curCol As Long, curTopRow As Long
 
     If MsgBox("Нажмите Да если вы хотите пересчитать накладную с новыми значениеми", vbDefaultButton2 Or vbYesNo, "") <> vbOK Then Exit Sub
@@ -1444,13 +1444,13 @@ Dim curRow As Long, curCol As Long, curTopRow As Long
     Grid2.col = dnNomName
     preserve_yn = False
     
-    For i = 1 To Grid2.Rows
-        Grid2.row = i
+    For I = 1 To Grid2.Rows
+        Grid2.row = I
         If Grid2.ForeColor = vbRed Then
             preserve_yn = True
             Exit For
         End If
-    Next i
+    Next I
     
     If preserve_yn Then
         If MsgBox("Нажмите Да если вы хотите сохранить значения введенные вручную", vbDefaultButton2 Or vbYesNo, "") <> vbOK Then

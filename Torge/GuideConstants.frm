@@ -123,10 +123,10 @@ oldHeight = Me.Height
 oldWidth = Me.Width
 
 Grid.FormatString = "|<Название|<Значение|<Примечание"
-Grid.colWidth(gmConstantsId) = 0
-Grid.colWidth(gmConstants) = 585
-Grid.colWidth(gmValue) = 1005
-Grid.colWidth(gmNote) = 4545
+Grid.ColWidth(gmConstantsId) = 0
+Grid.ColWidth(gmConstants) = 585
+Grid.ColWidth(gmValue) = 1005
+Grid.ColWidth(gmNote) = 4545
 sql = "SELECT ConstantsId, Constants, Value, Note From GuideConstants "
 Set tbGuide = myOpenRecordSet("##441", sql, dbOpenForwardOnly)
 If tbGuide Is Nothing Then Exit Sub
@@ -136,8 +136,8 @@ While Not tbGuide.EOF
     quantity = quantity + 1
     Grid.TextMatrix(quantity, gmConstantsId) = tbGuide!ConstantsId
     Grid.TextMatrix(quantity, gmConstants) = tbGuide!Constants
-    Grid.TextMatrix(quantity, gmValue) = tbGuide!value
-    If Not IsNull(tbGuide!note) Then Grid.TextMatrix(quantity, gmNote) = tbGuide!note
+    Grid.TextMatrix(quantity, gmValue) = tbGuide!Value
+    If Not IsNull(tbGuide!Note) Then Grid.TextMatrix(quantity, gmNote) = tbGuide!Note
     Grid.AddItem ""
 
     tbGuide.MoveNext
@@ -157,21 +157,21 @@ End Sub
 
 
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer
+Dim H As Integer, W As Integer
 
 If WindowState = vbMinimized Then Exit Sub
 On Error Resume Next
-h = Me.Height - oldHeight
+H = Me.Height - oldHeight
 oldHeight = Me.Height
-w = Me.Width - oldWidth
+W = Me.Width - oldWidth
 oldWidth = Me.Width
-Grid.Height = Grid.Height + h
-Grid.Width = Grid.Width + w
+Grid.Height = Grid.Height + H
+Grid.Width = Grid.Width + W
 
-cmAdd.Top = cmAdd.Top + h
-cmDel.Top = cmDel.Top + h
-cmExit.Top = cmExit.Top + h
-cmExit.left = cmExit.left + w
+cmAdd.Top = cmAdd.Top + H
+cmDel.Top = cmDel.Top + H
+cmExit.Top = cmExit.Top + H
+cmExit.Left = cmExit.Left + W
 
 End Sub
 
@@ -240,23 +240,23 @@ End Sub
 
 Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then _
-        MsgBox "ColWidth = " & Grid.colWidth(Grid.MouseCol)
+        MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
 
 End Sub
 
-Private Function validateConstant(name As String, Optional ByVal value As String = "0") As Boolean
+Private Function validateConstant(name As String, Optional ByVal Value As String = "0") As Boolean
 Dim initStr As String
     validateConstant = True
-    If Not IsNumeric(value) Then
+    If Not IsNumeric(Value) Then
         MsgBox "Неверное значение константы", vbOKOnly Or vbCritical, "Повторите ввод"
         GoTo er
     Else
-        value = CStr(CDbl(value))
+        Value = CStr(CDbl(Value))
     End If
     
     On Error GoTo invalid
     
-    initStr = name & "=" & value
+    initStr = name & "=" & Value
     sc.ExecuteStatement (initStr)
     Exit Function
 invalid:
@@ -319,13 +319,13 @@ End If
 
 End Sub
 
-Function ValueToGuideConstantsField(myErrCod As String, value As String, _
+Function ValueToGuideConstantsField(myErrCod As String, Value As String, _
 field As String, Optional passErr As Integer = -11111) As Integer
 'Dim i As Integer
 
 ValueToGuideConstantsField = False
 sql = "UPDATE GuideConstants SET [" & field & _
-"] = '" & value & "' WHERE (((ConstantsId)=" & gConstantsId & "));"
+"] = '" & Value & "' WHERE (((ConstantsId)=" & gConstantsId & "));"
 'MsgBox "sql = " & sql
 
 ValueToGuideConstantsField = myExecute(myErrCod, sql, passErr)

@@ -141,7 +141,7 @@ Public purpose As String ', detail As String
 'Const sgSubSchet = 2
 
 Private Sub cmAdd_Click()
-Dim i As Integer
+Dim I As Integer
 
 jGuidePurpDet.Regim = "purpose"
 tmpStr = ""
@@ -163,27 +163,27 @@ Set tbGuide = myOpenRecordSet("##476", sql, dbOpenForwardOnly)
 'tbGuide.Index = "Key"
 
 'tbGuide.Seek "=", debit, subDebit, kredit, subKredit, 0
-i = 0
+I = 0
 'If Not tbGuide.NoMatch Then
 If Not tbGuide.BOF Then
 '    tbGuide.MoveNext: i = 1
     While Not tbGuide.EOF ' сначала исп-ем удаленные номера
-        If tbGuide!pId > i Then GoTo AA
+        If tbGuide!pId > I Then GoTo AA
         tbGuide.MoveNext
-        i = i + 1
+        I = I + 1
     Wend
-    If i > 255 Then msgOfEnd "##335", "переполнение yGuidePurpose"
+    If I > 255 Then msgOfEnd "##335", "переполнение yGuidePurpose"
 End If
 AA:
 tbGuide.Close
 
 sql = "INSERT INTO yGuidePurpose (Debit, subDebit, Kredit, subKredit, " & _
 "pId, pDescript ) VALUES ('" & debit & "', '" & subDebit & "', '" & kredit & _
-"', '" & subKredit & "', " & i & ", '" & tmpStr & "')"
-i = myExecute("##336", sql, -196)
-If i = -2 Then
+"', '" & subKredit & "', " & I & ", '" & tmpStr & "')"
+I = myExecute("##336", sql, -196)
+If I = -2 Then
     MsgBox "Назначение '" & tmpStr & "' уже есть!", , "Предупреждение"
-ElseIf i <> 0 Then
+ElseIf I <> 0 Then
     Exit Sub
 End If
 wrkDefault.CommitTrans
@@ -217,16 +217,16 @@ End Sub
 
 
 Private Sub cmDel_Click()
-Dim i As Integer
+Dim I As Integer
 
 sql = "DELETE From yGuidePurpose " & _
 "WHERE (((Debit)='" & debit & "') AND ((subDebit)='" & subDebit & _
 "') AND ((Kredit)='" & kredit & "') AND ((subKredit)='" & subKredit & _
 "') AND ((pDescript)='" & lbPurpose.Text & "'));"
-i = myExecute("##337", sql, -198)
-If i = 0 Then
+I = myExecute("##337", sql, -198)
+If I = 0 Then
     loadLbFromPurpose lbPurpose
-ElseIf i = -2 Then
+ElseIf I = -2 Then
     MsgBox "Для удаления Назначения '" & lbPurpose.Text & "', сначала " & _
     "удалите входящие в него Уточнения.", , "Удаление непустого Назначения невозможно!"
     Exit Sub

@@ -685,11 +685,11 @@ End Sub
 Private Sub chGain_Click()
 If noClick Then Exit Sub
 
-If chGain.value = 1 Then
+If chGain.Value = 1 Then
 '    chPerList.Enabled = False
-    chPerList.value = 0
+    chPerList.Value = 0
     loadKlassNomenk
-ElseIf chPerList.value = 0 Then
+ElseIf chPerList.Value = 0 Then
     loadKlassNomenk ' т.е. если сбросилась не по установке chGain
 End If
 On Error Resume Next
@@ -700,11 +700,11 @@ End Sub
 
 Private Sub chPerList_Click()
 If noClick Then Exit Sub
-If chPerList.value = 1 Then
+If chPerList.Value = 1 Then
 '    chGain.Enabled = False
-    chGain.value = 0
+    chGain.Value = 0
     loadKlassNomenk
-ElseIf chGain.value = 0 Then
+ElseIf chGain.Value = 0 Then
     loadKlassNomenk ' т.е. если сбросилась не по установке chGain
 End If
     
@@ -724,27 +724,27 @@ Sub gridColControl()
 Dim delta As Integer
 
 delta = 825
-Grid.colWidth(nkName) = 2085 '2520
+Grid.ColWidth(nkName) = 2085 '2520
 If Regim = "asOborot" Or Regim = "sourOborot" Or Regim = "asOstat" Then
-    If ckEndDate.value = 1 Or cbInside.ListIndex <> 1 Then
-        Grid.colWidth(nkDostup) = 0
+    If ckEndDate.Value = 1 Or cbInside.ListIndex <> 1 Then
+        Grid.ColWidth(nkDostup) = 0
         If Regim = "asOborot" Or Regim = "sourOborot" Then
-            Grid.colWidth(nkZapas) = 0
-            Grid.colWidth(nkZakup) = 0
-            Grid.colWidth(nkDeficit) = 0
-            Grid.colWidth(nkMark) = 0
-            Grid.colWidth(nkName) = 3420
+            Grid.ColWidth(nkZapas) = 0
+            Grid.ColWidth(nkZakup) = 0
+            Grid.ColWidth(nkDeficit) = 0
+            Grid.ColWidth(nkMark) = 0
+            Grid.ColWidth(nkName) = 3420
         Else
-            Grid.colWidth(nkName) = Grid.colWidth(nkName) + delta
+            Grid.ColWidth(nkName) = Grid.ColWidth(nkName) + delta
         End If
         Grid.TextMatrix(0, nkEndOstat) = "Кон.Остатки"
     Else 'т.е. когда кон.дата не отмечена и установлен Склад1
-        Grid.colWidth(nkDostup) = delta
+        Grid.ColWidth(nkDostup) = delta
         If Regim = "asOborot" Or Regim = "sourOborot" Then
-            Grid.colWidth(nkZapas) = 645
-            Grid.colWidth(nkZakup) = 630
-            Grid.colWidth(nkDeficit) = 780
-            Grid.colWidth(nkMark) = 705
+            Grid.ColWidth(nkZapas) = 645
+            Grid.ColWidth(nkZakup) = 630
+            Grid.ColWidth(nkDeficit) = 780
+            Grid.ColWidth(nkMark) = 705
         End If
         Grid.TextMatrix(0, nkEndOstat) = "Ф.Остатки"
     End If
@@ -756,7 +756,7 @@ End Sub
 
 Private Sub ckStartDate_Click()
 If noClick Then Exit Sub
-If ckStartDate.value = 0 Then
+If ckStartDate.Value = 0 Then
     tbStartDate.Enabled = False
 Else
     tbStartDate.Enabled = True
@@ -767,11 +767,11 @@ Private Sub ckUnUsed_Click()
 Dim l As Long, bColor As Long
 
 If Not Grid.Visible Then
-    ckUnUsed.value = 0
+    ckUnUsed.Value = 0
     Exit Sub
 End If
 bColor = &HCCCCCC
-If ckUnUsed.value = 0 Then
+If ckUnUsed.Value = 0 Then
     bColor = 0
 Else
     Grid.CellBackColor = Grid.BackColor 'поскольку LeaveCell будет заблокирована
@@ -883,7 +883,7 @@ Else
     curCol = I
 End If
 
-Grid.colWidth(I) = colWdth
+Grid.ColWidth(I) = colWdth
 If align <> "" Then Grid.ColAlignment(I) = align
 Grid.TextMatrix(0, I) = colName
 End Sub
@@ -982,11 +982,11 @@ If Regim <> "" Then initCol nkEdIzm, "Ед.изм.производства", 435, flexAlignLeftCe
 controlGridHight ' ниже tv
 
 If oldRegim <> Regim Or oldRegim = "##undef##" Then
-    ckStartDate.value = 1 '    переключает tbStartDate.Enabled
+    ckStartDate.Value = 1 '    переключает tbStartDate.Enabled
     noClick = True
-    ckEndDate.value = 0
-    chGain.value = 0
-    chPerList.value = 1
+    ckEndDate.Value = 0
+    chGain.Value = 0
+    chPerList.Value = 1
     cbInside.ListIndex = 1
     noClick = False
 
@@ -1060,7 +1060,7 @@ Else
     controlGridHight "max" 'равно tv
     Grid.RowHeight(0) = 320
     cotnrolTopElementsVisible False
-    Grid.colWidth(nkName) = 3105
+    Grid.ColWidth(nkName) = 3105
     'initCol nkSize, "Размер", 675
     initCol nkEdIzm2, "Ед.измерения", 525, flexAlignLeftCenter
     initCol nkPack, "В упаковке", 600, flexAlignLeftCenter
@@ -1104,7 +1104,7 @@ If cmKlassLoad.Visible Then 'после режима "fltOborot"
     cmKlassLoad.Visible = False
     tv.Visible = True
     Grid.Width = Grid.Width - tv.Width
-    Grid.left = Grid.left + tv.Width
+    Grid.Left = Grid.Left + tv.Width
 End If
 If Regim = "nomenkSelect" Or Regim = "singleSelect" Then 'из справ-ка гот.изделий
 '    cmSel.Visible = True
@@ -1134,7 +1134,7 @@ ElseIf Regim = "asOborot" Or Regim = "sourOborot" Then
     "затем  в левой панели выберите группу с требуемой номенклатурой."
 ElseIf Regim = "fltOborot" Then
     tv.Visible = False
-    Grid.left = Grid.left - tv.Width
+    Grid.Left = Grid.Left - tv.Width
     Grid.Width = Grid.Width + tv.Width
     cmKlassLoad.Visible = True
     Me.Caption = "Номенклатура для закупки"
@@ -1309,25 +1309,25 @@ Private Sub Command4_Click()
 End Sub
 
 Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim value As String
+Dim Value As String
 
 If KeyCode = vbKeyF7 Then
     If mousCol = nkName Then
-        value = InputBox("Укажите полное название или фрагмент.", _
-        "Поиск в колонке 'Описание'", value)
-        If value = "" Then Exit Sub
-        If findExValInCol(Grid, value, nkName) > 0 Then Exit Sub
+        Value = InputBox("Укажите полное название или фрагмент.", _
+        "Поиск в колонке 'Описание'", Value)
+        If Value = "" Then Exit Sub
+        If findExValInCol(Grid, Value, nkName) > 0 Then Exit Sub
         MsgBox "В текущем списке фрагмент не найден.", , "Результат поиска"
     End If
 ElseIf Shift = vbCtrlMask And KeyCode = vbKeyF Then
-    value = InputBox("Укажите номер или его фрагмент.", "Поиск номенклатуры", value)
-    If value = "" Then Exit Sub
-    loadKlassNomenk "F" & value
+    Value = InputBox("Укажите номер или его фрагмент.", "Поиск номенклатуры", Value)
+    If Value = "" Then Exit Sub
+    loadKlassNomenk "F" & Value
 ElseIf Shift = vbCtrlMask And KeyCode = vbKeyG Then
-    value = InputBox("Укажите полное название(описание) или фрагмент.", _
-    "Поиск номенклатуры", value)
-    If value = "" Then Exit Sub
-    loadKlassNomenk "G" & value
+    Value = InputBox("Укажите полное название(описание) или фрагмент.", _
+    "Поиск номенклатуры", Value)
+    If Value = "" Then Exit Sub
+    loadKlassNomenk "G" & Value
 ElseIf KeyCode = vbKeyEscape Then
     Frame1.Visible = False
     On Error Resume Next
@@ -1503,28 +1503,28 @@ Dim klassName As String, ret As String, KlassId As Integer, parentKlassId As Int
 End Sub
 
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer
+Dim H As Integer, W As Integer
 
 If WindowState = vbMinimized Then Exit Sub
 On Error Resume Next
-h = Me.Height - oldHeight
+H = Me.Height - oldHeight
 oldHeight = Me.Height
-w = Me.Width - oldWidth
+W = Me.Width - oldWidth
 oldWidth = Me.Width
-Grid.Height = Grid.Height + h
-Grid.Width = Grid.Width + w
-tv.Height = tv.Height + h
+Grid.Height = Grid.Height + H
+Grid.Width = Grid.Width + W
+tv.Height = tv.Height + H
 
-cmKlassLoad.Top = cmKlassLoad.Top + h
-laKolvo.Top = laKolvo.Top + h
-laQuant.Top = laQuant.Top + h
-cmHide.Top = cmHide.Top + h
-cmExcel.Top = cmExcel.Top + h
+cmKlassLoad.Top = cmKlassLoad.Top + H
+laKolvo.Top = laKolvo.Top + H
+laQuant.Top = laQuant.Top + H
+cmHide.Top = cmHide.Top + H
+cmExcel.Top = cmExcel.Top + H
 'cmSel.Top = cmSel.Top + h
-cmExit.Top = cmExit.Top + h
-cmExit.left = cmExit.left + w
-cmObrez.Top = cmObrez.Top + h
-ckUnUsed.Top = ckUnUsed.Top + h
+cmExit.Top = cmExit.Top + H
+cmExit.Left = cmExit.Left + W
+cmObrez.Top = cmObrez.Top + H
+ckUnUsed.Top = ckUnUsed.Top + H
 '.Left = .Left + w
 
 End Sub
@@ -1678,8 +1678,8 @@ If quantity > 0 And frmMode = "" Then
  
  oldCellColor = Grid.CellBackColor
  
- If ((chGain.Visible And chGain.value > 0) _
- Or (chPerList.Visible And chPerList.value > 0)) Then
+ If ((chGain.Visible And chGain.Value > 0) _
+ Or (chPerList.Visible And chPerList.Value > 0)) Then
     Exit Sub
  End If
  If Regim = "" Then
@@ -1773,7 +1773,7 @@ End Sub
 Private Sub Grid_LeaveCell()
 'If Not noClick Then Grid.CellBackColor = Grid.BackColor
 If noClick Then Exit Sub
-If ckUnUsed.value = 0 Then
+If ckUnUsed.Value = 0 Then
     Grid.CellBackColor = Grid.BackColor
 Else
     Grid.CellBackColor = oldCellColor
@@ -1784,7 +1784,7 @@ Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As 
 Dim I As Integer
 
 If Grid.MouseRow = 0 And Shift = 2 Then
-        MsgBox "ColWidth = " & Grid.colWidth(Grid.MouseCol)
+        MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
 
 ElseIf frmMode = "nomenkReplace" Then
     Me.PopupMenu mnContext4
@@ -1930,7 +1930,7 @@ If valueToNomencField("##153", lbMark.Text, "mark") Then
             Dim outcome As Single, strOutcome As String
             strOutcome = Grid.TextMatrix(mousRow, nkAvgOutcome)
             If Right(strOutcome, 1) = "*" Then
-                strOutcome = left(strOutcome, Len(strOutcome) - 1)
+                strOutcome = Left(strOutcome, Len(strOutcome) - 1)
             End If
             If IsNumeric(strOutcome) Then
                 outcome = CSng(strOutcome)
@@ -2395,8 +2395,8 @@ Dim curRow As Integer, startRow As Integer, stopRow As Integer
     Next curRow
     
     Me.MousePointer = flexHourglass
-    If VentureHistory.ckPerList.value <> 1 Then
-        VentureHistory.ckPerList.value = 1
+    If VentureHistory.ckPerList.Value <> 1 Then
+        VentureHistory.ckPerList.Value = 1
     Else
         VentureHistory.fillGrid
     End If
@@ -2624,7 +2624,7 @@ If KeyCode = vbKeyReturn Then
     If frmMode = "nomenkAddObraz" Then
         tbNomenk.AddNew
         On Error Resume Next 'некоторые ячейки м.б.пустыми
-        tbNomenk!nomName = Grid.TextMatrix(mousRow, nkName)
+        tbNomenk!Nomname = Grid.TextMatrix(mousRow, nkName)
         tbNomenk!ed_izmer = Grid.TextMatrix(mousRow, nkEdIzm)
         tbNomenk!ed_Izmer2 = Grid.TextMatrix(mousRow, nkEdIzm2)
         tbNomenk!perList = Grid.TextMatrix(mousRow, nkPerList)
@@ -3103,7 +3103,7 @@ Dim restCsv As String, currentOrder As Integer
             done = True
         Else
             If sepIndex > 0 Then
-                token = left(restCsv, sepIndex - 1)
+                token = Left(restCsv, sepIndex - 1)
                 restCsv = Mid(restCsv, sepIndex + 1)
             Else
                 token = restCsv
@@ -3154,7 +3154,7 @@ Dim Cena1 As Double
 '
 '
 
-ckUnUsed.value = 0
+ckUnUsed.Value = 0
 If Regim = "asOborot" Or Regim = "sourOborot" Or Regim = "fltOborot" Then
     ' Set dates for parameters to stored procs (i.e.
     setStartEndDates tbStartDate, tbEndDate
@@ -3187,9 +3187,9 @@ strWhere = "WHERE sGuideNomenk.klassId = " & gKlassId
 If filtr = "obrez" Then
     strWhere = "WHERE sGuideNomenk.perList > 1.0 "
 ElseIf filtr <> "" Then
-    If left$(filtr, 1) = "F" Then
+    If Left$(filtr, 1) = "F" Then
         strWhere = "WHERE sGuideNomenk.nomNom Like '*" & Mid$(filtr, 2) & "*'"
-    ElseIf left$(filtr, 1) = "G" Then
+    ElseIf Left$(filtr, 1) = "G" Then
         strWhere = "WHERE sGuideNomenk.nomName Like '*" & Mid$(filtr, 2) & "*'"
     End If
 ElseIf Regim = "checkCurOstat" Or Regim = "fltOborot" Then
@@ -3238,10 +3238,10 @@ If Not tbNomenk.BOF Then
     
     strN = "(sDMC.nomNom) = '" & gNomNom & "'"
     gainC = 1
-    If chGain.Visible And chGain.value = 1 Then _
+    If chGain.Visible And chGain.Value = 1 Then _
         gainC = tbNomenk!cost 'цена фактическая
     gain = gainC
-    If ((chPerList.Visible And chPerList.value = 1) Or Regim <> "asOstat") And Regim <> "" Then
+    If ((chPerList.Visible And chPerList.Value = 1) Or Regim <> "asOstat") And Regim <> "" Then
         gain = gain / tbNomenk!perList 'оборотные всегда выдаем в целых
         Grid.TextMatrix(quantity + 1, nkEdIzm) = tbNomenk!ed_Izmer2
     Else
@@ -3277,7 +3277,7 @@ If Not tbNomenk.BOF Then
     quantity = quantity + 1
     Grid.TextMatrix(quantity, nkNomer) = gNomNom
     Grid.TextMatrix(quantity, nkCod) = tbNomenk!cod
-    Grid.TextMatrix(quantity, nkName) = tbNomenk!nomName
+    Grid.TextMatrix(quantity, nkName) = tbNomenk!Nomname
     Grid.TextMatrix(quantity, nkSize) = tbNomenk!Size
             
      If Regim <> "checkCurOstat" Then _

@@ -189,7 +189,7 @@ Begin VB.Form Analityc
          _ExtentX        =   2138
          _ExtentY        =   508
          _Version        =   393216
-         Format          =   16449537
+         Format          =   16580609
          CurrentDate     =   39599
       End
       Begin MSComCtl2.DTPicker tbEndDate 
@@ -201,7 +201,7 @@ Begin VB.Form Analityc
          _ExtentX        =   2138
          _ExtentY        =   508
          _Version        =   393216
-         Format          =   16449537
+         Format          =   16580609
          CurrentDate     =   39599
       End
       Begin VB.Label Label5 
@@ -439,7 +439,7 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
-Public managId As String
+Public ManagId As String
 Public applicationType As String
 
 
@@ -582,12 +582,12 @@ End Sub
 Private Sub cmApply_Click()
 Dim filterId As Integer
 
-    Results.left = Me.left + Me.Width
+    Results.Left = Me.Left + Me.Width
     Results.Top = Me.Top
     Results.filterId = submitFilter("")
     If Results.filterId <> 0 Then
         Results.applyTriggered = True
-        Results.managId = managId
+        Results.ManagId = ManagId
         If ckStartDate.value = 1 Then
             Results.startDate = tbStartDate.value
         Else
@@ -780,8 +780,8 @@ Dim filterId As Integer, byRowId As Integer, byColumnId As Integer
         & "  left join nParamType pt on p.paramTypeId = pt.id" _
         & "  where i.filterid = " & filterId
     
-    Set table = myOpenRecordSet("##initFilter.2", sql, dbOpenForwardOnly)
-    If table Is Nothing Then myBase.Close: End
+    Set Table = myOpenRecordSet("##initFilter.2", sql, dbOpenForwardOnly)
+    If Table Is Nothing Then myBase.Close: End
     ckStartDate.value = 0
     tbStartDate.value = Now() - 365
     tbStartDate.Enabled = False
@@ -789,62 +789,62 @@ Dim filterId As Integer, byRowId As Integer, byColumnId As Integer
     tbEndDate.value = Now()
     tbEndDate.Enabled = False
     
-    While Not table.EOF
-        If table!itemType = "materials" Then
-            If table!isActive = 1 Then
+    While Not Table.EOF
+        If Table!itemType = "materials" Then
+            If Table!isActive = 1 Then
                 ckKriteriumMat.value = 1
             Else
                 ckKriteriumMat.value = 0
             End If
-            If Not IsNull(table!intValue) Then
+            If Not IsNull(Table!intValue) Then
                 On Error Resume Next
-                Set Node = tvMat.Nodes("k" & table!intValue)
+                Set Node = tvMat.Nodes("k" & Table!intValue)
                 expandParents Node
                 Node.checked = True
             End If
             
         End If
         
-        If table!itemType = "regions" Then
-            If table!isActive = 1 Then
+        If Table!itemType = "regions" Then
+            If Table!isActive = 1 Then
                 ckKriteriumRegion.value = 1
             Else
                 ckKriteriumRegion.value = 0
             End If
-            Set Node = tvRegion.Nodes("k" & table!intValue)
+            Set Node = tvRegion.Nodes("k" & Table!intValue)
             Node.checked = True
             expandParents Node
         End If
         
-        If table!itemType = "oborudItems" Then
-            If table!isActive = 1 And ckKriteriumNoOborud.value = 0 Then
+        If Table!itemType = "oborudItems" Then
+            If Table!isActive = 1 And ckKriteriumNoOborud.value = 0 Then
                 ckKriteriumOborud.value = 1
             Else
                 ckKriteriumRegion.value = 0
             End If
-            cbOborud(table!intValue).value = 1
+            cbOborud(Table!intValue).value = 1
         End If
         
-        If table!itemType = "noOboruds" Then
+        If Table!itemType = "noOboruds" Then
             ckKriteriumNoOborud.value = 1
         End If
         
-        If table!itemType = "filterPeriod" Then
-            If table!paramType = "periodStart" Then
+        If Table!itemType = "filterPeriod" Then
+            If Table!paramType = "periodStart" Then
                 ckStartDate.value = 1
-                tbStartDate.value = table!charValue
+                tbStartDate.value = Table!charValue
                 tbStartDate.Enabled = True
             End If
-            If table!paramType = "periodEnd" Then
+            If Table!paramType = "periodEnd" Then
                 ckEndDate.value = 1
-                tbEndDate.value = table!charValue
+                tbEndDate.value = Table!charValue
                 tbStartDate.Enabled = True
             End If
         End If
         
         
-        If table!itemType = "client" Then
-            gClientId = table!isActive
+        If Table!itemType = "client" Then
+            gClientId = Table!isActive
             If gClientId > 0 Then
                 Dim I As Integer
                 For I = 1 To clientId.Rows - 1
@@ -860,9 +860,9 @@ Dim filterId As Integer, byRowId As Integer, byColumnId As Integer
             End If
         End If
         
-        table.MoveNext
+        Table.MoveNext
     Wend
-    table.Close
+    Table.Close
     
 done:
     flagInitFilter = False
@@ -886,7 +886,7 @@ Dim exists As Integer, result As Integer
             & "where name = '" & filterName & "' and personal = " & personal
         myExecute "W#updateFilter", sql, -1
     Else
-        sql = "select n_insertFilter ('" & filterName & "', '" & managId & "', " & personal _
+        sql = "select n_insertFilter ('" & filterName & "', '" & ManagId & "', " & personal _
             & ", " & byRowId & ", " & byColumnId & ")"
         byErrSqlGetValues "W#clearFilter", sql, result
     End If
@@ -965,7 +965,7 @@ Dim personal As Integer
     End If
 
     If txFilterName.Text = "" Then
-        filterName = managId
+        filterName = ManagId
         personal = 1
     Else
         filterName = txFilterName.Text
@@ -1055,7 +1055,7 @@ Dim columnDefs() As columnDef
     
     If tvColumns.Visible Then
         tvColumns.SetFocus
-        initColumns columnDefs, 0, managId, , cbGroupByRow.ItemData(cbGroupByRow.ListIndex), cbGroupByColumn.ItemData(cbGroupByColumn.ListIndex)
+        initColumns columnDefs, 0, ManagId, , cbGroupByRow.ItemData(cbGroupByRow.ListIndex), cbGroupByColumn.ItemData(cbGroupByColumn.ListIndex)
         initColumnTree columnDefs
     End If
     'Debug.Print "cmColumns_Click, tvColumns.Visible = " & tvColumns.Visible
@@ -1082,10 +1082,10 @@ End Sub
 
 ' Используем инверсную логику: наличие записи в таблице означает исключение столбца.
 
-Private Sub persistColumnSelect(checked As Boolean, columnId As Integer, managId As String, byRow As Integer, byColumn As Integer)
+Private Sub persistColumnSelect(checked As Boolean, columnId As Integer, ManagId As String, byRow As Integer, byColumn As Integer)
     If Not checked Then
         sql = "insert into nHeaderColumnSelected (managId, templateId, columnId) select " _
-        & "'" & managId & "'" _
+        & "'" & ManagId & "'" _
         & ", a.templateId " _
         & ", " & columnId _
         & " from nAnalys a " _
@@ -1096,7 +1096,7 @@ Private Sub persistColumnSelect(checked As Boolean, columnId As Integer, managId
         & " from nAnalys a " _
         & " where a.byrow = " & byRow _
         & " and a.bycolumn = " & byColumn _
-        & " and hc.managId = '" & managId & "'" _
+        & " and hc.managId = '" & ManagId & "'" _
         & " and hc.templateId = a.templateId " _
         & " and hc.columnId = " & columnId
     End If
@@ -1110,7 +1110,7 @@ End Sub
 
 
 Private Sub tvColumns_NodeCheck(ByVal Node As MSComctlLib.Node)
-    persistColumnSelect Node.checked, CInt(Mid(Node.Key, 2)), managId _
+    persistColumnSelect Node.checked, CInt(Mid(Node.Key, 2)), ManagId _
         , cbGroupByRow.ItemData(cbGroupByRow.ListIndex) _
         , cbGroupByColumn.ItemData(cbGroupByColumn.ListIndex)
 
@@ -1134,16 +1134,16 @@ Dim I As Integer
     loadKlass
     loadRegions
 
-    Set table = myOpenRecordSet("W#72", "select * from nFilter where personal != 1", dbOpenForwardOnly)
-    If table Is Nothing Then myBase.Close: End
+    Set Table = myOpenRecordSet("W#72", "select * from nFilter where personal != 1", dbOpenForwardOnly)
+    If Table Is Nothing Then myBase.Close: End
     cbFilters.Text = ""
     
     cbFilters.AddItem ""
-    While Not table.EOF
-        cbFilters.AddItem "" & table!Name & ""
-        table.MoveNext
+    While Not Table.EOF
+        cbFilters.AddItem "" & Table!Name & ""
+        Table.MoveNext
     Wend
-    table.Close
+    Table.Close
     
     'проинициализировать листбокс группировки по горизонтали
     initByRowList
@@ -1162,7 +1162,7 @@ Dim I As Integer
     End If
     
     If filterName = "" Then
-        filterName = managId
+        filterName = ManagId
         personal = 1
     End If
     
@@ -1170,24 +1170,24 @@ Dim I As Integer
     
 End Sub
 
-Private Sub populateAxeList(ByRef table As Recordset, cb As ComboBox)
+Private Sub populateAxeList(ByRef Table As Recordset, cb As ComboBox)
     
     'проинициализировать комбобокс с доступными группировками по одной из оси (по строкам или по столбцам)
     
-    If table Is Nothing Then
+    If Table Is Nothing Then
         myBase.Close: End
     End If
     
     cb.Clear
     Dim I As Integer
     I = 0
-    While Not table.EOF
-        cb.AddItem table!Name_ru
-        cb.ItemData(I) = table!id
+    While Not Table.EOF
+        cb.AddItem Table!Name_ru
+        cb.ItemData(I) = Table!id
         I = I + 1
-        table.MoveNext
+        Table.MoveNext
     Wend
-    table.Close
+    Table.Close
     
 End Sub
 
@@ -1197,9 +1197,9 @@ Private Sub initByColumnList(byRowId As Integer)
         & " and exists (select 1 from nAnalys a where a.byrow = " & byRowId & " and c.id = a.bycolumn)" _
         & " order by c.bycolumn_flag"
         
-    Set table = myOpenRecordSet("W#initByRowList", sql, dbOpenForwardOnly)
+    Set Table = myOpenRecordSet("W#initByRowList", sql, dbOpenForwardOnly)
     'Debug.Print sql
-    populateAxeList table, cbGroupByColumn
+    populateAxeList Table, cbGroupByColumn
     
 End Sub
 
@@ -1209,20 +1209,20 @@ Private Sub initByRowList()
     sql = "select * from nAnalysCategory ac where byrow_flag = 1 " _
         & " and exists (select 1 from nAnalys a where a.byrow = ac.id and application = '" & applicationType & "')"
     
-    Set table = myOpenRecordSet("W#initByRowList", sql, dbOpenForwardOnly)
-    If table Is Nothing Then
+    Set Table = myOpenRecordSet("W#initByRowList", sql, dbOpenForwardOnly)
+    If Table Is Nothing Then
         myBase.Close: End
     End If
     
-    populateAxeList table, cbGroupByRow
+    populateAxeList Table, cbGroupByRow
     
 End Sub
 
 Private Sub initClientGrid()
     sql = "select * from bayGuideFirms where firmId > 0 order by name "
     
-    Set table = myOpenRecordSet("W#initByRowList", sql, dbOpenForwardOnly)
-    If table Is Nothing Then
+    Set Table = myOpenRecordSet("W#initByRowList", sql, dbOpenForwardOnly)
+    If Table Is Nothing Then
         myBase.Close: End
     End If
     
@@ -1230,9 +1230,9 @@ Private Sub initClientGrid()
     clientId.colWidth(0) = 0
     clientId.colWidth(1) = clientId.Width
     
-    While Not table.EOF
-        clientId.AddItem table!firmId & vbTab & table!Name
-        table.MoveNext
+    While Not Table.EOF
+        clientId.AddItem Table!firmId & vbTab & Table!Name
+        Table.MoveNext
     Wend
     clientId.RemoveItem (1)
 End Sub

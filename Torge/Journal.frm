@@ -319,7 +319,7 @@ jKassaReport.Show
 End Sub
 
 Private Sub ckEndDate_Click()
-If ckEndDate.value = 1 Then
+If ckEndDate.Value = 1 Then
     tbEndDate.Enabled = True
 Else
     tbEndDate.Enabled = False
@@ -329,7 +329,7 @@ cmLoad.Caption = "Загрузить"
 End Sub
 
 Private Sub ckStartDate_Click()
-If ckStartDate.value = 1 Then
+If ckStartDate.Value = 1 Then
     tbStartDate.Enabled = True
 Else
     tbStartDate.Enabled = False
@@ -338,7 +338,7 @@ cmLoad.Caption = "Загрузить"
 End Sub
 
 Private Sub cmAdd_Click()
-Dim i As Integer
+Dim I As Integer
 Dim str As String
 
 cmAdd.Enabled = False 'нельзя жать чаще 1с, т.к. дата это ключ
@@ -349,8 +349,8 @@ On Error GoTo adderr
 
 Set tbDocs = myOpenRecordSet("##324", "yBook", dbOpenTable) 'dbOpenForwardOnly)
 If tbDocs Is Nothing Then Exit Sub
-i = InStr(cmAdd.Caption, "+")
-If i > 0 Then
+I = InStr(cmAdd.Caption, "+")
+If I > 0 Then
     If Not IsDate(Grid.TextMatrix(mousRow, jnDate)) Then
         MsgBox "Образец не определен"
         GoTo AA
@@ -359,7 +359,7 @@ If i > 0 Then
     tbDocs.Seek "=", Grid.TextMatrix(mousRow, jnDate)
     If tbDocs.NoMatch Then
         MsgBox "Образец не найден в базе", , ""
-AA:     cmAdd.Caption = left$(cmAdd.Caption, i - 2)
+AA:     cmAdd.Caption = Left$(cmAdd.Caption, I - 2)
         tbDocs.Close
         Exit Sub
     End If
@@ -377,7 +377,7 @@ tbDocs!xDate = tmpDate
 tbDocs!m = AUTO.cbM.Text
 
 
-If i > 0 Then
+If I > 0 Then
     tbDocs!debit = Grid.TextMatrix(mousRow, jnDebit)
     str = Grid.TextMatrix(mousRow, jnSubDebit)
 '    If Not IsNumeric(str) Then str = 0
@@ -387,7 +387,7 @@ If i > 0 Then
 '    If Not IsNumeric(str) Then str = 0
     tbDocs!subKredit = str
     tbDocs!ordersNum = Grid.TextMatrix(mousRow, jnOrdersNum)
-    tbDocs!note = Grid.TextMatrix(mousRow, jnNote)
+    tbDocs!Note = Grid.TextMatrix(mousRow, jnNote)
     tbDocs!purposeId = purposeId
 '    tbDocs!detailId = detailId
     tbDocs!KredDebitor = KredDebitor
@@ -416,7 +416,7 @@ Grid.TextMatrix(Grid.row, jnDate) = Format(tmpDate, "dd/mm/yy hh:nn:ss")
 Grid.TextMatrix(Grid.row, jnM) = AUTO.cbM.Text
 If Not IsNull(rate) Then _
     Grid.TextMatrix(Grid.row, jnRate) = rate
-If i > 0 Then
+If I > 0 Then
     Grid.TextMatrix(Grid.row, jnDebit) = Grid.TextMatrix(mousRow, jnDebit)
     Grid.TextMatrix(Grid.row, jnSubDebit) = Grid.TextMatrix(mousRow, jnSubDebit)
     Grid.TextMatrix(Grid.row, jnKredit) = Grid.TextMatrix(mousRow, jnKredit)
@@ -427,7 +427,7 @@ If i > 0 Then
     Grid.TextMatrix(Grid.row, jnPurpose) = Grid.TextMatrix(mousRow, jnPurpose)
     Grid.TextMatrix(Grid.row, jnDetail) = Grid.TextMatrix(mousRow, jnDetail)
     Grid.TextMatrix(Grid.row, jnVenture) = Grid.TextMatrix(mousRow, jnVenture)
-    cmAdd.Caption = left$(cmAdd.Caption, i - 2)
+    cmAdd.Caption = Left$(cmAdd.Caption, I - 2)
 End If
 mousRow = Grid.Rows - 1
 mousCol = jnRate
@@ -480,7 +480,7 @@ Grid.SetFocus
 End Sub
 
 Sub loadLbFromDebKreditor()
-Dim i As Long
+Dim I As Long
 
 Set table = myOpenRecordSet("##353", "select * from yDebKreditor order by Name", dbOpenTable)
 If table Is Nothing Then myBase.Close: End
@@ -541,8 +541,8 @@ table.Close
 End Sub
 
 Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim i As Integer, row As Long, str As String
-Static prevRow As Long, value As String
+Dim I As Integer, row As Long, str As String
+Static prevRow As Long, Value As String
 
 If KeyCode = vbKeyMenu Then
     If InStr(cmAdd.Caption, "+") = 0 Then cmAdd.Caption = cmAdd.Caption & " +"
@@ -558,27 +558,27 @@ ElseIf KeyCode = vbKeyF7 Then
         row = prevRow
         str = "Больше"
     Else
-        value = InputBox("Введите образец для поиска или фрагмент. " & vbCrLf & _
+        Value = InputBox("Введите образец для поиска или фрагмент. " & vbCrLf & _
         vbCrLf & "Далее для проджения поиска этого образца со следующей " & _
         "позииции Вы можете нажимать <Shift><F7>.", "Поиск в поле '" & _
-        Grid.TextMatrix(0, mousCol) & "'", value)
+        Grid.TextMatrix(0, mousCol) & "'", Value)
         row = -1
         str = "Среди загруженных"
     End If
-    If value = "" Then Exit Sub
-    prevRow = findExValInCol(Grid, value, CInt(mousCol), row) + 1
+    If Value = "" Then Exit Sub
+    prevRow = findExValInCol(Grid, Value, CInt(mousCol), row) + 1
     If prevRow < 1 Then _
-        MsgBox str & " образец '" & value & "' не найден!", , ""
+        MsgBox str & " образец '" & Value & "' не найден!", , ""
     
  End If
 End Sub
 
 Private Sub Form_KeyUp(KeyCode As Integer, Shift As Integer)
-Dim i As Integer
+Dim I As Integer
 
 If KeyCode = vbKeyMenu Then
-    i = InStr(cmAdd.Caption, "+")
-    If i > 0 Then cmAdd.Caption = left$(cmAdd.Caption, i - 2)
+    I = InStr(cmAdd.Caption, "+")
+    If I > 0 Then cmAdd.Caption = Left$(cmAdd.Caption, I - 2)
 End If
 
 
@@ -591,7 +591,7 @@ oldHeight = Me.Height
 oldWidth = Me.Width
 
 isLoad = True
-ckStartDate.value = 1
+ckStartDate.Value = 1
 
 If dostup = "a" Then mnNasroy.Visible = True
 
@@ -600,7 +600,7 @@ tbStartDate.Text = "01." & Format(CurDate, "mm/yy")
 'tbStartDate.Text = Format(DateAdd("d", 0, begDate), "dd/mm/yy")
 tbEndDate.Text = Format(CurDate, "dd/mm/yy")
 If otlad = "otlaD" Then
-    ckStartDate.value = 1
+    ckStartDate.Value = 1
     Me.BackColor = otladColor
 End If
 
@@ -609,14 +609,14 @@ tbKurs.Text = rate
 
 Grid.FormatString = "|<Дата|М|Курс|Валюта|Дб|Сс|Кр|Сс|<Заказчик(временная)" & _
 "|<Кредитор\Дебитор|<Договор|<Примечание|<Назначение|<Уточнение|<Предприятие|<Шифр затрат|id_xoz"
-Grid.colWidth(0) = 0
-Grid.colWidth(jnDate) = 780
-Grid.colWidth(jnDebKreditor) = 2580
-Grid.colWidth(jnOrdersNum) = 1200
-Grid.colWidth(jnFirm) = 1395
-Grid.colWidth(jnDetail) = 1500
-Grid.colWidth(jnVenture) = 1600
-Grid.colWidth(jnId) = 0
+Grid.ColWidth(0) = 0
+Grid.ColWidth(jnDate) = 780
+Grid.ColWidth(jnDebKreditor) = 2580
+Grid.ColWidth(jnOrdersNum) = 1200
+Grid.ColWidth(jnFirm) = 1395
+Grid.ColWidth(jnDetail) = 1500
+Grid.ColWidth(jnVenture) = 1600
+Grid.ColWidth(jnId) = 0
 'jnNote
 
 
@@ -625,7 +625,7 @@ quantity = 0
 End Sub
 
 Sub loadBook()
- Dim i As Integer, str As String
+ Dim I As Integer, str As String
 
 Grid.Visible = False
 quantity = 0
@@ -662,8 +662,8 @@ Me.MousePointer = flexHourglass
 If Not tbDocs.BOF Then
  While Not tbDocs.EOF
     quantity = quantity + 1
-    i = tbDocs!KredDebitor
-    Grid.TextMatrix(quantity, 0) = i
+    I = tbDocs!KredDebitor
+    Grid.TextMatrix(quantity, 0) = I
     Grid.TextMatrix(quantity, jnDate) = Format(tbDocs!xDate, "dd/mm/yy hh:nn:ss")
     If Not IsNull(tbDocs!rate) Then
         Grid.TextMatrix(quantity, jnRate) = Round(tbDocs!rate, 2)
@@ -673,11 +673,11 @@ If Not tbDocs.BOF Then
     Grid.TextMatrix(quantity, jnSubDebit) = schType(tbDocs!subDebit)
     Grid.TextMatrix(quantity, jnKredit) = schType(tbDocs!kredit, 255)
     Grid.TextMatrix(quantity, jnSubKredit) = schType(tbDocs!subKredit)
-    If i > 0 Then
-        sql = "SELECT Name From GuideFirms WHERE (((FirmId)=" & i & "));"
+    If I > 0 Then
+        sql = "SELECT Name From GuideFirms WHERE (((FirmId)=" & I & "));"
         GoTo AA
-    ElseIf i < 0 Then
-        sql = "SELECT Name From yDebKreditor WHERE (((id)=" & i & "));"
+    ElseIf I < 0 Then
+        sql = "SELECT Name From yDebKreditor WHERE (((id)=" & I & "));"
 '"W##.." - Если фирму или дебкредитора удалили, то поле б пустым
 AA:     If byErrSqlGetValues("W##428", sql, str) Then _
             Grid.TextMatrix(quantity, jnDebKreditor) = str
@@ -686,7 +686,7 @@ AA:     If byErrSqlGetValues("W##428", sql, str) Then _
     If Not IsNull(tbDocs!firm) Then _
         Grid.TextMatrix(quantity, jnFirm) = tbDocs!firm
     Grid.TextMatrix(quantity, jnOrdersNum) = tbDocs!ordersNum
-    Grid.TextMatrix(quantity, jnNote) = tbDocs!note
+    Grid.TextMatrix(quantity, jnNote) = tbDocs!Note
     Grid.TextMatrix(quantity, jnPurpose) = tbDocs!pDescript
     Grid.TextMatrix(quantity, jnDetail) = tbDocs!descript
     Grid.TextMatrix(quantity, jnVenture) = tbDocs!ventureName
@@ -740,7 +740,7 @@ Grid.TextMatrix(mousRow, jnPurpose) = purpose
 End Sub
 
 
-Function valueToBookField(myErrCod As String, value As String, field As String) As Boolean
+Function valueToBookField(myErrCod As String, Value As String, field As String) As Boolean
 Dim pId As Integer, dId As Integer, str As String
 
     valueToBookField = False
@@ -763,7 +763,7 @@ Dim pId As Integer, dId As Integer, str As String
         pId & strWhere
         GoTo AA
     Else
-        sql = "UPDATE yBook set " & field & " = " & value & strWhere
+        sql = "UPDATE yBook set " & field & " = " & Value & strWhere
 AA:
         If myExecute(myErrCod, sql) <> 0 Then Exit Function
         'Debug.Print sql
@@ -778,23 +778,23 @@ End Function
 
 
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer
+Dim H As Integer, W As Integer
 If WindowState = vbMinimized Then Exit Sub
 On Error Resume Next
-h = Me.Height - oldHeight
+H = Me.Height - oldHeight
 oldHeight = Me.Height
-w = Me.Width - oldWidth
+W = Me.Width - oldWidth
 oldWidth = Me.Width
-Grid.Height = Grid.Height + h
-Grid.Width = Grid.Width + w
+Grid.Height = Grid.Height + H
+Grid.Width = Grid.Width + W
 
-laKurs.left = laKurs.left + w
-tbKurs.left = tbKurs.left + w
-cmLoad.Top = cmLoad.Top + h
-cmAdd.Top = cmAdd.Top + h
-cmDel.Top = cmDel.Top + h
-cmExit.Top = cmExit.Top + h
-cmExcel.Top = cmExcel.Top + h
+laKurs.Left = laKurs.Left + W
+tbKurs.Left = tbKurs.Left + W
+cmLoad.Top = cmLoad.Top + H
+cmAdd.Top = cmAdd.Top + H
+cmDel.Top = cmDel.Top + H
+cmExit.Top = cmExit.Top + H
+cmExcel.Top = cmExcel.Top + H
 'cmExit.Left = cmExit.Left + w
 
 'Grid_EnterCell
@@ -873,7 +873,7 @@ Or mousCol = jnDebit Or mousCol = jnKredit Or mousCol = jnPurpose Then
 '    jGuidePurpose.detail = Grid.TextMatrix(mousRow, jnDetail)
     jGuidePurpose.Show vbModal
 ElseIf mousCol = jnDate Then
-    textBoxInGridCell tbMobile, Grid, left$(Grid.TextMatrix(mousRow, mousCol), 8)
+    textBoxInGridCell tbMobile, Grid, Left$(Grid.TextMatrix(mousRow, mousCol), 8)
 ElseIf mousCol = jnDebKreditor Then
     listBoxInGridCell lbGuids, Grid, "select" 'lbDebKreditor
 ElseIf mousCol = jnRate Then
@@ -950,7 +950,7 @@ End Sub
 Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
 
 If Grid.MouseRow = 0 And Shift = 2 Then
-        MsgBox "ColWidth = " & Grid.colWidth(Grid.MouseCol)
+        MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
 'ElseIf quantity > 0 And Grid.row <> Grid.RowSel Then
 ElseIf mousCol = jnVal Then
     laSum.Caption = Round(sumInGridCol(Grid, mousCol), 2)
@@ -1031,7 +1031,7 @@ End Sub
 Private Sub tbKurs_GotFocus()
 beChange = False
 End Sub
-Sub addRowToGrid(sum As String, note As String)
+Sub addRowToGrid(sum As String, Note As String)
 
 If quantity > 0 Then Grid.AddItem ("")
 quantity = quantity + 1
@@ -1046,7 +1046,7 @@ Grid.TextMatrix(Grid.row, jnDebit) = schType(debit)
 Grid.TextMatrix(Grid.row, jnSubDebit) = schType(subDebit)
 Grid.TextMatrix(Grid.row, jnKredit) = schType(kredit)
 Grid.TextMatrix(Grid.row, jnSubKredit) = schType(subKredit)
-Grid.TextMatrix(Grid.row, jnNote) = note 'tbDocs!note
+Grid.TextMatrix(Grid.row, jnNote) = Note 'tbDocs!note
 
 
 sql = "SELECT pDescript from yGuidePurpose WHERE (((Debit)='" & debit & _

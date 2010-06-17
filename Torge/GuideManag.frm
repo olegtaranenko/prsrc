@@ -122,10 +122,10 @@ textBoxInGridCell tbMobile, Grid
 End Sub
 
 Private Sub cmDel_Click()
-Dim i As Integer
+Dim I As Integer
 sql = "DELETE  From GuideManag WHERE (((ManagId)=" & gManagId & "));"
-i = myExecute("##440", sql, -198)
-If i = 0 Then
+I = myExecute("##440", sql, -198)
+If I = 0 Then
     quantity = quantity - 1
     If quantity > 0 Then
         Grid.RemoveItem mousRow
@@ -134,7 +134,7 @@ If i = 0 Then
     End If
     laSourM.Caption = ""
     laDestM.Caption = ""
-ElseIf i = -2 Then
+ElseIf I = -2 Then
     MsgBox "У этого Менеджера есть заказы либо он задействовон в справочниках " & _
     "Фирм.", , "Удаление невозможно!"
 End If
@@ -207,7 +207,7 @@ While Not tbGuide.EOF
     Grid.TextMatrix(quantity, gmManagId) = tbGuide!ManagId
     Grid.TextMatrix(quantity, gmManag) = tbGuide!Manag
     Grid.TextMatrix(quantity, gmForSort) = tbGuide!ForSort
-    Grid.TextMatrix(quantity, gmNote) = tbGuide!note
+    Grid.TextMatrix(quantity, gmNote) = tbGuide!Note
     Grid.AddItem ""
 
     tbGuide.MoveNext
@@ -230,21 +230,21 @@ Private Sub MSFlexGrid1_Click()
 End Sub
 
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer
+Dim H As Integer, W As Integer
 
 If WindowState = vbMinimized Then Exit Sub
 On Error Resume Next
-h = Me.Height - oldHeight
+H = Me.Height - oldHeight
 oldHeight = Me.Height
-w = Me.Width - oldWidth
+W = Me.Width - oldWidth
 oldWidth = Me.Width
-Grid.Height = Grid.Height + h
-Grid.Width = Grid.Width + w
+Grid.Height = Grid.Height + H
+Grid.Width = Grid.Width + W
 
-cmAdd.Top = cmAdd.Top + h
-cmDel.Top = cmDel.Top + h
-cmExit.Top = cmExit.Top + h
-cmExit.Left = cmExit.Left + w
+cmAdd.Top = cmAdd.Top + H
+cmDel.Top = cmDel.Top + H
+cmExit.Top = cmExit.Top + H
+cmExit.Left = cmExit.Left + W
 
 End Sub
 
@@ -347,7 +347,7 @@ End If
 End Sub
 
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim str As String, i As Integer
+Dim str As String, I As Integer
 
 If KeyCode = vbKeyReturn Then
   str = Trim(tbMobile.Text)
@@ -366,16 +366,16 @@ If KeyCode = vbKeyReturn Then
       Set tbGuide = myOpenRecordSet("##442", sql, dbOpenDynaset)
 '      If tbGuide Is Nothing Then Exit Sub
 '      tbGuide.Index = "Key"
-      i = 0
+      I = 0
       While Not tbGuide.EOF ' сначала исп-ем удаленные номера
-        If tbGuide!ManagId > i Then GoTo AA
+        If tbGuide!ManagId > I Then GoTo AA
         tbGuide.MoveNext
-        i = i + 1
+        I = I + 1
       Wend
       tbGuide.Close
-      If i > 255 Then msgOfEnd "##451", "переполнение GuideManag"
+      If I > 255 Then msgOfEnd "##451", "переполнение GuideManag"
       
-AA:   gManagId = i
+AA:   gManagId = I
 
       sql = "INSERT INTO GuideManag (ManagId, Manag) VALUES (" & _
       gManagId & ", '" & str & "')"
@@ -422,13 +422,13 @@ End If
 
 End Sub
 
-Function ValueToGuideManagField(myErrCod As String, value As String, _
+Function ValueToGuideManagField(myErrCod As String, Value As String, _
 field As String, Optional passErr As Integer = -11111) As Integer
 'Dim i As Integer
 
 ValueToGuideManagField = False
 sql = "UPDATE GuideManag SET [" & field & _
-"] = '" & value & "' WHERE (((ManagId)=" & gManagId & "));"
+"] = '" & Value & "' WHERE (((ManagId)=" & gManagId & "));"
 'MsgBox "sql = " & sql
 
 ValueToGuideManagField = myExecute(myErrCod, sql, passErr)

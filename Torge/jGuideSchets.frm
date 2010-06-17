@@ -95,19 +95,19 @@ textBoxInGridCell tbMobile, Grid
 End Sub
 
 Private Sub cmDel_Click()
-Dim i As String, j As String
+Dim I As String, J As String
 
-i = Grid.TextMatrix(mousRow, gsNumber)
+I = Grid.TextMatrix(mousRow, gsNumber)
 If Grid.TextMatrix(mousRow, gsSubNumber) = "" Then
-    j = "00"
+    J = "00"
 Else
-    j = Grid.TextMatrix(mousRow, gsSubNumber)
+    J = Grid.TextMatrix(mousRow, gsSubNumber)
 End If
-sql = "DELETE yGuideSchets WHERE (((number)='" & i & _
-"') AND ((subNumber)='" & j & "'));"
+sql = "DELETE yGuideSchets WHERE (((number)='" & I & _
+"') AND ((subNumber)='" & J & "'));"
 
-i = myExecute("##475", sql, -198)
-If i = 0 Then
+I = myExecute("##475", sql, -198)
+If I = 0 Then
     quantity = quantity - 1
     If quantity > 0 Then
         Grid.RemoveItem mousRow
@@ -115,7 +115,7 @@ If i = 0 Then
         clearGridRow Grid, 1
         cmDel.Enabled = False
     End If
-ElseIf i = -2 Then
+ElseIf I = -2 Then
     MsgBox "Этот счет используется.", , _
     "Удаление невозможно!"
 End If
@@ -166,7 +166,7 @@ If Not tbGuide.BOF Then
    If tbGuide!number <> "255" And tbGuide!number <> "" Then
     quantity = quantity + 1
     Grid.TextMatrix(quantity, gsNumber) = Journal.schType(tbGuide!number)
-    Grid.TextMatrix(quantity, gsNote) = tbGuide!note
+    Grid.TextMatrix(quantity, gsNote) = tbGuide!Note
     If tbGuide!subNumber <> 0 Then _
         Grid.TextMatrix(quantity, gsSubNumber) = Journal.schType(tbGuide!subNumber)
     Grid.TextMatrix(quantity, gsSubNote) = tbGuide!subNote
@@ -246,20 +246,20 @@ If Grid.MouseRow = 0 And Shift = 2 Then _
 End Sub
 
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim i As String, j As String, k As Integer
+Dim I As String, J As String, k As Integer
 
 If KeyCode = vbKeyReturn Then
 
   If mousCol = gsNumber Then
     'If Not IsNumeric(tbMobile.Text) Then GoTo ER1
-    i = Len(tbMobile.Text)
-    If i >= 4 Then
-        i = Left$(tbMobile.Text, 2)
-        j = Mid$(tbMobile.Text, 4)
+    I = Len(tbMobile.Text)
+    If I >= 4 Then
+        I = Left$(tbMobile.Text, 2)
+        J = Mid$(tbMobile.Text, 4)
         GoTo AA
-    ElseIf i = 2 Then
-        i = tbMobile.Text
-        j = "00"
+    ElseIf I = 2 Then
+        I = tbMobile.Text
+        J = "00"
 AA: '    Set tbGuide = myOpenRecordSet("##355", "yGuideSchets", dbOpenTable)
 '        If tbGuide Is Nothing Then Exit Sub
 '        tbGuide.Index = "Key"
@@ -272,7 +272,7 @@ AA: '    Set tbGuide = myOpenRecordSet("##355", "yGuideSchets", dbOpenTable)
 '            tbGuide.Close
             
             sql = "INSERT INTO yGuideSchets (number, subNumber) " & _
-            "VALUES ('" & i & "', '" & j & "')"
+            "VALUES ('" & I & "', '" & J & "')"
             k = myExecute("##355", sql, -193)
             If k = -2 Then
                 MsgBox "Счет " & tbMobile.Text & " уже есть!", , "Добавление невозможно"
@@ -280,8 +280,8 @@ AA: '    Set tbGuide = myOpenRecordSet("##355", "yGuideSchets", dbOpenTable)
             ElseIf k <> 0 Then
                 GoTo EN2
             End If
-            Grid.TextMatrix(mousRow, gsNumber) = Journal.schType(i)
-            Grid.TextMatrix(mousRow, gsSubNumber) = Journal.schType(j)
+            Grid.TextMatrix(mousRow, gsNumber) = Journal.schType(I)
+            Grid.TextMatrix(mousRow, gsSubNumber) = Journal.schType(J)
             quantity = quantity + 1 '$$4
             cmDel.Enabled = True    '
             GoTo EN2
@@ -295,7 +295,7 @@ ER1:    MsgBox "Введите номер счета и субсчета: первые две - номер счета, далее 
         "номер субсчета. Пример 99 или 19 НДС. Номера счета и субсчета могут быть текстовой строкой", _
         , "Недопустимый формат счета!"
 EN1:    tbMobile.SelStart = 0
-        tbMobile.SelLength = i
+        tbMobile.SelLength = I
         tbMobile.SetFocus
         Exit Sub
     End If
@@ -329,18 +329,18 @@ EN2: lbHide
 End If
 End Sub
 
-Function ValueToGuideSchetField(myErrCod As String, value As String, _
+Function ValueToGuideSchetField(myErrCod As String, Value As String, _
 field As String) As Boolean
-Dim i As String, j As String
+Dim I As String, J As String
         
 ValueToGuideSchetField = False
-i = Grid.TextMatrix(mousRow, gsNumber)
-If i = "" Then i = "00"
-j = Grid.TextMatrix(mousRow, gsSubNumber)
-If j = "" Then j = "00"
+I = Grid.TextMatrix(mousRow, gsNumber)
+If I = "" Then I = "00"
+J = Grid.TextMatrix(mousRow, gsSubNumber)
+If J = "" Then J = "00"
 
-sql = "UPDATE yGuideSchets SET [" & field & "] = " & value & _
-" WHERE (((number)='" & i & "') AND ((subNumber)='" & j & "'));"
+sql = "UPDATE yGuideSchets SET [" & field & "] = " & Value & _
+" WHERE (((number)='" & I & "') AND ((subNumber)='" & J & "'));"
 
 Debug.Print sql
 If myExecute(myErrCod, sql) = 0 Then ValueToGuideSchetField = True

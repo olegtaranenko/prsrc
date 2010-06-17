@@ -95,16 +95,16 @@ textBoxInGridCell tbMobile, Grid
 End Sub
 
 Private Sub cmDel_Click()
-Dim i As Integer
+Dim I As Integer
 
 sql = "DELETE From sGuideSource " & _
 "WHERE (((sGuideSource.sourceId)=" & gSourceId & "));"
-i = myExecute("##471", sql, -198)
-If i = 0 Then
+I = myExecute("##471", sql, -198)
+If I = 0 Then
     quantity = quantity - 1
     If quantity > 0 Then Grid.RemoveItem mousRow
     If quantity <= sysQuant Then cmDel.Visible = False
-ElseIf i = -2 Then
+ElseIf I = -2 Then
     MsgBox "Этот поставщик используется в некоторых документах.", , _
     "Удаление невозможно!"
 End If
@@ -156,21 +156,21 @@ Private Sub MSFlexGrid1_Click()
 End Sub
 
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer
+Dim H As Integer, W As Integer
 
 If WindowState = vbMinimized Then Exit Sub
 On Error Resume Next
-h = Me.Height - oldHeight
+H = Me.Height - oldHeight
 oldHeight = Me.Height
-w = Me.Width - oldWidth
+W = Me.Width - oldWidth
 oldWidth = Me.Width
-Grid.Height = Grid.Height + h
-Grid.Width = Grid.Width + w
+Grid.Height = Grid.Height + H
+Grid.Width = Grid.Width + W
 
-cmAdd.Top = cmAdd.Top + h
-cmDel.Top = cmDel.Top + h
-cmExit.Top = cmExit.Top + h
-cmExit.Left = cmExit.Left + w
+cmAdd.Top = cmAdd.Top + H
+cmDel.Top = cmDel.Top + H
+cmExit.Top = cmExit.Top + H
+cmExit.Left = cmExit.Left + W
 
 End Sub
 
@@ -257,7 +257,7 @@ If Grid.MouseRow = 0 And Shift = 2 Then _
 End Sub
 
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim str As String, i As Integer
+Dim str As String, I As Integer
 
 If KeyCode = vbKeyReturn Then
   str = Trim(tbMobile.Text)
@@ -292,8 +292,8 @@ If KeyCode = vbKeyReturn Then
 '      tbGuide.Close
       sql = "INSERT INTO sGuideSource (sourceId, SourceName) " & _
       "VALUES (" & gSourceId & ", '" & str & "')"
-      i = myExecute("##457", sql, -196)
-      If i <> 0 Then GoTo ERR0
+      I = myExecute("##457", sql, -196)
+      If I <> 0 Then GoTo ERR0
       
       wrkDefault.CommitTrans
       
@@ -301,8 +301,8 @@ If KeyCode = vbKeyReturn Then
       quantity = quantity + 1
       If quantity > sysQuant Then cmDel.Visible = True
     Else
-       i = ValueToGuideSourceField("##142", str, "sourceName", -196)
-       If i <> 0 Then GoTo ERR0
+       I = ValueToGuideSourceField("##142", str, "sourceName", -196)
+       If I <> 0 Then GoTo ERR0
 '       If i = 3022 Then
 '            MsgBox "Это название уже есть", , "Ошибка!"
 '            Exit Sub
@@ -338,7 +338,7 @@ Exit Sub
 '    End
 'End If
 ERR0:
-If i = -2 Then
+If I = -2 Then
     MsgBox "Это название уже есть (возможно в Cправочнике поставщиков " & _
     "или Справочнике внутренних подразделений - что тоже не допускается).", , "Ошибка - " & cErr
     tbMobile.SetFocus

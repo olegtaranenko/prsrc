@@ -293,7 +293,7 @@ Const widthDate = 735
 Private Sub ckBySub_Click()
 cmLoad.Caption = "Загрузить"
 
-If ckBySub.value = 0 Then
+If ckBySub.Value = 0 Then
     Journal.loadLbFromSchets lbSchets, -2  ' без субсчетов
 Else
     Journal.loadLbFromSchets lbSchets
@@ -338,7 +338,7 @@ End Sub
 Private Sub cmLoad_Click()
 Dim dSql As String, kSql As String, dateWhere As String, dateWhereBef As String
 Dim fields As String, from As String, xgroup  As String, str As String
-Dim sum As Double, i As Integer, d As Double, k As Double
+Dim sum As Double, I As Integer, d As Double, k As Double
 Dim OrdNums As Integer ', byOrdNums As String
     
 cmLoad.Caption = "Обновить"
@@ -347,7 +347,7 @@ Me.MousePointer = flexHourglass
 
 fields = "": xgroup = "": from = " FROM yBook ": sum = 0
 OrdNums = 0 ': byOrdNums = ""
-If ckPurpose.value = 1 Then
+If ckPurpose.Value = 1 Then
     OrdNums = 1
 '    byOrdNums = "1, "
     sum = widthPurpose
@@ -357,7 +357,7 @@ If ckPurpose.value = 1 Then
     "(yGuidePurpose.Kredit = yBook.Kredit) AND (yGuidePurpose.subDebit = " & _
     "yBook.subDebit) AND (yGuidePurpose.Debit = yBook.Debit)"
 End If
-If ckVenture.value = 1 Then
+If ckVenture.Value = 1 Then
     OrdNums = OrdNums + 1
 '    byOrdNums = byOrdNums & OrdNums & ", "
     sum = sum + widthVenture
@@ -366,21 +366,21 @@ If ckVenture.value = 1 Then
     If from = "" Then from = " FROM yBook "
     from = from & " Left JOIN GuideVenture v on v.ventureId = yBook.ventureId "
 End If
-If ckNumOrder.value = 1 Then
+If ckNumOrder.Value = 1 Then
     OrdNums = OrdNums + 1
 '    byOrdNums = byOrdNums & OrdNums & ", "
     sum = sum + widthNumOrder
     If fields <> "" Then fields = fields & ", "
     fields = fields & "yBook.ordersNum"
 End If
-If ckDKreditor.value = 1 Then
+If ckDKreditor.Value = 1 Then
     OrdNums = OrdNums + 1
 '    byOrdNums = byOrdNums & OrdNums & ", "
     sum = sum + widthDKreditor
     If fields <> "" Then fields = fields & ", "
     fields = fields & "yBook.KredDebitor"
 End If
-If ckDate.value = 1 Then
+If ckDate.Value = 1 Then
     OrdNums = OrdNums + 1
 '    byOrdNums = byOrdNums & OrdNums & ", "
 '    sum = sum + widthDate
@@ -401,11 +401,11 @@ If sum > 0 Then
 Else
     sum = 1
 End If
-Grid.colWidth(byPurpose) = sum * widthPurpose * ckPurpose.value
-Grid.colWidth(byVenture) = sum * widthVenture * ckVenture.value
-Grid.colWidth(byOrdersNum) = sum * widthNumOrder * ckNumOrder.value
-Grid.colWidth(byDebKreditor) = sum * widthDKreditor * ckDKreditor.value
-Grid.colWidth(byDate) = widthDate * ckDate.value
+Grid.ColWidth(byPurpose) = sum * widthPurpose * ckPurpose.Value
+Grid.ColWidth(byVenture) = sum * widthVenture * ckVenture.Value
+Grid.ColWidth(byOrdersNum) = sum * widthNumOrder * ckNumOrder.Value
+Grid.ColWidth(byDebKreditor) = sum * widthDKreditor * ckDKreditor.Value
+Grid.ColWidth(byDate) = widthDate * ckDate.Value
 
 dateWhereBef = getWhereByDateBoxes(Me, "yBook.xDate", begDate, "befo")
 dateWhere = getWhereByDateBoxes(Me, "yBook.xDate", begDate)
@@ -422,7 +422,7 @@ End If
 kreditSql = lbSchetsToSql("Kredit")
 
 
-If ckCurrentRate.value Then
+If ckCurrentRate.Value Then
     dSql = " Sum(IF" & debitSql & " THEN UEsumm * rate / " & rate & " ELSE 0 ENDIF)"
     kSql = " Sum(IF" & kreditSql & " THEN UEsumm * rate / " & rate & " ELSE 0 ENDIF)"
 Else
@@ -435,7 +435,7 @@ sql = "SELECT Sum(begDebit), Sum(begKredit) from yGuideSchets " & _
     "WHERE " & lbSchetsToSql & ";"
 
 If Not byErrSqlGetValues("##379", sql, d, k) Then GoTo EN1
-If ckCurrentRate.value Then
+If ckCurrentRate.Value Then
     d = d * 30 / rate: k = k * 30 / rate
 End If
 sum = d - k
@@ -458,9 +458,9 @@ Else
     tbBegKredit.Text = 0
 End If
     
-str = "": For i = 1 To OrdNums: str = str & i & ", ": Next i
+str = "": For I = 1 To OrdNums: str = str & I & ", ": Next I
 If str <> "" Then
-    str = " ORDER BY " & left$(str, Len(str) - 2)
+    str = " ORDER BY " & Left$(str, Len(str) - 2)
 End If
 
 sql = "SELECT " & fields & dSql & " AS Debit," & kSql & " AS Kredit" & from & _
@@ -477,27 +477,27 @@ quantity = 0
 d = 0: k = 0
 While Not table.EOF
     quantity = quantity + 1
-    If ckVenture.value = 1 Then _
+    If ckVenture.Value = 1 Then _
         If Not IsNull(table!ventureName) Then Grid.TextMatrix(quantity, byVenture) = table!ventureName
-    If ckPurpose.value = 1 Then _
+    If ckPurpose.Value = 1 Then _
         If Not IsNull(table!pDescript) Then Grid.TextMatrix(quantity, byPurpose) = table!pDescript
-    If ckNumOrder.value = 1 Then _
+    If ckNumOrder.Value = 1 Then _
         If Not IsNull(table!ordersNum) Then Grid.TextMatrix(quantity, byOrdersNum) = table!ordersNum
-    If ckDKreditor.value = 1 Then
-        i = table!KredDebitor
-        Grid.TextMatrix(quantity, 0) = i ' нужен для reportDateWhere
-        If i > 0 Then
-            sql = "SELECT Name From GuideFirms WHERE FirmId =" & i
+    If ckDKreditor.Value = 1 Then
+        I = table!KredDebitor
+        Grid.TextMatrix(quantity, 0) = I ' нужен для reportDateWhere
+        If I > 0 Then
+            sql = "SELECT Name From GuideFirms WHERE FirmId =" & I
             GoTo AA
-        ElseIf i < 0 Then
-            sql = "SELECT Name From yDebKreditor WHERE id =" & i
+        ElseIf I < 0 Then
+            sql = "SELECT Name From yDebKreditor WHERE id =" & I
 AA:         If byErrSqlGetValues("W##362", sql, str) Then _
             Grid.TextMatrix(quantity, byDebKreditor) = str
         End If
     End If
-    If ckDate.value = 1 Then _
-        Grid.TextMatrix(quantity, byDate) = right$(table!CDate, 2) & _
-        Mid$(table!CDate, 3, 4) & left$(table!CDate, 2)
+    If ckDate.Value = 1 Then _
+        Grid.TextMatrix(quantity, byDate) = Right$(table!CDate, 2) & _
+        Mid$(table!CDate, 3, 4) & Left$(table!CDate, 2)
     d = d + table!debit
     Grid.TextMatrix(quantity, byDebit) = Round(table!debit, 2)
     k = k + table!kredit
@@ -540,16 +540,16 @@ oldWidth = Me.Width
 tbStartDate.Text = "01." & Format(CurDate, "mm/yy")
 tbEndDate.Text = Format(CurDate, "dd/mm/yy")
 
-ckBySub.value = 0
+ckBySub.Value = 0
 
 Grid.FormatString = "|<Назначение|<Предприятие|<Договор|Дебитор\Кредитор|<Дата|Дебет|Кредит"
-Grid.colWidth(0) = 0
-Grid.colWidth(byPurpose) = 0
-Grid.colWidth(byOrdersNum) = 0
-Grid.colWidth(byDebKreditor) = 0
-Grid.colWidth(byDate) = 0
-Grid.colWidth(byDebit) = 1000
-Grid.colWidth(byKredit) = 1000
+Grid.ColWidth(0) = 0
+Grid.ColWidth(byPurpose) = 0
+Grid.ColWidth(byOrdersNum) = 0
+Grid.ColWidth(byDebKreditor) = 0
+Grid.ColWidth(byDate) = 0
+Grid.ColWidth(byDebit) = 1000
+Grid.ColWidth(byKredit) = 1000
 isLoad = True
 
 
@@ -557,35 +557,35 @@ End Sub
 
 
 Sub lbResize()
-Dim heig As Integer, i As Integer
+Dim heig As Integer, I As Integer
 
 'i = Int((cmLoad.Top - lbSchets.Top) / 195)
-i = Int((laGroup.Top - lbSchets.Top) / 195)
-If i > lbSchets.ListCount Then i = lbSchets.ListCount
-lbSchets.Height = 195 * i + 100
+I = Int((laGroup.Top - lbSchets.Top) / 195)
+If I > lbSchets.ListCount Then I = lbSchets.ListCount
+lbSchets.Height = 195 * I + 100
 End Sub
 
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer
+Dim H As Integer, W As Integer
 If WindowState = vbMinimized Then Exit Sub
 On Error Resume Next
 
-h = Me.Height - oldHeight
+H = Me.Height - oldHeight
 oldHeight = Me.Height
 'w = Me.Width - oldWidth
 'oldWidth = Me.Width
 Me.Width = oldWidth
-Grid.Height = Grid.Height + h
+Grid.Height = Grid.Height + H
 'Grid.Width = Grid.Width + w
 
-cmLoad.Top = cmLoad.Top + h
-cmExit.Top = cmExit.Top + h
-laGroup.Top = laGroup.Top + h
-ckPurpose.Top = ckPurpose.Top + h
-ckVenture.Top = ckVenture.Top + h
-ckNumOrder.Top = ckNumOrder.Top + h
-ckDKreditor.Top = ckDKreditor.Top + h
-ckDate.Top = ckDate.Top + h
+cmLoad.Top = cmLoad.Top + H
+cmExit.Top = cmExit.Top + H
+laGroup.Top = laGroup.Top + H
+ckPurpose.Top = ckPurpose.Top + H
+ckVenture.Top = ckVenture.Top + H
+ckNumOrder.Top = ckNumOrder.Top + H
+ckDKreditor.Top = ckDKreditor.Top + H
+ckDate.Top = ckDate.Top + H
 'cmExit.Left = cmExit.Left + w
 
 lbResize
@@ -605,9 +605,9 @@ Grid.TextMatrix(mousRow, mousCol), vbDefaultButton2 Or vbYesNo, _
 "Продолжить?") = vbNo Then Exit Sub
  
 'строим SQL исходя из установок на момент нажатия <Обновить>
-If Grid.colWidth(byDate) > 0 Then ' тогда даты периода не учитываем
+If Grid.ColWidth(byDate) > 0 Then ' тогда даты периода не учитываем
     str = Grid.TextMatrix(mousRow, byDate)
-    str = left$(str, 6) & "20" & Mid$(str, 7, 2)
+    str = Left$(str, 6) & "20" & Mid$(str, 7, 2)
     filtrWhere = "((yBook.xDate) Like '" & str & "*')"
 Else
     filtrWhere = reportDateWhere
@@ -629,22 +629,22 @@ Else
 End If
 
 'по ширине узнаем, какие галки б. установлены
-If Grid.colWidth(byPurpose) > 0 Then
+If Grid.ColWidth(byPurpose) > 0 Then
     If filtrWhere <> "" Then filtrWhere = filtrWhere & " AND "
     filtrWhere = filtrWhere & "((yGuidePurpose.pDescript)='" & _
     Grid.TextMatrix(mousRow, byPurpose) & "')"
 End If
-If Grid.colWidth(byVenture) > 0 Then
+If Grid.ColWidth(byVenture) > 0 Then
     If filtrWhere <> "" Then filtrWhere = filtrWhere & " AND "
     filtrWhere = filtrWhere & "(isnull(v.ventureName, '')='" & _
     Grid.TextMatrix(mousRow, byVenture) & "')"
 End If
-If Grid.colWidth(byOrdersNum) > 0 Then
+If Grid.ColWidth(byOrdersNum) > 0 Then
     If filtrWhere <> "" Then filtrWhere = filtrWhere & " AND "
     filtrWhere = filtrWhere & "((yBook.OrdersNum)='" & _
     Grid.TextMatrix(mousRow, byOrdersNum) & "')"
 End If
-If Grid.colWidth(byDebKreditor) > 0 Then
+If Grid.ColWidth(byDebKreditor) > 0 Then
     If filtrWhere <> "" Then filtrWhere = filtrWhere & " AND "
     filtrWhere = filtrWhere & "((yBook.KredDebitor)=" & _
     Grid.TextMatrix(mousRow, 0) & ")"
@@ -676,7 +676,7 @@ End Sub
 
 Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then _
-        MsgBox "ColWidth = " & Grid.colWidth(Grid.MouseCol)
+        MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
 
 End Sub
 
@@ -697,7 +697,7 @@ cmLoad.Caption = "Загрузить"
 End Sub
 
 Function lbSchetsToSql(Optional DKredit As String = "") As String
-Dim i As Integer, schetSql As String, subSchet As String
+Dim I As Integer, schetSql As String, subSchet As String
 Dim sTable As String
 
 lbSchetsToSql = ""
@@ -706,12 +706,12 @@ If DKredit = "" Then
 Else
     sTable = "[yBook].["
 End If
-For i = 0 To lbSchets.ListCount - 1
-    If lbSchets.Selected(i) Then
+For I = 0 To lbSchets.ListCount - 1
+    If lbSchets.Selected(I) Then
 '        schetSql = "[yBook].[" & DKredit & "]=" & Left$(lbSchets.List(i), 2)
-        schetSql = sTable & DKredit & "]=" & "'" & left$(lbSchets.List(i), 2) & "'"
-        If ckBySub.value = 1 Then
-            subSchet = "'" & Mid$(lbSchets.List(i), 4) & "'"
+        schetSql = sTable & DKredit & "]=" & "'" & Left$(lbSchets.List(I), 2) & "'"
+        If ckBySub.Value = 1 Then
+            subSchet = "'" & Mid$(lbSchets.List(I), 4) & "'"
             If subSchet = "''" Then subSchet = "'00'"
 '            If Not IsNumeric(subSchet) Then
 '                subSchet = "'" & subSchet & "'"
@@ -728,7 +728,7 @@ For i = 0 To lbSchets.ListCount - 1
             lbSchetsToSql = lbSchetsToSql & " OR (" & schetSql & ")"
         End If
     End If
-Next i
+Next I
 End Function
 
 

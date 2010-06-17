@@ -87,7 +87,7 @@ Grid_EnterCell
 End Sub
 
 Sub paramLoad()
-Dim i As Integer
+Dim I As Integer
 sql = "SELECT yGuidePurpose.pDescript, yGuidePurpose.Debit, " & _
 "yGuidePurpose.Kredit, yGuidePurpose.subDebit, yGuidePurpose.subKredit, " & _
 "yGuidePurpose.auto " & _
@@ -98,16 +98,16 @@ sql = "SELECT yGuidePurpose.pDescript, yGuidePurpose.Debit, " & _
 Set tbDocs = myOpenRecordSet("##395", sql, dbOpenForwardOnly)
 While Not tbDocs.EOF
   If tbDocs!AUTO = "r" Then
-    i = 1: GoTo AA:
+    I = 1: GoTo AA:
   ElseIf tbDocs!AUTO = "z" Then
-    i = 2: GoTo AA:
+    I = 2: GoTo AA:
   ElseIf tbDocs!AUTO = "m" Then
-    i = 3
-AA: Grid.TextMatrix(i, jnDebit) = Journal.schType(tbDocs!debit, 255)
-    Grid.TextMatrix(i, jnSubDebit) = Journal.schType(tbDocs!subDebit)
-    Grid.TextMatrix(i, jnKredit) = Journal.schType(tbDocs!kredit, 255)
-    Grid.TextMatrix(i, jnSubKredit) = Journal.schType(tbDocs!subKredit)
-    Grid.TextMatrix(i, jnPurpose) = tbDocs!pDescript
+    I = 3
+AA: Grid.TextMatrix(I, jnDebit) = Journal.schType(tbDocs!debit, 255)
+    Grid.TextMatrix(I, jnSubDebit) = Journal.schType(tbDocs!subDebit)
+    Grid.TextMatrix(I, jnKredit) = Journal.schType(tbDocs!kredit, 255)
+    Grid.TextMatrix(I, jnSubKredit) = Journal.schType(tbDocs!subKredit)
+    Grid.TextMatrix(I, jnPurpose) = tbDocs!pDescript
 '    Grid.TextMatrix(i, jnDetail) = tbDocs!descript
   End If
   tbDocs.MoveNext

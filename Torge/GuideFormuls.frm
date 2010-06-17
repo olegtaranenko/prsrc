@@ -154,7 +154,7 @@ textBoxInGridCell tbMobile, Grid
 End Sub
 
 Private Sub cmDel_Click()
-Dim i As Integer, str As String
+Dim I As Integer, str As String
 
 str = Grid.TextMatrix(mousRow, gfNomer)
 If MsgBox("Удалить формулу №" & str & " из Справочника", _
@@ -163,11 +163,11 @@ If MsgBox("Удалить формулу №" & str & " из Справочника", _
 
 sql = "DELETE From sGuideFormuls " & _
 "WHERE (((sGuideFormuls.nomer)=" & str & "));"
-i = myExecute("##304", sql, -198)
-If i = 0 Then
+I = myExecute("##304", sql, -198)
+If I = 0 Then
     quantity = quantity - 1
     If quantity > 0 Then Grid.RemoveItem mousRow
-ElseIf i = -2 Then
+ElseIf I = -2 Then
     MsgBox "Эта формула используется в справочнике ном-ры или изделий.", , _
     "Удаление невозможно!"
 End If
@@ -200,7 +200,7 @@ End If
 End Sub
 
 Private Sub Form_KeyPress(KeyAscii As Integer)
-Dim i As Integer
+Dim I As Integer
 
 If tbMobile.Visible And mousCol = gfFormula And KeyAscii > 57 Then
     If KeyAscii = 222 Or KeyAscii = 254 Then 'точка на Рус.
@@ -208,20 +208,20 @@ If tbMobile.Visible And mousCol = gfFormula And KeyAscii > 57 Then
     Else
         KeyAscii = 0
         If Grid.TextMatrix(mousRow, gfForWho) = lbForWho.List(0) Then
-            i = 0
+            I = 0
 '            listBoxInGridCell lbPrams(0), Grid
 '            lbPrams(0).Top = lbPrams(0).Top + Grid.CellHeight
         ElseIf Grid.TextMatrix(mousRow, gfForWho) = lbForWho.List(2) Then
-            i = 1
+            I = 1
 '            listBoxInGridCell lbPrams(1), Grid
 '            lbPrams(1).Top = lbPrams(1).Top + Grid.CellHeight
         Else
-            i = 2
+            I = 2
 '            listBoxInGridCell lbPrams2, Grid
 '            lbPrams2.Top = lbPrams2.Top + Grid.CellHeight
         End If
-        listBoxInGridCell lbPrams(i), Grid
-        lbPrams(i).Top = lbPrams(i).Top + Grid.CellHeight
+        listBoxInGridCell lbPrams(I), Grid
+        lbPrams(I).Top = lbPrams(I).Top + Grid.CellHeight
     End If
 End If
 
@@ -232,11 +232,11 @@ oldHeight = Me.Height
 oldWidth = Me.Width
 
 Grid.FormatString = "|№|<Принадлежность|<Формула|<Примечание"
-Grid.colWidth(0) = 0
-Grid.colWidth(gfNomer) = 450
-Grid.colWidth(gfFormula) = 6120
-Grid.colWidth(gfForWho) = 1395
-Grid.colWidth(gfNote) = 1980
+Grid.ColWidth(0) = 0
+Grid.ColWidth(gfNomer) = 450
+Grid.ColWidth(gfFormula) = 6120
+Grid.ColWidth(gfForWho) = 1395
+Grid.ColWidth(gfNote) = 1980
 sql = "SELECT sGuideFormuls.Formula, sGuideFormuls.Note, " & _
 "sGuideFormuls.forWho, sGuideFormuls.nomer " & _
 "From sGuideFormuls  ORDER BY sGuideFormuls.nomer;"
@@ -256,7 +256,7 @@ While Not tbGuide.EOF
     Grid.TextMatrix(quantity, gfNomer) = tbGuide!nomer
     Grid.TextMatrix(quantity, gfFormula) = tbGuide!formula
     Grid.TextMatrix(quantity, gfForWho) = tbGuide!forWho
-    Grid.TextMatrix(quantity, gfNote) = tbGuide!note
+    Grid.TextMatrix(quantity, gfNote) = tbGuide!Note
     Grid.AddItem ""
 NXT1:
     tbGuide.MoveNext
@@ -290,21 +290,21 @@ Private Sub MSFlexGrid1_Click()
 End Sub
 
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer
+Dim H As Integer, W As Integer
 
 If WindowState = vbMinimized Then Exit Sub
 On Error Resume Next
-h = Me.Height - oldHeight
+H = Me.Height - oldHeight
 oldHeight = Me.Height
-w = Me.Width - oldWidth
+W = Me.Width - oldWidth
 oldWidth = Me.Width
-Grid.Height = Grid.Height + h
-Grid.Width = Grid.Width + w
+Grid.Height = Grid.Height + H
+Grid.Width = Grid.Width + W
 
-cmAdd.Top = cmAdd.Top + h
-cmDel.Top = cmDel.Top + h
-cmExit.Top = cmExit.Top + h
-cmExit.left = cmExit.left + w
+cmAdd.Top = cmAdd.Top + H
+cmDel.Top = cmDel.Top + H
+cmExit.Top = cmExit.Top + H
+cmExit.Left = cmExit.Left + W
 
 End Sub
 
@@ -392,7 +392,7 @@ End Sub
 
 Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then _
-        MsgBox "ColWidth = " & Grid.colWidth(Grid.MouseCol)
+        MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
 
 End Sub
 
@@ -421,14 +421,14 @@ End If
 End Sub
 
 Private Sub lbPrams_DblClick(index As Integer)
-Dim str As String, i As Integer '
+Dim str As String, I As Integer '
 
-str = left$(tbMobile.Text, tbMobile.SelStart)
+str = Left$(tbMobile.Text, tbMobile.SelStart)
 str = str & lbPrams(index).Text
-i = Len(str)
+I = Len(str)
 str = str & Mid$(tbMobile.Text, tbMobile.SelStart + 1)
 tbMobile.Text = str
-tbMobile.SelStart = i
+tbMobile.SelStart = I
 
 tbMobile.SetFocus
 lbPrams(index).Visible = False
@@ -490,7 +490,7 @@ End If
 End Sub
 
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim str As String, i As Integer
+Dim str As String, I As Integer
 
 'notValidKey = False
 If KeyCode = vbKeyReturn Then
@@ -513,16 +513,16 @@ If KeyCode = vbKeyReturn Then
              
       sql = "INSERT INTO sGuideFormuls (nomer, formula, forWho) " & _
       "VALUES (" & str & ", '1' ,'" & lbForWho.List(0) & "')"
-      i = myExecute("##472", sql, -193)
-      If i <> 0 Then GoTo ERR0
+      I = myExecute("##472", sql, -193)
+      If I <> 0 Then GoTo ERR0
       
       
       Grid.TextMatrix(mousRow, gfNomer) = str
       Grid.TextMatrix(mousRow, gfFormula) = "1"
       Grid.TextMatrix(mousRow, gfForWho) = lbForWho.List(0)
     Else
-       i = ValueToFormulsField("##307", str, "nomer", -193)
-       If i <> 0 Then GoTo ERR0
+       I = ValueToFormulsField("##307", str, "nomer", -193)
+       If I <> 0 Then GoTo ERR0
 '       If i = 3022 Then
 '            MsgBox "Этот номер уже задействован.", , "Ошибка!"
 '            Exit Sub
@@ -532,7 +532,7 @@ If KeyCode = vbKeyReturn Then
     End If
   ElseIf mousCol = gfFormula Then
        If Not checkFormul(str) Then Exit Sub
-       i = ValueToFormulsField("##303", str, "Formula")
+       I = ValueToFormulsField("##303", str, "Formula")
   ElseIf mousCol = gfNote Then
        If ValueToFormulsField("##303", str, "Note") <> 0 Then GoTo EN1
   End If
@@ -562,7 +562,7 @@ Exit Sub
 'End If
 
 ERR0:
-If i = -2 Then
+If I = -2 Then
     MsgBox "Этот номер уже задействован", , "Ошибка - " & cErr
     tbMobile.SetFocus
 Else
@@ -571,13 +571,13 @@ End If
 
 End Sub
 
-Function ValueToFormulsField(myErrCod As String, value As String, _
+Function ValueToFormulsField(myErrCod As String, Value As String, _
 field As String, Optional passErr As Integer = -1) As Integer
-Dim i As Integer
+Dim I As Integer
 
 ValueToFormulsField = False
 
-sql = "UPDATE sGuideFormuls SET sGuideFormuls." & field & " = '" & value & _
+sql = "UPDATE sGuideFormuls SET sGuideFormuls." & field & " = '" & Value & _
 "' WHERE (((sGuideFormuls.nomer)=" & Grid.TextMatrix(mousRow, gfNomer) & "));"
 'MsgBox "sql = " & sql
 

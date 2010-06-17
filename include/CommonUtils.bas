@@ -3,7 +3,7 @@ Option Explicit
 
 Type MapEntry
     Key As String
-    value As Variant
+    Value As Variant
 End Type
 
 
@@ -28,7 +28,7 @@ Sub fatalError(msg As String, Optional lookAdmin As String)
 End Sub
 
 Sub getAppInfo(ByRef version As VersionInfo)
-    version.path = App.path & "\" & App.exeName & ".exe"
+    version.path = App.path & "\" & App.EXEName & ".exe"
     version.maj = App.Major
     version.min = App.Minor
     version.bld = App.Revision

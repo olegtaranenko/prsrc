@@ -122,7 +122,7 @@ Attribute VB_Exposed = False
 Option Explicit
 Dim isOn As Boolean, isSinhro As Boolean ', baseIsOpen As Boolean
 Sub dummy()
-Dim IsEmpty, Table, ManagId
+Dim IsEmpty, Table, ManagId, Name
 End Sub
 Sub nextWindow()
 Dim str As String

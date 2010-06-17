@@ -164,10 +164,10 @@ Sub laControl(Optional col As String = "")
 End Sub
 
 Sub fitFormToGrid()
-Dim i As Long, delta As Long
+Dim I As Long, delta As Long
 
-    i = 350 + (Grid.CellHeight + 17) * Grid.Rows
-    delta = i - Grid.Height
+    I = 350 + (Grid.CellHeight + 17) * Grid.Rows
+    delta = I - Grid.Height
     
     If Me.Height + delta > (Screen.Height - 900) Then _
         delta = (Screen.Height - 900) - Me.Height
@@ -175,9 +175,9 @@ Dim i As Long, delta As Long
     
     'Grid.Height = i
     delta = 0
-    For i = 0 To Grid.Cols - 1
-        delta = delta + Grid.ColWidth(i)
-    Next i
+    For I = 0 To Grid.Cols - 1
+        delta = delta + Grid.ColWidth(I)
+    Next I
     Me.Width = delta + 700
 
 End Sub
@@ -378,17 +378,17 @@ End Function
 
 
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer
+Dim H As Integer, W As Integer
 
 If WindowState = vbMinimized Then Exit Sub
 On Error Resume Next
 
-h = Me.Height - oldHeight
+H = Me.Height - oldHeight
 oldHeight = Me.Height
-w = Me.Width - oldWidth
+W = Me.Width - oldWidth
 oldWidth = Me.Width
-Grid.Height = Grid.Height + h
-Grid.Width = Grid.Width + w
+Grid.Height = Grid.Height + H
+Grid.Width = Grid.Width + W
 cmPrint.Top = Grid.Top + Grid.Height + 50
 cmExel.Top = cmPrint.Top
 cmExit.Top = cmPrint.Top

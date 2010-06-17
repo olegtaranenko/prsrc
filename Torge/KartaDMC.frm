@@ -243,7 +243,7 @@ End Sub
 Private Sub cmDocs_Click()
 Exit Sub
 'Кнопка отключена поскольку Расходные накладные убрали их этой программы
-Dim i As Integer, str As String
+Dim I As Integer, str As String
 
 DMCnomNomCur = Grid.TextMatrix(Grid.row, ktNomenk)
 'numDoc = Documents.Grid.TextMatrix(Grid.row, ktDocNum)
@@ -259,14 +259,14 @@ GridToExcel Grid, "Карта движения по номенклатуре '" & gNomNom & "'"
 End Sub
 
 Private Sub cmLoad_Click()
-Dim i As Integer
+Dim I As Integer
 
 Me.MousePointer = flexHourglass
 Grid.Visible = False
 quantity = 0
-For i = 1 To UBound(DMCnomNom())
-    getKartaDMC DMCnomNom(i)
-Next i
+For I = 1 To UBound(DMCnomNom())
+    getKartaDMC DMCnomNom(I)
+Next I
 Grid.Visible = True
 Me.MousePointer = flexDefault
 End Sub
@@ -281,7 +281,7 @@ End Sub
 
 'reg='check' - проверка по всему диапазону
 Public Sub getKartaDMC(nNom As String, Optional reg As String = "")
-Dim str2 As String, i As Integer, str As String, per As Single
+Dim str2 As String, I As Integer, str As String, per As Single
 Dim firstBad As Long, head As Integer, ed_izm As String, ed_izm2 As String
 Dim prev As Integer, ost As Single, bOst As Single, iBef As Integer
 Dim ost_outcome As Single, ost_income As Single
@@ -293,7 +293,7 @@ sql = "SELECT sGuideNomenk.nomName, " & _
 "From sGuideNomenk WHERE (((sGuideNomenk.nomNom)='" & nNom & "'));"
 bOst = 0
 byErrSqlGetValues "##132", sql, nomenkName, ed_izm, ed_izm2, per ' $$4
-If ckPerList.value = 1 Then
+If ckPerList.Value = 1 Then
     ed_izm = ed_izm2
 Else
     per = 1
@@ -354,18 +354,18 @@ End If
 prev = -1: iBef = -1: firstBad = 0
 While Not tbDMC.EOF
     If quantity > 0 Or head = 1 Then Grid.AddItem ""
-    i = DateDiff("d", begDate, tbDMC!xDate)
+    I = DateDiff("d", begDate, tbDMC!xDate)
 '    If i > iBef And ost < 0 And head = 1 Then ' если на посл. запись предыдущ дня
-    If i > iBef And ost < 0 Then ' если на посл. запись предыдущ дня
+    If I > iBef And ost < 0 Then ' если на посл. запись предыдущ дня
         Grid.row = quantity + 1  ' были "-" остатки то предыдущ строку
         Grid.col = ktOstat       ' делаем красной
         Grid.CellForeColor = 200 '
         Grid.CellFontBold = True 'в 2х местах
         If firstBad = 0 Then firstBad = Grid.row ' первая строка с "-"
     End If
-    iBef = i
+    iBef = I
     quantity = quantity + 1
-    Grid.TextMatrix(quantity + head, ktDate) = Format(begDate + i, "dd.mm.yy")
+    Grid.TextMatrix(quantity + head, ktDate) = Format(begDate + I, "dd.mm.yy")
     
     str = tbDMC!numDoc
     If tbDMC!numExt < 254 Then str = str & "/" & tbDMC!numExt
@@ -503,23 +503,23 @@ isLoad = True
 End Sub
 
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer
+Dim H As Integer, W As Integer
 
 If WindowState = vbMinimized Then Exit Sub
 On Error Resume Next
-h = Me.Height - oldHeight
+H = Me.Height - oldHeight
 oldHeight = Me.Height
-w = Me.Width - oldWidth
+W = Me.Width - oldWidth
 oldWidth = Me.Width
-Grid.Height = Grid.Height + h
-Grid.Width = Grid.Width + w
-cmLoad.Top = cmLoad.Top + h
-Label1.Top = Label1.Top + h
-laQuant.Top = laQuant.Top + h
-cmCheck.Top = cmCheck.Top + h
-cmDocs.Top = cmDocs.Top + h
-cmPrint.Top = cmPrint.Top + h
-cmExcel.Top = cmExcel.Top + h
+Grid.Height = Grid.Height + H
+Grid.Width = Grid.Width + W
+cmLoad.Top = cmLoad.Top + H
+Label1.Top = Label1.Top + H
+laQuant.Top = laQuant.Top + H
+cmCheck.Top = cmCheck.Top + H
+cmDocs.Top = cmDocs.Top + H
+cmPrint.Top = cmPrint.Top + H
+cmExcel.Top = cmExcel.Top + H
 '.Left = .Left + w
 
 End Sub

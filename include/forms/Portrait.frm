@@ -145,19 +145,19 @@ Dim rownum As Integer
     Me.Grid.FormatString = "|Номер зак.|Дата зак.|>Заказано|>Оплачено|>К-во.мат.|>Сумма мат."
     rownum = 1
     table.MoveFirst
-    Dim i As Integer ' номер столбца
+    Dim I As Integer ' номер столбца
     While Not table.EOF
         
-        i = 1
+        I = 1
         If rownum > 1 Then
             Grid.AddItem ""
         End If
-        Grid.TextMatrix(rownum, i) = table!numorder: i = i + 1
-        Grid.TextMatrix(rownum, i) = table!inDate: i = i + 1
-        Grid.TextMatrix(rownum, i) = Format(table!orderOrdered, "# ###.00"): i = i + 1
-        Grid.TextMatrix(rownum, i) = Format(table!orderPaid, "# ###.00"): i = i + 1
-        Grid.TextMatrix(rownum, i) = Format(table!materialQty, "# ###.00"): i = i + 1
-        Grid.TextMatrix(rownum, i) = Format(table!materialSaled, "# ###.00"): i = i + 1
+        Grid.TextMatrix(rownum, I) = table!Numorder: I = I + 1
+        Grid.TextMatrix(rownum, I) = table!inDate: I = I + 1
+        Grid.TextMatrix(rownum, I) = Format(table!orderOrdered, "# ###.00"): I = I + 1
+        Grid.TextMatrix(rownum, I) = Format(table!orderPaid, "# ###.00"): I = I + 1
+        Grid.TextMatrix(rownum, I) = Format(table!materialQty, "# ###.00"): I = I + 1
+        Grid.TextMatrix(rownum, I) = Format(table!materialSaled, "# ###.00"): I = I + 1
         
         table.MoveNext
         rownum = rownum + 1
@@ -168,24 +168,24 @@ Dim rownum As Integer
 End Sub
 
 Private Sub Form_Resize()
-    Dim h As Integer, w As Integer
+    Dim H As Integer, W As Integer
     
     If Me.WindowState = vbMinimized Then Exit Sub
     On Error Resume Next
     
-    h = Me.Height - oldHeight
+    H = Me.Height - oldHeight
     oldHeight = Me.Height
-    w = Me.Width - oldWidth
+    W = Me.Width - oldWidth
     oldWidth = Me.Width
-    Grid.Height = Grid.Height + h
-    Grid.Width = Grid.Width + w
-    laRecCount.Top = laRecCount.Top + h
-    laCount.Top = laCount.Top + h
-    laHeader.Width = laHeader.Width + w
-    cmExel.Top = cmExel.Top + h
-    cmPrint.Top = cmPrint.Top + h
-    cmExit.Top = cmExit.Top + h
-    cmExit.left = cmExit.left + w
+    Grid.Height = Grid.Height + H
+    Grid.Width = Grid.Width + W
+    laRecCount.Top = laRecCount.Top + H
+    laCount.Top = laCount.Top + H
+    laHeader.Width = laHeader.Width + W
+    cmExel.Top = cmExel.Top + H
+    cmPrint.Top = cmPrint.Top + H
+    cmExit.Top = cmExit.Top + H
+    cmExit.Left = cmExit.Left + W
 End Sub
 
 Private Sub Grid_Click()
@@ -210,7 +210,7 @@ End Sub
 
 Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
     If Grid.MouseRow = 0 And Shift = vbKeyShift Then
-        MsgBox "ColWidth = " & Grid.colWidth(Grid.MouseCol)
+        MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
     End If
 End Sub
 

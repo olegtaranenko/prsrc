@@ -141,7 +141,7 @@ End Function
 Function dateBasic2Sybase(aDay As String)
 Dim dt_str As String
 
-dt_str = "20" & Right$(aDay, 2) & "-" & Mid$(aDay, 4, 2) & "-" & left$(aDay, 2)
+dt_str = "20" & Right$(aDay, 2) & "-" & Mid$(aDay, 4, 2) & "-" & Left$(aDay, 2)
 dateBasic2Sybase = CDate(dt_str)
 
 End Function
@@ -150,7 +150,7 @@ End Function
 Function dateSybase2Basic(aDay As String)
 Dim dt_str As String
 
-dt_str = left(aDay, 4) & "-" & Mid(aDay, 5, 2) & "-" & Right(aDay, 2)
+dt_str = Left(aDay, 4) & "-" & Mid(aDay, 5, 2) & "-" & Right(aDay, 2)
 dateSybase2Basic = dt_str
 
 End Function
@@ -314,7 +314,7 @@ Dim v_yyyy As Integer
         v_dd = CInt(dt)
         dt = ""
     Else
-        v_dd = CInt(left(dt, dotPos))
+        v_dd = CInt(Left(dt, dotPos))
         dt = Mid(dt, dotPos + 1)
     End If
     
@@ -324,7 +324,7 @@ Dim v_yyyy As Integer
             v_mm = CInt(dt)
             dt = ""
         Else
-            v_mm = CInt(left(dt, dotPos))
+            v_mm = CInt(Left(dt, dotPos))
             dt = Mid(dt, dotPos + 1)
         End If
     Else
@@ -388,7 +388,7 @@ Else
 '        MsgBox "неверный формат даты", , "Ошибка"
 '    Else
         'str = Left$(str, 6) & "20" & Mid$(str, 7, 2)
-        str = "20" & Right$(str, 2) & "-" & Mid$(str, 4, 2) & "-" & left$(str, 2)
+        str = "20" & Right$(str, 2) & "-" & Mid$(str, 4, 2) & "-" & Left$(str, 2)
         If IsDate(str) Then
             tmpDate = str
             If fryDays = "" Then
@@ -467,7 +467,7 @@ Dim I As Integer, l As Long
     Else
         lb.Top = Grid.CellTop + Grid.Top - lb.Height + Grid.CellHeight
     End If
-    lb.left = Grid.CellLeft + Grid.left
+    lb.Left = Grid.CellLeft + Grid.Left
     lb.ListIndex = 0
     If sel <> "" Then
         For I = 0 To lb.ListCount - 1 '
@@ -855,7 +855,7 @@ If I = 0 Then
 '    numDoc = Left$(nom, i - 1)
 '    numExt = 0
 Else
-    numDoc = left$(nom, I - 1)
+    numDoc = Left$(nom, I - 1)
     numExt = Mid$(nom, I + 1)
 End If
 End Sub
@@ -1011,7 +1011,7 @@ If maxi < 1 Then
     MsgBox "мало параметров для п\п byErrSqlGetValues()"
     Exit Function
 End If
-str = CStr(val(0)): c = left$(str, 1)
+str = CStr(val(0)): c = Left$(str, 1)
 If c = "W" Then str = Mid$(str, 2)
 Set tabl = myOpenRecordSet(str, CStr(val(1)), dbOpenForwardOnly) 'dbOpenDynaset)$#$
 'If tabl Is Nothing Then Exit Function
@@ -1160,7 +1160,7 @@ Sub textBoxInGridCell(tb As TextBox, Grid As MSFlexGrid, Optional Value As Strin
     Else
         tb.Text = Value
     End If
-    tb.left = Grid.CellLeft + Grid.left
+    tb.Left = Grid.CellLeft + Grid.Left
     If pRow = 0 Then
         tb.Top = Grid.Top
     Else
@@ -1480,7 +1480,7 @@ With objExel.ActiveSheet
                     .Borders(xlEdgeBottom).Weight = xlThin
                 End With
                 
-                str = left$(str, Len(str) - 6)
+                str = Left$(str, Len(str) - 6)
                 With .Cells(exRow, 2)
                     .Value = str
                     .Font.Bold = True

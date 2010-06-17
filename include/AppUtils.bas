@@ -36,7 +36,7 @@ objExel.Visible = True
 objExel.SheetsInNewWorkbook = 1
 objExel.Workbooks.Add
 With objExel.ActiveSheet
-.Cells(1, 2).value = title
+.Cells(1, 2).Value = title
 ReDim Preserve strA(Grid.Cols + 1)
 For r = 0 To Grid.Rows - 1
     Dim curColumn As Integer
@@ -100,10 +100,10 @@ End Function
 
 
 
-Function newNumorder(value As String) As Numorder
+Function newNumorder(Value As String) As Numorder
     Dim ret As Numorder
     Set ret = New Numorder
-    ret.val = value
+    ret.val = Value
     Set newNumorder = ret
 End Function
 
@@ -113,7 +113,7 @@ Dim valueorder As Numorder
 
     Set valueorder = New Numorder
     valueorder.val = getSystemField("lastDocNum")
-    If valueorder.IsEmpty Then
+    If valueorder.isEmpty Then
         valueorder.docs = True
     End If
     If Not valueorder.isCurrentDay Then

@@ -112,12 +112,12 @@ Private Sub cmExit_Click()
 End Sub
     
 Private Sub Form_Load()
-Dim i As Integer, sz As Integer
+Dim I As Integer, sz As Integer
     sql = "select * from sguidenomenk where nomnom = '" & gNomNom & "'"
     Set Table = myOpenRecordSet("##234.1", sql, dbOpenForwardOnly)
     While Not Table.EOF
         lbNomnom.Caption = gNomNom
-        lbName.Caption = Table!nomName
+        lbName.Caption = Table!Nomname
         If Not IsNull(Table!cod) Then
             lbCod.Caption = Table!cod
             Table.MoveNext
@@ -155,8 +155,8 @@ Dim i As Integer, sz As Integer
         If Grid.Rows > 1 Then
             Grid.TextMatrix(Grid.Rows - 1, phCostNew) = Format(Table!cost, "#.00")
         End If
-        Grid.AddItem CStr(Table!Dat)
-        Grid.TextMatrix(Grid.Rows - 1, phDate) = Format(Table!Dat, "dd-mm-yyyy")
+        Grid.AddItem CStr(Table!dat)
+        Grid.TextMatrix(Grid.Rows - 1, phDate) = Format(Table!dat, "dd-mm-yyyy")
         Grid.TextMatrix(Grid.Rows - 1, phCost) = Format(Table!cost, "#.00#")
         If Not IsNull(Table!Manag) Then
             Grid.TextMatrix(Grid.Rows - 1, phChangedBy) = Table!Manag
@@ -171,20 +171,20 @@ Dim i As Integer, sz As Integer
     isLoad = True
 End Sub
 Private Sub Form_Resize()
-    Dim h As Integer, w As Integer
+    Dim H As Integer, W As Integer
     
     If WindowState = vbMinimized Then Exit Sub
     On Error Resume Next
-    h = Me.Height - oldHeight
+    H = Me.Height - oldHeight
     oldHeight = Me.Height
-    w = Me.Width - oldWidth
+    W = Me.Width - oldWidth
     oldWidth = Me.Width
-    Grid.Height = Grid.Height + h
-    Grid.Width = Grid.Width + w
-    cmExit.Top = cmExit.Top + h
+    Grid.Height = Grid.Height + H
+    Grid.Width = Grid.Width + W
+    cmExit.Top = cmExit.Top + H
     cmExit.Left = Grid.Left + Grid.Width - cmExit.Width
     
-    cmPrint.Top = cmPrint.Top + h
+    cmPrint.Top = cmPrint.Top + H
     cmPrint.Left = cmExit.Left - 50 - cmPrint.Width
     
     'cmExcel.Top = cmExcel.Top + h

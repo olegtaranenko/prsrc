@@ -239,16 +239,16 @@ Private Sub cmExit_Click()
     Unload Me
 End Sub
 Public Sub fillGrid()
-Dim i As Integer, tmpTopRow As Long
+Dim I As Integer, tmpTopRow As Long
 
     tmpTopRow = Grid.TopRow
     
     Me.MousePointer = flexHourglass
     Grid.Visible = False
     quantity = 0
-    For i = 1 To UBound(DMCnomNom())
-        getVentureHistory DMCnomNom(i)
-    Next i
+    For I = 1 To UBound(DMCnomNom())
+        getVentureHistory DMCnomNom(I)
+    Next I
     If tmpTopRow < Grid.Rows Then
         Grid.TopRow = tmpTopRow
     End If
@@ -309,18 +309,18 @@ End Function
 
 Private Sub showRest(dstRow As Long)
 Dim totalRest As Single
-Dim i As Integer
+Dim I As Integer
 
     totalRest = 0
-    For i = 1 To UBound(ventureIds)
-        If (Round(ventureRests(i), 3) < 0) Then
-            Grid.col = ktOstat + i
+    For I = 1 To UBound(ventureIds)
+        If (Round(ventureRests(I), 3) < 0) Then
+            Grid.col = ktOstat + I
             Grid.row = dstRow
             Grid.CellForeColor = vbRed
         End If
-        Grid.TextMatrix(dstRow, ktOstat + i) = Format(ventureRests(i), "#0.00")
-        totalRest = totalRest + ventureRests(i)
-    Next i
+        Grid.TextMatrix(dstRow, ktOstat + I) = Format(ventureRests(I), "#0.00")
+        totalRest = totalRest + ventureRests(I)
+    Next I
     Grid.TextMatrix(dstRow, ktOstat) = Format(totalRest, "#0.00")
 End Sub
 
@@ -328,7 +328,7 @@ Public Sub getVentureHistory(nNom As String)
 Dim ed_izm As String, ed_izm2 As String, v_perList As Single
 Dim v_cod As String, v_size As String, v_nameDisplay As String
 Dim dstRow As Long
-Dim i As Integer
+Dim I As Integer
 Dim totalRest As Single
 Dim restrictDate As Variant
 Dim cumulative_predikat As String
@@ -352,7 +352,7 @@ Dim doShowRow As Boolean
         historyStart = Null
     End If
     
-    If ckCumulative.value = 0 Then
+    If ckCumulative.Value = 0 Then
         cumulative_predikat = "not"
     End If
 
@@ -365,7 +365,7 @@ Dim doShowRow As Boolean
     
     byErrSqlGetValues "##132", sql, nomenkName, ed_izm, ed_izm2, v_perList, v_cod, v_size
     
-    If ckPerList.value = 0 Then
+    If ckPerList.Value = 0 Then
         v_perList = 1
     End If
     
@@ -534,52 +534,52 @@ Dim doShowRow As Boolean
 End Sub
 
 Private Sub resetRests()
-Dim i As Integer
+Dim I As Integer
 
-    For i = 1 To UBound(ventureIds)
-        ventureRests(i) = 0
-    Next i
+    For I = 1 To UBound(ventureIds)
+        ventureRests(I) = 0
+    Next I
     
 End Sub
 Private Function vlIndex(ventureId)
-Dim i As Integer
+Dim I As Integer
 
-    For i = 1 To UBound(ventureIds)
-        If ventureId = ventureIds(i) Then
-            vlIndex = i
+    For I = 1 To UBound(ventureIds)
+        If ventureId = ventureIds(I) Then
+            vlIndex = I
             Exit Function
         End If
-    Next i
+    Next I
     vlIndex = defaultVentureIndex
     
 End Function
 
 
 Private Sub orderVentureRest(ByVal qty, srcventureId, dstVentureId, perList)
-Dim i As Integer
+Dim I As Integer
 
     qty = qty / perList
-    i = vlIndex(srcventureId)
-    ventureRests(i) = ventureRests(i) - qty
-    i = vlIndex(dstVentureId)
-    ventureRests(i) = ventureRests(i) + qty
+    I = vlIndex(srcventureId)
+    ventureRests(I) = ventureRests(I) - qty
+    I = vlIndex(dstVentureId)
+    ventureRests(I) = ventureRests(I) + qty
 End Sub
             
             
 Private Sub orderRest(ByVal qty, ventureId, activeOper, perList)
-Dim i As Integer
-    i = vlIndex(ventureId)
-    ventureRests(i) = ventureRests(i) + qty / perList * activeOper
+Dim I As Integer
+    I = vlIndex(ventureId)
+    ventureRests(I) = ventureRests(I) + qty / perList * activeOper
 End Sub
 
 
 
 Private Function getVentureNameById(destVentureId)
 Dim v_ventureId As Integer
-Dim i As Integer
+Dim I As Integer
 
-    i = vlIndex(destVentureId)
-    getVentureNameById = lbVenture.List(i - 1)
+    I = vlIndex(destVentureId)
+    getVentureNameById = lbVenture.List(I - 1)
     Exit Function
 
     If IsNull(destVentureId) Then
@@ -589,12 +589,12 @@ Dim i As Integer
     End If
     
    
-    For i = 0 To lbVenture.ListCount - 1
-        If lbVenture.ItemData(i) = v_ventureId Then
-            getVentureNameById = lbVenture.List(i)
+    For I = 0 To lbVenture.ListCount - 1
+        If lbVenture.ItemData(I) = v_ventureId Then
+            getVentureNameById = lbVenture.List(I)
             Exit Function
         End If
-    Next i
+    Next I
     
 End Function
 
@@ -614,7 +614,7 @@ Private Sub Form_Activate()
 End Sub
 
 Private Sub Form_Load()
-Dim i As Integer, sz As Integer
+Dim I As Integer, sz As Integer
 
 
     oldHeight = Me.Height
@@ -624,33 +624,33 @@ Dim i As Integer, sz As Integer
         & " From GuideVenture v" _
         & " left join system s on v.id_analytic = s.id_analytic_default " _
         & "WHERE id_analytic is not null order by ventureName"
-    Set Table = myOpenRecordSet("##144", sql, dbOpenForwardOnly)
-    If Table Is Nothing Then End
+    Set table = myOpenRecordSet("##144", sql, dbOpenForwardOnly)
+    If table Is Nothing Then End
     ReDim ventureIds(0)
     ReDim ventureRests(0)
     ReDim ventureAbbrevs(0)
     
     
-    While Not Table.EOF
-        lbVenture.AddItem Table!ventureName
-        lbVenture.ItemData(lbVenture.ListCount - 1) = Table!ventureId
+    While Not table.EOF
+        lbVenture.AddItem table!ventureName
+        lbVenture.ItemData(lbVenture.ListCount - 1) = table!ventureId
         sz = UBound(ventureIds)
         ReDim Preserve ventureIds(sz + 1)
-        ventureIds(sz + 1) = Table!ventureId
+        ventureIds(sz + 1) = table!ventureId
 
         ReDim Preserve ventureRests(sz + 1)
         ventureRests(sz + 1) = 0
 
         ReDim Preserve ventureAbbrevs(sz + 1)
-        ventureAbbrevs(sz + 1) = Table!rusAbbrev
+        ventureAbbrevs(sz + 1) = table!rusAbbrev
         
-        If Not IsNull(Table!id_analytic_default) Then
+        If Not IsNull(table!id_analytic_default) Then
             defaultVentureIndex = sz + 1
         End If
 
-        Table.MoveNext
+        table.MoveNext
     Wend
-    Table.Close
+    table.Close
     lbVenture.Height = lbVenture.ListCount * 205 + 50
 
     tbStartDate.Text = Format(begDate, "dd/mm/yy")
@@ -672,36 +672,36 @@ Dim i As Integer, sz As Integer
     Grid.ColWidth(ktOstat) = 900
     Grid.Cols = Grid.Cols + lbVenture.ListCount
     
-    For i = 1 To lbVenture.ListCount
-        Grid.TextMatrix(0, ktOstat + i) = lbVenture.List(i - 1)
-        Grid.ColWidth(ktOstat + i) = 600
-        Grid.ColAlignment(ktOstat + i) = flexAlignGeneral
-    Next i
+    For I = 1 To lbVenture.ListCount
+        Grid.TextMatrix(0, ktOstat + I) = lbVenture.List(I - 1)
+        Grid.ColWidth(ktOstat + I) = 600
+        Grid.ColAlignment(ktOstat + I) = flexAlignGeneral
+    Next I
     
     isLoad = True
 End Sub
 
 Private Sub Form_Resize()
-    Dim h As Integer, w As Integer
+    Dim H As Integer, W As Integer
     
     If WindowState = vbMinimized Then Exit Sub
     On Error Resume Next
-    h = Me.Height - oldHeight
+    H = Me.Height - oldHeight
     oldHeight = Me.Height
-    w = Me.Width - oldWidth
+    W = Me.Width - oldWidth
     oldWidth = Me.Width
-    Grid.Height = Grid.Height + h
-    Grid.Width = Grid.Width + w
-    cmLoad.Top = cmLoad.Top + h
-    Label1.Top = Label1.Top + h
-    laQuant.Top = laQuant.Top + h
-    cmExit.Top = cmExit.Top + h
+    Grid.Height = Grid.Height + H
+    Grid.Width = Grid.Width + W
+    cmLoad.Top = cmLoad.Top + H
+    Label1.Top = Label1.Top + H
+    laQuant.Top = laQuant.Top + H
+    cmExit.Top = cmExit.Top + H
     cmExit.Left = Grid.Left + Grid.Width - cmExit.Width
     
-    cmPrint.Top = cmPrint.Top + h
+    cmPrint.Top = cmPrint.Top + H
     cmPrint.Left = cmExit.Left - 50 - cmPrint.Width
     
-    cmExcel.Top = cmExcel.Top + h
+    cmExcel.Top = cmExcel.Top + H
     
 End Sub
 
@@ -826,7 +826,7 @@ Dim ivoId As Integer, saveCol As Long, saveRow As Long
     Loop While curNomnom = Grid.TextMatrix(iRow, ktNomnom) _
                 And (Fix(qty + 0.5) + corrQty) > 0
                 
-    targetDate = CDate("01." & Month(targetDate) & "." & Year(targetDate))
+    targetDate = CDate("01." & Month(targetDate) & "." & year(targetDate))
     Do While Weekday(targetDate) = vbSaturday Or Weekday(targetDate) = vbSunday
         targetDate = DateAdd("d", 1, targetDate)
     Loop

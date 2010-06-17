@@ -918,26 +918,26 @@ End Sub
 
 
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer
+Dim H As Integer, W As Integer
 
 If WindowState = vbMinimized Then Exit Sub
 On Error Resume Next
-h = Me.Height - oldHeight
+H = Me.Height - oldHeight
 oldHeight = Me.Height
-w = Me.Width - oldWidth
+W = Me.Width - oldWidth
 oldWidth = Me.Width
-Grid.Height = Grid.Height + h
-Grid.Width = Grid.Width + w / 2
+Grid.Height = Grid.Height + H
+Grid.Width = Grid.Width + W / 2
 
-Grid2.Height = Grid2.Height + h
-Grid2.Width = Grid2.Width + w / 2
-Grid2.left = Grid2.left + w / 2
-cmLoad.Top = cmLoad.Top + h
-cmAdd.Top = cmAdd.Top + h
-cmDel.Top = cmDel.Top + h
-cmAdd2.Top = cmAdd2.Top + h
-cmProduct.Top = cmProduct.Top + h
-cmDel2.Top = cmDel2.Top + h
+Grid2.Height = Grid2.Height + H
+Grid2.Width = Grid2.Width + W / 2
+Grid2.Left = Grid2.Left + W / 2
+cmLoad.Top = cmLoad.Top + H
+cmAdd.Top = cmAdd.Top + H
+cmDel.Top = cmDel.Top + H
+cmAdd2.Top = cmAdd2.Top + H
+cmProduct.Top = cmProduct.Top + H
+cmDel2.Top = cmDel2.Top + H
 
 End Sub
 
@@ -1221,7 +1221,7 @@ End Sub
 Private Sub lbBad_DblClick()
 Dim I As Integer
 I = InStr(lbBad.Text, "  ")
-gNomNom = left$(lbBad.Text, I - 1)
+gNomNom = Left$(lbBad.Text, I - 1)
 ReDim DMCnomNom(1)
 DMCnomNom(1) = gNomNom
 KartaDMC.Grid.Visible = False

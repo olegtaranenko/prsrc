@@ -15,11 +15,10 @@ Public siteCfgFile As String
 
 
 Sub dummy()
-Dim IsEmpty As String
+Dim IsEmpty, Value
 End Sub
 
 Sub parseCommandLine(Optional MaxArgs)
-    Dim IsEmpty As String
    'Declare variables.
    Dim c, CmdLine, CmdLnLen, InArg, I, NumArgs
    Dim inQuoted As Boolean
@@ -201,7 +200,7 @@ End Sub
 Function loadFileSettings(filePath As String, ByRef curSettings() As MapEntry) As Integer
 Dim entry As MapEntry
 
-    Dim str As String, str2 As String, I As Integer, j As Integer
+    Dim str As String, str2 As String, I As Integer, J As Integer
     str = filePath
     ReDim curSettings(0)
     
@@ -241,7 +240,7 @@ EN1:
 End Sub
 
 Function getAppCfgDefaultName() As String
-    getAppCfgDefaultName = App.path & "\" & App.exeName & ".cfg"
+    getAppCfgDefaultName = App.path & "\" & App.EXEName & ".cfg"
 End Function
 
 Function getSiteCfgDefaultName() As String

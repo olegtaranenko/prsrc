@@ -234,25 +234,25 @@ End Sub
 
 
 Private Sub Form_Resize()
-    Grid.left = 100
+    Grid.Left = 100
     Grid.Width = Me.Width - 300
     TabStrip1.Top = 100
     TabStrip1.Width = Grid.Width
-    TabStrip1.left = Grid.left
+    TabStrip1.Left = Grid.Left
     Grid.Top = TabStrip1.Top + TabStrip1.Height
     Grid.Height = Me.Height - Grid.Top - 1200
-    cmExit.left = Grid.left + Grid.Width - cmExit.Width
+    cmExit.Left = Grid.Left + Grid.Width - cmExit.Width
     cmExit.Top = Grid.Top + Grid.Height + 50
     cmExel.Top = cmExit.Top
     cmPrint.Top = cmExit.Top
-    cmExel.left = 500
-    cmPrint.left = cmExel.left + cmExel.Width + 300
+    cmExel.Left = 500
+    cmPrint.Left = cmExel.Left + cmExel.Width + 300
     cmExit.Visible = True
-    lbTotal.left = cmPrint.left + cmPrint.Width + 300
+    lbTotal.Left = cmPrint.Left + cmPrint.Width + 300
     lbTotal.Top = cmExit.Top + 50
     lbTotalQty.Top = lbTotal.Top
-    lbTotalQty.left = lbTotal.left + lbTotal.Width + 50
-    cmFind.left = lbTotalQty.left + lbTotalQty.Width + 300
+    lbTotalQty.Left = lbTotal.Left + lbTotal.Width + 50
+    cmFind.Left = lbTotalQty.Left + lbTotalQty.Width + 300
     cmFind.Top = cmExit.Top
     Grid.Visible = True
 
@@ -558,7 +558,7 @@ Dim periodIndex As Integer
     AjustColumnWidths Me.Grid, Label1
     totalQtyLabel = getCurrentSetting("totalQtyLabel", filterSettings)
     lbTotalQty.Caption = CStr(rownum) & " " & totalQtyLabel
-    cmFind.left = lbTotalQty.left + lbTotalQty.Width + 100
+    cmFind.Left = lbTotalQty.Left + lbTotalQty.Width + 100
     
     activateTab 1
     
@@ -699,10 +699,10 @@ Dim periodColumnName As String
         colInfo.label = table("label")
         If Not IsNull(table!year) Then colInfo.year = table!year
         If Not IsNull(table!st) Then colInfo.stDate = table!st
-        If Not IsNull(table!EN) Then colInfo.enDate = table!EN
+        If Not IsNull(table!en) Then colInfo.enDate = table!en
         colInfo.periodId = table(periodColumnName)
         colInfo.index = index
-        colInfo.colWidth = getColumnWidth(index, table!label)
+        colInfo.ColWidth = getColumnWidth(index, table!label)
 
 
         ReDim Preserve periods(index)
@@ -730,7 +730,7 @@ Dim periodColumnName As String
     For index = 0 To UBound(GridHeaderHeadDef)
         headerColumn = GridHeaderHeadDef(index)
         If headerColumn.hidden = 1 Then
-            Grid.colWidth(index) = 0
+            Grid.ColWidth(index) = 0
         End If
     Next index
     
@@ -781,7 +781,7 @@ Dim entry As MapEntry
     Set table = myOpenRecordSet("##Results.3", sql, dbOpenDynaset)
     While Not table.EOF
         entry.Key = table!paramName
-        entry.value = table!paramValue
+        entry.Value = table!paramValue
         append filterSettings, entry
         table.MoveNext
     Wend
@@ -834,12 +834,12 @@ Dim headerRest As String, headerRestLn As Long, tabName As String
                 tabName = headerRest
                 headerRest = ""
             Else
-                tabName = left(headerRest, delimitorPos - 1)
+                tabName = Left(headerRest, delimitorPos - 1)
                 headerRest = Mid(headerRest, delimitorPos + 1)
             End If
             If Len(tabName) > 0 Then
                 Dim controlChar As String
-                controlChar = left(tabName, 1)
+                controlChar = Left(tabName, 1)
                 If InStr(1, "^<>", controlChar, vbBinaryCompare) > 0 Then
                     tabName = Mid(tabName, 2)
                 End If
@@ -863,9 +863,9 @@ Dim I As Integer, J As Integer, colIndex As Integer
         For J = 0 To multiplyCols - 1
             colIndex = PreHeaderCount + (I * multiplyCols) + J
             If J + 1 = tabNumber Then
-                Grid.colWidth(colIndex) = periods(I).colWidth
+                Grid.ColWidth(colIndex) = periods(I).ColWidth
             Else
-                Grid.colWidth(colIndex) = 0
+                Grid.ColWidth(colIndex) = 0
             End If
         Next J
     Next I
@@ -878,7 +878,7 @@ Dim ln As Integer
 
     For I = 0 To periodCount - 1
         colIndex = PreHeaderCount + (I * multiplyCols) + activeTab - 1
-        periods(I).colWidth = Grid.colWidth(colIndex)
+        periods(I).ColWidth = Grid.ColWidth(colIndex)
     Next I
     
 End Sub

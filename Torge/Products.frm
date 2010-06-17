@@ -630,7 +630,7 @@ Sub setGridsWidth()
     Else
         Grid.Width = sumGridsWidth * wesGrid
         Grid2.Width = sumGridsWidth - Grid.Width
-        Grid2.left = Grid.left + Grid.Width + between ' + помежность между Grid
+        Grid2.Left = Grid.Left + Grid.Width + between ' + помежность между Grid
     End If
 
 End Sub
@@ -778,7 +778,7 @@ oldHeight = Me.Height
 oldWidth = Me.Width
 'If oldWidth = 0 Then ' только один раз в сам. начале
 ''    oldReg = "###"
-    sumGridsWidth = Grid2.left - Grid.left + Grid2.Width - between '
+    sumGridsWidth = Grid2.Left - Grid.Left + Grid2.Width - between '
     wesGrid = Grid.Width / sumGridsWidth
 'End If
 
@@ -869,7 +869,7 @@ If Not tbSeries.BOF Then
     Key = "k" & tbSeries!seriaId
     pKey = "k" & tbSeries!parentSeriaId
     On Error GoTo ERR1 ' назначить второй проход
-    Set Node = tv.Nodes.Add(pKey, tvwChild, Key, tbSeries!seriaName)
+    Set Node = tv.Nodes.Add(pKey, tvwChild, Key, tbSeries!serianame)
     On Error GoTo 0
     Node.Sorted = True
 NXT1:
@@ -896,45 +896,45 @@ Exit Sub
 ERR1:
  iErr = iErr + 1: bilo = True
  ReDim Preserve k(iErr): ReDim Preserve pK(iErr): ReDim Preserve NN(iErr)
- k(iErr) = Key: pK(iErr) = pKey: NN(iErr) = tbSeries!seriaName
+ k(iErr) = Key: pK(iErr) = pKey: NN(iErr) = tbSeries!serianame
  Resume Next
 
 ERR2: bilo = True: Resume NXT
 End Sub
 
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer
+Dim H As Integer, W As Integer
 
 If WindowState = vbMinimized Then Exit Sub
 On Error Resume Next
-h = Me.Height - oldHeight
+H = Me.Height - oldHeight
 oldHeight = Me.Height
-w = Me.Width - oldWidth
+W = Me.Width - oldWidth
 oldWidth = Me.Width
 
-sumGridsWidth = sumGridsWidth + w
+sumGridsWidth = sumGridsWidth + W
 setGridsWidth
 
-Grid.Height = Grid.Height + h
+Grid.Height = Grid.Height + H
 'Grid.Width = Grid.Width + w / 2
-Grid2.Height = Grid2.Height + h
+Grid2.Height = Grid2.Height + H
 'Grid2.Width = Grid2.Width + w / 2
 'Grid2.Left = Grid2.Left + w / 2
-tv.Height = tv.Height + h
+tv.Height = tv.Height + H
 
-cmSel.Top = cmSel.Top + h
-cmSel.left = cmSel.left + w
-tbQuant.Top = tbQuant.Top + h
-tbQuant.left = tbQuant.left + w
-laQuant.Top = laQuant.Top + h
-laQuant.left = laQuant.left + w
-cmExit.Top = cmExit.Top + h
-cmExit.left = cmExit.left + w
-cmExcel.Top = cmExcel.Top + h
-cmExcel.left = Grid.left + Grid.Width - cmExcel.Width
-Frame1.left = Frame1.left + w
-cmSostavExcel.left = Grid2.left + Grid2.Width - cmSostavExcel.Width
-cmSostavExcel.Top = cmSostavExcel.Top + h
+cmSel.Top = cmSel.Top + H
+cmSel.Left = cmSel.Left + W
+tbQuant.Top = tbQuant.Top + H
+tbQuant.Left = tbQuant.Left + W
+laQuant.Top = laQuant.Top + H
+laQuant.Left = laQuant.Left + W
+cmExit.Top = cmExit.Top + H
+cmExit.Left = cmExit.Left + W
+cmExcel.Top = cmExcel.Top + H
+cmExcel.Left = Grid.Left + Grid.Width - cmExcel.Width
+Frame1.Left = Frame1.Left + W
+cmSostavExcel.Left = Grid2.Left + Grid2.Width - cmSostavExcel.Width
+cmSostavExcel.Top = cmSostavExcel.Top + H
 
 End Sub
 
@@ -1909,7 +1909,7 @@ If Not tbNomenk.BOF Then
        
     Grid2.TextMatrix(quantity2, gpNomNom) = tbNomenk!nomnom
     Grid2.TextMatrix(quantity2, gpNomName) = tbNomenk!cod & " " & _
-        tbNomenk!nomName & " " & tbNomenk!Size
+        tbNomenk!Nomname & " " & tbNomenk!Size
     Grid2.TextMatrix(quantity2, gpEdIzm) = tbNomenk!ed_izmer
     If Not IsNull(tbNomenk!quantity) Then _
             Grid2.TextMatrix(quantity2, gpQuant) = tbNomenk!quantity
