@@ -606,7 +606,7 @@ Const rowFromOrdersEquip = "select " _
 Private Sub changeCaseOfTheVariables()
 Dim IsEmpty As String, Numorder As String, StatusId As String, Rollback As String, Outdatetime As String, p_numOrder As String
 Dim tbWorktime As String, Left As String
-Dim Equip As String, Worktime As String, ManagId As String
+Dim Equip As String, Worktime As String, ManagId As String, ColWidth
 
 End Sub
 
@@ -615,7 +615,7 @@ Private Sub adjustHotMoney()
 Dim I As Long, J As Integer
 
     For I = 1 To Grid.Rows - 1
-        Dim value As Double, rate As Double
+        Dim Value As Double, rate As Double
         Dim valueStr As String, rateStr As String
         rateStr = Grid.TextMatrix(I, orRate)
         If rateStr <> "" Then
@@ -625,13 +625,13 @@ Dim I As Long, J As Integer
             If J = 2 Then GoTo skip
             valueStr = Grid.TextMatrix(I, orZalog + J)
             If valueStr <> "" Then
-                value = CDbl(valueStr)
+                Value = CDbl(valueStr)
                 If sessionCurrency = CC_RUBLE Then
-                    value = value * rate
+                    Value = Value * rate
                 Else
-                    value = value / rate
+                    Value = Value / rate
                 End If
-                LoadNumeric Grid, I, orZalog + J, value, , "###0.00"
+                LoadNumeric Grid, I, orZalog + J, Value, , "###0.00"
             End If
 skip:
         Next J
@@ -708,15 +708,15 @@ Sub begFiltrEnable()
     laPo.Enabled = True
     laClos.Enabled = True
     cbStartDate.Enabled = True
-    If cbStartDate.value = 1 Then tbStartDate.Enabled = True
+    If cbStartDate.Value = 1 Then tbStartDate.Enabled = True
     cbEndDate.Enabled = True
-    If cbEndDate.value = 1 Then tbEndDate.Enabled = True
+    If cbEndDate.Value = 1 Then tbEndDate.Enabled = True
     cbClose.Enabled = True
 End Sub
 
 Private Sub chConflict_Click()
 cmRefr.Caption = "Загрузить"
-If chConflict.value = 1 Then
+If chConflict.Value = 1 Then
     laConflict.ForeColor = vbRed
     begFiltrDisable
 Else
@@ -835,7 +835,10 @@ syncOrderByEquipment 1, valueorder.val, zakazNum
 Grid.row = zakazNum
 Grid.col = orWerk
 Grid.LeftCol = orNomZak
+On Error Resume Next
 Grid.SetFocus
+On Error GoTo 0
+
 'wrkDefault.CommitTrans
 
 Exit Sub
@@ -855,9 +858,9 @@ End Sub
 Private Sub cmRefr_Click()
 Dim minDate As Date, maxDate As Date
 
-If chConflict.value = 0 Then
+If chConflict.Value = 0 Then
   begFiltrEnable
-  If cbStartDate.value = 1 And cbEndDate.value = 1 Then
+  If cbStartDate.Value = 1 And cbEndDate.Value = 1 Then
     minDate = tbStartDate.Text
     maxDate = tbEndDate.Text
     If minDate > maxDate Then
@@ -872,7 +875,7 @@ begFiltr
 LoadBase
 
 Me.MousePointer = flexDefault
-If chConflict.value = 1 And zakazNum = 0 Then _
+If chConflict.Value = 1 And zakazNum = 0 Then _
     MsgBox "Противоречий нет", , "Информация"
 cmRefr.Caption = "Обновить"
 laFiltr.Visible = False
@@ -1029,7 +1032,7 @@ If Not tqOrders.BOF Then
         MsgBox "Поскольку были обнаружены противоречия, в Реестр будут " & _
         "помещены только заказы с противоречиями. Текст противоречия по " & _
         "конкретному заказу можно получить нажатием <Ctrl>+<I>.", , "Файл не записан!"
-        chConflict.value = 1
+        chConflict.Value = 1
         cmRefr_Click
         Close #1
         Kill tmpFile
@@ -1062,9 +1065,9 @@ Kill webSvodkaPath
 'On Error GoTo 0
 Name tmpFile As webSvodkaPath
 
-If chConflict.value = 1 Then
+If chConflict.Value = 1 Then
     MsgBox "Противоречий нет. Файл Сводки создан.", , "Информация:"
-    chConflict.value = 0
+    chConflict.Value = 0
 End If
 
 sql = "SELECT f.xLogin, f.Pass From GuideFirms " & _
@@ -1172,7 +1175,7 @@ End Sub
 
 
 Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim str As String, value As String, I As Integer, il As Long
+Dim str As String, Value As String, I As Integer, il As Long
 
 If cbM.ListIndex < 0 Then
     'cbM_LostFocus
@@ -1202,40 +1205,40 @@ ElseIf KeyCode = vbKeyF5 Then
     cmAdd_Click
 ElseIf KeyCode = vbKeyF7 Then
     If mousCol = orNomZak Then
-        value = ""
-AA:     value = InputBox("Введите номер заказа", "Поиск", value)
-        If value = "" Then Exit Sub
-        If Not IsNumeric(value) Then
+        Value = ""
+AA:     Value = InputBox("Введите номер заказа", "Поиск", Value)
+        If Value = "" Then Exit Sub
+        If Not IsNumeric(Value) Then
             MsgBox "Номер должен быть числом"
             GoTo AA
         End If
-        If findValInCol(Grid, value, orNomZak) Then Exit Sub
+        If findValInCol(Grid, Value, orNomZak) Then Exit Sub
         If MsgBox("Выполнить поиск заказа по всей базе?", vbYesNo, _
         "Среди загруженных заказ не найден!") = vbNo Then Exit Sub
         For I = 1 To orColNumber
             orSqlWhere(I) = ""
         Next I
-        loadWithFiltr value
+        loadWithFiltr Value
         Grid_EnterCell 'поскольку одна строчка
     ElseIf mousCol = orFirma Then
-        value = Grid.TextMatrix(mousRow, orFirma)
-        value = InputBox("Укажите полное название или фрагмент.", "Поиск в колонке 'Название Фирмы'", value)
-        If value = "" Then Exit Sub
-        If findExValInCol(Grid, value, orFirma) > 0 Then Exit Sub
-        If MsgBox("Выполнить расширенный поиск фирмы '" & value & "' ?", vbYesNo, _
+        Value = Grid.TextMatrix(mousRow, orFirma)
+        Value = InputBox("Укажите полное название или фрагмент.", "Поиск в колонке 'Название Фирмы'", Value)
+        If Value = "" Then Exit Sub
+        If findExValInCol(Grid, Value, orFirma) > 0 Then Exit Sub
+        If MsgBox("Выполнить расширенный поиск фирмы '" & Value & "' ?", vbYesNo, _
         "Среди загруженных заказ этой фирмы не найден!") = vbNo Then Exit Sub
         If tbEnable.Visible Then
             FindFirm.cmAllOrders.Visible = True
             FindFirm.cmNoClose.Visible = True
             FindFirm.cmNoCloseFiltr.Visible = True
         End If
-        FindFirm.tb.Text = value
+        FindFirm.tb.Text = Value
         FindFirm.Show vbModal
 '    ElseIf mousCol = orIzdelia Or mousCol = orLogo Then
     Else
-        value = Grid.TextMatrix(mousRow, mousCol)
-        value = InputBox("Укажите образец поиска.", "Поиск", value)
-        If findExValInCol(Grid, value, CInt(mousCol)) > 0 Then Exit Sub
+        Value = Grid.TextMatrix(mousRow, mousCol)
+        Value = InputBox("Укажите образец поиска.", "Поиск", Value)
+        If findExValInCol(Grid, Value, CInt(mousCol)) > 0 Then Exit Sub
         MsgBox "Фрагмент не найден"
 '    Else
 '        MsgBox "По этому полю поиск не предусмотрен", , "Предупреждение"
@@ -1536,7 +1539,7 @@ Dim theManager As MapEntry
 While Not table.EOF
     str = table!Manag
     theManager.Key = table!ManagId
-    theManager.value = str
+    theManager.Value = str
     Managers(J) = theManager
     
     If str = "not" Then
@@ -1573,7 +1576,7 @@ Dim addNullDate As String, strWhere As String
     orSqlWhere(I) = ""
  Next I
  
-If chConflict.value = 1 Then '  ******************************
+If chConflict.Value = 1 Then '  ******************************
     orSqlWhere(orStatus) = "(o.StatusId)=4" 'готов
     If Timer > t17_00 Then
        orSqlWhere(orStatus) = orSqlWhere(orStatus) & ") OR (" & _
@@ -1581,7 +1584,7 @@ If chConflict.value = 1 Then '  ******************************
     End If
 Else                         '********************************
  
- If cbStartDate.value = 1 Then
+ If cbStartDate.Value = 1 Then
     stDate = "(o.inDate)>='" & _
              Format(tbStartDate.Text, "yyyy-mm-dd") & "'"
     addNullDate = ""
@@ -1590,7 +1593,7 @@ Else                         '********************************
     addNullDate = " OR (o.inDate) Is Null"
  End If
 
- If cbEndDate.value = 1 Then
+ If cbEndDate.Value = 1 Then
     enDate = "(o.inDate)<='" & _
             Format(tbEndDate.Text, "yyyy-mm-dd") & " 11:59:59 PM'"
  Else
@@ -1606,7 +1609,7 @@ Else                         '********************************
  End If
  orSqlWhere(orData) = strWhere & addNullDate
  
- If cbClose.value = 0 Or Not tbEnable.Visible Then
+ If cbClose.Value = 0 Or Not tbEnable.Visible Then
     orSqlWhere(orStatus) = "(o.StatusId)<>6" 'закрыт
  Else
     orSqlWhere(orStatus) = ""
@@ -2344,8 +2347,8 @@ AA: If MsgBox("Такое изменение статуса можно применить только в нештатных " & _
     "у заказа есть пердметы и он был закыт, то некоторые операции с предметами будут невозможны!" _
     , vbDefaultButton2 Or vbYesNo, "Внимание!!") = vbNo Then GoTo EN1
 BB: wrkDefault.BeginTrans
-    '''str = manId(cbM.ListIndex)
-    '''orderUpdate "##50", str, "Orders", "lastManagId"
+    str = manId(cbM.ListIndex)
+    orderUpdate "##50", str, "Orders", "lastManagId"
     If orderUpdate("##50", id, "Orders", "StatusId") = 0 Then
         Grid.TextMatrix(mousRow, mousCol) = lbAnnul.Text
 '        If lbAnnul.Text = "принят" Then - !!! если открыт этап этого не надо
@@ -2419,7 +2422,7 @@ Dim str As String
     delZakazFromReplaceRS ' если он там есть
     If txt = "" Then visits "-"    ' коррекция посещения фирмой
     str = manId(cbM.ListIndex)
-    '''orderUpdate "##369", str, "Orders", "lastManagId"
+    orderUpdate "##369", str, "Orders", "lastManagId"
     If orderUpdate("##369", 7, "Orders", "StatusId") = 0 Then
         Grid.TextMatrix(mousRow, mousCol) = "аннулирован"
         wrkDefault.CommitTrans
@@ -2487,7 +2490,7 @@ Grid.Text = lbM.Text
 str = manId(lbM.ListIndex)
 orderUpdate "##22", str, "Orders", "ManagId"
 str = manId(cbM.ListIndex)
-'''orderUpdate "##49", str, "Orders", "lastManagId"
+orderUpdate "##49", str, "Orders", "lastManagId"
 
 lbHide
 End Sub
@@ -2508,7 +2511,7 @@ str = lbProblem.ListIndex
 If lbProblem.ListIndex > 5 Then str = lbProblem.ListIndex + 4
 orderUpdate "##22", str, "Orders", "ProblemId"
 str = manId(cbM.ListIndex)
-'''orderUpdate "##49", str, "Orders", "lastManagId"
+orderUpdate "##49", str, "Orders", "lastManagId"
 
 lbHide
 
@@ -2562,7 +2565,7 @@ If Not bilo Then
         wrkDefault.BeginTrans   ' начало транзакции
         str = manId(cbM.ListIndex)
         orderUpdate "##45", 6, "Orders", "StatusId"
-        '''orderUpdate "##48", str, "Orders", "lastManagId"
+        orderUpdate "##48", str, "Orders", "lastManagId"
         delZakazFromEquip
         sql = "DELETE From sDMCrez WHERE numDoc =" & gNzak
         myExecute "##326", sql, 0
@@ -2888,7 +2891,7 @@ Dim ret As Boolean, fldName As String
     If Not ret Then
         Dim str As String
         str = manId(cbM.ListIndex)
-        '''orderUpdate "##firm2null", str, "Orders", "lastManagId"
+        orderUpdate "##firm2null", str, "Orders", "lastManagId"
         Grid.TextMatrix(mousRow, orFirma) = ""
     End If
 End Sub
@@ -3067,13 +3070,19 @@ Dim next_nu As String
 
 If KeyCode = vbKeyReturn Then
 DNM = Format(Now(), "dd.mm.yy hh:nn") & vbTab & cbM.Text & " " & gNzak ' именно vbTab
-   
-    If mousCol = orVrVip Then
-'        If Not isFloatFromMobile("workTime") Then Exit Sub
-'        orderUpdate "##24", tbMobile.Text, "Orders", "workTime"
+str = tbMobile.Text
+    If mousCol = orMOVrVid Then
+        Dim dt As Variant
+        dt = RuDate2Date(Grid.TextMatrix(mousRow, orMOData))
+        If IsNumeric(str) And IsDate(dt) Then
+            dt = DateAdd("h", CInt(str), dt)
+            orderUpdate "##23", Format(dt, "'yyyymmdd hh:00'"), "OrdersInCeh", "DateTimeMO"
+            Grid.TextMatrix(mousRow, mousCol) = str
+        End If
     ElseIf mousCol = orVrVid Then
         'If Not isFloatFromMobile("outTime") Then Exit Sub
         orderUpdate "##24", str, "Orders", "outTime"
+        Grid.TextMatrix(mousRow, mousCol) = str
     ElseIf mousCol = orLogo Then
         orderUpdate "##26", "'" & tbMobile.Text & "'", "Orders", "Logo"
         Grid.TextMatrix(mousRow, mousCol) = tbMobile.Text
@@ -3222,7 +3231,7 @@ DNM = Format(Now(), "dd.mm.yy hh:nn") & vbTab & cbM.Text & " " & gNzak ' именно 
         End If
     End If
     str = manId(cbM.ListIndex)
-    '''orderUpdate "##48", str, "Orders", "lastManagId"
+    orderUpdate "##48", str, "Orders", "lastManagId"
     
     GoTo AA
 ElseIf KeyCode = vbKeyEscape Then
@@ -3398,7 +3407,7 @@ While Not tqOrders.EOF
  
  numZak = tqOrders!Numorder
   
- If chConflict.value = 1 Then If Not isConflict() Then GoTo NXT
+ If chConflict.Value = 1 Then If Not isConflict() Then GoTo NXT
  
 ' On Error GoTo ERR1
  If zakazNum > 0 Then Grid.AddItem ""
@@ -3500,7 +3509,7 @@ If getSqlWhere <> "" Then getSqlWhere = " WHERE (" & getSqlWhere & ")"
     
 End Function
 
-Function strWhereByValCol(value As String, col As Integer, Optional _
+Function strWhereByValCol(Value As String, col As Integer, Optional _
 operator As String = "=") As String
 Dim str As String, typ As String, oper As String
 
@@ -3514,28 +3523,28 @@ End If
 typ = Left$(str, 1)
 str = Mid$(str, 2)
 If typ = "d" Then
-    If value = "" Then
-        value = " Is Null"
+    If Value = "" Then
+        Value = " Is Null"
     Else
         If operator = "=" Then
-            value = Left$(value, 6) & "20" & Mid$(value, 7, 2) 'это нужно если в Win98 установлен "гггг" - формат года
-            value = " Like '" & value & "%'"
+            Value = Left$(Value, 6) & "20" & Mid$(Value, 7, 2) 'это нужно если в Win98 установлен "гггг" - формат года
+            Value = " Like '" & Value & "%'"
         ElseIf operator = "<" Then
-            value = " <= '" & Format(value, "yyyy-mm-dd") & " 11:59:59 PM'"
+            Value = " <= '" & Format(Value, "yyyy-mm-dd") & " 11:59:59 PM'"
         Else
-            value = " >= '" & Format(value, "yyyy-mm-dd") & "'"
+            Value = " >= '" & Format(Value, "yyyy-mm-dd") & "'"
         End If
     End If
 ElseIf typ = "s" Then
-    value = " = '" & value & "'"
+    Value = " = '" & Value & "'"
 Else
-    If value = "" Then
-        value = " Is Null"
+    If Value = "" Then
+        Value = " Is Null"
     Else
-        value = oper & value
+        Value = oper & Value
     End If
 End If
-strWhereByValCol = "(" & str & ")" & value
+strWhereByValCol = "(" & str & ")" & Value
 
 End Function
 
@@ -3673,8 +3682,8 @@ End Function
 Private Sub Timer1_Timer()
 minut = minut - 1
 If minut <= 0 Then
-    cbClose.value = 0
-    chConflict.value = 0
+    cbClose.Value = 0
+    chConflict.Value = 0
     
     Timer1.Enabled = False
     tbEnable.Visible = False

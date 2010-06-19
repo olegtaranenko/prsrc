@@ -273,10 +273,13 @@ Public Const CC_UE As Integer = 2
 ' на сколько нужно увеличивать ширину колонок, если выбраны рубли
 Public Const ColWidthForRuble As Single = 1.3
 
+Function dummy()
+    Dim Left, StatusId, Outdatetime, Rollback, IsEmpty, ExeName
+    Dim WorktimeMO
 
+End Function
 
 Function tuneCurencyAndGranularity(tunedValue, currentRate, valueCurrency As Integer, Optional quantity As Double = 1, Optional perlist As Long = 1) As Double
-    Dim Left As String, StatusId As String, Outdatetime As String, Rollback As String, IsEmpty As String, ExeName As String
     '
     Dim totalInRubles As Double
     Dim singleInRubles As Double
@@ -481,11 +484,11 @@ If cfg.isLoad Then Unload cfg '$$2
 
 End Sub
 
-Function findValInCol(Grid As MSFlexGrid, value, col As Integer) As Boolean
+Function findValInCol(Grid As MSFlexGrid, Value, col As Integer) As Boolean
 Dim il As Long
 findValInCol = False
 For il = 1 To Grid.Rows - 1
-    If value = Grid.TextMatrix(il, orNomZak) Then
+    If Value = Grid.TextMatrix(il, orNomZak) Then
         Grid.TopRow = il
         Grid.row = il
         findValInCol = True
@@ -495,7 +498,7 @@ Next il
 
 End Function
         
-Function findExValInCol(Grid As MSFlexGrid, value As String, _
+Function findExValInCol(Grid As MSFlexGrid, Value As String, _
             col As Integer, Optional pos As Long = -1) As Long
 Dim il As Long, str  As String, beg As Long
 
@@ -504,10 +507,10 @@ If pos < 1 Then
 Else
     beg = pos
 End If
-value = UCase(value)
+Value = UCase(Value)
 For il = beg To Grid.Rows - 1
     str = UCase(Grid.TextMatrix(il, col))
-    If InStr(str, value) > 0 Then
+    If InStr(str, Value) > 0 Then
         Grid.TopRow = il
         Grid.row = il
         findExValInCol = il
@@ -519,15 +522,15 @@ findExValInCol = -1
 End Function
 
 '$odbc08$
-Function existValueInTableFielf(ByVal value As Variant, tabl As String, field) As Boolean
+Function existValueInTableFielf(ByVal Value As Variant, tabl As String, field) As Boolean
 Dim table As Recordset
 
 existValueInTableFielf = False
 
-If Not IsNumeric(value) Then value = "'" & value & "'"
+If Not IsNumeric(Value) Then Value = "'" & Value & "'"
 
 sql = "SELECT " & field & " From " & tabl & " WHERE (((" & field & ") = " & _
-value & "));"
+Value & "));"
 'MsgBox sql
 Set table = myOpenRecordSet("##390", sql, dbOpenForwardOnly)
 'If table Is Nothing Then myBase.Close: End
@@ -701,8 +704,8 @@ getWhereByDateBoxes = "": str = "":
 
 ckStart = False: ckEnd = False
 On Error Resume Next ' на случай, если в этой форме у дат нет флажков
-If Frm.ckEndDate.value > 0 Then ckEnd = True  'то они как бы установлены
-If Frm.ckStartDate.value > 0 And Frm.ckStartDate.Visible Then ckStart = True
+If Frm.ckEndDate.Value > 0 Then ckEnd = True  'то они как бы установлены
+If Frm.ckStartDate.Value > 0 And Frm.ckStartDate.Visible Then ckStart = True
 On Error GoTo 0
 
 If ckStart Then
@@ -1954,7 +1957,7 @@ End Function
 
 'не записыват неуникальное значение, для полей, где такие
 'значения запрещены. А  генерит при этом error?
-Function ValueToTableField(myErrCod As String, ByVal value As String, ByVal table As String, _
+Function ValueToTableField(myErrCod As String, ByVal Value As String, ByVal table As String, _
 ByVal field As String, Optional by As String = "", Optional Numorder As Variant) As Integer
 Dim sql As String, byStr As String  ', numOrd As String
 
@@ -1962,7 +1965,7 @@ Dim sql As String, byStr As String  ', numOrd As String
 ValueToTableField = False
 'If value = "" Then value = Chr(34) & Chr(34)
 
-If value = "" Then value = "''"
+If Value = "" Then Value = "''"
 If by = "" Then
     Dim nzak As String
     If IsMissing(Numorder) Then
@@ -1987,7 +1990,7 @@ ElseIf by = "byWerkId" Then
 ElseIf by = "byEquipId" Then
     byStr = ".numOrder = " & gNzak & " AND " & table & ".equipId = " & gEquipId
 ElseIf by = "byNumDoc" Then
-    sql = "UPDATE " & table & " SET " & table & "." & field & "=" & value _
+    sql = "UPDATE " & table & " SET " & table & "." & field & "=" & Value _
         & " WHERE " & table & ".numDoc =" & numDoc & " AND " & table & _
         ".numExt =" & numExt
     GoTo AA
@@ -1995,7 +1998,7 @@ Else
     Exit Function
 End If
 sql = "UPDATE " & table & " SET " & table & "." & field & _
-" = " & value & " WHERE " & table & byStr
+" = " & Value & " WHERE " & table & byStr
 AA:
 'MsgBox "sql = " & sql
 
@@ -2509,7 +2512,7 @@ tbSystem.Close
 lockSklad = True
 End Function
     
-Function orderUpdateWithIssue(ByVal issueMarker As String, value As String, table As String, _
+Function orderUpdateWithIssue(ByVal issueMarker As String, Value As String, table As String, _
 field As String, Optional by As String = "", Optional Numorder As Variant) As Integer
 Dim nzak As String
 Dim issueId As Variant
@@ -2518,7 +2521,7 @@ Dim issueId As Variant
     Else
         nzak = Numorder
     End If
-    orderUpdateWithIssue = ValueToTableField("##orderUpdateWithIssue", value, table, field, by, nzak)
+    orderUpdateWithIssue = ValueToTableField("##orderUpdateWithIssue", Value, table, field, by, nzak)
     
     sql = "select wi_check_business_issue(' " & issueMarker & "')"
     byErrSqlGetValues "##check_issue", sql, issueId
@@ -2532,7 +2535,7 @@ Dim issueId As Variant
 End Function
     
     
-Function orderUpdate(ByVal myErrCod As String, value As String, table As String, _
+Function orderUpdate(ByVal myErrCod As String, Value As String, table As String, _
 field As String, Optional by As String = "", Optional Numorder As Variant) As Integer
 Dim nzak As String
     If IsMissing(Numorder) Then
@@ -2540,7 +2543,7 @@ Dim nzak As String
     Else
         nzak = Numorder
     End If
-    orderUpdate = ValueToTableField(myErrCod, value, table, field, by, nzak)
+    orderUpdate = ValueToTableField(myErrCod, Value, table, field, by, nzak)
     If table = "Orders" Then
         refreshTimestamp (nzak)
     End If
@@ -2633,7 +2636,7 @@ Dim I As Integer
         If imanagId <> "" Then
             For I = 0 To UBound(Managers)
                 If Managers(I).Key = imanagId Then
-                    getManagById = CStr(Managers(I).value)
+                    getManagById = CStr(Managers(I).Value)
                     Exit Function
                 End If
             Next I

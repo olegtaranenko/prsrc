@@ -18,7 +18,7 @@ Public ProductsPath As String
 
 
 Public tbSystem As Recordset
-Public table As Recordset
+Public Table As Recordset
 Public tbNomenk As Recordset
 Public tbProduct As Recordset
 Public tbDocs As Recordset
@@ -301,47 +301,6 @@ Dim il As Long
     noClick = False
 End Sub
 
-
-Function myIsDate(ByVal dt As String) As Variant
-Dim dotPos As Integer
-Dim v_dd As Integer
-Dim v_mm As Integer
-Dim v_yyyy As Integer
-    
-    On Error GoTo catch
-    dotPos = InStr(dt, ".")
-    If IsNull(dotPos) Or dotPos = 0 Then
-        v_dd = CInt(dt)
-        dt = ""
-    Else
-        v_dd = CInt(Left(dt, dotPos))
-        dt = Mid(dt, dotPos + 1)
-    End If
-    
-    If Len(dt) > 0 Then
-        dotPos = InStr(dt, ".")
-        If IsNull(dotPos) Or dotPos = 0 Then
-            v_mm = CInt(dt)
-            dt = ""
-        Else
-            v_mm = CInt(Left(dt, dotPos))
-            dt = Mid(dt, dotPos + 1)
-        End If
-    Else
-        v_mm = Format(Now(), "mm")
-    End If
-    
-    If Len(dt) <= 2 And Len(dt) > 0 Then
-        v_yyyy = CInt("20" & Format(CInt(dt), "0#"))
-    Else
-        v_yyyy = Format(Now(), "yyyy")
-    End If
-    
-    myIsDate = Format(CDate(CStr(v_yyyy) & "-" & Format(v_mm, "0#") & "-" & Format(v_dd, "0#")), "dd.mm.yy")
-    Exit Function
-catch:
-    myIsDate = False
-End Function
 
 
 Function isDateEmpty(tBox As TextBox, Optional warn As Boolean = True) As Boolean
@@ -1176,7 +1135,7 @@ End Sub
 
 'не записыват неуникальное значение, дл€ полей, где такие
 'значени€ запрещены. ј  генерит при этом error?
-Function ValueToTableField(myErrCod As String, Value As String, table As String, _
+Function ValueToTableField(myErrCod As String, Value As String, Table As String, _
 field As String, Optional by As String = "") As Boolean
 Dim sql As String, byStr As String  ', numOrd As String
 
@@ -1197,16 +1156,16 @@ ElseIf by = "byProductId" Then
 'ElseIf by = "bySourceId" Then
 '    byStr = ".sourceId)= " & gSourceId
 ElseIf by = "byNumDoc" Then
-    sql = "UPDATE " & table & " SET " & table & "." & field & "=" & Value _
-        & " WHERE (((" & table & ".numDoc)=" & numDoc & " AND (" & table & _
+    sql = "UPDATE " & Table & " SET " & Table & "." & field & "=" & Value _
+        & " WHERE (((" & Table & ".numDoc)=" & numDoc & " AND (" & Table & _
         ".numExt)=" & numExt & " ));"
     GoTo AA
 Else
     byStr = "." & by
     'Exit Function
 End If
-sql = "UPDATE " & table & " SET " & table & "." & field & _
-" = " & Value & " WHERE (((" & table & byStr & " ));"
+sql = "UPDATE " & Table & " SET " & Table & "." & field & _
+" = " & Value & " WHERE (((" & Table & byStr & " ));"
 AA:
 'MsgBox "sql = " & sql
 'Debug.Print sql
@@ -1224,15 +1183,15 @@ Public Function vo_deleteNomnom(nomnom As String, numDoc As String) As Boolean
 End Function
 
 Function getValueFromTable(tabl As String, field As String, where As String) As Variant
-Dim table As Recordset
+Dim Table As Recordset
 
 getValueFromTable = Null
 sql = "SELECT " & field & " as fff  From " & tabl & _
       " WHERE " & where & ";"
-Set table = myOpenRecordSet("##59.1", sql, dbOpenForwardOnly)
-If table Is Nothing Then Exit Function
-If Not table.BOF Then getValueFromTable = table!fff
-table.Close
+Set Table = myOpenRecordSet("##59.1", sql, dbOpenForwardOnly)
+If Table Is Nothing Then Exit Function
+If Not Table.BOF Then getValueFromTable = Table!fff
+Table.Close
 End Function
 
 Function calcKolonValue(ByVal freight As Double, ByVal marginProc As Double, ByVal rabbat As Double, ByVal kolonok As Double, ByVal curentKolon As Integer)
@@ -1745,7 +1704,7 @@ End Function
 
 
 Public Sub initProdCategoryBox(ByRef lbPrWeb, Optional extended As Boolean = False)
-Dim table As Recordset
+Dim Table As Recordset
 Dim name As String
 
     ' —начала удал€ем старые значени€
@@ -1755,21 +1714,21 @@ Dim name As String
     
     sql = "select * from GuideProdCategory"
     
-    Set table = myOpenRecordSet("##72", sql, dbOpenForwardOnly)
-    If table Is Nothing Then myBase.Close: End
+    Set Table = myOpenRecordSet("##72", sql, dbOpenForwardOnly)
+    If Table Is Nothing Then myBase.Close: End
     
     lbPrWeb.AddItem "", 0
-    While Not table.EOF
+    While Not Table.EOF
         If extended Then
-            name = table!nameRu & " (" & table!sysname & ")"
+            name = Table!nameRu & " (" & Table!sysname & ")"
         Else
-            name = table!sysname
+            name = Table!sysname
         End If
-        lbPrWeb.AddItem table!sysname
-        lbPrWeb.ItemData(lbPrWeb.ListCount - 1) = table!prodCategoryId
-        table.MoveNext
+        lbPrWeb.AddItem Table!sysname
+        lbPrWeb.ItemData(lbPrWeb.ListCount - 1) = Table!prodCategoryId
+        Table.MoveNext
     Wend
-    table.Close
+    Table.Close
     
     If TypeOf lbPrWeb Is ListBox Then
         lbPrWeb.Height = 225 * lbPrWeb.ListCount

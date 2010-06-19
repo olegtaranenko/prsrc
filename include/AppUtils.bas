@@ -113,7 +113,7 @@ Dim valueorder As Numorder
 
     Set valueorder = New Numorder
     valueorder.val = getSystemField("lastDocNum")
-    If valueorder.isEmpty Then
+    If valueorder.IsEmpty Then
         valueorder.docs = True
     End If
     If Not valueorder.isCurrentDay Then
@@ -233,7 +233,7 @@ Dim p_days_start As Integer, p_days_end As Integer
 
 'laRecSum.Caption = Round(sum, 2)
 If quantity > 0 Then
-    Grid.RemoveItem quantity + 1
+    Grid.removeItem quantity + 1
 End If
 trigger = False
 Grid.Visible = True
@@ -243,3 +243,53 @@ whoRezerved = quantity
 End Function
 
 
+Function RuDate2Date(ByVal dt As String) As Variant
+Dim dotPos As Integer
+Dim v_dd As Integer
+Dim v_mm As Integer
+Dim v_yyyy As Integer
+    
+    On Error GoTo catch
+    dotPos = InStr(dt, ".")
+    If IsNull(dotPos) Or dotPos = 0 Then
+        v_dd = CInt(dt)
+        dt = ""
+    Else
+        v_dd = CInt(Left(dt, dotPos))
+        dt = Mid(dt, dotPos + 1)
+    End If
+    
+    If Len(dt) > 0 Then
+        dotPos = InStr(dt, ".")
+        If IsNull(dotPos) Or dotPos = 0 Then
+            v_mm = CInt(dt)
+            dt = ""
+        Else
+            v_mm = CInt(Left(dt, dotPos))
+            dt = Mid(dt, dotPos + 1)
+        End If
+    Else
+        v_mm = Format(Now(), "mm")
+    End If
+    
+    If Len(dt) <= 2 And Len(dt) > 0 Then
+        v_yyyy = CInt("20" & Format(CInt(dt), "0#"))
+    Else
+        v_yyyy = Format(Now(), "yyyy")
+    End If
+    
+    RuDate2Date = CDate(CStr(v_yyyy) & "-" & Format(v_mm, "0#") & "-" & Format(v_dd, "0#"))
+    Exit Function
+catch:
+    RuDate2Date = False
+End Function
+
+Function myIsDate(ByVal str As String) As Variant
+    Dim dt As Variant
+    dt = RuDate2Date(str)
+    If IsDate(dt) Then
+        myIsDate = Format(dt, "dd.mm.yy")
+    Else
+        myIsDate = dt
+    End If
+End Function
