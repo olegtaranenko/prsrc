@@ -55,6 +55,22 @@
 				<changelog.file>${changelog.PATH}/parallel-${artifactId}.xml</changelog.file>
 			</properties>
 		</profile>
+		<profile>
+			<id>dedev</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<changelog.context>parallel</changelog.context>
+				<prior.port>9810</prior.port>
+				<accountn.port>9811</accountn.port>
+				<markmaster.port>9812</markmaster.port>
+				<stime.port>9813</stime.port>
+				<remote.odbc.pm>accountn</remote.odbc.pm>
+				<remote.odbc.mm>markmaster</remote.odbc.mm>
+				<remote.odbc.stime>stime</remote.odbc.stime>
+			</properties>
+		</profile>
 	</profiles>
 
 	<build>

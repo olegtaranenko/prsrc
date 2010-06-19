@@ -31,6 +31,15 @@
 				<changelog.context>cut</changelog.context>
 			</properties>
 		</profile>
+		<profile>
+			<id>dedev</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<syb.servicename>prior</syb.servicename>
+			</properties>
+		</profile>
 	</profiles>
 	<build>
 		<resources>

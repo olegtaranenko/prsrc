@@ -21,6 +21,16 @@
 				<syb.servicename>dev_stime</syb.servicename>
 			</properties>
 		</profile>
+		<profile>
+			<id>dedev</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<syb.servicename>stime</syb.servicename>
+				<remote.odbc.prior>prior</remote.odbc.prior>
+			</properties>
+		</profile>
 	</profiles>
 	
 	<build>

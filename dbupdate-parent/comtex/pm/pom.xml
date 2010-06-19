@@ -21,6 +21,15 @@
 				<syb.servicename>dev_pm</syb.servicename>
 			</properties>
 		</profile>
+		<profile>
+			<id>dedev</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<syb.servicename>accountn</syb.servicename>
+			</properties>
+		</profile>
 	</profiles>
 	
 	<build>

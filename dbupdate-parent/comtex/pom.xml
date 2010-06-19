@@ -17,6 +17,27 @@
 		<module>mm</module>
 	</modules>
 
+	<profiles>
+		<profile>
+			<id>parallel</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<remote.odbc.prior>dev_prior</remote.odbc.prior>
+			</properties>
+		</profile>
+		<profile>
+			<id>dedev</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<remote.odbc.prior>prior</remote.odbc.prior>
+			</properties>
+		</profile>
+	</profiles>
+
 	<build>
 		<pluginManagement>
 			<plugins>
@@ -29,6 +50,10 @@
 							<property>
 								<name>this.server.name</name>
 								<value>${syb.servicename.orig}</value>
+							</property>
+							<property>
+								<name>remote.odbc.prior</name>
+								<value>${remote.odbc.prior}</value>
 							</property>
 							<property>
 								<name>basedir</name>

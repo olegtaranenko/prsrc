@@ -22,6 +22,15 @@
 				<syb.servicename>dev_mm</syb.servicename>
 			</properties>
 		</profile>
+		<profile>
+			<id>dedev</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<syb.servicename>markmaster</syb.servicename>
+			</properties>
+		</profile>
 	</profiles>
 	
 	

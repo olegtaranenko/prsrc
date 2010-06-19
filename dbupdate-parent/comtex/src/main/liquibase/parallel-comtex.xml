@@ -10,13 +10,13 @@
 
          
 
-	<changeSet id="1" author="parallel" runOnChange="true" context="parallel">
+	<changeSet id="1" author="parallel" runAlways="true" context="parallel" runOnChange="true">
 		<comment>Научиться запускать и работать параллельно в две версиях системы: production и development</comment>
 		<update tableName="guides">
 			<column name="namer" value="${this.server.name}"/>
 			<where>id = 0</where>
 		</update>
-		<sql><![CDATA[alter server prior class 'ASAODBC' USING 'DSN=dev_prior;UID=dba;PWD=sql']]></sql>
+		<sql>alter server prior class 'ASAODBC' USING 'DSN=${remote.odbc.prior};UID=dba;PWD=sql'</sql>
 	</changeSet>
 
 </databaseChangeLog>
