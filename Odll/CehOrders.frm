@@ -231,6 +231,7 @@ End Sub
 Private Sub cmEquip_Click(Index As Integer)
     idEquip = Index
     werkBegin
+    gridIsLoad = True
 End Sub
 
 Private Sub cmExAll_Click()
@@ -608,7 +609,7 @@ Dim equipIndex As Integer
     sql = "select e.equipId, we.werkId, e.equipName, we.equipId as IsPresent " _
         & " from GuideEquip e " _
         & " LEFT JOIN WerkEquip we ON we.equipId = e.equipId AND we.werkId = " & idWerk _
-        & "WHERE e.equipId > 0" _
+        & " WHERE e.equipId > 0" _
         & " order by e.equipId"
 
     Set tbOrders = myOpenRecordSet("##we.01", sql, dbOpenForwardOnly)
