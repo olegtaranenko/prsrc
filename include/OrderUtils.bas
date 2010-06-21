@@ -26,7 +26,8 @@ If myExecute("##11", sql, 0) > 0 Then GoTo ER1
 
 sql = "UPDATE OrdersEquip " _
 & " SET outDateTime = " & tenOclock _
-& " WHERE outDateTime < " & Midnight
+& " WHERE outDateTime < " & Midnight _
+& " AND exists (select 1 from OrdersInCeh oc where oc.numorder = OrdersEquip.Numorder) "
 If myExecute("##404", sql, 0) > 0 Then GoTo ER1
 
 

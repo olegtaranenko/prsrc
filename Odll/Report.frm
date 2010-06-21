@@ -639,10 +639,12 @@ Else
 End If
 
 sql = "SELECT Orders.numOrder, Orders.StatusId, Orders.ProblemId, " & _
-"Orders.DateRS, Orders.FirmId, Orders.outDateTime, Orders.Logo, " & _
+"Orders.DateRS, Orders.FirmId, oe.outDateTime, Orders.Logo, " & _
 "Orders.Product, Orders.ordered, Orders.paid, Orders.shipped, " & _
 "GuideManag.Manag " & _
-strFrom & " WHERE (" & strWhere & ") ORDER BY Orders.outDateTime;"
+strFrom _
+& " JOIN vw_OrdersEquipSummary oe on oe.numorder = Orders.numorder" _
+& " WHERE " & strWhere & " ORDER BY oe.outDateTime;"
 
 Set tqOrders = myOpenRecordSet("##65", sql, dbOpenDynaset)
 L = 1
@@ -730,12 +732,12 @@ Me.Width = delta + 700
 
 End Sub
 
-Function numericToReport(row As Long, col As Integer, value As Variant) _
+Function numericToReport(row As Long, col As Integer, Value As Variant) _
 As Double
-    If Not IsNumeric(value) Then
+    If Not IsNumeric(Value) Then
         numericToReport = 0
     Else
-        numericToReport = value
+        numericToReport = Value
     End If
     If Round(numericToReport, 0) = numericToReport Then
         Grid.TextMatrix(row, col) = numericToReport
