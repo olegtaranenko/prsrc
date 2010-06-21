@@ -407,13 +407,7 @@ Begin VB.Form Orders
    Begin VB.Menu mnMenu 
       Caption         =   "Меню"
       Begin VB.Menu mnSetkaY 
-         Caption         =   "Сетка заказов YAG                            F1"
-      End
-      Begin VB.Menu mnSetkaC 
-         Caption         =   "Сетка заказов CO2                            F2"
-      End
-      Begin VB.Menu mnSetkaS 
-         Caption         =   "Сетка заказов SUB                             F3"
+         Caption         =   "Сетка заказов                                 F2"
       End
       Begin VB.Menu mnArhZone 
          Caption         =   "Фильтр Незакрыты и отгружены      F6"
@@ -422,7 +416,7 @@ Begin VB.Form Orders
          Caption         =   "Справочник сторонних организаций F11"
       End
       Begin VB.Menu mnFirmFind 
-         Caption         =   "Поиск фирмы по названию               F12"
+         Caption         =   "Поиск фирмы по названию              F12"
       End
       Begin VB.Menu mnReports 
          Caption         =   "Отчеты"
@@ -902,14 +896,15 @@ End Sub
 
 ' возвращает информацию для местного (на компе пользователя) лога
 Public Function openOrdersRowToGrid(myErr As String, Optional redraw As Boolean = False) As String
-
-gNzak = Grid.TextMatrix(mousRow, orNomZak)
-sql = rowFromOrdersSQL & " WHERE o.Numorder = " & gNzak
-Set tqOrders = myOpenRecordSet(myErr, sql, dbOpenForwardOnly)
-If tqOrders Is Nothing Then myBase.Close: End
-If tqOrders.BOF Then myBase.Close: End
-
-openOrdersRowToGrid = copyRowToGrid(mousRow, gNzak, redraw)
+If mousRow > 0 Then
+    gNzak = Grid.TextMatrix(mousRow, orNomZak)
+    sql = rowFromOrdersSQL & " WHERE o.Numorder = " & gNzak
+    Set tqOrders = myOpenRecordSet(myErr, sql, dbOpenForwardOnly)
+    If tqOrders Is Nothing Then myBase.Close: End
+    If tqOrders.BOF Then myBase.Close: End
+    
+    openOrdersRowToGrid = copyRowToGrid(mousRow, gNzak, redraw)
+End If
 
 'tqOrders.Close
 End Function
@@ -1007,7 +1002,7 @@ End Function
 
 
 Private Sub cmToWeb_Click()
-Dim Outdate As String, outTime As String, nbsp As String, tmpFile As String
+Dim Outdate As String, Outtime As String, nbsp As String, tmpFile As String
 Dim V As Variant
 
 Me.MousePointer = flexHourglass
@@ -1023,8 +1018,8 @@ If Not tqOrders.BOF Then
   nbsp = "&" & "nbsp"
   tmpDate = Now
   Outdate = Format(tmpDate, "dd.mm.yy")
-  outTime = Format(tmpDate, "hh:nn")
-  Print #1, Outdate & nbsp & nbsp & nbsp & nbsp & nbsp & outTime
+  Outtime = Format(tmpDate, "hh:nn")
+  Print #1, Outdate & nbsp & nbsp & nbsp & nbsp & nbsp & Outtime
   Print #1, ""
   While Not tqOrders.EOF
       If isConflict() Then
@@ -1191,12 +1186,8 @@ ElseIf Shift = vbCtrlMask And KeyCode = vbKeyL Then
     tbEnable.Text = ""
     tbEnable.Visible = True
     tbEnable.SetFocus
-ElseIf KeyCode = vbKeyF1 Then
-    mnSetkaY_Click
 ElseIf KeyCode = vbKeyF2 Then
-    mnSetkaC_Click
-ElseIf KeyCode = vbKeyF3 Then 'ceh$$
-    mnSetkaS_Click
+    mnSetkaY_Click
 ElseIf KeyCode = vbKeyF6 And tbEnable.Visible Then
     mnArhZone_Click
 ElseIf KeyCode = vbKeyF4 Then
@@ -2906,24 +2897,15 @@ End Sub
 
 Private Sub mnSetkaY_Click()
     'Zakaz.startParams (1)
+    gNzak = ""
     Zakaz.Regim = "setka"
-    Zakaz.idEquip = 1
+    If gEquipId <= 0 Then
+        gEquipId = 1
+    End If
+    Zakaz.idEquip = gEquipId
     Zakaz.Show vbModal
 End Sub
 
-Private Sub mnSetkaC_Click()
-    'Zakaz.startParams (2)
-    Zakaz.Regim = "setka"
-    Zakaz.idEquip = 2
-    Zakaz.Show vbModal
-End Sub
-
-Private Sub mnSetkaS_Click()
-    'Zakaz.startParams (3)
-    Zakaz.Regim = "setka"
-    Zakaz.idEquip = 3
-    Zakaz.Show vbModal
-End Sub
 
 Private Sub mnSklad_Click()
 cbM_LostFocus

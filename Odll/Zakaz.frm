@@ -24,6 +24,7 @@ Begin VB.Form Zakaz
       Left            =   360
       TabIndex        =   30
       Top             =   5520
+      Visible         =   0   'False
       Width           =   510
    End
    Begin VB.CheckBox ckCeh 
@@ -277,6 +278,7 @@ Begin VB.Form Zakaz
       Left            =   120
       TabIndex        =   31
       Top             =   5520
+      Visible         =   0   'False
       Width           =   252
    End
    Begin VB.Label Label1 
@@ -528,6 +530,7 @@ End Sub
 
 Private Sub cmCeh_Click(Index As Integer)
     idEquip = Index + 1
+    gEquipId = idEquip
     'statusIdOld = statusIdNew
     startParams
     'newZagruz ' вызывается в startParams (!?)
@@ -1705,10 +1708,11 @@ End Sub
 Private Sub cehSelectorsInit(action As Boolean)
 Dim I As Integer
     For I = 0 To UBound(Equip) - 1
-        ckCehDone(I).Visible = False
-        'ckCehDone(I).Enabled = False
-        cmCeh(I).Visible = False
-        cmCeh(I).Enabled = False
+        If Regim = "" Then
+            ckCehDone(I).Visible = action
+        End If
+        cmCeh(I).Visible = action
+        cmCeh(I).Enabled = action
     Next I
     
 End Sub
@@ -1814,6 +1818,8 @@ End If
 If Regim = "" Then
     If InitZagruz Then
     End If
+Else
+    cehSelectorsInit True
 End If
 
 startParams
@@ -1912,18 +1918,19 @@ startParams = False
 
 maxDay = 0
 
-If idWerk > 0 Then ' вызов в режиме Сетки заказов
+Set zakazBean = New ZakazVO
+If gNzak = "" Then ' вызов в режиме Сетки заказов
     Me.cmAdd.Visible = False
     Me.cmRepit.Visible = False
     gNzak = ""
     statusIdOld = 0
     Me.urgent = ""
 Else
-    
+
     Me.laNomZak.Caption = gNzak
     Me.cmAdd.Visible = True
     Me.cmRepit.Visible = True
-    
+
     sql = "SELECT o.numorder, o.StatusId, o.DateRS, o.outTime, o.werkId" _
     & ", oe.outDateTime, oe.statusEquipId, oe.equipId, oe.worktime, oe.workTimeMO" _
     & ", oc.DateTimeMO, oc.StatM, oe.StatO" _
@@ -1935,7 +1942,6 @@ Else
     & " WHERE o.numOrder =" & gNzak & " AND oe.equipId = " & CStr(idEquip)
     Set tbOrders = myOpenRecordSet("##402", sql, dbOpenForwardOnly)
     
-    Set zakazBean = New ZakazVO
     zakazBean.initFromDb
     
     tbOrders.Close
