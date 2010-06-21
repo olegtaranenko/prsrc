@@ -244,9 +244,9 @@ Grid.SetFocus
 End Sub
 
 Private Sub cmAdd_Click()
-If Grid.TextMatrix(Grid.rows - 1, gfId) <> "" Then Grid.AddItem ("")
+If Grid.TextMatrix(Grid.Rows - 1, gfId) <> "" Then Grid.AddItem ("")
 
-Grid.row = Grid.rows - 1
+Grid.row = Grid.Rows - 1
 Grid.col = gfNazwFirm 'название
 Grid.SetFocus
 textBoxInGridCell tbMobile, Grid
@@ -475,9 +475,6 @@ Dim sqlReq As String, firmId As String, DNM As String
 Unload Me
 End Sub
 
-Private Sub Command1_Click()
-
-End Sub
 
 Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
 If KeyCode = vbKeyEscape And Not cep Then lbHide
@@ -486,6 +483,7 @@ End Sub
 Private Sub Form_Load()
 Dim I As Integer
 quantity = 0
+mousRow = -1
 
 Grid.FormatString = "|< Название  фирмы|^ M|Kатегория|Скидки в %|200x|2002" & _
 "|2003|2004|<Конт.лицо|<Телефон|<Факс|<e-mail|<Вид деятельности|<Каталог" & _
@@ -557,7 +555,7 @@ oldWidth = Me.Width
 End Sub
 
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer
+Dim H As Integer, W As Integer
 
 If Me.WindowState = vbMinimized Then Exit Sub
 If Me.WindowState = vbMaximized And Me.Width > cDELLwidth Then 'экран DELL
@@ -567,23 +565,23 @@ Else
 End If
 On Error Resume Next
 lbHide "noGrid"
-w = Me.Width - oldWidth
+W = Me.Width - oldWidth
 oldWidth = Me.Width
-h = Me.Height - oldHeight
+H = Me.Height - oldHeight
 oldHeight = Me.Height
 
 
-Grid.Height = Grid.Height + h
-Grid.Width = Grid.Width + w
-cmSel.Top = cmSel.Top + h
-cmExit.Top = cmExit.Top + h
+Grid.Height = Grid.Height + H
+Grid.Width = Grid.Width + W
+cmSel.Top = cmSel.Top + H
+cmExit.Top = cmExit.Top + H
 'cmExit.Left = cmExit.Left + w
-cmDel.Top = cmDel.Top + h
+cmDel.Top = cmDel.Top + H
 'tbFind.Top = tbFind.Top + h
 'cmFind.Top = cmFind.Top + h
-cmAdd.Top = cmAdd.Top + h
-cmExel.Top = cmExel.Top + h
-cmExel.left = cmExel.left + w
+cmAdd.Top = cmAdd.Top + H
+cmExel.Top = cmExel.Top + H
+cmExel.Left = cmExel.Left + W
 End Sub
 
 Private Sub Grid_Click()
@@ -684,11 +682,11 @@ Private Sub Grid_LeaveCell()
 Grid.CellBackColor = Grid.BackColor
 End Sub
 
-Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
-    Dim rows As String
+Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+    Dim Rows As String
     Dim col As String
     If isAdmin Then
-        Dim err As Integer
+        Dim Err As Integer
         If searchDestFirm Then
             searchDestFirm = False
             Grid.MousePointer = flexDefault
@@ -732,11 +730,11 @@ Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As 
                 & vbCr & "Нажмите Да[Yes], если вы действительно хотите удалить, или Нет[No], тогда это можно будет сделать позже.", vbYesNo) = vbYes Then
                     sql = "delete from guidefirms where firmId = " & moveSrcFirmId
                     wrkDefault.BeginTrans
-                    err = myExecute("##moveF.2", sql)
+                    Err = myExecute("##moveF.2", sql)
                     wrkDefault.CommitTrans
-                    If err <> 1 Then
+                    If Err <> 1 Then
                         Dim I As Long
-                        For I = 1 To Grid.rows - 1
+                        For I = 1 To Grid.Rows - 1
                             If Grid.TextMatrix(I, gfId) = moveSrcFirmId Then
                                 Grid.removeItem (I)
                                 Exit For
@@ -760,7 +758,7 @@ Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As 
         MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
     Exit Sub
 execError:
-        wrkDefault.rollback
+        wrkDefault.Rollback
         MsgBox "Произошла непредвиденная ошибка, которая будет показана в следующем диалоге." & vbCr & "Сообщите о ней администратору", , "Выполение невозможно"
         errorCodAndMsg cErr
         reconnectDB
