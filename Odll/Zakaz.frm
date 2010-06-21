@@ -627,7 +627,7 @@ End If
 If reg = "fromCehZagruz" Then
     isMzagruz = False
 Else
-    isMzagruz = (ckCeh.value = 0)
+    isMzagruz = (ckCeh.Value = 0)
 End If
 
 'ZeDay = maxDay + 1  'чтобы не сработали !!эти значение исп-ся далее 4 раза
@@ -797,7 +797,7 @@ tbOrders.Close
 
 If reg = "fromCehZagruz" Then Exit Sub
 
-If ckCeh.value = 0 Then
+If ckCeh.Value = 0 Then
   For I = 1 To maxDay
     lv.ListItems("k" & I).SubItems(zkMbef) = Round(befOst(I), 1) '23.11.04
     lv.ListItems("k" & I).SubItems(zkMzagr) = _
@@ -991,9 +991,9 @@ cmZapros.Enabled = statusIdOld <> statusIdNew
 
 For I = 0 To UBound(Equip) - 1
     If ckCehDone(I).Tag = CStr(statusIdNew) Then
-        ckCehDone(I).value = 1
+        ckCehDone(I).Value = 1
     Else
-        ckCehDone(I).value = 0
+        ckCehDone(I).Value = 0
     End If
 Next I
 
@@ -1696,7 +1696,7 @@ End Sub
 
 Private Sub cehSelectorAccess(cehIndex As Integer, action As Boolean, syncStatus As Boolean)
     ckCehDone(cehIndex).Visible = action
-    ckCehDone(cehIndex).value = IIf(syncStatus, 1, 0)
+    ckCehDone(cehIndex).Value = IIf(syncStatus, 1, 0)
     cmCeh(cehIndex).Visible = action
     cmCeh(cehIndex).Enabled = action
 End Sub
@@ -1986,7 +1986,7 @@ Else
           
     V = zakazBean.StatM
     If cbMOsetByText(Me.cbM, V) Then
-        Me.tbDateMO.Text = zakazBean.DateTimeMO
+        Me.tbDateMO.Text = Format(zakazBean.DateTimeMO, "dd.mm.yy")
     End If
     
     Me.tbWorktime.Text = zakazBean.Worktime
