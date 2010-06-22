@@ -1,15 +1,16 @@
 Attribute VB_Name = "Common"
 Option Explicit
 Dim ErrNumber As Integer, ErrDescription As String
+Dim gMsg As String
 
 
 
 '-- Main application entry point.
 Sub Main()
 
-Dim localExe As String
+    Dim localExe As String
 
-Dim success As Boolean
+    Dim msgStyle As VbMsgBoxStyle
 
     loadEffectiveSettingsCfg
     initLogFileName
@@ -18,20 +19,19 @@ Dim success As Boolean
     
     If getEffectiveSetting("exe") <> "" Then
         localExe = getFullExeName(getEffectiveSetting("exe"))
-        success = exeStart(localExe)
+        If Not exeStart(localExe) Then
+            fatalError "Unexpected error " & Err.Description
+        End If
+    ElseIf getCurrentSetting("help", argumentSettings) <> "" Then
+        
     ElseIf getCurrentSetting("deploy", argumentSettings) <> "" Then
         localExe = getFullExeName(getCurrentSetting("deploy", argumentSettings))
-        success = exeDeploy(localExe)
-        If success Then
-            MsgBox "Файл " & localExe & vbCr & " успешно выложен в репозиторий.", vbInformation
-        Else
-            MsgBox "Ошибка при попытке выложить файл " & localExe & " в репозиторий.", vbCritical
-        End If
+        msgStyle = exeDeploy(localExe)
+        MsgBox gMsg _
+        & vbCr & vbCr & "Файл :" & vbTab & localExe, msgStyle
+        'MsgBox "Ошибка при попытке выложить файл " & localExe & " в репозиторий.", msgStyle
     End If
     
-    If Not success Then
-        fatalError "Unexpected error " & Err.Description
-    End If
 End Sub
 
 Private Function isReporsitoryExists() As String
@@ -47,29 +47,77 @@ Private Function isReporsitoryExists() As String
     
 failed:
     isReporsitoryExists = ""
-    info "Wrong repository path: " & isReporsitoryExists _
-            & "Check network access or/and correct program settings"
+    MsgBox "Unexpected error by checking the repository" _
+        & vbCr & "Check network access or/and correct program settings" _
+        & vbCr & "Setting to repository path: " & isReporsitoryExists, vbCritical, "Error"
+        
 End Function
 
-' returns true if succes false otherwise
-Private Function exeDeploy(localExe As String) As Boolean
-Dim failed As Boolean
-    exeDeploy = False
-    On Error GoTo failed
+
+Function exeDeploy(localExe As String) As VbMsgBoxStyle
+Dim myInfo As VersionInfo, repositoryInfo As VersionInfo
+'Dim m As Variant
+Dim nameWithoutPath As String
+Dim repositoryExe As String, repositoryPath As String
+Dim check As Integer
+Dim doCopy As Boolean
+Dim remoteFound As Boolean
     
-    failed = checkVersionDeploy(localExe)
-    
-    If failed Then
-        fatalError "Error by deploy " & localExe & "."
+On Error GoTo failed
+    exeDeploy = vbInformation
+
+    repositoryPath = getEffectiveSetting("repositoryPath")
+    nameWithoutPath = stripPath(localExe)
+    repositoryExe = repositoryPath & "\" & nameWithoutPath
+
+    gMsg = ""
+    doCopy = False
+    If GetDllVersion(localExe, myInfo) Then
+        If GetDllVersion(repositoryExe, repositoryInfo) Then
+            
+            check = compareVersion(myInfo, repositoryInfo)
+            If vbYes = MsgBox("File to deploy: " & vbTab & localExe & ". " _
+                & vbCr & "Repository: " & vbTab & repositoryPath _
+                & vbCr & "Local version: " & vbTab & infoToString(myInfo) _
+                & vbCr & "Remote version: " & vbTab & infoToString(repositoryInfo) _
+                & vbCr & "Do you want to deploy?" _
+                , vbYesNo Or vbExclamation, "Внимание") _
+            Then
+                doCopy = True
+            Else
+                gMsg = "Deploing canceled..."
+            End If
+        Else
+            gMsg = "Unexpected error by access to repository." _
+            & vbCr & "Repository path: " & repositoryExe
+            GoTo failed
+        End If
+    Else
+        gMsg = "Local file " & localExe & " not found!"
+        GoTo failed
     End If
-    exeDeploy = True
+    
+    If doCopy Then
+        'gMsg = "Ошибка сравнения версий файлов " & myInfo & " и " & repositoryInfo
+        If compareVersion(myInfo, repositoryInfo) <> 0 Then
+            Dim archivePath As String, archiveExe As String
+            archivePath = getArchevePath(repositoryPath, repositoryInfo)
+            archiveExe = archivePath & "\" & getArchiveName(nameWithoutPath, repositoryInfo)
+            gMsg = "Ошибка переписывания файла " & repositoryExe & " в папку " & archivePath
+            FileCopy repositoryExe, archiveExe
+        End If
+        gMsg = "Ошибка копирования файла " & localExe & " в папку " & repositoryPath
+        FileCopy localExe, repositoryExe
+        gMsg = "Successful deploy!"
+    End If
     Exit Function
 failed:
+    exeDeploy = vbCritical
 End Function
 
 
 ' returns true if succes false otherwise
-Private Function exeStart(localExe As String) As Boolean
+Private Function exeStart(localExe As String) As String
 
 Dim existsFile As String, repositoryPath  As String
 Dim failed As Boolean
@@ -164,53 +212,7 @@ EN1:
     checkSelfVersion = True
 End Function
 
-Function checkVersionDeploy(localExe As String) As Boolean
-Dim myInfo As VersionInfo, repositoryInfo As VersionInfo
-'Dim m As Variant
-Dim nameWithoutPath As String
-Dim repositoryExe As String, repositoryPath As String
-Dim check As Integer
-Dim doCopy As Boolean
-Dim remoteFound As Boolean
 
-On Error GoTo EN1
-    repositoryPath = getEffectiveSetting("repositoryPath")
-    nameWithoutPath = stripPath(localExe)
-    repositoryExe = repositoryPath & "\" & nameWithoutPath
-
-    checkVersionDeploy = False
-    doCopy = False
-    If GetDllVersion(localExe, myInfo) Then
-        If GetDllVersion(repositoryExe, repositoryInfo) Then
-            
-            check = compareVersion(myInfo, repositoryInfo)
-            If vbYes = MsgBox("Deploy of " & localExe & ". " _
-                & vbCr & "Local version - " & infoToString(myInfo) _
-                & vbCr & "Remote version - " & infoToString(repositoryInfo) _
-                & vbCr & "Deploy?" _
-                , vbYesNo, "Внимание") _
-            Then
-                doCopy = True
-            End If
-            remoteFound = True
-        End If
-    Else
-        MsgBox "Local file " & localExe & " not found!", vbExclamation
-        checkVersionDeploy = True
-    End If
-    If doCopy Then
-        If compareVersion(myInfo, repositoryInfo) <> 0 And remoteFound Then
-            Dim archivePath As String, archiveExe As String
-            archivePath = getArchevePath(repositoryPath, repositoryInfo)
-            archiveExe = getArchiveName(nameWithoutPath, repositoryInfo)
-            FileCopy repositoryExe, archivePath & "\" & archiveExe
-        End If
-        FileCopy localExe, repositoryExe
-    End If
-    Exit Function
-EN1:
-    checkVersionDeploy = True
-End Function
 
 Function getArchiveName(name As String, info As VersionInfo) As String
     getArchiveName = name & "." & infoToString(info)
@@ -236,29 +238,58 @@ On Error GoTo EN1
 
     checkVersionExe = False
     doCopy = False
-    If getEffectiveSetting("overwrite") = 1 Then
-        doCopy = True
-    ElseIf GetDllVersion(localExe, myInfo) Then
-        If GetDllVersion(repositoryExe, repositoryInfo) Then
-            
-            check = compareVersion(myInfo, repositoryInfo)
-            If check < 0 Then
-                If vbYes = MsgBox("Обнаружена новая версия программы " & nameWithoutPath & ". " _
-                    & vbCr & "Текущая версия программы - " & infoToString(myInfo) _
-                    & vbCr & "Новая версия программы - " & infoToString(repositoryInfo) _
-                    & vbCr & "Нажмите Да(Yes) чтобы обновить версию" _
-                    , vbYesNo, "Внимание") _
-                Then
-                    doCopy = True
-                End If
+    Dim localOk As Boolean, remoteOk As Boolean
+On Error GoTo localFail
+    localOk = GetDllVersion(localExe, myInfo)
+    GoTo checkRemote
+    
+localFail:
+    localOk = False
+    ErrNumber = Err.Number
+    ErrDescription = Err.Description
+    
+checkRemote:
+On Error GoTo remoteFail
+    remoteOk = GetDllVersion(repositoryExe, repositoryInfo)
+    GoTo mainCheck
+remoteFail:
+    remoteOk = False
+    ErrNumber = Err.Number
+    ErrDescription = Err.Description
+    
+mainCheck:
+On Error GoTo mainFail
+        
+    If localOk And remoteOk Then
+        check = compareVersion(myInfo, repositoryInfo)
+        If check < 0 Then
+            If vbYes = MsgBox("Обнаружена новая версия программы " & nameWithoutPath & ". " _
+                & vbCr & "Текущая версия программы - " & infoToString(myInfo) _
+                & vbCr & "Новая версия программы - " & infoToString(repositoryInfo) _
+                & vbCr & "Нажмите Да(Yes) чтобы обновить версию" _
+                , vbYesNo, "Внимание") _
+            Then
+                doCopy = True
             End If
-        Else
-            checkVersionExe = True
         End If
+    ElseIf remoteOk Then
+        ' попробовать скопировать из репозитория последнюю версию файла в рабочую директорию
+        If vbYes = MsgBox( _
+             " Текущая директория: " & vbTab & myInfo.path _
+            & vbCr & "Репозиторий: " & vbTab & repositoryInfo.path _
+            & vbCr & "Программа: " & vbTab & nameWithoutPath & " версии [ " & infoToString(myInfo) & "]" _
+            & vbCr & "Нажмите Да(Yes) чтобы скачать файл на диск." _
+            , vbYesNo, "Внимание") _
+        Then
+            doCopy = True
+        End If
+    ElseIf localOk Then
+        
     Else
         MsgBox "Невозможно определить версию файла " & localExe, vbExclamation
         checkVersionExe = True
     End If
+    
     If doCopy Then
         'ShellAndHold "xcopy /y " & repositoryExe & " " & localExe, vbHide
         info "Found update for " & localExe & ", version: " & infoToString(myInfo)
@@ -267,10 +298,11 @@ On Error GoTo EN1
         info "... update was successful"
     End If
     Exit Function
-EN1:
+    
+mainFail:
     ErrNumber = Err.Number
     ErrDescription = Err.Description
-    checkVersionExe = True
+    checkVersionExe = False
 End Function
 
 Function getAppArguments()
@@ -299,20 +331,20 @@ Function getExeName(alias As String) As String
 Dim I As Integer
 Dim hasExt As Boolean
 Dim appAliases(3) As MapEntry
-    appAliases(1).Key = "prior": appAliases(1).value = "PriorN.exe"
-    appAliases(2).Key = "stime": appAliases(2).value = "stimeN.exe"
-    appAliases(3).Key = "rowmat": appAliases(3).value = "Rowmat_N.exe"
+    appAliases(1).Key = "prior": appAliases(1).Value = "PriorN.exe"
+    appAliases(2).Key = "stime": appAliases(2).Value = "stimeN.exe"
+    appAliases(3).Key = "rowmat": appAliases(3).Value = "Rowmat_N.exe"
     
     getExeName = alias
     For I = 1 To UBound(appAliases)
         If getExeName = appAliases(I).Key Then
-            getExeName = appAliases(I).value
+            getExeName = appAliases(I).Value
             Exit Function
         End If
     Next I
     
     If Len(getExeName) > 0 Then
-        If Not right(getExeName, 4) = ".exe" Then
+        If Not Right(getExeName, 4) = ".exe" Then
             getExeName = getExeName & ".exe"
         End If
     End If
