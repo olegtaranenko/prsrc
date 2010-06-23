@@ -34,6 +34,7 @@ Public Equip() As String
 Public Werk() As String
 Public werkSourceId() As Integer
 
+Public gWerkId As Integer
 Public gEquipId As Integer
 Public Const lenStatus = 20
 Public statId(lenStatus) As Integer
@@ -389,27 +390,27 @@ End If
 End Sub
 
 Sub clearGridRow(Grid As MSFlexGrid, row As Long)
-Dim il As Long
+Dim IL As Long
     noClick = True
     Grid.row = row
-    For il = 0 To Grid.Cols - 1
-        Grid.col = il
-        If il > 0 Then Grid.CellBackColor = Grid.BackColor
+    For IL = 0 To Grid.Cols - 1
+        Grid.col = IL
+        If IL > 0 Then Grid.CellBackColor = Grid.BackColor
         Grid.CellForeColor = Grid.ForeColor
         Grid.CellFontStrikeThrough = False
-        Grid.TextMatrix(row, il) = ""
-    Next il
+        Grid.TextMatrix(row, IL) = ""
+    Next IL
     Grid.col = 1
     noClick = False
 End Sub
 
 Sub colorGridRow(Grid As MSFlexGrid, row As Long, color As Long)
-Dim il As Long
+Dim IL As Long
     Grid.row = row
-    For il = 0 To Grid.Cols - 1
-        Grid.col = il
-        If il > 0 Then Grid.CellBackColor = color
-    Next il
+    For IL = 0 To Grid.Cols - 1
+        Grid.col = IL
+        If IL > 0 Then Grid.CellBackColor = color
+    Next IL
     Grid.col = 1
 End Sub
 
@@ -465,42 +466,40 @@ Dim S As Double
 End Sub
 
 Sub delZakazFromReplaceRS()
-sql = "DELETE From ReplaceRS " & "WHERE numOrder = " & gNzak
-myExecute "##79", sql, 0 ' удаляем, если есть
+    sql = "DELETE From ReplaceRS " & "WHERE numOrder = " & gNzak
+    myExecute "##79", sql, 0 ' удаляем, если есть
 End Sub
 
 
 Sub exitAll()
-If isOrders Then Unload Orders
-If isWerkOrders Then Unload WerkOrders
-If isZagruz Then Unload Zagruz
-If isFindFirm Then Unload FindFirm
-
-If sDocs.isLoad Then Unload sDocs
-
-If cfg.isLoad Then Unload cfg '$$2
-'If isZagruzM Then Unload ZagruzM
-'myBase.Close
+    If isOrders Then Unload Orders
+    If isWerkOrders Then Unload WerkOrders
+    If isZagruz Then Unload Zagruz
+    If isFindFirm Then Unload FindFirm
+    
+    If sDocs.isLoad Then Unload sDocs
+    
+    If cfg.isLoad Then Unload cfg '$$2
 
 End Sub
 
 Function findValInCol(Grid As MSFlexGrid, Value, col As Integer) As Boolean
-Dim il As Long
+Dim IL As Long
 findValInCol = False
-For il = 1 To Grid.Rows - 1
-    If Value = Grid.TextMatrix(il, orNomZak) Then
-        Grid.TopRow = il
-        Grid.row = il
+For IL = 1 To Grid.Rows - 1
+    If Value = Grid.TextMatrix(IL, orNomZak) Then
+        Grid.TopRow = IL
+        Grid.row = IL
         findValInCol = True
         Exit For
     End If
-Next il
+Next IL
 
 End Function
         
 Function findExValInCol(Grid As MSFlexGrid, Value As String, _
             col As Integer, Optional pos As Long = -1) As Long
-Dim il As Long, str  As String, beg As Long
+Dim IL As Long, str  As String, beg As Long
 
 If pos < 1 Then
     beg = 1
@@ -508,15 +507,15 @@ Else
     beg = pos
 End If
 Value = UCase(Value)
-For il = beg To Grid.Rows - 1
-    str = UCase(Grid.TextMatrix(il, col))
+For IL = beg To Grid.Rows - 1
+    str = UCase(Grid.TextMatrix(IL, col))
     If InStr(str, Value) > 0 Then
-        Grid.TopRow = il
-        Grid.row = il
-        findExValInCol = il
+        Grid.TopRow = IL
+        Grid.row = IL
+        findExValInCol = IL
         Exit Function
     End If
-Next il
+Next IL
 findExValInCol = -1
 
 End Function
@@ -1537,7 +1536,7 @@ End If
  
  str = LoadDate(Orders.Grid, row, orDataVid, tqOrders!Outdatetime, "dd.mm.yy")
  If str <> "" Then log = log & " Out=" & str
- str = LoadNumeric(Orders.Grid, row, orVrVid, tqOrders!outTime)
+ str = LoadNumeric(Orders.Grid, row, orVrVid, tqOrders!Outtime)
  If str <> "" Then log = log & "_" & str
  
  str = LoadNumeric(Orders.Grid, row, orVrVip, tqOrders!Worktime, , "#0.0")

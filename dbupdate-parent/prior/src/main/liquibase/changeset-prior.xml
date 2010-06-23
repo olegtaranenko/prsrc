@@ -1737,6 +1737,14 @@ where id = 2
 		</sql>
 	</changeSet>
 
+	<changeSet id="68" author="mantis-125" runOnChange="true">
+		<comment>улучшить время отклика при загрузки таблицы заказов</comment>
+		<createIndex tableName="Orders" indexName="loadbase" unique="false">
+			<column name="werkId"/>
+			<column name="statusId"/>
+		</createIndex>
+	</changeSet>
+
 	<changeSet id="1" author="mantis-121" runOnChange="true">
 		<comment>soft delete из справочника сторонних организаций</comment>
 		<sqlFile path="triggers/GuideFirms.wf_delete_firm.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>

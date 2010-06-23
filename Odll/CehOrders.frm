@@ -215,9 +215,9 @@ Grid.SetFocus
 End Sub
 
 Private Sub chSingl_Click()
-If chSingl.value = 1 And Not IsNumeric(tbNomZak.Text) Then
+If chSingl.Value = 1 And Not IsNumeric(tbNomZak.Text) Then
     MsgBox "Номер заказа выбран неверно.", , "Предупреждение:"
-    chSingl.value = 0
+    chSingl.Value = 0
     Exit Sub
 End If
 werkBegin
@@ -262,10 +262,10 @@ End Sub
 Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
 If KeyCode = vbKeyEscape Then lbHide
 If KeyCode = vbKeyF1 Then
-    If chSingl.value = 1 Then
-        chSingl.value = 0
+    If chSingl.Value = 1 Then
+        chSingl.Value = 0
     Else
-        chSingl.value = 1
+        chSingl.Value = 1
     End If
 End If
 End Sub
@@ -326,7 +326,7 @@ Grid.ColWidth(chProblem) = colWdth(chProblem)
 Grid.ColWidth(chDataVid) = colWdth(chDataVid)
 Grid.ColWidth(chIzdelia) = colWdth(chIzdelia)
 
-If chDetail.value = 1 Then
+If chDetail.Value = 1 Then
     Grid.ColWidth(chDataRes) = 740
 Else
     Grid.ColWidth(chDataRes) = 0
@@ -335,21 +335,85 @@ Grid.ColWidth(chVrVid) = colWdth(chVrVid)
 Grid.ColWidth(chFirma) = colWdth(chFirma)
 Grid.ColWidth(chLogo) = colWdth(chLogo) - Grid.ColWidth(chDataRes)
 
-Dim EquipTitle As String, EquipSql As String
-If idEquip = 0 Then
-    EquipTitle = "All"
-    EquipSql = ""
+Dim RightLinie As Long, HShift As Long
+Dim equipIndex As Integer
+
+
+
+    HShift = cmEquip(0).Width + 20
+    RightLinie = cmEquip(0).Left + HShift
+    Dim werkSql As String
+    If idWerk > 0 Then
+        werkSql = " AND we.werkId = " & idWerk
+    End If
+    
+    sql = "select e.equipId, e.equipName, we.equipId as IsPresent " _
+        & vbCr & " from GuideEquip e " _
+        & " LEFT JOIN WerkEquip we ON we.equipId = e.equipId" & werkSql _
+        & vbCr & " WHERE e.equipId > 0" _
+        & " group by e.equipId, e.equipName, ispresent" _
+        & " order by e.equipId"
+
+    Set tbOrders = myOpenRecordSet("##we.01", sql, dbOpenForwardOnly)
+    If Not tbOrders Is Nothing Then
+        While Not tbOrders.EOF
+            equipIndex = tbOrders!equipId
+            Debug.Print sql
+            If cmEquip.UBound < UBound(Equip) Then
+            
+                Load cmEquip(equipIndex)
+            End If
+            If Not IsNull(tbOrders!IsPresent) Then
+                cmEquip(equipIndex).Caption = tbOrders!equipName
+                cmEquip(equipIndex).Visible = True
+                cmEquip(equipIndex).Left = RightLinie
+                RightLinie = RightLinie + HShift
+            Else
+                cmEquip(equipIndex).Visible = False
+            End If
+            tbOrders.MoveNext
+        Wend
+        tbOrders.Close
+    End If
+
+
+
+Dim myTitle(1) As String, mySql(1) As String
+If idWerk = 0 Then
+    myTitle(0) = "All"
+    mySql(0) = ""
 Else
-    EquipTitle = Equip(idEquip)
-    EquipSql = " AND equipId = " & idEquip
+    myTitle(0) = Werk(idWerk)
+    mySql(0) = "WerkId = " & idWerk
 End If
 
-Me.Caption = Werk(idWerk) & " - " & EquipTitle & "  " & mainTitle
+If idEquip = 0 Then
+    myTitle(1) = "All"
+    mySql(1) = ""
+Else
+    myTitle(1) = Equip(idEquip)
+    mySql(1) = "equipId = " & idEquip
+End If
+
+Dim firstArg As Boolean, Where As String
+firstArg = True
+For I = 0 To 1
+    If mySql(I) <> "" Then
+        If firstArg Then
+            Where = "WHERE"
+            firstArg = False
+        Else
+            Where = Where & " AND"
+        End If
+        Where = Where & " " & mySql(I)
+    End If
+Next I
+
+Me.Caption = myTitle(0) & " - " & myTitle(1) & "  " & mainTitle
 
 ' Сортируем, чтобы макет появился только один раз
-sql = "select * from vw_Reestr where werkId = " & idWerk & EquipSql
+sql = "select * from vw_Reestr " & Where
 
-'& " ORDER BY Numorder "
 
 Set tbCeh = myOpenRecordSet("##34", sql, dbOpenDynaset)
 If tbCeh Is Nothing Then myQuery.Close: myBase.Close: End
@@ -369,7 +433,7 @@ If Not tbCeh.BOF Then
         MaketNumorder = gNzak
     End If
     
-    If chSingl.value = 1 And gNzak <> tbNomZak.Text Then GoTo NXT
+    If chSingl.Value = 1 And gNzak <> tbNomZak.Text Then GoTo NXT
     If IsDate(tbCeh!DateTimeMO) Then
       If tbCeh!DateTimeMO < CDate("01.01.2000") _
         Or tbCeh!DateTimeMO > CDate("01.01.2050") _
@@ -377,7 +441,7 @@ If Not tbCeh.BOF Then
         msgOfZakaz "##308", "Недопустимая дата МО. Обратитесь к менеджеру. ", tbCeh!Manag
         GoTo NXT
       End If
-      If IsNull(tbCeh!workTimeMO) Then
+      If IsNull(tbCeh!WorktimeMO) Then
         If MaketFlag Then
             toCehFromStr "m" 'макет
             MaketFlag = False
@@ -476,7 +540,7 @@ End If
     Else
         If tbCeh!StatO = "готов" Then _
             Grid.TextMatrix(werkRows, chProcVip) = "100"
-        S = tbCeh!workTimeMO
+        S = tbCeh!WorktimeMO
         If S < 0 Then S = -S
         LoadDateKey tbCeh!DateTimeMO, "##36"
         LoadDate Grid, werkRows, chVrVid, tbCeh!DateTimeMO, "hh"
@@ -485,7 +549,7 @@ End If
         msgOfZakaz ("##36"), , tbCeh!Manag
         Grid.TextMatrix(werkRows, chVrVip) = "(??) "
     Else
-      If chDetail.value = 1 Then '
+      If chDetail.Value = 1 Then '
         Grid.TextMatrix(werkRows, chVrVip) = "(" & S & ")"
       Else
         Grid.TextMatrix(werkRows, chVrVip) = Round(S, 2)
@@ -562,11 +626,8 @@ Dim I As Integer
 oldHeight = Me.Height
 oldWidth = Me.Width
 
-#If Not COMTEC = 1 Then '----------------------------------------------
 cmNaklad.Visible = True
-#End If '--------------------------------------------------------------
 
-'If dostup = "y" Or dostup = "c" Then cmZagruz.Visible = True
 If Not (dostup = "a" Or dostup = "m" Or dostup = "" Or dostup = "b") Then
     cmZagruz.Visible = True
     Orders.managLoad "fromCeh" ' загрузка Manag()
@@ -600,35 +661,7 @@ Grid.ColWidth(0) = 0
 Grid.ColWidth(chNomZak) = 1000
 Grid.ColWidth(chIzdelia) = 2450
 
-Dim RightLinie As Long, HShift As Long
-Dim equipIndex As Integer
     
-    HShift = cmEquip(0).Width + 20
-    RightLinie = cmEquip(0).Left + HShift
-    
-    sql = "select e.equipId, we.werkId, e.equipName, we.equipId as IsPresent " _
-        & " from GuideEquip e " _
-        & " LEFT JOIN WerkEquip we ON we.equipId = e.equipId AND we.werkId = " & idWerk _
-        & " WHERE e.equipId > 0" _
-        & " order by e.equipId"
-
-    Set tbOrders = myOpenRecordSet("##we.01", sql, dbOpenForwardOnly)
-    If Not tbOrders Is Nothing Then
-        While Not tbOrders.EOF
-            equipIndex = tbOrders!equipId
-            Load cmEquip(equipIndex)
-            If Not IsNull(tbOrders!IsPresent) Then
-                cmEquip(equipIndex).Caption = tbOrders!equipName
-                cmEquip(equipIndex).Visible = True
-                cmEquip(equipIndex).Left = RightLinie
-                RightLinie = RightLinie + HShift
-            Else
-                cmEquip(equipIndex).Visible = False
-            End If
-            tbOrders.MoveNext
-        Wend
-        tbOrders.Close
-    End If
 
 
 Timer1.Interval = 500

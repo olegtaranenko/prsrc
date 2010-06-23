@@ -224,6 +224,12 @@ EN1:
     loadFileSettings = -1
 End Function
 
+
+Sub saveAppSettings()
+    saveFileSettings appCfgFile, appSettings
+End Sub
+
+
 Sub saveFileSettings(filePath As String, ByRef curSettings() As MapEntry)
 Dim I As Integer, str  As String
 Dim doSave As Boolean
@@ -240,7 +246,7 @@ EN1:
 End Sub
 
 Function getAppCfgDefaultName() As String
-    getAppCfgDefaultName = App.path & "\" & App.EXEName & ".cfg"
+    getAppCfgDefaultName = App.path & "\" & App.ExeName & ".cfg"
 End Function
 
 Function getSiteCfgDefaultName() As String

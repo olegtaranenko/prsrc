@@ -15,6 +15,22 @@ Begin VB.Form Orders
    ScaleHeight     =   6216
    ScaleWidth      =   11880
    StartUpPosition =   2  'CenterScreen
+   Begin VB.CommandButton cmReestr 
+      Caption         =   "Реестр"
+      Height          =   315
+      Left            =   6180
+      TabIndex        =   40
+      Top             =   5400
+      Width           =   852
+   End
+   Begin VB.CommandButton cmJournal 
+      Caption         =   "Журнал"
+      Height          =   315
+      Left            =   7080
+      TabIndex        =   39
+      Top             =   5710
+      Width           =   852
+   End
    Begin VB.ListBox lbEquip 
       Height          =   816
       ItemData        =   "Orders.frx":030A
@@ -76,7 +92,7 @@ Begin VB.Form Orders
       Width           =   9015
    End
    Begin VB.ListBox lbClose 
-      Height          =   450
+      Height          =   432
       ItemData        =   "Orders.frx":0362
       Left            =   240
       List            =   "Orders.frx":036C
@@ -225,7 +241,7 @@ Begin VB.Form Orders
       Width           =   372
    End
    Begin VB.ListBox lbDel 
-      Height          =   450
+      Height          =   432
       ItemData        =   "Orders.frx":03B1
       Left            =   240
       List            =   "Orders.frx":03BB
@@ -237,7 +253,7 @@ Begin VB.Form Orders
    Begin VB.CommandButton cmExvel 
       Caption         =   "Печать в Excel"
       Height          =   315
-      Left            =   9660
+      Left            =   10020
       TabIndex        =   14
       Top             =   5580
       Width           =   1515
@@ -253,7 +269,7 @@ Begin VB.Form Orders
    Begin VB.CommandButton cmToWeb 
       Caption         =   "Файлы для WEB"
       Height          =   315
-      Left            =   7920
+      Left            =   8280
       TabIndex        =   13
       Top             =   5580
       Visible         =   0   'False
@@ -265,17 +281,17 @@ Begin VB.Form Orders
       Left            =   6180
       TabIndex        =   12
       Top             =   5710
-      Width           =   972
+      Width           =   852
    End
    Begin VB.CommandButton cmWerk 
-      Caption         =   "YAG"
+      Caption         =   "All"
       Height          =   315
       Index           =   0
-      Left            =   6180
+      Left            =   7080
       TabIndex        =   11
       Top             =   5400
       Visible         =   0   'False
-      Width           =   732
+      Width           =   612
    End
    Begin VB.ListBox lbStat 
       Height          =   816
@@ -308,7 +324,7 @@ Begin VB.Form Orders
       Height          =   816
       ItemData        =   "Orders.frx":03FD
       Left            =   2100
-      List            =   "Orders.frx":040A
+      List            =   "Orders.frx":0404
       TabIndex        =   19
       Top             =   3960
       Visible         =   0   'False
@@ -329,7 +345,7 @@ Begin VB.Form Orders
       ForeColorSel    =   -2147483630
       GridLines       =   2
       AllowUserResizing=   1
-      FormatString    =   $"Orders.frx":041D
+      FormatString    =   $"Orders.frx":040D
       BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
          Name            =   "MS Sans Serif"
          Size            =   9.6
@@ -379,7 +395,7 @@ Begin VB.Form Orders
       Width           =   1332
    End
    Begin VB.Label laWerk 
-      Caption         =   "Рабочий реестр: "
+      Caption         =   "Подразделение: "
       Height          =   192
       Left            =   4680
       TabIndex        =   23
@@ -793,6 +809,7 @@ tbOrders!StatusId = 0
 tbOrders!Numorder = valueorder.val
 tbOrders!inDate = Now
 tbOrders!ManagId = manId(Orders.cbM.ListIndex)
+tbOrders!werkId = gWerkId
 str = getSystemField("Kurs")
 
 Dim rate As Double
@@ -810,6 +827,7 @@ wrkDefault.CommitTrans
 If zakazNum > 0 Then Grid.AddItem ""
 zakazNum = zakazNum + 1
 Grid.TextMatrix(zakazNum, 0) = zakazNum
+Grid.TextMatrix(zakazNum, orWerk) = Werk(gWerkId)
 Grid.TextMatrix(zakazNum, orInvoice) = "счет ?"
 Grid.TextMatrix(zakazNum, orNomZak) = valueorder.val
 Grid.TextMatrix(zakazNum, orData) = Format(Now, "dd.mm.yy")
@@ -849,6 +867,18 @@ GridToExcel Grid
 End Sub
 
 
+Private Sub cmReestr_Click()
+    Dim currentWerkId As Integer, newWerkId As Integer
+    currentWerkId = WerkOrders.idWerk
+    
+    newWerkId = gWerkId
+    If currentWerkId <> newWerkId And isWerkOrders Then
+        Unload WerkOrders
+    End If
+    WerkOrders.idWerk = newWerkId
+    WerkOrders.Show 'vbModal
+End Sub
+
 Private Sub cmRefr_Click()
 Dim minDate As Date, maxDate As Date
 
@@ -873,6 +903,8 @@ If chConflict.Value = 1 And zakazNum = 0 Then _
     MsgBox "Противоречий нет", , "Информация"
 cmRefr.Caption = "Обновить"
 laFiltr.Visible = False
+
+Me.Caption = cmWerk(gWerkId).Caption & mainTitle
 
 End Sub
 
@@ -1115,14 +1147,8 @@ End Sub
 
 
 Private Sub cmWerk_Click(Index As Integer)
-    Dim currentWerkId As Integer, newWerkId As Integer
-    currentWerkId = WerkOrders.idWerk
-    newWerkId = Index + 1
-    If currentWerkId <> newWerkId And isWerkOrders Then
-        Unload WerkOrders
-    End If
-    WerkOrders.idWerk = newWerkId
-    WerkOrders.Show 'vbModal
+    gWerkId = Index
+    cmRefr_Click
 End Sub
 
 Private Sub cmEquip_Click()
@@ -1346,10 +1372,6 @@ mnServic.Visible = False
 beClick = False
 flDelRowInMobile = False
 
-Me.Caption = Me.Caption & mainTitle
-' заголовок в меню: в какой валюте вводить данные
-setCurrencyCaption
-
 orColNumber = 0
 mousCol = 1
 initOrCol orNomZak, "no.Numorder"
@@ -1397,7 +1419,7 @@ zakazNum = 0
 tbStartDate.Text = Format(DateAdd("d", -7, curDate), "dd/mm/yy")
 tbEndDate.Text = Format(curDate, "dd/mm/yy")
 
-Grid.FormatString = "|>№ заказа|>№ счета|<Предпр|Цех|Оборуд.|^Дата |^ М|<Статус |<Проблемы|" & _
+Grid.FormatString = "|>№ заказа|>№ счета|<Предпр|Подр.|Оборуд.|^Дата |^ М|<Статус |<Проблемы|" & _
 "<ДатаРС|<Название Фирмы|<Дата выдачи|Вр.выдачи|Вр.выполнения|Макет|Образец|" & _
 "<дата выдачи MO|<вр.выдачи MO|O в.выполнения|<Лого|<Изделия|" & _
 "Категория|<Тема|Залог|Нал.опл.|Курс|заказано|согласовано|отгружено|^ M"
@@ -1458,18 +1480,17 @@ sql = "select werkId, werkCode, werkSourceId from GuideWerk order by 1"
 
 initListbox sql, lbWerk, "werkId", "werkCode"
 
-For I = 1 To lbWerk.ListCount - 2
-    Load cmWerk(I)
-    cmWerk(I).Left = cmWerk(I - 1).Left + cmWerk(I - 1).Width + 10
-    cmWerk(I).Visible = True
-Next I
-
-ReDim Werk(lbWerk.ListCount - 1)
-
+ReDim Preserve Werk(lbWerk.ListCount - 1)
 For I = 0 To lbWerk.ListCount - 2
+    Load cmWerk(I + 1)
+    cmWerk(I + 1).Left = cmWerk(I).Left + cmWerk(I).Width + 10
+    cmWerk(I + 1).Visible = True
+    
     Werk(I + 1) = lbWerk.List(I + 1)
-    cmWerk(I).Caption = Werk(I + 1)
+    cmWerk(I + 1).Caption = Werk(I + 1)
 Next I
+
+
 
 Set table = myOpenRecordSet("##72.2", sql, dbOpenForwardOnly)
 If table Is Nothing Then myBase.Close: End
@@ -1490,6 +1511,14 @@ ReDim Equip(lbEquip.ListCount - 1)
 For I = 0 To lbEquip.ListCount - 2
     Equip(I + 1) = lbEquip.List(I + 1)
 Next I
+
+    gWerkId = getEffectiveSetting("werkId")
+    gEquipId = getEffectiveSetting("equipId")
+
+Me.Caption = Werk(gWerkId) & mainTitle
+' заголовок в меню: в какой валюте вводить данные
+setCurrencyCaption
+
 
 
 End Sub
@@ -1639,6 +1668,9 @@ laZagruz.Top = laZagruz.Top + H
 cmExvel.Top = cmExvel.Top + H
 tbEnable.Top = tbEnable.Top + H
 tbEnable.Left = tbEnable.Left + W
+cmReestr.Top = cmReestr.Top + H
+cmJournal.Top = cmJournal.Top + H
+
 Dim RightLine As Integer
 For I = 0 To cmWerk.UBound
     cmWerk(I).Top = cmWerk(I).Top + H
@@ -1655,9 +1687,13 @@ cmEquip.Top = cmEquip.Top + H
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
-Unload Filtr
-isOrders = False
-exitAll
+    Unload Filtr
+    isOrders = False
+    exitAll
+    setAppSetting "werkId", gWerkId
+    setAppSetting "equipId", gEquipId
+    saveAppSettings
+
 End Sub
 
 Private Sub Grid_Compare(ByVal Row1 As Long, ByVal Row2 As Long, Cmp As Integer)
@@ -3486,8 +3522,10 @@ For I = 0 To orColNumber
 '    MsgBox "orSqlWhere=" & orSqlWhere(I) & "  getSqlWhere=" & getSqlWhere
   End If
 Next I
-If getSqlWhere <> "" Then getSqlWhere = " WHERE (" & getSqlWhere & ")"
-'MsgBox "Where = " & getSqlWhere
+If getSqlWhere <> "" Then getSqlWhere = " WHERE " & getSqlWhere
+If gWerkId <> 0 Then
+    getSqlWhere = getSqlWhere & " AND o.werkId = " & gWerkId
+End If
     
 End Function
 
