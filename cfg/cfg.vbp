@@ -10,10 +10,11 @@ Module=md5Util; md5Util.bas
 IconForm="Startup"
 Startup="Sub Main"
 HelpFile=""
+NoControlUpgrade=1
 Title="cfg"
 ExeName32="cfg.exe"
 Path32=".."
-Command32="-deploy rowmat -path .."
+Command32="-exe stime -repositoryPath .."
 Name="cfg"
 HelpContextID="0"
 CompatibleMode="0"
@@ -38,6 +39,7 @@ Unattended=0
 Retained=0
 ThreadPerObject=0
 MaxNumberOfThreads=1
+RemoveUnusedControlInfo=0
 DebugStartupOption=0
 
 [MS Transaction Server]
