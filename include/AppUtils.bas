@@ -203,8 +203,8 @@ Dim p_days_start As Integer, p_days_end As Integer
             quantity = quantity + 1
             Grid.TextMatrix(quantity, rtNomZak) = tbOrders!Numorder
             Grid.TextMatrix(quantity, rtReserv) = Format(tbOrders!quant, "# ##0.00")
-            If Not IsNull(tbOrders!Ceh) Then _
-                Grid.TextMatrix(quantity, rtCeh) = tbOrders!Ceh
+            If Not IsNull(tbOrders!Werk) Then _
+                Grid.TextMatrix(quantity, rtCeh) = tbOrders!Werk
             
             Grid.TextMatrix(quantity, rtData) = tbOrders!date1
             If Not IsNull(tbOrders!Manager) Then _
@@ -233,7 +233,7 @@ Dim p_days_start As Integer, p_days_end As Integer
 
 'laRecSum.Caption = Round(sum, 2)
 If quantity > 0 Then
-    Grid.removeItem quantity + 1
+    Grid.RemoveItem quantity + 1
 End If
 trigger = False
 Grid.Visible = True
