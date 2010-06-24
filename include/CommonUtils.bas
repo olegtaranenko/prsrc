@@ -28,7 +28,7 @@ Sub fatalError(msg As String, Optional lookAdmin As String)
 End Sub
 
 Sub getAppInfo(ByRef version As VersionInfo)
-    version.path = App.path & "\" & App.EXEName & ".exe"
+    version.path = App.path & "\" & App.ExeName & ".exe"
     version.maj = App.Major
     version.min = App.Minor
     version.bld = App.Revision
@@ -90,7 +90,7 @@ Function getMainTitle() As String
 Dim version As VersionInfo
 
     getAppInfo version
-    getMainTitle = " [версия " & infoToString(version) & "]"
+    getMainTitle = " [" & infoToString(version) & "]"
 
 End Function
 
