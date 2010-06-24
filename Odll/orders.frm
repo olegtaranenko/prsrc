@@ -92,7 +92,7 @@ Begin VB.Form Orders
       Width           =   9015
    End
    Begin VB.ListBox lbClose 
-      Height          =   432
+      Height          =   450
       ItemData        =   "Orders.frx":0362
       Left            =   240
       List            =   "Orders.frx":036C
@@ -241,7 +241,7 @@ Begin VB.Form Orders
       Width           =   372
    End
    Begin VB.ListBox lbDel 
-      Height          =   432
+      Height          =   450
       ItemData        =   "Orders.frx":03B1
       Left            =   240
       List            =   "Orders.frx":03BB
@@ -904,7 +904,7 @@ If chConflict.Value = 1 And zakazNum = 0 Then _
 cmRefr.Caption = "Обновить"
 laFiltr.Visible = False
 
-Me.Caption = cmWerk(gWerkId).Caption & mainTitle
+Me.Caption = addCurrencyToCaption(cmWerk(gWerkId).Caption & mainTitle)
 
 End Sub
 
@@ -1196,7 +1196,7 @@ End Sub
 
 
 Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim str As String, Value As String, I As Integer, il As Long
+Dim str As String, Value As String, I As Integer, IL As Long
 
 If cbM.ListIndex < 0 Then
     'cbM_LostFocus

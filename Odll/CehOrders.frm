@@ -358,9 +358,7 @@ Dim equipIndex As Integer
     If Not tbOrders Is Nothing Then
         While Not tbOrders.EOF
             equipIndex = tbOrders!equipId
-            Debug.Print sql
             If cmEquip.UBound < UBound(Equip) Then
-            
                 Load cmEquip(equipIndex)
             End If
             If Not IsNull(tbOrders!IsPresent) Then
@@ -411,7 +409,6 @@ Next I
 
 Me.Caption = myTitle(0) & " - " & myTitle(1) & "  " & mainTitle
 
-' Сортируем, чтобы макет появился только один раз
 sql = "select * from vw_Reestr " & Where
 
 
@@ -436,7 +433,7 @@ If Not tbCeh.BOF Then
     If chSingl.Value = 1 And gNzak <> tbNomZak.Text Then GoTo NXT
     If IsDate(tbCeh!DateTimeMO) Then
       If tbCeh!DateTimeMO < CDate("01.01.2000") _
-        Or tbCeh!DateTimeMO > CDate("01.01.2050") _
+        Or tbCeh!DateTimeMO > CDate("01.01.2150") _
       Then
         msgOfZakaz "##308", "Недопустимая дата МО. Обратитесь к менеджеру. ", tbCeh!Manag
         GoTo NXT
@@ -574,7 +571,6 @@ Else
     Grid.TextMatrix(werkRows, chStatus) = Status(tbCeh!StatusId)
 End If
 MN:
-#If Not COMTEC = 1 Then '----------------------------------------------
  For I = 1 To UBound(tmpL) 'отмечаем заказы с выписанными накладными
     If tmpL(I) = gNzak Then
         Grid.col = chIzdelia
@@ -583,7 +579,6 @@ MN:
         Exit For
     End If
  Next I
-#End If '--------------------------------------------------------------
 Grid.TextMatrix(werkRows, 0) = marker
 Grid.TextMatrix(werkRows, chNomZak) = gNzak & str
 If str <> "" Then colorGridRow Grid, werkRows, &HCCCCCC 'маркируем МО
@@ -592,7 +587,7 @@ Grid.TextMatrix(werkRows, chFirma) = tbCeh!name
 Grid.TextMatrix(werkRows, chLogo) = tbCeh!Logo
 Grid.TextMatrix(werkRows, chIzdelia) = tbCeh!Product
 If tbCeh!StatusId = 5 Then ' отложен
-        Grid.TextMatrix(werkRows, chProblem) = Problems(tbCeh!ProblemId)
+    Grid.TextMatrix(werkRows, chProblem) = Problems(tbCeh!ProblemId)
 End If
 
 End Sub

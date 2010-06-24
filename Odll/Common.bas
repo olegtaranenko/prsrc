@@ -2714,5 +2714,11 @@ Dim I As Integer, txt As String
 
 End Function
 
-
+Function addCurrencyToCaption(Caption As String) As String
+    If sessionCurrency = CC_RUBLE Then
+        addCurrencyToCaption = Caption & " - Рубли"
+    ElseIf sessionCurrency = CC_UE Then
+        addCurrencyToCaption = Caption & " - Доллары"
+    End If
+End Function
 
