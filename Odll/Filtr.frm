@@ -58,7 +58,7 @@ Begin VB.Form Filtr
       Enabled         =   0   'False
       Height          =   2400
       Left            =   1800
-      MultiSelect     =   2  'Расширенно
+      MultiSelect     =   2  'Extended
       TabIndex        =   22
       Top             =   3180
       Width           =   1575
@@ -145,7 +145,7 @@ Begin VB.Form Filtr
       ItemData        =   "Filtr.frx":0025
       Left            =   3780
       List            =   "Filtr.frx":0027
-      MultiSelect     =   2  'Расширенно
+      MultiSelect     =   2  'Extended
       TabIndex        =   14
       TabStop         =   0   'False
       Top             =   420
@@ -154,7 +154,7 @@ Begin VB.Form Filtr
    Begin VB.ListBox lbStatus 
       Height          =   1620
       Left            =   2400
-      MultiSelect     =   2  'Расширенно
+      MultiSelect     =   2  'Extended
       TabIndex        =   10
       TabStop         =   0   'False
       Top             =   420
@@ -195,14 +195,14 @@ Begin VB.Form Filtr
    Begin VB.ListBox lbM 
       Height          =   255
       Left            =   1740
-      MultiSelect     =   2  'Расширенно
+      MultiSelect     =   2  'Extended
       TabIndex        =   7
       TabStop         =   0   'False
       Top             =   420
       Width           =   555
    End
    Begin VB.Label laEnable 
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Height          =   1035
       Left            =   540
       TabIndex        =   31
@@ -211,10 +211,10 @@ Begin VB.Form Filtr
       Width           =   1095
    End
    Begin VB.Label Label6 
-      Alignment       =   2  'Центровка
-      Appearance      =   0  'Плоска
+      Alignment       =   2  'Center
+      Appearance      =   0  'Flat
       BackColor       =   &H80000004&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Caption         =   "Отгружено"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
@@ -233,10 +233,10 @@ Begin VB.Form Filtr
       Width           =   1215
    End
    Begin VB.Label laTema 
-      Alignment       =   2  'Центровка
-      Appearance      =   0  'Плоска
+      Alignment       =   2  'Center
+      Appearance      =   0  'Flat
       BackColor       =   &H80000004&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Caption         =   "Тема"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
@@ -255,10 +255,10 @@ Begin VB.Form Filtr
       Width           =   1695
    End
    Begin VB.Label laKategor 
-      Alignment       =   2  'Центровка
-      Appearance      =   0  'Плоска
+      Alignment       =   2  'Center
+      Appearance      =   0  'Flat
       BackColor       =   &H80000004&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Caption         =   "Категория"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
@@ -277,10 +277,10 @@ Begin VB.Form Filtr
       Width           =   1035
    End
    Begin VB.Label Label5 
-      Alignment       =   2  'Центровка
-      Appearance      =   0  'Плоска
+      Alignment       =   2  'Center
+      Appearance      =   0  'Flat
       BackColor       =   &H80000004&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Caption         =   "Оплачено"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
@@ -299,10 +299,10 @@ Begin VB.Form Filtr
       Width           =   1335
    End
    Begin VB.Label Label4 
-      Alignment       =   2  'Центровка
-      Appearance      =   0  'Плоска
+      Alignment       =   2  'Center
+      Appearance      =   0  'Flat
       BackColor       =   &H80000004&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Caption         =   "Название Фирмы"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
@@ -321,10 +321,10 @@ Begin VB.Form Filtr
       Width           =   3495
    End
    Begin VB.Label Label3 
-      Alignment       =   2  'Центровка
-      Appearance      =   0  'Плоска
+      Alignment       =   2  'Center
+      Appearance      =   0  'Flat
       BackColor       =   &H80000004&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Caption         =   "Статус"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
@@ -343,10 +343,10 @@ Begin VB.Form Filtr
       Width           =   1395
    End
    Begin VB.Label Label2 
-      Alignment       =   2  'Центровка
-      Appearance      =   0  'Плоска
+      Alignment       =   2  'Center
+      Appearance      =   0  'Flat
       BackColor       =   &H80000004&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Caption         =   "М"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
@@ -365,10 +365,10 @@ Begin VB.Form Filtr
       Width           =   495
    End
    Begin VB.Label Label1 
-      Alignment       =   2  'Центровка
-      Appearance      =   0  'Плоска
+      Alignment       =   2  'Center
+      Appearance      =   0  'Flat
       BackColor       =   &H80000004&
-      BorderStyle     =   1  'Фиксировано один
+      BorderStyle     =   1  'Fixed Single
       Caption         =   "Дата"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
@@ -509,16 +509,16 @@ If lbType.Visible Then
     End If
 End If
 If opAll Then
-    orSqlWhere(0) = "(Orders.paid)>=[Orders].[ordered]"
+    orSqlWhere(0) = "o.paid>=o.ordered"
 ElseIf opNotAll Then
-    orSqlWhere(0) = "((Orders.paid)<[Orders].[ordered]) OR ((Orders.ordered)>0) AND ((Orders.paid)) Is Null"
+    orSqlWhere(0) = "(o.paid < o.ordered) OR ( o.ordered > 0) AND o.paid Is Null"
 Else
     orSqlWhere(0) = ""
 End If
 If opAlls Then
-    str = "(Orders.shipped)>=[Orders].[ordered]"
+    str = "o.shipped >= o.ordered"
 ElseIf opNotAlls Then
-    str = "((Orders.shipped)<[Orders].[ordered]) OR ((Orders.ordered)>0) AND ((Orders.shipped)) Is Null"
+    str = "(o.shipped < o.ordered) OR (o.ordered > 0) AND o.shipped Is Null"
 Else
     str = ""
 End If

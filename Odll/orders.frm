@@ -1381,7 +1381,7 @@ mousCol = 1
 initOrCol orNomZak, "no.Numorder"
 initOrCol orInvoice, "so.Invoice"
 initOrCol orVenture, "sv.ventureName"
-initOrCol orWerk, "sGuideWerk.Werk"
+initOrCol orWerk, "sw.Werk"
 initOrCol orEquip, "so.Equip"
 initOrCol orData, "do.inDate"
 initOrCol orMen, "sm.Manag"

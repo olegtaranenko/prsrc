@@ -390,16 +390,16 @@ End If
 End Sub
 
 Sub clearGridRow(Grid As MSFlexGrid, row As Long)
-Dim IL As Long
+Dim I As Long
     noClick = True
     Grid.row = row
-    For IL = 0 To Grid.Cols - 1
-        Grid.col = IL
-        If IL > 0 Then Grid.CellBackColor = Grid.BackColor
+    For I = 0 To Grid.Cols - 1
+        Grid.col = I
+        If I > 0 Then Grid.CellBackColor = Grid.BackColor
         Grid.CellForeColor = Grid.ForeColor
         Grid.CellFontStrikeThrough = False
-        Grid.TextMatrix(row, IL) = ""
-    Next IL
+        Grid.TextMatrix(row, I) = ""
+    Next I
     Grid.col = 1
     noClick = False
 End Sub
@@ -806,7 +806,7 @@ If notAll = "byId" Then notAll = ""
 If beAll And notAll = "" Then orSqlWhere(col) = ""
 
 If (beAll Or beNothing) And Not Orders.tbEnable.Visible And col = orStatus Then
-    orSqlWhere(col) = "(GuideStatus.Status)<>'закрыт'"
+    orSqlWhere(col) = "(s.Status)<>'закрыт'"
 Else
 End If
 End Function
