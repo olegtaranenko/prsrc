@@ -266,15 +266,15 @@ Begin VB.Form Orders
    End
    Begin MSComctlLib.Toolbar Toolbar1 
       Align           =   1  'Align Top
-      Height          =   396
+      Height          =   636
       Left            =   0
       TabIndex        =   14
       Top             =   0
       Width           =   11880
       _ExtentX        =   20955
-      _ExtentY        =   699
-      ButtonWidth     =   635
-      ButtonHeight    =   572
+      _ExtentY        =   1122
+      ButtonWidth     =   487
+      ButtonHeight    =   995
       Appearance      =   1
       _Version        =   393216
    End
@@ -860,29 +860,29 @@ tbEndDate.Text = Format(CurDate, "dd/mm/yy")
 
 '*********************************************************************$$7
 sql = "SELECT * From GuideManag ORDER BY forSort;"
-Set table = myOpenRecordSet("##03", sql, dbOpenForwardOnly)
-If table Is Nothing Then myBase.Close: End
+Set Table = myOpenRecordSet("##03", sql, dbOpenForwardOnly)
+If Table Is Nothing Then myBase.Close: End
 I = 0: ReDim manId(0):
 Dim imax As Integer: imax = 0: ReDim Manag(0)
-While Not table.EOF
-    str = table!Manag
+While Not Table.EOF
+    str = Table!Manag
     If str = "not" Then
         GoTo AA
-    ElseIf LCase(table!forSort) <> "unused" Then
-        If table!managId <> 0 Then cbM.AddItem str
+    ElseIf LCase(Table!forSort) <> "unused" Then
+        If Table!managId <> 0 Then cbM.AddItem str
         lbM.AddItem str
-        manId(I) = table!managId
+        manId(I) = Table!managId
         I = I + 1
         ReDim Preserve manId(I):
-AA:     If imax < table!managId Then
-            imax = table!managId
+AA:     If imax < Table!managId Then
+            imax = Table!managId
             ReDim Preserve Manag(imax)
         End If
-        Manag(table!managId) = str
+        Manag(Table!managId) = str
     End If
-    table.MoveNext
+    Table.MoveNext
 Wend
-table.Close
+Table.Close
 
 lbM.Height = lbM.Height + 195 * (lbM.ListCount - 1)
 
@@ -894,15 +894,15 @@ Next I
 lbProblem.Height = lbProblem.Height + 195 * (lbProblem.ListCount - 1)
 
 '*******
-Set table = myOpenRecordSet("##72", "GuideVenture", dbOpenForwardOnly)
-If table Is Nothing Then myBase.Close: End
+Set Table = myOpenRecordSet("##72", "GuideVenture", dbOpenForwardOnly)
+If Table Is Nothing Then myBase.Close: End
 
 lbVenture.AddItem "", 0
-While Not table.EOF
-    lbVenture.AddItem "" & table!ventureName & "", table!ventureId
-    table.MoveNext
+While Not Table.EOF
+    lbVenture.AddItem "" & Table!ventureName & "", Table!ventureId
+    Table.MoveNext
 Wend
-table.Close
+Table.Close
 
 'begFiltr '******* начальный фильтр
 isOrders = True
@@ -965,26 +965,26 @@ orSqlWhere(orInvoice) = "(isNumeric(BayOrders.Invoice) =1) OR NOT EXISTS(" & _
 End Sub
 
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer
+Dim H As Integer, w As Integer
 lbHide "noFocus"
 
 
 If Me.WindowState = vbMinimized Then Exit Sub
 
 On Error Resume Next
-h = Me.Height - oldHeight
+H = Me.Height - oldHeight
 oldHeight = Me.Height
 w = Me.Width - oldWidth
 oldWidth = Me.Width
-Grid.Height = Grid.Height + h
+Grid.Height = Grid.Height + H
 Grid.Width = Grid.Width + w
-cmRefr.Top = cmRefr.Top + h
-laInform.Top = laInform.Top + h
-cmAdd.Top = cmAdd.Top + h
+cmRefr.Top = cmRefr.Top + H
+laInform.Top = laInform.Top + H
+cmAdd.Top = cmAdd.Top + H
 'cmExAll.Top = cmExAll.Top + h
-cmExvel.Top = cmExvel.Top + h
-tbEnable.Top = tbEnable.Top + h
-tbEnable.left = tbEnable.left + w
+cmExvel.Top = cmExvel.Top + H
+tbEnable.Top = tbEnable.Top + H
+tbEnable.Left = tbEnable.Left + w
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
@@ -1063,16 +1063,16 @@ Dim tmpRow As Long, tmpCol As Long
 End Sub
 
 Function haveUslugi() As Boolean
-Dim s As Double
+Dim S As Double
 
 End Function
 
 Function havePredmeti() As Boolean
-Dim s As Double
+Dim S As Double
 havePredmeti = False
 sql = "SELECT quantity From sDMCrez WHERE (((numDoc)=" & gNzak & "));"
-If Not byErrSqlGetValues("W##199", sql, s) Then myBase.Close: End
-If s > 0 Then havePredmeti = True
+If Not byErrSqlGetValues("W##199", sql, S) Then myBase.Close: End
+If S > 0 Then havePredmeti = True
 End Function
 
 Private Sub Grid_DblClick()
@@ -1731,7 +1731,7 @@ Private Sub mnCurrency_Click()
     Dim deletedPart As String
     deletedPart = InStr(Me.Caption, " - ")
     If deletedPart > 0 Then
-        Me.Caption = left(Me.Caption, deletedPart - 1)
+        Me.Caption = Left(Me.Caption, deletedPart - 1)
     End If
     setCurrencyCaption
     adjustMoneyColumnWidth (False)
@@ -1911,7 +1911,7 @@ lbHide
 End Sub
 
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim str As String, DNM As String, s As Double
+Dim str As String, DNM As String, S As Double
 
 If KeyCode = vbKeyReturn Then
 DNM = Format(Now(), "dd.mm.yy hh:nn") & vbTab & cbM.Text & " " & gNzak ' именно vbTab
@@ -2114,14 +2114,14 @@ If str = "" Then
     MsgBox "По этому полю фильтр не предусмотрен"
     Exit Function
 End If
-typ = left$(str, 1)
+typ = Left$(str, 1)
 str = Mid$(str, 2)
 If typ = "d" Then
     If value = "" Then
         value = " Is Null"
     Else
         If operator = "=" Then
-            value = left$(value, 6) & "20" & Mid$(value, 7, 2) 'это нужно если в Win98 установлен "гггг" - формат года
+            value = Left$(value, 6) & "20" & Mid$(value, 7, 2) 'это нужно если в Win98 установлен "гггг" - формат года
             value = " Like '" & value & "%'"
         ElseIf operator = "<" Then
             value = " <= '" & Format(value, "yyyy-mm-dd") & " 11:59:59 PM'"
