@@ -515,7 +515,11 @@ If cbO.Text = "в работе" Or cbO.Text = "готов" Then
     tbDateMO.Enabled = True
     laVrVipO.Enabled = True
     tbVrVipO.Enabled = True
-    tbVrVipO.Text = zakazBean.WorktimeMO
+    If Not IsNull(zakazBean.WorktimeMO) Then
+        tbVrVipO.Text = zakazBean.WorktimeMO
+    Else
+        tbVrVipO.Text = ""
+    End If
 Else
     If Not (cbM.Text = "в работе" Or cbM.Text = "готов") Then
         laDateMO.Enabled = False
@@ -969,7 +973,7 @@ If Grid.MouseRow = 0 And Shift = 2 Then _
 End Sub
 
 Private Sub laNomZak_Click()
-    Dim Left As String, Worktime As String, tbWorktime As String, Rollback As String
+    Dim Left As String, Worktime As String, tbWorktime As String, Rollback As String, Value
 End Sub
 
 Private Sub tbDateMO_GotFocus()
