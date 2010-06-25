@@ -450,7 +450,7 @@ Dim success As Integer
         End If
 
         Grid.Text = lbActive.Text
-        Orders.initListbox "select * from GuideVenture where standalone = 0", Orders.lbVenture, "VentureId", "VentureName"
+        initListbox "select * from GuideVenture where standalone = 0", Orders.lbVenture, "VentureId", "VentureName"
         
         clickedRow = -1
     End If

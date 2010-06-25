@@ -1047,6 +1047,50 @@ table.Close
 'Проверка режима совместной работы с Комтех
 CheckIntegration
 
+    gWerkId = getEffectiveSetting("werkId")
+    gEquipId = getEffectiveSetting("equipId")
+
+
+' раньше было в Orders.Form.Load
+Dim mySql As String
+mySql = "select werkId, werkCode, werkSourceId from GuideWerk order by 1"
+
+initListbox mySql, Orders.lbWerk, "werkId", "werkCode"
+
+ReDim Preserve Werk(Orders.lbWerk.ListCount - 1)
+For I = 0 To Orders.lbWerk.ListCount - 2
+    Load Orders.cmWerk(I + 1)
+    Orders.cmWerk(I + 1).Left = Orders.cmWerk(I).Left + Orders.cmWerk(I).Width + 10
+    Orders.cmWerk(I + 1).Visible = True
+    
+    Werk(I + 1) = Orders.lbWerk.List(I + 1)
+    Orders.cmWerk(I + 1).Caption = Werk(I + 1)
+Next I
+
+
+
+Set table = myOpenRecordSet("##72.2", mySql, dbOpenForwardOnly)
+If table Is Nothing Then myBase.Close: End
+ReDim werkSourceId(Orders.lbWerk.ListCount - 1)
+I = 1
+While Not table.EOF
+    werkSourceId(I) = table!werkSourceId
+    table.MoveNext
+    I = I + I
+Wend
+table.Close
+
+
+initListbox "select equipId, equipName from Guideequip where equipName <> '' order by 1", Orders.lbEquip, "equipId", "equipName"
+
+ReDim Equip(Orders.lbEquip.ListCount - 1)
+
+For I = 0 To Orders.lbEquip.ListCount - 2
+    Equip(I + 1) = Orders.lbEquip.List(I + 1)
+Next I
+
+
+
 If dostup = "y" Then
     WerkOrders.idWerk = 1: WerkOrders.Show
 ElseIf dostup = "c" Then    '$$$ceh
@@ -2721,4 +2765,26 @@ Function addCurrencyToCaption(Caption As String) As String
         addCurrencyToCaption = Caption & " - Доллары"
     End If
 End Function
+
+Public Sub initListbox(ByVal InitSql As String, ByVal lb As listBox, keyField As String, valueField As String)
+
+    ' Сначала удаляем старые значения
+    While lb.ListCount
+        lb.removeItem (0)
+    Wend
+
+    Set table = myOpenRecordSet("##72.0", InitSql, dbOpenForwardOnly)
+    If table Is Nothing Then myBase.Close: End
+    
+    lb.AddItem "", 0
+    While Not table.EOF
+        lb.AddItem "" & table(valueField) & ""
+        lb.ItemData(lb.ListCount - 1) = table(keyField)
+        table.MoveNext
+    Wend
+    table.Close
+    lb.Height = 225 * lb.ListCount
+
+End Sub
+
 
