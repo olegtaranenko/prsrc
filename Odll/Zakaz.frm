@@ -2003,7 +2003,11 @@ Else
      
     V = zakazBean.StatO
     If cbMOsetByText(Me.cbO, V) Then
-        Me.tbDateMO = zakazBean.DateTimeMO
+        If Not IsNull(zakazBean.DateTimeMO) Then
+            Me.tbDateMO = zakazBean.DateTimeMO
+        Else
+            Me.tbDateMO = ""
+        End If
         If Me.cbO.Text = "готов" Then
             'Me.tbVrVipO.Text = Orders.Grid.TextMatrix(Orders.mousRow, orOVrVip)
             Me.tbVrVipO.Text = zakazBean.Worktime
