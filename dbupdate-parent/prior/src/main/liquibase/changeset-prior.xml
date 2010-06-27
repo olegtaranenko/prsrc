@@ -1750,6 +1750,25 @@ where id = 2
 		<sqlFile path="procedures/wf_order_reserved.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 	</changeSet>
 
+
+	<changeSet id="70" author="mantis-125" runOnChange="true">
+		<comment>При переводе заказа из согласования в работу не обнуляются данные по моделям/образцам</comment>
+		<sql><![CDATA[
+update ordersEquip set WorkTimeMO = null, statO = null
+where 
+exists (select 1 from orders o where ordersEquip.numorder = o.numorder and o.statusid = 1 )
+and (isnull(ordersEquip.WorkTimeMO, 0) != 0 or ordersEquip.statO != '')
+		]]></sql>
+
+		<sql><![CDATA[
+update ordersinceh set datetimemo = null, statM = null
+from orders o 
+where ordersinceh.numorder = o.numorder and o.statusid = 1
+		]]></sql>
+
+	</changeSet>
+
+
 	<changeSet id="1" author="mantis-121" runOnChange="true">
 		<comment>soft delete из справочника сторонних организаций</comment>
 		<sqlFile path="triggers/GuideFirms.wf_delete_firm.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
