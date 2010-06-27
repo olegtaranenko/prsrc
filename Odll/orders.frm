@@ -1693,10 +1693,6 @@ Dim tmpRow As Long, tmpCol As Long
     Orders.SetFocus
 End Sub
 
-Function haveUslugi() As Boolean
-Dim S As Double
-
-End Function
 Function stopOrderAtVenture() As Boolean
 '    If ((mousCol <> orZakazano And mousCol <> orVenture And Grid.TextMatrix(mousRow, orZakazano) = "") Or Not isVentureGreen) Then
     stopOrderAtVenture = False
@@ -1854,8 +1850,6 @@ If mousRow = 0 Then Exit Sub
 
 gNzak = Grid.TextMatrix(mousRow, orNomZak)
 
-'    gEquipId = 2
-
 
 sql = "SELECT O.StatusId, o.lastModified, o.lastManagId " _
 & " From Orders o " _
@@ -1943,9 +1937,9 @@ Else
 End If
     
 
-If CDate(orderTimestamp) > CDate(loadBaseTimestamp) Then
+If CDate(orderTimestamp) > CDate(loadBaseTimestamp) And (Manag(lastManagId) <> cbM.Text) Then
     MsgBox "После того, как вы загрузили информацию о заказе, он был изменен менеджером " _
-    & lastManagId & " в " & orderTimestamp & "." _
+    & Manag(lastManagId) & " в " & orderTimestamp & "." _
     & vbCr & "Обновите данные и попробуйте повторить операцию снова." _
      , , "Стоп"
     Exit Sub
