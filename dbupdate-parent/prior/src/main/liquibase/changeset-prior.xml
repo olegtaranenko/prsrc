@@ -1768,6 +1768,15 @@ where ordersinceh.numorder = o.numorder and o.statusid = 1
 
 	</changeSet>
 
+	<changeSet id="71" author="mantis-125" runOnChange="true">
+		<comment>M148 ƒважды прибавл€ютс€ часы времени выдачи к дате выдачи</comment>
+		<sql><![CDATA[
+update ordersequip set outdatetime = convert(datetime, cast(outdatetime as integer))
+where hour (outdatetime) > 0
+		]]></sql>
+
+	</changeSet>
+
 
 	<changeSet id="1" author="mantis-121" runOnChange="true">
 		<comment>soft delete из справочника сторонних организаций</comment>

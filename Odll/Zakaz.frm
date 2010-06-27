@@ -395,13 +395,6 @@ Begin VB.Form Zakaz
       Top             =   2280
       Width           =   1575
    End
-   Begin VB.Label laMess 
-      Height          =   555
-      Left            =   420
-      TabIndex        =   16
-      Top             =   5100
-      Width           =   5835
-   End
    Begin VB.Label laReadyDate 
       BackColor       =   &H8000000A&
       Caption         =   "Дата выдачи"
@@ -419,6 +412,14 @@ Begin VB.Form Zakaz
       TabIndex        =   14
       Top             =   1320
       Width           =   1515
+   End
+   Begin VB.Label laMess 
+      BackColor       =   &H8000000A&
+      Height          =   432
+      Left            =   420
+      TabIndex        =   16
+      Top             =   4980
+      Width           =   5832
    End
 End
 Attribute VB_Name = "Zakaz"
@@ -1116,18 +1117,9 @@ End If
 
 str = tbReadyDate.Text
 If str = "" Then
-'    tbOrders!outDateTime = Null
     str = "Null"
 Else
-    str = "'" & "20" & Mid$(str, 7, 2) & "-" & Mid$(str, 4, 2) & "-" & Left$(str, 2)
-    sql = Orders.Grid.TextMatrix(Orders.mousRow, orVrVid)
-    If sql = "" Then
-'        tbOrders!outDateTime = tbReadyDate.Text
-        str = str & "'"
-    Else
-        str = str & " " & sql & ":00'"
-'       tbOrders!outDateTime = str
-    End If
+    str = "'" & "20" & Mid$(str, 7, 2) & "-" & Mid$(str, 4, 2) & "-" & Left$(str, 2) & "'"
 End If
 
 Dim v_outDateTime As String
