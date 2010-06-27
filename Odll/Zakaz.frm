@@ -5,16 +5,16 @@ Begin VB.Form Zakaz
    BackColor       =   &H8000000A&
    BorderStyle     =   3  'Fixed Dialog
    Caption         =   "Перемещение заказа в цеховую сводку"
-   ClientHeight    =   5904
-   ClientLeft      =   48
-   ClientTop       =   336
-   ClientWidth     =   9468
+   ClientHeight    =   5910
+   ClientLeft      =   45
+   ClientTop       =   330
+   ClientWidth     =   9465
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form2"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   5904
-   ScaleWidth      =   9468
+   ScaleHeight     =   5910
+   ScaleWidth      =   9465
    ShowInTaskbar   =   0   'False
    StartUpPosition =   2  'CenterScreen
    Begin VB.CommandButton cmCeh 
@@ -72,7 +72,7 @@ Begin VB.Form Zakaz
    End
    Begin VB.ComboBox cbM 
       Enabled         =   0   'False
-      Height          =   288
+      Height          =   315
       ItemData        =   "Zakaz.frx":0026
       Left            =   6660
       List            =   "Zakaz.frx":0033
@@ -118,7 +118,7 @@ Begin VB.Form Zakaz
       Width           =   915
    End
    Begin VB.ComboBox cbStatus 
-      Height          =   288
+      Height          =   315
       Left            =   8220
       Style           =   2  'Dropdown List
       TabIndex        =   1
@@ -322,7 +322,7 @@ Begin VB.Form Zakaz
       BackColor       =   &H8000000A&
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   7.8
+         Size            =   8.25
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -340,11 +340,11 @@ Begin VB.Form Zakaz
       BackColor       =   &H80000009&
       BorderStyle     =   1  'Fixed Single
       Enabled         =   0   'False
-      Height          =   288
+      Height          =   285
       Left            =   8220
       TabIndex        =   0
-      Top             =   456
-      Width           =   912
+      Top             =   330
+      Width           =   915
    End
    Begin VB.Label laVrVipO 
       BackColor       =   &H8000000A&
@@ -369,20 +369,20 @@ Begin VB.Form Zakaz
    Begin VB.Label laHnomZak 
       BackColor       =   &H8000000A&
       Caption         =   "№ Заказа"
-      Height          =   192
+      Height          =   195
       Left            =   6540
       TabIndex        =   19
-      Top             =   480
-      Width           =   852
+      Top             =   360
+      Width           =   855
    End
    Begin VB.Label laStatus 
       BackColor       =   &H8000000A&
       Caption         =   "Статус:"
-      Height          =   192
+      Height          =   195
       Left            =   6540
       TabIndex        =   18
-      Top             =   960
-      Width           =   1212
+      Top             =   840
+      Width           =   1215
    End
    Begin VB.Label laDateRS 
       Alignment       =   2  'Center
@@ -394,6 +394,13 @@ Begin VB.Form Zakaz
       TabIndex        =   17
       Top             =   2280
       Width           =   1575
+   End
+   Begin VB.Label laMess 
+      Height          =   555
+      Left            =   420
+      TabIndex        =   16
+      Top             =   5100
+      Width           =   5835
    End
    Begin VB.Label laReadyDate 
       BackColor       =   &H8000000A&
@@ -412,14 +419,6 @@ Begin VB.Form Zakaz
       TabIndex        =   14
       Top             =   1320
       Width           =   1515
-   End
-   Begin VB.Label laMess 
-      BackColor       =   &H8000000A&
-      Height          =   432
-      Left            =   420
-      TabIndex        =   16
-      Top             =   4980
-      Width           =   5832
    End
 End
 Attribute VB_Name = "Zakaz"
