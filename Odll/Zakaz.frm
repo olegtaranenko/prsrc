@@ -322,7 +322,7 @@ Begin VB.Form Zakaz
       BackColor       =   &H8000000A&
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   8.25
+         Size            =   7.8
          Charset         =   204
          Weight          =   700
          Underline       =   0   'False
@@ -468,7 +468,7 @@ Const zgOtlad = 7
 
 
 Sub lvAddDay(I As Integer)
-Dim Left As String, Rollback As String, Worktime As String, Outdatetime As String
+Dim Left As String, Rollback As String, Worktime As String, Outdatetime As String, Value
 
 Dim item As ListItem, str As String
     str = Format(DateAdd("d", I - 1, curDate), "dd/mm/yy")
@@ -1241,7 +1241,7 @@ table.Close
   If myExecute("##397.3", sql) <> 0 Then GoTo ER1
   ' ... and from InCeh table
   sql = "update OrdersInCeh SET DateTimeMO = NULL, statM = NULL WHERE NumOrder = " & gNzak
-  If myExecute("##397.4", sql) <> 0 Then GoTo ER1
+  myExecute "##397.4", sql, -1
  End If ' согласов
 tbOrders.Close
 
