@@ -473,7 +473,7 @@ End Sub
 '$odbc15$
 Private Sub cmClose_Click()
 Dim I As Integer, J As Integer, NN2() As String, K As Integer
-Dim numExtO As Integer, id As Integer, l As Long, S As Double
+Dim numExtO As Integer, id As Integer, l As Long, s As Double
 Dim mov As Double, moveNum As String, per As Double, str As String, str2 As String
 
 If Not lockSklad Then Exit Sub
@@ -500,12 +500,12 @@ For l = 1 To quantity2
             If Not byErrSqlGetValues("##366", sql, per, str2) Then Exit Sub
             
             QQ3(J) = per * Grid2(0).TextMatrix(l, nkIntQuant)
-            S = PrihodRashod("+", -1001) - PrihodRashod("-", -1001) 'Ф. остатки по складу
-            S = Round(S - QQ3(J), 2)
-            If S < 0 Then
+            s = PrihodRashod("+", -1001) - PrihodRashod("-", -1001) 'Ф. остатки по складу
+            s = Round(s - QQ3(J), 2)
+            If s < 0 Then
               If MsgBox("Дефицит товара '" & gNomNom & "' в факт. остатках " & _
               "в подразделении '" & sDocs.lbInside.List(0) & _
-              "' составит (" & Round(S / per, 2) & " " & str2 & "), продолжить?", _
+              "' составит (" & Round(s / per, 2) & " " & str2 & "), продолжить?", _
               vbOKCancel Or vbDefaultButton2, "Подтвердите") = vbCancel Then
                 lockSklad "un"
                 GoTo EN1
@@ -515,12 +515,12 @@ For l = 1 To quantity2
             moveNum = "yes"
         End If
         
-AA:     S = PrihodRashod("+", skladId) - PrihodRashod("-", skladId) 'Ф. остатки по складу
-        S = Round(mov + S - str, 2)
-        If S < 0 Then
+AA:     s = PrihodRashod("+", skladId) - PrihodRashod("-", skladId) 'Ф. остатки по складу
+        s = Round(mov + s - str, 2)
+        If s < 0 Then
           If MsgBox("Дефицит товара '" & gNomNom & "' в факт. остатках " & _
           "в подразделении '" & sDocs.lbInside.List(-1001 - skladId) & _
-          "' составит (" & S & "), продолжить?", _
+          "' составит (" & s & "), продолжить?", _
           vbOKCancel Or vbDefaultButton2, "Подтвердите") = vbCancel Then
             lockSklad "un"
             GoTo EN1
@@ -625,7 +625,7 @@ ER2:
 ER1:
 tbDocs.Close
 ER3:
-wrkDefault.Rollback
+wrkDefault.rollback
 lockSklad "un"
 MsgBox "Списание не прошло. Сообщите администратору.", , "Error - " & cErr
 
@@ -824,6 +824,9 @@ Dim stdPageRows As Integer
         lastPageRows = quantity2 - pageNum * pageRows
         If lastPageRows > 0 Then
             pageNum = pageNum + 1
+        Else
+            ' кратное количество строк (например 70 строк по 35 на каждой из 2-х страниц)
+            lastPageRows = stdPageRows
         End If
     End If
     
@@ -893,7 +896,7 @@ End Sub
 
 'ind=1 м.б. только при Regim = ""
 Sub loadToGrid(ind As Integer)
-Dim I As Integer, S As Double, S2 As Double, str As String, str2 As String
+Dim I As Integer, s As Double, S2 As Double, str As String, str2 As String
 
 
 ReDim NN(0): ReDim QQ(0): ReDim QQ2(0): QQ2(0) = 0: ReDim QQ3(0)
@@ -972,21 +975,21 @@ For I = 1 To UBound(NN)
             
             sql = "SELECT Sum(quant) AS Sum_quant From sDMC WHERE " & _
             "sDMC.numDoc = " & numDoc & " AND sDMC.nomNom = '" & NN(I) & "'"
-            If byErrSqlGetValues("##194", sql, S) Then
-                Grid2(ind).TextMatrix(quantity2, nkClos) = Round(S, 2)
-                Grid2(ind).TextMatrix(quantity2, nkEClos) = Round(S - QQ3(I), 2)
+            If byErrSqlGetValues("##194", sql, s) Then
+                Grid2(ind).TextMatrix(quantity2, nkClos) = Round(s, 2)
+                Grid2(ind).TextMatrix(quantity2, nkEClos) = Round(s - QQ3(I), 2)
             End If
             If Regim <> "" Then
               If tbNomenk!perlist <> 1 Then 'для обрезной доп. колонка для целых
                 beSUO = True
                 Grid2(ind).TextMatrix(quantity2, nkIntEdIzm) = tbNomenk!ed_Izmer2
               End If
-              S = 0: S2 = 0
+              s = 0: S2 = 0
               sql = "SELECT curQuant, intQuant from sDMCrez " & _
               "WHERE numDoc =" & gNzak & " AND nomNom = '" & NN(I) & "'"
-              byErrSqlGetValues "##362", sql, S, S2
-              If S > 0 Then _
-                Grid2(ind).TextMatrix(quantity2, nkQuant) = Round(S, 2)
+              byErrSqlGetValues "##362", sql, s, S2
+              If s > 0 Then _
+                Grid2(ind).TextMatrix(quantity2, nkQuant) = Round(s, 2)
               If S2 > 0 Then _
                 Grid2(ind).TextMatrix(quantity2, nkIntQuant) = S2
             End If
@@ -1120,7 +1123,7 @@ End If '*************************************************************
 End Sub
 
 Private Sub Grid2_EnterCell(Index As Integer)
-Dim T As Double, S As Double
+Dim T As Double, s As Double
 If Index > 0 Then Exit Sub
 mousRow2 = Grid2(Index).row
 mousCol2 = Grid2(Index).col
@@ -1144,7 +1147,7 @@ Grid2(Index).CellBackColor = Grid2(Index).BackColor
 
 End Sub
 
-Private Sub Grid2_MouseUp(Index As Integer, Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub Grid2_MouseUp(Index As Integer, Button As Integer, Shift As Integer, x As Single, y As Single)
 If Grid2(Index).MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid2(Index).ColWidth(Grid2(Index).MouseCol)
 
@@ -1158,14 +1161,14 @@ Grid2(0).SetFocus
 Grid2_EnterCell 0
 End Sub
 
-Private Sub Grid4_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub Grid4_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
 If Grid4.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid4.ColWidth(Grid4.MouseCol)
 
 End Sub
 
 Private Sub tbMobile2_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim delta As Double, quant As Double, S As Double, str As String
+Dim delta As Double, quant As Double, s As Double, str As String
 
 If KeyCode = vbKeyReturn Then
   
