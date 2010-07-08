@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="cp1251"?>
+ 
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd"
+  logicalFilePath="comtex-id-correction.xml"
+>
+
+         
+
+	<changeSet id="1" author="id-correction" runAlways="true">
+		<comment>корректировать id в таблице inc_table для ${table-nm}</comment>
+		<sql><![CDATA[
+update inc_table set next_id = aa.max_id
+from (select max(id) as max_id from ${table-nm}) aa
+where table_nm = '${table-nm}'
+		]]></sql>
+	</changeSet>
+
+</databaseChangeLog>
+

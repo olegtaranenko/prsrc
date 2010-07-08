@@ -71,6 +71,15 @@
 				<remote.odbc.stime>stime</remote.odbc.stime>
 			</properties>
 		</profile>
+		<profile>
+			<id>id-correction</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<changelog.file>${changelog.PATH}/comtex-id-correction.xml</changelog.file>
+			</properties>
+		</profile>
 	</profiles>
 
 	<build>
