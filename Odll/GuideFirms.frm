@@ -34,7 +34,7 @@ Begin VB.Form GuideFirms
    Begin VB.TextBox tbInform 
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   9.6
+         Size            =   9.75
          Charset         =   204
          Weight          =   400
          Underline       =   0   'False
@@ -80,7 +80,7 @@ Begin VB.Form GuideFirms
       Width           =   2535
    End
    Begin VB.ListBox lbM 
-      Height          =   240
+      Height          =   255
       Left            =   3780
       TabIndex        =   13
       Top             =   2100
@@ -98,7 +98,7 @@ Begin VB.Form GuideFirms
       Width           =   795
    End
    Begin VB.ListBox lbKP 
-      Height          =   816
+      Height          =   840
       ItemData        =   "GuideFirms.frx":0000
       Left            =   3300
       List            =   "GuideFirms.frx":0010
