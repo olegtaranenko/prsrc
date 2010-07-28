@@ -732,8 +732,10 @@ While Not tbOrders.EOF
 '        If tbOrders!numOrder = laNomZak.Caption Then GoTo NXT 'а не из базы
     End If
     
-    If eDay > maxDay Then msgOfEnd ("##371")
-    
+    If eDay > maxDay Then
+        msgOfEnd "##371", "Заказ " & CStr(tbOrders!Numorder) & vbCr & "Неверная дата!"
+    End If
+
 '    dayCorrect bDay, eDay, tbOrders!urgent спец.распределение срочн. заказов приводит к тому, что м.б. разные минусы у М и в цеху
     dayCorrect bDay, eDay, ""
     
@@ -2001,7 +2003,7 @@ Else
     V = zakazBean.StatO
     If cbMOsetByText(Me.cbO, V) Then
         If Not IsNull(zakazBean.DateTimeMO) Then
-            Me.tbDateMO = zakazBean.DateTimeMO
+            Me.tbDateMO = Format(zakazBean.DateTimeMO, "dd.mm.yy")
         Else
             Me.tbDateMO = ""
         End If

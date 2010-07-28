@@ -1945,12 +1945,30 @@ Else
 End If
 End Function
 
+Function checkInputDateFormat(inp As String) As String
+    checkInputDateFormat = ""
+    If Len(inp) = 0 Then
+        'пустые даты проверку проходят
+        Exit Function
+    End If
+    If Len(inp) <> 8 Or Mid(inp, 3, 1) <> "." Or Mid(inp, 6, 1) <> "." Then
+        checkInputDateFormat = "Введенное значение должно соответствовать шаблону dd.mm.yy"
+    End If
+End Function
+
 'в случеу true также возвращает дату в tmpDate
 Function isDateTbox(tBox As TextBox, Optional fryDays As String = "", Optional doEmptyCheck As Boolean = True) As Boolean
-Dim str As String
+Dim str As String, checkDt As String
 
 isDateTbox = False
 str = tBox.Text
+
+checkDt = checkInputDateFormat(str)
+If checkDt <> "" Then
+    MsgBox checkDt, , "Ошибка при вводе даты"
+    Exit Function
+End If
+
 If str <> "" Then
     str = "20" & Right$(str, 2) & "-" & Mid$(str, 4, 2) & "-" & Left$(str, 2)
     If IsDate(str) Then
