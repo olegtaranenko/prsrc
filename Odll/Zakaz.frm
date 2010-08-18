@@ -1239,7 +1239,9 @@ table.Close
   If myExecute("##397.2", sql) <> 0 Then GoTo ER1
  Else
   'Quasi Delete MO info from Equip table ...
-  sql = "update OrdersEquip SET WorktimeMO = NULL, statO = NULL WHERE NumOrder = " & gNzak ' & " AND equipId = " & idEquip ' для всех оборудований ...
+  sql = "update OrdersEquip SET " _
+  & " nevip = 1, stat = '', WorktimeMO = NULL, statO = NULL " _
+  & " WHERE NumOrder = " & gNzak ' & " AND equipId = " & idEquip ' для всех оборудований ...
   If myExecute("##397.3", sql) <> 0 Then GoTo ER1
   ' ... and from InCeh table
   sql = "update OrdersInCeh SET DateTimeMO = NULL, statM = NULL WHERE NumOrder = " & gNzak
