@@ -1,7 +1,8 @@
 if (%1) == () goto usage
 
 SET VBP=orders.vbp
-if %1. == Torge. SET VBP=Torge.vbp
+if %1. == Torge. SET VBP=%1.vbp
+if %1. == cfg. SET VBP=%1.vbp
 
 cd %1
 "C:\Program Files\Microsoft Visual Studio\VB98\VB6.EXE" /m %VBP%

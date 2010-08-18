@@ -614,9 +614,8 @@ Const rowFromOrdersEquip = "select " _
 
 
 Private Sub changeCaseOfTheVariables()
-Dim isEmpty As String, Numorder As String, StatusId As String, Rollback As String, Outdatetime As String, p_numOrder As String
-Dim tbWorktime As String, Left As String
-Dim Equip As String, Worktime As String, ManagId As String, ColWidth
+'Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W
+Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W
 
 End Sub
 
@@ -782,7 +781,7 @@ If InStr(Orders.cmAdd.Caption, "+") > 0 Then
   baseWerkId = tbOrders!werkId
   baseFirmId = tbOrders!firmId
   baseProblemId = tbOrders!ProblemId
-  baseFirm = tbOrders!name
+  baseFirm = tbOrders!Name
   baseProblem = tbOrders!problem
   isBaseOrder = True
   tbOrders.Close
@@ -1077,7 +1076,7 @@ If Not tqOrders.BOF Then
     valToWeb tqOrders!ordered
     valToWeb tqOrders!paid
     valToWeb tqOrders!shipped
-    valToWeb tqOrders!name
+    valToWeb tqOrders!Name
     valToWeb tqOrders!Manag
     valToWeb tqOrders!DateRS
     Print #1, strToWeb
@@ -1348,7 +1347,7 @@ If tbEnable.Visible Then mnAllOrders.Visible = True
 oldHeight = Me.Height
 oldWidth = Me.Width
 
-If Not isEmpty(otlad) Then
+If Not IsEmpty(otlad) Then
     Frame1.BackColor = otladColor
     Me.BackColor = otladColor
 
@@ -1458,18 +1457,18 @@ managLoad 'загрузка Manag() cbM lbM и Filtr.lbM
 lbM.Height = lbM.Height + 195 * (lbM.ListCount - 1)
 Filtr.lbM.Height = Filtr.lbM.Height + 195 * (Filtr.lbM.ListCount - 1)
 
-If Not isEmpty(otlad) Then cbM.ListIndex = cbM.ListCount - 1
+If Not IsEmpty(otlad) Then cbM.ListIndex = cbM.ListCount - 1
 
-Set table = myOpenRecordSet("##72", "GuideTema", dbOpenForwardOnly)
-If table Is Nothing Then myBase.Close: End
+Set Table = myOpenRecordSet("##72", "GuideTema", dbOpenForwardOnly)
+If Table Is Nothing Then myBase.Close: End
 
 I = 0
-While Not table.EOF
-    lbTema.AddItem table!Tema, table!temaId
-    Filtr.lbTema.AddItem table!Tema, table!temaId
-    table.MoveNext
+While Not Table.EOF
+    lbTema.AddItem Table!Tema, Table!temaId
+    Filtr.lbTema.AddItem Table!Tema, Table!temaId
+    Table.MoveNext
 Wend
-table.Close
+Table.Close
 
 For I = 0 To lenProblem
     If Problems(I) <> "no" Then lbProblem.AddItem Problems(I)
@@ -1489,39 +1488,39 @@ Public Sub managLoad(Optional fromWerk As String = "")
 Dim I As Integer, str As String, J As String
 
 sql = "SELECT * From GuideManag where manag <> '' ORDER BY forSort"
-Set table = myOpenRecordSet("##03", sql, dbOpenForwardOnly)
-If table Is Nothing Then myBase.Close: End
+Set Table = myOpenRecordSet("##03", sql, dbOpenForwardOnly)
+If Table Is Nothing Then myBase.Close: End
 I = 0: ReDim manId(0): ReDim Managers(0): J = 0
 Dim imax As Integer: imax = 0: ReDim Manag(0)
 Dim theManager As MapEntry
-While Not table.EOF
-    str = table!Manag
-    theManager.Key = table!ManagId
+While Not Table.EOF
+    str = Table!Manag
+    theManager.Key = Table!ManagId
     theManager.Value = str
     Managers(J) = theManager
     
     If str = "not" Then
         GoTo AA
-    ElseIf LCase(table!forSort) <> "unused" Then
+    ElseIf LCase(Table!forSort) <> "unused" Then
         If fromWerk = "" Then
-          If table!ManagId <> 0 Then cbM.AddItem str
+          If Table!ManagId <> 0 Then cbM.AddItem str
           lbM.AddItem str
           Filtr.lbM.AddItem str
         End If
-        manId(I) = table!ManagId
+        manId(I) = Table!ManagId
         I = I + 1
         ReDim Preserve manId(I):
-AA:     If imax < table!ManagId Then
-            imax = table!ManagId
+AA:     If imax < Table!ManagId Then
+            imax = Table!ManagId
             ReDim Preserve Manag(imax)
         End If
-        Manag(table!ManagId) = str
+        Manag(Table!ManagId) = str
     End If
-    table.MoveNext
+    Table.MoveNext
     J = J + 1
     ReDim Preserve Managers(J)
 Wend
-table.Close
+Table.Close
 
 End Sub
  
@@ -2430,7 +2429,7 @@ Sub delZakazFromGrid()
     If zakazNum = 0 Then
         clearGridRow Grid, mousRow
     Else
-        Grid.removeItem mousRow
+        Grid.RemoveItem mousRow
     End If
     Grid.col = orNomZak
 
@@ -3456,7 +3455,7 @@ For I = 0 To orColNumber
 Next I
 If getSqlWhere <> "" Then getSqlWhere = " WHERE " & getSqlWhere
 If gWerkId <> 0 Then
-    getSqlWhere = getSqlWhere & " AND o.werkId = " & gWerkId
+    getSqlWhere = getSqlWhere & " AND (isnull(o.werkId, 0) = 0 OR o.werkId = " & gWerkId & ")"
 End If
     
 End Function
@@ -3590,7 +3589,7 @@ Function copyRowToGrid(row As Long, ByVal Numorder As Long, Optional redraw As B
     End If
  
  Grid.TextMatrix(row, orMen) = tqOrders!Manag
- Grid.TextMatrix(row, orFirma) = tqOrders!name
+ Grid.TextMatrix(row, orFirma) = tqOrders!Name
  LoadDate Grid, row, orData, tqOrders!inDate, "dd.mm.yy"
  
  copyRowToGrid = StatParamsLoad(row, redraw)
@@ -3723,14 +3722,14 @@ sql = "SELECT Max([eQuant]-[prevQuant]) as max From xEtapByIzdelia " & _
 "UNION SELECT Max([eQuant]-[prevQuant]) as max From xEtapByNomenk " & _
 "WHERE ((Numorder)=" & gNzak & ");"
 'Debug.Print sql
- Set table = myOpenRecordSet("##385", sql, dbOpenDynaset) 'dbOpenTable)
- If table Is Nothing Then Exit Function
+ Set Table = myOpenRecordSet("##385", sql, dbOpenDynaset) 'dbOpenTable)
+ If Table Is Nothing Then Exit Function
  S = -1
- While Not table.EOF ' только 2 цикла
-    S = max(S, table!max)
-    table.MoveNext
+ While Not Table.EOF ' только 2 цикла
+    S = max(S, Table!max)
+    Table.MoveNext
  Wend
- table.Close
+ Table.Close
  If S > 0.005 Then
     isNewEtap = True
  ElseIf S <> -1 Then
