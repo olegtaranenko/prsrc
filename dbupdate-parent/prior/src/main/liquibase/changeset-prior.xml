@@ -1784,6 +1784,76 @@ where hour (outdatetime) > 0
 		<sqlFile path="triggers/BayGuideFirms.wf_delete_firm.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 	</changeSet>
 
+	<changeSet id="1" author="fed.okruga" runOnChange="false">
+		<comment>Врем. таблица федеральных округов для заливки из CSV</comment>
+		<createTable tableName="tempFO">
+			<column name="id" type="integer" autoIncrement="true">
+				<constraints primaryKey="true" primaryKeyName="pk_fedokruga"/>
+			</column>
+			<column name="nameFO" type="varchar(64)" >
+				<constraints nullable="true"/>
+			</column>
+			<column name="parentId" type="integer" >
+				<constraints nullable="true"/>
+			</column>
+			<column name="BayRegionId" type="integer" >
+				<constraints nullable="true"/>
+			</column>
+			<column name="NameBayRegion" type="varchar(64)" >
+				<constraints nullable="true"/>
+			</column>
+			<column name="territoryId" type="integer" >
+				<constraints nullable="true"/>
+			</column>
+		</createTable>
+	</changeSet>
+
+	<changeSet id="2" author="fed.okruga" runOnChange="false">
+		<comment>удалить мусор из таблицы BayRegion</comment>
+		<dropColumn tableName="bayRegion" columnName="id_voc_names"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="3" author="fed.okruga" runOnChange="false">
+		<modifyColumn tableName="BayRegion">
+			<column name="region" type="varchar(64)"/>
+		</modifyColumn>
+	</changeSet>
+
+	<changeSet id="4" author="fed.okruga" runOnChange="false">
+		<comment>Загрузить Фед.Округа в буферную таблицу</comment>
+		<loadData tableName="tempFO" file="data/tempFO.csv">
+			<column header="nameFO" type="STRING" />
+			<column header="NameBayRegion" type="STRING" />
+		</loadData>
+	</changeSet>
+
+	<changeSet id="5" author="fed.okruga" runOnChange="true">
+		<comment>prepare proc</comment>
+		<sqlFile path="procedures/temp_fedorkruga.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+	</changeSet>
+
+	<changeSet id="6" author="fed.okruga" runOnChange="false">
+		<comment>execute proc</comment>
+		<executeCommand executable="dbisqlc.exe">
+			<arg value="-c"/>
+			<arg value="DSN=prior;UID=dba;PWD=sql"/>
+			<arg value="-q"/>
+			<arg value="${basedir}\target\classes\mainteinance\exec-fedorkruga.sql"/>
+		</executeCommand>
+	</changeSet>
+
+	<changeSet id="7" author="fed.okruga" runOnChange="false">
+		<comment>cleanup of table</comment>
+		<dropTable tableName="tempFO"/>
+	</changeSet>
+
+	<changeSet id="8" author="fed.okruga" runOnChange="false">
+		<comment>cleanup of proc</comment>
+		<sql><![CDATA[
+	drop procedure temp_fedokruga;
+		]]></sql>
+	</changeSet>
 
 </databaseChangeLog>
 
