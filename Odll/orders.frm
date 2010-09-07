@@ -2586,7 +2586,7 @@ ElseIf lbStat.Text = "принят" Then
         delZakazFromEquip
         
         
-        sql = "UPDATE Orders SET StatusId = 0, DateRS = Null, " _
+        sql = "UPDATE Orders SET StatusId = 0, DateRS = Null" _
         & " WHERE Numorder = " & gNzak
         If myExecute("##325", sql) <> 0 Then GoTo ER1
         
