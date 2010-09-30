@@ -13,6 +13,15 @@
 	<description>Update Prior database</description>
 	<profiles>
 		<profile>
+			<id>production</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<syb.servicename>prior</syb.servicename>
+			</properties>
+		</profile>
+		<profile>
 			<id>parallel</id>
 			<activation>
 				<activeByDefault>false</activeByDefault>
