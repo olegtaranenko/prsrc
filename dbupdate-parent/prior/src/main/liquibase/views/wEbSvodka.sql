@@ -22,7 +22,7 @@ SELECT
 	f.xLogin, 
 	o.numOrder, 
 	o.StatusId, 
-	oe.outDateTime, 
+	o.outDateTime, 
 	p.Problem, 
 	o.Logo, 
 	o.Product, 

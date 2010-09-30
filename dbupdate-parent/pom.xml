@@ -36,9 +36,10 @@
 				<accountn.port>9811</accountn.port>
 				<markmaster.port>9812</markmaster.port>
 				<stime.port>9813</stime.port>
-				<remote.odbc.pm>dev_accountn</remote.odbc.pm>
-				<remote.odbc.mm>dev_markmaster</remote.odbc.mm>
-				<remote.odbc.stime>dev_stime</remote.odbc.stime>
+				<remote.odbc.pm>accountn</remote.odbc.pm>
+				<remote.odbc.mm>markmaster</remote.odbc.mm>
+				<remote.odbc.stime>stime</remote.odbc.stime>
+				<syb.servicename>prior</syb.servicename>
 			</properties>
 		</profile>
 		<profile>
@@ -53,6 +54,10 @@
 				<markmaster.port>9822</markmaster.port>
 				<stime.port>9823</stime.port>
 				<changelog.file>${changelog.PATH}/parallel-${artifactId}.xml</changelog.file>
+				<remote.odbc.pm>dev_accountn</remote.odbc.pm>
+				<remote.odbc.mm>dev_markmaster</remote.odbc.mm>
+				<remote.odbc.stime>dev_stime</remote.odbc.stime>
+				<syb.servicename>dev_prior</syb.servicename>
 			</properties>
 		</profile>
 		<profile>
@@ -69,6 +74,7 @@
 				<remote.odbc.pm>accountn</remote.odbc.pm>
 				<remote.odbc.mm>markmaster</remote.odbc.mm>
 				<remote.odbc.stime>stime</remote.odbc.stime>
+				<syb.servicename>prior</syb.servicename>
 			</properties>
 		</profile>
 		<profile>

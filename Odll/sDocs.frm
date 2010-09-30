@@ -351,21 +351,21 @@ Const dnNowOstatRez = 6
 Public Sub initVentureLB()
 ' Сначала удаляем старые значения
 While lbVenture.ListCount
-    lbVenture.removeItem (0)
+    lbVenture.RemoveItem (0)
 Wend
 
 sql = "select * from GuideVenture where standalone = 0 and id_analytic is not null"
 
-Set table = myOpenRecordSet("##72", sql, dbOpenForwardOnly)
-If table Is Nothing Then myBase.Close: End
+Set Table = myOpenRecordSet("##72", sql, dbOpenForwardOnly)
+If Table Is Nothing Then myBase.Close: End
 
 'lbVenture.AddItem "", 0
-While Not table.EOF
-    lbVenture.AddItem "" & table!ventureName & ""
-    lbVenture.ItemData(lbVenture.ListCount - 1) = table!ventureId
-    table.MoveNext
+While Not Table.EOF
+    lbVenture.AddItem "" & Table!ventureName & ""
+    lbVenture.ItemData(lbVenture.ListCount - 1) = Table!ventureId
+    Table.MoveNext
 Wend
-table.Close
+Table.Close
 lbVenture.Height = 225 * lbVenture.ListCount
 
 End Sub
@@ -373,15 +373,15 @@ End Sub
 
 
 Private Sub lbVenture_DblClick()
-Dim newNote As String, ncount As Integer
+Dim newNote As String, nCount As Integer
 
 If lbVenture.Visible = False Then Exit Sub
 sql = "select wf_make_venture_income('" & Grid.TextMatrix(mousRow, dcNumDoc) & "', " & lbVenture.ItemData(lbVenture.ListIndex) & ")"
 Debug.Print sql
 
 'i = orderUpdate("##72", lbVenture.ItemData(lbVenture.ListIndex), "Orders", "ventureId")
-byErrSqlGetValues "##126.1", sql, ncount
-If ncount > 0 Then
+byErrSqlGetValues "##126.1", sql, nCount
+If nCount > 0 Then
     Grid.Text = lbVenture.Text
 '    newNote = getValueFromTable("sDocs", "Note", "numDoc = " & Grid.TextMatrix(mousRow, dcNumDoc))
 '    If IsNull(newNote) Then newNote = ""
@@ -413,7 +413,7 @@ tbStartDate.Enabled = Not tbStartDate.Enabled
 End Sub
 
 Private Sub ckCeh_Click()
-If ckCeh.value = 0 Then
+If ckCeh.Value = 0 Then
     Me.Caption = "Расходные накладные"
     cmAdd.Visible = True
     cmOrder.Visible = True
@@ -456,7 +456,7 @@ clearGrid Grid
 End Sub
 
 Private Sub ckEndDate_Click()
-If ckEndDate.value = 1 Then
+If ckEndDate.Value = 1 Then
     tbEndDate.Enabled = True
 Else
     tbEndDate.Enabled = False
@@ -471,7 +471,7 @@ loadDocNomenk
 End Sub
 
 Private Sub ckStartDate_Click()
-If ckStartDate.value = 1 Then
+If ckStartDate.Value = 1 Then
     tbStartDate.Enabled = True
 Else
     tbStartDate.Enabled = False
@@ -524,14 +524,19 @@ End Sub
 Private Sub cmBay_Click()
 lbZakaz.Clear
 
-sql = "SELECT sDMCrez.numDoc " & _
-"FROM sDMCrez INNER JOIN BayOrders ON sDMCrez.numDoc = BayOrders.numOrder " & _
-"GROUP BY sDMCrez.numDoc HAVING (((Max(sDMCrez.curQuant))>0));"
+sql = "SELECT bo.numorder " & _
+"FROM BayOrders bo JOIN sDMCrez r ON r.numDoc = bo.numOrder " & _
+" GROUP BY bo.numorder HAVING Max(r.curQuant) > 0" _
+& "       UNION " _
+& " SELECT bo.numorder " & _
+"FROM BayOrders bo JOIN xPredmetyByIzdelia pi ON pi.numorder = bo.numOrder " & _
+" where pi.curQuant > 0"
+
 Set tbDocs = myOpenRecordSet("##346", sql, dbOpenForwardOnly)
 If tbDocs Is Nothing Then Exit Sub
 
 While Not tbDocs.EOF
-    lbZakaz.AddItem tbDocs!numDoc
+    lbZakaz.AddItem tbDocs!Numorder
     cmBay.Enabled = False
     tbDocs.MoveNext
 Wend
@@ -561,20 +566,20 @@ ReDim NN(0): ReDim QQ(0): I = 0
 
 While Not tbDMC.EOF
     I = I + 1
-    gNomNom = tbDMC!nomNom
+    gNomNom = tbDMC!Nomnom
     S = PrihodRashod("+", skladId) - PrihodRashod("-", skladId) 'Ф. остатки по складу
     ReDim Preserve NN(I): NN(I) = gNomNom
     ReDim Preserve QQ(I)
     If reg = "bay" Then
-        QQ(I) = tbDMC!curQuant * tbDMC!perlist
-        S = Round((S - QQ(I)) / tbDMC!perlist, 2)
+        QQ(I) = tbDMC!curQuant
+        S = Round((S - QQ(I)), 2)
     Else
         QQ(I) = tbDMC!quantity
         S = Round(S - QQ(I), 2)
     End If
     
     If S < 0 Then
-      If MsgBox("Дефицит товара '" & tbDMC!nomNom & "' по подразделению '" & _
+      If MsgBox("Дефицит товара '" & tbDMC!Nomnom & "' по подразделению '" & _
       sklad & "'" & " составит (" & S & "), продолжить?", _
       vbOKCancel Or vbDefaultButton2, "Подтвердите") = vbCancel Then Exit Function
     End If
@@ -627,7 +632,7 @@ Next I
   
 wrkDefault.CommitTrans
 
-ckCeh.value = 0
+ckCeh.Value = 0
 
 loadDocs "single"
 MsgBox "Списание прошло успешно!", , ""
@@ -700,7 +705,7 @@ If Not (sId < -1000 And dId < -1000) Then ' для межскладских не корректируем
  '           tbNomenk.Seek "=", tbDMC!nomNom
             cErr = "116" '##116
             sql = "UPDATE sGuideNomenk SET nowOstatki = [nowOstatki]+" & _
-            tbDMC!quant & " WHERE (((sGuideNomenk.nomNom)='" & tbDMC!nomNom & "'));"
+            tbDMC!quant & " WHERE (((sGuideNomenk.nomNom)='" & tbDMC!Nomnom & "'));"
             If myExecute("##418", sql) <> 0 Then GoTo ERR1
   '          If tbNomenk.NoMatch Then GoTo ERR1
   '          tbNomenk.Edit
@@ -811,6 +816,13 @@ Next I
 sql = "UPDATE sDMCrez SET curQuant = 0 WHERE numDoc = " & numDoc
 If myExecute("##367", sql) <> 0 Then GoTo ER3
 
+sql = "update xPredmetyByIzdelia set" _
+& " doneQuant = isnull(doneQuant, 0) + isnull(curQuant,0)" _
+& ", curQuant = null" _
+& " where numorder = " & numDoc
+
+myExecute "W#367.2", sql, -1
+
 wrkDefault.CommitTrans
 EN1: lockSklad "un"
 
@@ -879,16 +891,16 @@ Nakladna.Show vbModal
 End Sub
 
 Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
-Static value
+Static Value
 
 If KeyCode = vbKeyF7 Then
-AA: value = InputBox("Введите номер накладной или заказа.", "Поиск", value)
-    If value = "" Then Exit Sub
-    If Not IsNumeric(value) Then
+AA: Value = InputBox("Введите номер накладной или заказа.", "Поиск", Value)
+    If Value = "" Then Exit Sub
+    If Not IsNumeric(Value) Then
         MsgBox "Номер должен быть числом"
         GoTo AA
     End If
-    numDoc = value
+    numDoc = Value
     loadDocs "docsFind"
 End If
 End Sub
@@ -919,7 +931,7 @@ End If
 
 tbStartDate.Text = Format(DateAdd("d", -14, curDate), "dd/mm/yy")
 tbEndDate.Text = Format(curDate, "dd/mm/yy")
-ckStartDate.value = 1
+ckStartDate.Value = 1
 
 Grid.FormatString = "|<Дата|<№ Док-та|<Окуда|<Куда|<Примечание|<Предпр"
 Grid.ColWidth(dcSourId) = 0
@@ -932,27 +944,27 @@ Grid.ColWidth(dcNote) = 1100
 
 sql = "SELECT sGuideSource.sourceId, sGuideSource.sourceName From sGuideSource " & _
 "WHERE (((sGuideSource.sourceId)<0)) ORDER BY sGuideSource.sourceId DESC;"
-Set table = myOpenRecordSet("##95", sql, dbOpenDynaset)
-If table Is Nothing Then myBase.Close: End
+Set Table = myOpenRecordSet("##95", sql, dbOpenDynaset)
+If Table Is Nothing Then myBase.Close: End
 ReDim insideId(0): ReDim statiaId(0): I = 0: J = 0
-While Not table.EOF
-    If table!sourceId < -1000 Then 'внутр подр-я
-        If Regim = "fromCeh" And table!sourceId < -1002 Then GoTo NX1
-        lbInside.AddItem table!SourceName
+While Not Table.EOF
+    If Table!sourceId < -1000 Then 'внутр подр-я
+        If Regim = "fromCeh" And Table!sourceId < -1002 Then GoTo NX1
+        lbInside.AddItem Table!SourceName
         ReDim Preserve insideId(I)
-        insideId(I) = table!sourceId
+        insideId(I) = Table!sourceId
         I = I + 1
     Else
         If Regim = "fromCeh" And J > 4 Then GoTo NX1
-        lbStatia.AddItem table!SourceName
+        lbStatia.AddItem Table!SourceName
         ReDim Preserve statiaId(J)
-        statiaId(J) = table!sourceId
+        statiaId(J) = Table!sourceId
         J = J + 1
     End If
-NX1: table.MoveNext
+NX1: Table.MoveNext
 Wend
 
-table.Close
+Table.Close
 lbInside.Height = lbInside.Height + 195 * (lbInside.ListCount - 1)
 lbStatia.Height = lbStatia.Height + 195 * (lbStatia.ListCount - 1)
 quantity = 0
@@ -979,7 +991,7 @@ Dim strWhere As String, moveWhere As String, I As Integer, str As String
     str = getWhereByDateBoxes(Me, "sDocs.xDate", begDate)
     If Regim = "fromCeh" Then
         strWhere = "((sDocs.numExt) = 0) AND ((sDocs.Note)='" & Werk(idWerk) & "')" 'вирт. накладные
-    ElseIf ckCeh.value = 1 Then
+    ElseIf ckCeh.Value = 1 Then
         strWhere = "((sDocs.numExt) = 0)" 'вирт. накладные
     Else
         strWhere = "((sDocs.numExt) > 0 AND (sDocs.numExt)< 255)" 'расходные накладные
@@ -1052,7 +1064,7 @@ tbDocs.Close
 rowViem quantity, Grid
 Grid.Visible = True
 If quantity > 0 Then
-    If reg <> "add" Or quantity = 1 Then Grid.removeItem quantity + 1
+    If reg <> "add" Or quantity = 1 Then Grid.RemoveItem quantity + 1
     Grid.row = quantity
     Grid.col = 1
     gridIzLoad = True '
@@ -1083,7 +1095,7 @@ Dim I As Integer
 I = InStr(nom, "/")
 If I = 0 Then
     numDoc = nom
-    If Regim = "fromCeh" Or ckCeh.value = 1 Then
+    If Regim = "fromCeh" Or ckCeh.Value = 1 Then
         numExt = 0
     Else
         numExt = 254
@@ -1099,7 +1111,7 @@ Sub gridRowDel()
     If quantity = 0 Then
         clearGridRow Grid, mousRow
     Else
-        Grid.removeItem mousRow
+        Grid.RemoveItem mousRow
     End If
 
 End Sub
@@ -1117,7 +1129,7 @@ End Sub
 
 'Optional reg As String = ""
 Function loadDocNomenk() As Boolean
-Dim il As Long, str As String, str2 As String, q As Double, I As Integer
+Dim IL As Long, str As String, str2 As String, q As Double, I As Integer
 Dim msgOst As String, r As Double, b As Double
 
 loadDocNomenk = True ' не надо отката - пока
@@ -1162,7 +1174,7 @@ End If
 'MsgBox sql
    
    If byClick Then
-        bilo = (ckPerList.value = 1)
+        bilo = (ckPerList.Value = 1)
    Else
         noClick = True
         bilo = isIntMove() ' если слева или справа целый склад
@@ -1174,20 +1186,20 @@ If tbNomenk Is Nothing Then Exit Function
 If Not tbNomenk.BOF Then
   While Not tbNomenk.EOF
     quantity2 = quantity2 + 1
-    Grid2.TextMatrix(quantity2, dnNomNom) = tbNomenk!nomNom
+    Grid2.TextMatrix(quantity2, dnNomNom) = tbNomenk!Nomnom
     Grid2.TextMatrix(quantity2, dnNomName) = tbNomenk!cod & " " & _
         tbNomenk!nomName & " " & tbNomenk!Size
     Grid2.TextMatrix(quantity2, dnQuant) = Round(tbNomenk!quant, 2)
     
    If bilo Then
-        If Not byClick Then ckPerList.value = 1
+        If Not byClick Then ckPerList.Value = 1
         Grid2.TextMatrix(quantity2, dnEdIzm) = tbNomenk!ed_Izmer2
         If IsNumeric(tbNomenk!perlist) Then ' dnLists
           If tbNomenk!perlist > 0.01 Then Grid2.TextMatrix(quantity2, dnQuant) _
                                 = Round(tbNomenk!quant / tbNomenk!perlist, 2)
         End If
     Else
-        If Not byClick Then ckPerList.value = 0
+        If Not byClick Then ckPerList.Value = 0
         Grid2.TextMatrix(quantity2, dnEdIzm) = tbNomenk!ed_Izmer
     End If
    
@@ -1201,7 +1213,7 @@ noClick = False
 byClick = False
 
 If quantity2 > 0 Then
-    Grid2.removeItem quantity2 + 1
+    Grid2.RemoveItem quantity2 + 1
 End If
 
 Grid2.Visible = True
@@ -1222,8 +1234,8 @@ reservNoNeed = (skladId = -1002 Or (skladId = -1001 And _
               Grid.TextMatrix(mousRow, dcDest) = lbInside.List(1)))
 End Function
 
-Function valueToDocsField(myErrCod As String, value As String, field As String) As Boolean
-sql = "UPDATE sDocs  SET sDocs." & field & "=" & value & _
+Function valueToDocsField(myErrCod As String, Value As String, Field As String) As Boolean
+sql = "UPDATE sDocs  SET sDocs." & Field & "=" & Value & _
 " WHERE (((sDocs.numDoc)=" & numDoc & " AND (sDocs.numExt)=" & numExt & "));"
 'MsgBox sql
 valueToDocsField = False
@@ -1231,25 +1243,25 @@ If myExecute(myErrCod, sql) = 0 Then valueToDocsField = True
 End Function
 
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer
+Dim H As Integer, W As Integer
 If Me.WindowState = vbMinimized Then Exit Sub
 On Error Resume Next
-h = Me.Height - oldHeight
+H = Me.Height - oldHeight
 oldHeight = Me.Height
-w = Me.Width - oldWidth
+W = Me.Width - oldWidth
 oldWidth = Me.Width
-Grid.Height = Grid.Height + h
+Grid.Height = Grid.Height + H
 
-Grid2.Height = Grid2.Height + h
+Grid2.Height = Grid2.Height + H
 
-cmLoad.Top = cmLoad.Top + h
-cmAdd.Top = cmAdd.Top + h
-cmOrder.Top = cmOrder.Top + h
-cmBay.Top = cmBay.Top + h
-cmDel.Top = cmDel.Top + h
-cmAdd2.Top = cmAdd2.Top + h
-cmExit.Top = cmExit.Top + h
-cmPrint.Top = cmPrint.Top + h
+cmLoad.Top = cmLoad.Top + H
+cmAdd.Top = cmAdd.Top + H
+cmOrder.Top = cmOrder.Top + H
+cmBay.Top = cmBay.Top + H
+cmDel.Top = cmDel.Top + H
+cmAdd2.Top = cmAdd2.Top + H
+cmExit.Top = cmExit.Top + H
+cmPrint.Top = cmPrint.Top + H
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
@@ -1343,7 +1355,7 @@ If prevRow <> mousRow And gridIzLoad Then
 End If
 If mousCol = 0 Then Exit Sub
 bilo = False
-If ckCeh.value = 1 Then
+If ckCeh.Value = 1 Then
     Grid.CellBackColor = vbButtonFace
     Exit Sub
 End If

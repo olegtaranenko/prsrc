@@ -383,45 +383,38 @@ Begin VB.Form Documents
       Begin VB.Menu mnSep2 
          Caption         =   "-"
       End
-      Begin VB.Menu mnWebs 
-         Caption         =   "Файлы для Web"
-      End
-      Begin VB.Menu mnWeb 
-         Caption         =   "Файл остатков для WEB"
-         Visible         =   0   'False
-      End
-      Begin VB.Menu mnSep3 
-         Caption         =   "-"
-      End
-      Begin VB.Menu mnToExcelWeb 
-         Caption         =   "Остатки по складу материалов"
-      End
-      Begin VB.Menu mnBrightAwards 
-         Caption         =   "Остатки по складу Bright Awards"
-      End
-      Begin VB.Menu mnSep4 
-         Caption         =   "-"
-      End
-      Begin VB.Menu mnToExcel 
-         Caption         =   "Прайс-лист материалов"
-      End
-      Begin VB.Menu mnBrightAwardsPrice 
-         Caption         =   "Прайс-лист Bright Awards технический"
-      End
-      Begin VB.Menu mnSep5 
-         Caption         =   "-"
+      Begin VB.Menu mnPricePM 
+         Caption         =   "Прайс-лист Петровских Мастерских"
       End
       Begin VB.Menu mnPriceToExcel 
          Caption         =   "Прайс-лист Bright Awards"
-      End
-      Begin VB.Menu mnPricePM 
-         Caption         =   "Прайс-лист Петровских Мастерских"
       End
       Begin VB.Menu mnPriceDealer 
          Caption         =   "Прайс-лист дилеров"
       End
       Begin VB.Menu mnPriceRA 
          Caption         =   "Прайс-лист РПФ"
+      End
+      Begin VB.Menu mnSep4 
+         Caption         =   "-"
+      End
+      Begin VB.Menu mnToExcelWeb 
+         Caption         =   "Прайс и остатки по складу материалов"
+      End
+      Begin VB.Menu mnBrightAwards 
+         Caption         =   "Прайс и остатки по складу Bright Awards (РПФ)"
+      End
+      Begin VB.Menu mnBrightAwardsPrice 
+         Caption         =   "Прайс-лист Bright Awards технический"
+      End
+      Begin VB.Menu mnSep5 
+         Caption         =   "-"
+         Visible         =   0   'False
+      End
+      Begin VB.Menu mnToExcel 
+         Caption         =   "Прайс-лист материалов"
+         Enabled         =   0   'False
+         Visible         =   0   'False
       End
       Begin VB.Menu mnFilters 
          Caption         =   "WEB фильтры"
@@ -492,11 +485,11 @@ Dim destId As String
 
 Const dcDate = 1
 Const dcNumDoc = 2
-'Const dcM = 3
 Const dcSour = 3
 Const dcDest = 4
 Const dcNote = 6
 Const dcVenture = 5
+
 'Grid2
 Const dnNomNom = 1
 Const dnNomName = 2
@@ -505,11 +498,12 @@ Const dnEdIzm2 = 4
 Const dnQuant = 5
 Const dnEdIzm = 6
 
-Sub dummy()
-Dim Note, ColWidth, Nomname, Value
-End Sub
+Const DefaultContact1 = "www.petmas.ru, e-mail: petmas@dol.ru"
+Const DefaultContact2 = "тел.: (495) 333-02-78, (499) 743-00-70, (499) 788-73-64; Факс: (495) 720-54-56"
 
-'reg ="","single","add"
+
+
+'reg ="","single","add","docsFind"
 Sub loadDocs(Optional reg As String = "")
 Dim strWhere As String, I As Integer, str As String
  prevRow = -1
@@ -531,13 +525,13 @@ Dim strWhere As String, I As Integer, str As String
     clearGrid Grid
  End If
  
- sql = "SELECT sDocs.xDate, sDocs.Note, sDocs.numDoc, sDocs.numExt, " & _
- "sDocs.destId, sGuideSource.sourceName, GS.sourceName AS destName " & _
- ", v.ventureName as venture_name " & _
- "FROM sDocs INNER JOIN sGuideSource ON sDocs.sourId = sGuideSource.sourceId " & _
- "JOIN sGuideSource AS GS ON sDocs.destId = GS.sourceId " & _
- "left JOIN guideVenture v ON v.ventureId = sDocs.ventureId " & _
- "WHERE sDocs.numExt =255 " & strWhere & "  ORDER BY sDocs.xDate; "
+sql = "SELECT sDocs.xDate, sDocs.Note, sDocs.numDoc, sDocs.numExt, " & _
+    "sDocs.destId, sGuideSource.sourceName, GS.sourceName AS destName " & _
+    ", v.ventureName as venture_name " & _
+    "FROM sDocs INNER JOIN sGuideSource ON sDocs.sourId = sGuideSource.sourceId " & _
+    "JOIN sGuideSource AS GS ON sDocs.destId = GS.sourceId " & _
+    "left JOIN guideVenture v ON v.ventureId = sDocs.ventureId " & _
+    "WHERE sDocs.numExt = 255 " & strWhere & "  ORDER BY sDocs.xDate"
 ' "WHERE ((" & str & " AND (GuideManag.Manag)='" & cbM.Text & "' " & strWhere & "));"
 ' Debug.Print sql
  Set tbDocs = myOpenRecordSet("##176", sql, dbOpenForwardOnly)
@@ -560,7 +554,6 @@ Dim strWhere As String, I As Integer, str As String
     tbDocs.MoveNext
   Wend
 End If
-'Debug.Print sql
 tbDocs.Close
 rowViem quantity, Grid
 Grid.Visible = True
@@ -780,15 +773,15 @@ loadDocs
 End Sub
 
 Function getNextNumExt() As Integer
-Dim v As Variant
+Dim V As Variant
 
 getNextNumExt = 0
 sql = "SELECT Max(sDocs.numExt) AS Max_numExt From sDocs " & _
 "WHERE (((sDocs.numDoc)=" & numDoc & "));"
 
-If Not byErrSqlGetValues("##128", sql, v) Then Exit Function
-If IsNumeric(v) Then
-    getNextNumExt = v + 1
+If Not byErrSqlGetValues("##128", sql, V) Then Exit Function
+If IsNumeric(V) Then
+    getNextNumExt = V + 1
 Else
     getNextNumExt = 1
 End If
@@ -858,13 +851,13 @@ End If
 
 sql = "SELECT sGuideSource.sourceName From sGuideSource " & _
 "WHERE (((sGuideSource.sourceId)>0)) ORDER BY sGuideSource.sourceName;"
-Set table = myOpenRecordSet("##144", sql, dbOpenForwardOnly)
-If table Is Nothing Then End
-While Not table.EOF
-    lbSource.AddItem table!SourceName
-    table.MoveNext
+Set Table = myOpenRecordSet("##144", sql, dbOpenForwardOnly)
+If Table Is Nothing Then End
+While Not Table.EOF
+    lbSource.AddItem Table!SourceName
+    Table.MoveNext
 Wend
-table.Close
+Table.Close
 'lbSource.Height = 195 * lbSource.ListCount + 100
 
 loadLbInside
@@ -901,18 +894,18 @@ Dim I As Integer
 
 sql = "SELECT sGuideSource.sourceId, sGuideSource.sourceName From sGuideSource " & _
 "WHERE (((sGuideSource.sourceId)<-1000)) ORDER BY sGuideSource.sourceId DESC;"
-Set table = myOpenRecordSet("##95", sql, dbOpenDynaset)
-If table Is Nothing Then myBase.Close: End
+Set Table = myOpenRecordSet("##95", sql, dbOpenDynaset)
+If Table Is Nothing Then myBase.Close: End
 ReDim insideId(0): I = 0: ' ReDim statiaId(0): j = 0
 lbInside.Clear
-While Not table.EOF
-    lbInside.AddItem table!SourceName
+While Not Table.EOF
+    lbInside.AddItem Table!SourceName
     ReDim Preserve insideId(I)
-    insideId(I) = table!sourceId
+    insideId(I) = Table!sourceId
     I = I + 1
-    table.MoveNext
+    Table.MoveNext
 Wend
-table.Close
+Table.Close
 lbInside.Height = lbInside.Height + 195 * (lbInside.ListCount - 1)
 End Sub
 
@@ -989,7 +982,7 @@ End If
 End Sub
 
 Function loadDocNomenk(Optional reg As String = "") As Boolean
-Dim il As Long, str As String, s As Single, I As Integer ', str2 As String
+Dim IL As Long, str As String, S As Single, I As Integer ', str2 As String
 Dim msgOst As String, r As Single, o As Single
 
 loadDocNomenk = True ' не надо отката - пока
@@ -1078,8 +1071,6 @@ End Sub
 Private Sub Grid_KeyDown(KeyCode As Integer, Shift As Integer)
 If KeyCode = vbKeyReturn Then
     Grid_DblClick
-'ElseIf KeyCode = vbKeyEscape Then
-'    lbHide
 End If
 
 End Sub
@@ -1112,23 +1103,22 @@ Wend
 
 sql = "select * from GuideVenture where standalone = 0 and id_analytic is not null"
 
-Set table = myOpenRecordSet("##72", sql, dbOpenForwardOnly)
-If table Is Nothing Then myBase.Close: End
+Set Table = myOpenRecordSet("##72", sql, dbOpenForwardOnly)
+If Table Is Nothing Then myBase.Close: End
 
 'lbVenture.AddItem "", 0
-While Not table.EOF
-    lbVenture.AddItem "" & table!ventureName & ""
-    lbVenture.ItemData(lbVenture.ListCount - 1) = table!ventureId
-    table.MoveNext
+While Not Table.EOF
+    lbVenture.AddItem "" & Table!ventureName & ""
+    lbVenture.ItemData(lbVenture.ListCount - 1) = Table!ventureId
+    Table.MoveNext
 Wend
-table.Close
+Table.Close
 lbVenture.Height = 225 * lbVenture.ListCount
 
 End Sub
 
 
 Private Sub Grid_KeyUp(KeyCode As Integer, Shift As Integer)
-'If KeyCode = vbKeyEscape Then Grid.CellBackColor = Grid.BackColor
 If KeyCode = vbKeyEscape Then Grid_EnterCell
 
 End Sub
@@ -1138,7 +1128,7 @@ If Grid.col <> 0 Then Grid.CellBackColor = Grid.BackColor
 
 End Sub
 
-Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
 End Sub
@@ -1156,7 +1146,6 @@ If Grid2.MouseRow = 0 Then
     End If
     SortCol Grid2, mousCol2
     Grid2.row = 1    ' только чтобы снять выделение
-'    Grid2_EnterCell
 End If
 Grid2_EnterCell
 End Sub
@@ -1213,7 +1202,7 @@ Grid2.CellBackColor = Grid2.BackColor
 
 End Sub
 
-Private Sub Grid2_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid2_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
 If Grid2.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid2.ColWidth(Grid2.MouseCol)
 End Sub
@@ -1264,9 +1253,9 @@ Else
         GoTo BB '      и Поставщик
      Else
         sql = "UPDATE sDocs, sGuideSource SET sDocs.sourId = " & _
-        "[sGuideSource].[sourceId], sDocs.destId = " & id & _
-        " WHERE (((sGuideSource.sourceName)='" & INVENT & "') AND " & _
-        "((numDoc)=" & numDoc & ") AND ((numExt)=" & numExt & "));"
+        "sGuideSource.sourceId, sDocs.destId = " & id & _
+        " WHERE sGuideSource.sourceName = '" & INVENT & "' AND " & _
+        "numDoc = " & numDoc & " AND numExt = " & numExt
         If myExecute("##96", sql) = 0 Then
             Grid.TextMatrix(mousRow, dcSour) = INVENT
             GoTo AA
@@ -1288,10 +1277,9 @@ lbHide
 
 End Sub
 
-Function valueToDocsField(myErrCod As String, Value As String, field As String) As Boolean
-sql = "UPDATE sDocs  SET sDocs." & field & "=" & Value & _
-" WHERE (((sDocs.numDoc)=" & numDoc & " AND (sDocs.numExt)=" & numExt & "));"
-'MsgBox sql
+Function valueToDocsField(myErrCod As String, Value As String, Field As String) As Boolean
+sql = "UPDATE sDocs  SET sDocs." & Field & "=" & Value & _
+" WHERE sDocs.numDoc = " & numDoc & " AND sDocs.numExt = " & numExt
 valueToDocsField = False
 If myExecute(myErrCod, sql) = 0 Then valueToDocsField = True
 End Function
@@ -1307,13 +1295,10 @@ End If
 End Sub
 
 Private Sub lbSource_DblClick()
-sql = "UPDATE sDocs, sGuideSource SET sDocs.sourId = [sGuideSource].[sourceId] " & _
-"WHERE (((sDocs.numDoc)=" & numDoc & ") AND ((sDocs.numExt)=" & numExt & _
-") AND (([sGuideSource].[sourceName])='" & lbSource.Text & "'));"
-'sql = "UPDATE sDocs, sGuideSource SET sDocs.sourId = sGuideSource.sourceId " & _
-"WHERE (((sDocs.numDoc)=" & numDoc & ") AND ((sDocs.numExt)=" & numExt & _
-") AND ((sGuideSource.sourceName)='" & lbSource.Text & "'));"
-'MsgBox sql
+sql = "UPDATE sDocs, sGuideSource SET sDocs.sourId = sGuideSource.sourceId " & _
+"WHERE sDocs.numDoc = " & numDoc & " AND sDocs.numExt = " & numExt & _
+" AND sGuideSource.sourceName = '" & lbSource.Text & "'"
+
 If myExecute("##126", sql) = 0 Then Grid.Text = lbSource.Text
 lbHide
 
@@ -1365,19 +1350,22 @@ Private Sub mnBrightAwards_Click()
 
     Dim myRegim As String
     myRegim = "awardsWeb"
-    ExcelParamDialog.mainReportTitle = getEffectiveSetting(myRegim & ".title", "Остатки по складу Bright Awards (без цен)")
+    ExcelParamDialog.mainReportTitle = getEffectiveSetting(myRegim & ".title", "Прайс и Остатки по складу Bright Awards")
     ExcelParamDialog.kegl = getEffectiveSetting(myRegim & ".kegl", 8)
     ExcelParamDialog.outputUE = getEffectiveSetting(myRegim & ".ue", True)
     ExcelParamDialog.Regim = myRegim
-    ExcelParamDialog.withPrice = False
-    ExcelParamDialog.showRabbat = False
+    ExcelParamDialog.withPrice = True
+    ExcelParamDialog.showRabbat = True
+    ExcelParamDialog.contact1 = getEffectiveSetting(".contact1", DefaultContact1)
+    ExcelParamDialog.contact2 = getEffectiveSetting(".contact2", DefaultContact2)
+    ExcelParamDialog.commonRabbat = getEffectiveSetting(myRegim & ".rabbat", 0)
     
     ExcelParamDialog.Show vbModal, Me
     If Not ExcelParamDialog.exitCode = vbOK Then
         Exit Sub
     End If
     BrightAwardsRestToExcel myRegim, , ExcelParamDialog.mainReportTitle, _
-        ExcelParamDialog.kegl
+        ExcelParamDialog.kegl, 0, ExcelParamDialog.commonRabbat
     
 End Sub
 
@@ -1391,6 +1379,7 @@ Private Sub mnBrightAwardsPrice_Click()
     ExcelParamDialog.commonRabbat = getEffectiveSetting(myRegim & ".rabbat", 0)
     ExcelParamDialog.Regim = myRegim
     ExcelParamDialog.withPrice = True
+    ExcelParamDialog.showRabbat = False
     
     ExcelParamDialog.Show vbModal, Me
     If Not ExcelParamDialog.exitCode = vbOK Then
@@ -1568,7 +1557,7 @@ Private Sub mnPricePM_Click()
     Else
         reportRate = ExcelParamDialog.RubRate
     End If
-    PriceToExcel myRegim, reportRate, ExcelParamDialog.mainReportTitle, ExcelParamDialog.kegl, ExcelParamDialog.prodCategoryId
+    PriceToExcel myRegim, reportRate, ExcelParamDialog.mainReportTitle, ExcelParamDialog.kegl, ExcelParamDialog.prodCategoryId, , DefaultContact1, DefaultContact2
 
 End Sub
 
@@ -1579,9 +1568,11 @@ Private Sub mnPriceToExcel_Click()
     ExcelParamDialog.mainReportTitle = getEffectiveSetting(myRegim & ".title", "КОРПОРАТИВНЫЕ ПРИЗЫ И НАГРАДЫ (Каталог 2008-2009 Выпуск 5)")
     ExcelParamDialog.kegl = getEffectiveSetting(myRegim & ".kegl", 9)
     ExcelParamDialog.outputUE = getEffectiveSetting(myRegim & ".ue", True)
+    ExcelParamDialog.contact1 = getEffectiveSetting(".contact1", DefaultContact1)
+    ExcelParamDialog.contact2 = getEffectiveSetting(".contact2", DefaultContact2)
     ExcelParamDialog.Regim = myRegim
     
-    ExcelParamDialog.doProdCategory = True
+    ExcelParamDialog.doProdCategory = False
     ExcelParamDialog.withPrice = True
     ExcelParamDialog.Show vbModal, Me
     If Not ExcelParamDialog.exitCode = vbOK Then
@@ -1594,7 +1585,7 @@ Private Sub mnPriceToExcel_Click()
     Else
         reportRate = ExcelParamDialog.RubRate
     End If
-    PriceToExcel myRegim, reportRate, ExcelParamDialog.mainReportTitle, ExcelParamDialog.kegl, ExcelParamDialog.prodCategoryId
+    PriceToExcel myRegim, reportRate, ExcelParamDialog.mainReportTitle, ExcelParamDialog.kegl, 2, , ExcelParamDialog.contact1, ExcelParamDialog.contact2
 
 End Sub
 
@@ -1605,7 +1596,9 @@ Private Sub mnPriceDealer_Click()
     ExcelParamDialog.mainReportTitle = getEffectiveSetting(myRegim & ".title", "Прайс-лист Bright Awards для Дилеров")
     ExcelParamDialog.kegl = getEffectiveSetting(myRegim & ".kegl", 9)
     ExcelParamDialog.outputUE = getEffectiveSetting(myRegim & ".ue", True)
-    ExcelParamDialog.doProdCategory = True
+    ExcelParamDialog.contact1 = getEffectiveSetting(".contact1", DefaultContact1)
+    ExcelParamDialog.contact2 = getEffectiveSetting(".contact2", DefaultContact2)
+    ExcelParamDialog.doProdCategory = False
     ExcelParamDialog.Regim = myRegim
     ExcelParamDialog.withPrice = True
     
@@ -1621,7 +1614,7 @@ Private Sub mnPriceDealer_Click()
         reportRate = ExcelParamDialog.RubRate
     End If
     
-    PriceToExcel myRegim, reportRate, ExcelParamDialog.mainReportTitle, ExcelParamDialog.kegl, ExcelParamDialog.prodCategoryId
+    PriceToExcel myRegim, reportRate, ExcelParamDialog.mainReportTitle, ExcelParamDialog.kegl, 2, , ExcelParamDialog.contact1, ExcelParamDialog.contact2
 
 End Sub
 
@@ -1631,10 +1624,12 @@ Private Sub mnPriceRA_Click()
     ExcelParamDialog.mainReportTitle = getEffectiveSetting(myRegim & ".title", "Прайс-лист Bright Awards для Рекламных Агенств")
     ExcelParamDialog.kegl = getEffectiveSetting(myRegim & ".kegl", 9)
     ExcelParamDialog.outputUE = getEffectiveSetting(myRegim & ".ue", True)
-    ExcelParamDialog.doProdCategory = True
+    ExcelParamDialog.doProdCategory = False
     ExcelParamDialog.showRabbat = True
     ExcelParamDialog.Regim = myRegim
     ExcelParamDialog.withPrice = True
+    ExcelParamDialog.contact1 = getEffectiveSetting(".contact1", DefaultContact1)
+    ExcelParamDialog.contact2 = getEffectiveSetting(".contact2", DefaultContact2)
     
     ExcelParamDialog.Show vbModal, Me
     If Not ExcelParamDialog.exitCode = vbOK Then
@@ -1647,7 +1642,7 @@ Private Sub mnPriceRA_Click()
     Else
         reportRate = ExcelParamDialog.RubRate
     End If
-    PriceToExcel myRegim, reportRate, ExcelParamDialog.mainReportTitle, ExcelParamDialog.kegl, ExcelParamDialog.prodCategoryId, ExcelParamDialog.commonRabbat
+    PriceToExcel myRegim, reportRate, ExcelParamDialog.mainReportTitle, ExcelParamDialog.kegl, 2, ExcelParamDialog.commonRabbat
 End Sub
 
 
@@ -1729,11 +1724,27 @@ Private Sub mnToExcel_Click()
 End Sub
 
 Private Sub mnToExcelWeb_Click()
+
+' остатки по складу номенклатуры
+'5. Прайс-лист и Остатки материалов по складу (на базе текущего отчета Остатки по складу материалов)
+'Требуется: Вывести доступные остатки и цены из Справочника Номенклатуры.
+'Условие вывода:
+'- наличие признака WEB в колонке WEB справочника номенклатуры
+'Графы:
+'1 - код изделия
+'2 - описание изделия
+'3 - размер изделия (см)
+'4 - единицы измерения (шт, лист)
+'5 - количество изделий на складе
+'6, 7, 8, 9 - цены материалов со скидкой от количества
+
     Dim myRegim As String
     myRegim = "toExcelWeb"
-    ExcelParamDialog.mainReportTitle = getEffectiveSetting(myRegim & ".title", "ОСТАТКИ ПО СКЛАДУ РАСХОДНЫХ МАТЕРИАЛОВ И КОМПЛЕКТУЮЩИХ")
+    ExcelParamDialog.mainReportTitle = getEffectiveSetting(myRegim & ".title", "Прайс-лист и Остатки материалов по складу ")
     ExcelParamDialog.kegl = getEffectiveSetting(myRegim & ".kegl", 8)
     ExcelParamDialog.Regim = myRegim
+    ExcelParamDialog.contact1 = getEffectiveSetting(".contact1", DefaultContact1)
+    ExcelParamDialog.contact2 = getEffectiveSetting(".contact2", DefaultContact2)
     ExcelParamDialog.withPrice = False
     
     ExcelParamDialog.Show vbModal, Me
@@ -1791,20 +1802,20 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
     Dim currentSeriaId As Integer
     Dim currentProductId As Integer
     Dim RPF_Rate As Single
+    Dim productRow As Integer
+    ' Если изделие состоит из номенклатуры типа "web",
+    ' то его цена для дилеров определяется как сумма по справочнику номенклатуры
+    Dim WebIzdelie() As Double
     
-    If Regim = "awards" Then
-        lastCol = "I"
-    Else
-        ' awardsWeb
-        lastCol = "E"
-    End If
+    lastCol = "I"
+    
     lastColInt = 5 + (Asc(lastCol) - Asc("E"))
     Dim priceRegim As String
     
-    If priceType = 0 Then ' dealer
-        priceRegim = "dealer"
-    ElseIf priceType = 1 Then ' RPF
+    If priceType = 0 Then     ' RPF
         priceRegim = "agency"
+    ElseIf priceType = 1 Then ' dealer
+        priceRegim = "dealer"
     Else
         priceRegim = "default"
     End If
@@ -1821,18 +1832,18 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
         .Columns(3).columnWidth = 10
         .Columns(4).columnWidth = 6.2
         .Columns(5).columnWidth = 6.2
+        .Columns(5).HorizontalAlignment = xlHAlignRight
+        
         Const priceColWidth = 6
-        If Regim = "awards" Then
-            .Columns(6).columnWidth = priceColWidth
-            .Columns(7).columnWidth = priceColWidth
-            .Columns(8).columnWidth = priceColWidth
-            .Columns(9).columnWidth = priceColWidth
-        End If
+        
+        .Columns(6).columnWidth = priceColWidth
+        .Columns(7).columnWidth = priceColWidth
+        .Columns(8).columnWidth = priceColWidth
+        .Columns(9).columnWidth = priceColWidth
 
         ' печать стандартной шапки
-        excelStdSchapka objExel, RubRate, mainReportTitle, lastCol, "МАРКМАСТЕР"
+        exRow = excelStdSchapka(objExel, RubRate, mainReportTitle, lastCol, "МАРКМАСТЕР", , ExcelParamDialog.contact1, ExcelParamDialog.contact2)
     
-        exRow = 6
         sql = "call wf_report_bright_ostat"
         Set tbProduct = myOpenRecordSet("##331", sql, dbOpenDynaset)
         If tbProduct Is Nothing Then GoTo EN1
@@ -1846,21 +1857,19 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
                         .Borders(xlEdgeBottom).Weight = xlThin
                         .Borders(xlEdgeRight).Weight = xlMedium
                     End With
-                    
+
                     exRow = exRow + 1
                     cErr = setVertBorders(objExel, xlThin, lastColInt)
-                    
+
                     .Cells(exRow, 1).Value = "Код"
                     .Cells(exRow, 2).Value = "Описание"
                     .Cells(exRow, 3).Value = "Размер"
                     .Cells(exRow, 4).Value = "Ед.изм."
-                    .Cells(exRow, 5).Value = "Кол-во"
-                    If Regim = "awards" Then
-                        .Cells(exRow, 6).Value = "Цена 1"
-                        .Cells(exRow, 7).Value = "Цена 2"
-                        .Cells(exRow, 8).Value = "Цена 3"
-                        .Cells(exRow, 9).Value = "Цена 4"
-                    End If
+                    .Cells(exRow, 5).Value = "Дост.ост"
+                    .Cells(exRow, 6).Value = "Цена 1"
+                    .Cells(exRow, 7).Value = "Цена 2"
+                    .Cells(exRow, 8).Value = "Цена 3"
+                    .Cells(exRow, 9).Value = "Цена 4"
                     exRow = exRow + 1
                 End If
 
@@ -1873,19 +1882,20 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
                     .Cells(exRow, 2).Value = tbProduct!prDescript
                     .Cells(exRow, 3).Value = tbProduct!prSize
                     .Cells(exRow, 4).Value = "стр " & tbProduct!Page & "."
-                    If Regim = "awards" Then
-                        For I = 6 To 9
-                            .Cells(exRow, I).Font.Bold = True
-                        Next I
-                        gain2 = tbProduct!gain2
-                        gain3 = tbProduct!gain3
-                        gain4 = tbProduct!gain4
-                        ExcelProductPrices RPF_Rate, priceRegim, RubRate, exRow, 6, commonRabbat
-                    End If
+
+                    For I = 6 To 9
+                        .Cells(exRow, I).Font.Bold = True
+                    Next I
+                    gain2 = tbProduct!gain2
+                    gain3 = tbProduct!gain3
+                    gain4 = tbProduct!gain4
+                    ExcelProductPrices RPF_Rate, priceRegim, RubRate, exRow, 6, commonRabbat
+
+                    productRow = exRow
                     exRow = exRow + 1
                 End If
-                
-                
+
+
                 cErr = setVertBorders(objExel, xlThin, lastColInt)
 
                 .Cells(exRow, 1).Value = tbProduct!Ncod
@@ -1893,14 +1903,24 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
                 .Cells(exRow, 2).Value = tbProduct!Nomname
                 .Cells(exRow, 3).Value = tbProduct!Nsize
                 .Cells(exRow, 4).Value = tbProduct!ed_Izmer2
-                .Cells(exRow, 5).Value = tbProduct!qty_dost
+                Dim dostOstatok As String
+                If Not IsNull(tbProduct!qty_dost) Then
+                    dostOstatok = tbProduct!qty_dost
+                Else
+                    dostOstatok = 0
+                End If
+                If tbProduct!quantEd <> 1 Then
+                    dostOstatok = "*) " & Round(dostOstatok, 2) & "(" & tbProduct!quantEd & ")"
+                End If
+                .Cells(exRow, 5).Value = dostOstatok
+
                 If Regim = "awards" Then
                     ExcelKolonPrices exRow, 6, RubRate, RPF_Rate
                 End If
-                
+
                 currentSeriaId = tbProduct!prSeriaId
                 currentProductId = tbProduct!prId
-                
+
                 exRow = exRow + 1
                 tbProduct.MoveNext
             Wend
@@ -1909,6 +1929,15 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
         With .Range("A" & exRow & ":" & lastCol & exRow)
             .Borders(xlEdgeTop).Weight = xlMedium
         End With
+        exRow = exRow + 1
+        .Cells(exRow, 1).Value = "Примечание *)"
+        With .Range("B" & CStr(exRow) & ":" & lastCol & CStr(exRow))
+            .Merge (True)
+            .Value = "В скобках указано количество позиций в одном готовом изделии. Цена позиции - за одну единицу."
+            .HorizontalAlignment = xlHAlignLeft
+        End With
+        .Rows(exRow).Font.Italic = True
+    
     
     End With
 EN1:
@@ -1949,51 +1978,36 @@ minusQuant = 0
 With objExel.ActiveSheet
     .Cells.Font.Size = 8
 
-    If toExel = "toExcelWeb" Then
-        lastCol = "E"
-    Else
-        lastCol = "H"
-    End If
+    lastCol = "I"
     lastColInt = 5 + (Asc(lastCol) - Asc("E"))
     
     ' печать стандартной шапки
-    excelStdSchapka objExel, RubRate, mainReportTitle, lastCol, "МАРКМАСТЕР"
+    exRow = excelStdSchapka(objExel, RubRate, mainReportTitle, lastCol, "МАРКМАСТЕР", True, ExcelParamDialog.contact1, ExcelParamDialog.contact2)
 
-    exRow = 6
+
     Dim currentKlassId As Integer
-    Dim withOstat As Integer, exCol As Long
+    Dim exCol As Long
 
     .Columns(1).columnWidth = 12.57
     .Columns(2).columnWidth = 39.71
     .Columns(3).columnWidth = 10
     .Columns(4).columnWidth = 6.2
-    If Not toExel = "toExcelWeb" Then
-        .Columns(5).columnWidth = 7: .Columns(5).HorizontalAlignment = xlHAlignRight
-        .Columns(6).columnWidth = 7: .Columns(6).HorizontalAlignment = xlHAlignRight
-        .Columns(7).columnWidth = 7: .Columns(7).HorizontalAlignment = xlHAlignRight
-        .Columns(8).columnWidth = 7: .Columns(8).HorizontalAlignment = xlHAlignRight
-    Else
-        .Columns(5).columnWidth = 6.2
-    End If
+    .Columns(5).columnWidth = 6.2
+    .Columns(5).HorizontalAlignment = xlHAlignRight
+    .Columns(6).columnWidth = 7:
+    .Columns(6).HorizontalAlignment = xlHAlignRight
+    .Columns(7).columnWidth = 7:
+    .Columns(7).HorizontalAlignment = xlHAlignRight
+    .Columns(8).columnWidth = 7:
+    .Columns(8).HorizontalAlignment = xlHAlignRight
+    .Columns(9).columnWidth = 7:
+    .Columns(9).HorizontalAlignment = xlHAlignRight
     
-    'cErr = setVertBorders(objExel, xlMedium, lastColInt)
-'xlColumnDataType
-    'If cErr <> 0 Then GoTo ERR2
-'xlDiagonalDown, xlDiagonalUp, xlEdgeBottom, xlEdgeLeft, xlEdgeRight
-'xlEdgeTop, xlInsideHorizontal, or xlInsideVertical.
-    With .Range("A" & exRow & ":" & lastCol & exRow)
-        '.Borders(xlEdgeBottom).Weight = xlMedium ' xlThin
-        '.Borders(xlEdgeTop).Weight = xlMedium
-    End With
-    'exRow = exRow + 1
 '------------------------------------------------------------------------
 
 
     
-  If toExel = "toExcelWeb" Then
-    withOstat = 1
-  End If
-  sql = "call wf_report_mat_ost(" & withOstat & ")"
+  sql = "call wf_report_mat_ost(1)"
   
   Set tbProduct = myOpenRecordSet("##331", sql, dbOpenDynaset)
   If tbProduct Is Nothing Then GoTo EN1
@@ -2019,35 +2033,28 @@ With objExel.ActiveSheet
             .Cells(exRow, 2).Value = "Описание"
             .Cells(exRow, 3).Value = "Размер"
             .Cells(exRow, 4).Value = "Ед.изм."
-            If toExel = "toExcelWeb" Then
-                .Cells(exRow, 5).Value = "Кол-во"
-                exCol = 6
-            Else
-                exCol = 5
+            .Cells(exRow, 5).Value = "Кол-во"
+            exCol = 6
+            With .Range("A" & exRow & ":" & lastCol & exRow)
+                .Borders(xlEdgeBottom).Weight = xlThin
+                .Font.Italic = True
+                .HorizontalAlignment = xlHAlignCenter
+            End With
+            If Not IsNull(tbProduct!Kolon1) Then
+                .Cells(exRow, exCol).Value = Chr(160) & tbProduct!Kolon1
+                .Cells(exRow, exCol).Font.Bold = True
             End If
-            If Not toExel = "toExcelWeb" Then
-                '.Cells(exRow, exCol).Value = "Цена УЕ"
-                With .Range("A" & exRow & ":" & lastCol & exRow)
-                    .Borders(xlEdgeBottom).Weight = xlThin
-                    .Font.Italic = True
-                    .HorizontalAlignment = xlHAlignCenter
-                End With
-                If Not IsNull(tbProduct!Kolon1) Then
-                    .Cells(exRow, exCol).Value = Chr(160) & tbProduct!Kolon1
-                    .Cells(exRow, exCol).Font.Bold = True
-                End If
-                If Not IsNull(tbProduct!Kolon2) Then
-                    .Cells(exRow, exCol + 1).Value = Chr(160) & tbProduct!Kolon2
-                    .Cells(exRow, exCol + 1).Font.Bold = True
-                End If
-                If Not IsNull(tbProduct!Kolon3) Then
-                    .Cells(exRow, exCol + 2).Value = Chr(160) & tbProduct!Kolon3
-                    .Cells(exRow, exCol + 2).Font.Bold = True
-                End If
-                If Not IsNull(tbProduct!Kolon4) Then
-                    .Cells(exRow, exCol + 3).Value = Chr(160) & tbProduct!Kolon4
-                    .Cells(exRow, exCol + 3).Font.Bold = True
-                End If
+            If Not IsNull(tbProduct!Kolon2) Then
+                .Cells(exRow, exCol + 1).Value = Chr(160) & tbProduct!Kolon2
+                .Cells(exRow, exCol + 1).Font.Bold = True
+            End If
+            If Not IsNull(tbProduct!Kolon3) Then
+                .Cells(exRow, exCol + 2).Value = Chr(160) & tbProduct!Kolon3
+                .Cells(exRow, exCol + 2).Font.Bold = True
+            End If
+            If Not IsNull(tbProduct!Kolon4) Then
+                .Cells(exRow, exCol + 3).Value = Chr(160) & tbProduct!Kolon4
+                .Cells(exRow, exCol + 3).Font.Bold = True
             End If
             cErr = setVertBorders(objExel, xlThin, lastColInt)
             If cErr <> 0 Then GoTo ERR2
@@ -2060,15 +2067,13 @@ With objExel.ActiveSheet
         .Cells(exRow, 2).Value = tbProduct!Nomname
         .Cells(exRow, 3).Value = tbProduct!Size
         .Cells(exRow, 4).Value = str
-        If Not toExel = "toExcelWeb" Then
-            ExcelKolonPrices exRow, exCol, RubRate
-        Else
-            tmpSng = Round(tbProduct!qty_dost - 0.499)
-            If tmpSng < -0.01 Then
-                minusQuant = minusQuant + 1 '************************
-            End If
-            .Cells(exRow, 5).Value = Round(tmpSng, 2)
+        tmpSng = Round(tbProduct!qty_dost - 0.499)
+        If tmpSng < -0.01 Then
+            minusQuant = minusQuant + 1
         End If
+        .Cells(exRow, 5).Value = Round(tmpSng, 2)
+            
+        ExcelKolonPrices exRow, exCol, RubRate
         cErr = setVertBorders(objExel, xlThin, lastColInt)
         If cErr <> 0 Then GoTo ERR2
         
@@ -2139,75 +2144,82 @@ Private Sub ExcelKolonPrices(exRow As Long, exCol As Long, RubRate As Double, Op
 
 End Sub
 
-Private Sub mnWebs_Click()
-Dim str As String, ch As String, slen As Integer, oper As String, I As Integer
-Dim tmpFile As String ', filtrList As String
-
-If MsgBox("По кнопке 'ДА' будет перезаписаны файлы для WEB: файл складcких " & _
-"остатков и файл комплектации готовых изделий." _
-, vbDefaultButton2 Or vbYesNo, "Подтвердите запись") = vbNo Then Exit Sub
 
 
-Me.MousePointer = flexHourglass
-
-sql = "UPDATE sGuideNomenk SET sGuideNomenk.web2 = '';"
-If myExecute("##405", sql) <> 0 Then GoTo EN2
-
-
-sql = "SELECT sProducts.nomNom, sGuideProducts.prName, sGuideProducts.prId " & _
-"FROM sGuideProducts INNER JOIN sProducts ON sGuideProducts.prId = " & _
-"sProducts.ProductId WHERE (((sGuideProducts.web)<>''));"
-'MsgBox sql
-Set tbProduct = myOpenRecordSet("##373", sql, dbOpenDynaset)
-
-If Not tbProduct Is Nothing Then
-  
-  If tbProduct.BOF Then
-    MsgBox "Ни одно изделие не помечено для Web", , "Файл комлектации не создан!"
-  Else
-    tmpFile = webProducts & "tmp"
-    On Error GoTo ERR1
-    Open tmpFile For Output As #1
-'    On Error GoTo 0
-    While Not tbProduct.EOF
-'      sql = "UPDATE sGuideNomenk INNER JOIN sProducts ON sGuideNomenk.nomNom " & _
-'      "= sProducts.nomNom   SET sGuideNomenk.web2 = 'web' " & _
-'      "WHERE (((sProducts.ProductId)=" & tbProduct!prId & "));"
-'      myExecute "##372", sql
+Private Sub CalcKolonPrices(ByRef prices() As Double, RubRate As Double, Optional RPF_Rate As Single = 1)
+    prices(0) = prices(0) + RPF_Rate * tbNomenk!CENA_W * RubRate
     
-      Print #1, tbProduct!prName & vbTab & tbProduct!nomnom
-      tbProduct.MoveNext
-    Wend
-    Close #1
-'    On Error Resume Next ' файла м.не быть
-    Kill webProducts
-'    On Error GoTo 0
-    Name tmpFile As webProducts
-  End If
-  tbProduct.Close
-End If
-
-Documents.ostatToWeb 'именно в конце
+    Dim kolonok As Integer, optBasePrice As Double, margin As Double, iKolon As Integer, manualOpt As Boolean
+    kolonok = tbNomenk!kolonok
+    margin = tbNomenk!margin
+    optBasePrice = tbNomenk!CENA_W
     
-GoTo EN2
-ERR1:
-If Err = 76 Then
-    MsgBox "Невозможно создать файл " & tmpFile, , "Error: Не обнаружен ПК или Путь к файлу"
-ElseIf Err = 53 Then
-    Resume Next ' файла м.не быть
-ElseIf Err = 47 Then
-    MsgBox "Невозможно создать файл " & tmpFile, , "Error: Нет доступа на запись."
-Else
-    MsgBox Error, , "Ошибка 47-" & Err '##47
-    'End
-End If
-EN2:
-On Error Resume Next 'нужен, если фокус после нажатия передали другому приложению
-On Error Resume Next
-Grid.SetFocus
-Me.MousePointer = flexDefault
+    If kolonok > 0 Then
+        manualOpt = False
+    Else
+        manualOpt = True
+    End If
+    
+    For iKolon = 1 To Abs(kolonok) - 1
+        If manualOpt Then
+            prices(iKolon - 1) = prices(iKolon - 1) + RPF_Rate * tbNomenk("CenaOpt" & CStr(iKolon)) * RubRate
+        Else
+            prices(iKolon - 1) = prices(iKolon - 1) + RPF_Rate * RubRate * calcKolonValue(optBasePrice, margin, tbNomenk!rabbat, Abs(kolonok), iKolon)
+        End If
+    Next iKolon
 
 End Sub
+
+
+
+Private Sub mnWebs_Click()
+
+
+
+    Dim myRegim As String
+    myRegim = "agency"
+    ExcelParamDialog.Regim = myRegim
+    
+    ExcelParamDialog.mainReportTitle = "-"
+    ExcelParamDialog.kegl = -1
+    ExcelParamDialog.outputUE = getEffectiveSetting(myRegim & ".ue", True)
+    ExcelParamDialog.doProdCategory = False
+    ExcelParamDialog.showRabbat = True
+    ExcelParamDialog.withPrice = True
+    ExcelParamDialog.contact1 = "-"
+    ExcelParamDialog.contact2 = "-"
+    ExcelParamDialog.CsvAsOutput = True
+    
+    ExcelParamDialog.Show vbModal, Me
+    If Not ExcelParamDialog.exitCode = vbOK Then
+        GoTo done
+    End If
+
+    Dim reportRate As Double
+    If ExcelParamDialog.outputUE Then
+        reportRate = 1
+    Else
+        reportRate = ExcelParamDialog.RubRate
+    End If
+
+    Dim csvFile As String, csvPath As String
+    
+    csvPath = getEffectiveSetting("ProductsPath", ".")
+    If csvPath <> "" And Right(csvPath, 1) <> "\" Then
+        csvPath = csvPath & "\"
+    End If
+    csvFile = csvPath & "rpf.csv"
+    
+    If MsgBox("По кнопке 'Дa'(Yes) будет перезаписан файл " & csvFile, vbDefaultButton2 Or vbYesNo, "Подтвердите запись") = vbNo Then
+        GoTo done
+    End If
+
+    PriceToCSV Me, myRegim, csvFile, reportRate, 2, ExcelParamDialog.commonRabbat
+    
+done:
+
+End Sub
+
 
 Private Sub sourOborot_Click()
 Dim n1 As Nomenklatura
@@ -2367,6 +2379,6 @@ End Sub
 
 Private Sub ventureOborot_Click()
     Analityc.applicationType = "stime"
-    Analityc.managId = AUTO.cbM.Text
+    Analityc.ManagId = AUTO.cbM.Text
     Analityc.Show
 End Sub

@@ -229,6 +229,10 @@ Sub saveAppSettings()
     saveFileSettings appCfgFile, appSettings
 End Sub
 
+Sub saveSiteSettings()
+    saveFileSettings siteCfgFile, siteSettings
+End Sub
+
 
 Sub saveFileSettings(filePath As String, ByRef curSettings() As MapEntry)
 Dim I As Integer, str  As String
@@ -246,7 +250,7 @@ EN1:
 End Sub
 
 Function getAppCfgDefaultName() As String
-    getAppCfgDefaultName = App.path & "\" & App.ExeName & ".cfg"
+    getAppCfgDefaultName = App.path & "\" & App.EXEName & ".cfg"
 End Function
 
 Function getSiteCfgDefaultName() As String
@@ -315,6 +319,11 @@ Dim exists As Variant
 End Sub
 Public Sub cleanSettings(curSetting() As MapEntry)
     ReDim curSetting(0)
+End Sub
+
+Public Sub setSiteSetting(Key As String, Value)
+    setCurrentSetting siteSettings, Key, Value
+    setCurrentSetting settings, Key, Value
 End Sub
 
 

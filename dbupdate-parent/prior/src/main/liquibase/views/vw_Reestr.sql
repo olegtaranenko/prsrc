@@ -51,8 +51,8 @@ SELECT
 FROM Orders o
 	JOIN OrdersEquip       oe ON o.numOrder = oe.numOrder
 	JOIN GuideEquip         e ON e.equipId  = oe.equipId
-	JOIN GuideFirms         f ON f.FirmId = o.FirmId
+	JOIN FirmGuide          f ON f.FirmId = o.FirmId
 	JOIN GuideManag         m ON m.ManagId = o.ManagId
 	JOIN OrdersInCeh       oc ON o.numOrder = oc.numOrder
-	LEFT JOIN GuideStatus   s ON s.statusId = oe.statusEquipId
-where outDatetime is not null
+	LEFT JOIN GuideStatus   s ON s.statusId = oe.statusEquipId and s.werkId = o.werkid
+where oe.outDatetime is not null;

@@ -2,10 +2,10 @@ VERSION 5.00
 Begin VB.Form FindFirm 
    BackColor       =   &H8000000A&
    BorderStyle     =   1  'Fixed Single
-   Caption         =   "Расширенный поиск по всем фирмам из справочника"
+   Caption         =   "Поиск по фирмам"
    ClientHeight    =   5040
-   ClientLeft      =   45
-   ClientTop       =   330
+   ClientLeft      =   48
+   ClientTop       =   336
    ClientWidth     =   5520
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
@@ -86,7 +86,7 @@ Begin VB.Form FindFirm
       Width           =   675
    End
    Begin VB.ListBox lb 
-      Height          =   3765
+      Height          =   3696
       Left            =   60
       TabIndex        =   1
       Top             =   480
@@ -108,12 +108,14 @@ Attribute VB_Exposed = False
 Option Explicit
 Dim firmsId() As Integer
 Public Regim As String
-Public firmId As String
+Public FirmId As String
+Public idWerk As Integer
+
 Dim pos As Integer, oldWord As String
 
 
 Private Sub cmAllOrders_Click()
-firmId = firmsId(lb.ListIndex)
+FirmId = firmsId(lb.ListIndex)
 Report.Regim = "allOrders"
 Report.Show vbModal
 End Sub
@@ -126,17 +128,22 @@ Private Sub cmGuide_Click()
 bilo = cmSelect.Visible
 tmpStr = lb.Text
 
-Unload Me
-
 Me.MousePointer = flexHourglass
-GuideFirms.Regim = "fromFindFirm"
-GuideFirms.tbFind.Text = tmpStr
-GuideFirms.cmSel.Visible = bilo
-
+If idWerk = 1 Then
+    BayGuideFirms.Regim = "fromFindFirm"
+    BayGuideFirms.tbFind.Text = tmpStr
+    BayGuideFirms.cmSel.Visible = bilo
+    BayGuideFirms.Show vbModal
+Else
+    GuideFirms.Regim = "fromFindFirm"
+    GuideFirms.tbFind.Text = tmpStr
+    GuideFirms.cmSel.Visible = bilo
+    GuideFirms.Show vbModal
+End If
 
 Me.MousePointer = flexDefault
+Unload Me
 
-GuideFirms.Show vbModal
 End Sub
 
 Private Sub cmNext_Click()
@@ -161,7 +168,7 @@ End Sub
 
 Private Sub cmNoClose_Click()
 Me.MousePointer = flexHourglass
-firmId = firmsId(lb.ListIndex)
+FirmId = firmsId(lb.ListIndex)
 Report.Regim = "Orders"
 Report.Show vbModal
 Me.MousePointer = flexDefault
@@ -182,8 +189,8 @@ If Regim = "edit" Then
 
     gNzak = Orders.Grid.TextMatrix(Orders.Grid.row, orNomZak)
     visits "-", "firm" ' уменьщаем посещения у старой фирмы, если она была
-    firmId = firmsId(lb.ListIndex)
-    ValueToTableField "##20", firmId, "Orders", "FirmId"
+    FirmId = firmsId(lb.ListIndex)
+    ValueToTableField "##20", FirmId, "Orders", "FirmId"
     visits "+", "firm" ' увеличиваем посещения у новой фирмы
 
     DNM = Format(Now(), "dd.mm.yy hh:nn") & vbTab & Orders.cbM.Text & " " & gNzak ' именно vbTab
@@ -243,23 +250,25 @@ End Sub
 Private Sub Form_Load()
 isFindFirm = True
 loadFirms
+Me.Caption = Werk(idWerk) & " - Поиск по фирмам"
 End Sub
 
 Sub loadFirms()
-Dim I As Integer
+Dim I As Integer, Name
 
-sql = "SELECT GuideFirms.FirmId, GuideFirms.Name From GuideFirms " & _
-"ORDER BY GuideFirms.Name;"
+sql = "SELECT FirmId, Name From FirmGuide " _
+& "Where WerkId = " & idWerk _
+& "ORDER BY Name"
 Set tbFirms = myOpenRecordSet("##70", sql, dbOpenForwardOnly)
 If tbFirms Is Nothing Then Exit Sub
 myRedim firmsId, 1000
 I = 0
 If Not tbFirms.BOF Then
   While Not tbFirms.EOF
-    If tbFirms!firmId = 0 Then GoTo NXT
-    lb.AddItem tbFirms!name
+    If tbFirms!FirmId = 0 Then GoTo NXT
+    lb.AddItem tbFirms!Name
     myRedim firmsId, I + 1
-    firmsId(I) = tbFirms!firmId
+    firmsId(I) = tbFirms!FirmId
     I = I + 1
 NXT:
     tbFirms.MoveNext

@@ -476,7 +476,7 @@ Private Sub cmFiltrGo_Click()
 Dim str As String, strWhere As String, I As Integer
 
 Orders.chConflict.value = 0
-For I = 1 To orColNumber
+For I = 1 To Orders.orColNumber
     orSqlWhere(I) = ""
 Next I
 ' ********************** поле Дата

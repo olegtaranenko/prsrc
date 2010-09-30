@@ -89,10 +89,14 @@
 							<name>remote.odbc.stime</name>
 							<value>${remote.odbc.stime}</value>
 						</property>
-							<property>
-								<name>basedir</name>
-								<value>${basedir}</value>
-							</property>
+						<property>
+							<name>basedir</name>
+							<value>${basedir}</value>
+						</property>
+						<property>
+							<name>syb.servicename</name>
+							<value>${syb.servicename}</value>
+						</property>
 					</expressionVars>
 				</configuration>
 			</plugin>
@@ -101,7 +105,6 @@
 
 	<properties>
 		<syb.server.port>${prior.port}</syb.server.port>
-		<syb.servicename>prior</syb.servicename>
 		<syb.servicename.orig>prior</syb.servicename.orig>
 		<syb.username>dba</syb.username>
 		<syb.password>sql</syb.password>

@@ -1,7 +1,6 @@
 VERSION 5.00
 Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "mscomctl.ocx"
 Begin VB.Form Zagruz 
-   BackColor       =   &H8000000A&
    Caption         =   "Загрузка"
    ClientHeight    =   6396
    ClientLeft      =   4668
@@ -9,17 +8,16 @@ Begin VB.Form Zagruz
    ClientWidth     =   8004
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
+   Picture         =   "Zagruz.frx":0000
    ScaleHeight     =   6396
    ScaleWidth      =   8004
    StartUpPosition =   2  'CenterScreen
-   Begin VB.CommandButton cmEquip 
-      Caption         =   "YAG"
-      Height          =   315
-      Index           =   0
+   Begin VB.ComboBox cbEquips 
+      Height          =   288
       Left            =   2160
       TabIndex        =   22
-      Top             =   6000
-      Width           =   495
+      Top             =   6030
+      Width           =   2652
    End
    Begin VB.CommandButton Command1 
       Caption         =   "Command1"
@@ -33,9 +31,9 @@ Begin VB.Form Zagruz
    Begin VB.CommandButton cmHistory 
       Caption         =   "Журнал"
       Height          =   315
-      Left            =   3540
+      Left            =   5100
       TabIndex        =   20
-      Top             =   5640
+      Top             =   6030
       Width           =   795
    End
    Begin VB.CommandButton cmDel 
@@ -52,7 +50,7 @@ Begin VB.Form Zagruz
       Height          =   315
       Left            =   6960
       TabIndex        =   10
-      Top             =   5640
+      Top             =   6030
       Width           =   855
    End
    Begin VB.TextBox tbMobile 
@@ -167,6 +165,15 @@ Begin VB.Form Zagruz
          Text            =   "Живые"
          Object.Width           =   1455
       EndProperty
+   End
+   Begin VB.Label lbEquips 
+      Alignment       =   1  'Right Justify
+      Caption         =   "Выбор оборудования:"
+      Height          =   252
+      Left            =   120
+      TabIndex        =   23
+      Top             =   6030
+      Width           =   1932
    End
    Begin VB.Label laVirab 
       Alignment       =   1  'Right Justify
@@ -288,8 +295,11 @@ If MsgBox("Если нажать <Да>, то на все дни будет установлен ресурс по " & _
 End If
 End Sub
 
-Private Sub cmEquip_Click(Index As Integer)
-    idEquip = Index + 1
+Private Sub cbEquips_Click()
+    If cbEquips.ListIndex >= 0 Then
+        idEquip = cbEquips.ItemData(cbEquips.ListIndex)
+    End If
+    
     ZagruzLoad
 End Sub
 
@@ -335,15 +345,9 @@ Dim I As Integer
     oldHeight = Me.Height
     oldWidth = Me.Width
     
-    For I = 1 To UBound(Equip) - 1
-        Load cmEquip(I)
-        cmEquip(I).Left = cmEquip(I - 1).Left + cmEquip(I - 1).Width + 10
-        cmEquip(I).Visible = True
-    Next I
     
-    For I = 0 To UBound(Equip) - 1
-        cmEquip(I).Caption = Equip(I + 1)
-    Next I
+    cbEquips.AddItem "Все типы оборудования", 0
+    initEquipCombo cbEquips, -1, idEquip
     
     
     isZagruz = True
@@ -467,12 +471,6 @@ laUsed.Top = laUsed.Top + H
 
 Dim RightLine As Integer
 
-For I = 0 To cmEquip.UBound
-    cmEquip(I).Top = cmEquip(I).Top + H
-    If RightLine < cmEquip(I).Left + cmEquip(I).Width Then
-        RightLine = cmEquip(I).Left + cmEquip(I).Width
-    End If
-Next I
 
 End Sub
 
@@ -481,7 +479,7 @@ isZagruz = False
 End Sub
 
 Private Sub lv_Click()
-chDopView.value = 0
+chDopView.Value = 0
 End Sub
 
 Private Sub lv_ColumnClick(ByVal ColumnHeader As MSComctlLib.ColumnHeader)
@@ -538,7 +536,7 @@ cmRefr.Caption = "Сохранить"
 End Sub
 
 Private Sub tbKPD_Click()
-chDopView.value = 0
+chDopView.Value = 0
 End Sub
 
 '$odbc14$
@@ -599,7 +597,7 @@ cmRefr.Caption = "Сохранить"
 End Sub
 
 Private Sub tbNomRes_Click()
-chDopView.value = 0
+chDopView.Value = 0
 End Sub
 
 Private Sub tbStanki_Change()
@@ -608,6 +606,6 @@ cmRefr.Caption = "Сохранить"
 End Sub
 
 Private Sub tbStanki_Click()
-chDopView.value = 0
+chDopView.Value = 0
 End Sub
 

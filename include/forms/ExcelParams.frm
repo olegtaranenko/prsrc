@@ -4,19 +4,41 @@ Begin VB.Form ExcelParamDialog
    BackColor       =   &H8000000A&
    BorderStyle     =   3  'Fixed Dialog
    Caption         =   "Параметры вывода в Excel"
-   ClientHeight    =   2760
+   ClientHeight    =   3252
    ClientLeft      =   2760
    ClientTop       =   3756
-   ClientWidth     =   8244
+   ClientWidth     =   9744
    FillColor       =   &H8000000A&
    FillStyle       =   0  'Solid
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   2760
-   ScaleWidth      =   8244
+   ScaleHeight     =   3252
+   ScaleWidth      =   9744
    ShowInTaskbar   =   0   'False
    StartUpPosition =   1  'CenterOwner
+   Begin VB.TextBox tbOutputPath 
+      Height          =   288
+      Left            =   600
+      TabIndex        =   19
+      Top             =   360
+      Visible         =   0   'False
+      Width           =   7452
+   End
+   Begin VB.TextBox tbContact2 
+      Height          =   288
+      Left            =   600
+      TabIndex        =   17
+      Top             =   2760
+      Width           =   7452
+   End
+   Begin VB.TextBox tbContact1 
+      Height          =   288
+      Left            =   600
+      TabIndex        =   15
+      Top             =   2160
+      Width           =   7452
+   End
    Begin VB.ComboBox cbPriceType 
       Height          =   288
       ItemData        =   "ExcelParams.frx":0000
@@ -93,20 +115,51 @@ Begin VB.Form ExcelParamDialog
       BackColor       =   &H8000000A&
       Caption         =   "Отмена"
       Height          =   375
-      Left            =   6840
+      Left            =   8400
       MaskColor       =   &H8000000A&
       TabIndex        =   1
-      Top             =   2040
+      Top             =   840
       Width           =   1215
    End
    Begin VB.CommandButton OKButton 
       BackColor       =   &H8000000A&
       Caption         =   "OK"
       Height          =   375
-      Left            =   240
+      Left            =   8400
       TabIndex        =   0
-      Top             =   2040
+      Top             =   240
       Width           =   1215
+   End
+   Begin VB.Label lbOutputPath 
+      AutoSize        =   -1  'True
+      BackColor       =   &H8000000A&
+      Caption         =   "Вывод файла в директорию"
+      Height          =   192
+      Left            =   360
+      TabIndex        =   20
+      Top             =   120
+      Visible         =   0   'False
+      Width           =   2304
+   End
+   Begin VB.Label lbContact2 
+      AutoSize        =   -1  'True
+      BackColor       =   &H8000000A&
+      Caption         =   "Подзаголовок (телефоны)"
+      Height          =   192
+      Left            =   360
+      TabIndex        =   18
+      Top             =   2520
+      Width           =   2172
+   End
+   Begin VB.Label lbContact1 
+      AutoSize        =   -1  'True
+      BackColor       =   &H8000000A&
+      Caption         =   "Подзаголовок (контакты)"
+      Height          =   192
+      Left            =   360
+      TabIndex        =   16
+      Top             =   1920
+      Width           =   2100
    End
    Begin VB.Label lbPriceType 
       Alignment       =   1  'Right Justify
@@ -176,6 +229,8 @@ Public exitCode As Integer
 Public outputUE As Boolean
 Public RubRate As Double
 Public mainReportTitle As String
+Public contact1 As String
+Public contact2 As String
 Public kegl As Integer
 Public commonRabbat As Single
 Public doProdCategory As Boolean
@@ -185,7 +240,7 @@ Public priceType As Integer
 
 Public Regim As String
 Public withPrice As Boolean
-
+Public CsvAsOutput As Boolean
 
 Dim doUnload As Boolean
 
@@ -199,12 +254,12 @@ End Sub
 Private Sub cbPriceType_Click()
     If cbPriceType.ListIndex = 1 Then
         priceType = 1
-        tbCommonRabbat.Visible = True
-        laCommonRabbat.Visible = True
-    Else
-        priceType = 0
         tbCommonRabbat.Visible = False
         laCommonRabbat.Visible = False
+    Else
+        priceType = 0
+        tbCommonRabbat.Visible = True
+        laCommonRabbat.Visible = True
     End If
 End Sub
 
@@ -225,14 +280,61 @@ Private Sub Form_Load()
         rbRub.Value = True
     End If
     tbRate.Text = getCurrentRate()
-    If mainTitle <> "" Then
+    
+    If CsvAsOutput Then
+        lbOutputPath.Visible = True
+        tbOutputPath.Visible = True
+        tbOutputPath.Text = getEffectiveSetting("ProductsPath", "")
+    Else
+        lbOutputPath.Visible = False
+        tbOutputPath.Visible = False
+    End If
+
+    If kegl < 0 Then
+        tbKegl.Visible = False
+        lbKegl.Visible = False
+    ElseIf kegl > 0 Then
+        tbKegl.Text = kegl
+        tbKegl.Visible = True
+        lbKegl.Visible = True
+    End If
+    
+    If Regim = "pricePM" Then
+        tbContact1.Visible = False
+        tbContact2.Visible = False
+        lbContact1.Visible = False
+        lbContact2.Visible = False
+    Else
+        tbContact1.Visible = True
+        tbContact2.Visible = True
+        lbContact1.Visible = True
+        lbContact2.Visible = True
+    End If
+    
+    
+    If mainReportTitle = "-" Then
+        tbMainTitle.Visible = False
+        lbMainTitle.Visible = False
+    ElseIf mainReportTitle <> "" Then
         tbMainTitle.Text = mainReportTitle
     End If
-    If kegl <> 0 Then
-        tbKegl.Text = kegl
+    
+    If contact1 = "-" Then
+        tbContact1.Visible = False
+        lbContact1.Visible = False
+    ElseIf contact1 <> "" Then
+        tbContact1.Text = contact1
+    End If
+    
+    If contact2 = "-" Then
+        tbContact2.Visible = False
+        lbContact2.Visible = False
+    ElseIf contact2 <> "" Then
+        tbContact2.Text = contact2
     End If
     
     initProdCategoryBox cbProdCategory
+    
     If doProdCategory Then
         lProdCategory.Visible = True
         cbProdCategory.Visible = True
@@ -263,18 +365,20 @@ Private Sub Form_Load()
         End If
         
         If cbPriceType.ListIndex = 1 Then
-            showRabbat = True
-        Else
             showRabbat = False
+        Else
+            showRabbat = True
         End If
     End If
 
     If showRabbat Then
         tbCommonRabbat.Visible = True
         laCommonRabbat.Visible = True
+    Else
+        tbCommonRabbat.Visible = False
+        laCommonRabbat.Visible = False
     End If
     
-
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
@@ -284,11 +388,21 @@ Private Sub Form_Unload(Cancel As Integer)
         setAppSetting Regim & ".ue", outputUE
         setAppSetting Regim & ".rabbat", commonRabbat
         setAppSetting Regim & ".pricetype", cbPriceType.ListIndex
+        If tbContact1.Visible Then
+            setAppSetting ".contact1", contact1
+        End If
+        If tbContact2.Visible Then
+            setAppSetting ".contact2", contact2
+        End If
     
         saveFileSettings getAppCfgDefaultName, appSettings
     End If
     showRabbat = False
     Regim = ""
+End Sub
+
+Private Sub Label1_Click()
+
 End Sub
 
 Private Sub OKButton_Click()
@@ -315,10 +429,31 @@ Private Sub OKButton_Click()
         doUnload = False
     End If
     
-    If doProdCategory Then
+    If doProdCategory And cbProdCategory.ListIndex >= 0 Then
         doProdCategory = False
         prodCategoryId = cbProdCategory.ItemData(cbProdCategory.ListIndex)
     End If
+    
+    If CsvAsOutput Then
+        Dim csvPath As String
+        csvPath = tbOutputPath.Text
+        If csvPath <> "" And Right(csvPath, 1) <> "\" Then
+            csvPath = csvPath & "\"
+        End If
+        
+        If Dir$(csvPath) = "" Then
+            MsgBox tbOutputPath.Text & ": Не существует такая директория или доступ к ней заблокирован.", , "Проверьте путь"
+            Exit Sub
+        End If
+        'Fileexists
+        If tbOutputPath.Text <> getEffectiveSetting("ProductsPath", "") Then
+            setSiteSetting "ProductsPath", tbOutputPath.Text
+            saveSiteSettings
+        End If
+    End If
+    contact1 = tbContact1.Text
+    contact2 = tbContact2.Text
+    
     
     If doUnload Then
         Unload Me
@@ -341,3 +476,4 @@ Private Sub tbCommonRabbat_Change()
         commonRabbat = CSng(tbCommonRabbat.Text)
     End If
 End Sub
+

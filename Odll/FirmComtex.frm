@@ -152,9 +152,9 @@ Public serverName As String
 
 
 Private Sub cmAdd_Click()
-    If Grid.TextMatrix(Grid.rows - 1, fcFirmName) <> "" Then Grid.AddItem ("")
+    If Grid.TextMatrix(Grid.Rows - 1, fcFirmName) <> "" Then Grid.AddItem ("")
     
-    Grid.row = Grid.rows - 1
+    Grid.row = Grid.Rows - 1
     Grid.col = fcFirmName 'название
     Grid.SetFocus
     textBoxInGridCell tbMobile, Grid
@@ -291,7 +291,7 @@ Dim orderField As String
         Grid.AddItem ("")
 AA:     tbFirms.MoveNext
       Wend
-      If quantity > 0 Then Grid.removeItem (quantity + 1)
+      If quantity > 0 Then Grid.RemoveItem (quantity + 1)
     End If
     tbFirms.Close
     wrkDefault.CommitTrans
@@ -315,7 +315,7 @@ End Sub
 Private Sub updateRemote(info As String _
     , tableName As String _
     , fieldName As String _
-    , value As Variant _
+    , Value As Variant _
     , condititon As String _
     , p_ServerName As String _
 )
@@ -324,12 +324,12 @@ Private Sub updateRemote(info As String _
         & "'" & tableName & "'" _
         & ", '" & fieldName & "'" _
         & ","
-    If IsNumeric(value) Then
+    If IsNumeric(Value) Then
         sql = sql & _
-            value
+            Value
     Else
         sql = sql & _
-            "'''''" & value & "'''''"
+            "'''''" & Value & "'''''"
     End If
     
     ' условие
@@ -355,7 +355,7 @@ Dim id_jscet As String
     'wrkDefault.BeginTrans
     On Error GoTo fail
     id_jscet = getValueFromTable("Orders", "id_jscet", "numOrder = " & gNzak)
-    wrkDefault.rollback
+    wrkDefault.Rollback
     
     updateRemote "Выбор плательщика", "jscet", "id_d" _
             , p_id_bill _
@@ -372,6 +372,7 @@ Dim id_jscet As String
     GoTo finally
 fail:
     MsgBox "Ошибка при выборе плательщика" & vbCr & "", , "Сообщите администратору"
+    wrkDefault.Rollback
 finally:
 End Sub
 
@@ -451,27 +452,27 @@ oldWidth = Me.Width
 End Sub
 
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer
+Dim H As Integer, W As Integer
 
 If Me.WindowState = vbMinimized Then Exit Sub
 On Error Resume Next
 lbHide "noGrid"
-w = Me.Width - oldWidth
+W = Me.Width - oldWidth
 oldWidth = Me.Width
-h = Me.Height - oldHeight
+H = Me.Height - oldHeight
 oldHeight = Me.Height
 
 
-Grid.Height = Grid.Height + h
-Grid.Width = Grid.Width + w
-cmSel.Top = cmSel.Top + h
-cmExit.Top = cmExit.Top + h
+Grid.Height = Grid.Height + H
+Grid.Width = Grid.Width + W
+cmSel.Top = cmSel.Top + H
+cmExit.Top = cmExit.Top + H
 'cmExit.Left = cmExit.Left + w
 'tbFind.Top = tbFind.Top + h
 'cmFind.Top = cmFind.Top + h
-cmAdd.Top = cmAdd.Top + h
-cmExel.Top = cmExel.Top + h
-cmExel.Left = cmExel.Left + w
+cmAdd.Top = cmAdd.Top + H
+cmExel.Top = cmExel.Top + H
+cmExel.Left = cmExel.Left + W
 End Sub
 
 Private Sub Grid_Click()
@@ -564,7 +565,7 @@ Private Sub Grid_LeaveCell()
 Grid.CellBackColor = Grid.BackColor
 End Sub
 
-Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
 End Sub
@@ -613,7 +614,7 @@ If KeyCode = vbKeyReturn Then
     
     On Error GoTo fail
     id_jscet = getValueFromTable("Orders", "id_jscet", "numOrder = " & gNzak)
-    wrkDefault.rollback
+    wrkDefault.Rollback
     
     If mousCol = fcFirmName Then
         strId = Grid.TextMatrix(mousRow, fcId)
@@ -621,7 +622,7 @@ If KeyCode = vbKeyReturn Then
         If strId = "" Then
             wrkDefault.BeginTrans
 
-            id_belong = getValueFromTable("guidefirms", "id_voc_names", "firmid = 0")
+            id_belong = getValueFromTable("FirmGuide", "id_voc_names", "firmid = 0")
             
             sql = "select insert_count_remote('" _
                 & serverName _
@@ -666,7 +667,7 @@ End If
 
 Exit Sub
 fail:
-    wrkDefault.rollback
+    wrkDefault.Rollback
     GoTo finally
 
 ERR0:

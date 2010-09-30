@@ -53,7 +53,6 @@ Public gSeriaId As String
 Public gProduct As String
 Public gProductId As String
 Public prExt As Integer
-Public cenaFreight As String, cenaFact As String
 
 Public gSourceId As String
 Public gDocDate As Date
@@ -65,7 +64,6 @@ Public DMCnomNom() As String ' номер(а), кот в загруж.карточке
 Public DMCklass As String ' номер группы, кот в загруж.карточке
 Public tmpNum As Single ' временая в т.ч. для isNunericTbox()
 'Public CENA1 As Single, VES As Single, STAVKA As Single
-Public sc ' ScriptControl
 Public noClick As Boolean
 Public beChange As Boolean 'была правка в textBox
 Public debit As String, subDebit As String, kredit As String, subKredit As String
@@ -127,16 +125,6 @@ Function RateAsString(ByVal curRate As Double) As String
     RateAsString = "1 у.е. = " & strRate & " " & rubleRoot & rubleSuffix
 End Function
 
-
-Function getCurrentRate() As Double
-Dim s As String
-
-    sql = "SELECT Kurs FROM System;"
-    If byErrSqlGetValues("##321", sql, s) Then
-        getCurrentRate = Abs(s)
-    End If
-
-End Function
 
 Function dateBasic2Sybase(aDay As String)
 Dim dt_str As String
@@ -253,47 +241,47 @@ End Sub
 
 
 Sub clearGridRow(Grid As MSFlexGrid, row As Long)
-Dim il As Long
+Dim IL As Long
     noClick = True
     Grid.row = row
-    For il = 0 To Grid.Cols - 1
-      If il > 0 Then
-        Grid.col = il
+    For IL = 0 To Grid.Cols - 1
+      If IL > 0 Then
+        Grid.col = IL
         Grid.CellBackColor = Grid.BackColor
         Grid.CellForeColor = Grid.ForeColor
       End If
-      Grid.TextMatrix(row, il) = ""
-    Next il
+      Grid.TextMatrix(row, IL) = ""
+    Next IL
     Grid.col = 1
     noClick = False
 End Sub
 
 Sub colorGridRow(Grid As MSFlexGrid, row As Long, color As Long)
-Dim il As Long
+Dim IL As Long
     noClick = True
     Grid.row = row
-    For il = 0 To Grid.Cols - 1
-        Grid.col = il
-        If il > 0 Then Grid.CellBackColor = color
-    Next il
+    For IL = 0 To Grid.Cols - 1
+        Grid.col = IL
+        If IL > 0 Then Grid.CellBackColor = color
+    Next IL
     Grid.col = 1
     noClick = False
 End Sub
 
 Sub foreColorGridRow(Grid As MSFlexGrid, row As Long, color As Long, ccol As Long)
-Dim il As Long
+Dim IL As Long
     noClick = True
     Grid.row = row
-    For il = 0 To Grid.Cols - 1
-        Grid.col = il
-        If il > 0 Then Grid.CellForeColor = color
-    Next il
+    For IL = 0 To Grid.Cols - 1
+        Grid.col = IL
+        If IL > 0 Then Grid.CellForeColor = color
+    Next IL
     Grid.col = ccol
     noClick = False
 End Sub
 
 Sub colorGridCell(Grid As MSFlexGrid, ByVal row As Long, ByVal col As Long, ByVal color As Long)
-Dim il As Long
+Dim IL As Long
     noClick = True
     Grid.row = row
     Grid.col = col
@@ -309,7 +297,7 @@ Dim dt As String
 Dim ret As Variant
     
     dt = tBox.Text
-    If isEmpty(dt) Or Len(CStr(dt)) = 0 Then
+    If IsEmpty(dt) Or Len(CStr(dt)) = 0 Then
         isDateEmpty = False
         Exit Function
     End If
@@ -389,7 +377,7 @@ End Function
 
 Function findExValInCol(Grid As MSFlexGrid, Value As String, _
             col As Integer, Optional pos As Long = -1) As Long
-Dim il As Long, str  As String, beg As Long
+Dim IL As Long, str  As String, beg As Long
 
 If pos < 1 Then
     beg = 1
@@ -397,29 +385,29 @@ Else
     beg = pos
 End If
 Value = UCase(Value)
-For il = beg To Grid.Rows - 1
-    str = UCase(Grid.TextMatrix(il, col))
+For IL = beg To Grid.Rows - 1
+    str = UCase(Grid.TextMatrix(IL, col))
     If InStr(str, Value) > 0 Then
-        Grid.TopRow = il
-        Grid.row = il
-        findExValInCol = il
+        Grid.TopRow = IL
+        Grid.row = IL
+        findExValInCol = IL
         Exit Function
     End If
-Next il
+Next IL
 findExValInCol = -1
 
 End Function
 
 Sub listBoxInGridCell(lb As ListBox, Grid As MSFlexGrid, Optional sel As String = "")
-Dim I As Integer, l As Long
+Dim I As Integer, L As Long
     If lb.ListCount < 200 Then
-        l = CLng(195) * CLng(lb.ListCount) + 100 ' Для больших списков
+        L = CLng(195) * CLng(lb.ListCount) + 100 ' Для больших списков
     Else
-        l = Grid.Height / 2 + 500
+        L = Grid.Height / 2 + 500
     End If
         
-    If l > Grid.Height / 2 + 500 Then l = Grid.Height / 2 + 500
-    lb.Height = l
+    If L > Grid.Height / 2 + 500 Then L = Grid.Height / 2 + 500
+    lb.Height = L
     
     If Grid.CellTop + lb.Height < Grid.Height Then
         lb.Top = Grid.CellTop + Grid.Top
@@ -519,25 +507,6 @@ CheckIntegration
 
 End Sub
 
-Private Function initFomulConstats() As Boolean
-    initFomulConstats = True
-    On Error GoTo er
-    ' init the Global constants to use its in formulas
-    sql = "select * from GuideConstants"
-    Set tbGuide = myOpenRecordSet("##0.3", sql, dbOpenForwardOnly)
-    If tbGuide Is Nothing Then GoTo er
-    While Not tbGuide.EOF
-        Dim initStr As String
-        initStr = tbGuide!Constants & "=" & CDbl(tbGuide!Value)
-        sc.ExecuteStatement (initStr)
-        tbGuide.MoveNext
-    Wend
-    tbGuide.Close
-    Exit Function
-er:
-    initFomulConstats = False
-End Function
-
 Function max(val1, val2)
 If val2 > val1 Then
     max = val2
@@ -599,11 +568,11 @@ End If
 End Function
 
 Function ValueToGuideSourceField(myErrCod As String, Value As String, _
-field As String, Optional passErr As Integer = -11111) As Integer
+Field As String, Optional passErr As Integer = -11111) As Integer
 Dim I As Integer
 
 ValueToGuideSourceField = False
-sql = "UPDATE sGuideSource SET [" & field & _
+sql = "UPDATE sGuideSource SET [" & Field & _
 "] = '" & Value & "' WHERE (((sourceId)=" & gSourceId & "));"
 'MsgBox "sql = " & sql
 
@@ -663,63 +632,6 @@ If newLen < maxLen Then Exit Sub
 ReDim Preserve Mass(newLen + 20)
 End Sub
 
-Function nomenkFormula(Optional noOpen As String = "", Optional Web As String = "", Optional Cena1 As Double = -1)
-Dim str As String
-Dim vCena1 As Double
-
-If noOpen = "" Then
-    sql = "SELECT sGuideNomenk.formulaNom" & Web & " , sGuideNomenk.CENA1, " & _
-    "sGuideNomenk.VES, sGuideNomenk.STAVKA, sGuideFormuls.Formula as formula" & Web & _
-    " FROM sGuideFormuls INNER JOIN sGuideNomenk ON sGuideFormuls.nomer = " & _
-    "sGuideNomenk.formulaNom" & Web & _
-    " WHERE (((sGuideNomenk.nomNom)='" & gNomNom & "'));"
-'MsgBox sql
-    Set tbNomenk = myOpenRecordSet("##317", sql, dbOpenDynaset)
-    If tbNomenk Is Nothing Then Exit Function
-    If tbNomenk.BOF Then tbNomenk.Close: Exit Function
-End If
-tmpStr = tbNomenk!formula
-tmpStr = tbNomenk.fields("formula" & Web)
-'If tbNomenk!formula = "" Then
-If tmpStr = "" Then
-    nomenkFormula = "error: Формула не задана"
-    Exit Function
-End If
-
-If Cena1 < 0 Then
-    vCena1 = tbNomenk!Cena1
-Else
-    vCena1 = Cena1
-End If
-
-
-If Web = "" Then
-    str = "CENA1=" & vCena1 & ": VES=" & _
-    tbNomenk!ves & ": STAVKA=" & tbNomenk!STAVKA
-    sc.ExecuteStatement (str)
-Else
-    str = "CenaFreight=" & cenaFreight & ": CenaFact=" & cenaFact
-    On Error GoTo ERR2
-    sc.ExecuteStatement (str)
-End If
-On Error GoTo ERR1
-nomenkFormula = Round(sc.Eval(tmpStr), 2)
-
-GoTo en
-ERR2:
-  nomenkFormula = "error в  CenaFreight или cenaFact"
-  GoTo en
-ERR1:
-  nomenkFormula = "error: " & Error
-'  If noMsg = "" Then
-'    MsgBox Error & " - при выполнении формулы '" & tbNomenk!formula & _
-'    "' для номенклатуры '" & tbNomenk!nomNom & "' (" & tmpStr & ")", , _
-'    "Ошибка 314 - " & Err & ":  " '##314
- ' End If
-en:
-If noOpen = "" Then tbNomenk.Close
-End Function
-
 Sub rowViem(numRow As Long, Grid As MSFlexGrid)
 Dim I As Integer
 
@@ -766,7 +678,7 @@ wrkDefault.BeginTrans
 For rr = 1 To UBound(QQ)
   Set tbDMC = myOpenRecordSet("##157", "sDMC", dbOpenTable)
   If tbDMC Is Nothing Then GoTo EN1
-  tbDMC.index = "nomDoc"
+  tbDMC.Index = "nomDoc"
   tbDMC.Seek "=", numDoc, numExt, NN(rr)
   If tbDMC.NoMatch Then
       tbDMC.Close
@@ -784,7 +696,7 @@ For rr = 1 To UBound(QQ)
   
     Set tbNomenk = myOpenRecordSet("##156", "sGuideNomenk", dbOpenTable)
     If tbNomenk Is Nothing Then GoTo EN1
-    tbNomenk.index = "PrimaryKey"
+    tbNomenk.Index = "PrimaryKey"
     tbNomenk.Seek "=", NN(rr)
     If tbNomenk.NoMatch Then
         tbNomenk.Close
@@ -838,12 +750,12 @@ getPurposeIdByDescript = id
 End Function
 
 
-Function valueToSystemField(val As Variant, field As String) As Boolean
+Function valueToSystemField(val As Variant, Field As String) As Boolean
 valueToSystemField = False
 Set tbSystem = myOpenRecordSet("##148", "System", dbOpenTable)
 If tbSystem Is Nothing Then Exit Function
 tbSystem.Edit
-tbSystem.fields(field) = val
+tbSystem.fields(Field) = val
 tbSystem.Update
 tbSystem.Close
 valueToSystemField = True
@@ -948,7 +860,7 @@ End Sub
 
 
 Sub clearGrid(Grid As MSFlexGrid)
-Dim il As Long
+Dim IL As Long
 Grid.Rows = 2
 ' For il = Grid.Rows To 3 Step -1
 '    Grid.RemoveItem (il)
@@ -1013,7 +925,7 @@ Set tbDocs = myOpenRecordSet("##158", "sDocs", dbOpenTable) 'dbOpenForwardOnly)
 If tbDocs Is Nothing Then Exit Function
 
 docLock = False
-tbDocs.index = "PrimaryKey"
+tbDocs.Index = "PrimaryKey"
 tbDocs.Seek "=", numDoc, nnExt
 If tbDocs.NoMatch Then
     MsgBox "Похоже документ уже удалили", , "Error - 166"
@@ -1041,16 +953,16 @@ End Function
 
 
 Function sumInGridCol(Grid As MSFlexGrid, col As Long) As Single
-Dim v, I As Integer
+Dim V, I As Integer
     
     sumInGridCol = 0
     For I = Grid.row To Grid.RowSel
-        v = Grid.TextMatrix(I, col)
-        If Not IsNumeric(v) Then
-            v = 0
+        V = Grid.TextMatrix(I, col)
+        If Not IsNumeric(V) Then
+            V = 0
         Else
-            If v < 10000000 Then
-                sumInGridCol = sumInGridCol + v
+            If V < 10000000 Then
+                sumInGridCol = sumInGridCol + V
             End If
         End If
         
@@ -1136,7 +1048,7 @@ End Sub
 'не записыват неуникальное значение, для полей, где такие
 'значения запрещены. А  генерит при этом error?
 Function ValueToTableField(myErrCod As String, Value As String, Table As String, _
-field As String, Optional by As String = "") As Boolean
+Field As String, Optional by As String = "") As Boolean
 Dim sql As String, byStr As String  ', numOrd As String
 
 ValueToTableField = False
@@ -1156,7 +1068,7 @@ ElseIf by = "byProductId" Then
 'ElseIf by = "bySourceId" Then
 '    byStr = ".sourceId)= " & gSourceId
 ElseIf by = "byNumDoc" Then
-    sql = "UPDATE " & Table & " SET " & Table & "." & field & "=" & Value _
+    sql = "UPDATE " & Table & " SET " & Table & "." & Field & "=" & Value _
         & " WHERE (((" & Table & ".numDoc)=" & numDoc & " AND (" & Table & _
         ".numExt)=" & numExt & " ));"
     GoTo AA
@@ -1164,7 +1076,7 @@ Else
     byStr = "." & by
     'Exit Function
 End If
-sql = "UPDATE " & Table & " SET " & Table & "." & field & _
+sql = "UPDATE " & Table & " SET " & Table & "." & Field & _
 " = " & Value & " WHERE (((" & Table & byStr & " ));"
 AA:
 'MsgBox "sql = " & sql
@@ -1182,11 +1094,11 @@ Public Function vo_deleteNomnom(nomnom As String, numDoc As String) As Boolean
     End If
 End Function
 
-Function getValueFromTable(tabl As String, field As String, where As String) As Variant
+Function getValueFromTable(tabl As String, Field As String, where As String) As Variant
 Dim Table As Recordset
 
 getValueFromTable = Null
-sql = "SELECT " & field & " as fff  From " & tabl & _
+sql = "SELECT " & Field & " as fff  From " & tabl & _
       " WHERE " & where & ";"
 Set Table = myOpenRecordSet("##59.1", sql, dbOpenForwardOnly)
 If Table Is Nothing Then Exit Function
@@ -1291,13 +1203,19 @@ Function excelDealerSchapka(ByRef objExel, ByVal RubRate As Double, ByVal mainTi
 End Function
 
 
-Function excelStdSchapka(ByRef objExel, ByVal RubRate As Double, ByVal mainTitle As String, ByVal leftBound As String, Optional ventureName As String = "ПЕТРОВСКИЕ МАСТЕРСКИЕ") As Integer
+Function excelStdSchapka(ByRef objExel, ByVal RubRate As Double, ByVal mainTitle As String _
+    , ByVal leftBound As String, Optional ventureName As String = "ПЕТРОВСКИЕ МАСТЕРСКИЕ", Optional paymentType = False _
+    , Optional contact1 As String = "", Optional contact2 As String = "") As Integer
 
-    excelStdSchapka = 6
+    Const titleUE = "цены указаны в у.е. и исчисляются в USD по курсу ЦБ (НДС не облагается)"
+    Const titleRub = "цены указаны в рублях (НДС не облагается"
+    
+    excelStdSchapka = 7
     With objExel.ActiveSheet.Cells(1, 1)
         .Value = Format(Now(), "dd.mm.yyyy")
         .HorizontalAlignment = xlHAlignCenter
     End With
+    
     
     With objExel.ActiveSheet.Range("B1:" & leftBound & "1")
         .Merge (True)
@@ -1313,40 +1231,61 @@ Function excelStdSchapka(ByRef objExel, ByVal RubRate As Double, ByVal mainTitle
     End With
     With objExel.ActiveSheet.Range("A3:" & leftBound & "3")
         .Merge (True)
-        .Value = "www.petmas.ru, e-mail: petmas@dol.ru"
+        .Value = contact1
         .HorizontalAlignment = xlHAlignCenter
     End With
     With objExel.ActiveSheet.Range("A4:" & leftBound & "4")
         .Merge (True)
-        .Value = "тел.: (495) 333-02-78, (499) 743-00-70, (499) 788-73-64; Факс: (495) 720-54-56"
+        .Value = contact2
         .HorizontalAlignment = xlHAlignCenter
     End With
-    'With objExel.ActiveSheet.Range("A5:" & leftBound & "5")
-    '    .Merge (True)
-    '    If RubRate = 1 Then
-    '        .value = "Цены указаны в у.е., исчисляются в USD по курсу ЦБ и включают НДС"
-    '    Else
-    '        .value = "Цены указаны рублях и включают НДС"
-    '    End If
-    '    .HorizontalAlignment = xlHAlignRight
-    '    .Font.Bold = True
-    'End With
+    If paymentType Then
+        With objExel.ActiveSheet.Range("A5:" & leftBound & "5")
+            .Merge (True)
+            If RubRate = 1 Then
+                .Value = titleUE
+            Else
+                .Value = titleRub
+            End If
+            .HorizontalAlignment = xlHAlignRight
+            .Font.Bold = True
+        End With
+    End If
 End Function
 
 
 
 
-Sub PriceToExcel(Regim As String, curRate As Double, mainReportTitle As String, kegl As Integer, Optional prodCategoryId As Integer = 1, Optional commonRabbat As Single = 1)
-Dim I As Integer, findId As Integer, str As String
 
+
+
+
+Sub PriceToExcel(Regim As String, curRate As Double, mainReportTitle As String, kegl As Integer, Optional prodCategoryId As Integer = 1, Optional commonRabbat As Single = 1 _
+        , Optional contact1 As String = "", Optional contact2 As String = "")
+        
+Dim I As Integer, findId As Integer, str As String
+Dim venture As String
+
+Const venturePM = "Петровские Мастерские"
+Const ventureMM = "Маркмастер"
 ' столбец - последний. В зависимости от режима - разный
 Dim lastCol As String, lastColInt As Integer
 Dim RPF_Rate As Single
+Dim paymentType As Boolean
+
 'Из Спарвочника Готовых изделий получаем Список Id всех групп(серий),
 'в которых есть хотя бы одно изделие.
 sql = "SELECT DISTINCT prSeriaId from sGuideProducts"
 If prodCategoryId <> 0 Then
     sql = sql & " where prodCategoryId = " & prodCategoryId
+End If
+
+If Regim = "pricePM" Then
+    venture = venturePM
+    paymentType = False
+Else
+    venture = ventureMM
+    paymentType = True
 End If
 
 Set tbProduct = myOpenRecordSet("##412", sql, dbOpenDynaset)
@@ -1359,14 +1298,11 @@ While Not tbProduct.EOF
     findId = tbProduct!prSeriaId
 
 AA: ' tbGuide.Seek "=", findId
-'    If tbGuide.NoMatch Then msgOfEnd ("##414")
     sql = "SELECT seriaName, parentSeriaId from sGuideSeries " & _
     "WHERE seriaId = " & findId
     If Not byErrSqlGetValues("##414", sql, str, findId) Then tbProduct.Close: Exit Sub
     
-'    NN(i) = tbGuide!seriaName & " / " & NN(i) ' к имени добавляем Id
     NN(I) = str & " / " & NN(I) ' к имени добавляем Id
-'    findId = tbGuide!parentSeriaId
     If findId > 0 Then GoTo AA 'к имени текущей группы спереди приклеиваются
                                'имена всех групп дерева, в которые она входит
     tbProduct.MoveNext
@@ -1389,7 +1325,8 @@ With objExel.ActiveSheet
         .Cells.Font.Size = kegl
     
     lastCol = "H"
-    exRow = excelStdSchapka(objExel, curRate, mainReportTitle, lastCol)
+    
+    exRow = excelStdSchapka(objExel, curRate, mainReportTitle, lastCol, venture, paymentType, contact1, contact2)
     
     lastColInt = Asc(lastCol) - Asc("A") + 1
     
@@ -1413,11 +1350,16 @@ With objExel.ActiveSheet
     '"Номер"    "Код"   "web"   "Описание"    Размер   "1-5"   "Стр."
     'SortNom   prName    web    prDescript    prSize   Cena4    page
     
-    sql = "SELECT p.prId, p.prName, p.prDescript, p.prSize, p.Cena4, p.page, p.rabbat as productRabbat, f.formula " _
-        & " From sGuideProducts p " _
-        & " left JOIN sGuideFormuls f on f.nomer = p.formulaNom" _
-        & " Where p.prSeriaId = " & findId & " AND p.prodCategoryId = " & prodCategoryId
-        
+    sql = "SELECT p.prId, p.prName, p.prDescript, p.prSize, p.Cena4, p.page, p.rabbat as productRabbat, f.formula, w.prId as hasWeb " _
+        & vbCr & " From sGuideProducts p " _
+        & vbCr & " left JOIN sGuideFormuls f on f.nomer = p.formulaNom" _
+        & vbCr & " left JOIN wf_izdeliaWithWeb w on w.prId  = p.prId" _
+        & vbCr & " Where p.prSeriaId = " & findId & " AND p.prodCategoryId = " & prodCategoryId
+    If Regim = "default" Then
+        sql = sql & " and w.prId is null"
+    End If
+    'Debug.Print sql
+    
     If Not Regim = "pricePM" Then
         sql = sql & " and isnumeric(p.page) = 1"
     End If
@@ -1475,8 +1417,15 @@ With objExel.ActiveSheet
             .Cells(exRow, 1).Value = tbProduct!prName
             .Cells(exRow, 2).Value = tbProduct!prSize
             .Cells(exRow, 3).Value = tbProduct!prDescript
+            Dim res As String
             
-            ExcelProductPrices RPF_Rate, Regim, curRate, exRow, 4, commonRabbat
+            res = ExcelProductPrices(RPF_Rate, Regim, curRate, exRow, 4, commonRabbat)
+            If res <> "" Then
+                MsgBox "Ошибка при вычислении цены" & vbCr & "Текст ошибки: " & res, , "Изделие " & tbProduct!prName
+                tbProduct.Close
+                GoTo fail
+            End If
+             
             
             .Cells(exRow, lastColInt).Value = " " & tbProduct!Page
             cErr = setVertBorders(objExel, xlThin, lastColInt)
@@ -1495,6 +1444,7 @@ With objExel.ActiveSheet
 
 End With
 
+fail:
 Set objExel = Nothing
 Exit Sub
 
@@ -1506,27 +1456,27 @@ Set objExel = Nothing
 
 End Sub
 
-Public Sub ExcelProductPrices(ByRef RPF_Rate As Single, Regim As String, curRate As Double, exRow As Long, exCol As Long, Optional commonRabbat As Single)
+Public Function ExcelProductPrices(ByRef RPF_Rate As Single, Regim As String, curRate As Double, exRow As Long, exCol As Long, Optional commonRabbat As Single) As String
+
     
-    Dim baseCena As String, SumCenaFreight As String
+    Dim baseCena As String
     Dim rbt As Single
-    RPF_Rate = 1
-    If Regim = "dealer" Or Regim = "agency" Then
-        productFormula SumCenaFreight, baseCena, "noOpen"
-    End If
-    If Regim = "agency" Then
-        RPF_Rate = baseCena 'temp storage
-        If tbProduct!productRabbat = 0 Then
-            rbt = commonRabbat
-        Else
-            rbt = tbProduct!productRabbat
-        End If
-        baseCena = tbProduct!Cena4 * (1 - rbt / 100)
-        RPF_Rate = baseCena / RPF_Rate
-    ElseIf Regim = "default" Or Regim = "pricePM" Then
-        baseCena = tbProduct!Cena4
-    End If
+    Dim hasWeb As Boolean
+    Dim res As String
         
+    gProductId = tbProduct!prId
+    
+    If Not IsNull(tbProduct!hasWeb) Then
+        res = res
+    End If
+    res = calcBaseCenaAndRpfRate(Regim, baseCena, RPF_Rate, tbProduct!Cena4, tbProduct!productRabbat, commonRabbat, tbProduct!hasWeb)
+    
+    If res <> "" Then
+        ExcelProductPrices = res
+        Exit Function
+        
+    End If
+    
     With objExel.ActiveSheet
         .Cells(exRow, exCol).Value = Chr(160) & Format(baseCena * curRate, "0.00")
         If gain4 > 0 Then
@@ -1535,8 +1485,11 @@ Public Sub ExcelProductPrices(ByRef RPF_Rate As Single, Regim As String, curRate
             .Cells(exRow, exCol + 3).Value = Chr(160) & Format(Round(baseCena * curRate * gain4, 1), "0.00")
         End If
     End With
+        
 
-End Sub
+End Function
+
+
 
 Function getRabbat(cenaProd As Double, rabbat As Integer) As Double
     getRabbat = (1 - rabbat / 100) * cenaProd
@@ -1555,7 +1508,7 @@ End Function
 Function getGainAndHead() As Boolean
 getGainAndHead = False
 sql = "SELECT head1, head2, head3, head4, gain2, gain3, gain4 " & _
-"from sGuideSeries WHERE (((sGuideSeries.seriaId)=" & gSeriaId & "));"
+"from sGuideSeries WHERE sGuideSeries.seriaId = " & gSeriaId
 If Not byErrSqlGetValues("##416", sql, head1, head2, head3, head4, gain2, _
 gain3, gain4) Then Exit Function
 getGainAndHead = True
@@ -1574,165 +1527,5 @@ Dim I As Integer
 End Function
 
 
-Function productFormula(ByRef SumCenaFreight As String, ByRef SumCenaSale As String, Optional noOpen As String = "")
-Dim str As String
 
-If noOpen = "" Then
-    sql = "SELECT sGuideProducts.*, sGuideFormuls.Formula FROM sGuideFormuls " & _
-    "INNER JOIN sGuideProducts ON sGuideFormuls.nomer = sGuideProducts.formulaNom " & _
-    "WHERE (((sGuideProducts.prId)=" & gProductId & "));"
-    'MsgBox sql
-    Set tbProduct = myOpenRecordSet("##316", sql, dbOpenDynaset)
-    If tbProduct Is Nothing Then Exit Function
-    If tbProduct.BOF Then tbProduct.Close: Exit Function
-End If
-
-SumCenaFreight = getSumCena(tbProduct!prId)
-If InStr(tbProduct!formula, "SumCenaFreight") > 0 Then
-  If IsNumeric(SumCenaFreight) Then
-    sc.ExecuteStatement "SumCenaFreight=" & SumCenaFreight
-    SumCenaFreight = Round(CSng(SumCenaFreight), 2)
-  Else
-    productFormula = "error СумЦ.доставка" 'текст ошибки
-    'tbProduct.Close
-    GoTo EN1
-  End If
-End If
-
-SumCenaSale = getSumCena(tbProduct!prId, "Sale")
-If InStr(tbProduct!formula, "SumCenaSale") > 0 Then
-  If IsNumeric(SumCenaSale) Then
-    sc.ExecuteStatement "SumCenaSale=" & SumCenaSale
-    SumCenaSale = Round(CSng(SumCenaSale), 2)
-  Else
-    'tbProduct.Close
-    productFormula = "error СумЦоПродажа" 'текст ошибки
-    GoTo EN1
-  End If
-End If
-
-On Error GoTo ERR2
-sc.ExecuteStatement "VremObr = " & tbProduct!VremObr
-productFormula = Round(sc.Eval(tbProduct!formula), 2)
-GoTo EN1
-ERR2:
-    productFormula = "error: " & Error
-'    MsgBox Error & " - при выполнении формулы '" & tbProduct!formula & _
-'    "' для изделия '" & tbProduct!prName & "' (" & tmpStr & ")", , _
-'    "Ошибка 316 - " & Err & ":  " '##316
-EN1:
-tmpStr = tbProduct!formula
-If noOpen = "" Then tbProduct.Close
-End Function
-
-
-
-'reg = "" => SumCenaFreight
-'reg <> "" => SumCenaSale
-Function getSumCena(productId As Integer, Optional reg As String = "") As String
-Dim sum As Single, v, s As Single, prevGroup As String, max As Single
-
-sum = 0
-
-sql = "SELECT sProducts.nomNom, sProducts.quantity, sProducts.xgroup, sGuideNomenk.perList, " & _
-"sGuideNomenk.CENA1, sGuideNomenk.VES, sGuideNomenk.STAVKA, sGuideFormuls.Formula, " & _
-"sGuideNomenk.CENA_W " & _
-"FROM (sGuideFormuls INNER JOIN sGuideNomenk ON sGuideFormuls.nomer = " & _
-"sGuideNomenk.formulaNom) INNER JOIN sProducts ON sGuideNomenk.nomNom " & _
-"= sProducts.nomNom WHERE (((sProducts.ProductId)=" & productId & "))" & _
-"ORDER BY sProducts.xgroup;"
-Set tbNomenk = myOpenRecordSet("##313", sql, dbOpenForwardOnly)
-If tbNomenk Is Nothing Then
-    'tbProduct.Close
-    If reg = "" Then
-        getSumCena = "Error ##31 в SumCenaFreight"
-    Else
-        getSumCena = "Error ##313 в SumCenaSale"
-    End If
-    Exit Function
-End If
-If tbNomenk.BOF Then
-    getSumCena = "Error: Не обнаружены комплектующие"
-    GoTo er
-End If
-'If tbProduct!prName = "S202M" Then
-'    max = max
-'End If
-max = -1
-While Not tbNomenk.EOF
-'    If tbNomenk!formula = "" Then
-'        getSumCena = "Error: Не определена формула для номенклатуры '" & tbNomenk!nomNom & "'"
-'        GoTo ER
-'    End If
-    If reg = "" Then
-        If tbNomenk!formula = "" Then
-            getSumCena = "Error: Не определена формула для номенклатуры '" & tbNomenk!nomnom & "'"
-            GoTo er
-        End If
-        v = nomenkFormula("noOpen") 'Цена2
-    Else
-        v = tbNomenk!CENA_W
-    End If
-        
-    If IsNumeric(v) Then
-        s = v * tbNomenk!quantity / tbNomenk!perList
-        If tbNomenk!xgroup = "" Then
-            sum = sum + s
-            prevGroup = tbNomenk!xgroup
-        ElseIf prevGroup = tbNomenk!xgroup Then
-            If max < s Then max = s
-        Else
-            If prevGroup <> "" Then sum = sum + max
-            max = s
-            prevGroup = tbNomenk!xgroup
-        End If
-    Else
-        getSumCena = v & " в формуле для  '" & tbNomenk!nomnom & "'"
-        GoTo er
-    End If
-
-    tbNomenk.MoveNext
-Wend
-If max = -1 Then '  - не было групп
-    getSumCena = sum
-Else
-    getSumCena = sum + max
-End If
-er:
-tbNomenk.Close
-End Function
-
-
-Public Sub initProdCategoryBox(ByRef lbPrWeb, Optional extended As Boolean = False)
-Dim Table As Recordset
-Dim name As String
-
-    ' Сначала удаляем старые значения
-    While lbPrWeb.ListCount
-        lbPrWeb.RemoveItem (0)
-    Wend
-    
-    sql = "select * from GuideProdCategory"
-    
-    Set Table = myOpenRecordSet("##72", sql, dbOpenForwardOnly)
-    If Table Is Nothing Then myBase.Close: End
-    
-    lbPrWeb.AddItem "", 0
-    While Not Table.EOF
-        If extended Then
-            name = Table!nameRu & " (" & Table!sysname & ")"
-        Else
-            name = Table!sysname
-        End If
-        lbPrWeb.AddItem Table!sysname
-        lbPrWeb.ItemData(lbPrWeb.ListCount - 1) = Table!prodCategoryId
-        Table.MoveNext
-    Wend
-    Table.Close
-    
-    If TypeOf lbPrWeb Is ListBox Then
-        lbPrWeb.Height = 225 * lbPrWeb.ListCount
-    End If
-
-End Sub
 

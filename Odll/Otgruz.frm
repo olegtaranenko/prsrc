@@ -95,6 +95,8 @@ Public mousRow5 As Long, mousCol5 As Long
 Public Regim As String
 Public closeZakaz As Boolean
 Public orderRate As Double
+Public idWerk As Integer
+Dim myAsWhole As Integer
 
 Dim doOtgruzDateUpdate As Boolean
 Dim uslugOrdered As Double
@@ -104,7 +106,7 @@ Const usOutSum = 2
 Const usNowSum = 3
 
 Dim oldHeight As Integer, oldWidth As Integer ' нач размер формы
-Dim outDate() As Date, outLen As Integer, deltaHeight As Integer
+Dim Outdate() As Date, outLen As Integer, deltaHeight As Integer
 
 Private Sub cmCancel_Click()
     Unload Me
@@ -145,7 +147,7 @@ Orders.openOrdersRowToGrid "##218": tqOrders.Close
 lbDate.SetFocus
 Exit Sub
 ER1:
-wrkDefault.rollback
+wrkDefault.Rollback
 MsgBox "Удаление не прошло", , ""
 End Sub
 
@@ -186,7 +188,7 @@ wrkDefault.BeginTrans
     lbDate.SetFocus
     Exit Sub
 ER1:
-    wrkDefault.rollback
+    wrkDefault.Rollback
     MsgBox "Непредвиденная ошибка при смене даты отгрузки", , "Сообщите администартору"
     
 End Sub
@@ -202,7 +204,7 @@ Dim strDate As String
 
     strDate = Format(lbDate.Text, "dd.mm.yy")
     If tbMobile.Visible = False Then
-        tbMobile.left = cmOtgruzDate.left + cmOtgruzDate.Width + 100
+        tbMobile.Left = cmOtgruzDate.Left + cmOtgruzDate.Width + 100
         tbMobile.Top = cmOtgruzDate.Top
         tbMobile.Visible = True
         tbMobile.Text = strDate
@@ -221,6 +223,14 @@ Dim str As String
 oldHeight = Me.Height
 oldWidth = Me.Width
 deltaHeight = Me.Height - lbDate.Height
+
+' продажи или пр-во?
+If idWerk = 1 Then
+    myAsWhole = 1
+Else
+    myAsWhole = 0
+End If
+
 gridIsLoad = False
 noClick = True
 If dostup = "a" Then
@@ -241,7 +251,7 @@ If Regim = "uslug" Then
     Exit Sub
 End If
 Me.Caption = "Отгрузка изделий по заказу № " & gNzak
-Grid5.rows = 3
+Grid5.Rows = 3
 Grid5.FixedRows = 2
 Grid5.MergeRow(0) = True
 str = "|Надлежит отгрузить"
@@ -286,14 +296,14 @@ noClick = False
 End Sub
 
 Sub loadUslug()
-Dim s As Double
+Dim S As Double
 
 sql = "SELECT ordered From Orders WHERE (((Orders.numOrder)=" & gNzak & "));"
-If byErrSqlGetValues("##227", sql, s) Then _
-    Grid5.TextMatrix(1, usSumm) = Round(rated(s, orderRate), 2)
-uslugOrdered = s
+If byErrSqlGetValues("##227", sql, S) Then _
+    Grid5.TextMatrix(1, usSumm) = Round(rated(S, orderRate), 2)
+uslugOrdered = S
 
-getOtgrugeno 1 ' usNowSum и usOutSum
+getOtgrugeno 1, 1 ' usNowSum и usOutSum
 
 End Sub
 
@@ -303,19 +313,20 @@ Dim I As Integer
 lbDate.Clear
 loadOutDates
 For I = 0 To outLen
-    lbDate.AddItem Format(outDate(I), "dd.mm.yy hh:nn:ss")
+    lbDate.AddItem Format(Outdate(I), "dd.mm.yy hh:nn:ss")
 Next I
 lbDate.ListIndex = outLen: gridIsLoad = False
 
 ReDim QQ(0)
 ReDim QQ2(0)
+ReDim QQ3(0) 'будут храниться цена за Единицу (cenaEd)
 
 If Regim = "uslug" Then
     loadUslug
     Grid5.col = usNowSum
     mousCol5 = usNowSum
 Else
-    loadPredmeti Me, orderRate, "fromOtgruz"
+    loadPredmeti Me, orderRate, idWerk, myAsWhole, "fromOtgruz", 0
     Grid5.col = prNowQuant
     mousCol5 = prNowQuant
     Grid5.row = 2
@@ -343,136 +354,157 @@ End If
 Set tbProduct = myOpenRecordSet("##222", sql, dbOpenForwardOnly)
 If tbProduct Is Nothing Then myBase.Close: End
 
-ReDim outDate(0): outLen = 0
+ReDim Outdate(0): outLen = 0
 If Not tbProduct.BOF Then
  loadOutDates = True
  While Not tbProduct.EOF
-    outDate(outLen) = tbProduct!outDate
-    outLen = outLen + 1: ReDim Preserve outDate(outLen)
+    Outdate(outLen) = tbProduct!Outdate
+    outLen = outLen + 1: ReDim Preserve Outdate(outLen)
     tbProduct.MoveNext
  Wend
 End If
 tbProduct.Close
-outDate(outLen) = Now()
+Outdate(outLen) = Now()
 
 End Function
 
-Sub getOtgrugeno(row As Long, Optional byNomenk As String = "")
-Dim s As Double, str  As String
+Sub getOtgrugeno(row As Long, myCenaEd As Double, Optional byNomenk As String = "")
+Dim S As Double, str  As String
 strWhere = "'" & Format(lbDate.Text, "yyyy-mm-dd hh:nn:ss") & "'"
 
-'отпущено до даты
+Dim Nomnom1 As Nomnom
+Dim isNomnom As Boolean
+isNomnom = False
 
+
+'отпущено до даты
 If Regim = "uslug" Then
     sql = "SELECT Sum(quant) AS Sum_quant From xUslugOut " & _
-    "WHERE (((numOrder)=" & gNzak & ") AND ((outDate)<" & strWhere & "));"
+    " WHERE numOrder = " & gNzak & " AND outDate < " & strWhere
 ElseIf byNomenk = "" Then
     sql = "SELECT Sum(quant) AS Sum_quant From xPredmetyByIzdeliaOut " & _
-    "WHERE (((numOrder)=" & gNzak & ") AND ((prId)= " & tbNomenk!prId & _
-    ") AND ((prExt)=" & tbNomenk!prExt & ") AND ((outDate)<" & strWhere & "));"
+    "WHERE numOrder = " & gNzak & " AND prId = " & tbNomenk!prId & _
+    " AND prExt = " & tbNomenk!prExt & " AND outDate < " & strWhere
 Else
+    Set Nomnom1 = nomnomCache.getNomnom(tbNomenk!Nomnom)
+    isNomnom = True
     sql = "SELECT Sum(quant) AS Sum_quant From xPredmetyByNomenkOut " & _
-    "WHERE (((numOrder)=" & gNzak & ") AND ((nomNom)= '" & tbNomenk!nomNom & _
-    "') AND ((outDate)<" & strWhere & "));"
+    "WHERE numOrder = " & gNzak & " AND nomNom = '" & tbNomenk!Nomnom & _
+    "' AND outDate <" & strWhere
 End If
 'MsgBox sql
-byErrSqlGetValues "W##203", sql, s
+byErrSqlGetValues "W##203", sql, S
+Dim itemSumma As Double
+
+itemSumma = tbNomenk!cenaEd * S
+If myAsWhole = 1 And isNomnom Then
+    S = Nomnom1.getQuantity(S, myAsWhole)
+End If
+
 If Regim = "uslug" Then
-    Grid5.TextMatrix(row, usOutSum) = Round(rated(s, orderRate), 2)
+    Grid5.TextMatrix(row, usOutSum) = Round(rated(S, orderRate), 2)
 Else
-    Grid5.TextMatrix(row, prOutQuant) = Round(s, 2)
+    Grid5.TextMatrix(row, prOutQuant) = Round(S, 2)
     If IsNumeric(tbNomenk!cenaEd) Then
-        Grid5.TextMatrix(row, prOutSum) = Round(rated(tbNomenk!cenaEd * s, orderRate), 2)
+        Grid5.TextMatrix(row, prOutSum) = Round(rated(itemSumma, orderRate), 2)
     End If
 End If
 
-'If lbDate.ListIndex = outLen Then
-    ReDim Preserve QQ(row): QQ(row) = s
-'End If
+ReDim Preserve QQ(row): QQ(row) = S
+
 'отпущено на дату
 If Regim = "uslug" Then
     sql = "SELECT Sum(quant) AS Sum_quant From xUslugOut " & _
-    "WHERE (((numOrder)=" & gNzak & ") AND ((outDate)=" & strWhere & "));"
+    "WHERE numOrder = " & gNzak & " AND outDate = " & strWhere
 ElseIf byNomenk = "" Then
     sql = "SELECT quant From xPredmetyByIzdeliaOut " & _
-    "WHERE (((numOrder)=" & gNzak & ") AND ((prId)= " & tbNomenk!prId & _
-    ") AND ((prExt)=" & tbNomenk!prExt & ") AND ((outDate)=" & strWhere & "));"
+    "WHERE numOrder = " & gNzak & " AND prId = " & tbNomenk!prId & _
+    " AND prExt = " & tbNomenk!prExt & " AND outDate = " & strWhere
 Else
-    sql = "SELECT quant  From xPredmetyByNomenkOut " & _
-    "WHERE (((numOrder)=" & gNzak & ") AND ((nomNom)= '" & tbNomenk!nomNom & _
-    "') AND ((outDate)=" & strWhere & "));"
+    sql = "SELECT quant From xPredmetyByNomenkOut "
+    sql = sql & " WHERE numOrder = " & gNzak & " AND nomNom = '" & tbNomenk!Nomnom & "' AND outDate = " & strWhere
 End If
 'MsgBox sql
-byErrSqlGetValues "W##204", sql, s
-ReDim Preserve QQ2(row): QQ2(row) = s
+byErrSqlGetValues "W##204", sql, S
+
+itemSumma = tbNomenk!cenaEd * S
+If myAsWhole = 1 And isNomnom Then
+    S = Nomnom1.getQuantity(S, myAsWhole)
+End If
+ReDim Preserve QQ2(row): QQ2(row) = S
+
+ReDim Preserve QQ3(row): QQ3(row) = myCenaEd
 
 If Regim = "uslug" Then
-    Grid5.TextMatrix(row, usNowSum) = Round(rated(s, orderRate), 2)
+    Grid5.TextMatrix(row, usNowSum) = Round(rated(S, orderRate), 2)
 Else
-    Grid5.TextMatrix(row, prNowQuant) = Round(s, 2)
-    If IsNumeric(tbNomenk!cenaEd) Then _
-        Grid5.TextMatrix(row, prNowSum) = Round(rated(tbNomenk!cenaEd * s, orderRate), 2)
+    Grid5.TextMatrix(row, prNowQuant) = Round(S, 2)
+    If IsNumeric(tbNomenk!cenaEd) Then
+        Grid5.TextMatrix(row, prNowSum) = Round(rated(itemSumma, orderRate), 2)
+    End If
 End If
 End Sub
 
 'обновляет поле shipped в Orders
 Function saveShipped(Optional doUpdate As Boolean = True) As Variant
-Dim s As Double, s1 As Double
+Dim S As Double, s1 As Double
 
 saveShipped = Null
 If Regim = "" Then
-    sql = "SELECT Sum(xPredmetyByIzdelia.cenaEd*xPredmetyByIzdeliaOut.quant) " & _
-    "FROM xPredmetyByIzdelia INNER JOIN xPredmetyByIzdeliaOut ON " & _
-    "(xPredmetyByIzdelia.prExt = xPredmetyByIzdeliaOut.prExt) AND " & _
-    "(xPredmetyByIzdelia.prId = xPredmetyByIzdeliaOut.prId) AND " & _
-    "(xPredmetyByIzdelia.numOrder = xPredmetyByIzdeliaOut.numOrder) " & _
-    "WHERE (((xPredmetyByIzdelia.numOrder)=" & gNzak & "));"
-    If Not byErrSqlGetValues("W##213", sql, s) Then Exit Function
+    sql = "SELECT Sum(pi.cenaEd * pio.quant)" & _
+    " FROM xPredmetyByIzdelia pi " & _
+    " JOIN xPredmetyByIzdeliaOut pio ON (pi.prExt = pio.prExt)" & _
+        " AND pi.prId = pio.prId " & _
+        " AND pi.numOrder = pio.numOrder "
+    sql = sql & " WHERE pi.numOrder =" & gNzak
+    If Not byErrSqlGetValues("W##213", sql, S) Then Exit Function
 
-    sql = "SELECT Sum(xPredmetyByNomenk.cenaEd*xPredmetyByNomenkOut.quant) " & _
-    "FROM xPredmetyByNomenk INNER JOIN xPredmetyByNomenkOut ON " & _
-    "(xPredmetyByNomenk.nomNom = xPredmetyByNomenkOut.nomNom) AND " & _
-    "(xPredmetyByNomenk.numOrder = xPredmetyByNomenkOut.numOrder) " & _
-    "WHERE (((xPredmetyByNomenk.numOrder)=" & gNzak & "));"
+    sql = "SELECT Sum(pn.cenaEd * pno.quant) " & _
+    " FROM xPredmetyByNomenk pn" & _
+    " JOIN xPredmetyByNomenkOut pno ON pn.nomNom = pno.nomNom" & _
+        " AND pn.numOrder = pno.numOrder "
+    If myAsWhole = 1 Then
+        sql = sql & " JOIN sGuideNomenk n ON n.nomnom = pn.nomnom"
+    End If
+    sql = sql & " WHERE pn.numOrder =" & gNzak
     If Not byErrSqlGetValues("W##214", sql, s1) Then Exit Function
 
-    s = s + s1
+    S = S + s1
 Else 'услуги
     sql = "SELECT Sum(quant) AS Sum_quant From xUslugOut " & _
-    "WHERE (((numOrder)=" & gNzak & "));"
-    If Not byErrSqlGetValues("W##301", sql, s) Then Exit Function
+    "WHERE numOrder = " & gNzak
+    If Not byErrSqlGetValues("W##301", sql, S) Then Exit Function
 End If
-If s > 0 Then
-    tmpStr = s
+If S > 0 Then
+    tmpStr = S
 Else
     tmpStr = "Null"
 End If
-'sql = "UPDATE Orders SET shipped = " & tmpStr & " WHERE (((numOrder)=" & gNzak & "));"
-'If myExecute("##368", sql) = 0 Then saveShipped = s
+
 If doUpdate Then
     orderUpdate "##368", tmpStr, "Orders", "shipped"
 End If
-saveShipped = s
+saveShipped = S
 End Function
 
 Private Sub Form_Resize()
 
-Dim h As Integer, w As Integer
+Dim H As Integer, W As Integer
 If Me.WindowState = vbMinimized Then Exit Sub
 On Error Resume Next
-h = Me.Height - oldHeight
+H = Me.Height - oldHeight
 oldHeight = Me.Height
-w = Me.Width - oldWidth
+W = Me.Width - oldWidth
 oldWidth = Me.Width
-Grid5.Height = Grid5.Height + h
+Grid5.Height = Grid5.Height + H
 lbDate.Height = Me.Height - deltaHeight
-Grid5.Width = Grid5.Width + w
+Grid5.Width = Grid5.Width + W
 
-cmDel.Top = cmDel.Top + h
-cmCancel.Top = cmCancel.Top + h
-cmCancel.left = cmCancel.left + w
+cmDel.Top = cmDel.Top + H
+cmCancel.Top = cmCancel.Top + H
+cmCancel.Left = cmCancel.Left + W
 cmOtgruzDate.Top = cmDel.Top
-cmOtgruzDate.left = cmDel.left + cmDel.Width + 100
+cmOtgruzDate.Left = cmDel.Left + cmDel.Width + 100
 
 End Sub
 
@@ -528,21 +560,21 @@ Private Sub Grid5_LostFocus()
 Grid5.CellBackColor = Grid5.BackColor
 End Sub
 
-Private Sub Grid5_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub Grid5_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
 If Grid5.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid5.ColWidth(Grid5.MouseCol)
 
 End Sub
 
 Sub OutNowSummToGrid5()
-Dim il As Long, sum As Double, sum2 As Double
+Dim IL As Long, sum As Double, sum2 As Double
 sum = 0: sum2 = 0
-For il = 2 To Grid5.rows - 2
-    sum = sum + Grid5.TextMatrix(il, prOutSum)
-    sum2 = sum2 + Grid5.TextMatrix(il, prNowSum)
-Next il
-Grid5.TextMatrix(il, prOutSum) = Round(sum, 2)
-Grid5.TextMatrix(il, prNowSum) = Round(sum2, 2)
+For IL = 2 To Grid5.Rows - 2
+    sum = sum + Grid5.TextMatrix(IL, prOutSum)
+    sum2 = sum2 + Grid5.TextMatrix(IL, prNowSum)
+Next IL
+Grid5.TextMatrix(IL, prOutSum) = Round(sum, 2)
+Grid5.TextMatrix(IL, prNowSum) = Round(sum2, 2)
 
 
 End Sub
@@ -554,7 +586,7 @@ cmOtgruzDate.Enabled = lbDate.ListIndex < outLen
 
 gridIsLoad = False
 If Regim = "" Then
-    loadPredmeti Me, orderRate, "fromOtgruz"
+    loadPredmeti Me, orderRate, idWerk, myAsWhole, "fromOtgruz"
     OutNowSummToGrid5
     Grid5.row = 2
     Grid5.col = prNowQuant
@@ -626,11 +658,13 @@ finally:
 End Function
 
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim pQuant As Double, s As Double, maxQ As Double
+Dim pQuant As Double, S As Double, maxQ As Double, preciseCenaEd As Double
+Dim Nomnom1 As Nomnom
 
 
 If KeyCode = vbKeyReturn Then
     doOtgruzDateUpdate = tbMobile.Visible = True And tbMobile.Top = cmOtgruzDate.Top
+    preciseCenaEd = QQ3(mousRow5)
     If doOtgruzDateUpdate Then
         updateOtgruzDate
         Exit Sub
@@ -652,15 +686,15 @@ If KeyCode = vbKeyReturn Then
     'pQuant = Round(tbMobile.Text, 2)
     'tbMobile.Text = rated(nowFore, orderRate)
     
-    sql = "SELECT * from xUslugOut WHERE (((numOrder)=" & gNzak & _
-    ") AND ((outDate)='" & Format(outDate(lbDate.ListIndex), "yyyy-mm-dd  hh:nn:ss") & "'));"
+    sql = "SELECT * from xUslugOut WHERE numOrder = " & gNzak & _
+    " AND outDate = '" & Format(Outdate(lbDate.ListIndex), "yyyy-mm-dd  hh:nn:ss") & "'"
     Set tbProduct = myOpenRecordSet("##229", sql, dbOpenForwardOnly)
     
     If tbProduct.BOF Then
         If nowFore > 0 Then
             tbProduct.AddNew
-            tbProduct!outDate = outDate(lbDate.ListIndex)
-            tbProduct!numorder = gNzak
+            tbProduct!Outdate = Outdate(lbDate.ListIndex)
+            tbProduct!Numorder = gNzak
             tbProduct!quant = nowFore
             tbProduct.update
         End If
@@ -691,29 +725,24 @@ If KeyCode = vbKeyReturn Then
   
   maxQ = Grid5.TextMatrix(mousRow5, prQuant) 'надлежит отгрузить
   maxQ = maxQ - QQ(mousRow5) 'на столько можно увеличивать
-  maxQ = Round(maxQ + Grid5.TextMatrix(mousRow5, prNowQuant), 2)
-  If Not isNumericTbox(tbMobile, 0, maxQ) Then wrkDefault.rollback: Exit Sub
+  If Not isNumericTbox(tbMobile, 0, maxQ) Then wrkDefault.Rollback: Exit Sub
   If Grid5.TextMatrix(mousRow5, prType) = "изделие" Then
     pQuant = Round(tbMobile.Text)
     tbMobile.Text = pQuant
   
     cErr = "202" '##202
     'изд-е
-    sql = "SELECT * FROM xPredmetyByIzdeliaOut " & _
-    "WHERE (((outDate)='" & Format(outDate(lbDate.ListIndex), "yyyy-mm-dd  hh:nn:ss") & "'" & _
-    ") AND ((numOrder)=" & gNzak & ") AND ((prId)=" & gProductId & _
-    ") AND ((prExt)=" & prExt & "));"
+    sql = "SELECT pio.* FROM xPredmetyByIzdeliaOut pio " & _
+    " WHERE  pio.outDate = '" & Format(Outdate(lbDate.ListIndex), "yyyy-mm-dd  hh:nn:ss") & "'" & _
+    " AND pio.numOrder = " & gNzak & " AND pio.prId = " & gProductId & " AND pio.prExt = " & prExt
     'Debug.Print sql
     Set tbProduct = myOpenRecordSet("##200", sql, dbOpenForwardOnly)
-'    If tbProduct Is Nothing Then GoTo ER1
-'    tbProduct.index = "Key"
-'    tbProduct.Seek "=", outDate(lbDate.ListIndex), gNzak, gProductId, prExt
-'    If tbProduct.NoMatch Then
+    
     If tbProduct.BOF Then
         If pQuant > 0 Then
             tbProduct.AddNew
-            tbProduct!outDate = outDate(lbDate.ListIndex)
-            tbProduct!numorder = gNzak
+            tbProduct!Outdate = Outdate(lbDate.ListIndex)
+            tbProduct!Numorder = gNzak
             tbProduct!prId = gProductId
             tbProduct!prExt = prExt
             tbProduct!quant = pQuant
@@ -731,32 +760,32 @@ If KeyCode = vbKeyReturn Then
     pQuant = Round(tbMobile.Text, 2)
     tbMobile.Text = pQuant
 
-    sql = "SELECT * from xPredmetyByNomenkOut " & _
-    "WHERE (((outDate)='" & Format(outDate(lbDate.ListIndex), "yyyy-mm-dd  hh:nn:ss") & _
-    "') AND ((numOrder)=" & gNzak & ") AND ((nomNom)='" & gNomNom & "'));"
-'MsgBox sql
+    Set Nomnom1 = nomnomCache.getNomnom(gNomNom)
+    
+    sql = "SELECT pno.* from xPredmetyByNomenkOut pno " & _
+    " WHERE outDate = '" & Format(Outdate(lbDate.ListIndex), "yyyy-mm-dd  hh:nn:ss") & _
+    "' AND numOrder = " & gNzak & "  AND nomNom = '" & gNomNom & "'"
+    
     Set tbNomenk = myOpenRecordSet("##201", sql, dbOpenForwardOnly)
-'    If tbNomenk Is Nothing Then GoTo ER1
-'    tbNomenk.index = "Key"
-'    tbNomenk.Seek "=", outDate(lbDate.ListIndex), gNzak, gNomNom
-'    If tbNomenk.NoMatch Then
     If tbNomenk.BOF Then
         If pQuant > 0 Then
             tbNomenk.AddNew
-            tbNomenk!outDate = outDate(lbDate.ListIndex)
-            tbNomenk!numorder = gNzak
-            tbNomenk!nomNom = gNomNom
-            tbNomenk!quant = pQuant
+            tbNomenk!Outdate = Outdate(lbDate.ListIndex)
+            tbNomenk!Numorder = gNzak
+            tbNomenk!Nomnom = gNomNom
+            tbNomenk!quant = Nomnom1.getQuantityRevert(pQuant, myAsWhole)
             tbNomenk.update
         End If
     ElseIf pQuant = 0 Then
         tbNomenk.Delete
     Else
         tbNomenk.Edit
-        tbNomenk!quant = pQuant
+        tbNomenk!quant = Nomnom1.getQuantityRevert(pQuant, myAsWhole)
         tbNomenk.update
     End If
     tbNomenk.Close
+    
+    Grid5.TextMatrix(mousRow5, prNowSum) = Nomnom1.getQuantityRevert(pQuant * preciseCenaEd, myAsWhole)
     
   End If
 
@@ -770,8 +799,6 @@ If KeyCode = vbKeyReturn Then
   QQ(mousRow5) = QQ(mousRow5) + pQuant - Grid5.TextMatrix(mousRow5, prNowQuant)
   
   Grid5.TextMatrix(mousRow5, prNowQuant) = pQuant
-  maxQ = Grid5.TextMatrix(mousRow5, prCenaEd)
-  Grid5.TextMatrix(mousRow5, prNowSum) = Round(pQuant * maxQ, 2)
   
   OutNowSummToGrid5
   
@@ -784,7 +811,7 @@ End If
 Exit Sub
 ER1:
 errorCodAndMsg ("Отгрузка не прошла")
-wrkDefault.rollback
+wrkDefault.Rollback
 ER2:
 lbHide5
 MsgBox "Отгрузка не прошла", , "Error-" & cErr & " Сообщите администратору"

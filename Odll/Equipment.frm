@@ -4,12 +4,12 @@ Begin VB.Form Equipment
    ClientHeight    =   4524
    ClientLeft      =   48
    ClientTop       =   588
-   ClientWidth     =   8172
+   ClientWidth     =   9156
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
    ScaleHeight     =   4524
-   ScaleWidth      =   8172
+   ScaleWidth      =   9156
    ShowInTaskbar   =   0   'False
    StartUpPosition =   1  'CenterOwner
    Begin VB.Frame OrderFrame 
@@ -18,7 +18,7 @@ Begin VB.Form Equipment
       Left            =   240
       TabIndex        =   12
       Top             =   0
-      Width           =   7812
+      Width           =   8772
       Begin VB.CheckBox cbUrgent 
          Enabled         =   0   'False
          Height          =   252
@@ -179,7 +179,7 @@ Begin VB.Form Equipment
       Cancel          =   -1  'True
       Caption         =   "Отмена"
       Height          =   315
-      Left            =   6840
+      Left            =   7800
       TabIndex        =   0
       Top             =   4080
       Width           =   1152
@@ -190,38 +190,54 @@ Begin VB.Form Equipment
       Left            =   240
       TabIndex        =   2
       Top             =   2040
-      Width           =   7812
+      Width           =   8772
       Begin VB.CheckBox cbEquipment 
          Caption         =   " YAG"
          Height          =   372
          Index           =   0
-         Left            =   240
+         Left            =   120
          TabIndex        =   5
          Top             =   660
-         Width           =   732
+         Width           =   1692
       End
       Begin VB.TextBox tbWorktime 
          Height          =   288
          Index           =   0
-         Left            =   960
+         Left            =   2040
          TabIndex        =   4
          Top             =   720
          Visible         =   0   'False
-         Width           =   492
+         Width           =   528
       End
       Begin VB.TextBox tbWorktimeO 
          Height          =   285
          Index           =   0
-         Left            =   1560
+         Left            =   2640
          TabIndex        =   3
          Top             =   720
          Visible         =   0   'False
          Width           =   552
       End
+      Begin VB.Label laVrVipO 
+         Caption         =   "обр-ца"
+         Height          =   252
+         Left            =   2640
+         TabIndex        =   8
+         Top             =   360
+         Width           =   612
+      End
+      Begin VB.Label Label11 
+         Caption         =   "основ."
+         Height          =   252
+         Left            =   2040
+         TabIndex        =   34
+         Top             =   360
+         Width           =   612
+      End
       Begin VB.Label Label10 
          Caption         =   "в цехе"
          Height          =   252
-         Left            =   5160
+         Left            =   6120
          TabIndex        =   33
          Top             =   360
          Width           =   612
@@ -229,7 +245,7 @@ Begin VB.Form Equipment
       Begin VB.Label lbEquipStat 
          Height          =   252
          Index           =   0
-         Left            =   5040
+         Left            =   6000
          TabIndex        =   32
          Top             =   720
          Width           =   996
@@ -237,15 +253,15 @@ Begin VB.Form Equipment
       Begin VB.Label lbNevip 
          Height          =   252
          Index           =   0
-         Left            =   7320
+         Left            =   8160
          TabIndex        =   31
          Top             =   720
-         Width           =   396
+         Width           =   516
       End
       Begin VB.Label Label9 
          Caption         =   "%Вып."
          Height          =   252
-         Left            =   7200
+         Left            =   8160
          TabIndex        =   30
          Top             =   360
          Width           =   492
@@ -253,7 +269,7 @@ Begin VB.Form Equipment
       Begin VB.Label lbEquipStatusO 
          Height          =   252
          Index           =   0
-         Left            =   6120
+         Left            =   7080
          TabIndex        =   29
          Top             =   720
          Width           =   996
@@ -261,23 +277,23 @@ Begin VB.Form Equipment
       Begin VB.Label Label8 
          Caption         =   "обр-ца"
          Height          =   252
-         Left            =   6240
+         Left            =   7200
          TabIndex        =   28
          Top             =   360
          Width           =   612
       End
       Begin VB.Label Label1 
-         Caption         =   "Время изг. основ,"
+         Caption         =   "Время изготовления"
          Height          =   252
-         Left            =   240
+         Left            =   120
          TabIndex        =   11
          Top             =   360
-         Width           =   1452
+         Width           =   1812
       End
       Begin VB.Label lbDateOut 
          Height          =   252
          Index           =   0
-         Left            =   2280
+         Left            =   3240
          TabIndex        =   10
          Top             =   720
          Visible         =   0   'False
@@ -286,23 +302,15 @@ Begin VB.Form Equipment
       Begin VB.Label Label2 
          Caption         =   "К дате"
          Height          =   252
-         Left            =   2520
+         Left            =   3360
          TabIndex        =   9
          Top             =   360
          Width           =   732
       End
-      Begin VB.Label laVrVipO 
-         Caption         =   "обр-ца"
-         Height          =   252
-         Left            =   1800
-         TabIndex        =   8
-         Top             =   360
-         Width           =   612
-      End
       Begin VB.Label Label5 
          Caption         =   "Статус"
          Height          =   252
-         Left            =   4080
+         Left            =   5040
          TabIndex        =   7
          Top             =   360
          Width           =   612
@@ -310,7 +318,7 @@ Begin VB.Form Equipment
       Begin VB.Label lbEquipStatus 
          Height          =   252
          Index           =   0
-         Left            =   4080
+         Left            =   5040
          TabIndex        =   6
          Top             =   720
          Width           =   876
@@ -446,8 +454,8 @@ End Sub
 Private Sub putOrderEquip(Index As Integer)
     Dim Worktime As Double, WorktimeMO As Double
     Dim DateOut As String
-    Dim equipId As Integer
-    equipId = Index + 1
+    Dim EquipId As Integer
+    EquipId = Index + 1
     If IsNumeric(tbWorktime(Index).Text) Then
         Worktime = tbWorktime(Index).Text
     Else
@@ -467,25 +475,25 @@ Private Sub putOrderEquip(Index As Integer)
     End If
     
     
-    sql = "call putOrderEquip (" & gNzak & "," & equipId & "," & Worktime & "," & DateOut & "," & WorktimeMO & ")"
+    sql = "call putOrderEquip (" & gNzak & "," & EquipId & "," & Worktime & "," & DateOut & "," & WorktimeMO & ")"
     'Debug.Print sql
     myExecute "W#eq.2", sql
     
 End Sub
 
 Private Sub deleteOrderEquip(Index As Integer)
-    Dim equipId As Integer
-    equipId = Index + 1
+    Dim EquipId As Integer
+    EquipId = Index + 1
     
-    sql = "call deleteOrderEquip (" & gNzak & "," & equipId & ")"
+    sql = "call deleteOrderEquip (" & gNzak & "," & EquipId & ")"
     myExecute "W#eq.3", sql, -1
     
 End Sub
 
 
 Private Sub cmSetOutDate_Click(Index As Integer)
-    Dim equipId As Integer
-    equipId = Index + 1
+    Dim EquipId As Integer
+    EquipId = Index + 1
     
 End Sub
 
@@ -533,7 +541,7 @@ Dim I As Integer, VShift As Integer, LowLinie As Long
         Load tbWorktimeO(I)
         
         
-        cbEquipment(I).Caption = Equip(I + 1)
+        cbEquipment(I).Caption = EquipFullName(I + 1)
         cbEquipment(I).Visible = True
         LowLinie = tbWorktime(I).Top + tbWorktime(I).Height
     Next I
@@ -559,7 +567,7 @@ Dim equipIndex As Integer
         Set tbOrders = myOpenRecordSet("##eq04", sql, dbOpenForwardOnly)
         If Not tbOrders Is Nothing Then
             While Not tbOrders.EOF
-                equipIndex = tbOrders!equipId - 1
+                equipIndex = tbOrders!EquipId - 1
                 cbEquipment(equipIndex).Visible = True
                 setVisibleByEquipment equipIndex, True
                 AlignEquipmentControls equipIndex, LowLinie
@@ -596,11 +604,10 @@ Private Sub loadEquipment()
     
     Dim Outdate As Variant, Outtime, StatO, StatM, Stat, DateTimeMO, DateRS, str
     
-    sql = "select o.StatusId, oe.Outdatetime, o.outTime" _
+    sql = "select o.StatusId, o.Outdatetime, o.outTime" _
     & ", oc.urgent, oc.StatM, oc.DateTimeMO" _
     & ", o.DateRS, o.werkId" _
     & " from orders o " _
-    & " left join vw_OrdersEquipSummary oe on o.numorder = oe.numorder " _
     & " left join OrdersInCeh oc on oc.numorder = o.numorder " _
     & " where o.numorder = " & gNzak
     
@@ -649,12 +656,13 @@ Private Sub loadEquipment()
         tbDateMO = ""
     End If
     
-    sql = "select oe.worktime, oe.worktimeMO, oe.Stat, oe.StatO, oe.EquipId, oe.Outdatetime, (1 - isnull(nevip, 1)) * 100 as nevip " _
+    sql = "select oe.worktime, oe.worktimeMO, oe.Stat, oe.StatO" _
+    & " , oe.EquipId, oe.Outdatetime, (1 - isnull(nevip, 1)) * 100 as nevip " _
     & " , s.status as statusEquip " _
     & " , isnull(oc.urgent, '') as urgent" _
     & " FROM OrdersEquip oe " _
     & " LEFT JOIN OrdersInCeh oc on oe.numorder = oc.numorder" _
-    & " LEFT JOIN GuideStatus   s ON s.statusId = oe.statusEquipId " _
+    & " LEFT JOIN StatusGuide  s ON s.statusId = oe.statusEquipId" _
     & " WHERE oe.numorder = " & gNzak
 
     Set tbOrders = myOpenRecordSet("##eq02", sql, dbOpenForwardOnly)
@@ -663,46 +671,46 @@ Private Sub loadEquipment()
             '
             While Not tbOrders.EOF
                 If Not tbOrders("equipId") Is Nothing Then
-                    Dim equipId As Integer
-                    equipId = tbOrders!equipId - 1
-                    cbEquipment(equipId).Value = 1
+                    Dim EquipId As Integer
+                    EquipId = tbOrders!EquipId - 1
+                    cbEquipment(EquipId).Value = 1
                     
                     If Not IsNull(tbOrders!Worktime) Then
-                        tbWorktime(equipId).Text = tbOrders!Worktime
+                        tbWorktime(EquipId).Text = tbOrders!Worktime
                     End If
                     
                     If Not IsNull(tbOrders!WorktimeMO) Then
-                        tbWorktimeO(equipId).Text = tbOrders!WorktimeMO
+                        tbWorktimeO(EquipId).Text = tbOrders!WorktimeMO
                     Else
-                        tbWorktimeO(equipId).Text = ""
+                        tbWorktimeO(EquipId).Text = ""
                     End If
                     
                     If Not IsNull(tbOrders!Outdatetime) Then
-                        lbDateOut(equipId).Caption = tbOrders!Outdatetime
+                        lbDateOut(EquipId).Caption = tbOrders!Outdatetime
                     Else
-                        lbDateOut(equipId).Caption = ""
+                        lbDateOut(EquipId).Caption = ""
                     End If
                     
                     If Not IsNull(tbOrders!statusEquip) Then
-                        lbEquipStatus(equipId).Caption = tbOrders!statusEquip
+                        lbEquipStatus(EquipId).Caption = tbOrders!statusEquip
                     Else
-                        lbEquipStatus(equipId).Caption = ""
+                        lbEquipStatus(EquipId).Caption = ""
                     End If
                     If Not IsNull(tbOrders!Stat) Then
-                        lbEquipStat(equipId).Caption = tbOrders!Stat
+                        lbEquipStat(EquipId).Caption = tbOrders!Stat
                     Else
-                        lbEquipStat(equipId).Caption = ""
+                        lbEquipStat(EquipId).Caption = ""
                     End If
                     
                     If Not IsNull(tbOrders!StatO) Then
-                        lbEquipStatusO(equipId).Caption = tbOrders!StatO
+                        lbEquipStatusO(EquipId).Caption = tbOrders!StatO
                     Else
-                        lbEquipStatusO(equipId).Caption = ""
+                        lbEquipStatusO(EquipId).Caption = ""
                     End If
                     If Not IsNull(tbOrders!nevip) Then
-                        lbNevip(equipId).Caption = tbOrders!nevip
+                        lbNevip(EquipId).Caption = tbOrders!nevip
                     Else
-                        lbNevip(equipId).Caption = ""
+                        lbNevip(EquipId).Caption = ""
                     End If
                 End If
                 tbOrders.MoveNext
@@ -725,15 +733,15 @@ Dim I As Integer
     Next I
 End Sub
 
-Private Sub HideEquip(equipId As Integer, Show As Boolean)
-    cbEquipment(equipId).Visible = Show
-    tbWorktime(equipId).Visible = Show
-    tbWorktimeO(equipId).Visible = Show
-    lbDateOut(equipId).Visible = Show
-    lbEquipStatus(equipId).Visible = Show
-    lbEquipStat(equipId).Visible = Show
-    lbEquipStatusO(equipId).Visible = Show
-    lbNevip(equipId).Visible = Show
+Private Sub HideEquip(EquipId As Integer, Show As Boolean)
+    cbEquipment(EquipId).Visible = Show
+    tbWorktime(EquipId).Visible = Show
+    tbWorktimeO(EquipId).Visible = Show
+    lbDateOut(EquipId).Visible = Show
+    lbEquipStatus(EquipId).Visible = Show
+    lbEquipStat(EquipId).Visible = Show
+    lbEquipStatusO(EquipId).Visible = Show
+    lbNevip(EquipId).Visible = Show
 End Sub
 
 

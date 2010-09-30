@@ -3,6 +3,22 @@ Option Explicit
 Public myBase As Database
 Public wrkDefault As Workspace
 
+Function setNullableParamInt(p As Variant) As String
+    If IsNull(p) Or p = "" Then
+        setNullableParamInt = "Null"
+    Else
+        setNullableParamInt = CStr(p)
+    End If
+End Function
+
+
+Function setNullableParamStr(p As Variant) As String
+    If IsNull(p) Then
+        setNullableParamStr = "Null"
+    Else
+        setNullableParamStr = "'" & CStr(p) & "'"
+    End If
+End Function
 
 Sub baseOpen()
 Dim str As String, dburl As String
@@ -40,11 +56,11 @@ Public Sub reconnectDB()
 End Sub
 
 
-Function getSystemField(field As String) As Variant
+Function getSystemField(Field As String) As Variant
     getSystemField = Null
     Set tbSystem = myOpenRecordSet("##147", "System", dbOpenForwardOnly)
     If tbSystem Is Nothing Then myBase.Close: End
-    getSystemField = tbSystem.fields(field)
+    getSystemField = tbSystem.fields(Field)
     tbSystem.Close
 End Function
 

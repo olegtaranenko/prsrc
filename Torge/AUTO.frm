@@ -122,7 +122,8 @@ Attribute VB_Exposed = False
 Option Explicit
 Dim isOn As Boolean, isSinhro As Boolean ', baseIsOpen As Boolean
 Sub dummy()
-Dim IsEmpty, Table, ManagId, Name
+'Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, WerkId
+Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, WerkId
 End Sub
 Sub nextWindow()
 Dim str As String

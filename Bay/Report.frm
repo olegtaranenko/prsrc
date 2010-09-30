@@ -179,7 +179,7 @@ If year = "" Then
  str = Reports.tbStartDate.Text
  Report.laHeader.Caption = "Статистика посещений фирм за период с " & str & _
                 " по " & Reports.tbEndDate.Text
- nMonth = left$(str, 2)
+ nMonth = Left$(str, 2)
  nYear = Right$(str, 4)
  mCount = DateDiff("m", str, Reports.tbEndDate.Text) + 1
 
@@ -197,9 +197,9 @@ If year = "" Then
  Loop While iCount > 0
  str = str & "|Итого|Вр.вып|Заказано|Оплачено"
  Report.Grid.FormatString = str
- Report.Grid.ColWidth(0) = 0
- Report.Grid.ColWidth(1) = 1875
- Report.Grid.ColWidth(3) = 1605
+ Report.Grid.colWidth(0) = 0
+ Report.Grid.colWidth(1) = 1875
+ Report.Grid.colWidth(3) = 1605
 'Grid.ColWidth(lastCol + 2) = 795
  Report.nCols = lastCol + 2
   
@@ -360,12 +360,12 @@ Dim strFirm As String, strFrom As String, strWhere As String
 Grid.FormatString = "|<№ заказа|^M |<Статус|<Проблемы|" & _
 "<Дата выдачи|<Время выдачи|Заказано|Оплачено|Отгружено"
 
-Grid.ColWidth(0) = 0
+Grid.colWidth(0) = 0
 'Grid.ColWidth(rpNomZak) = 840
-Grid.ColWidth(rpStatus) = 720
-Grid.ColWidth(rpProblem) = 975
-Grid.ColWidth(rpDataVid) = 1095
-Grid.ColWidth(rpVrVid) = 615
+Grid.colWidth(rpStatus) = 720
+Grid.colWidth(rpProblem) = 975
+Grid.colWidth(rpDataVid) = 1095
+Grid.colWidth(rpVrVid) = 615
 
 If Regim = "Orders" Or Regim = "allOrders" Then 'из FindFirm
     strFirm = FindFirm.lb.Text
@@ -373,8 +373,8 @@ If Regim = "Orders" Or Regim = "allOrders" Then 'из FindFirm
 '    strFrom = "From Orders"
     strFrom = "FROM GuideManag INNER JOIN BayOrders ON GuideManag.ManagId = BayOrders.ManagId"
 ElseIf Regim = "FromFirms" Or Regim = "allFromFirms" Then
-    strFirm = GuideFirms.Grid.TextMatrix(GuideFirms.mousRow, gfNazwFirm)
-    strWhere = "((BayOrders.FirmId)=" & GuideFirms.Grid.TextMatrix(GuideFirms.mousRow, gfId) & ")"
+    strFirm = BayGuideFirms.Grid.TextMatrix(BayGuideFirms.mousRow, bfNazwFirm)
+    strWhere = "((BayOrders.FirmId)=" & BayGuideFirms.Grid.TextMatrix(BayGuideFirms.mousRow, bfId) & ")"
 '    strFrom = "From Orders"
     strFrom = "FROM GuideManag INNER JOIN BayOrders ON GuideManag.ManagId = BayOrders.ManagId"
 Else                                            'из конт. меню
@@ -481,24 +481,24 @@ As Double
 End Function
 
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer
+Dim H As Integer, W As Integer
 
 If Me.WindowState = vbMinimized Then Exit Sub
 On Error Resume Next
 
-h = Me.Height - oldHeight
+H = Me.Height - oldHeight
 oldHeight = Me.Height
-w = Me.Width - oldWidth
+W = Me.Width - oldWidth
 oldWidth = Me.Width
-Grid.Height = Grid.Height + h
-Grid.Width = Grid.Width + w
-laRecCount.Top = laRecCount.Top + h
-laCount.Top = laCount.Top + h
-laHeader.Width = laHeader.Width + w
-cmExel.Top = cmExel.Top + h
-cmPrint.Top = cmPrint.Top + h
-cmExit.Top = cmExit.Top + h
-cmExit.left = cmExit.left + w
+Grid.Height = Grid.Height + H
+Grid.Width = Grid.Width + W
+laRecCount.Top = laRecCount.Top + H
+laCount.Top = laCount.Top + H
+laHeader.Width = laHeader.Width + W
+cmExel.Top = cmExel.Top + H
+cmPrint.Top = cmPrint.Top + H
+cmExit.Top = cmExit.Top + H
+cmExit.Left = cmExit.Left + W
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
@@ -528,6 +528,6 @@ End Sub
 
 Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then _
-        MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
+        MsgBox "ColWidth = " & Grid.colWidth(Grid.MouseCol)
 End Sub
 

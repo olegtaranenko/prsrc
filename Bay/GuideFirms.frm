@@ -1,20 +1,21 @@
 VERSION 5.00
 Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
-Begin VB.Form GuideFirms 
+Begin VB.Form BayGuideFirms 
    BackColor       =   &H8000000A&
    BorderStyle     =   1  'Fixed Single
    Caption         =   "Справочник сторонних организаций"
-   ClientHeight    =   8190
-   ClientLeft      =   45
-   ClientTop       =   330
+   ClientHeight    =   8184
+   ClientLeft      =   48
+   ClientTop       =   336
    ClientWidth     =   11880
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    MinButton       =   0   'False
-   ScaleHeight     =   8190
+   ScaleHeight     =   8184
    ScaleWidth      =   11880
+   StartUpPosition =   1  'CenterOwner
    Begin VB.ListBox lbOborud 
-      Height          =   1620
+      Height          =   1584
       ItemData        =   "GuideFirms.frx":0000
       Left            =   1320
       List            =   "GuideFirms.frx":001C
@@ -76,7 +77,7 @@ Begin VB.Form GuideFirms
       End
    End
    Begin VB.ListBox lbRegion 
-      Height          =   5715
+      Height          =   5616
       ItemData        =   "GuideFirms.frx":005E
       Left            =   2640
       List            =   "GuideFirms.frx":0060
@@ -104,7 +105,7 @@ Begin VB.Form GuideFirms
    Begin VB.TextBox tbInform 
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   9.75
+         Size            =   9.6
          Charset         =   204
          Weight          =   400
          Underline       =   0   'False
@@ -150,7 +151,7 @@ Begin VB.Form GuideFirms
       Width           =   2535
    End
    Begin VB.ListBox lbM 
-      Height          =   255
+      Height          =   240
       Left            =   420
       TabIndex        =   12
       Top             =   1860
@@ -226,8 +227,8 @@ Begin VB.Form GuideFirms
       TabIndex        =   5
       Top             =   1020
       Width           =   11715
-      _ExtentX        =   20664
-      _ExtentY        =   11351
+      _ExtentX        =   20659
+      _ExtentY        =   11345
       _Version        =   393216
       MergeCells      =   2
       AllowUserResizing=   1
@@ -260,7 +261,7 @@ Begin VB.Form GuideFirms
       Width           =   1215
    End
 End
-Attribute VB_Name = "GuideFirms"
+Attribute VB_Name = "BayGuideFirms"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
@@ -272,7 +273,12 @@ Public mousCol As Long    '
 Dim oldHeight As Integer, oldWidth As Integer ' нач размер формы
 Dim quantity As Integer 'количество найденных фирм
 Dim pos As Long 'поиция поиска
+Dim OrdersTableName As String
+
 Const cEmpty = "пустой менеджер"
+
+
+
 
 
 Private Sub cbM_Click()
@@ -282,11 +288,11 @@ Grid.SetFocus
 End Sub
 
 Private Sub cmAdd_Click()
-If Grid.TextMatrix(Grid.Rows - 1, gfId) <> "" Then Grid.AddItem ("")
+If Grid.TextMatrix(Grid.Rows - 1, bfId) <> "" Then Grid.AddItem ("")
 
-'Grid.col = gfId ' чтобы наверняка было соб.EnterCell по Grid.col = gfNazwFirm
+'Grid.col = bfId ' чтобы наверняка было соб.EnterCell по Grid.col = bfNazwFirm
 Grid.row = Grid.Rows - 1
-Grid.col = gfNazwFirm 'название
+Grid.col = bfNazwFirm 'название
 Grid.SetFocus
 textBoxInGridCell tbMobile, Grid
 End Sub
@@ -303,19 +309,19 @@ End Sub
 
 Private Sub cmCancel_Click()
     Frame1.Visible = False
-tbInform.Text = Grid.TextMatrix(mousRow, gfType)
+tbInform.Text = Grid.TextMatrix(mousRow, bfType)
 Grid.SetFocus
 End Sub
 
 Private Sub cmDel_Click()
-Dim strId As String, i As Integer
+Dim strId As String, I As Integer
 
 If MsgBox("По кнопке <Да> вся информация по фирме будет безвозвратно " & _
 "удалена из базы!", vbYesNo, "Удалить Фирму?") = vbNo Then Exit Sub
 
-strId = Grid.TextMatrix(mousRow, gfId)
-'sql = "SELECT BayGuideFirms.FirmId, BayGuideFirms.Name  From BayGuideFirms " & _
-'"WHERE (((BayGuideFirms.FirmId)=" & strId & "));"
+strId = Grid.TextMatrix(mousRow, bfId)
+'sql = "SELECT FirmGuide.FirmId, FirmGuide.Name  From FirmGuide " & _
+'"WHERE (((FirmGuide.FirmId)=" & strId & "));"
 'Set tbFirms = myOpenRecordSet("##67", sql, dbOpenDynaset)
 'If tbFirms Is Nothing Then Exit Sub
 'On Error GoTo ERR1
@@ -324,13 +330,13 @@ strId = Grid.TextMatrix(mousRow, gfId)
 'tbFirms.Close
 
 sql = "DELETE FROM BayGuideFirms WHERE FirmId = " & strId
-i = myExecute("##67", sql, -198)
-If i = -2 Then
+I = myExecute("##67", sql, -198)
+If I = -2 Then
     MsgBox "У этой фирмы есть заказы. Перед ее удалением необходимо " & _
     "в этих заказах выбать другую фирму, либо удалить эти заказы", , _
     "Удаление невозможно!"
     GoTo EN1
-ElseIf i <> 0 Then
+ElseIf I <> 0 Then
     GoTo EN1
 End If
 
@@ -366,7 +372,7 @@ End Sub
 
 Public Sub cmFind_Click()
 'Static pos As Long
-pos = findExValInCol(Grid, tbFind.Text, gfNazwFirm, pos)
+pos = findExValInCol(Grid, tbFind.Text, bfNazwFirm, pos)
 If pos > 0 Then
     cmSel.Enabled = True
     cmFind.Caption = "Далее"
@@ -392,7 +398,7 @@ Grid_EnterCell
 End Sub
 
 Sub loadGuide()
-Dim i As Long, strWhere As String, str As String
+Dim I As Long, strWhere As String, str As String
 
 Me.MousePointer = flexHourglass
 Grid.Visible = False
@@ -400,10 +406,10 @@ clearGrid Grid
 strWhere = Trim(tbFind.Text)
 If Not strWhere = "" Then
 '    strWhere = "Where (((BayGuideFirms.Name) = '" & strWhere & "' )) "
-    strWhere = "(BayGuideFirms.Name) = '" & strWhere & "'"
+    strWhere = "(FirmGuide.Name) = '" & strWhere & "'"
 End If
 str = ""
-If cbM.ListIndex > 0 Then str = "(BayGuideFirms.ManagId) = " & _
+If cbM.ListIndex > 0 Then str = "(FirmGuide.ManagId) = " & _
     manId(cbM.ListIndex - 1)
 If strWhere <> "" And str <> "" Then
     strWhere = strWhere & " AND " & str
@@ -430,28 +436,28 @@ If Not tbFirms.BOF Then
     If tbFirms!firmId = 0 Then GoTo AA
     quantity = quantity + 1
 If tbFirms!firmId = 39 Then
-i = i
+I = I
 End If
-    Grid.TextMatrix(quantity, gfId) = tbFirms!firmId
-    Grid.TextMatrix(quantity, gfNazwFirm) = tbFirms!Name
-    Grid.TextMatrix(quantity, gfM) = Manag(tbFirms!managId)
-    fieldToCol tbFirms!OborudName, gfOborud
-    fieldToCol tbFirms!Sale, gfSale
-    fieldToCol tbFirms!Kontakt, gfKontakt
-    fieldToCol tbFirms!Otklik, gfOtklik
-    fieldToCol tbFirms!year01, gf2001 '$$3
-    fieldToCol tbFirms!year02, gf2002 '
-    fieldToCol tbFirms!year03, gf2003 '
-    fieldToCol tbFirms!year04, gf2004
+    Grid.TextMatrix(quantity, bfId) = tbFirms!firmId
+    Grid.TextMatrix(quantity, bfNazwFirm) = tbFirms!Name
+    Grid.TextMatrix(quantity, bfM) = Manag(tbFirms!managId)
+    fieldToCol tbFirms!OborudName, bfOborud
+    fieldToCol tbFirms!Sale, bfSale
+    fieldToCol tbFirms!Kontakt, bfKontakt
+    fieldToCol tbFirms!Otklik, bfOtklik
+    fieldToCol tbFirms!year01, bf2001 '$$3
+    fieldToCol tbFirms!year02, bf2002 '
+    fieldToCol tbFirms!year03, bf2003 '
+    fieldToCol tbFirms!year04, bf2004
 
-    fieldToCol tbFirms!FIO, gfFIO
-    fieldToCol tbFirms!Fax, gfFax
-    fieldToCol tbFirms!Email, gfEmail
-    fieldToCol tbFirms!Type, gfType
-    fieldToCol tbFirms!Pass, gfPass
-    fieldToCol tbFirms!region, gfRegion
-    fieldToCol tbFirms!xLogin, gfLogin
-    fieldToCol tbFirms!Phone, gfTlf
+    fieldToCol tbFirms!FIO, bfFIO
+    fieldToCol tbFirms!Fax, bfFax
+    fieldToCol tbFirms!Email, bfEmail
+    fieldToCol tbFirms!Type, bfType
+    fieldToCol tbFirms!Pass, bfPass
+    fieldToCol tbFirms!region, bfRegion
+    fieldToCol tbFirms!xLogin, bfLogin
+    fieldToCol tbFirms!Phone, bfTlf
     Grid.AddItem ("")
 AA: tbFirms.MoveNext
   Wend
@@ -485,16 +491,16 @@ End Sub
 
 Private Sub cmNoCloseFiltr_Click()
 Dim str As String
-str = Grid.TextMatrix(mousRow, gfNazwFirm)
+str = Grid.TextMatrix(mousRow, bfNazwFirm)
 Unload Me
 Orders.loadFirmOrders str
 
 End Sub
 
 Private Sub cmOk_Click()
-If ValueToTableField("##353", "'" & tbType.Text & "'", "BayGuideFirms", _
+If ValueToTableField("##353", "'" & tbType.Text & "'", "FirmGuide", _
 "Type", "byFirmId") = 0 Then
-    Grid.TextMatrix(mousRow, gfType) = tbType.Text
+    Grid.TextMatrix(mousRow, bfType) = tbType.Text
 End If
 Frame1.Visible = False
 Grid.SetFocus
@@ -507,8 +513,8 @@ Dim sqlReq As String, firmId As String, DNM As String
 
     gNzak = Orders.Grid.TextMatrix(Orders.Grid.row, orNomZak)
     visits "-", "firm" ' уменьщаем посещения у старой фирмы, если она была
-    firmId = Grid.TextMatrix(Grid.row, gfId)
-    ValueToTableField "##20", firmId, "BayOrders", "FirmId"
+    firmId = Grid.TextMatrix(Grid.row, bfId)
+    ValueToTableField "##20", firmId, "FirmGuide", "FirmId"
     visits "+", "firm" ' увеличиваем посещения у новой фирмы
 
     DNM = Format(Now(), "dd.mm.yy hh:nn") & vbTab & Orders.cbM.Text & " " & gNzak ' именно vbTab
@@ -526,12 +532,21 @@ Private Sub Command1_Click()
 
 End Sub
 
+Private Sub Form_Initialize()
+    If UCase(App.title) = "PRIOR" Then
+        OrdersTableName = "Orders"
+    Else
+        OrdersTableName = "BayOrders"
+    End If
+    
+End Sub
+
 Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
 If KeyCode = vbKeyEscape Then lbHide
 End Sub
 
 Private Sub Form_Load()
-Dim i As Integer
+Dim I As Integer
 quantity = 0
 pos = 0
 oldHeight = Me.Height
@@ -542,39 +557,39 @@ Grid.FormatString = "|< Название  фирмы|^ M|<Оборудование|<Регион|Скидки в %|" &
 "|<Логин|<Пароль|>Id"
 'сделать чтобы в 2004 - высвечивалась колонка, в 2005 - 2,2006 - 3, далее -4
 
-Grid.TextMatrix(0, gf2002) = Format(lastYear - 2, "0000") '$$3
-Grid.TextMatrix(0, gf2003) = Format(lastYear - 1, "0000")
-Grid.TextMatrix(0, gf2004) = Format(lastYear, "0000")
+Grid.TextMatrix(0, bf2002) = Format(lastYear - 2, "0000") '$$3
+Grid.TextMatrix(0, bf2003) = Format(lastYear - 1, "0000")
+Grid.TextMatrix(0, bf2004) = Format(lastYear, "0000")
 
-If lastYear < 2007 Then Grid.colWidth(gf2001) = 0 '$$3
-If lastYear < 2006 Then Grid.colWidth(gf2002) = 0
-If lastYear < 2005 Then Grid.colWidth(gf2003) = 0
+If lastYear < 2007 Then Grid.colWidth(bf2001) = 0 '$$3
+If lastYear < 2006 Then Grid.colWidth(bf2002) = 0
+If lastYear < 2005 Then Grid.colWidth(bf2003) = 0
 
 Grid.MergeRow(0) = True
 Grid.colWidth(0) = 0
-Grid.colWidth(gfM) = 330
-Grid.colWidth(gfNazwFirm) = 2730
-Grid.colWidth(gfOborud) = 735
-Grid.colWidth(gfRegion) = 1140
-Grid.colWidth(gfSale) = 655
-Grid.colWidth(gfKontakt) = 700
-Grid.colWidth(gfOtklik) = 645
-Grid.colWidth(gfFIO) = 1410
-Grid.colWidth(gfTlf) = 1140
-'Grid.ColWidth(gfType) = 615 в Resize
-Grid.colWidth(gfLogin) = 780
-Grid.colWidth(gfId) = 480
+Grid.colWidth(bfM) = 330
+Grid.colWidth(bfNazwFirm) = 2730
+Grid.colWidth(bfOborud) = 735
+Grid.colWidth(bfRegion) = 1140
+Grid.colWidth(bfSale) = 655
+Grid.colWidth(bfKontakt) = 700
+Grid.colWidth(bfOtklik) = 645
+Grid.colWidth(bfFIO) = 1410
+Grid.colWidth(bfTlf) = 1140
+'Grid.ColWidth(bfType) = 615 в Resize
+Grid.colWidth(bfLogin) = 780
+Grid.colWidth(bfId) = 480
 
 cbM.AddItem "все менеджеры"
 lbM.AddItem "not"
-For i = 0 To Orders.lbM.ListCount - 1
-    If i < Orders.lbM.ListCount - 1 Then lbM.AddItem Orders.lbM.List(i)
-    If Orders.lbM.List(i) = "" Then
+For I = 0 To Orders.lbM.ListCount - 1
+    If I < Orders.lbM.ListCount - 1 Then lbM.AddItem Orders.lbM.List(I)
+    If Orders.lbM.List(I) = "" Then
         cbM.AddItem cEmpty
     Else
-        cbM.AddItem "менеджер " & Orders.lbM.List(i)
+        cbM.AddItem "менеджер " & Orders.lbM.List(I)
     End If
-Next i
+Next I
 cbM.ListIndex = 0
 lbM.Height = lbM.Height + 195 * (lbM.ListCount - 1)
 
@@ -595,13 +610,13 @@ If tbFind.Text <> "" Then cmFind.Enabled = True
 If Regim = "fromContext" Then 'из Orders
     tbFind.Text = Orders.Grid.Text
     tbFind.SelStart = 0
-    tbFind.SelLength = Len(GuideFirms.tbFind.Text)
+    tbFind.SelLength = Len(BayGuideFirms.tbFind.Text)
     cmSel.Visible = True
     GoTo AA
 ElseIf Regim = "fromFindFirm" Then
 '    tbFind.Text = FindFirm.lb.Text
     tbFind.SelStart = 0
-    tbFind.SelLength = Len(GuideFirms.tbFind.Text)
+    tbFind.SelLength = Len(BayGuideFirms.tbFind.Text)
 '    cmSel.Visible = FindFirm.cmSelect.Visible
 ElseIf Regim = "fromMenu" Then 'по <F11> из Orders
     cmLoad.Visible = True
@@ -614,8 +629,8 @@ End If
 cmAdd.Visible = True
 cmDel.Visible = True
 
-Set table = myOpenRecordSet("##72", "bayRegion", dbOpenForwardOnly)
-If table Is Nothing Then myBase.Close: End
+Set Table = myOpenRecordSet("##72", "bayRegion", dbOpenForwardOnly)
+If Table Is Nothing Then myBase.Close: End
 
 'loadGuide не надо, т.к. при загрузке cbM_Click
 Timer1.Interval = 100
@@ -624,33 +639,33 @@ Timer1.Enabled = True
 End Sub
 
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer
+Dim H As Integer, W As Integer
 
 If Me.WindowState = vbMinimized Then Exit Sub
 If Me.WindowState = vbMaximized And Me.Width > cDELLwidth Then 'экран DELL
-    Grid.colWidth(gfType) = 5430
+    Grid.colWidth(bfType) = 5430
 Else
-    Grid.colWidth(gfType) = 615
+    Grid.colWidth(bfType) = 615
 End If
 On Error Resume Next
 
 lbHide "noGrid"
-w = Me.Width - oldWidth
+W = Me.Width - oldWidth
 oldWidth = Me.Width
-h = Me.Height - oldHeight
+H = Me.Height - oldHeight
 oldHeight = Me.Height
 
-Grid.Height = Grid.Height + h
-Grid.Width = Grid.Width + w
-cmSel.Top = cmSel.Top + h
-cmExit.Top = cmExit.Top + h
-cmExit.left = cmExit.left + w
-cmDel.Top = cmDel.Top + h
-cmAdd.Top = cmAdd.Top + h
-laHeadQ.Top = laHeadQ.Top + h
-laQuant.Top = laQuant.Top + h
-cmExel.Top = cmExel.Top + h
-cmLoad.Top = cmLoad.Top + h
+Grid.Height = Grid.Height + H
+Grid.Width = Grid.Width + W
+cmSel.Top = cmSel.Top + H
+cmExit.Top = cmExit.Top + H
+cmExit.Left = cmExit.Left + W
+cmDel.Top = cmDel.Top + H
+cmAdd.Top = cmAdd.Top + H
+laHeadQ.Top = laHeadQ.Top + H
+laQuant.Top = laQuant.Top + H
+cmExel.Top = cmExel.Top + H
+cmLoad.Top = cmLoad.Top + H
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
@@ -665,7 +680,7 @@ mousRow = Grid.MouseRow
 If quantity = 0 Then Exit Sub
 If Grid.MouseRow = 0 Then
     Grid.CellBackColor = Grid.BackColor
-    If mousCol = gf2004 Then
+    If mousCol = bf2004 Then
         SortCol Grid, mousCol, "numeric"
     Else
         SortCol Grid, mousCol
@@ -677,31 +692,31 @@ End If
 End Sub
 
 Private Sub Grid_DblClick()
-Dim i As Integer
+Dim I As Integer
 
 If Grid.CellBackColor = vbYellow Then Exit Sub
 
-gFirmId = Grid.TextMatrix(mousRow, gfId)
+gFirmId = Grid.TextMatrix(mousRow, bfId)
 
-If mousCol = gfM Then
+If mousCol = bfM Then
     listBoxInGridCell lbM, Grid, "select"
-ElseIf mousCol = gfOborud Then
+ElseIf mousCol = bfOborud Then
     listBoxInGridCell lbOborud, Grid, "select"
-ElseIf mousCol = gfRegion Then ' Регион
-        For i = 0 To lbRegion.ListCount - 1 '
-            If Grid.Text = lbRegion.List(i) Then
+ElseIf mousCol = bfRegion Then ' Регион
+        For I = 0 To lbRegion.ListCount - 1 '
+            If Grid.Text = lbRegion.List(I) Then
 '                noClick = True
-                lbRegion.ListIndex = i 'вызывает ложное onClick
+                lbRegion.ListIndex = I 'вызывает ложное onClick
 '                noClick = False
                 Exit For
             End If
-        Next i
+        Next I
     lbRegion.Visible = True
     lbRegion.ZOrder
     lbRegion.SetFocus
     Grid.Enabled = False 'иначе курсор по ней бегает
 '    listBoxInGridCell lbRegion, Grid, "select"
-ElseIf mousCol = gfType Then
+ElseIf mousCol = bfType Then
     tbType.Text = Grid.Text
 '    tbType.SelLength = Len(tbType.Text)
     Frame1.Visible = True
@@ -720,7 +735,7 @@ mousRow = Grid.row
 mousCol = Grid.col
 'If quantity = 0 Or Regim = "F7" Then Exit Sub
 'If Regim = "F7" Then Exit Sub
-If mousCol = gfNazwFirm Then
+If mousCol = bfNazwFirm Then
     cmSel.Enabled = True
     cmDel.Enabled = True
 Else
@@ -728,14 +743,14 @@ Else
     cmDel.Enabled = False
 End If
 
-If mousCol = gfNazwFirm Or mousCol = gfFIO Then
+If mousCol = bfNazwFirm Or mousCol = bfFIO Then
     tbInform.MaxLength = 80
     tbMobile.MaxLength = 80
-ElseIf mousCol = gfType Then
+ElseIf mousCol = bfType Then
     tbInform.MaxLength = 255
 '    tbMobile.MaxLength = 255
-ElseIf mousCol = gfTlf Or mousCol = gfSale Or _
-mousCol = gfFax Or mousCol = gfEmail Then
+ElseIf mousCol = bfTlf Or mousCol = bfSale Or _
+mousCol = bfFax Or mousCol = bfEmail Then
     tbInform.MaxLength = 50
     tbMobile.MaxLength = 50
 Else
@@ -744,14 +759,14 @@ Else
 End If
 tbInform.Text = Grid.TextMatrix(mousRow, mousCol)
 
-If mousCol = gfId Or mousCol = gfLogin Or mousCol = gfPass Or _
-mousCol = gf2004 Or Grid.TextMatrix(mousRow, gfId) = "" Then
+If mousCol = bfId Or mousCol = bfLogin Or mousCol = bfPass Or _
+mousCol = bf2004 Or Grid.TextMatrix(mousRow, bfId) = "" Then
     Grid.CellBackColor = vbYellow
     tbInform.Locked = True
 Else
     Grid.CellBackColor = &H88FF88 ' бл.зел
 '   Grid.CellBackColor = &H8888FF    ' бл.кр
-    If mousCol = gfM Or mousCol = gfRegion Or mousCol = gfType Then
+    If mousCol = bfM Or mousCol = bfRegion Or mousCol = bfType Then
         tbInform.Locked = True
     Else
         tbInform.Locked = False
@@ -769,7 +784,7 @@ Private Sub Grid_KeyDown(KeyCode As Integer, Shift As Integer)
 If KeyCode = vbKeyReturn Then
         Grid_DblClick
 ElseIf KeyCode = vbKeyF4 Then
-    If mousCol = gfLogin Or mousCol = gfPass Then _
+    If mousCol = bfLogin Or mousCol = bfPass Then _
                 textBoxInGridCell tbMobile, Grid
 ElseIf KeyCode = vbKeyEscape Then
     lbHide
@@ -788,17 +803,17 @@ End Sub
 Private Sub lbOborud_DblClick()
 
 If lbOborud.Text = "" Then
-    sql = "update bayguidefirms set Oborudid = null " _
-    & " where bayguidefirms.firmId = " & gFirmId
+    sql = "update FirmGuide set Oborudid = null " _
+    & " where FirmGuide.firmId = " & gFirmId
 Else
-    sql = "update bayguidefirms set Oborudid = u.Oborudid " _
+    sql = "update FirmGuide set Oborudid = u.Oborudid " _
     & " from GuideOborud u" _
-    & " where bayguidefirms.firmId = " & gFirmId _
+    & " where FirmGuide.firmId = " & gFirmId _
     & " and u.Oborud = '" & lbOborud.Text & "'"
 End If
 myExecute "##354", sql
 
-Grid.TextMatrix(mousRow, gfOborud) = lbOborud.Text
+Grid.TextMatrix(mousRow, bfOborud) = lbOborud.Text
 
 lbHide
 
@@ -812,18 +827,18 @@ Private Sub lbRegion_DblClick()
 'Region
 
 If lbRegion.Text = "" Then
-    sql = "update bayguidefirms set regionid = null " _
-    & " where bayguidefirms.firmId = " & gFirmId
+    sql = "update FirmGuide set regionid = null " _
+    & " where FirmGuide.firmId = " & gFirmId
 Else
-    sql = "update bayguidefirms set regionid = r.regionid " _
+    sql = "update FirmGuide set regionid = r.regionid " _
     & " from bayregion r" _
-    & " where bayguidefirms.firmId = " & gFirmId _
+    & " where FirmGuide.firmId = " & gFirmId _
     & " and r.region = '" & lbRegion.Text & "'"
 End If
 
 myExecute "##354", sql
 
-Grid.TextMatrix(mousRow, gfRegion) = lbRegion.Text
+Grid.TextMatrix(mousRow, bfRegion) = lbRegion.Text
 lbHide
 cmAdd.Enabled = True
 cmExit.Enabled = True
@@ -844,8 +859,8 @@ If lbM.ListIndex = 0 Then
 Else
     str = manId(lbM.ListIndex - 1)
 End If
-ValueToTableField "##355", str, "BayGuideFirms", "ManagId", "byFirmId"
-Grid.TextMatrix(mousRow, gfM) = lbM.Text
+ValueToTableField "##355", str, "FirmGuide", "ManagId", "byFirmId"
+Grid.TextMatrix(mousRow, bfM) = lbM.Text
 lbHide
 
 End Sub
@@ -885,30 +900,23 @@ lbHide
 End Sub
 
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim str As String, i As Integer, strId As String
+Dim str As String, I As Integer, strId As String
 If KeyCode = vbKeyReturn Then
  str = Trim(tbMobile.Text)
- gFirmId = Grid.TextMatrix(mousRow, gfId)
+ gFirmId = Grid.TextMatrix(mousRow, bfId)
 
- If mousCol = gfNazwFirm Then
-   strId = Grid.TextMatrix(mousRow, gfId)
+ If mousCol = bfNazwFirm Then
+   strId = Grid.TextMatrix(mousRow, bfId)
 '   On Error GoTo ERR1
    If strId = "" Then
     wrkDefault.BeginTrans
-    sql = "update bayGuideFirms set firmId = firmId where firmId = 0"
     
-    sql = "select max(firmid) from bayGuideFirms;"
-    If Not byErrSqlGetValues("##50", sql, gFirmId) Then GoTo ERR1
-    gFirmId = gFirmId + 1
-    
-    sql = "insert into bayGuideFirms (firmId, name, ManagId) values (" & _
-    gFirmId & ", '" & str & "', 14)"
-    i = myExecute("##50", sql, -196)
-    If i <> 0 Then GoTo ERR0:
+    sql = "insert into FirmGuide (name, werkId) values ('" & str & "', 1); select @@identity;"
+    I = byErrSqlGetValues("##50", sql, gFirmId)
     wrkDefault.CommitTrans
     
     
-    Grid.TextMatrix(mousRow, gfId) = gFirmId
+    Grid.TextMatrix(mousRow, bfId) = gFirmId
     quantity = quantity + 1
 '    cep = True ' запускаем цепь посл.ввода еще 2х полей
 '    cmAdd.Enabled = False
@@ -917,46 +925,44 @@ If KeyCode = vbKeyReturn Then
 '    cbM.Enabled = False
 '    cmExel.Enabled = False
     Grid.TextMatrix(mousRow, mousCol) = str
-    Grid.TextMatrix(mousRow, gfM) = "not"
+    Grid.TextMatrix(mousRow, bfM) = "not"
     lbHide
-    Grid.col = gfM: mousCol = gfM
+    Grid.col = bfM: mousCol = bfM
     listBoxInGridCell lbM, Grid
     Exit Sub
    Else
-    sql = "UPDATE BayGuideFirms SET Name = '" & str & _
-    "' WHERE (((FirmId)=" & strId & "));"
-'    MsgBox sql
-    i = myExecute("##356", sql, -196)
-    If i <> 0 Then GoTo ERR0:
+    sql = "UPDATE FirmGuide SET Name = '" & str & "' WHERE FirmId = " & strId
+    I = myExecute("##356", sql, -196)
+    If I <> 0 Then GoTo ERR0:
     
    End If
    On Error GoTo 0
- ElseIf mousCol = gfSale Then
-    ValueToTableField "##66", "'" & str & "'", "BayGuideFirms", "Sale", "byFirmId"
- ElseIf mousCol = gfKontakt Then
-    ValueToTableField "##66", "'" & str & "'", "BayGuideFirms", "Kontakt", "byFirmId"
- ElseIf mousCol = gfOtklik Then
-    ValueToTableField "##66", "'" & str & "'", "BayGuideFirms", "Otklik", "byFirmId"
- ElseIf mousCol = gfFIO Then
-    ValueToTableField "##66", "'" & str & "'", "BayGuideFirms", "FIO", "byFirmId"
- ElseIf mousCol = gfTlf Then
-    ValueToTableField "##66", "'" & str & "'", "BayGuideFirms", "Phone", "byFirmId"
- ElseIf mousCol = gfFax Then
-    ValueToTableField "##66", "'" & str & "'", "BayGuideFirms", "Fax", "byFirmId"
- ElseIf mousCol = gfEmail Then
-    ValueToTableField "##66", "'" & str & "'", "BayGuideFirms", "Email", "byFirmId"
- ElseIf mousCol = gfLogin Then
-    If str <> "" And str <> Grid.TextMatrix(mousRow, gfLogin) Then
-        If existValueInTableFielf(str, "BayGuideFirms", "xLogin") Then
+ ElseIf mousCol = bfSale Then
+    ValueToTableField "##66", "'" & str & "'", "FirmGuide", "Sale", "byFirmId"
+ ElseIf mousCol = bfKontakt Then
+    ValueToTableField "##66", "'" & str & "'", "FirmGuide", "Kontakt", "byFirmId"
+ ElseIf mousCol = bfOtklik Then
+    ValueToTableField "##66", "'" & str & "'", "FirmGuide", "Otklik", "byFirmId"
+ ElseIf mousCol = bfFIO Then
+    ValueToTableField "##66", "'" & str & "'", "FirmGuide", "FIO", "byFirmId"
+ ElseIf mousCol = bfTlf Then
+    ValueToTableField "##66", "'" & str & "'", "FirmGuide", "Phone", "byFirmId"
+ ElseIf mousCol = bfFax Then
+    ValueToTableField "##66", "'" & str & "'", "FirmGuide", "Fax", "byFirmId"
+ ElseIf mousCol = bfEmail Then
+    ValueToTableField "##66", "'" & str & "'", "FirmGuide", "Email", "byFirmId"
+ ElseIf mousCol = bfLogin Then
+    If str <> "" And str <> Grid.TextMatrix(mousRow, bfLogin) Then
+        If existValueInTableFielf(str, "FirmGuide", "xLogin") Then
             MsgBox "Такой логин уже есть.", , "Недопустимое значение"
             tbMobile.SelStart = Len(tbMobile.Text)
             tbMobile.SetFocus
             Exit Sub
         End If
     End If
-    ValueToTableField "##66", "'" & str & "'", "BayGuideFirms", "xLogin", "byFirmId"
- ElseIf mousCol = gfPass Then
-    ValueToTableField "##66", "'" & str & "'", "BayGuideFirms", "Pass", "byFirmId"
+    ValueToTableField "##66", "'" & str & "'", "FirmGuide", "xLogin", "byFirmId"
+ ElseIf mousCol = bfPass Then
+    ValueToTableField "##66", "'" & str & "'", "FirmGuide", "Pass", "byFirmId"
 End If
 'GoTo AA
 'ElseIf KeyCode = vbKeyEscape Then
@@ -966,7 +972,7 @@ AA:
 End If
 Exit Sub
 
-ERR0: If i = -2 Then
+ERR0: If I = -2 Then
         MsgBox "Такая фирма уже есть", , "Ошибка!"
         tbMobile.SetFocus
       Else
@@ -986,10 +992,10 @@ Timer1.Enabled = False
  Else ' из контекстного меню
     cmFind.Caption = "Поиск"
    'cmFind_Click
-    If findValInCol(Grid, tbFind.Text, gfNazwFirm) Then
+    If findValInCol(Grid, tbFind.Text, bfNazwFirm) Then
         Grid.SetFocus
     Else
-        tbFind.SetFocus
+        If tbFind.Visible Then tbFind.SetFocus
     End If
  End If
 

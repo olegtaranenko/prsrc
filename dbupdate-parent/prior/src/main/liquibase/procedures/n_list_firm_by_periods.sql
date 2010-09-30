@@ -12,10 +12,10 @@ CREATE PROCEDURE n_list_firm_by_periods (
 )
 begin
 
-	declare v_region_flag integer;
-	declare v_material_flag integer;
-	declare v_oborud_flag integer;
-	declare v_no_oborud_flag integer;
+	declare v_region_flag    integer;
+	declare v_material_flag  integer;
+	declare v_bayStatus_flag integer;
+	declare v_tool_flag      integer;
 
 	declare v_detail      integer;
 	declare v_detail_fine integer;
@@ -29,6 +29,7 @@ begin
 
 	set v_detail      = 0;
 	set v_detail_fine = 0;
+
 	if isnull(p_rowId, 0) != 0 then
 		set v_detail = 1;
 		if isnull(p_columnId, 0) != 0 then
@@ -38,10 +39,18 @@ begin
 
 	select count(*) into v_region_flag   	from #regions   where isActive = 1;
 	select count(*) into v_material_flag 	from #materials where isActive = 1;
-	select count(*) into v_no_oborud_flag   from #noOboruds;
-	set v_oborud_flag = 0;
-	if v_no_oborud_flag = 0 then
-		select count(*) into v_oborud_flag   from #oborudItems where isActive = 1;
+
+	select toolId into v_tool_flag  from #tool;
+	if v_tool_flag is null then
+		set v_tool_flag = 0
+	end if;
+
+
+	
+	select bayStatusId into v_bayStatus_flag  from #bayStatus;
+
+	if v_bayStatus_flag is null then
+		set v_bayStatus_flag = 0
 	end if;
 
 
@@ -78,17 +87,35 @@ begin
 			o.indate >= isnull(v_begin, o.inDate) and (v_end is null or o.inDate < v_end)
 		and (v_region_flag = 0 or exists (select 1 from #regions r, bayguidefirms f where f.firmid = o.firmid and r.regionid = f.regionid))
 		and (v_detail = 0 or o.firmId = v_firmId)
-		and (v_oborud_flag = 0 
-			or exists (
-				select 1 from oborudKomplekt ok 
-				, #oborudItems oi, bayGuideFirms f
-				where ok.oborudId = f.oborudId and ok.oborudItemId = oi.oborudItemId and f.firmId = o.firmId
+		and (v_tool_flag = 0 
+			or (v_tool_flag = -1 and not exists (
+				select 1  
+				from FirmTools ft
+				where ft.firmId = o.firmId
+				)
+			)
+			or (v_tool_flag > 0 and exists (
+				select 1 
+				from FirmTools ft
+					, #tool tt
+				where ft.firmId = o.firmId and tt.toolId = ft.toolId
+				)
 			)
 		)
-		and (v_no_oborud_flag = 0 
-			or exists (
-				select 1 from bayGuideFirms f
-				where f.firmId = o.firmId and f.oborudId is null
+		and (  v_bayStatus_flag = 0 
+			or (v_bayStatus_flag = -1 
+				and not exists (
+					select 1 
+					from bayGuideFirms bf 
+					where bf.firmId = o.firmId and bf.bayStatusId > 0
+				)
+			)
+			or (v_bayStatus_flag > 0 
+				and exists (
+					select 1 
+					from #bayStatus bs, bayGuideFirms bf 
+					where o.firmId = bf.firmId and bs.bayStatusId = bf.bayStatusId
+				)
 			)
 		)
 	;
@@ -195,7 +222,7 @@ begin
 			, r.regionid
 			, p.periodid
 			, o.firmId
-			, ob.oborud
+			, f.tools as oborud
 		from #periods p 
 		join (
 			select sum(isnull(orderPaid, 0)) as orderPaid
@@ -209,7 +236,6 @@ begin
 		join #firm_has_mat fm on fm.firmid  = o.firmid
 		join bayguidefirms f  on f.firmid   = o.firmid
 		join bayregion     r  on r.regionid = f.regionid
-		left join guideOborud ob on ob.oborudId = f.oborudId
 		left join (
 			select sum(sm) as materialSaled, firmid, periodId
 			from #sale_item

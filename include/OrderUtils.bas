@@ -1,6 +1,21 @@
 Attribute VB_Name = "OrderUtils"
 Option Explicit
 
+'
+' Тип предназначен для управления видимостью столбцов грида,
+' в зависимости от того, какое подразделение сейчас выбрано (для таблицы Orders)
+'
+Type WerkColumn
+    Field As String ' системное название столбца. Соответствует имени поля в таблице
+    WerkId As Integer ' если 0 - показывать для всех подразделений
+    columnWidth As Integer ' ширина столбца. Может динамически меняться в зависимости от ширины столбца в гриде
+    GridColIndex As Long ' порядковый номер в гриде
+    
+    Visible As Boolean  ' false если столбец в принципе не показывается. Например нулевой, технические и т.д.
+                        ' задается при инициализации если начальная длина равна 0
+End Type
+
+
 
 Sub nextDay()  'возможен прыжок на неск дней
 Dim Werk As String
@@ -21,7 +36,6 @@ sql = "UPDATE Orders JOIN OrdersInCeh ON Orders.numOrder = OrdersInCeh.numOrder 
 & " SET Orders.DateRS = " & tenOclock & ", OrdersInCeh.DateTimeMO = " & tenOclock _
 & " WHERE Orders.DateRS  < " & Midnight & " And Orders.DateRS Is Not Null"
 
-'Debug.Print sql
 If myExecute("##11", sql, 0) > 0 Then GoTo ER1
 
 sql = "UPDATE OrdersEquip " _
@@ -33,6 +47,7 @@ If myExecute("##404", sql, 0) > 0 Then GoTo ER1
 
 sql = "UPDATE OrdersInCeh SET DateTimeMO = " & tenOclock _
 & " WHERE DateTimeMO < " & Midnight
+
 If myExecute("##405", sql, 0) > 0 Then GoTo ER1
 
 
@@ -52,7 +67,7 @@ End Sub
 
 Function replaceResurs() As Boolean
 Dim oldRes As Double, S As Double, N As Double, I As Integer, J As Integer
-Dim newRes As Double, equipId As Integer, KPD As Double
+Dim newRes As Double, EquipId As Integer, KPD As Double
 
 replaceResurs = False
         
@@ -65,7 +80,7 @@ Set tbOrders = myOpenRecordSet("##newRes", sql, dbOpenForwardOnly)
 
 If tbOrders Is Nothing Then Exit Function
 While Not tbOrders.EOF
-    equipId = tbOrders!equipId
+    EquipId = tbOrders!EquipId
     newRes = tbOrders!newRes
     N = tbOrders!Nstan
     KPD = tbOrders!KPD
@@ -75,7 +90,7 @@ While Not tbOrders.EOF
         tmpDate = DateAdd("d", -I, curDate)
         
         sql = "SELECT 1, nomRes FROM Resurs " & _
-        " WHERE xDate = '" & Format(tmpDate, "yy.mm.dd") & "' and equipId = " & equipId
+        " WHERE xDate = '" & Format(tmpDate, "yy.mm.dd") & "' and equipId = " & EquipId
         
         If Not byErrSqlGetValues("W##12", sql, J, S) Then Exit Function
         If J = 0 Then ' нет этого дня
@@ -90,7 +105,7 @@ While Not tbOrders.EOF
     
     
     sql = "DELETE from Resurs" _
-    & " WHERE xDate < '" & Format(curDate, "yy.mm.dd") & "' and equipId = " & equipId
+    & " WHERE xDate < '" & Format(curDate, "yy.mm.dd") & "' and equipId = " & EquipId
     If myExecute("##406", sql, 0) > 0 Then Exit Function
     
   
@@ -100,14 +115,14 @@ While Not tbOrders.EOF
     sql = "SELECT Sum(oe.workTime * oe.Nevip) AS nevip" _
     & " FROM Orders o " _
     & " JOIN OrdersEquip oe ON oe.numOrder = o.numOrder" _
-    & " WHERE o.StatusId = 1 AND oe.equipId = " & equipId _
+    & " WHERE o.StatusId = 1 AND oe.equipId = " & EquipId _
     & " AND EXISTS (select 1 from OrdersInCeh oc where oc.numorder = oe.numorder) "
     byErrSqlGetValues "##372", sql, tmpSng
     
     S = 0 ' плюс неготовые образцы
     sql = "SELECT sum(oe.worktimeMO) as Sum_worktimeMO " _
     & " FROM OrdersEquip oe " _
-    & " WHERE oe.StatO ='в работе' AND oe.equipId = " & equipId _
+    & " WHERE oe.StatO ='в работе' AND oe.equipId = " & EquipId _
     & " AND EXISTS (select 1 from OrdersInCeh oc where oc.numorder = oe.numorder) "
     byErrSqlGetValues "##372", sql, S
     
@@ -119,29 +134,29 @@ While Not tbOrders.EOF
     'только завтра, поскольку новые значения применятся ко всему текущему дню
     '(у дат впереди год - чтобы корректно работала сортировка)
     
-    sql = "SELECT Max(xDate) AS dLast FROM Itogi WHERE equipId = " & equipId
+    sql = "SELECT Max(xDate) AS dLast FROM Itogi WHERE equipId = " & EquipId
     byErrSqlGetValues "##407", sql, tmpStr
     If tmpStr = Format(curDate, "yy.mm.dd") Then GoTo EN1 ' запись сегодня уже была
     
     'numOrder = 0 ' признак ресурса
     sql = "INSERT INTO Itogi ( equipId, [xDate], numOrder, Virabotka ) " & _
-    "SELECT " & equipId & ", '" & tmpStr & "', 0, " & Round(oldRes * N, 2)
+    "SELECT " & EquipId & ", '" & tmpStr & "', 0, " & Round(oldRes * N, 2)
     'MsgBox sql
     myExecute "##408", sql
     
     sql = "INSERT INTO Itogi ( equipId, [xDate], numOrder, Virabotka ) " & _
-    "SELECT " & equipId & ", '" & tmpStr & "', 1, " & KPD
+    "SELECT " & EquipId & ", '" & tmpStr & "', 1, " & KPD
     myExecute "##409", sql
     
     'записываем сумму невыполнено живых(относятся к сегодня)
     'numOrder = 2 ' признак суммы невыполнено живых
     sql = "INSERT INTO Itogi (equipId, [xDate], numOrder, Virabotka ) " & _
-    "SELECT " & equipId & ", '" & Format(curDate, "yy.mm.dd") & "', 2, " & tmpSng
+    "SELECT " & EquipId & ", '" & Format(curDate, "yy.mm.dd") & "', 2, " & tmpSng
     myExecute "##410", sql
     
     'оставляем только историю последнего месяца
     sql = "DELETE from Itogi" _
-    & " WHERE xDate < '" & Format(DateAdd("m", -1, curDate), "yy.mm.dd") & "' AND equipId = " & equipId
+    & " WHERE xDate < '" & Format(DateAdd("m", -1, curDate), "yy.mm.dd") & "' AND equipId = " & EquipId
     myExecute "##411", sql, 0
     tbOrders.MoveNext
 Wend

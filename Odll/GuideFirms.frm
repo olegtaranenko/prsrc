@@ -3,7 +3,7 @@ Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form GuideFirms 
    BackColor       =   &H8000000A&
    BorderStyle     =   1  'Fixed Single
-   Caption         =   "Справочник сторонних организаций"
+   Caption         =   "Справочник фирм заказчиков"
    ClientHeight    =   8184
    ClientLeft      =   48
    ClientTop       =   336
@@ -269,15 +269,7 @@ If MsgBox("По кнопке <Да> вся информация по фирме будет безвозвратно " & _
 "удалена из базы!", vbYesNo, "Удалить Фирму?") = vbNo Then Exit Sub
 
 strId = Grid.TextMatrix(mousRow, gfId)
-'sql = "SELECT GuideFirms.FirmId, GuideFirms.Name  From GuideFirms " & _
-'"WHERE (((GuideFirms.FirmId)=" & strId & "));"
-'Set tbFirms = myOpenRecordSet("##67", sql, dbOpenDynaset)
-'If tbFirms Is Nothing Then Exit Sub
-'On Error GoTo ERR1
-'tbFirms.MoveFirst
-'tbFirms.Delete
-'tbFirms.Close
-sql = "DELETE FROM GuideFirms WHERE FirmId = " & strId
+sql = "DELETE FROM FirmGuide WHERE FirmId = " & strId
 I = myExecute("##67", sql, -198)
 If I = -2 Then
     MsgBox "У этой фирмы есть заказы. Перед ее удалением необходимо " & _
@@ -292,21 +284,9 @@ quantity = quantity - 1
 If quantity = 0 Then
     clearGridRow Grid, mousRow
 Else
-    Grid.removeItem mousRow
+    Grid.RemoveItem mousRow
 End If
 
-'Grid.SetFocus
-'Exit Sub
-
-'ERR1:
-'If Err = 3200 Then
-'    MsgBox "У этой фирмы есть заказы. Перед ее удалением необходимо " & _
-'    "в этих заказах выбать другую фирму, либо удалить эти заказы", , _
-'    "Удаление невозможно!"
-'Else
-'    errorCodAndMsg ("66")
-'    MsgBox Error, , "Ошибка 66-" & Err & ":  " '##66
-'End If
 EN1:
 Grid.SetFocus
 End Sub
@@ -354,11 +334,10 @@ Grid.Visible = False
 clearGrid Grid
 strWhere = trimAll(tbFind.Text)
 If Not strWhere = "" Then
-'    strWhere = "Where (((GuideFirms.Name) = '" & strWhere & "' )) "
-    strWhere = "(GuideFirms.Name) = '" & strWhere & "'"
+    strWhere = "(FirmGuide.Name) = '" & strWhere & "'"
 End If
 str = ""
-If cbM.ListIndex > 0 Then str = "(GuideFirms.ManagId) = " & _
+If cbM.ListIndex > 0 Then str = "(FirmGuide.ManagId) = " & _
     manId(cbM.ListIndex - 1)
 If strWhere <> "" And str <> "" Then
     strWhere = strWhere & " AND " & str
@@ -369,14 +348,14 @@ If strWhere <> "" Then strWhere = "Where ((" & strWhere & ")) "
 'MsgBox "strWhere = " & strWhere
 quantity = 0
 
-sql = "SELECT GuideFirms.FirmId, GuideFirms.Name, GuideFirms.xLogin, " & _
-"GuideFirms.Address, GuideFirms.Phone, GuideFirms.Kategor, GuideFirms.Sale, " & _
-"GuideFirms.year01, GuideFirms.year02, GuideFirms.year03, GuideFirms.year04, " & _
-"GuideManag.Manag, GuideFirms.FIO, GuideFirms.Fax, GuideFirms.Email, " & _
-"GuideFirms.Atr1, GuideFirms.Atr2, GuideFirms.Atr3, GuideFirms.Pass, " & _
-"GuideFirms.Level, GuideFirms.Type, GuideFirms.Katalog " & _
-"FROM GuideManag RIGHT JOIN GuideFirms ON GuideManag.ManagId = GuideFirms.ManagId " & _
-strWhere & "ORDER BY GuideFirms.Name;"
+sql = "SELECT FirmGuide.FirmId, FirmGuide.Name, FirmGuide.xLogin, " & _
+"FirmGuide.Address, FirmGuide.Phone, FirmGuide.Kategor, FirmGuide.Sale, " & _
+"FirmGuide.year01, FirmGuide.year02, FirmGuide.year03, FirmGuide.year04, " & _
+"GuideManag.Manag, FirmGuide.FIO, FirmGuide.Fax, FirmGuide.Email, " & _
+"FirmGuide.Atr1, FirmGuide.Atr2, FirmGuide.Atr3, FirmGuide.Pass, " & _
+"FirmGuide.Level, FirmGuide.Type, FirmGuide.Katalog " & _
+"FROM GuideManag RIGHT JOIN FirmGuide ON GuideManag.ManagId = FirmGuide.ManagId " & _
+strWhere & "ORDER BY FirmGuide.Name;"
 'MsgBox sql
 Set tbFirms = myOpenRecordSet("##15", sql, dbOpenForwardOnly) 'dbOpenSnapshot)
 If tbFirms Is Nothing Then GoTo EN1
@@ -384,11 +363,11 @@ If tbFirms Is Nothing Then GoTo EN1
 If Not tbFirms.BOF Then
   'tbFirms.MoveFirst
   While Not tbFirms.EOF
-    If tbFirms!firmId = 0 Then GoTo AA
+    If tbFirms!FirmId = 0 Then GoTo AA
     quantity = quantity + 1
 '    Grid.TextMatrix(quantity, 0) = quantity
-    Grid.TextMatrix(quantity, gfId) = tbFirms!firmId
-    Grid.TextMatrix(quantity, gfNazwFirm) = tbFirms!name
+    Grid.TextMatrix(quantity, gfId) = tbFirms!FirmId
+    Grid.TextMatrix(quantity, gfNazwFirm) = tbFirms!Name
 '    Grid.TextMatrix(quantity, gfM) = Manag(tbFirms!ManagId)
 '    If Not IsNull(tbFirms!Manag) Then
     fieldToCol tbFirms!Manag, gfM
@@ -406,7 +385,7 @@ If Not tbFirms.BOF Then
     fieldToCol tbFirms!Atr1, gfAtr1
     fieldToCol tbFirms!Atr2, gfAtr2
     fieldToCol tbFirms!Atr3, gfAtr3
-    fieldToCol tbFirms!PASS, gfPass
+    fieldToCol tbFirms!Pass, gfPass
     fieldToCol tbFirms!Kategor, gfKategor
     fieldToCol tbFirms!xLogin, gfLogin
     fieldToCol tbFirms!Address, gfAdres
@@ -414,7 +393,7 @@ If Not tbFirms.BOF Then
     Grid.AddItem ("")
 AA: tbFirms.MoveNext
   Wend
-  If quantity > 0 Then Grid.removeItem (quantity + 1)
+  If quantity > 0 Then Grid.RemoveItem (quantity + 1)
 End If
 tbFirms.Close
 EN1:
@@ -424,8 +403,8 @@ Me.MousePointer = flexDefault
 
 End Sub
 
-Sub fieldToCol(field As Variant, col As Long)
-If Not IsNull(field) Then Grid.TextMatrix(quantity, col) = field
+Sub fieldToCol(Field As Variant, col As Long)
+If Not IsNull(Field) Then Grid.TextMatrix(quantity, col) = Field
 End Sub
 
 Private Sub cmLoad_Click()
@@ -452,14 +431,14 @@ Orders.loadFirmOrders str
 End Sub
 
 Private Sub cmSel_Click()
-Dim sqlReq As String, firmId As String, DNM As String
+Dim sqlReq As String, FirmId As String, DNM As String
 
     Orders.Grid.Text = Grid.Text
 
     gNzak = Orders.Grid.TextMatrix(Orders.Grid.row, orNomZak)
     visits "-", "firm" ' уменьщаем посещения у старой фирмы, если она была
-    firmId = Grid.TextMatrix(Grid.row, gfId)
-    ValueToTableField "##20", firmId, "Orders", "FirmId"
+    FirmId = Grid.TextMatrix(Grid.row, gfId)
+    ValueToTableField "##20", FirmId, "Orders", "FirmId"
     visits "+", "firm" ' увеличиваем посещения у новой фирмы
 
     DNM = Format(Now(), "dd.mm.yy hh:nn") & vbTab & Orders.cbM.Text & " " & gNzak ' именно vbTab
@@ -522,7 +501,7 @@ Next I
 cbM.ListIndex = 0
 lbM.Height = lbM.Height + 195 * (lbM.ListCount - 1)
 
-Me.Caption = "Справочник сторонних организаций"
+'Me.Caption = "Справочник сторонних организаций"
 
 If tbFind.Text <> "" Then cmFind.Enabled = True
 If Regim = "fromContext" Then 'из Orders
@@ -700,18 +679,18 @@ Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As 
                 wrkDefault.BeginTrans
                 myExecute "##moveF.1", sql, -1
 
-                sql = " update guidefirms dst" _
+                sql = " update FirmGuide dst" _
                     & " set dst.year01 = dst.year01 + src.year01 " _
                     & " ,dst.year02 = dst.year02 + src.year02   " _
                     & " ,dst.year03 = dst.year03 + src.year03   " _
                     & " ,dst.year04 = dst.year04 + src.year04   " _
-                    & " from guidefirms src                     " _
+                    & " from FirmGuide src                     " _
                     & " where src.firmid = " & moveSrcFirmId _
                     & " and dst.firmId = " & dstFirmId
                     
                 myExecute "##moveF.2", sql, -1
 
-                sql = " update guidefirms set " _
+                sql = " update FirmGuide set " _
                     & "   year01 = 0          " _
                     & " , year02 = 0          " _
                     & " , year03 = 0          " _
@@ -728,7 +707,7 @@ Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As 
                 
                 If MsgBox("Вы так же можете из базы полностью удалить информацию о фирме '" & moveSrcFirmName & "'" _
                 & vbCr & "Нажмите Да[Yes], если вы действительно хотите удалить, или Нет[No], тогда это можно будет сделать позже.", vbYesNo) = vbYes Then
-                    sql = "delete from guidefirms where firmId = " & moveSrcFirmId
+                    sql = "delete from FirmGuide where firmId = " & moveSrcFirmId
                     wrkDefault.BeginTrans
                     Err = myExecute("##moveF.2", sql)
                     wrkDefault.CommitTrans
@@ -736,7 +715,7 @@ Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As 
                         Dim I As Long
                         For I = 1 To Grid.Rows - 1
                             If Grid.TextMatrix(I, gfId) = moveSrcFirmId Then
-                                Grid.removeItem (I)
+                                Grid.RemoveItem (I)
                                 Exit For
                             End If
                         Next I
@@ -767,7 +746,7 @@ End Sub
 
 Private Sub lbKP_DblClick()
 
-ValueToTableField "##66", "'" & lbKP.Text & "'", "GuideFirms", "Kategor", "byFirmId"
+ValueToTableField "##66", "'" & lbKP.Text & "'", "FirmGuide", "Kategor", "byFirmId"
 Grid.TextMatrix(mousRow, gfKategor) = lbKP.Text
 lbHide
 cep = False
@@ -790,7 +769,7 @@ If lbM.ListIndex = 0 Then
 Else
     str = manId(lbM.ListIndex - 1)
 End If
-ValueToTableField "##66", str, "GuideFirms", "ManagId", "byFirmId"
+ValueToTableField "##66", str, "FirmGuide", "ManagId", "byFirmId"
 Grid.TextMatrix(mousRow, gfM) = lbM.Text
 lbHide
 If cep Then
@@ -857,16 +836,10 @@ If KeyCode = vbKeyReturn Then
    On Error GoTo ERR1
    If strId = "" Then
     wrkDefault.BeginTrans
-    sql = "update guidefirms set firmId = firmId where firmId = 0"
-    myBase.Execute sql
     
-    sql = "select max(firmid) from guidefirms;"
-    If Not byErrSqlGetValues("##50", sql, gFirmId) Then GoTo ERR1
-    gFirmId = gFirmId + 1
-    
-    sql = "insert into guidefirms (firmId, name) values (" & gFirmId & ", '" & str & "')"
-    I = myExecute("##50", sql, -196)
-    If I <> 0 Then GoTo ERR0:
+    sql = "insert into FirmGuide (name, werkId) values ('" & str & "', 2); select @@identity;"
+    I = byErrSqlGetValues("##50", sql, gFirmId)
+    If I > 0 Then GoTo ERR0:
     wrkDefault.CommitTrans
     
     Grid.TextMatrix(mousRow, gfId) = gFirmId
@@ -882,7 +855,7 @@ If KeyCode = vbKeyReturn Then
     listBoxInGridCell lbM, Grid
     Exit Sub
    Else
-    sql = "UPDATE GuideFirms SET Name = '" & str & _
+    sql = "UPDATE FirmGuide SET Name = '" & str & _
     "' WHERE (((FirmId)=" & strId & "));"
 '    MsgBox sql
     I = myExecute("##356", sql, -196)
@@ -890,41 +863,41 @@ If KeyCode = vbKeyReturn Then
    End If
    On Error GoTo 0
  ElseIf mousCol = gfSale Then
-    ValueToTableField "##66", "'" & str & "'", "GuideFirms", "Sale", "byFirmId"
+    ValueToTableField "##66", "'" & str & "'", "FirmGuide", "Sale", "byFirmId"
  ElseIf mousCol = gfFIO Then
-    ValueToTableField "##66", "'" & str & "'", "GuideFirms", "FIO", "byFirmId"
+    ValueToTableField "##66", "'" & str & "'", "FirmGuide", "FIO", "byFirmId"
  ElseIf mousCol = gfTlf Then
-    ValueToTableField "##66", "'" & str & "'", "GuideFirms", "Phone", "byFirmId"
+    ValueToTableField "##66", "'" & str & "'", "FirmGuide", "Phone", "byFirmId"
  ElseIf mousCol = gfFax Then
-    ValueToTableField "##66", "'" & str & "'", "GuideFirms", "Fax", "byFirmId"
+    ValueToTableField "##66", "'" & str & "'", "FirmGuide", "Fax", "byFirmId"
  ElseIf mousCol = gfEmail Then
-    ValueToTableField "##66", "'" & str & "'", "GuideFirms", "Email", "byFirmId"
+    ValueToTableField "##66", "'" & str & "'", "FirmGuide", "Email", "byFirmId"
  ElseIf mousCol = gfAdres Then
-    ValueToTableField "##66", "'" & str & "'", "GuideFirms", "Address", "byFirmId"
+    ValueToTableField "##66", "'" & str & "'", "FirmGuide", "Address", "byFirmId"
  ElseIf mousCol = gfAtr1 Then
-    ValueToTableField "##66", "'" & str & "'", "GuideFirms", "Atr1", "byFirmId"
+    ValueToTableField "##66", "'" & str & "'", "FirmGuide", "Atr1", "byFirmId"
  ElseIf mousCol = gfAtr2 Then
-    ValueToTableField "##66", "'" & str & "'", "GuideFirms", "Atr2", "byFirmId"
+    ValueToTableField "##66", "'" & str & "'", "FirmGuide", "Atr2", "byFirmId"
  ElseIf mousCol = gfAtr3 Then
-    ValueToTableField "##66", "'" & str & "'", "GuideFirms", "Atr3", "byFirmId"
+    ValueToTableField "##66", "'" & str & "'", "FirmGuide", "Atr3", "byFirmId"
  ElseIf mousCol = gfLogin Then
     If str <> "" And str <> Grid.TextMatrix(mousRow, gfLogin) Then
-        If existValueInTableFielf(str, "GuideFirms", "xLogin") Then '$#$
+        If existValueInTableFielf(str, "FirmGuide", "xLogin") Then '$#$
             MsgBox "Такой логин уже есть.", , "Недопустимое значение"
             tbMobile.SelStart = Len(tbMobile.Text)
             tbMobile.SetFocus
             Exit Sub
         End If
     End If
-    ValueToTableField "##66", "'" & str & "'", "GuideFirms", "xLogin", "byFirmId"
+    ValueToTableField "##66", "'" & str & "'", "FirmGuide", "xLogin", "byFirmId"
  ElseIf mousCol = gfPass Then
-    ValueToTableField "##66", "'" & str & "'", "GuideFirms", "Pass", "byFirmId"
+    ValueToTableField "##66", "'" & str & "'", "FirmGuide", "Pass", "byFirmId"
  ElseIf mousCol = gfLevel Then
-    ValueToTableField "##66", "'" & str & "'", "GuideFirms", "Level", "byFirmId"
+    ValueToTableField "##66", "'" & str & "'", "FirmGuide", "Level", "byFirmId"
  ElseIf mousCol = gfType Then
-    ValueToTableField "##66", "'" & str & "'", "GuideFirms", "Type", "byFirmId"
+    ValueToTableField "##66", "'" & str & "'", "FirmGuide", "Type", "byFirmId"
  ElseIf mousCol = gfKatalog Then
-    ValueToTableField "##66", "'" & str & "'", "GuideFirms", "Katalog", "byFirmId"
+    ValueToTableField "##66", "'" & str & "'", "FirmGuide", "Katalog", "byFirmId"
 End If
 AA:
  Grid.TextMatrix(mousRow, mousCol) = str
@@ -933,12 +906,14 @@ End If
 
 Exit Sub
 
-ERR0: If I = -2 Then
+ERR0:
+    If I = -2 Then
         MsgBox "Такая фирма уже есть", , "Ошибка!"
         tbMobile.SetFocus
       Else
 ERR1:   lbHide
       End If
+    wrkDefault.Rollback
 End Sub
 
 

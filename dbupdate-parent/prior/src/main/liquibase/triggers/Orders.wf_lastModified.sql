@@ -13,7 +13,7 @@ for each row
 begin
 	declare do_correction int;
 
-	if not update(rowLock) and not update(numorder) and not update(lastModified) and not update(lastManagId) and not update(id_bill) then
+	if not update(rowLock) and not update(numorder) and not update(lastModified) and not update(lastManagId) then
 		set do_correction = 1;
 		if update(dateRS) then
 			if isnull(old_name.dateRS, convert(datetime, '20000101')) != isnull(new_name.dateRS, convert(datetime, '20000101')) then

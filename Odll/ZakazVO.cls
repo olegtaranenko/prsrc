@@ -14,27 +14,36 @@ Attribute VB_Exposed = False
 Option Explicit
 
 Public Numorder As Long
-Public werkId As Integer
-Public equipId As Integer
+Public WerkId As Integer
+Public EquipId As Integer
+Public FirmId As Integer        ' заказчик
 Public StatusId As Integer
-Public Outtime As Variant ' Integer (may be null)
+Public Outtime As Variant       ' Integer Orders
+Public StatusInCeh As Variant   ' OrdersInCeh
+Public Outdatetime As Variant   ' Orders
 
-Public Worktime As Double
-Public Outdatetime As Variant
-Public statusEquipID As Variant
-Public statusInCeh As Variant
+Public Remark As Variant ' nullable String, Orders
+Public Transport As Variant ' nullable String, Orders
 
-Public DateRS As Variant
-Public DateTimeMO As Variant
-Public WorktimeMO As Variant
-Public StatM As Variant
-Public StatO As Variant
-Public nevip As Variant
-Public urgent As String 'Variant
-Public m_lastModified As Variant ' Date
-Public m_lastModifiedEquip As Variant ' Date
-Public m_lastManagId As Variant 'String
-Public m_lastManagEquipId As Variant 'String
+
+Public Worktime As Double       ' OrdersEquip накапливается по всем оборудованиям
+Public statusEquipID As Variant ' OrdersEquip
+
+Public DateRS As Variant        'Date  Orders
+Public DateTimeMO As Variant    'Date  OrdersInCeh
+Public WorktimeMO As Variant    'Double OrdersEquip накапливается по всем оборудованиям
+Public StatM As Variant         'String OrdersInCeh
+Public StatO As Variant         'String OrdersEquip
+Public nevip As Variant         'Double OrdersInCeh
+Public urgent As String         'Variant OrdersInCeh
+Public equipStatusSync As Integer     ' показывает, что статусы по оборудованиям рассогласованы
+
+Public m_lastModified As Variant        ' Date
+Public m_lastModifiedEquip As Variant   ' Date
+Public m_lastModifiedInCeh As Variant   ' Date
+Public m_lastManagId As Variant         'String
+Public m_lastManagEquipId As Variant    'String
+Public m_lastManagInCehId As Variant    'String
 
 Private done As Boolean
 
@@ -60,40 +69,39 @@ Public Property Get lastManagId() As Variant
     If IsNull(m_lastManagId) And IsNull(m_lastManagEquipId) Then
         lastManagId = Null
     Else
-        If IsNull(m_lastManagId) Then
-            lastManagId = m_lastManagEquipId
-        ElseIf IsNull(m_lastManagEquipId) Then
+        If Not IsNull(m_lastManagId) And Not IsEmpty(m_lastManagId) Then
             lastManagId = m_lastManagId
         Else
-            If m_lastManagId > m_lastManagEquipId Then
-                lastManagId = m_lastManagId
-            Else
-                lastManagId = m_lastManagEquipId
-            End If
+            lastManagId = m_lastManagEquipId
         End If
     End If
 End Property
 
+
 Public Property Get lastManag() As String
     Dim vlmid As Variant
     vlmid = lastManagId
-    lastManag = getManagById(vlmid)
+    If Not IsNull(vlmid) Then
+        lastManag = Manag(vlmid)
+    End If
 End Property
 
 
-
 Public Sub incrementFromDb()
+
 Dim resetToCurrentEquip As Boolean
-    done = False
-    resetToCurrentEquip = False
+Dim currentLastModified As Date
+    
     If tbOrders.BOF Then
         Exit Sub
     End If
-    If tbOrders!Numorder <> Me.Numorder Then
-        Me.clean
-        Me.initFromDb
-    Else
-        Dim currentLastModified As Date
+    
+    done = False
+    resetToCurrentEquip = False
+    
+        
+    Numorder = tbOrders!Numorder
+        
         If Not IsNull(tbOrders!lastModified) Then
             currentLastModified = tbOrders!lastModified
             If IsNull(Me.m_lastModified) Or (Not IsNull(Me.m_lastModified) And Me.m_lastModified < currentLastModified) Then
@@ -101,24 +109,50 @@ Dim resetToCurrentEquip As Boolean
                 resetToCurrentEquip = True
             End If
         End If
-        If Not IsNull(tbOrders!lastModifiedEquip) Then
-            currentLastModified = tbOrders!lastModifiedEquip
-            If IsNull(Me.m_lastModified) Or (Not IsNull(Me.m_lastModified) And Me.m_lastModified < currentLastModified) Then
-                m_lastModifiedEquip = currentLastModified
-                resetToCurrentEquip = True
-            End If
-        End If
-    End If
-    
-    If resetToCurrentEquip Then
-        werkId = tbOrders!werkId
-        If IsNull(tbOrders!equipId) Then
-            equipId = 0
+        
+        WerkId = tbOrders!WerkId
+        If IsNull(tbOrders!EquipId) Then
+            EquipId = 0
         Else
-            equipId = tbOrders!equipId
+            EquipId = tbOrders!EquipId
         End If
+        StatusId = tbOrders!StatusId
+        FirmId = tbOrders!FirmId
+        
+        m_lastManagId = tbOrders!lastManagId
+        m_lastManagEquipId = tbOrders!lastManagEquipId
+        
         If tbOrders!presentationFormat = 1 Then
+            
+            If Not IsNull(tbOrders!lastModifiedEquip) Then
+                currentLastModified = tbOrders!lastModifiedEquip
+                If IsNull(Me.m_lastModified) Or (Not IsNull(Me.m_lastModified) And Me.m_lastModified < currentLastModified) Then
+                    m_lastModifiedEquip = currentLastModified
+                    resetToCurrentEquip = True
+                End If
+            End If
+
+            If Not IsNull(tbOrders!Worktime) Then
+                Worktime = Worktime + tbOrders!Worktime
+            End If
+            If Not IsNull(tbOrders!WorktimeMO) Then
+                WorktimeMO = WorktimeMO + tbOrders!WorktimeMO
+            End If
+            If Not IsNull(tbOrders!StatO) Then
+                ' комиш, абер лучше, чем просто переписывать
+                StatO = StatO & tbOrders!StatO
+                'StatO = tbOrders!StatO
+            End If
+
+            If Not IsNull(tbOrders!statusEquipID) Then
+                If Not IsEmpty(statusEquipID) And statusEquipID <> tbOrders!statusEquipID Then
+                    Me.equipStatusSync = 1
+                End If
+                statusEquipID = tbOrders!statusEquipID
+            End If
+
         ElseIf tbOrders!presentationFormat = 0 Then
+
             Outtime = tbOrders!Outtime
             If IsNull(Outtime) Then
                 Outdatetime = tbOrders!Outdatetime
@@ -127,7 +161,7 @@ Dim resetToCurrentEquip As Boolean
             End If
             Worktime = tbOrders!Worktime
             statusEquipID = tbOrders!statusEquipID
-            statusInCeh = tbOrders!statusInCeh
+            StatusInCeh = tbOrders!StatusInCeh
             DateRS = tbOrders!DateRS
             DateTimeMO = tbOrders!DateTimeMO
             WorktimeMO = tbOrders!WorktimeMO
@@ -140,26 +174,30 @@ Dim resetToCurrentEquip As Boolean
                 urgent = ""
             End If
         End If
-        m_lastManagEquipId = tbOrders!lastManagEquipId
-        m_lastManagId = tbOrders!lastManagId
 
         done = True
-    End If
     
 End Sub
 
+
 Public Sub initFromDb()
+    clean
+    incrementFromDb
+End Sub
+
+
+Public Sub initFromDb_()
 
     If tbOrders.BOF Then
         Exit Sub
     End If
 
     Numorder = tbOrders!Numorder
-    If Not IsNull(tbOrders!werkId) Then
-        werkId = tbOrders!werkId
+    If Not IsNull(tbOrders!WerkId) Then
+        WerkId = tbOrders!WerkId
     End If
-    If Not IsNull(tbOrders!equipId) Then
-        equipId = tbOrders!equipId
+    If Not IsNull(tbOrders!EquipId) Then
+        EquipId = tbOrders!EquipId
     End If
     StatusId = tbOrders!StatusId
     m_lastModified = tbOrders!lastModified
@@ -168,6 +206,7 @@ Public Sub initFromDb()
     If tbOrders!presentationFormat = 1 Then
         m_lastModifiedEquip = tbOrders!lastModifiedEquip
         m_lastManagEquipId = tbOrders!lastManagEquipId
+        
     ElseIf tbOrders!presentationFormat = 0 Then
         Outtime = tbOrders!Outtime
         If IsNull(Outtime) Then
@@ -177,7 +216,7 @@ Public Sub initFromDb()
         End If
         Worktime = tbOrders!Worktime
         statusEquipID = tbOrders!statusEquipID
-        statusInCeh = tbOrders!statusInCeh
+        StatusInCeh = tbOrders!StatusInCeh
         DateRS = tbOrders!DateRS
         DateTimeMO = tbOrders!DateTimeMO
         WorktimeMO = tbOrders!WorktimeMO
@@ -198,16 +237,20 @@ Public Property Get inited() As Boolean
 End Property
 
 Public Sub clean()
+
+    done = False
+
     Numorder = 0
-    werkId = 0
-    equipId = 0
+    WerkId = 0
+    EquipId = 0
     StatusId = -1
     Outtime = 0
-    
+    equipStatusSync = 0
+
     Worktime = 0
     Outdatetime = Null
     statusEquipID = Null
-    statusInCeh = Null
+    StatusInCeh = Null
     
     DateRS = Null
     DateTimeMO = Null

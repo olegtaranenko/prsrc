@@ -131,36 +131,36 @@ tmpStr = lb.Text
 Unload Me
 
 Me.MousePointer = flexHourglass
-GuideFirms.Regim = "fromFindFirm"
-GuideFirms.tbFind.Text = tmpStr
-GuideFirms.cmSel.Visible = bilo
-GuideFirms.cmLoad.Visible = Not bilo
+BayGuideFirms.Regim = "fromFindFirm"
+BayGuideFirms.tbFind.Text = tmpStr
+BayGuideFirms.cmSel.Visible = bilo
+BayGuideFirms.cmLoad.Visible = Not bilo
 
 Me.MousePointer = flexDefault
 
 'Unload Me
-''GuideFirms.cmFind_Click
-''GuideFirms.cmFind.Caption = "Поиск"
+''BayGuideFirms.cmFind_Click
+''BayGuideFirms.cmFind.Caption = "Поиск"
 
-GuideFirms.Show vbModal
+BayGuideFirms.Show vbModal
 End Sub
 
 Private Sub cmNext_Click()
-Dim i As Integer, wordLen As Integer, word As String
+Dim I As Integer, wordLen As Integer, word As String
 
 pos = pos + 1
 word = LCase(tb.Text)
 oldWord = word
 wordLen = Len(word)
-For i = pos To lb.ListCount - 1
-    If InStr(LCase(lb.List(i)), word) > 0 Then
-        lb.Selected(i) = True
-        pos = i
+For I = pos To lb.ListCount - 1
+    If InStr(LCase(lb.List(I)), word) > 0 Then
+        lb.Selected(I) = True
+        pos = I
         cmSelect.Enabled = True
         Exit Sub
     End If
     pos = -1
-Next i
+Next I
 
 
 End Sub
@@ -206,7 +206,7 @@ Unload Me
 End Sub
 
 Private Sub cmFiltr_Click()
-Dim i As Integer, wordLen As Integer, word As String
+Dim I As Integer, wordLen As Integer, word As String
 Dim tmpId() As Integer, tmpName() As String, ti As Integer
 
 If cmFiltr.Caption = "Фильтр" Then
@@ -219,20 +219,20 @@ If cmFiltr.Caption = "Фильтр" Then
  oldWord = word
  wordLen = Len(word)
  ti = -1
- For i = 0 To lb.ListCount - 1
-    If InStr(LCase(lb.List(i)), word) > 0 Then
+ For I = 0 To lb.ListCount - 1
+    If InStr(LCase(lb.List(I)), word) > 0 Then
         ti = ti + 1
         myRedim tmpId, ti
         myRedim tmpName, ti
-        tmpName(ti) = lb.List(i)
-        tmpId(ti) = firmsId(i)
+        tmpName(ti) = lb.List(I)
+        tmpId(ti) = firmsId(I)
     End If
- Next i
+ Next I
  lb.Clear
- For i = 0 To ti
-    lb.AddItem tmpName(i), i
-    firmsId(i) = tmpId(i)
- Next i
+ For I = 0 To ti
+    lb.AddItem tmpName(I), I
+    firmsId(I) = tmpId(I)
+ Next I
  cmFiltr.Caption = "Обновить"
 Else
  cmNext.Enabled = True
@@ -253,21 +253,21 @@ loadFirms
 End Sub
 
 Sub loadFirms()
-Dim i As Integer
+Dim I As Integer
 
 sql = "SELECT BayGuideFirms.FirmId, BayGuideFirms.Name From BayGuideFirms " & _
 "ORDER BY BayGuideFirms.Name;"
 Set tbFirms = myOpenRecordSet("##70", sql, dbOpenForwardOnly)
 If tbFirms Is Nothing Then Exit Sub
 myRedim firmsId, 1000
-i = 0
+I = 0
 If Not tbFirms.BOF Then
   While Not tbFirms.EOF
     If tbFirms!firmId = 0 Then GoTo NXT
     lb.AddItem tbFirms!Name
-    myRedim firmsId, i + 1
-    firmsId(i) = tbFirms!firmId
-    i = i + 1
+    myRedim firmsId, I + 1
+    firmsId(I) = tbFirms!firmId
+    I = I + 1
 NXT:
     tbFirms.MoveNext
   Wend
@@ -296,23 +296,23 @@ If cmSelect.Enabled = True And cmSelect.Visible = True Then cmSelect_Click
 End Sub
 
 Private Sub tb_Change()
-Dim i As Integer, wordLen As Integer, word As String
+Dim I As Integer, wordLen As Integer, word As String
 
 word = LCase(tb.Text)
 wordLen = Len(word)
-If left$(word, Len(oldWord)) <> oldWord Then pos = 0
+If Left$(word, Len(oldWord)) <> oldWord Then pos = 0
 oldWord = word
-For i = pos To lb.ListCount - 1
-    If LCase(left$(lb.List(i), wordLen)) = word Then
-        lb.Selected(i) = True
-        pos = i
+For I = pos To lb.ListCount - 1
+    If LCase(Left$(lb.List(I), wordLen)) = word Then
+        lb.Selected(I) = True
+        pos = I
         cmSelect.Enabled = True
         cmNoClose.Enabled = True
         cmAllOrders.Enabled = True
         cmNoCloseFiltr.Enabled = True
         Exit Sub
     End If
-Next i
+Next I
 
 End Sub
 

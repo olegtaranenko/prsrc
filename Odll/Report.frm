@@ -378,7 +378,7 @@ If sum > 0 Then
         & "o.Product, o.ProblemId, oe.outDateTime, " _
         & "f.Name, oe.workTime, o.StatusId, oe.Nevip " _
         & " FROM Orders o" _
-        & " JOIN GuideFirms f ON f.FirmId = o.FirmId " _
+        & " JOIN FirmGuide f ON f.FirmId = o.FirmId " _
         & " JOIN OrdersEquip oe ON o.numOrder = oe.numOrder AND oe.equipId = " & idEquip _
         & "WHERE o.numOrder = " & NN(I)
     Else 'образец
@@ -387,7 +387,7 @@ If sum > 0 Then
         "o.Product, o.ProblemId, oc.DateTimeMO As outDateTime, " _
         & " f.Name, oe.workTimeMO As workTime" _
         & " FROM Orders o" _
-        & " JOIN GuideFirms f ON f.FirmId = o.FirmId" _
+        & " JOIN FirmGuide f ON f.FirmId = o.FirmId" _
         & " JOIN OrdersEquip oe ON o.numOrder = oe.numOrder AND oe.equipId = " & idEquip _
         & " LEFT JOIN OrdersInCeh oc ON o.numOrder = oc.numOrder" _
         & " WHERE o.numOrder = " & NN(I)
@@ -417,7 +417,7 @@ If sum > 0 Then
 '        Grid.TextMatrix(quantity + i, crProblem) = Problems(tbOrders!ProblemId)
         LoadDate Grid, quantity + I, crDataVid, tbOrders!Outdatetime, "dd.mm.yy"
         LoadDate Grid, quantity + I, crVrVid, tbOrders!Outdatetime, "hh"
-        Grid.TextMatrix(quantity + I, crFirma) = tbOrders!name
+        Grid.TextMatrix(quantity + I, crFirma) = tbOrders!Name
         Grid.TextMatrix(quantity + I, crLogo) = tbOrders!Logo
         Grid.TextMatrix(quantity + I, crIzdelia) = tbOrders!Product
     End If
@@ -489,19 +489,19 @@ End If
 
 sql = "SELECT GuideManag.ManagId, GuideManag.Manag From GuideManag " & _
       "ORDER BY GuideManag.ForSort;"
-Set table = myOpenRecordSet("##75", sql, dbOpenForwardOnly)
-If table Is Nothing Then Exit Sub
+Set Table = myOpenRecordSet("##75", sql, dbOpenForwardOnly)
+If Table Is Nothing Then Exit Sub
 'Table.MoveFirst
-If table.BOF Then
-    table.Close
+If Table.BOF Then
+    Table.Close
     Exit Sub
 End If
 line = 2
 Dim sumKK As Integer, sumRA As Integer, sumAll As Integer
 sumKK = 0: sumRA = 0: sumAll = 0
-While Not table.EOF '    ********************
-    Grid.TextMatrix(line, rpM2) = table!Manag
-    id = table!ManagId
+While Not Table.EOF '    ********************
+    Grid.TextMatrix(line, rpM2) = Table!Manag
+    id = Table!ManagId
     I = getCount(id, "KK"): sumKK = sumKK + I
     Grid.TextMatrix(line, rpFirmKK) = I
     I = getCount(id, "RA"): sumRA = sumRA + I
@@ -520,7 +520,7 @@ While Not table.EOF '    ********************
         Grid.TextMatrix(line, rpPaidAll) = Format(paidSum, "0.00")
     line = line + 1
     Grid.AddItem ""
-    table.MoveNext
+    Table.MoveNext
 Wend '    ********************
 Grid.RowHeight(line) = 50
 Grid.AddItem ""
@@ -530,7 +530,7 @@ Grid.col = rpFirmKK: Grid.CellFontBold = True: Grid.Text = sumKK
 Grid.col = rpFirmRA: Grid.CellFontBold = True: Grid.Text = sumRA
 Grid.col = rpFirmAll: Grid.CellFontBold = True: Grid.Text = sumAll
 
-table.Close
+Table.Close
 
 End Sub
 '$odbc15$
@@ -576,7 +576,7 @@ End Function
 
 Function getCount(id As Integer, typ As String) As Integer
 Dim strWhere As String
-strWhere = "(GuideFirms.Kategor)"
+strWhere = "(FirmGuide.Kategor)"
 If typ = "KK" Then
     strWhere = "(" & strWhere & "='К') AND"
 ElseIf typ = "RA" Then
@@ -585,8 +585,8 @@ Else
     strWhere = ""
 End If
 getCount = 0
-sql = "SELECT Count(GuideFirms.FirmId) AS Kolvo From GuideFirms " & _
-"WHERE (" & strWhere & " ((GuideFirms.ManagId)=" & id & "));"
+sql = "SELECT Count(FirmGuide.FirmId) AS Kolvo From FirmGuide " & _
+"WHERE (" & strWhere & " ((FirmGuide.ManagId)=" & id & "));"
 'MsgBox sql
 Set tbFirms = myOpenRecordSet("##458", sql, dbOpenForwardOnly)
 If tbFirms Is Nothing Then Exit Function
@@ -598,8 +598,8 @@ End Function
 
 'Regim = "Orders"       FindFirm    <Отчет "Незакрытые заказы">
 'Regim = "allOrders"    FindFirm    <Отч."Все заказы фирмы">
-'Regim = "FromFirms"    GuideFirms  <Отчет "Незакрытые заказы">
-'Regim = "allFromFirms" GuideFirms  <Отч."Все заказы фирмы>
+'Regim = "FromFirms"    FirmGuide  <Отчет "Незакрытые заказы">
+'Regim = "allFromFirms" FirmGuide  <Отч."Все заказы фирмы>
 'Regim = "fromCehNaklad Nakladna    <Состав изд.>
 '       Команды конт.меню при клике в поле Фирма в Orders
 'Regim = "allOrdersByFirmName" 'Отчет "Все заказы Фирмы"'
@@ -619,7 +619,7 @@ Grid.ColWidth(rpIzdelia) = 3240 ' 3570
 
 If Regim = "Orders" Or Regim = "allOrders" Then 'из FindFirm
     strFirm = FindFirm.lb.Text
-    strWhere = "((Orders.FirmId)=" & FindFirm.firmId & ")"
+    strWhere = "((Orders.FirmId)=" & FindFirm.FirmId & ")"
     strFrom = "FROM GuideManag INNER JOIN Orders ON GuideManag.ManagId = Orders.ManagId"
 ElseIf Regim = "FromFirms" Or Regim = "allFromFirms" Then
     strFirm = GuideFirms.Grid.TextMatrix(GuideFirms.mousRow, gfNazwFirm)
@@ -627,8 +627,8 @@ ElseIf Regim = "FromFirms" Or Regim = "allFromFirms" Then
     strFrom = "FROM GuideManag INNER JOIN Orders ON GuideManag.ManagId = Orders.ManagId"
 Else                                            'из конт. меню
     strFirm = Orders.Grid.TextMatrix(Orders.mousRow, orFirma)
-    strWhere = "((GuideFirms.Name)='" & strFirm & "')"
-    strFrom = "FROM GuideFirms INNER JOIN (GuideManag INNER JOIN Orders ON GuideManag.ManagId = Orders.ManagId) ON GuideFirms.FirmId = Orders.FirmId"
+    strWhere = "((FirmGuide.Name)='" & strFirm & "')"
+    strFrom = "FROM FirmGuide INNER JOIN (GuideManag INNER JOIN Orders ON GuideManag.ManagId = Orders.ManagId) ON FirmGuide.FirmId = Orders.FirmId"
 End If
 If Regim = "allOrdersByFirmName" Or Regim = "allOrders" Or Regim = "allFromFirms" Then
     flReportArhivOrders = True
@@ -639,12 +639,11 @@ Else
 End If
 
 sql = "SELECT Orders.numOrder, Orders.StatusId, Orders.ProblemId, " & _
-"Orders.DateRS, Orders.FirmId, oe.outDateTime, Orders.Logo, " & _
+"Orders.DateRS, Orders.FirmId, Orders.outDateTime, Orders.Logo, " & _
 "Orders.Product, Orders.ordered, Orders.paid, Orders.shipped, " & _
 "GuideManag.Manag " & _
 strFrom _
-& " JOIN vw_OrdersEquipSummary oe on oe.numorder = Orders.numorder" _
-& " WHERE " & strWhere & " ORDER BY oe.outDateTime;"
+& " WHERE " & strWhere & " ORDER BY Orders.outDateTime"
 
 Set tqOrders = myOpenRecordSet("##65", sql, dbOpenDynaset)
 L = 1
@@ -828,14 +827,14 @@ While Not tbProduct.EOF
   For I = 1 To UBound(NN)
     sql = "SELECT nomName From sGuideNomenk WHERE (((nomNom)='" & NN(I) & "'));"
     byErrSqlGetValues "##333", sql, str
-    Grid.AddItem Chr(9) & NN(I) & Chr(9) & str & Chr(9) & QQ(I)
+    Grid.AddItem Chr(9) & NN(I) & Chr(9) & str & Chr(9) & Round(QQ(I), 2)
   Next I
   Grid.AddItem ""
 NXT:
   tbProduct.MoveNext
 Wend
-Grid.removeItem Grid.Rows
-Grid.removeItem 1
+Grid.RemoveItem Grid.Rows
+Grid.RemoveItem 1
 
 I = 350 + (Grid.CellHeight + 17) * Grid.Rows
 delta = I - Grid.Height

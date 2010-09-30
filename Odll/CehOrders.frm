@@ -3,24 +3,22 @@ Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form WerkOrders 
    BackColor       =   &H8000000A&
    Caption         =   " "
-   ClientHeight    =   5730
+   ClientHeight    =   5784
    ClientLeft      =   60
-   ClientTop       =   345
+   ClientTop       =   348
    ClientWidth     =   11880
    Icon            =   "CehOrders.frx":0000
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
-   ScaleHeight     =   5730
+   ScaleHeight     =   5784
    ScaleWidth      =   11880
    StartUpPosition =   2  'CenterScreen
-   Begin VB.CommandButton cmEquip 
-      Caption         =   "All"
-      Height          =   315
-      Index           =   0
-      Left            =   3960
+   Begin VB.ComboBox cbEquips 
+      Height          =   288
+      Left            =   6000
       TabIndex        =   16
       Top             =   5400
-      Width           =   495
+      Width           =   2652
    End
    Begin VB.CommandButton cmNaklad 
       Caption         =   "Выписанные накладные"
@@ -106,7 +104,7 @@ Begin VB.Form WerkOrders
       Width           =   1575
    End
    Begin VB.ListBox lbProblem 
-      Height          =   1230
+      Height          =   1200
       Left            =   3300
       TabIndex        =   5
       Top             =   3240
@@ -122,7 +120,7 @@ Begin VB.Form WerkOrders
       Width           =   915
    End
    Begin VB.ListBox lbStatus 
-      Height          =   1815
+      Height          =   1776
       ItemData        =   "CehOrders.frx":030A
       Left            =   540
       List            =   "CehOrders.frx":0329
@@ -132,7 +130,7 @@ Begin VB.Form WerkOrders
       Width           =   1035
    End
    Begin VB.ListBox lbObrazec 
-      Height          =   450
+      Height          =   432
       ItemData        =   "CehOrders.frx":0361
       Left            =   1560
       List            =   "CehOrders.frx":036B
@@ -142,7 +140,7 @@ Begin VB.Form WerkOrders
       Width           =   855
    End
    Begin VB.ListBox lbMaket 
-      Height          =   450
+      Height          =   432
       ItemData        =   "CehOrders.frx":0378
       Left            =   2460
       List            =   "CehOrders.frx":0382
@@ -157,10 +155,20 @@ Begin VB.Form WerkOrders
       TabIndex        =   0
       Top             =   360
       Width           =   11655
-      _ExtentX        =   20558
-      _ExtentY        =   8705
+      _ExtentX        =   20553
+      _ExtentY        =   8700
       _Version        =   393216
       AllowUserResizing=   1
+   End
+   Begin VB.Label lbEquips 
+      Alignment       =   1  'Right Justify
+      BackColor       =   &H8000000A&
+      Caption         =   "Выбор оборудования:"
+      Height          =   252
+      Left            =   3960
+      TabIndex        =   17
+      Top             =   5400
+      Width           =   1932
    End
    Begin VB.Label Label1 
       Caption         =   "<F1>"
@@ -203,6 +211,13 @@ Dim maxExt
 Dim tbCeh As Recordset
 Dim idEquip As Integer
 
+
+Private Sub cbEquips_Click()
+    If noClick Then Exit Sub
+    idEquip = cbEquips.ItemData(cbEquips.ListIndex)
+    werkBegin
+    gridIsLoad = True
+End Sub
 
 Private Sub chDetail_Click()
 Dim StatusId As String, Worktime As String, Left As String, Numorder As String, Outdatetime As String, Rollback As String
@@ -270,7 +285,8 @@ If KeyCode = vbKeyF1 Then
 End If
 End Sub
 
-Sub werkBegin()
+
+Sub werkBegin(Optional doEquipToolbar As Boolean = False)
 Dim str As String, I As Integer, J As Integer, IL As Long, tmpTopRow As Long
 tmpTopRow = Grid.TopRow
 
@@ -305,7 +321,7 @@ colWdth(chLogo) = Grid.ColWidth(chLogo) + Grid.ColWidth(chDataRes)
 
 Grid.Visible = False
 For IL = Grid.Rows To 3 Step -1
-    Grid.removeItem (IL)
+    Grid.RemoveItem (IL)
 Next IL
 Grid.row = 1
 For IL = 0 To Grid.Cols - 1
@@ -335,75 +351,45 @@ Grid.ColWidth(chVrVid) = colWdth(chVrVid)
 Grid.ColWidth(chFirma) = colWdth(chFirma)
 Grid.ColWidth(chLogo) = colWdth(chLogo) - Grid.ColWidth(chDataRes)
 
-Dim RightLinie As Long, HShift As Long
-Dim equipIndex As Integer
+Dim RightLinie As Long
+Dim equipIndex As Integer, HShift As Long
 
 
 
-    HShift = cmEquip(0).Width + 20
-    RightLinie = cmEquip(0).Left + HShift
-    Dim werkSql As String
-    If idWerk > 0 Then
-        werkSql = " AND we.werkId = " & idWerk
-    End If
+    'HShift = cmEquip(0).Width + 20
+    'RightLinie = cmEquip(0).Left + HShift
     
-    sql = "select e.equipId, e.equipName, we.equipId as IsPresent " _
-        & vbCr & " from GuideEquip e " _
-        & " LEFT JOIN WerkEquip we ON we.equipId = e.equipId" & werkSql _
-        & vbCr & " WHERE e.equipId > 0" _
-        & " group by e.equipId, e.equipName, ispresent" _
-        & " order by e.equipId"
-
-    Set tbOrders = myOpenRecordSet("##we.01", sql, dbOpenForwardOnly)
-    If Not tbOrders Is Nothing Then
-        While Not tbOrders.EOF
-            equipIndex = tbOrders!equipId
-            If cmEquip.UBound < UBound(Equip) Then
-                Load cmEquip(equipIndex)
-            End If
-            If Not IsNull(tbOrders!IsPresent) Then
-                cmEquip(equipIndex).Caption = tbOrders!equipName
-                cmEquip(equipIndex).Visible = True
-                cmEquip(equipIndex).Left = RightLinie
-                RightLinie = RightLinie + HShift
-            Else
-                cmEquip(equipIndex).Visible = False
-            End If
-            tbOrders.MoveNext
-        Wend
-        tbOrders.Close
-    End If
-
-
-
-Dim myTitle(1) As String, mySql(1) As String
-If idWerk = 0 Then
-    myTitle(0) = "All"
-    mySql(0) = ""
-Else
-    myTitle(0) = Werk(idWerk)
-    mySql(0) = "WerkId = " & idWerk
+If doEquipToolbar Then
+    initEquipCombo Me.cbEquips, idWerk, idEquip
 End If
 
-If idEquip = 0 Then
-    myTitle(1) = "All"
-    mySql(1) = ""
+
+Dim myTitle(1) As String, mysql(1) As String
+myTitle(0) = Werk(idWerk)
+If idWerk = 0 Then
+    mysql(0) = ""
 Else
-    myTitle(1) = Equip(idEquip)
-    mySql(1) = "equipId = " & idEquip
+    mysql(0) = "WerkId = " & idWerk
+End If
+
+myTitle(1) = cbEquips.Text
+If idEquip = 0 Then
+    mysql(1) = ""
+Else
+    mysql(1) = "equipId = " & idEquip
 End If
 
 Dim firstArg As Boolean, Where As String
 firstArg = True
 For I = 0 To 1
-    If mySql(I) <> "" Then
+    If mysql(I) <> "" Then
         If firstArg Then
             Where = "WHERE"
             firstArg = False
         Else
             Where = Where & " AND"
         End If
-        Where = Where & " " & mySql(I)
+        Where = Where & " " & mysql(I)
     End If
 Next I
 
@@ -521,7 +507,7 @@ End If
     werkRows = werkRows + 1
     
     Grid.TextMatrix(werkRows, chEquip) = tbCeh!Equip
-    Grid.TextMatrix(werkRows, chEquipId) = tbCeh!equipId
+    Grid.TextMatrix(werkRows, chEquipId) = tbCeh!EquipId
     
     Grid.col = chNomZak
     Grid.row = werkRows
@@ -583,7 +569,7 @@ Grid.TextMatrix(werkRows, 0) = marker
 Grid.TextMatrix(werkRows, chNomZak) = gNzak & str
 If str <> "" Then colorGridRow Grid, werkRows, &HCCCCCC 'маркируем МО
 Grid.TextMatrix(werkRows, chM) = tbCeh!Manag
-Grid.TextMatrix(werkRows, chFirma) = tbCeh!name
+Grid.TextMatrix(werkRows, chFirma) = tbCeh!Name
 Grid.TextMatrix(werkRows, chLogo) = tbCeh!Logo
 Grid.TextMatrix(werkRows, chIzdelia) = tbCeh!Product
 If tbCeh!StatusId = 5 Then ' отложен
@@ -683,15 +669,16 @@ cmZagruz.Top = cmZagruz.Top + H
 cmZagruz.Left = cmZagruz.Left + W
 cmPrint.Left = cmPrint.Left + W
 cmNaklad.Top = cmNaklad.Top + H
-
+lbEquips.Top = lbEquips.Top + H
+cbEquips.Top = cbEquips.Top + H
 Dim RightLine As Integer
 
-For I = 0 To cmEquip.UBound
-    cmEquip(I).Top = cmEquip(I).Top + H
-    If RightLine < cmEquip(I).Left + cmEquip(I).Width Then
-        RightLine = cmEquip(I).Left + cmEquip(I).Width
-    End If
-Next I
+'For I = 0 To cmEquip.UBound
+'    cmEquip(I).Top = cmEquip(I).Top + H
+'    If RightLine < cmEquip(I).Left + cmEquip(I).Width Then
+'        RightLine = cmEquip(I).Left + cmEquip(I).Width
+'    End If
+'Next I
 
 
 End Sub
@@ -761,7 +748,6 @@ dostup = "b") Then Me.PopupMenu mnNomZak
 
 getNumFromStr (Grid.TextMatrix(mousRow, chNomZak))
 
-#If Not COMTEC = 1 Then '----------------------------------------------
 If mousCol = chIzdelia And Grid.CellForeColor = 200 Then
     numDoc = gNzak
     numExt = 0
@@ -769,7 +755,6 @@ If mousCol = chIzdelia And Grid.CellForeColor = 200 Then
     Nakladna.idWerk = Me.idWerk
     Nakladna.Show vbModal
 End If
-#End If '--------------------------------------------------------------
 
 If dostup = "" Then Exit Sub
 marker = Grid.TextMatrix(mousRow, 0)
@@ -1047,7 +1032,7 @@ End Sub
 
 '$odbc14$
 'Для образца, кот. Утвержден возвращает Null
-Function makeProcReady(Stat As String, equipId As Integer, Optional obraz As String = "") As Variant
+Function makeProcReady(Stat As String, EquipId As Integer, Optional obraz As String = "") As Variant
 Dim S As Single, T As Single, N As Single, virabotka As Single, str As String
 Dim StatO As String
 
@@ -1073,7 +1058,7 @@ AA:
     ''??TODO
     sql = "SELECT oe.workTimeMO, oe.StatO " _
     & " FROM OrdersEquip oe " _
-    & " WHERE oe.numOrder = " & gNzak & " AND equipId = " & equipId
+    & " WHERE oe.numOrder = " & gNzak & " AND equipId = " & EquipId
     If Not byErrSqlGetValues("##386", sql, virabotka, StatO) Then Exit Function
     If S = 0 Then ' 100%
     Else
@@ -1082,7 +1067,7 @@ AA:
   Else
     sql = "SELECT oe.workTime, isnull(oe.Nevip, 1) as nevip " _
     & " FROM OrdersEquip oe " _
-    & " WHERE oe.numOrder = " & gNzak & " AND equipId = " & equipId
+    & " WHERE oe.numOrder = " & gNzak & " AND equipId = " & EquipId
     If Not byErrSqlGetValues("##421", sql, T, N) Then Exit Function
     
     virabotka = Round((N - S) * T, 2)
@@ -1092,7 +1077,7 @@ AA:
 'гот-ть может изменится к примеру с 75% до 0%
     str = Format(curDate, "yy.mm.dd")
     
-    sql = "call putWerkOrderReady(" & gNzak & ", '" & str & "', '" & obraz & "', " & virabotka & ", " & equipId & ", " & S & ")"
+    sql = "call putWerkOrderReady(" & gNzak & ", '" & str & "', '" & obraz & "', " & virabotka & ", " & EquipId & ", " & S & ")"
   
     myExecute "##374", sql
     
@@ -1102,7 +1087,7 @@ AA:
             Exit Function
         End If
     Else 'obraz = ""
-        gEquipId = equipId
+        gEquipId = EquipId
         ValueToTableField "##41", "'в работе'", "OrdersEquip", "Stat", "byEquipId"
     End If
     
@@ -1124,7 +1109,7 @@ End Sub
 Private Sub Timer1_Timer()
 Timer1.Enabled = False
 
-werkBegin
+werkBegin (True)
 gridIsLoad = True
 Grid.col = 1
 isWerkOrders = True
@@ -1132,9 +1117,9 @@ trigger = True
 
 End Sub
 
-Function newEtap(table As String) As Boolean
+Function newEtap(Table As String) As Boolean
 newEtap = False
-sql = "UPDATE " & table & " SET prevQuant = eQuant WHERE numOrder =" & gNzak
+sql = "UPDATE " & Table & " SET prevQuant = eQuant WHERE numOrder =" & gNzak
 If myExecute("##193", sql, 0) > 0 Then Exit Function
 newEtap = True
 End Function

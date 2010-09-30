@@ -1031,6 +1031,29 @@ where pc.sysname = sGuideProducts.web
 		<sqlFile path="procedures/put_jscet.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 	</changeSet>
 
+	<changeSet id="1" author="tune-excel-reports" runOnChange="true">
+		<comment>Вьюха показывает, какие изделия включают номенклатуру с признаком web. Используется в следующем отчете</comment>
+		<sqlFile path="views/wf_izdeliaWithWeb.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="2" author="tune-excel-reports" runOnChange="true"> 
+		<comment>резалт-сет вычисления изделия, у которого хотя бы одна номенклатура имеет признак web.
+столбцы, для вычисления стоимости позиции в зависимости от количества (из справочника номенклатуры) (margin, rabbat, kolonok и т.д.)
+строчек: к-во фиксированных групп + к-во вариантных групп.
+в каждой вариантной группе - цена номенклатуры с максимальной стоимостью.
+		</comment>
+		<sqlFile path="procedures/wf_report_price_web_izdelia.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+	</changeSet>
+
+
+	<changeSet id="1" author="csv-reports" runOnChange="true"> 
+		<comment>
+Отчет Прайс-лист в РПФ, но только в csv-формате (для вебщиков)
+		</comment>
+		<sqlFile path="procedures/wf_report_bright_rpf.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+	</changeSet>
+
 	<changeSet id="1" author="mantis-139" runOnChange="true">
 		<comment>M139 процедура для отчета по остаткам ном-ры, входящей в каталог BrightAwards.</comment>
 		<sqlFile path="procedures/wf_report_bright_ostat.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
@@ -1361,18 +1384,7 @@ update	OrdersEquip set outDatetime = convert(int, outDatetime)
 		</createIndex>
 	</changeSet>
 
-	<changeSet id="24" author="mantis-125" runOnChange="true">
-		<comment>Переделка основных вьюх для цеховых форм</comment>
-		<sqlFile path="views/wCO2_plus.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
-		<sqlFile path="views/wCO2.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
-		<sqlFile path="views/wYAG_plus.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
-		<sqlFile path="views/vw_Reestr.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
-		<sqlFile path="views/wSUB_plus.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
-		<sqlFile path="views/wSUB.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
-		<sqlFile path="views/wYAG.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
-		<sqlFile path="views/wEbSvodka.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
-		<rollback/>
-	</changeSet>
+<!-- changelog mantis-125::24 moved after mantis-141::35 -->
 
 	<changeSet id="25" author="mantis-125" runOnChange="true">
 		<comment>При изменении имени source менять и в комтехе</comment>
@@ -1682,7 +1694,7 @@ from Itogi_SUB
 		/>
 	</changeSet>
 
-	<changeSet id="66" author="mantis-125" runOnChange="true">
+	<changeSet id="66" author="mantis-125" runOnChange="false">
 		<comment>Вынос всех аналитических вьюхи из файла transdata/prior_views.sql</comment>
 		<sqlFile path="rollback/all_orders.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="rollback/isumBranOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
@@ -1778,7 +1790,949 @@ where hour (outdatetime) > 0
 	</changeSet>
 
 
-	<changeSet id="1" author="mantis-121" runOnChange="true">
+<!-- - - - - - - - - - - - - - - - - - - - - ->
+<!   Перевод продаж в приор                   >
+<!- - - - - - - - - - - - - - - - - - - - - -->
+
+
+	<changeSet id="0" author="mantis-141" runOnChange="true">
+		<comment>soft delete из справочника сторонних организаций</comment>
+		<sqlFile path="drop/BayGuideFirms.wf_delete_firm.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="drop/BayGuideFirms.wf_insert_firm.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="drop/BayGuideFirms.wf_update_firm.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="drop/Orders.wf_lastModified.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="drop/xPredmetyByNomenk.wf_insert_nomenk.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="drop/sDmcRez.wf_delete_nomenk.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="drop/sDmcRez.wf_insert_nomenk.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="drop/sDmcRez.wf_update_nomenk.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+	</changeSet>
+
+	<changeSet id="1" author="mantis-141" runOnChange="false">
+		<comment>Сбросить внешний ключ с продажных ордеров на справочник фирм-покупателей</comment>
+		<dropForeignKeyConstraint baseTableName="BayOrders" constraintName="BayOrders_329"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="2" author="mantis-141" runOnChange="false">
+		<comment>Сбросить внешние ключи со справочника фирм-покупателей</comment>
+		<dropForeignKeyConstraint baseTableName="BayGuideFirms" constraintName="region_of_firm"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="3" author="mantis-141" runOnChange="false">
+		<comment>Сбросить внешние ключи со справочника фирм-покупателей</comment>
+		<dropForeignKeyConstraint baseTableName="BayGuideFirms" constraintName="GuideManagBayGuideFirms"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="4" author="mantis-141" runOnChange="false">
+		<comment>Сбросить внешние ключи со справочника фирм-покупателей</comment>
+		<dropForeignKeyConstraint baseTableName="BayGuideFirms" constraintName="bgf_OborudId"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="5" author="mantis-141" runOnChange="false">
+		<comment>Общий справочник фирм-клиентов по заказам и продажам</comment>
+		<renameTable oldTableName="BayGuideFirms" newTableName="FirmGuide"/>
+	</changeSet>
+
+	<changeSet id="6" author="mantis-141" runOnChange="false">
+		<comment>Добавить в общий справочник недостающие поля из GuideFirms</comment>
+		<addColumn tableName="FirmGuide">
+			<column name="WerkId" type="int"><constraints nullable="true"/></column>
+			<column name="Kategor" type="varchar(50)"><constraints nullable="true"/></column>
+			<column name="Address" type="varchar(50)"><constraints nullable="true"/></column>
+			<column name="Atr1" type="varchar(20)"><constraints nullable="true"/></column>
+			<column name="Atr2" type="varchar(20)"><constraints nullable="true"/></column>
+			<column name="Atr3" type="varchar(20)"><constraints nullable="true"/></column>
+			<column name="Level" type="varchar(50)"><constraints nullable="true"/></column>
+		</addColumn>
+
+	</changeSet>
+
+
+	<changeSet id="7" author="mantis-141" runOnChange="false">
+		<comment>Ненужный мусор из справочника фирм</comment>
+		<dropColumn tableName="FirmGuide" columnName="manag_"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="8" author="mantis-141" runOnChange="true">
+		<comment>в справочнике фирм пока клиенты только по Продажам</comment>
+		<update tableName="FirmGuide">
+			<column name="werkId" value="1"/>
+		</update>
+	</changeSet>
+
+	<changeSet id="9" author="mantis-141" runOnChange="false">
+		<addNotNullConstraint tableName="FirmGuide" columnName="werkId"/>
+	</changeSet>
+
+	<changeSet id="10" author="mantis-141" runOnChange="false">
+		<addNotNullConstraint tableName="FirmGuide" columnName="id_voc_names"/>
+	</changeSet>
+
+	<changeSet id="11" author="mantis-141" runOnChange="false">
+		<addUniqueConstraint tableName="FirmGuide" columnNames="werkId, id_voc_names" constraintName="idComtecRef"/>
+	</changeSet>
+	
+
+	<changeSet id="12" author="mantis-141" runOnChange="false">
+		<comment>сделать первичный ключ в Справочнике фирм автоинкрементным.</comment>
+		<sql>
+			alter table FirmGuide alter firmId SET DEFAULT AUTOINCREMENT
+		</sql>
+	</changeSet>
+
+	<changeSet id="13" author="mantis-141" runOnChange="false">
+		<comment>присоединяем клиентов GuideFirms к общему справочнику. GuideFirms.FirmId -> FirmGuide.regionId</comment>
+		<sql>
+INSERT INTO FirmGuide
+	(
+	regionid,
+	WerkId,
+	Name,
+	xLogin,
+	FIO,
+	Phone,
+	Kategor,
+	Sale,
+	ManagId,
+	Address,
+	Fax,
+	Email,
+	Atr1,
+	Atr2,
+	Atr3,
+	Pass,
+	Level,
+	Type,
+	Katalog,
+	year01,
+	year02,
+	year03,
+	year04,
+	id_voc_names
+	)
+SELECT
+	FirmId,
+	2,
+	Name,
+	xLogin,
+	FIO,
+	Phone,
+	Kategor,
+	Sale,
+	ManagId,
+	Address,
+	Fax,
+	Email,
+	Atr1,
+	Atr2,
+	Atr3,
+	Pass,
+	Level,
+	Type,
+	Katalog,
+	year01,
+	year02,
+	year03,
+	year04,
+	id_voc_names
+from GuideFirms
+where firmId != 0
+		</sql>
+	</changeSet>
+
+	<changeSet id="14" author="mantis-141" runOnChange="false">
+		<comment>Сбросить внешний ключ с основных ордеров на справочник фирм-заказчиков</comment>
+		<dropForeignKeyConstraint baseTableName="Orders" constraintName="GuideFirmsOrders"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="15" author="mantis-141" runOnChange="true">
+		<comment>улучшить время отклика при загрузки таблицы заказов</comment>
+		<createIndex tableName="FirmGuide" indexName="oldFirmId" unique="false">
+			<column name="werkId"/>
+			<column name="regionId"/>
+		</createIndex>
+	</changeSet>
+
+	<changeSet id="16" author="mantis-141" runOnChange="true">
+		<comment>soft delete из справочника сторонних организаций</comment>
+		<sqlFile path="drop/Orders.wf_update_orders.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="drop/FirmGuide.wf_insert_firm.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+	</changeSet>
+
+	<changeSet id="17" author="mantis-141" runOnChange="false">
+		<comment>Сбросить внешний ключ с продажных ордеров на справочник фирм-покупателей</comment>
+		<sql>
+update Orders set FirmId = f.FirmId
+from FirmGuide f 
+where orders.firmId = f.regionId
+and f.werkId = 2
+		</sql>
+	</changeSet>
+
+	<changeSet id="18" author="mantis-141" runOnChange="false">
+		<comment>Без компромиссов убираем все, что можно</comment>
+		<dropTable tableName="GuideFirms"/>
+	</changeSet>
+
+	<changeSet id="19" author="mantis-141" runOnChange="true">
+		<comment>Вместо старых таблиц - вьюхи!</comment>
+		<sqlFile path="views/GuideFirms.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="views/BayGuideFirms.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback/>
+	</changeSet>
+
+
+	<changeSet id="20" author="mantis-141" runOnChange="true">
+		<comment>сбросить временный индекс</comment>
+		<dropIndex tableName="FirmGuide" indexName="oldFirmId"/>
+	</changeSet>
+
+
+	<changeSet id="21" author="mantis-141" runOnChange="false">
+		<comment>Объединяя продажи с заказами приходится добавлять столбцы в основную таблицу Orders</comment>
+		<addColumn tableName="Orders">
+			<column name="outDateTime" type="datetime"><constraints nullable="true"/></column>
+			<column name="Remark" type="varchar(20)"><constraints nullable="true"/></column>    <!-- Ves -->
+			<column name="Transport" type="varchar(20)"><constraints nullable="true"/></column> <!-- Size -->
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="22" author="mantis-141" runOnChange="true">
+		<comment>Процедура: Выставить процент готовности заказа</comment>
+		<sqlFile path="procedures/CalculateOrdered.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="23" author="mantis-141" runOnChange="false">
+		<comment>Перелить продажи - в основную таблицу Заказов</comment>
+		<sql>
+INSERT INTO Orders
+	(
+	rowLock,
+	numOrder,
+	werkId,
+	inDate,
+	ManagId,
+	StatusId,
+	ProblemId,
+	FirmId,
+	outDateTime,
+	ordered,
+	paid,
+	shipped,
+	lastManagId,
+	Invoice,
+	Remark,
+	Transport,
+	id_jscet,
+	ventureid,
+	id_bill,
+	rate
+	)
+SELECT
+	rowLock,
+	numOrder,
+	1,
+	inDate,
+	ManagId,
+	StatusId,
+	ProblemId,
+	FirmId,
+	outDateTime,
+	CalculateOrdered(numorder),
+	paid,
+	shipped,
+	lastManagId,
+	Invoice,
+	Ves,
+	Size,
+	id_jscet,
+	ventureid,
+	id_bill,
+	rate
+FROM
+	BayOrders
+		</sql>
+	</changeSet>
+
+	<changeSet id="24" author="mantis-141" runOnChange="false">
+		<comment>Поле Shipped прописывается явно</comment>
+		<sql>
+update orders
+set shipped = orderSellShip.cenaTotal
+from orderSellShip 
+where orders.numorder = orderSellShip.numorder
+		</sql>
+	</changeSet>
+
+	<changeSet id="25" author="mantis-141" runOnChange="false">
+		<comment>Перелить Номенклатуру Продаж</comment>
+		<sql>
+INSERT INTO xPredmetyByNomenk
+(
+    numOrder,
+    nomNom,
+    quant,
+    cenaEd,
+    id_scet
+)
+SELECT
+    r.numDoc,
+    r.nomNom,
+    r.quantity,
+    r.intQuant / n.perList,
+    r.id_scet
+FROM
+    sdmcrez r
+JOIN sGuideNomenk n on r.nomnom = n.nomnom
+where
+	exists (
+		select 1 from bayorders o where o.numorder = r.numdoc
+	)
+		</sql>
+	</changeSet>
+
+
+	<changeSet id="26" author="mantis-141" runOnChange="false">
+		<comment>Перелить продажи - отгрузку</comment>
+		<sql>
+INSERT INTO xPredmetyByNomenkOut
+(
+    outDate,
+    numOrder,
+    nomNom,
+    quant,
+    id_mat,
+    id_jmat
+)
+SELECT
+    bo.outDate,
+    bo.numOrder,
+    bo.nomNom,
+    bo.quant * n.perList,
+    bo.id_mat,
+    bo.id_jmat
+FROM
+	BayNomenkOut bo
+join 
+	sguidenomenk n on n.nomnom = bo.nomnom
+		</sql>
+	</changeSet>
+
+
+	<changeSet id="27" author="mantis-141" runOnChange="false">
+		<comment>Удалить Номенклатуру Продаж из таблицы Резервирования</comment>
+		<sql><![CDATA[
+update sdmcrez
+set id_scet = -1
+from 
+	bayorders as bay with (nolock)
+where bay.numorder = sdmcrez.numdoc
+	and bay.statusId = 6
+		]]></sql>
+	</changeSet>
+
+	<changeSet id="28" author="mantis-141" runOnChange="true">
+		<comment>улучшить время отклика при загрузки таблицы заказов</comment>
+		<createIndex tableName="sDmcRez" indexName="id_scet" unique="false">
+			<column name="id_scet"/>
+		</createIndex>
+	</changeSet>
+
+
+	<changeSet id="29" author="mantis-141" runOnChange="false">
+		<comment>Удалить Номенклатуру Продаж из таблицы Резервирования</comment>
+		<sql><![CDATA[
+DELETE FROM
+	sdmcrez 
+where id_scet = -1
+		]]></sql>
+	</changeSet>
+
+	<changeSet id="30" author="mantis-141" runOnChange="true">
+		<comment>Берем дату выдачи заказа (и продажи) из Orders.Outdatetime</comment>
+		<sqlFile path="triggers/OrdersEquip.wf_update.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="31" author="mantis-141" runOnChange="true">
+		<comment>Восстанавливаем дату выдачи заказа</comment>
+		<executeCommand executable="dbisqlc.exe">
+			<arg value="-c"/>
+			<arg value="DSN=${syb.servicename};UID=dba;PWD=sql"/>
+			<arg value="-q"/>
+			<arg value="${basedir}\target\classes\mainteinance\outdatetime.sql"/>
+		</executeCommand>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="32" author="mantis-141" runOnChange="false">
+		<comment>Статус, который зависит от цеха</comment>
+		<createTable tableName="WerkStatusNames">
+			<column name="werkId" type="integer" >
+				<constraints nullable="false" primaryKey="true" primaryKeyName="pk_ws"/>
+			</column>
+			<column name="statusId" type="tinyint" >
+				<constraints nullable="false" primaryKey="true" primaryKeyName="pk_ws"/>
+			</column>
+			<column name="status" type="varchar(20)" >
+				<constraints nullable="false"/>
+			</column>
+		</createTable>
+	</changeSet>
+	
+	<changeSet id="33" author="mantis-141" runOnChange="false">
+		<comment>Статусы для Цех1</comment>
+		<sql>
+INSERT INTO WerkStatusNames
+(
+    werkId,
+    statusId,
+    status
+)
+SELECT
+    2,
+    statusId,
+    status
+FROM
+	GuideStatus
+where
+	statusId in (1, 2, 3, 4, 5)
+		</sql>
+	</changeSet>
+
+	<changeSet id="34" author="mantis-141" runOnChange="false">
+		<comment>Статусы для Склад</comment>
+		<insert tableName="WerkStatusNames">
+			<column name="werkId" valueNumeric="1"/>
+			<column name="statusId" valueNumeric="1"/>
+			<column name="status" value="собран"/>
+		</insert>
+		<insert tableName="WerkStatusNames">
+			<column name="werkId" valueNumeric="1"/>
+			<column name="statusId" valueNumeric="4"/>
+			<column name="status" value="выдан"/>
+		</insert>
+	</changeSet>
+
+	<changeSet id="35" author="mantis-141" runOnChange="false">
+		<comment>Общий справочник статусов</comment>
+		<renameTable oldTableName="GuideStatus" newTableName="StatusGuide"/>
+	</changeSet>
+
+	<changeSet id="36" author="mantis-141" runOnChange="true">
+		<comment>Вместо старых таблиц - вьюхи!</comment>
+		<sqlFile path="views/GuideStatus.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="24" author="mantis-125" runOnChange="true">
+		<comment>Переделка основных вьюх для цеховых форм</comment>
+		<sqlFile path="views/wCO2_plus.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="views/wCO2.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="views/wYAG_plus.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="views/vw_Reestr.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="views/wSUB_plus.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="views/wSUB.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="views/wYAG.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="views/wEbSvodka.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="37" author="mantis-141" runOnChange="true">
+		<comment>Исправления процедур (удаленный BayOrders)</comment>
+		<sqlFile path="procedures/wf_order_closed_comtex.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="drop/all_orders.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="50" author="mantis-141" runOnChange="false">
+		<comment>Без компромиссов убираем таблицы по продажам</comment>
+		<dropTable tableName="BayOrders"/>
+	</changeSet>
+
+	<changeSet id="51" author="mantis-141" runOnChange="false">
+		<comment>Без компромиссов убираем таблицы по продажам</comment>
+		<dropTable tableName="BayGuideProblem"/>
+	</changeSet>
+
+	<changeSet id="52" author="mantis-141" runOnChange="false">
+		<comment>Без компромиссов убираем таблицы по продажам</comment>
+		<dropTable tableName="BayNomenkOut"/>
+	</changeSet>
+
+	<changeSet id="53" author="mantis-141" runOnChange="true">
+		<comment>Компромисс для ускорения разработки!</comment>
+		<sqlFile path="views/BayOrders.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="views/BayNomenkOut.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="views/BayNomenk.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback/>
+	</changeSet>
+
+
+	<changeSet id="54" author="mantis-141" runOnChange="true">
+		<comment>Отладка Анализа продаж</comment>
+		<sqlFile path="views/itemSellOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="views/itemSellRequ.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="views/itemWallShip.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="views/itemSellRsrv.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="55" author="mantis-141" runOnChange="true">
+		<comment>M161 Поднять накладную для заказов по продаже</comment>
+		<sqlFile path="procedures/wf_make_prnm.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="56" author="mantis-141" runOnChange="false">
+		<comment>Хранить число зарезервированнх гот.изделий (для продаж)</comment>
+		<addColumn tableName="xPredmetyByIzdelia">
+			<column name="curQuant" type="float"><constraints nullable="true"/></column>
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="57" author="mantis-141" runOnChange="false">
+		<comment>Хранить число зарезервированнх гот.изделий (для продаж)</comment>
+		<addColumn tableName="xPredmetyByIzdelia">
+			<column name="doneQuant" type="float"><constraints nullable="true"/></column>
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="58" author="mantis-141" runOnChange="true">
+		<comment>M161 Поднять накладную для заказов по продаже</comment>
+		<sqlFile path="views/itemWallOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="views/itemProdOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="views/orderProdOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="59" author="mantis-141" runOnChange="true">
+		<comment>M161 Не продавать изделия, если в них входит дробная номенклатура</comment>
+		<sqlFile path="views/wf_izdeliaForSell.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="60" author="mantis-141" runOnChange="true">
+		<comment>Выдать число отпущенных и текущих позиций (для заказов по продажам)</comment>
+		<sqlFile path="procedures/wf_set_sell_product.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="procedures/wf_sell_rest.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="procedures/wf_update_sell_rez.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="3" author="tune-excel-reports" runOnChange="true">
+		<comment></comment>
+		<sqlFile path="views/isumProdRsrv.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="views/isumSellRsrv.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="61" author="mantis-141" runOnChange="false">
+		<comment>по умолчанию добавляем фирму в Цеховой справочник.</comment>
+		<addDefaultValue tableName="FirmGuide" columnName="werkId" defaultValueNumeric="2"/>
+	</changeSet>
+
+	<changeSet id="1" author="mantis-175" runOnChange="false">
+		<comment>Oborud => Tool</comment>
+		<createTable tableName="GuideTool">
+			<column name="toolId" type="integer" autoIncrement="true">
+				<constraints nullable="false" primaryKey="true" primaryKeyName="pk_gt"/>
+			</column>
+			<column name="toolName" type="varchar(32)">
+				<constraints nullable="false"/>
+			</column>
+			<column name="toolShort" type="varchar(8)">
+				<constraints nullable="true"/>
+			</column>
+			<column name="toolTiny" type="varchar(8)">
+				<constraints nullable="true"/>
+			</column>
+		</createTable>
+	</changeSet>
+	
+	<changeSet id="2" author="mantis-175" runOnChange="false">
+		<comment>GuideTools populating</comment>
+		<loadData tableName="GuideTool" file="data/GuideTool.csv"/>
+	</changeSet>
+
+	<changeSet id="3" author="mantis-175" runOnChange="false">
+		<comment>New column 'tools' for FirmGuide table</comment>
+		<addColumn tableName="FirmGuide">
+			<column name="tools" type="varchar(32)"><constraints nullable="true"/></column>
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="4" author="mantis-175" runOnChange="false">
+		<comment>Many-to-many relation => FirmGuide - GuideTool</comment>
+		<createTable tableName="FirmTools">
+			<column name="toolId" type="integer">
+				<constraints nullable="false" primaryKey="true" primaryKeyName="pk_ft"/>
+			</column>
+			<column name="firmId" type="smallint">
+				<constraints nullable="false" primaryKey="true" primaryKeyName="pk_ft"/>
+			</column>
+		</createTable>
+	</changeSet>
+	
+	<changeSet id="5" author="mantis-175" runOnChange="false">
+		<addForeignKeyConstraint baseTableName="FirmTools" constraintName="ft_tool" baseColumnNames="toolId"
+			referencedTableName="GuideTool" referencedColumnNames="toolId"
+			onDelete="CASCADE" onUpdate="CASCADE"
+		/>
+	</changeSet>
+
+	<changeSet id="6" author="mantis-175" runOnChange="false">
+		<addForeignKeyConstraint baseTableName="FirmTools" constraintName="ft_firm" baseColumnNames="firmId"
+			referencedTableName="FirmGuide" referencedColumnNames="firmId"
+			onDelete="CASCADE" onUpdate="CASCADE"
+		/>
+	</changeSet>
+
+	<changeSet id="7" author="mantis-175" runOnChange="true">
+		<comment>Автоформирование строки FirmGuide.tools</comment>
+		<sqlFile path="procedures/enumTools.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+	</changeSet>
+
+	<changeSet id="8" author="mantis-175" runOnChange="true">
+		<comment>Автоформирование строки FirmGuide.tools</comment>
+		<sqlFile path="triggers/FirmTools.wf_insert.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="triggers/FirmTools.wf_delete.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+	</changeSet>
+
+	<changeSet id="9" author="mantis-175" runOnChange="false">
+		<comment>New column 'tools' for FirmGuide table</comment>
+		<addColumn tableName="FirmGuide">
+			<column name="bayStatusId" type="int"><constraints nullable="true"/></column>
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="10" author="mantis-175" runOnChange="false">
+		<comment></comment>
+		<createTable tableName="GuideBayStatus">
+			<column name="bayStatusId" type="integer" autoIncrement="true">
+				<constraints nullable="false" primaryKey="true" primaryKeyName="pk_gt"/>
+			</column>
+			<column name="BayStatusName" type="varchar(32)">
+				<constraints nullable="false"/>
+			</column>
+			<column name="BayStatusShort" type="varchar(8)">
+				<constraints nullable="false"/>
+			</column>
+		</createTable>
+	</changeSet>
+	
+	<changeSet id="11" author="mantis-175" runOnChange="true">
+		<comment>GuideBayStatuss populating</comment>
+		<loadData tableName="GuideBayStatus" file="data/GuideBayStatus.csv"/>
+	</changeSet>
+
+	<changeSet id="12" author="mantis-175" runOnChange="false">
+		<addForeignKeyConstraint baseTableName="FirmGuide" constraintName="fg_BayStatus" baseColumnNames="bayStatusId"
+			referencedTableName="GuideBayStatus" referencedColumnNames="bayStatusId"
+			onDelete="CASCADE" onUpdate="CASCADE"
+		/>
+	</changeSet>
+
+	<changeSet id="13" author="mantis-175" runOnChange="false">
+		<comment>
+Критерий "Новое оборудование" для фирмы покупателя.
+Поскольку может быть только одно значение, то будем хранить его в поле isActive.
+То есть не заводить еще параметров для этого типа критерия
+0 - не учитывать, -1 - отстутствует, иначе - определенный тип оборудования
+		</comment>
+		<delete tableName="nItemType">
+			<where>itemType = 'noOboruds'</where>
+		</delete>
+		<delete tableName="nItemType">
+			<where>itemType = 'oborudItems'</where>
+		</delete>
+		<insert tableName="nItemType">
+			<column name="itemType" value="tool"/>
+		</insert>
+	</changeSet>
+
+	<changeSet id="14" author="mantis-175" runOnChange="false">
+		<comment>
+Критерий "Статус покупателя" для фирмы покупателя.
+Поскольку может быть только одно значение, то будем хранить его в поле isActive.
+То есть не заводить еще параметров для этого типа критерия
+0 - не учитывать, -1 - отстутствует, иначе - определенный тип статуса
+		</comment>
+		<insert tableName="nItemType">
+			<column name="itemType" value="bayStatus"/>
+		</insert>
+	</changeSet>
+
+	<changeSet id="15" author="mantis-175" runOnChange="true">
+		<comment>Автоформирование строки FirmGuide.tools</comment>
+		<sqlFile path="procedures/n_removeItem.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+	</changeSet>
+
+	<changeSet id="16" author="mantis-175" runOnChange="true">
+		<comment>Исправления, связанные с новым оборудованием и статусом покупателей</comment>
+		<sqlFile path="procedures/n_exec_header.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="procedures/n_exec_filter.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="procedures/n_list_firm_by_klasses.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="procedures/n_internal_klasses.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+	</changeSet>
+
+	<changeSet id="19" author="mantis-175" runOnChange="false">
+		<comment>New column 'tools' for FirmGuide table</comment>
+		<addColumn tableName="FirmGuide">
+			<column name="City" type="varchar(32)"><constraints nullable="true"/></column>
+			<column name="Delat" type="long varchar"><constraints nullable="true"/></column>
+			<column name="InceptionYear" type="varchar(4)"><constraints nullable="true"/></column>
+			<column name="Director" type="varchar(128)"><constraints nullable="true"/></column>
+			<column name="KvoSotr" type="varchar(8)"><constraints nullable="true"/></column>
+			<column name="Steuer" type="varchar(32)"><constraints nullable="true"/></column>
+			<column name="HomePage" type="varchar(256)"><constraints nullable="true"/></column>
+			<column name="Supplier" type="varchar(32)"><constraints nullable="true"/></column>
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="17" author="mantis-175" runOnChange="false">
+		<comment>Переписать из старого оборудования в новое</comment>
+		<sql>
+insert into firmtools (firmId, toolId)
+select bf.firmId, case oi.oborudItemId when 1 then 2 else 3 end as toolid
+from bayguidefirms bf
+left join oborudkomplekt ok on ok.oborudId = bf.oborudId
+left join guideoborudItem oi on oi.oborudItemId = ok.oborudItemId
+where oi.oborudItemId in (1,2)
+		</sql>
+	</changeSet>
+
+	<changeSet id="18" author="mantis-175" runOnChange="false">
+		<comment>Переписать из старого оборудования в новое</comment>
+		<sql>
+insert into firmtools (firmId, toolId)
+select bf.firmId, 1
+from bayguidefirms bf
+where LOCATE(type, 'yag') > 0
+		</sql>
+	</changeSet>
+
+	<changeSet id="1" author="mantis-184" runOnChange="false">
+		<insert tableName="GuideEquip">
+			<column name="equipId" valueNumeric="6"/>
+			<column name="equipName" value="UVP"/>
+		</insert>
+	</changeSet>
+
+	<changeSet id="2" author="mantis-184" runOnChange="false">
+		<insert tableName="WerkEquip">
+			<column name="werkId" valueNumeric="1"/>
+			<column name="equipId" valueNumeric="6"/>
+		</insert>
+		<insert tableName="WerkEquip">
+			<column name="werkId" valueNumeric="2"/>
+			<column name="equipId" valueNumeric="6"/>
+		</insert>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="3" author="mantis-184" runOnChange="false">
+		<comment>GuideResurs data for UVP</comment>
+		<insert tableName="GuideResurs">
+			<column name="equipId" valueNumeric="6"/>
+		</insert>
+	</changeSet>
+
+	<changeSet id="4" author="mantis-184" runOnChange="false">
+		<comment>New column 'tools' for FirmGuide table</comment>
+		<addColumn tableName="WerkEquip">
+			<column name="equipOrder" type="int"><constraints nullable="true"/></column>
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="5" author="mantis-184" runOnChange="false">
+		<comment></comment>
+		<update tableName="WerkEquip">
+			<column name="equipOrder" value="100"/>
+		</update>
+	</changeSet>
+
+	<changeSet id="6" author="mantis-184" runOnChange="false">
+		<comment></comment>
+		<addDefaultValue tableName="WerkEquip" columnName="equipOrder" defaultValueNumeric="100"/>
+	</changeSet>
+
+	<changeSet id="8" author="mantis-184" runOnChange="false">
+		<addNotNullConstraint tableName="WerkEquip" columnName="equipOrder"/>
+	</changeSet>
+
+	<changeSet id="9" author="mantis-184" runOnChange="true">
+		<comment></comment>
+		<update tableName="WerkEquip">
+			<column name="equipOrder" value="200"/>
+			<where>equipId in (4,5) </where>
+		</update>
+	</changeSet>
+
+	<changeSet id="10" author="mantis-184" runOnChange="false">
+		<comment>New column 'tools' for FirmGuide table</comment>
+		<addColumn tableName="GuideEquip">
+			<column name="equipFullName" type="varchar(32)"><constraints nullable="true"/></column>
+		</addColumn>
+	</changeSet>
+
+
+	<changeSet id="11" author="mantis-184" runOnChange="true">
+		<comment></comment>
+		<update tableName="GuideEquip">
+			<column name="equipFullName" valueNumeric="'Лазер ' + equipName"/>
+			<where>equipId in (1, 2)</where>
+		</update>
+		<update tableName="GuideEquip">
+			<column name="equipFullName" valueNumeric="'Сублимация'"/>
+			<where>equipId in (3)</where>
+		</update>
+		<update tableName="GuideEquip">
+			<column name="equipFullName" valueNumeric="'Упаковка'"/>
+			<where>equipId in (4)</where>
+		</update>
+		<update tableName="GuideEquip">
+			<column name="equipFullName" valueNumeric="'Склейка'"/>
+			<where>equipId in (5)</where>
+		</update>
+		<update tableName="GuideEquip">
+			<column name="equipFullName" valueNumeric="'УФ-печать'"/>
+			<where>equipId in (6)</where>
+		</update>
+	</changeSet>
+
+	<changeSet id="1" author="mantis-200" runOnChange="false">
+		<insert tableName="GuideEquip">
+			<column name="equipId" valueNumeric="7"/>
+			<column name="equipName" value="SND"/>
+			<column name="equipFullName" value="Сандбласт"/>
+		</insert>
+	</changeSet>
+
+	<changeSet id="2" author="mantis-200" runOnChange="false">
+		<insert tableName="WerkEquip">
+			<column name="werkId" valueNumeric="2"/>
+			<column name="equipId" valueNumeric="7"/>
+		</insert>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="3" author="mantis-200" runOnChange="false">
+		<comment>GuideResurs data for UVP</comment>
+		<insert tableName="GuideResurs">
+			<column name="equipId" valueNumeric="7"/>
+		</insert>
+	</changeSet>
+
+	<changeSet id="4" author="mantis-200" runOnChange="false">
+		<comment>СО2 теперь и для склада</comment>
+		<insert tableName="WerkEquip">
+			<column name="werkId" valueNumeric="1"/>
+			<column name="equipId" valueNumeric="2"/>
+		</insert>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="0" author="mantis-201" runOnChange="false">
+		<modifyColumn tableName="GuideWerk">
+			<column name="WerkCode" type="varchar(31)"/>
+		</modifyColumn>
+	</changeSet>
+
+	<changeSet id="1" author="mantis-201" runOnChange="true">
+		<comment></comment>
+		<update tableName="GuideWerk">
+			<column name="WerkCode" value="Продажи"/>
+			<where>werkId = 1 </where>
+		</update>
+		<update tableName="GuideWerk">
+			<column name="WerkCode" value="Производство"/>
+			<where>werkId = 2 </where>
+		</update>
+	</changeSet>
+
+	<changeSet id="1" author="mantis-196" runOnChange="true">
+		<comment></comment>
+		<update tableName="sGuideNomenk">
+			<column name="web" value="mat"/>
+			<where>web = 'web'</where>
+		</update>
+	</changeSet>
+
+	<changeSet id="94" author="mantis-141" runOnChange="true">
+		<comment>по каким-то причинам в текущем продакшн у фирмы в ВеркИД значение 0</comment>
+		<sql>
+update firmguide join orders on orders.firmid = firmguide.firmid 
+set firmguide.werkid = orders.werkid 
+where firmguide.werkid not in (1,2 )
+		</sql>
+	</changeSet>
+
+
+	<changeSet id="95" author="mantis-141" runOnChange="true">
+		<comment>Убрать временные значения</comment>
+		<update tableName="FirmGuide">
+			<column name="regionId" value="null"/>
+			<where>werkId = 2</where>
+		</update>
+	</changeSet>
+
+
+	<changeSet id="96" author="mantis-141" runOnChange="false">
+		<comment>Восстановить ранее удаленные ограничения по таблицам</comment>
+		<addForeignKeyConstraint baseTableName="Orders" constraintName="o_firm"  baseColumnNames="firmId"
+			referencedTableName="FirmGuide" referencedColumnNames="firmId"
+			onUpdate="CASCADE"
+		/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="97" author="mantis-141" runOnChange="false">
+		<comment>Восстановить ранее удаленные ограничения по таблицам</comment>
+		<addForeignKeyConstraint baseTableName="FirmGuide" constraintName="fg_Manager" baseColumnNames="ManagId"
+			referencedTableName="GuideManag" referencedColumnNames="ManagId"
+			onUpdate="CASCADE"
+		/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="98" author="mantis-141" runOnChange="false">
+		<comment>Восстановить ранее удаленные ограничения по таблицам</comment>
+		<addForeignKeyConstraint baseTableName="FirmGuide" constraintName="fg_Region" baseColumnNames="regionId"
+			referencedTableName="BayRegion" referencedColumnNames="regionId"
+			onUpdate="CASCADE"
+		/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="99" author="mantis-141" runOnChange="false">
+		<comment>Восстановить ранее удаленные ограничения по таблицам</comment>
+		<addForeignKeyConstraint baseTableName="FirmGuide" constraintName="fg_Oborud" baseColumnNames="oborudId"
+			referencedTableName="GuideOborud" referencedColumnNames="oborudId"
+			onUpdate="CASCADE"
+		/>
+		<rollback/>
+	</changeSet>
+
+
+	<changeSet id="100" author="mantis-141" runOnChange="false">
+		<comment>Восстанавливаем триггера по таблицам Справочника Фирм и Заказов</comment>
+		<sqlFile path="rollback/xPredmetyByNomenk.wf_insert_nomenk.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="rollback/Orders.wf_update_orders.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="rollback/Orders.wf_lastModified.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="rollback/FirmGuide.wf_delete_firm.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="rollback/FirmGuide.wf_insert_firm.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="rollback/FirmGuide.wf_update_firm.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+	</changeSet>
+
+
+	<changeSet id="1" author="mantis-121" runOnChange="false">
 		<comment>soft delete из справочника сторонних организаций</comment>
 		<sqlFile path="triggers/GuideFirms.wf_delete_firm.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 		<sqlFile path="triggers/BayGuideFirms.wf_delete_firm.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
@@ -1834,6 +2788,8 @@ where hour (outdatetime) > 0
 	</changeSet>
 
 	<changeSet id="6" author="fed.okruga" runOnChange="false">
+		<validCheckSum>1e82741638e91a0734b75d8a49512b0</validCheckSum>
+		<validCheckSum>a5f1debea2c3b8b67767566fa1c45b2</validCheckSum>
 		<comment>execute proc</comment>
 		<executeCommand executable="dbisqlc.exe">
 			<arg value="-c"/>

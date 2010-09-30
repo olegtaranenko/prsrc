@@ -127,7 +127,7 @@ Public filterId As Integer
 Public applyTriggered As Boolean
 Public startDate As Date
 Public endDate As Date
-Public managId As String
+Public ManagId As String
 Dim filterSettings() As MapEntry
 Dim PreHeaderCount As Integer, PostHeaderCount As Integer, multiplyCols As Integer
 Dim tableSettingNoRowDetail As Integer
@@ -324,18 +324,18 @@ End Sub
 
 Private Sub Grid_DblClick()
 Dim columnNo As Long, periodNo As Long
-Dim firmId As Long, periodId As Integer
+Dim FirmId As Long, periodId As Integer
     'Dim PreHeaderCount As Integer, PostHeaderCount As Integer, multiplyCols As Integer
     If Grid.CellBackColor = vbYellow Then Exit Sub
 
     columnNo = Grid.col
     Portrait.filterId = filterId
-    firmId = CInt(Grid.TextMatrix(Grid.row, 0))
+    FirmId = CInt(Grid.TextMatrix(Grid.row, 0))
     If columnNo = 1 Then
         ' название фирмы (главного атрибута, по которому происходит группировка
         '
         Portrait.mode = "portrait"
-        Portrait.byRowId = firmId
+        Portrait.byRowId = FirmId
         Portrait.byColumnId = 0
         Portrait.Show , Me
     ElseIf columnNo >= PreHeaderCount And columnNo < PreHeaderCount + multiplyCols * periodCount Then
@@ -345,14 +345,14 @@ Dim firmId As Long, periodId As Integer
         periodId = periods(periodNo).periodId
         
         Portrait.mode = "detail"
-        Portrait.byRowId = firmId
+        Portrait.byRowId = FirmId
         Portrait.byColumnId = periodId
         Portrait.Show , Me
     ElseIf columnNo >= PreHeaderCount + multiplyCols * periodCount Then
         ' нажали на итог по строке
         '
         Portrait.mode = "detail"
-        Portrait.byRowId = firmId
+        Portrait.byRowId = FirmId
         Portrait.byColumnId = 0
         
         Portrait.Show , Me
@@ -409,7 +409,7 @@ Dim currentTab As Tabs
 Dim curTab As Variant
 
     Set curTab = TabStrip1.SelectedItem
-    activateTab curTab.index
+    activateTab curTab.Index
 End Sub
 
 
@@ -435,7 +435,7 @@ Dim periodIndex As Integer
     Grid.Visible = False
     Me.MousePointer = flexArrowHourGlass
     
-    sql = "select n_check_filter( " & filterId & ", '" & managId & "')"
+    sql = "select n_check_filter( " & filterId & ", '" & ManagId & "')"
     byErrSqlGetValues "##loadTable.1", sql, checkResult
     
     If checkResult <> "ok" Then
@@ -457,20 +457,20 @@ Dim periodIndex As Integer
     End If
     
     sql = "call n_exec_filter( " & filterId & ")"
-    Set table = myOpenRecordSet("##Results.1", sql, dbOpenDynaset)
-    If table Is Nothing Then
+    Set Table = myOpenRecordSet("##Results.1", sql, dbOpenDynaset)
+    If Table Is Nothing Then
         Me.Caption = "Ошибка при загрузке данных из базы"
         GoTo cleanup
     End If
     
-    If table.BOF Then
-        table.Close
+    If Table.BOF Then
+        Table.Close
         'MsgBox "Отчет не содержит данных", vbExclamation
         Me.Caption = "Отчет не содержит данных"
         GoTo cleanup
     End If
     
-    table.MoveFirst
+    Table.MoveFirst
     
     periodCount = UBound(periods) + 1
     ReDim rowTotals(multiplyCols)
@@ -481,9 +481,9 @@ Dim periodIndex As Integer
     rownum = 0
     prevSelector = Null
     skipFixedInit = False
-    While Not table.EOF
+    While Not Table.EOF
 
-        If prevSelector <> table(groupSelectorColumn) Or IsNull(prevSelector) Then
+        If prevSelector <> Table(groupSelectorColumn) Or IsNull(prevSelector) Then
             'totalBaseIndex = getPeriodShift(table("periodId")) * periodCount
             I = PreHeaderCount + multiplyCols * periodCount
             If rownum > 0 Then
@@ -499,7 +499,7 @@ Dim periodIndex As Integer
         columnBaseIndex = 0
         Dim val As Variant
         For columnIndex = 0 To UBound(GridHeaderHeadDef)
-            val = table(GridHeaderHeadDef(columnIndex).columnName)
+            val = Table(GridHeaderHeadDef(columnIndex).columnName)
             If Not IsNull(val) Then
                 If GridHeaderHeadDef(columnIndex).columnFormat <> "" Then
                     Grid.TextMatrix(rownum, columnBaseIndex + columnIndex) = Format(val, GridHeaderHeadDef(columnIndex).columnFormat)
@@ -510,10 +510,10 @@ Dim periodIndex As Integer
         Next columnIndex
         
         
-        totalBaseIndex = getPeriodShift(table("periodId")) * multiplyCols
+        totalBaseIndex = getPeriodShift(Table("periodId")) * multiplyCols
         columnBaseIndex = totalBaseIndex + UBound(GridHeaderHeadDef) + 1
         For columnIndex = 0 To UBound(GridHeaderTailDef)
-            curValue = table(GridHeaderTailDef(columnIndex).columnName)
+            curValue = Table(GridHeaderTailDef(columnIndex).columnName)
             If IsNull(curValue) Then curValue = CDbl(0)
             Grid.TextMatrix(rownum, columnBaseIndex + columnIndex) = Format(curValue, GridHeaderTailDef(columnIndex).columnFormat)
             rowTotals(columnIndex) = rowTotals(columnIndex) + curValue
@@ -525,11 +525,11 @@ Dim periodIndex As Integer
             Grid.TextMatrix(rownum, columnBaseIndex + columnIndex) = Format(rowTotals(columnIndex), GridHeaderTailDef(columnIndex).columnFormat)
         Next columnIndex
         
-        prevSelector = table(groupSelectorColumn)
+        prevSelector = Table(groupSelectorColumn)
         
-        table.MoveNext
+        Table.MoveNext
     Wend
-    table.Close
+    Table.Close
     
     Grid.AddItem ""
     Grid.col = 1: Grid.row = rownum + 1
@@ -584,7 +584,7 @@ Dim ln As Integer
     ln = UBound(periods)
     For I = 0 To ln
         If periods(I).periodId = periodId Then
-            getPeriodShift = periods(I).index
+            getPeriodShift = periods(I).Index
             Exit Function
         End If
     Next I
@@ -612,7 +612,7 @@ End Sub
 
 Private Function setGridHeaders(filterId As Integer) As Boolean
 Dim periodType As Variant
-Dim index As Integer
+Dim Index As Integer
 Dim colInfo As PeriodDef
 Dim colIndex As Integer, I As Integer
 Dim GridHeaderHead As String
@@ -626,18 +626,18 @@ Dim periodColumnName As String
     'Optimistic view
     setGridHeaders = True
 
-    initColumns GridHeaderHeadDef, 1, managId, filterId
-    initColumns GridHeaderTailDef, 2, managId, filterId
+    initColumns GridHeaderHeadDef, 1, ManagId, filterId
+    initColumns GridHeaderTailDef, 2, ManagId, filterId
     
-    For index = 0 To UBound(GridHeaderHeadDef)
-        headerColumn = GridHeaderHeadDef(index)
+    For Index = 0 To UBound(GridHeaderHeadDef)
+        headerColumn = GridHeaderHeadDef(Index)
         appendToHeader GridHeaderHead, headerColumn, delimHead
-    Next index
+    Next Index
     
-    For index = 0 To UBound(GridHeaderTailDef)
-        headerColumn = GridHeaderTailDef(index)
+    For Index = 0 To UBound(GridHeaderTailDef)
+        headerColumn = GridHeaderTailDef(Index)
         appendToHeader GridHeaderTail, headerColumn, delimTail
-    Next index
+    Next Index
     
     PreHeaderCount = UBound(GridHeaderHeadDef) + 1
     PostHeaderCount = UBound(GridHeaderTailDef) + 1
@@ -680,10 +680,10 @@ Dim periodColumnName As String
     
     sql = "call n_exec_header( " & filterId & ") "
     
-    Set table = myOpenRecordSet("##Results.2", sql, dbOpenDynaset)
+    Set Table = myOpenRecordSet("##Results.2", sql, dbOpenDynaset)
     ReDim periods(0)
-    index = 0
-    If table.BOF Then
+    Index = 0
+    If Table.BOF Then
         setGridHeaders = False
         Exit Function
     End If
@@ -695,22 +695,22 @@ Dim periodColumnName As String
     
     
 
-    While Not table.EOF
-        colInfo.label = table("label")
-        If Not IsNull(table!year) Then colInfo.year = table!year
-        If Not IsNull(table!st) Then colInfo.stDate = table!st
-        If Not IsNull(table!en) Then colInfo.enDate = table!en
-        colInfo.periodId = table(periodColumnName)
-        colInfo.index = index
-        colInfo.ColWidth = getColumnWidth(index, table!label)
+    While Not Table.EOF
+        colInfo.label = Table("label")
+        If Not IsNull(Table!year) Then colInfo.year = Table!year
+        If Not IsNull(Table!st) Then colInfo.stDate = Table!st
+        If Not IsNull(Table!EN) Then colInfo.enDate = Table!EN
+        colInfo.periodId = Table(periodColumnName)
+        colInfo.Index = Index
+        colInfo.ColWidth = getColumnWidth(Index, Table!label)
 
 
-        ReDim Preserve periods(index)
-        periods(index) = colInfo
-        table.MoveNext
-        index = index + 1
+        ReDim Preserve periods(Index)
+        periods(Index) = colInfo
+        Table.MoveNext
+        Index = Index + 1
     Wend
-    table.Close
+    Table.Close
     
     
     periodCount = UBound(periods) + 1
@@ -727,12 +727,12 @@ Dim periodColumnName As String
     End If
     Grid.FormatString = GridHeaderHead
     
-    For index = 0 To UBound(GridHeaderHeadDef)
-        headerColumn = GridHeaderHeadDef(index)
+    For Index = 0 To UBound(GridHeaderHeadDef)
+        headerColumn = GridHeaderHeadDef(Index)
         If headerColumn.hidden = 1 Then
-            Grid.ColWidth(index) = 0
+            Grid.ColWidth(Index) = 0
         End If
-    Next index
+    Next Index
     
 End Function
 
@@ -776,16 +776,16 @@ Private Sub setFilterParams()
 Dim entry As MapEntry
 
 '    Grid.FormatString = "|Фирма|Регион"
-    sql = "call n_boot_filter(" & filterId & ", '" & managId & "')"
+    sql = "call n_boot_filter(" & filterId & ", '" & ManagId & "')"
     
-    Set table = myOpenRecordSet("##Results.3", sql, dbOpenDynaset)
-    While Not table.EOF
-        entry.Key = table!paramName
-        entry.Value = table!paramValue
+    Set Table = myOpenRecordSet("##Results.3", sql, dbOpenDynaset)
+    While Not Table.EOF
+        entry.Key = Table!paramName
+        entry.Value = Table!paramValue
         append filterSettings, entry
-        table.MoveNext
+        Table.MoveNext
     Wend
-    table.Close
+    Table.Close
 End Sub
 
 Private Sub cleanTable()

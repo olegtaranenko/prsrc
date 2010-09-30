@@ -1073,7 +1073,7 @@ sql = "SELECT r.quant, n.cost, n.perList, p.cenaEd " _
     & " JOIN xPredmetyByNomenk p ON p.nomNom = r.nomNom AND p.numOrder = r.numOrder" _
     & " join orders o on r.numorder = o.numorder" _
     & " JOIN sGuideNomenk n ON n.nomNom = r.nomNom " _
-    & strWhere
+    & strWhere & " and werkid = 2"
 
 'Debug.Print sql
 

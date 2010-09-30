@@ -5,16 +5,16 @@ Begin VB.Form Zakaz
    BackColor       =   &H8000000A&
    BorderStyle     =   3  'Fixed Dialog
    Caption         =   "ѕеремещение заказа в цеховую сводку"
-   ClientHeight    =   5910
-   ClientLeft      =   45
-   ClientTop       =   330
-   ClientWidth     =   9465
+   ClientHeight    =   5904
+   ClientLeft      =   48
+   ClientTop       =   336
+   ClientWidth     =   9468
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form2"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   5910
-   ScaleWidth      =   9465
+   ScaleHeight     =   5904
+   ScaleWidth      =   9468
    ShowInTaskbar   =   0   'False
    StartUpPosition =   2  'CenterScreen
    Begin VB.CommandButton cmCeh 
@@ -432,7 +432,6 @@ Option Explicit
 Public urgent As Variant ' As String '"y" - срочный заказ
 Public Regim As String
 Public idEquip As Integer
-Public idWerk As Integer
 Public isUpdated As Boolean  ' выставлен в true если что-то в статусе заказа действительно помен€лось
 
 ' M125 - таким будет статус заказа
@@ -470,11 +469,11 @@ Const zgOtlad = 7
 Sub lvAddDay(I As Integer)
 Dim Left As String, Rollback As String, Worktime As String, Outdatetime As String, Value
 
-Dim item As ListItem, str As String
+Dim Item As ListItem, str As String
     str = Format(DateAdd("d", I - 1, curDate), "dd/mm/yy")
-    Set item = Zakaz.lv.ListItems.Add(, "k" & I, str)
+    Set Item = Zakaz.lv.ListItems.Add(, "k" & I, str)
     day = Weekday(DateAdd("d", I - 1, curDate))
-    If day = vbSunday Or day = vbSaturday Then item.ForeColor = &HFF
+    If day = vbSunday Or day = vbSaturday Then Item.ForeColor = &HFF
 End Sub
 
 Sub lvAddDays(Optional newLen As Integer = -1)
@@ -620,12 +619,12 @@ End Function
 'reg = "setka" по F1,F2 - т.е. первый раз
 'reg = "" - double click at status cell
 
-Sub newZagruz(Optional reg As String = "", Optional equipId As Integer)
+Sub newZagruz(Optional reg As String = "", Optional EquipId As Integer)
 Dim S As Double, nevip As Double, I As Integer
 Dim bDay As Integer, eDay As Integer, vEquipId As Integer
 
-If equipId <> 0 Then
-    vEquipId = equipId
+If EquipId <> 0 Then
+    vEquipId = EquipId
 Else
     vEquipId = Me.idEquip
 End If
@@ -800,7 +799,7 @@ If isMzagruz Then
   End If
 End If
 
-If reg = "" And quantity > 0 Then Grid.removeItem Grid.Rows - 1
+If reg = "" And quantity > 0 Then Grid.RemoveItem Grid.Rows - 1
 EN1:
 tbOrders.Close
 
@@ -1068,7 +1067,7 @@ End Sub
 
 '$odbc08$
 Private Sub cmAdd_Click()
-Dim I As Integer, str As String, item As ListItem, S As Double, T As Double
+Dim I As Integer, str As String, Item As ListItem, S As Double, T As Double
 Dim VrVip As String, VrVipO As String, editWorkTime As Boolean
 Dim Worktime As String
 
@@ -1198,9 +1197,9 @@ If myExecute("##396", sql) <> 0 Then GoTo ER1
 
 ' согласование или из согласовани€ в работу
 sql = "SELECT * from OrdersInCeh WHERE numOrder =" & gNzak
-Set table = myOpenRecordSet("##02", sql, dbOpenForwardOnly)
-bilo = Not table.BOF
-table.Close
+Set Table = myOpenRecordSet("##02", sql, dbOpenForwardOnly)
+bilo = Not Table.BOF
+Table.Close
 
  If statusIdNew = 3 Then ' согласов
   If cbM.Text = "в работе" Or cbM.Text = "готов" Or _
@@ -1532,19 +1531,19 @@ If DateDiff("d", tmpDate, curDate) > 0 Then               ' день приема заказа
   "From ReplaceRS  Where (((ReplaceRS.numOrder) = " & gNzak & ")) " & _
   "ORDER BY ReplaceRS.newDateIn;"
   
-  Set table = myOpenRecordSet("##22", sql, dbOpenDynaset) 'dbOpenTable)
-  If Not table Is Nothing Then
-    If table.BOF Then ' заказа пока нет в ReplaceRS
+  Set Table = myOpenRecordSet("##22", sql, dbOpenDynaset) 'dbOpenTable)
+  If Not Table Is Nothing Then
+    If Table.BOF Then ' заказа пока нет в ReplaceRS
       If MsgBox(msg, vbYesNo, title) = vbNo Then Exit Sub
          perenos = 1
     Else
-      table.MoveFirst: I = 0
-      While Not table.EOF
+      Table.MoveFirst: I = 0
+      While Not Table.EOF
         I = I + 1
-        table.MoveNext
+        Table.MoveNext
       Wend
-      table.MoveLast
-      If DateDiff("d", table!newDateIn, curDate) > 0 Then ' ƒата –— изменилась
+      Table.MoveLast
+      If DateDiff("d", Table!newDateIn, curDate) > 0 Then ' ƒата –— изменилась
          str = I                                      ' первый раз за
          Mid(title, 11) = str                             ' за сегодн€
          If MsgBox(msg, vbYesNo, title) = vbNo Then Exit Sub
@@ -1555,7 +1554,7 @@ If DateDiff("d", tmpDate, curDate) > 0 Then               ' день приема заказа
          perenos = 3
       End If
     End If 'Table.BOF
-    table.Close
+    Table.Close
   End If 'Not Table Is Nothing
 End If ' и —егодн€ не день приема заказа
 
@@ -1918,7 +1917,7 @@ End Sub
 
 Public Function startParams() As Boolean
 Dim I As Integer, str As String, J As Integer ', sumSroch As Double
-Dim item As ListItem, V As Variant, S As Double
+Dim Item As ListItem, V As Variant, S As Double
 startParams = False
 
 maxDay = 0
@@ -1936,11 +1935,11 @@ Else
     Me.cmAdd.Visible = True
     Me.cmRepit.Visible = True
 
-    sql = "SELECT o.numorder, o.StatusId, o.DateRS, o.outTime, o.werkId" _
+    sql = "SELECT o.numorder, o.StatusId, o.DateRS, o.outTime, o.werkId, o.FirmId" _
     & ", oe.outDateTime, oe.statusEquipId, oe.equipId, oe.worktime, oe.workTimeMO" _
     & ", oc.DateTimeMO, oc.StatM, oe.StatO" _
     & ", oe.stat as statusInCeh, oe.nevip, oc.urgent" _
-    & ", o.lastModified, o.lastManagId, 0 as presentationFormat" _
+    & ", o.lastModified, o.lastManagId, oe.lastManagId as lastManagEquipId, 0 as presentationFormat" _
     & " from Orders o" _
     & " JOIN OrdersEquip oe on oe.numorder = o.numorder" _
     & " LEFT JOIN OrdersInCeh oc on oc.numorder = o.numorder" _

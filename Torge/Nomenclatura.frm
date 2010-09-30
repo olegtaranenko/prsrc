@@ -150,10 +150,10 @@ Begin VB.Form Nomenklatura
       Width           =   1335
    End
    Begin VB.ListBox lbWeb 
-      Height          =   432
+      Height          =   624
       ItemData        =   "Nomenclatura.frx":0047
       Left            =   3240
-      List            =   "Nomenclatura.frx":0051
+      List            =   "Nomenclatura.frx":0054
       TabIndex        =   28
       Top             =   1260
       Visible         =   0   'False
@@ -189,9 +189,9 @@ Begin VB.Form Nomenklatura
    End
    Begin VB.ListBox lbMark 
       Height          =   432
-      ItemData        =   "Nomenclatura.frx":005C
+      ItemData        =   "Nomenclatura.frx":0064
       Left            =   3000
-      List            =   "Nomenclatura.frx":0066
+      List            =   "Nomenclatura.frx":006E
       TabIndex        =   23
       Top             =   3660
       Visible         =   0   'False
@@ -199,9 +199,9 @@ Begin VB.Form Nomenklatura
    End
    Begin VB.ListBox lbYesNo 
       Height          =   432
-      ItemData        =   "Nomenclatura.frx":0078
+      ItemData        =   "Nomenclatura.frx":0080
       Left            =   3060
-      List            =   "Nomenclatura.frx":0082
+      List            =   "Nomenclatura.frx":008A
       TabIndex        =   22
       Top             =   1920
       Visible         =   0   'False
@@ -649,6 +649,9 @@ Dim persistConst As Boolean
 
 Dim tvSelectedItem As Boolean
 
+Dim CenaFreight As String, CenaFact As String
+
+
 Private Sub setMnPriceHistoryStatus()
 Dim cnt As String
     If nkPrevCost <> -1 Then
@@ -764,7 +767,7 @@ End If
 End Sub
 
 Private Sub ckUnUsed_Click()
-Dim l As Long, bColor As Long
+Dim L As Long, bColor As Long
 
 If Not Grid.Visible Then
     ckUnUsed.Value = 0
@@ -776,10 +779,10 @@ If ckUnUsed.Value = 0 Then
 Else
     Grid.CellBackColor = Grid.BackColor 'поскольку LeaveCell будет заблокирована
 End If
-For l = 1 To Grid.Rows - 1
-    If Grid.TextMatrix(l, nkMark) = "Unused" Then _
-                    colorGridRow Grid, l, bColor
-Next l
+For L = 1 To Grid.Rows - 1
+    If Grid.TextMatrix(L, nkMark) = "Unused" Then _
+                    colorGridRow Grid, L, bColor
+Next L
 Grid_EnterCell
 On Error Resume Next
 Grid.SetFocus
@@ -1178,7 +1181,7 @@ Function ostatCorr(myErr As String, delta As Single) As Boolean
 ostatCorr = False
 Set tbNomenk = myOpenRecordSet(myErr, "sGuideNomenk", dbOpenTable)
 If tbNomenk Is Nothing Then Exit Function
-tbNomenk.index = "PrimaryKey"
+tbNomenk.Index = "PrimaryKey"
 tbNomenk.Seek "=", gNomNom
 If Not tbNomenk.NoMatch Then
     tbNomenk.Edit
@@ -1191,7 +1194,7 @@ tbNomenk.Close
 End Function
 
 
-Function valueToNomencField(myErr As String, val As Variant, field As String) As Boolean
+Function valueToNomencField(myErr As String, val As Variant, Field As String) As Boolean
 valueToNomencField = False
 
 On Error GoTo SqlFail
@@ -1204,16 +1207,16 @@ Set tbNomenk = myOpenRecordSet(myErr, sql, dbOpenForwardOnly)
 'If Not tbNomenk.NoMatch Then
 If Not tbNomenk.BOF Then
     tbNomenk.Edit
-    If TypeName(val) = "Single" And IsNumeric(tbNomenk.fields(field)) Then
-        tmpSingle = Round(val - tbNomenk.fields(field), 2) 'delta
+    If TypeName(val) = "Single" And IsNumeric(tbNomenk.fields(Field)) Then
+        tmpSingle = Round(val - tbNomenk.fields(Field), 2) 'delta
     End If
 '    If field = "begOstatki" Then
 '        tbNomenk!nowOstatki = Round(tbNomenk!nowOstatki + tmpSingle, 2)
-    If field = "mark" And val = lbMark.List(0) Then
+    If Field = "mark" And val = lbMark.List(0) Then
         tbNomenk!normZapas = Round(nomencDostupOstatki, 2) 'ƒ.ќ -> Min запас
         tbNomenk!zakup = FO '‘.ќ -> Max запас
     End If
-    tbNomenk.fields(field) = val
+    tbNomenk.fields(Field) = val
     tbNomenk.Update
     valueToNomencField = True
 End If
@@ -1365,7 +1368,7 @@ isLoad = True
 End Sub
 
 Sub loadKlass()
-Dim Key As String, pKey As String, k() As String, pK()  As String
+Dim Key As String, pKey As String, K() As String, pK()  As String
 Dim I As Integer, iErr As Integer, groupText As String
 
 If Regim = "sourOborot" Then
@@ -1373,19 +1376,19 @@ If Regim = "sourOborot" Then
     tv.Nodes.Clear
     sql = "SELECT sGuideSource.sourceName, sGuideSource.sourceId " & _
     "From sGuideSource WHERE (((sGuideSource.sourceId)>=0));"
-    Set table = myOpenRecordSet("##144", sql, dbOpenForwardOnly)
-    If table Is Nothing Then Exit Sub
-    While Not table.EOF
-        Key = "k" & table!sourceId
-        If table!sourceId = 0 Then
+    Set Table = myOpenRecordSet("##144", sql, dbOpenForwardOnly)
+    If Table Is Nothing Then Exit Sub
+    While Not Table.EOF
+        Key = "k" & Table!sourceId
+        If Table!sourceId = 0 Then
             Set Node = tv.Nodes.Add(, , Key, "(незаданные)")
         Else
-            Set Node = tv.Nodes.Add(, , Key, table!SourceName)
+            Set Node = tv.Nodes.Add(, , Key, Table!SourceName)
         End If
             
-        table.MoveNext
+        Table.MoveNext
     Wend
-    table.Close
+    Table.Close
   Exit Sub
 End If
 
@@ -1401,7 +1404,7 @@ If Not tbKlass.BOF Then
  Set Node = tv.Nodes.Add("k0", tvwChild, "all", "             ")
  Node.Sorted = True
  
- ReDim k(0): ReDim pK(0): ReDim NN(0): iErr = 0
+ ReDim K(0): ReDim pK(0): ReDim NN(0): iErr = 0
  While Not tbKlass.EOF
     If tbKlass!KlassId = 0 Then GoTo NXT1
     Key = "k" & tbKlass!KlassId
@@ -1419,12 +1422,12 @@ tbKlass.Close
 
 While bilo ' необходимы еще проходы
   bilo = False
-  For I = 1 To UBound(k())
-    If k(I) <> "" Then
+  For I = 1 To UBound(K())
+    If K(I) <> "" Then
         On Error GoTo ERR2 ' назначить еще проход
-        Set Node = tv.Nodes.Add(pK(I), tvwChild, k(I), NN(I))
+        Set Node = tv.Nodes.Add(pK(I), tvwChild, K(I), NN(I))
         On Error GoTo 0
-        k(I) = ""
+        K(I) = ""
         Node.Sorted = True
     End If
 NXT:
@@ -1460,8 +1463,8 @@ End If ' пересчет себестоимости
 Exit Sub
 ERR1:
  iErr = iErr + 1: bilo = True
- ReDim Preserve k(iErr): ReDim Preserve pK(iErr): ReDim Preserve NN(iErr)
- k(iErr) = Key: pK(iErr) = pKey: NN(iErr) = tbKlass!klassName
+ ReDim Preserve K(iErr): ReDim Preserve pK(iErr): ReDim Preserve NN(iErr)
+ K(iErr) = Key: pK(iErr) = pKey: NN(iErr) = tbKlass!klassName
  Resume Next
 
 ERR2: bilo = True: Resume NXT
@@ -1608,8 +1611,8 @@ BB:     If GuideFormuls.isLoad Then Unload GuideFormuls
         If mousCol = nkFormulaNom Then
           If valueToNomencField("##311", tmpStr, "formulaNom") Then
             Grid.TextMatrix(mousRow, nkFormulaNom) = tmpStr
-            cenaFreight = nomenkFormula
-            Grid.TextMatrix(mousRow, nkCenaFreight) = cenaFreight
+            CenaFreight = nomenkFormula
+            Grid.TextMatrix(mousRow, nkCenaFreight) = CenaFreight
             Grid.TextMatrix(mousRow, 0) = tmpStr 'теперь это сама формула
             'GoTo DD ' может вли€ть и на WEB значени€
           End If
@@ -1780,7 +1783,7 @@ Else
 End If
 End Sub
 
-Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
 Dim I As Integer
 
 If Grid.MouseRow = 0 And Shift = 2 Then
@@ -2197,7 +2200,7 @@ Dim queryTimeout As Variant
     End If
     
     MousePointer = flexHourglass
-    Set tvNode = tv.Nodes(tv.SelectedItem.index)
+    Set tvNode = tv.Nodes(tv.SelectedItem.Index)
     KlassId = Mid(tvNode.Key, 2)
     
     sql = "select wf_cost_bulk_change( " & KlassId & ")"
@@ -2345,7 +2348,7 @@ End Sub
 
 Private Sub mnKartaAdd_Click()
 Dim I As Integer, str As String, lenght As Integer, newLen As Integer
-Dim J As Integer, l As Long
+Dim J As Integer, L As Long
 Grid.CellBackColor = vbWhite
 If KartaDMC.cmCheck.Visible Then KartaDMC.removeHead
 KartaDMC.controlVisible False
@@ -2595,7 +2598,7 @@ End Sub
 
 Private Sub tbMobile_KeyDown(KeyCode As Integer, Shift As Integer)
 Dim str As String, I As Integer, old As String, row As Long, col As Integer, newPrevCost As String
-Dim s As Single, result As String 'field() As Variant
+Dim S As Single, result As String 'field() As Variant
 
 
 If tbmobile_readonly And KeyCode = vbKeyReturn Then
@@ -2682,7 +2685,7 @@ AA: Grid.TextMatrix(mousRow, mousCol) = str
         GoTo EN1
     End If
     Grid.TextMatrix(mousRow, nkPrevCost) = newPrevCost
-    cenaFact = str
+    CenaFact = str
     GoTo CC
 ' ElseIf mousCol = nkBegOstat Then ' при этом на столько же изм-с€ тек.ост-ки
 '    If Not isNumericTbox(tbMobile, 0) Then Exit Sub
@@ -2723,8 +2726,8 @@ AA: Grid.TextMatrix(mousRow, mousCol) = str
 BB: result = nomenkFormula 'tmpStr
     Grid.TextMatrix(mousRow, nkCenaFreight) = result
     Grid.TextMatrix(mousRow, 0) = tmpStr 'освежаем формулу
-    cenaFact = Grid.TextMatrix(mousRow, nkCena)
-CC: cenaFreight = Grid.TextMatrix(mousRow, nkCenaFreight)
+    CenaFact = Grid.TextMatrix(mousRow, nkCena)
+CC: CenaFreight = Grid.TextMatrix(mousRow, nkCenaFreight)
 '    result = nomenkFormula("", "W") ' ,берем номер WEB формулы из sGuideNomenk
 '    Grid.TextMatrix(mousRow, nkCena1W) = result
 '    Grid.TextMatrix(mousRow, nkWebFormula) = tmpStr 'освежаем формулу
@@ -2764,13 +2767,13 @@ CC: cenaFreight = Grid.TextMatrix(mousRow, nkCenaFreight)
     End If
     
     If mousCol = nkCENA1 Then
-        cenaFreight = nomenkFormula(, , CDbl(tbMobile.Text))
-        Grid.TextMatrix(mousRow, nkCenaFreight) = Format(cenaFreight, "0.00")
+        CenaFreight = nomenkFormula(, , CDbl(tbMobile.Text))
+        Grid.TextMatrix(mousRow, nkCenaFreight) = Format(CenaFreight, "0.00")
     Else
-        cenaFreight = Grid.TextMatrix(mousRow, nkCenaFreight)
+        CenaFreight = Grid.TextMatrix(mousRow, nkCenaFreight)
     End If
     If refreshGridCell = nkCena1W Then
-        Grid.TextMatrix(mousRow, nkCena1W) = Format(CDbl(cenaFreight) / (1 - margin / 100), "0.00")
+        Grid.TextMatrix(mousRow, nkCena1W) = Format(CDbl(CenaFreight) / (1 - margin / 100), "0.00")
     End If
     
     Dim kolonok As Integer, rabbat As Double
@@ -3135,8 +3138,8 @@ Dim restCsv As String, currentOrder As Integer
 End Sub
 
 Sub loadKlassNomenk(Optional filtr As String = "")
-Dim il As Long, strWhere As String, befWhere  As String
-Dim insWhere As String, strN As String, I As Integer, s As Single
+Dim IL As Long, strWhere As String, befWhere  As String
+Dim insWhere As String, strN As String, I As Integer, S As Single
 Dim beg As Single, prih As Double, rash As Double, oldNow As Single
 Dim Cena1 As Double
 
@@ -3230,8 +3233,8 @@ If Not tbNomenk.BOF Then
  While Not tbNomenk.EOF
     gNomNom = tbNomenk!nomnom
 '    beg = tbNomenk!begOstatki
-    cenaFact = tbNomenk!cost 'цена фактическа€
-    cenaFreight = nomenkFormula("noOpen")
+    CenaFact = tbNomenk!cost 'цена фактическа€
+    CenaFreight = nomenkFormula("noOpen")
     
 '    If cbInside.ListIndex > 1 Then beg = 0
     oldNow = Round(tbNomenk!nowOstatki, 2)
@@ -3272,7 +3275,7 @@ If Not tbNomenk.BOF Then
 '            Grid.TextMatrix(quantity + 1, nkMark) = tbNomenk!mark
         End If
         Grid.TextMatrix(quantity + 1, nkDostup) = dOst
-        Grid.TextMatrix(quantity + 1, nkCena) = cenaFact
+        Grid.TextMatrix(quantity + 1, nkCena) = CenaFact
     End If
     quantity = quantity + 1
     Grid.TextMatrix(quantity, nkNomer) = gNomNom
@@ -3321,7 +3324,7 @@ If Not tbNomenk.BOF Then
                 
         'Dim z As Boolean: z = calcZacup(quantity, "load")
         Grid.TextMatrix(quantity, nkDostup) = dOst
-        Grid.TextMatrix(quantity, nkCena) = cenaFact
+        Grid.TextMatrix(quantity, nkCena) = CenaFact
         
         
 '        = getBaySaledQty(tbNomenk!nomnom, startDate, endDate)
@@ -3367,7 +3370,7 @@ If Not tbNomenk.BOF Then
                 Grid.TextMatrix(quantity, nkEndOstat) = Round(FO, 2) ' строка д.б после вызова nomencDostupOstatki
                 Grid.TextMatrix(quantity, nkDostup) = Round(dOst, 2)
             End If
-            Grid.TextMatrix(quantity, nkCena) = cenaFact
+            Grid.TextMatrix(quantity, nkCena) = CenaFact
             If Not IsNull(tbNomenk!prev_cost) Then
                 Grid.TextMatrix(quantity, nkPrevCost) = tbNomenk!prev_cost
             Else
@@ -3378,7 +3381,7 @@ If Not tbNomenk.BOF Then
             Grid.TextMatrix(quantity, nkVES) = tbNomenk!ves
             Grid.TextMatrix(quantity, nkSTAVKA) = tbNomenk!STAVKA
             Grid.TextMatrix(quantity, 0) = tbNomenk!formula
-            Grid.TextMatrix(quantity, nkCenaFreight) = Format(cenaFreight, "0.00")
+            Grid.TextMatrix(quantity, nkCenaFreight) = Format(CenaFreight, "0.00")
             Grid.TextMatrix(quantity, nkFormulaNom) = tbNomenk!FormulaNom
             Grid.TextMatrix(quantity, nkYesNo) = tbNomenk!YesNo
             If Not IsNull(tbNomenk!SourceName) Then _
@@ -3386,8 +3389,8 @@ If Not tbNomenk.BOF Then
             If Not IsNull(tbNomenk!perList) Then _
                 Grid.TextMatrix(quantity, nkPerList) = tbNomenk!perList
 
-            If IsNumeric(cenaFreight) Then
-                Grid.TextMatrix(quantity, nkCena1W) = Format(cenaFreight / (1 - tbNomenk!margin / 100), "0.00")
+            If IsNumeric(CenaFreight) Then
+                Grid.TextMatrix(quantity, nkCena1W) = Format(CenaFreight / (1 - tbNomenk!margin / 100), "0.00")
             End If
             
             Grid.TextMatrix(quantity, nkCena2W) = Format(tbNomenk!CENA_W, "0.00")
@@ -3489,7 +3492,7 @@ Dim Kolon4 As String
     End If
 End Sub
 
-Private Sub recaluculateZakup(ByVal row As Long, ByVal avgOutcome As Single, ByVal dOst As Single, ByVal cenaFact As String _
+Private Sub recaluculateZakup(ByVal row As Long, ByVal avgOutcome As Single, ByVal dOst As Single, ByVal CenaFact As String _
         , ByVal mark As Variant, ByVal ves As Variant, ByVal normZapas As Variant, ByVal zakup As Variant _
 )
         
@@ -3532,7 +3535,7 @@ Private Sub recaluculateZakup(ByVal row As Long, ByVal avgOutcome As Single, ByV
 '            End If
 '            Grid.TextMatrix(row, nkDeficit) = Round(kZajav, 0)
             If onDemand2 > 0 Then
-                Grid.TextMatrix(row, nkZakupBax) = Round(onDemand2 * cenaFact, 2)
+                Grid.TextMatrix(row, nkZakupBax) = Round(onDemand2 * CenaFact, 2)
                 Grid.TextMatrix(row, nkZakupWeight) = Round(onDemand2 * ves, 1)
             End If
         End If
@@ -3547,7 +3550,7 @@ End Sub
 
 
 Public Function nomencDostupOstatki(Optional intQuant As String = "") As Single
-Dim s As Single, z As Single
+Dim S As Single, z As Single
 ' ‘.остатки
 FO = PrihodRashod("+", -1001) - PrihodRashod("-", -1001)
 
@@ -3557,20 +3560,20 @@ sql = "SELECT Sum(quantity) AS Sum_quantity, " & _
 "WHERE nomNom = '" & gNomNom & "'"
 
 'Debug.Print sql
-If Not byErrSqlGetValues("##469", sql, z, s) Then myBase.Close: End
-nomencDostupOstatki = FO - (z - s) ' минус, что несписано
+If Not byErrSqlGetValues("##469", sql, z, S) Then myBase.Close: End
+nomencDostupOstatki = FO - (z - S) ' минус, что несписано
 If intQuant <> "" Or Regim = "" Then
     sql = "SELECT perList from sGuideNomenk WHERE nomNom = '" & gNomNom & "'"
-    If Not byErrSqlGetValues("##436", sql, s) Then myBase.Close: End
-    nomencDostupOstatki = nomencDostupOstatki / s
-    FO = FO / s
+    If Not byErrSqlGetValues("##436", sql, S) Then myBase.Close: End
+    nomencDostupOstatki = nomencDostupOstatki / S
+    FO = FO / S
 End If
 End Function
 
 'skladId=0 - cуммарно по всем складам
 'skladId=2 - cуммарно по 1 и 2му складам
 Function PrihodRashod(reg As String, skladId As Integer) As Single
-Dim qWhere As String, s As Single
+Dim qWhere As String, S As Single
 
 PrihodRashod = 0
 
@@ -3660,7 +3663,7 @@ Dim I As Integer, str As String
     End If
 End Sub
 
-Private Sub tv_MouseDown(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub tv_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
 If Regim = "sourOborot" Then Exit Sub
 
 If Button = 2 Then
@@ -3673,7 +3676,7 @@ If Shift = 2 Then beShift = True
 
 End Sub
 
-Private Sub tv_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub tv_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
 Dim str As String
 If Regim = "sourOborot" Then Exit Sub
 

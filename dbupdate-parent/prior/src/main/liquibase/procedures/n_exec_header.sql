@@ -20,9 +20,9 @@ begin
 
 	create table #regions     (regionId     integer, isActive integer null);
 	create table #materials   (klassId      integer, isActive integer null);
-	create table #oborudItems (oborudItemId integer, isActive integer null);
-	create table #noOboruds   (noOborud     integer, isActive integer null);
 	create table #client      (clientId     integer, isActive integer null);
+	create table #tool        (toolId       integer, isActive integer null);
+	create table #bayStatus   (bayStatusId integer, isActive integer null);
 
 
 	for x as xd dynamic scroll cursor for

@@ -694,7 +694,7 @@ While Not tbProduct.EOF
     
     Set tbNomenk = myOpenRecordSet("##150", "sGuideNomenk", dbOpenTable)
     If tbNomenk Is Nothing Then GoTo EN1
-    tbNomenk.index = "PrimaryKey"
+    tbNomenk.Index = "PrimaryKey"
     tbNomenk.Seek "=", tbProduct!nomnom
     If tbNomenk.NoMatch Then
         tbNomenk.Close
@@ -718,7 +718,7 @@ While Not tbProduct.EOF
     
         Set tbDMC = myOpenRecordSet("##152", "sDMC", dbOpenTable)
         If tbDMC Is Nothing Then GoTo EN1
-        tbDMC.index = "nomDoc"
+        tbDMC.Index = "nomDoc"
         tbDMC.Seek "=", numDoc, numExt, tbProduct!nomnom
         If tbDMC.NoMatch Then
             tbDMC.Close
@@ -850,7 +850,7 @@ gridIsLoad = True
 End Sub
 
 Sub loadSeria()
-Dim Key As String, pKey As String, k() As String, pK()  As String
+Dim Key As String, pKey As String, K() As String, pK()  As String
 Dim I As Integer, iErr As Integer
 bilo = False
 sql = "SELECT sGuideSeries.*  From sGuideSeries ORDER BY sGuideSeries.seriaId;"
@@ -863,7 +863,7 @@ If Not tbSeries.BOF Then
  Set Node = tv.Nodes.Add(, , "k0", "—правочник по сери€м")
  Node.Sorted = True
  
- ReDim k(0): ReDim pK(0): ReDim NN(0): iErr = 0
+ ReDim K(0): ReDim pK(0): ReDim NN(0): iErr = 0
  While Not tbSeries.EOF
     If tbSeries!seriaId = 0 Then GoTo NXT1
     Key = "k" & tbSeries!seriaId
@@ -880,12 +880,12 @@ tbSeries.Close
 
 While bilo ' необходимы еще проходы
   bilo = False
-  For I = 1 To UBound(k())
-    If k(I) <> "" Then
+  For I = 1 To UBound(K())
+    If K(I) <> "" Then
         On Error GoTo ERR2 ' назначить еще проход
-        Set Node = tv.Nodes.Add(pK(I), tvwChild, k(I), NN(I))
+        Set Node = tv.Nodes.Add(pK(I), tvwChild, K(I), NN(I))
         On Error GoTo 0
-        k(I) = ""
+        K(I) = ""
         Node.Sorted = True
     End If
 NXT:
@@ -895,8 +895,8 @@ tv.Nodes.Item("k0").Expanded = True
 Exit Sub
 ERR1:
  iErr = iErr + 1: bilo = True
- ReDim Preserve k(iErr): ReDim Preserve pK(iErr): ReDim Preserve NN(iErr)
- k(iErr) = Key: pK(iErr) = pKey: NN(iErr) = tbSeries!serianame
+ ReDim Preserve K(iErr): ReDim Preserve pK(iErr): ReDim Preserve NN(iErr)
+ K(iErr) = Key: pK(iErr) = pKey: NN(iErr) = tbSeries!serianame
  Resume Next
 
 ERR2: bilo = True: Resume NXT
@@ -1068,16 +1068,16 @@ End If
 End Sub
 
 Function checkRowsByCol() As Boolean
-Dim il As Long, str As String
+Dim IL As Long, str As String
 checkRowsByCol = True
 If quantity2 = 0 Then Exit Function
-For il = 1 To Grid2.Rows - 1
-    str = Grid2.TextMatrix(il, gpQuant)
+For IL = 1 To Grid2.Rows - 1
+    str = Grid2.TextMatrix(IL, gpQuant)
     If Not IsNumeric(str) Then Exit Function ' это возм. при закрытой Grid2
     If CSng(str) < 0.01 Then
 BB:
 '       Grid2.SetFocus
-        Grid2.row = il
+        Grid2.row = IL
         Grid2.col = gpQuant
         MsgBox "ƒл€ оной из номенклатур, вход€щей в изделие, указано " & _
         "нулевое кол-во. ѕроставте количество либо удалите номенклатуру.", , _
@@ -1085,7 +1085,7 @@ BB:
         checkRowsByCol = False
         Exit Function
     End If
-Next il
+Next IL
 
 End Function
 
@@ -1120,7 +1120,7 @@ End If
 End Sub
 
 
-Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
 Dim I As Integer
 
 If Grid.MouseRow = 0 And Shift = 2 Then _
@@ -1257,7 +1257,7 @@ Private Function productUsedIn(ByVal productId As Integer) As String
 
 End Function
 
-Private Sub Grid2_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid2_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
 If Grid2.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid2.ColWidth(Grid2.MouseCol)
 If Regim = "select" Then Exit Sub
@@ -1691,13 +1691,13 @@ frmMode = "productReplace"
 
 End Sub
 
-Private Sub tbCol_Change(index As Integer)
+Private Sub tbCol_Change(Index As Integer)
 cmApple.Enabled = True
 cmCancel.Enabled = True
 
 End Sub
 
-Private Sub tbGain_Change(index As Integer)
+Private Sub tbGain_Change(Index As Integer)
 cmApple.Enabled = True
 cmCancel.Enabled = True
 
@@ -1880,26 +1880,27 @@ ValueToTableField "##115", "'" & NewString & "'", "sGuideSeries", "seriaName", "
 End Sub
 
 Sub loadProductNomenk(Optional markCol As Integer = 0)
-Dim il As Long, str As String
+Dim IL As Long, str As String
 
 Me.MousePointer = flexHourglass
 Grid2.Visible = False
 gridIsLoad = False
 'laProduct.Caption = "—писок готовых изделий по серии '" & tv.SelectedItem.Text & "'"
-For il = Grid2.Rows To 3 Step -1
-    Grid2.RemoveItem (il)
-Next il
+For IL = Grid2.Rows To 3 Step -1
+    Grid2.RemoveItem (IL)
+Next IL
 clearGridRow Grid2, 1
 quantity2 = 0
 
 sql = "SELECT p.*, n.nomName, n.ed_Izmer, n.Size, n.cod, n.perList, n.CENA1, n.VES, n.STAVKA" _
-    & ", n.CENA_W, f.Formula, pc.sysname as web " _
-    & " FROM sProducts p " _
-    & " JOIN sGuideNomenk n on n.nomNom = p.nomNom " _
-    & " JOIN sGuideFormuls f ON f.nomer = n.formulaNom " _
-    & " JOIN sGuideProducts gp on gp.prId = p.productId " _
-    & " left join GuideProdCategory pc on pc.prodCategoryId = gp.prodCategoryId " _
-    & " WHERE p.ProductId = " & gProductId
+    & ", n.CENA_W, f.Formula, pc.sysname as web, n.web as nomweb " _
+    & vbCr & " FROM sProducts p " _
+    & vbCr & " JOIN sGuideNomenk n on n.nomNom = p.nomNom " _
+    & vbCr & " JOIN sGuideFormuls f ON f.nomer = n.formulaNom " _
+    & vbCr & " JOIN sGuideProducts gp on gp.prId = p.productId " _
+    & vbCr & " left join GuideProdCategory pc on pc.prodCategoryId = gp.prodCategoryId " _
+    & vbCr & " WHERE p.ProductId = " & gProductId
+'Debug.Print sql
 
 Set tbNomenk = myOpenRecordSet("##108", sql, dbOpenForwardOnly)
 If tbNomenk Is Nothing Then Exit Sub
@@ -1927,8 +1928,8 @@ If Not tbNomenk.BOF Then
 '        Grid2.TextMatrix(quantity2, gpCENA_W) = str
 '    End If
     Grid2.TextMatrix(quantity2, gpGroup) = tbNomenk!xgroup
-    If Not IsNull(tbNomenk!Web) Then
-        Grid2.TextMatrix(quantity2, gpWeb) = tbNomenk!Web
+    If Not IsNull(tbNomenk!nomWeb) Then
+        Grid2.TextMatrix(quantity2, gpWeb) = tbNomenk!nomWeb
     End If
     
     Grid2.AddItem ""
@@ -1951,9 +1952,9 @@ End If
 '    Grid2_EnterCell
 
 If markCol > 0 Then
-  For il = 1 To quantity2
-    If Grid2.TextMatrix(il, gpNomNom) = gNomNom Then
-        Grid2.row = il
+  For IL = 1 To quantity2
+    If Grid2.TextMatrix(IL, gpNomNom) = gNomNom Then
+        Grid2.row = IL
         gridIsLoad = True
         Grid2.col = markCol
         Grid2.Visible = True
@@ -1961,7 +1962,7 @@ If markCol > 0 Then
         Grid2.SetFocus
         gridIsLoad = False
      End If
-  Next il
+  Next IL
 Else
     Grid2.row = 1    ' только чтобы сн€ть выделение
 End If
@@ -1994,7 +1995,7 @@ End Sub
 
 
 Sub loadSeriaProduct(Optional filtr As String = "")
-Dim il As Long, strWhere As String, str  As String
+Dim IL As Long, strWhere As String, str  As String
 
 Grid.Visible = False
 Frame1.Visible = False
@@ -2036,7 +2037,7 @@ cmApple.Enabled = False ' именно здесь
 cmCancel.Enabled = False
 
 
-il = 0
+IL = 0
 quantity = 0
 
 
@@ -2134,7 +2135,7 @@ If KeyCode = vbKeyReturn Or KeyCode = vbKeyEscape Then
 End If
 End Sub
 
-Private Sub tv_MouseDown(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub tv_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
 'If Button = 2 And Regim = "" Then
 If Button = 2 And Regim <> "select" Then
     mousRight = 1
@@ -2144,7 +2145,7 @@ End If
 
 End Sub
 
-Private Sub tv_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub tv_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
 Dim str As String
 If mousRight = 2 Then
   If frmMode = "productReplace" Then

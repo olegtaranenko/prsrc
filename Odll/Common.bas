@@ -3,6 +3,11 @@ Option Explicit
 'Проeкт\Свойства\Создание\Аргументы компиляции:
 ' - onErrorOtlad = 1 ' ловля редких err
 
+'Глобальный кэш номенклатуры
+Public nomnomCache As NomnomFactory
+'Public nomnomCache As New NomnomFactory
+Dim cacheResetTimer As Timer
+
 ' Размер страницы (к-во строк) при печати накладной.
 ' Задается в настройках, используется в модуле Nakladna.frm
 
@@ -31,6 +36,7 @@ Public isAdmin As Boolean
 
 Public isBlock As Boolean
 Public Equip() As String
+Public EquipFullName() As String
 Public Werk() As String
 Public werkSourceId() As Integer
 
@@ -81,6 +87,9 @@ Public gDocDate As Date
 Public gSeriaId As String
 Public gKlassId As String
 Public gNomNom As String
+Public gAsWhole As Integer ' для склада: запоминает, в какой единице показывать обрезную номенклатуру
+
+
 Public numDoc As Long, numExt As Integer
 
 Public oldValue As String 'старое значение поля, измененного последним
@@ -99,7 +108,7 @@ Public nr As Double ', dr As Double 'убываощие ном. и доп. ресурсы
 Public isLive As Boolean ' флаг - заказ живой
 Public zagAll As Double, zagLive As Double
 
-Public table As Recordset '
+Public Table As Recordset '
 Public myQuery As QueryDef
 Public sql As String      ' коллективного пользования
 Public strWhere As String '
@@ -120,7 +129,6 @@ Public oldCellColor As Long
 Public prExt As Integer, pType As String
 Public gridIsLoad As Boolean
 
-Public orColNumber As Integer ' число колонок в Orders
 Public orSqlWhere() As String
 Public orSqlFields() As String  '
 Public orNomZak As Integer, orWerk As Integer, orEquip As Integer, orData As Integer, orTema As Integer
@@ -131,6 +139,7 @@ Public orType As Integer, orInvoice As Integer
 Public orMOData As Integer, orMOVrVid As Integer, orOVrVip As Integer
 Public orLogo As Integer, orIzdelia As Integer, orZakazano As Integer
 Public orZalog As Integer, orNal As Integer, orRate As Integer
+Public orRemark As Integer, orSize As Integer, orPlaces As Integer
 Public orOplacheno As Integer, orOtgrugeno As Integer, orLastMen As Integer
 Public orVenture As Integer
 Public orlastModified As Integer
@@ -247,6 +256,7 @@ Public Const prCenaEd = 5
 Public Const prQuant = 6
 Public Const prSumm = 7
 Public Const prEtap = 8
+Public Const prVes = prEtap
 Public Const prEQuant = 9
 Public Const prOutQuant = 8
 Public Const prOutSum = 9
@@ -483,7 +493,7 @@ Sub exitAll()
 
 End Sub
 
-Function findValInCol(Grid As MSFlexGrid, Value, col As Integer) As Boolean
+Function findValInCol(Grid As MSFlexGrid, Value As Variant, col As Integer) As Boolean
 Dim IL As Long
 findValInCol = False
 For IL = 1 To Grid.Rows - 1
@@ -521,22 +531,22 @@ findExValInCol = -1
 End Function
 
 '$odbc08$
-Function existValueInTableFielf(ByVal Value As Variant, tabl As String, field) As Boolean
-Dim table As Recordset
+Function existValueInTableFielf(ByVal Value As Variant, tabl As String, Field) As Boolean
+Dim Table As Recordset
 
 existValueInTableFielf = False
 
 If Not IsNumeric(Value) Then Value = "'" & Value & "'"
 
-sql = "SELECT " & field & " From " & tabl & " WHERE (((" & field & ") = " & _
+sql = "SELECT " & Field & " From " & tabl & " WHERE (((" & Field & ") = " & _
 Value & "));"
 'MsgBox sql
-Set table = myOpenRecordSet("##390", sql, dbOpenForwardOnly)
+Set Table = myOpenRecordSet("##390", sql, dbOpenForwardOnly)
 'If table Is Nothing Then myBase.Close: End
 
-If Not table.BOF Then existValueInTableFielf = True
+If Not Table.BOF Then existValueInTableFielf = True
 
-table.Close
+Table.Close
 
 End Function
 
@@ -546,16 +556,16 @@ yymmdd = Right$(dateStr, 2) & "." & Mid$(dateStr, 4, 2) & "." & Left$(dateStr, 2
 End Function
 
 
-Function getValueFromTable(tabl As String, field As String, Where As String) As Variant
-Dim table As Recordset
+Function getValueFromTable(tabl As String, Field As String, Where As String) As Variant
+Dim Table As Recordset
 
 getValueFromTable = Null
-sql = "SELECT " & field & " as fff  From " & tabl & _
+sql = "SELECT " & Field & " as fff  From " & tabl & _
       " WHERE " & Where
-Set table = myOpenRecordSet("##59.1", sql, dbOpenForwardOnly)
-If table Is Nothing Then Exit Function
-If Not table.BOF Then getValueFromTable = table!fff
-table.Close
+Set Table = myOpenRecordSet("##59.1", sql, dbOpenForwardOnly)
+If Table Is Nothing Then Exit Function
+If Not Table.BOF Then getValueFromTable = Table!fff
+Table.Close
 End Function
 
 
@@ -584,11 +594,11 @@ End If
 
 End Function
 
-Function getStrPrEx(name As String, ext As Integer) As String
+Function getStrPrEx(Name As String, ext As Integer) As String
 If ext = 0 Then
-    getStrPrEx = name
+    getStrPrEx = Name
 Else
-    getStrPrEx = ext & "/ " & name
+    getStrPrEx = ext & "/ " & Name
 End If
 End Function
 
@@ -604,19 +614,19 @@ gNzak = Left$(str, I - 1)
 
 End Function
 '$odbc10$
-Function getResurs(equipId As Integer) As Integer
+Function getResurs(EquipId As Integer) As Integer
 Dim I As Integer, J As Integer, rMaxDay As Integer, S As Double
 ' rMaxDay - Resource max day - максимальное значение из таблицы ResursCEH (CO2, etc)
 
-Set tbSystem = myOpenRecordSet("##93", "select * from GuideResurs where equipId = " & equipId, dbOpenForwardOnly)
+Set tbSystem = myOpenRecordSet("##93", "select * from GuideResurs where equipId = " & EquipId, dbOpenForwardOnly)
 If tbSystem Is Nothing Then myBase.Close: End
 KPD = tbSystem!KPD
 Nstan = tbSystem!Nstan
 newRes = tbSystem!newRes
 tbSystem.Close
 
-sql = "SELECT nomRes from Resurs where equipId = " & equipId & " ORDER BY xDate"
-Set table = myOpenRecordSet("##10", sql, dbOpenForwardOnly)
+sql = "SELECT nomRes from Resurs where equipId = " & EquipId & " ORDER BY xDate"
+Set Table = myOpenRecordSet("##10", sql, dbOpenForwardOnly)
 'If table Is Nothing Then Exit Function
 
 'j = -1
@@ -627,18 +637,18 @@ On Error GoTo ERR1
 'If Not table.BOF Then
 ' table.MoveFirst
 ' Do
-While Not table.EOF
+While Not Table.EOF
     rMaxDay = rMaxDay + 1
     If rMaxDay = J Then
 '        table.Edit
 '            table!nomRes = Zagruz.tbMobile.Text
 '        table.Update
     End If
-    nomRes(rMaxDay) = table!nomRes
-    table.MoveNext
+    nomRes(rMaxDay) = Table!nomRes
+    Table.MoveNext
 ' Loop While Not table.EOF
 Wend
-table.Close
+Table.Close
 'End If
 
 addDays max(stDay, rMaxDay) 'добавляем дни, если Дата Выдачи всех заказов
@@ -810,8 +820,9 @@ If (beAll Or beNothing) And Not Orders.tbEnable.Visible And col = orStatus Then
 Else
 End If
 End Function
-'$NOodbc$
-Sub listBoxInGridCell(lb As listBox, Grid As MSFlexGrid, Optional sel As String = "")
+
+
+Sub listBoxInGridCell(lb As listBox, Grid As MSFlexGrid, Optional sel As String = "", Optional ColWidth As Long = -1)
 Dim I As Integer
     If Grid.CellTop + lb.Height < Grid.Height Then
         lb.Top = Grid.CellTop + Grid.Top
@@ -819,23 +830,32 @@ Dim I As Integer
         lb.Top = Grid.CellTop + Grid.Top - lb.Height + Grid.CellHeight
     End If
     lb.Left = Grid.CellLeft + Grid.Left
+    If ColWidth > 0 Then
+        lb.Width = ColWidth
+    End If
     lb.ListIndex = 0
+    
+    Dim saveNoClick As Boolean
+    saveNoClick = noClick
     If sel <> "" Then
         For I = 0 To lb.ListCount - 1 '
             If Grid.Text = lb.List(I) Then
-'                noClick = True
+                noClick = True
                 lb.ListIndex = I 'вызывает ложное onClick
-'                noClick = False
+                noClick = False
                 Exit For
             End If
         Next I
     End If
+    noClick = saveNoClick
+    
     lb.Visible = True
     lb.ZOrder
     lb.SetFocus
     Grid.Enabled = False 'иначе курсор по ней бегает
 '    lbIsActiv = True
 End Sub
+
 
 Function LoadNumeric(Grid As MSFlexGrid, row As Long, col As Integer, _
         val As Variant, Optional myErr As String = "", Optional fmt As String) As Double
@@ -877,14 +897,6 @@ End Function
 
 
 
-'$NOodbc$
-Sub initOrCol(colNum As Integer, Optional field As String = "")
-orColNumber = orColNumber + 1
-colNum = orColNumber
-ReDim Preserve orSqlFields(orColNumber + 1)
-orSqlFields(orColNumber) = field
-End Sub
-
 
 
 '$odbc10$
@@ -895,6 +907,12 @@ If App.PrevInstance = True Then
     MsgBox "Программа уже запущена", , "Error"
     End
 End If
+
+' кэш для номенклатуры
+Set nomnomCache = New NomnomFactory
+
+'nomnomCache.CompareMode = TextCompare
+'nomnomCache.Add "", New Nomnom
 
 ReDim NN(0): ReDim QQ(0): ReDim QQ2(0): ReDim QQ3(0) 'чтобы Ubound никогда не давала Err
 
@@ -942,6 +960,11 @@ baseOpen
     If myExecute("##@managerId", sql, 0) = 0 Then End
     
 mainTitle = getMainTitle
+gAsWhole = -1
+
+Set sc = CreateObject("ScriptControl")
+sc.Language = "VBScript"
+
 
 If Not IsEmpty(otlad) Then '
   webSvodkaPath = "C:\WINDOWS\TEMP\svodkaW."
@@ -1015,18 +1038,18 @@ ENop:
 isBlock = False
 noClick = False
 
-Set table = myOpenRecordSet("##05", "GuideStatus", dbOpenForwardOnly)
-While Not table.EOF
-    If table!StatusId > lenStatus + 1 Then
+Set Table = myOpenRecordSet("##05", "StatusGuide", dbOpenForwardOnly)
+While Not Table.EOF
+    If Table!StatusId > lenStatus + 1 Then
         MsgBox "Err в Orders\FormLoad"
         End
     End If
-    Status(table!StatusId) = table!Status
-    table.MoveNext
+    Status(Table!StatusId) = Table!Status
+    Table.MoveNext
 Wend
-table.Close
+Table.Close
 
-Set table = myOpenRecordSet("##04", "GuideProblem", dbOpenForwardOnly)
+Set Table = myOpenRecordSet("##04", "GuideProblem", dbOpenForwardOnly)
 'If table Is Nothing Then myBase.Close: End
 
 For I = 0 To 20
@@ -1034,15 +1057,15 @@ For I = 0 To 20
 Next I
 lenProblem = -1
 CC:
-    If lenProblem < table!ProblemId Then lenProblem = table!ProblemId
-    If table!ProblemId > 20 Then
+    If lenProblem < Table!ProblemId Then lenProblem = Table!ProblemId
+    If Table!ProblemId > 20 Then
         MsgBox "число проблем в базе превысило 20"
         End
     End If
-    Problems(table!ProblemId) = table!problem
-    table.MoveNext
-    If Not table.EOF Then GoTo CC
-table.Close
+    Problems(Table!ProblemId) = Table!problem
+    Table.MoveNext
+    If Not Table.EOF Then GoTo CC
+Table.Close
 
 'Проверка режима совместной работы с Комтех
 CheckIntegration
@@ -1052,42 +1075,50 @@ CheckIntegration
 
 
 ' раньше было в Orders.Form.Load
-Dim mySql As String
-mySql = "select werkId, werkCode, werkSourceId from GuideWerk order by 1"
+Dim mysql As String
 
-initListbox mySql, Orders.lbWerk, "werkId", "werkCode"
+mysql = "select werkId, werkCode, werkSourceId from GuideWerk order by 1"
 
-ReDim Preserve Werk(Orders.lbWerk.ListCount - 1)
-For I = 0 To Orders.lbWerk.ListCount - 2
-    Load Orders.cmWerk(I + 1)
-    Orders.cmWerk(I + 1).Left = Orders.cmWerk(I).Left + Orders.cmWerk(I).Width + 10
-    Orders.cmWerk(I + 1).Visible = True
-    
-    Werk(I + 1) = Orders.lbWerk.List(I + 1)
-    Orders.cmWerk(I + 1).Caption = Werk(I + 1)
-Next I
-
-
-
-Set table = myOpenRecordSet("##72.2", mySql, dbOpenForwardOnly)
-If table Is Nothing Then myBase.Close: End
-ReDim werkSourceId(Orders.lbWerk.ListCount - 1)
+Set Table = myOpenRecordSet("##72.2", mysql, dbOpenForwardOnly)
+If Table Is Nothing Then myBase.Close: End
+' ReDim werkSourceId(Orders.lbWerk.ListCount - 1)
 I = 1
-While Not table.EOF
-    werkSourceId(I) = table!werkSourceId
-    table.MoveNext
+While Not Table.EOF
+    ReDim Preserve Werk(I)
+    Werk(I) = Table!WerkCode
+    
+    ReDim Preserve werkSourceId(I)
+    werkSourceId(I) = Table!werkSourceId
+    Table.MoveNext
     I = I + I
 Wend
-table.Close
+Table.Close
+
+Werk(0) = ""
+
+' Внимание, подобная конструкция работает только если equipId начинается с 1 и не имеет пропусков
+' тогда индекс в массиве совпадает с ид
+mysql = "select equipId, equipName, equipFullName from GuideEquip where equipName <> '' order by 1"
+
+Set Table = myOpenRecordSet("##72.3", mysql, dbOpenForwardOnly)
+If Table Is Nothing Then myBase.Close: End
+
+I = 1
+While Not Table.EOF
+    ReDim Preserve Equip(I)
+    ReDim Preserve EquipFullName(I)
+    Equip(I) = Table!equipName
+    EquipFullName(I) = Table!EquipFullName
+    Table.MoveNext
+    I = I + 1
+Wend
+Table.Close
 
 
-initListbox "select equipId, equipName from Guideequip where equipName <> '' order by 1", Orders.lbEquip, "equipId", "equipName"
-
-ReDim Equip(Orders.lbEquip.ListCount - 1)
-
-For I = 0 To Orders.lbEquip.ListCount - 2
-    Equip(I + 1) = Orders.lbEquip.List(I + 1)
-Next I
+If Not initFomulConstats Then
+    MsgBox "Ошибка при инициализации формул" _
+        & vbCr & "Работа тем не менее будет продолжена", vbOKOnly Or vbExclamation, "Обратитесь к администратору"
+End If
 
 
 
@@ -1190,19 +1221,6 @@ On Error GoTo EN1
 sql = "UPDATE " & tabl & " SET year01 =[year01]+[year02], year02 =[year03], " & _
 "year03 = [year04], year04 = 0;"
 If myExecute("##390", sql) <> 0 Then Exit Function
-'sql = "SELECT year01, year02, year03, year04 FROM " & tabl & ";"
-'Set tbFirms = myOpenRecordSet("##390", sql, dbOpenDynaset)
-'If tbFirms Is Nothing Then Exit Function
-'While Not tbFirms.EOF
-'    tbFirms.Edit
-'    tbFirms!year01 = tbFirms!year01 + tbFirms!year02
-'    tbFirms!year02 = tbFirms!year03
-'    tbFirms!year03 = tbFirms!year04
-''    tbFirms!year04 = 0
-'    tbFirms.Update
-'    tbFirms.MoveNext
-'Wend
-'tbFirms.Close
 statisticReplace = True
 EN1:
 End Function
@@ -1218,8 +1236,7 @@ If MsgBox("Обнаружена необходимость перевода Статистики посешений на новый год. 
 
 wrkDefault.BeginTrans
 
-If Not statisticReplace("GuideFirms") Then GoTo ER1
-If Not statisticReplace("BayGuideFirms") Then GoTo ER1
+If Not statisticReplace("FirmGuide") Then GoTo ER1
 
 If valueToSystemField("##389", I, "lastYear") Then
     wrkDefault.CommitTrans
@@ -1558,7 +1575,7 @@ Grid.MousePointer = flexDefault
 End Sub
 
 
-Function StatParamsLoad(row As Long, Optional redraw As Boolean = False)
+Function StatParamsLoad(row As Long, ByRef orderBean As ZakazVO, Optional redraw As Boolean = False)
 Dim S As Double, log As String, str As String
 Dim Grid As MSFlexGrid
 
@@ -1567,15 +1584,20 @@ Set Grid = Orders.Grid
 If redraw Then
     Grid.col = orStatus
     Grid.row = row
-    If tqOrders!equipStatusSync <> 0 Then
-        Grid.CellForeColor = vbRed
-    Else
-        Grid.CellForeColor = vbBlack
-    End If
+    'If tqOrders!equipStatusSync <> 0 Then
+    '    Grid.CellForeColor = vbRed
+    'Else
+    '    Grid.CellForeColor = vbBlack
+    'End If
 End If
 
  log = Format(Now(), "dd.mm.yy hh:nn") & vbTab & Orders.cbM.Text & " " & gNzak ' именно vbTab
- str = Status(tqOrders!StatusId): log = log & " " & str
+ If tqOrders!WerkId = 1 And IsNull(tqOrders!Equip) Then
+    str = tqOrders!Status
+ Else
+    str = Status(tqOrders!StatusId)
+ End If
+ log = log & " " & str
  Orders.Grid.TextMatrix(row, orStatus) = str
  
  str = LoadDate(Orders.Grid, row, orDataVid, tqOrders!Outdatetime, "dd.mm.yy")
@@ -1583,7 +1605,9 @@ End If
  str = LoadNumeric(Orders.Grid, row, orVrVid, tqOrders!Outtime)
  If str <> "" Then log = log & "_" & str
  
- str = LoadNumeric(Orders.Grid, row, orVrVip, tqOrders!Worktime, , "#0.0")
+ 
+ 
+ str = LoadNumeric(Orders.Grid, row, orVrVip, orderBean.Worktime, , "#0.0")
  log = log & " Вр.вып=" & str
  
  Orders.Grid.TextMatrix(row, orProblem) = tqOrders!problem
@@ -1611,22 +1635,22 @@ End If
     Orders.Grid.TextMatrix(row, orM) = tqOrders!StatM
     log = log & " Mк(" & tqOrders!StatM & "):" & str ' Дата выд
  End If
- If IsNull(tqOrders!StatO) Then
+ If IsNull(orderBean.StatO) Then
     Orders.Grid.TextMatrix(row, orO) = ""
     Orders.Grid.TextMatrix(row, orOVrVip) = ""
  Else
-    Orders.Grid.TextMatrix(row, orO) = tqOrders!StatO
-    If tqOrders!StatO = "в работе" Or tqOrders!StatO = "готов" Then
+    Orders.Grid.TextMatrix(row, orO) = orderBean.StatO
+    If orderBean.StatO = "в работе" Or orderBean.StatO = "готов" Then
         If IsNull(tqOrders!DateTimeMO) Then
             msgOfZakaz "##313", "Отсутствует 'Дата MO'."
             str = " !Нет Даты MO! "
         End If
-        log = log & " Oб(" & tqOrders!StatO & "):" & str ' Дата выд
-        If IsNull(tqOrders!WorktimeMO) Then
+        log = log & " Oб(" & orderBean.StatO & "):" & str ' Дата выд
+        If IsNull(orderBean.WorktimeMO) Then
             msgOfZakaz "##314", "Отсутствует 'Время выполнения MO'."
         Else
-            Orders.Grid.TextMatrix(row, orOVrVip) = tqOrders!WorktimeMO
-            str = LoadNumeric(Orders.Grid, row, orOVrVip, tqOrders!WorktimeMO)
+            Orders.Grid.TextMatrix(row, orOVrVip) = orderBean.WorktimeMO
+            str = LoadNumeric(Orders.Grid, row, orOVrVip, orderBean.WorktimeMO)
             log = log & "=" & str
         End If
     End If
@@ -1730,10 +1754,10 @@ If year = "" Then
  
  Report.nCols = lastCol + 2
  If Report.Regim = "KK" Then
-    strWhere = "WHERE (((GuideFirms.Kategor)='К'));"
+    strWhere = "WHERE (((FirmGuide.Kategor)='К'));"
     Report.Grid.ColWidth(4) = 0
  ElseIf Report.Regim = "RA" Then
-    strWhere = "WHERE (((GuideFirms.Kategor)='П' Or (GuideFirms.Kategor)='Д'));"
+    strWhere = "WHERE (((FirmGuide.Kategor)='П' Or (FirmGuide.Kategor)='Д'));"
     Report.Grid.ColWidth(4) = 375
  Else
     Exit Sub
@@ -1780,7 +1804,7 @@ End If
 
  sql = "SELECT FirmId, Name, Kategor, " & _
  "year01, year02, year03, year04, " & _
- "Sale, ManagID FROM GuideFirms " & strWhere
+ "Sale, ManagID FROM FirmGuide " & strWhere
 'MsgBox sql
 Set tbFirms = myOpenRecordSet("##68", sql, dbOpenDynaset) 'ForwardOnly)
 If tbFirms Is Nothing Then Exit Sub
@@ -1807,7 +1831,7 @@ While Not tbFirms.EOF '                         *******************
     sql = "SELECT Orders.numOrder, Orders.workTime, Orders.paid, Orders.ordered From Orders " & _
     "WHERE (" & whereByTemaAndType & " ((Orders.inDate) Like '" & str & "-%') AND " & _
     "(Not ((Orders.StatusId)=0 Or (Orders.StatusId)=7)) AND " & _
-    "((Orders.FirmId)=" & tbFirms!firmId & ") AND ((Orders.workTime) Is Not Null));"
+    "((Orders.FirmId)=" & tbFirms!FirmId & ") AND ((Orders.workTime) Is Not Null));"
 'Debug.Print "1:" & sql
 'If tbFirms!firmId > 0 Then MsgBox sql
     Set tbOrders = myOpenRecordSet("##69", sql, dbOpenForwardOnly)
@@ -1839,7 +1863,7 @@ While Not tbFirms.EOF '                         *******************
     End If
     If visits > 0 And year = "" Then
         If Not bilo Then
-            Report.Grid.TextMatrix(nRow, 1) = tbFirms!name
+            Report.Grid.TextMatrix(nRow, 1) = tbFirms!Name
             If Not IsNull(tbFirms!ManagId) Then _
                     Report.Grid.TextMatrix(nRow, 2) = Manag(tbFirms!ManagId)
             Report.Grid.TextMatrix(nRow, 3) = tbFirms!Kategor
@@ -1896,7 +1920,7 @@ Wend '*******************
 EN1:
 tbFirms.Close
 If year = "" Then
-  If nRow > 1 Then Report.Grid.removeItem (nRow)
+  If nRow > 1 Then Report.Grid.RemoveItem (nRow)
   Report.laCount.Caption = nRow - 1
 Else
 '  If errBefYear > 0 Then !!!не стирать
@@ -1999,7 +2023,7 @@ End If
 End Function
 
 
-Function valueToSystemField(myErr As String, val As Variant, field As String) As Boolean
+Function valueToSystemField(myErr As String, val As Variant, Field As String) As Boolean
 
 valueToSystemField = False
 'sql = "select * from System"
@@ -2007,7 +2031,7 @@ valueToSystemField = False
 'If tbSystem Is Nothing Then myBase.Close: End
 'Debug.Print val
 If val = "" Then val = "''"
-myBase.Execute ("UPDATE SYSTEM SET " & field & " = " & val)
+myBase.Execute ("UPDATE SYSTEM SET " & Field & " = " & val)
 
 'tbSystem.Edit
 'tbSystem.Fields(field) = val
@@ -2018,8 +2042,8 @@ End Function
 
 'не записыват неуникальное значение, для полей, где такие
 'значения запрещены. А  генерит при этом error?
-Function ValueToTableField(myErrCod As String, ByVal Value As String, ByVal table As String, _
-ByVal field As String, Optional by As String = "", Optional Numorder As Variant) As Integer
+Function ValueToTableField(myErrCod As String, ByVal Value As String, ByVal Table As String, _
+ByVal Field As String, Optional by As String = "", Optional Numorder As Variant) As Integer
 Dim sql As String, byStr As String  ', numOrd As String
 
 
@@ -2049,17 +2073,17 @@ ElseIf by = "byProductId" Then
 ElseIf by = "byWerkId" Then
     byStr = ".numOrder = " & gNzak
 ElseIf by = "byEquipId" Then
-    byStr = ".numOrder = " & gNzak & " AND " & table & ".equipId = " & gEquipId
+    byStr = ".numOrder = " & gNzak & " AND " & Table & ".equipId = " & gEquipId
 ElseIf by = "byNumDoc" Then
-    sql = "UPDATE " & table & " SET " & table & "." & field & "=" & Value _
-        & " WHERE " & table & ".numDoc =" & numDoc & " AND " & table & _
+    sql = "UPDATE " & Table & " SET " & Table & "." & Field & "=" & Value _
+        & " WHERE " & Table & ".numDoc =" & numDoc & " AND " & Table & _
         ".numExt =" & numExt
     GoTo AA
 Else
     Exit Function
 End If
-sql = "UPDATE " & table & " SET " & table & "." & field & _
-" = " & Value & " WHERE " & table & byStr
+sql = "UPDATE " & Table & " SET " & Table & "." & Field & _
+" = " & Value & " WHERE " & Table & byStr
 AA:
 'MsgBox "sql = " & sql
 
@@ -2102,11 +2126,11 @@ Else
 End If
 End Sub
 
-Function getNevip(day As Integer, equipId As Integer)
+Function getNevip(day As Integer, EquipId As Integer)
 sql = "SELECT Sum(oe.workTime * oe.Nevip) AS wSum " & _
 "FROM OrdersEquip oe " & _
 "WHERE DateDiff(day,'" & Format(curDate, "yyyy-mm-dd") & "',oe.outDateTime) =" & day - 1 _
-& " AND oe.equipId =" & equipId
+& " AND oe.equipId =" & EquipId
 'MsgBox sql
 getNevip = 0
 byErrSqlGetValues "W##382", sql, getNevip
@@ -2162,8 +2186,8 @@ str = getYearField(tmpDate)
 
 'If str = "lock" Then Exit Sub ' если год участвовал в отсечении базы , то его не пересчитываем
 
-sql = "UPDATE GuideFirms SET GuideFirms." & str & " = [GuideFirms].[" & _
-str & "] " & oper & " 1  WHERE GuideFirms.FirmId =" & I
+sql = "UPDATE FirmGuide SET " & str & " = " & _
+str & " " & oper & " 1  WHERE FirmId = " & I
 'Debug.Print sql
 I = myExecute("##87", sql, -143)
 
@@ -2174,7 +2198,7 @@ End If
 End Sub
 
 
-Sub zagruzFromCeh(equipId As Integer, Optional passZakazNom As String = "")
+Sub zagruzFromCeh(EquipId As Integer, Optional passZakazNom As String = "")
 Dim outDay As Integer, J As Integer, passSql As String, str As String
 Dim tbCeh As Recordset
 
@@ -2190,7 +2214,7 @@ sql = "SELECT oe.outDateTime, o.StatusId, o.numOrder" _
     & " FROM Orders o " _
     & " JOIN OrdersEquip oe ON oe.numOrder = o.numOrder" _
     & " JOIN OrdersInCeh oc ON oc.numOrder = o.numOrder" _
-    & " WHERE oe.EquipId = " & equipId & " AND (isnull(worktime, 0) > 0 OR isnull(worktimeMO, 0) > 0 ) " & passSql
+    & " WHERE oe.EquipId = " & EquipId & " AND (isnull(worktime, 0) > 0 OR isnull(worktimeMO, 0) > 0 ) " & passSql
 
 'Debug.Print sql
 
@@ -2353,30 +2377,27 @@ End Function
 
 
 Function PrihodRashod(reg As String, skladId As Integer) As Double
-Dim qWhere As String, S As Double
+Dim qWhere As String, S As Double, targetSklad As String
 
 PrihodRashod = 0
 
 If reg = "+" Then
-    If skladId = 0 Then
-        qWhere = ") AND ((sDocs.destId) < -1000)"
-    ElseIf skladId = 2 Then
-        qWhere = ") AND ((sDocs.destId) = -1001 Or (sDocs.destId) = -1002)"
-    Else
-        qWhere = ") AND ((sDocs.destId) =" & skladId & ")"
-    End If
+    targetSklad = "destId"
 ElseIf reg = "-" Then
-    If skladId = 0 Then
-        qWhere = ") AND ((sDocs.sourId) < -1000)"
-    ElseIf skladId = 2 Then
-        qWhere = ") AND ((sDocs.sourId) = -1001 Or (sDocs.sourId) = -1002)"
-    Else
-        qWhere = ") AND ((sDocs.sourId) =" & skladId & ")"
-    End If
+    targetSklad = "sourId"
 End If
-sql = "SELECT Sum(sDMC.quant) AS Sum_quantity FROM sDocs INNER JOIN " & _
-"sDMC ON (sDocs.numExt = sDMC.numExt) AND (sDocs.numDoc = sDMC.numDoc) " & _
-"WHERE (((sDMC.nomNom) = '" & gNomNom & "' " & qWhere & ");"
+    
+If skladId = 0 Then
+    qWhere = "sDocs." & targetSklad & " < -1000"
+ElseIf skladId = 2 Then
+    qWhere = "(sDocs." & targetSklad & " = -1001 OR sDocs." & targetSklad & " = -1002)"
+Else
+    qWhere = "sDocs." & targetSklad & " = " & skladId
+End If
+sql = "SELECT Sum(sDMC.quant) AS Sum_quantity " _
+& " FROM sDocs" _
+& " INNER JOIN sDMC ON (sDocs.numExt = sDMC.numExt) AND (sDocs.numDoc = sDMC.numDoc) " & _
+" WHERE sDMC.nomNom  = '" & gNomNom & "' AND " & qWhere
 'Debug.Print sql
 byErrSqlGetValues "##157", sql, PrihodRashod
 
@@ -2418,8 +2439,9 @@ End Function
 
 'исп-ся при формировании предметов, а также отвечает за часть Надлежит
 'отпустить в Otgruz.frm
-Sub loadPredmeti(Frm As Form, orderRate As Double, Optional reg As String = "", Optional needToRefresh As Boolean = False)
+Sub loadPredmeti(Frm As Form, orderRate As Double, idWerk As Integer, asWhole As Integer, Optional reg As String = "", Optional needToRefresh As Boolean = False)
 Dim I As Integer
+Dim Nomnom1 As Nomnom, myAsWhole As Integer
 
 Screen.MousePointer = flexHourglass
 Frm.Grid5.Visible = False
@@ -2429,13 +2451,12 @@ I = 0: If reg = "fromOtgruz" Then I = 1
 clearGrid Frm.Grid5, 1 + I
 
 '******** изделия ************************************************
-sql = "SELECT sGuideProducts.prName, sGuideProducts.prDescript, " & _
-"xPredmetyByIzdelia.*, xEtapByIzdelia.eQuant, xEtapByIzdelia.prevQuant " & _
-"FROM (sGuideProducts INNER JOIN xPredmetyByIzdelia ON sGuideProducts.prId = " & _
-"xPredmetyByIzdelia.prId) LEFT JOIN xEtapByIzdelia ON (xPredmetyByIzdelia." & _
-"prExt = xEtapByIzdelia.prExt ) AND (xPredmetyByIzdelia.prId = " & _
-"xEtapByIzdelia.prId) AND (xPredmetyByIzdelia.numOrder = xEtapByIzdelia.numOrder)" & _
-"WHERE (((xPredmetyByIzdelia.numOrder)= " & gNzak & "));"
+sql = "SELECT gp.prName, gp.prDescript" & _
+", i.*, ei.eQuant, ei.prevQuant " & _
+" FROM sGuideProducts gp " & _
+" INNER JOIN xPredmetyByIzdelia i ON gp.prId = i.prId " & _
+" LEFT JOIN xEtapByIzdelia ei ON i.prExt = ei.prExt AND i.prId = ei.prId AND i.Numorder = ei.Numorder" & _
+" WHERE i.Numorder = " & gNzak
 'Debug.Print sql
 
 Set tbNomenk = myOpenRecordSet("##183", sql, dbOpenForwardOnly)
@@ -2456,7 +2477,7 @@ If Not tbNomenk.BOF Then
     Frm.Grid5.TextMatrix(Frm.quantity5 + I, prQuant) = Round(tbNomenk!quant, 2)
 ' все изменения проделать и для ном-ры (см. ниже)
     If reg = "fromOtgruz" Then
-        Otgruz.getOtgrugeno Frm.quantity5 + I
+        Otgruz.getOtgrugeno Frm.quantity5 + I, tbNomenk!cenaEd
     ElseIf Not IsNull(tbNomenk!eQuant) Then
         Frm.Grid5.TextMatrix(Frm.quantity5 + I, prEtap) = tbNomenk!eQuant
         Frm.Grid5.TextMatrix(Frm.quantity5 + I, prEQuant) = _
@@ -2470,14 +2491,17 @@ End If
 tbNomenk.Close
 
 '****** номенклатура ********************************************
-sql = "SELECT sGuideNomenk.nomNom, sGuideNomenk.nomName, " & _
-"sGuideNomenk.Size, sGuideNomenk.nomNom, sGuideNomenk.cod, " & _
-"sGuideNomenk.ed_Izmer, xPredmetyByNomenk.quant, xPredmetyByNomenk.cenaEd, " & _
-"xEtapByNomenk.eQuant, xEtapByNomenk.prevQuant " & _
-"FROM (sGuideNomenk INNER JOIN xPredmetyByNomenk ON sGuideNomenk.nomNom = " & _
-"xPredmetyByNomenk.nomNom) LEFT JOIN xEtapByNomenk ON (xPredmetyByNomenk." & _
-"nomNom = xEtapByNomenk.nomNom) AND (xPredmetyByNomenk.numOrder = xEtapByNomenk.numOrder) " & _
-"WHERE (((xPredmetyByNomenk.numOrder)=" & gNzak & "));"
+sql = "SELECT n.nomNom, n.nomName" & _
+", n.Size, n.nomNom, n.cod" & _
+", n.ed_Izmer, n.ed_Izmer2, k.quant, k.cenaEd, n.perList" & _
+", en.eQuant, en.prevQuant, n.ves " & _
+" FROM (sGuideNomenk n " & _
+" INNER JOIN xPredmetyByNomenk k ON n.nomNom = k.nomNom) " & _
+" LEFT JOIN xEtapByNomenk en ON (k.nomNom = en.nomNom) AND (k.Numorder = en.Numorder) " & _
+" WHERE k.Numorder =" & gNzak
+
+Dim sumVes As Double
+
 
 'Debug.Print sql
 Set tbNomenk = myOpenRecordSet("##184", sql, dbOpenForwardOnly)
@@ -2485,22 +2509,42 @@ If tbNomenk Is Nothing Then Exit Sub
 If Not tbNomenk.BOF Then
   While Not tbNomenk.EOF
     Frm.quantity5 = Frm.quantity5 + 1
-    Frm.Grid5.TextMatrix(Frm.quantity5 + I, prId) = tbNomenk!nomNom
+    Frm.Grid5.TextMatrix(Frm.quantity5 + I, prId) = tbNomenk!Nomnom
     Frm.Grid5.TextMatrix(Frm.quantity5 + I, prType) = "номенклатура"
     Frm.Grid5.TextMatrix(Frm.quantity5 + I, prName) = tbNomenk!cod
     Frm.Grid5.TextMatrix(Frm.quantity5 + I, prDescript) = _
         tbNomenk!nomName & " " & tbNomenk!Size
-    Frm.Grid5.TextMatrix(Frm.quantity5 + I, prEdizm) = tbNomenk!ed_Izmer
-    If Not IsNull(tbNomenk!cenaEd) Then
-        Frm.Grid5.TextMatrix(Frm.quantity5 + I, prCenaEd) = Round(rated(tbNomenk!cenaEd, orderRate), 2)
-        Frm.Grid5.TextMatrix(Frm.quantity5 + I, prSumm) = _
-                                Round(rated(tbNomenk!cenaEd * tbNomenk!quant, orderRate), 2)
+    
+    Dim quant As Double, cenaEd As Double
+    quant = tbNomenk!quant
+    cenaEd = tbNomenk!cenaEd
+    
+    
+    Set Nomnom1 = nomnomCache.getNomnom(tbNomenk!Nomnom, True)
+    
+    If idWerk <> 1 Then
+        myAsWhole = 0
+    Else
+        myAsWhole = asWhole
+    End If
+    
+    
+    Frm.Grid5.TextMatrix(Frm.quantity5 + I, prEdizm) = Nomnom1.getEdizm(myAsWhole)
+    
+    Dim myQuant As Double
+    
+    Frm.Grid5.TextMatrix(Frm.quantity5 + I, prVes) = Nomnom1.getVesEd(myAsWhole) * Nomnom1.getQuantity(quant, myAsWhole)
+    sumVes = sumVes + Nomnom1.getVesEd(myAsWhole) * Nomnom1.getQuantity(quant, myAsWhole)
+
+    If Not IsNull(cenaEd) Then
+        Frm.Grid5.TextMatrix(Frm.quantity5 + I, prCenaEd) = Nomnom1.getCenaEd(rated(cenaEd, orderRate), myAsWhole)
+        Frm.Grid5.TextMatrix(Frm.quantity5 + I, prSumm) = calcRounded(rated(quant * cenaEd, orderRate))
     End If
 
-    Frm.Grid5.TextMatrix(Frm.quantity5 + I, prQuant) = Round(tbNomenk!quant, 2)
+    Frm.Grid5.TextMatrix(Frm.quantity5 + I, prQuant) = Nomnom1.getQuantity(quant, myAsWhole)
 
     If reg = "fromOtgruz" Then
-        Otgruz.getOtgrugeno Frm.quantity5 + I, "byNomenk"
+        Otgruz.getOtgrugeno Frm.quantity5 + I, tbNomenk!cenaEd, "byNomenk"
     ElseIf Not IsNull(tbNomenk!eQuant) Then
         Frm.Grid5.TextMatrix(Frm.quantity5 + I, prEtap) = Round(tbNomenk!eQuant, 2)
         Frm.Grid5.TextMatrix(Frm.quantity5 + I, prEQuant) = _
@@ -2514,22 +2558,35 @@ If Not tbNomenk.BOF Then
 End If
 tbNomenk.Close
 
+
 If Frm.quantity5 > 0 Then
     Frm.Grid5.row = Frm.quantity5 + 1 + I
     Frm.Grid5.col = prQuant
     Frm.Grid5.Text = "Итого:"
+    Frm.Grid5.CellFontBold = True
+    
     Frm.Grid5.col = prSumm
     Frm.Grid5.Text = Round(rated(sProducts.saveOrdered(orderRate, needToRefresh), orderRate), 2)
     Frm.Grid5.CellFontBold = True
+    
+    Frm.Grid5.col = prVes
+    Frm.Grid5.CellFontBold = True
+    Frm.Grid5.Text = Round(sumVes)
+    
     If reg = "fromOtgruz" Then
         Frm.Grid5.col = prOutSum
         Frm.Grid5.Text = Round(rated(Otgruz.saveShipped(False), orderRate), 2)
         Frm.Grid5.CellFontBold = True
+        
         Frm.Grid5.col = prNowSum
         Frm.Grid5.Text = "0"
         Frm.Grid5.CellFontBold = True
     End If
+    If needToRefresh Then
+        Orders.openOrdersRowToGrid "##212.1"
+    End If
 End If
+
 Frm.Grid5.Visible = True
 
 Screen.MousePointer = flexDefault
@@ -2573,8 +2630,8 @@ tbSystem.Close
 lockSklad = True
 End Function
     
-Function orderUpdateWithIssue(ByVal issueMarker As String, Value As String, table As String, _
-field As String, Optional by As String = "", Optional Numorder As Variant) As Integer
+Function orderUpdateWithIssue(ByVal issueMarker As String, Value As String, Table As String, _
+Field As String, Optional by As String = "", Optional Numorder As Variant) As Integer
 Dim nzak As String
 Dim issueId As Variant
     If IsMissing(Numorder) Then
@@ -2582,7 +2639,7 @@ Dim issueId As Variant
     Else
         nzak = Numorder
     End If
-    orderUpdateWithIssue = ValueToTableField("##orderUpdateWithIssue", Value, table, field, by, nzak)
+    orderUpdateWithIssue = ValueToTableField("##orderUpdateWithIssue", Value, Table, Field, by, nzak)
     
     sql = "select wi_check_business_issue(' " & issueMarker & "')"
     byErrSqlGetValues "##check_issue", sql, issueId
@@ -2590,22 +2647,22 @@ Dim issueId As Variant
         orderUpdateWithIssue = CInt(issueId)
     End If
     
-    If table = "Orders" Then
+    If Table = "Orders" Then
         refreshTimestamp (nzak)
     End If
 End Function
     
     
-Function orderUpdate(ByVal myErrCod As String, Value As String, table As String, _
-field As String, Optional by As String = "", Optional Numorder As Variant) As Integer
+Function orderUpdate(ByVal myErrCod As String, Value As String, Table As String, _
+Field As String, Optional by As String = "", Optional Numorder As Variant) As Integer
 Dim nzak As String
     If IsMissing(Numorder) Then
         nzak = gNzak
     Else
         nzak = Numorder
     End If
-    orderUpdate = ValueToTableField(myErrCod, Value, table, field, by, nzak)
-    If table = "Orders" Then
+    orderUpdate = ValueToTableField(myErrCod, Value, Table, Field, by, nzak)
+    If Table = "Orders" Then
         refreshTimestamp (nzak)
     End If
 End Function
@@ -2676,7 +2733,7 @@ While bilo ' необходимы еще проходы
 NXT:
   Next I
 Wend
-p_tv.Nodes.item("k0").Expanded = True
+p_tv.Nodes.Item("k0").Expanded = True
 Exit Sub
 ERR1:
  iErr = iErr + 1: bilo = True
@@ -2784,24 +2841,93 @@ Function addCurrencyToCaption(Caption As String) As String
     End If
 End Function
 
-Public Sub initListbox(ByVal InitSql As String, ByVal lb As listBox, keyField As String, valueField As String)
+Function calcRounded(ByVal inp As Double) As Double
 
-    ' Сначала удаляем старые значения
-    While lb.ListCount
-        lb.removeItem (0)
-    Wend
+    Dim rounded As Double
+    rounded = Round(inp, 2)
+    If Abs(rounded) < 0.005 Then
+        rounded = Round(inp, 3)
+    End If
+    calcRounded = rounded
+End Function
 
-    Set table = myOpenRecordSet("##72.0", InitSql, dbOpenForwardOnly)
-    If table Is Nothing Then myBase.Close: End
+
+Public Sub initEquipCombo(ByRef cbEquips As ComboBox, idWerk As Integer, Optional idEquip As Integer = 0)
+
+    Dim werkSql As String, I As Integer
+    If idWerk > 0 Then
+        werkSql = " AND we.werkId = " & idWerk
+    End If
     
-    lb.AddItem "", 0
-    While Not table.EOF
-        lb.AddItem "" & table(valueField) & ""
-        lb.ItemData(lb.ListCount - 1) = table(keyField)
-        table.MoveNext
-    Wend
-    table.Close
-    lb.Height = 225 * lb.ListCount
+    sql = "select e.equipId, e.equipFullName, we.equipId as IsPresent " _
+        & vbCr & " from GuideEquip e " _
+        & vbCr & " LEFT JOIN WerkEquip we ON we.equipId = e.equipId" & werkSql _
+        & vbCr & " WHERE e.equipId > 0" _
+        & vbCr & " group by e.equipId, e.equipFullName, ispresent, we.equipOrder" _
+        & vbCr & " having ispresent is not null" _
+        & vbCr & " order by isnull(we.equipOrder, 100000), e.equipId"
+    'Debug.Print sql
+    
+    Dim nEquips As Integer
+    nEquips = cbEquips.ListCount - 1
+    For I = nEquips To 0 Step -1
+        cbEquips.RemoveItem I
+    Next I
+    
+    If idWerk >= 0 Then
+        cbEquips.AddItem "Все типы оборудования", 0
+    Else
+        ' выбрать первое из доступных
+        If idEquip <= 0 Then
+            idEquip = 1
+        End If
+    End If
+    initCombobox sql, cbEquips, "equipId", "equipFullName", 1
+    Dim saveNoClick As Boolean
+    saveNoClick = noClick
+    noClick = True
+    For I = 0 To cbEquips.ListCount - 1
+        If cbEquips.ItemData(I) = idEquip Then
+            cbEquips.ListIndex = I
+            Exit For
+        End If
+    Next I
+    noClick = saveNoClick
+
+
+End Sub
+
+Public Sub initWerkCombo(ByRef cbWerks As ComboBox, Optional idWerk As Integer = 0)
+
+    Dim I As Integer
+    
+    Dim nWerks As Integer
+    nWerks = cbWerks.ListCount - 1
+    For I = nWerks To 0 Step -1
+        cbWerks.RemoveItem I
+    Next I
+    
+    If idWerk >= 0 Then
+        cbWerks.AddItem "Все", 0
+    End If
+    
+    For I = 1 To UBound(Werk)
+        cbWerks.AddItem Werk(I), I
+        cbWerks.ItemData(I) = I
+    Next I
+    
+    
+    Dim saveNoClick As Boolean
+    saveNoClick = noClick
+    noClick = True
+    For I = 0 To cbWerks.ListCount - 1
+        If cbWerks.ItemData(I) = idWerk Then
+            cbWerks.ListIndex = I
+            Exit For
+        End If
+    Next I
+    noClick = saveNoClick
+
 
 End Sub
 

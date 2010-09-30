@@ -3,9 +3,11 @@ if exists (select '*' from sysprocedure where proc_name like 'wf_report_bright_o
 end if;
 
 create procedure wf_report_bright_ostat (
+	p_prId integer default null 
 )
 begin
 
+	
 	
 	declare v_ord_table varchar(64);
 	declare p_table_name varchar(64);    
@@ -53,7 +55,9 @@ begin
 	join #sGuideSeries_ord os on os.id = ph.prSeriaId
 	join sProducts          p on p.productId = ph.prId
 	join sGuideNomenk       k on k.nomnom = p.nomnom
-	where ph.prodCategoryId = 2 and isnumeric(ph.page) = 1;
+	where ph.prodCategoryId = 2 and isnumeric(ph.page) = 1
+		and isnull(p_prId, ph.prId) = ph.prId 
+	;
 --select * from #nomenk;
 
 
@@ -64,6 +68,7 @@ begin
 	join #nomenk k on k.nomnom = m.nomnom
     where n.destId = -1001
 	group by m.nomnom;
+--select * from #saldo;
 
 
 	insert into #saldo (nomnom, kredit)
@@ -87,6 +92,7 @@ begin
 	update #nomenk set quant = #itogo.debit - #itogo.kredit
 	from #itogo
 	where #itogo.nomnom = #nomenk.nomnom;
+--select * from #nomenk;
 
 
 
@@ -107,17 +113,19 @@ begin
 		, wf_breadcrump_klass(n.klassid) as klassname, n.klassid
 		, n.cena_W, n.rabbat, n.margin,  n.kolonok, n.CenaOpt2, n.CenaOpt3, n.CenaOpt4
 		, s.gain2, s.gain3, s.gain4
-		, f.formula
+		, f.formula, w.prId as hasWeb, p.quantity as quantEd
 	from sGuideProducts ph
-	join #sGuideSeries_ord os on os.id = ph.prSeriaId
+	join #sGuideSeries_ord os on os.id       = ph.prSeriaId
+	left join wf_izdeliaWithWeb w on w.prId  = ph.prId
 	join sProducts          p on p.productId = ph.prId
-	join sGuideNomenk       n on n.nomnom = p.nomnom
-	join sGuideSeries       s on s.seriaId =  ph.prSeriaId
-	left join #nomenk       k on k.nomnom = p.nomnom
-	left join sGuideFormuls f on f.nomer = ph.formulaNom
+	join sGuideNomenk       n on n.nomnom    = p.nomnom
+	join sGuideSeries       s on s.seriaId   = ph.prSeriaId
+	left join #nomenk       k on k.nomnom    = p.nomnom
+	left join sGuideFormuls f on f.nomer     = ph.formulaNom
 	where 
 			ph.prodCategoryId = 2 
 		and isnumeric(ph.page) = 1
+		and isnull(p_prId, ph.prId) = ph.prId 
 	order by os.ord, ph.sortNom, n.nomnom;
 
 

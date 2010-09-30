@@ -68,7 +68,7 @@ Public isLive As Boolean ' флаг - заказ живой
 Public zagAll As Double, zagLive As Double
 Public drobleDopRes As Boolean
 
-Public table As Recordset '
+Public Table As Recordset '
 Public myQuery As QueryDef
 Public sql As String      ' коллективного пользования
 Public strWhere As String '
@@ -137,26 +137,6 @@ Public skladId As Integer
 Public Const cDELLwidth = 19200 ' это порог а мах = 19290
 Private Const dhcMissing = -2 'нужна для quickSort
 
-Public Const gfNazwFirm = 1
-Public Const gfM = 2
-Public Const gfOborud = 3
-Public Const gfRegion = 4 'Регион
-Public Const gfSale = 5
-Public Const gfKontakt = 6
-Public Const gfOtklik = 7
-Public Const gf2001 = 8
-Public Const gf2002 = 9
-Public Const gf2003 = 10
-Public Const gf2004 = 11
-Public Const gfFIO = 12
-Public Const gfTlf = 13
-Public Const gfFax = 14
-Public Const gfEmail = 15
-Public Const gfType = 16
-Public Const gfLogin = 17
-Public Const gfPass = 18
-Public Const gfId = 19
-
 Public Const otladColor = &H80C0FF
 
 Public Const CC_RUBLE As Integer = 1
@@ -205,15 +185,15 @@ End Function
 
 
 Function getValueFromTable(tabl As String, field As String, where As String) As Variant
-Dim table As Recordset
+Dim Table As Recordset
 
 getValueFromTable = Null
 sql = "SELECT " & field & " as fff  From " & tabl & _
       " WHERE " & where & ";"
-Set table = myOpenRecordSet("##59.1", sql, dbOpenForwardOnly)
-If table Is Nothing Then Exit Function
-If Not table.BOF Then getValueFromTable = table!fff
-table.Close
+Set Table = myOpenRecordSet("##59.1", sql, dbOpenForwardOnly)
+If Table Is Nothing Then Exit Function
+If Not Table.BOF Then getValueFromTable = Table!fff
+Table.Close
 End Function
 
 
@@ -246,7 +226,7 @@ If maxi < 1 Then
     MsgBox "мало параметров для п\п byErrSqlGetValues()"
     Exit Function
 End If
-str = CStr(val(0)): c = left$(str, 1)
+str = CStr(val(0)): c = Left$(str, 1)
 If c = "W" Then str = Mid$(str, 2)
 'str = Mid$(str, 3)
 Set tabl = myOpenRecordSet(str, CStr(val(1)), dbOpenForwardOnly) 'dbOpenDynaset)$#$
@@ -323,9 +303,9 @@ ReDim Preserve Mass(newLen + 20)
 End Sub
 
 Sub delay(tau As Double)
-Dim s As Double
-    s = Timer
-    While Timer - s < tau ' 1 сек
+Dim S As Double
+    S = Timer
+    While Timer - S < tau ' 1 сек
         DoEvents
     Wend
 
@@ -379,7 +359,7 @@ findExValInCol = -1
 End Function
 
 Function existValueInTableFielf(ByVal value As Variant, tabl As String, field) As Boolean
-Dim table As Recordset
+Dim Table As Recordset
 
 existValueInTableFielf = False
 
@@ -388,12 +368,12 @@ If Not IsNumeric(value) Then value = "'" & value & "'"
 sql = "SELECT " & field & " From " & tabl & " WHERE (((" & field & ") = " & _
 value & "));"
 'MsgBox sql
-Set table = myOpenRecordSet("##390", sql, dbOpenForwardOnly)
+Set Table = myOpenRecordSet("##390", sql, dbOpenForwardOnly)
 'If table Is Nothing Then myBase.Close: End
 
-If Not table.BOF Then existValueInTableFielf = True
+If Not Table.BOF Then existValueInTableFielf = True
 
-table.Close
+Table.Close
 
 End Function
 
@@ -418,19 +398,19 @@ frm.Height = frm.Height + delta
 End Sub
 
 Function getOrdered(numZak As String) As Double
-Dim s As Double
+Dim S As Double
 
 getOrdered = -1
 
 sql = "SELECT Sum([sDMCrez].[quantity]*[sDMCrez].[intQuant]/[sGuideNomenk].[perList]) AS cSum " & _
 "FROM sGuideNomenk INNER JOIN sDMCrez ON sGuideNomenk.nomNom = sDMCrez.nomNom " & _
 "WHERE (((sDMCrez.numDoc)=" & numZak & "));"
-If Not byErrSqlGetValues("W##209", sql, s) Then Exit Function
-getOrdered = s
+If Not byErrSqlGetValues("W##209", sql, S) Then Exit Function
+getOrdered = S
 End Function
 'Orders.Grid.TextMatrix(Orders.Grid.row, orOtgrugeno)=getShipped()
 Function getShipped(numZak As String) As Double
-Dim s As Double, s1 As Double, str As String
+Dim S As Double, s1 As Double, str As String
 
 getShipped = 0
 'sql = "SELECT Sum([sDMC].[quant]*[sDMCrez].[intQuant]/[sGuideNomenk].[perList]) AS Выражение1 " & _
@@ -442,9 +422,9 @@ sql = "SELECT Sum([bayNomenkOut].[quant]*[sDMCrez].[intQuant]) AS bSum " & _
 "WHERE (((sDMCrez.numDoc)=" & numZak & "));"
 'Debug.Print sql
 
-If Not byErrSqlGetValues("W##209", sql, s) Then Exit Function
+If Not byErrSqlGetValues("W##209", sql, S) Then Exit Function
 
-getShipped = s
+getShipped = S
 End Function
 
 
@@ -454,7 +434,7 @@ Sub textBoxInGridCell(tb As TextBox, Grid As MSFlexGrid)
     tb.Width = Grid.CellWidth
 '    tb.Text = Grid.TextMatrix(mousRow, mousCol)
     tb.Text = Grid.TextMatrix(Grid.row, Grid.col)
-    tb.left = Grid.CellLeft + Grid.left
+    tb.Left = Grid.CellLeft + Grid.Left
     tb.Top = Grid.CellTop + Grid.Top
     tb.SelStart = 0
     tb.SelLength = Len(tb.Text)
@@ -472,7 +452,7 @@ Dim I As Integer
     Else
         lb.Top = Grid.CellTop + Grid.Top - lb.Height + Grid.CellHeight
     End If
-    lb.left = Grid.CellLeft + Grid.left
+    lb.Left = Grid.CellLeft + Grid.Left
     lb.ListIndex = 0
     If sel <> "" Then
         For I = 0 To lb.ListCount - 1 '
@@ -524,33 +504,33 @@ End Function
 Sub loadLbMassFromGuide(lbMass() As String, tableName As String)
 Dim I As Integer
 
-Set table = myOpenRecordSet("##04", tableName, dbOpenForwardOnly)
-If table Is Nothing Then myBase.Close: End
+Set Table = myOpenRecordSet("##04", tableName, dbOpenForwardOnly)
+If Table Is Nothing Then myBase.Close: End
 ReDim lbMass(0)
-While Not table.EOF
-    I = table.Fields(0)
+While Not Table.EOF
+    I = Table.Fields(0)
     ReDim Preserve lbMass(I)
     If tableName = "GuideStatus" Then
-        If table.Fields(1) = "в работе" Then
+        If Table.Fields(1) = "в работе" Then
             lbMass(I) = "собран" '
-        ElseIf table.Fields(1) = "готов" Then
+        ElseIf Table.Fields(1) = "готов" Then
             lbMass(I) = "выдан" '
         Else
-            lbMass(I) = table.Fields(1)
+            lbMass(I) = Table.Fields(1)
         End If
     Else
-        lbMass(I) = table.Fields(1)
+        lbMass(I) = Table.Fields(1)
     End If
-    table.MoveNext
+    Table.MoveNext
 Wend
-table.Close
+Table.Close
 'lb.Height = lb.Height + 195 * (lb.ListCount - 1)
 End Sub
 
 
 
 Sub Main()
-Dim I As Integer, s As Double, str As String, str1 As String, str2 As String
+Dim I As Integer, S As Double, str As String, str1 As String, str2 As String
 Dim isXP As Boolean
 
 If App.PrevInstance = True Then
@@ -577,7 +557,7 @@ sessionCurrency = getEffectiveSetting("currency", CC_RUBLE)
 
 
 On Error GoTo ERRf 'проверка настройки Win98
-s = "1.6"
+S = "1.6"
 
 On Error GoTo ERRs ' не дает Err если в сети не б.найден server, хотя из под DOS дает сист.Err=53
 If otlad <> "otlaD" And InStr(otlad, ":\") = 0 Then '
@@ -643,7 +623,7 @@ CurDate = str 'без часов и минут
     Input #2, str
     I = InStr(str, vbTab)
     If I < 9 Then GoTo ENlog
-    str1 = left$(str, I - 1)
+    str1 = Left$(str, I - 1)
     If Not IsDate(str1) Then GoTo ENlog
     'tmpDate = str
     If DateDiff("d", str1, CurDate) <= 7 Then Print #3, str ' удаляем > 7ми дней давности
@@ -912,7 +892,7 @@ Else
 '        MsgBox "неверный формат даты", , "Ошибка"
 '    Else
         'str = Left$(str, 6) & "20" & Mid$(str, 7, 2)
-        str = "20" & Right$(str, 2) & "-" & Mid$(str, 4, 2) & "-" & left$(str, 2)
+        str = "20" & Right$(str, 2) & "-" & Mid$(str, 4, 2) & "-" & Left$(str, 2)
         If IsDate(str) Then
             tmpDate = str
             If fryDays = "" Then
@@ -949,7 +929,7 @@ End Sub
 
 'не записыват неуникальное значение, для полей, где такие
 'значения запрещены. А  генерит при этом error?
-Function ValueToTableField(myErrCod As String, value As String, table As String, _
+Function ValueToTableField(myErrCod As String, value As String, Table As String, _
 field As String, Optional by As String = "") As Integer
 Dim sql As String, byStr As String ', numOrd As String
 
@@ -970,19 +950,19 @@ ElseIf by = "byProductId" Then
 'ElseIf by = "bySourceId" Then
 '    byStr = ".sourceId)= " & gSourceId
 ElseIf by = "byNumDoc" Then
-    sql = "UPDATE " & table & " SET " & table & "." & field & "=" & value _
-        & " WHERE (((" & table & ".numDoc)=" & numDoc & " AND (" & table & _
+    sql = "UPDATE " & Table & " SET " & Table & "." & field & "=" & value _
+        & " WHERE (((" & Table & ".numDoc)=" & numDoc & " AND (" & Table & _
         ".numExt)=" & numExt & " ));"
     GoTo AA
 Else
     Exit Function
 End If
-sql = "UPDATE " & table & " SET " & table & "." & field & _
-" = " & value & " WHERE (((" & table & byStr & " ));"
+sql = "UPDATE " & Table & " SET " & Table & "." & field & _
+" = " & value & " WHERE (((" & Table & byStr & " ));"
 AA:
 'MsgBox "sql = " & sql
 
-If left$(myErrCod, 1) = "W" Then
+If Left$(myErrCod, 1) = "W" Then
     myErrCod = Mid$(myErrCod, 2)
     ValueToTableField = myExecute(myErrCod, sql, 0) 'не сообщать если не WHERE
 Else
@@ -994,12 +974,12 @@ End Function
 
 Function beNaklads(Optional reg As String = "") As Boolean
 beNaklads = True
-Dim s As Double
+Dim S As Double
 'отпущено
 sql = "SELECT Sum(sDMC.quant) AS Sum_quant From sDMC " & _
 "WHERE (((sDMC.numExt)< 254) AND ((sDMC.numDoc)=" & numDoc & "));"
-If Not byErrSqlGetValues("##140", sql, s) Then Exit Function
-If s > 0.005 Then ' что-то отпущено
+If Not byErrSqlGetValues("##140", sql, S) Then Exit Function
+If S > 0.005 Then ' что-то отпущено
     If reg = "" Then
         MsgBox "По этому заказу выписывались накладные, поэтому изменять " & _
         "предметы нельзя. Если изменения все-же требуются, то прежде надо " & _
@@ -1012,7 +992,7 @@ End If
 End Function
     
 Function PrihodRashod(reg As String, skladId As Integer) As Double
-Dim qWhere As String, s As Double
+Dim qWhere As String, S As Double
 
 PrihodRashod = 0
 
@@ -1078,7 +1058,7 @@ End Function
 
 
 Function predmetiIsClose() As Variant
-Dim I As Integer, s As Double
+Dim I As Integer, S As Double
 
 predmetiIsClose = Null
 'If gNzak = 4092402 Then

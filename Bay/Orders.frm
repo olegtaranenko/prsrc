@@ -965,7 +965,7 @@ orSqlWhere(orInvoice) = "(isNumeric(BayOrders.Invoice) =1) OR NOT EXISTS(" & _
 End Sub
 
 Private Sub Form_Resize()
-Dim H As Integer, w As Integer
+Dim H As Integer, W As Integer
 lbHide "noFocus"
 
 
@@ -974,17 +974,17 @@ If Me.WindowState = vbMinimized Then Exit Sub
 On Error Resume Next
 H = Me.Height - oldHeight
 oldHeight = Me.Height
-w = Me.Width - oldWidth
+W = Me.Width - oldWidth
 oldWidth = Me.Width
 Grid.Height = Grid.Height + H
-Grid.Width = Grid.Width + w
+Grid.Width = Grid.Width + W
 cmRefr.Top = cmRefr.Top + H
 laInform.Top = laInform.Top + H
 cmAdd.Top = cmAdd.Top + H
 'cmExAll.Top = cmExAll.Top + h
 cmExvel.Top = cmExvel.Top + H
 tbEnable.Top = tbEnable.Top + H
-tbEnable.Left = tbEnable.Left + w
+tbEnable.Left = tbEnable.Left + W
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
@@ -1054,7 +1054,7 @@ Sub GuideFirmOnOff()
 Dim tmpRow As Long, tmpCol As Long
 '    tmpRow = mousRow
 '    tmpCol = mousCol
-    GuideFirms.Show vbModal
+    BayGuideFirms.Show vbModal
 '    mousRow = tmpRow
 '    mousCol = tmpCol
 '    BayOrders.Enabled = True
@@ -1757,16 +1757,16 @@ End Sub
 
 Private Sub mnFirmsGuide_Click()
 Me.MousePointer = flexHourglass
-GuideFirms.Regim = "fromContext"
-GuideFirms.Show vbModal
+BayGuideFirms.Regim = "fromContext"
+BayGuideFirms.Show vbModal
 Me.MousePointer = flexDefault
 
 End Sub
 
 Private Sub mnGuideFirms_Click()
 Me.MousePointer = flexHourglass
-GuideFirms.Regim = "fromMenu"
-GuideFirms.Show vbModal
+BayGuideFirms.Regim = "fromMenu"
+BayGuideFirms.Show vbModal
 Me.MousePointer = flexDefault
 
 End Sub

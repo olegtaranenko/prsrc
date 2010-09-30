@@ -13,6 +13,16 @@ Begin VB.Form sProducts
    ScaleHeight     =   6384
    ScaleWidth      =   11880
    StartUpPosition =   1  'CenterOwner
+   WindowState     =   2  'Maximized
+   Begin VB.CheckBox ckList 
+      BackColor       =   &H8000000A&
+      Caption         =   "в целых"
+      Height          =   252
+      Left            =   120
+      TabIndex        =   29
+      Top             =   5970
+      Width           =   972
+   End
    Begin VB.Frame splLeftH 
       BackColor       =   &H8000000A&
       BorderStyle     =   0  'None
@@ -21,7 +31,7 @@ Begin VB.Form sProducts
       Height          =   80
       Left            =   2400
       MousePointer    =   7  'Size N S
-      TabIndex        =   30
+      TabIndex        =   27
       Top             =   2760
       Width           =   3480
    End
@@ -31,17 +41,17 @@ Begin VB.Form sProducts
       Caption         =   "Frame1"
       ForeColor       =   &H8000000A&
       Height          =   1764
-      Left            =   5880
+      Left            =   6840
       MousePointer    =   9  'Size W E
-      TabIndex        =   29
+      TabIndex        =   26
       Top             =   0
-      Width           =   80
+      Width           =   84
    End
    Begin VB.ComboBox cbInside 
       Height          =   315
       Left            =   6180
       Style           =   2  'Dropdown List
-      TabIndex        =   26
+      TabIndex        =   23
       Top             =   0
       Visible         =   0   'False
       Width           =   1575
@@ -50,7 +60,7 @@ Begin VB.Form sProducts
       Caption         =   "Печать в Exel"
       Height          =   315
       Left            =   8640
-      TabIndex        =   25
+      TabIndex        =   22
       Top             =   5940
       Visible         =   0   'False
       Width           =   1215
@@ -62,43 +72,34 @@ Begin VB.Form sProducts
    Begin VB.TextBox tbMobile 
       Height          =   315
       Left            =   7620
-      TabIndex        =   23
+      TabIndex        =   20
       Text            =   "tbMobile"
       Top             =   1380
       Visible         =   0   'False
       Width           =   975
    End
-   Begin VB.CommandButton Command3 
-      Caption         =   "Обе"
-      Height          =   315
-      Left            =   1500
-      TabIndex        =   19
-      Top             =   6000
-      Visible         =   0   'False
-      Width           =   555
-   End
    Begin VB.CommandButton cmExel 
       Caption         =   "Печать в Exel"
       Height          =   315
-      Left            =   2340
-      TabIndex        =   18
+      Left            =   2520
+      TabIndex        =   16
       Top             =   5940
       Visible         =   0   'False
-      Width           =   1215
+      Width           =   1284
    End
    Begin VB.Frame gridFrame 
       BackColor       =   &H00800000&
       BorderStyle     =   0  'None
       Height          =   2055
       Left            =   3180
-      TabIndex        =   14
+      TabIndex        =   12
       Top             =   3420
       Visible         =   0   'False
       Width           =   7335
       Begin MSFlexGridLib.MSFlexGrid Grid4 
          Height          =   1455
          Left            =   60
-         TabIndex        =   15
+         TabIndex        =   13
          Top             =   300
          Visible         =   0   'False
          Width           =   7215
@@ -124,7 +125,7 @@ Begin VB.Form sProducts
          ForeColor       =   &H00FFFFFF&
          Height          =   252
          Left            =   120
-         TabIndex        =   17
+         TabIndex        =   15
          Top             =   60
          Width           =   7212
       End
@@ -133,28 +134,10 @@ Begin VB.Form sProducts
          Caption         =   "Если остатки позволяют, введите треб. кол-во изделий и нажмите <Enter>, иначе - <ESC>.."
          Height          =   255
          Left            =   60
-         TabIndex        =   16
+         TabIndex        =   14
          Top             =   1740
          Width           =   7215
       End
-   End
-   Begin VB.CommandButton Command2 
-      Caption         =   "Grid"
-      Height          =   315
-      Left            =   900
-      TabIndex        =   13
-      Top             =   6000
-      Visible         =   0   'False
-      Width           =   555
-   End
-   Begin VB.CommandButton Command1 
-      Caption         =   "Grid3"
-      Height          =   315
-      Left            =   240
-      TabIndex        =   12
-      Top             =   6000
-      Visible         =   0   'False
-      Width           =   615
    End
    Begin MSFlexGridLib.MSFlexGrid Grid 
       Height          =   2835
@@ -162,8 +145,8 @@ Begin VB.Form sProducts
       TabIndex        =   0
       Top             =   3000
       Visible         =   0   'False
-      Width           =   3500
-      _ExtentX        =   6181
+      Width           =   4464
+      _ExtentX        =   7874
       _ExtentY        =   4995
       _Version        =   393216
       AllowBigSelection=   0   'False
@@ -175,8 +158,8 @@ Begin VB.Form sProducts
       TabIndex        =   11
       Top             =   300
       Visible         =   0   'False
-      Width           =   3500
-      _ExtentX        =   6181
+      Width           =   4464
+      _ExtentX        =   7874
       _ExtentY        =   4360
       _Version        =   393216
       AllowBigSelection=   0   'False
@@ -237,7 +220,7 @@ Begin VB.Form sProducts
    Begin MSComctlLib.TreeView tv 
       Height          =   4980
       Left            =   120
-      TabIndex        =   22
+      TabIndex        =   19
       Top             =   840
       Width           =   2175
       _ExtentX        =   3831
@@ -252,11 +235,11 @@ Begin VB.Form sProducts
    End
    Begin MSFlexGridLib.MSFlexGrid Grid2 
       Height          =   2895
-      Left            =   6000
-      TabIndex        =   24
+      Left            =   6960
+      TabIndex        =   21
       Top             =   2940
-      Width           =   5832
-      _ExtentX        =   10287
+      Width           =   4872
+      _ExtentX        =   8594
       _ExtentY        =   5101
       _Version        =   393216
       AllowBigSelection=   0   'False
@@ -265,11 +248,11 @@ Begin VB.Form sProducts
    End
    Begin MSFlexGridLib.MSFlexGrid Grid5 
       Height          =   2412
-      Left            =   6000
-      TabIndex        =   20
+      Left            =   6960
+      TabIndex        =   17
       Top             =   300
-      Width           =   5832
-      _ExtentX        =   10287
+      Width           =   4872
+      _ExtentX        =   8594
       _ExtentY        =   4255
       _Version        =   393216
       AllowBigSelection=   0   'False
@@ -284,7 +267,7 @@ Begin VB.Form sProducts
       Height          =   5892
       Left            =   2300
       MousePointer    =   9  'Size W E
-      TabIndex        =   28
+      TabIndex        =   25
       Top             =   0
       Width           =   80
    End
@@ -296,7 +279,7 @@ Begin VB.Form sProducts
       Height          =   80
       Left            =   6000
       MousePointer    =   7  'Size N S
-      TabIndex        =   31
+      TabIndex        =   28
       Top             =   2640
       Width           =   5640
    End
@@ -325,7 +308,7 @@ Begin VB.Form sProducts
       Caption         =   "laGrid"
       Height          =   192
       Left            =   2400
-      TabIndex        =   27
+      TabIndex        =   24
       Top             =   2820
       Width           =   432
    End
@@ -334,7 +317,7 @@ Begin VB.Form sProducts
       Caption         =   "Состав предметов:"
       Height          =   195
       Left            =   7800
-      TabIndex        =   21
+      TabIndex        =   18
       Top             =   45
       Visible         =   0   'False
       Width           =   4035
@@ -357,6 +340,7 @@ Begin VB.Form sProducts
       Left            =   4860
       TabIndex        =   6
       Top             =   5985
+      Visible         =   0   'False
       Width           =   675
    End
    Begin VB.Menu mnContext 
@@ -395,7 +379,8 @@ Public zakazano As Double
 Public FO As Double ' ФО
 Public convertToIzdelie As Boolean
 Public orderRate As Double
-'Dim equip() As Double
+Public asWhole As Integer
+Public idWerk As Integer
 
 
 Private selectNomenkFlag As Boolean
@@ -433,6 +418,7 @@ Const nkEdIzm = 3
 Const nkQuant = 4
 Const nkCurOstat = 5
 Const nkDostup = 6
+Const nkQuantPricise = 7
 
 'Grid4
 Const frNomNom = 1
@@ -444,26 +430,26 @@ Dim buntColumn As Integer
 Dim Dragging As Boolean
 Dim DraggingX As Single, DraggingY As Single
 
-Sub nomenkToNNQQ(pQuant As Double, eQuant As Double, prQuant As Double)
+Sub nomenkToNNQQ(pQuant As Double, eQuant As Double, prQuantity As Double)
 Dim J As Integer, leng As Integer
 
     leng = UBound(NN)
 
     For J = 1 To leng
-        If NN(J) = tbNomenk!nomNom Then
+        If NN(J) = tbNomenk!Nomnom Then
             QQ(J) = QQ(J) + pQuant * tbNomenk!quantity
             If eQuant > 0 Then _
                 QQ2(J) = QQ2(J) + eQuant * tbNomenk!quantity
-            If prQuant > 0 Then _
-                QQ3(J) = QQ3(J) + prQuant * tbNomenk!quantity
+            If prQuantity > 0 Then _
+                QQ3(J) = QQ3(J) + prQuantity * tbNomenk!quantity
             Exit Sub
         End If
     Next J
     leng = leng + 1
-    ReDim Preserve NN(leng): NN(leng) = tbNomenk!nomNom
+    ReDim Preserve NN(leng): NN(leng) = tbNomenk!Nomnom
     ReDim Preserve QQ(leng): QQ(leng) = pQuant * tbNomenk!quantity
     ReDim Preserve QQ2(leng): QQ2(leng) = eQuant * tbNomenk!quantity
-    ReDim Preserve QQ3(leng): QQ3(leng) = prQuant * tbNomenk!quantity
+    ReDim Preserve QQ3(leng): QQ3(leng) = prQuantity * tbNomenk!quantity
 '    ReDim Preserve equip(leng)
 '    If Not IsNull(tbNomenk!Equip) Then
 '        equip(leng) = tbNomenk!Equip
@@ -525,7 +511,7 @@ End Function
 
 'перед исп-ем надо ReDim NN(0): ReDim QQ(0): ReDim QQ2(0) : ReDim QQ3(0):QQ2(0)=0 - не б.этапа
 Function productNomenkToNNQQ(pQuant As Double, eQuant As Double, _
-                                               prQuant As Double) As Boolean
+                                               prQuantity As Double) As Boolean
 Dim I As Integer, gr() As String
 
 productNomenkToNNQQ = False
@@ -541,7 +527,7 @@ Set tbNomenk = myOpenRecordSet("##192", sql, dbOpenDynaset)
 If tbNomenk Is Nothing Then Exit Function
 ReDim gr(0): I = 0
 While Not tbNomenk.EOF
-    nomenkToNNQQ pQuant, eQuant, prQuant
+    nomenkToNNQQ pQuant, eQuant, prQuantity
     I = I + 1
     ReDim Preserve gr(I): gr(I) = tbNomenk!xGroup
     tbNomenk.MoveNext
@@ -554,13 +540,14 @@ sql = "SELECT p.nomNom, p.quantity, p.xGroup" _
 & " WHERE p.ProductId =" & gProductId
 
 'MsgBox sql
+'Debug.Print sql
 Set tbNomenk = myOpenRecordSet("##177", sql, dbOpenDynaset)
 If tbNomenk Is Nothing Then Exit Function
 While Not tbNomenk.EOF
     For I = 1 To UBound(gr) ' если группа состоит из одной ном-ры, то она
         If gr(I) = tbNomenk!xGroup Then GoTo NXT ' НЕвариантна, т.к. не
     Next I                                      ' не попала в xVariantNomenc
-    nomenkToNNQQ pQuant, eQuant, prQuant
+    nomenkToNNQQ pQuant, eQuant, prQuantity
 NXT: tbNomenk.MoveNext
 Wend
 tbNomenk.Close
@@ -578,8 +565,103 @@ Private Sub cbInside_Click()
 If isLoad And Grid.Visible Then loadKlassNomenk
 End Sub
 
+
+Private Function FlipCurrency(inp As String, N As Nomnom) As String
+    Dim flipCurrencyRound As Double
+    
+    'asWhole - куда нужно переключиться
+    If Not IsNumeric(inp) Then Exit Function
+    If asWhole = 0 Then
+        FlipCurrency = inp / N.perlist
+    Else
+        FlipCurrency = inp * N.perlist
+    End If
+    flipCurrencyRound = Round(FlipCurrency, 2)
+    If Abs(flipCurrencyRound) < 0.005 Then
+        flipCurrencyRound = Round(FlipCurrency, 3)
+    End If
+    FlipCurrency = flipCurrencyRound
+End Function
+
+Private Function FlipQuantity(inp As String, N As Nomnom) As String
+    Dim flipQuantityRound As Double
+    
+    'asWhole - куда нужно переключиться
+    If Not IsNumeric(inp) Then Exit Function
+    If asWhole = 0 Then
+        FlipQuantity = inp * N.perlist
+    Else
+        FlipQuantity = inp / N.perlist
+    End If
+    flipQuantityRound = Round(FlipQuantity, 2)
+    If Abs(flipQuantityRound) < 0.005 Then
+        flipQuantityRound = Round(FlipQuantity, 3)
+    End If
+    FlipQuantity = flipQuantityRound
+End Function
+
+Private Function FlipEdizm(N As Nomnom) As String
+    'asWhole - куда нужно переключиться
+    If asWhole = 0 Then
+        FlipEdizm = N.edizm1
+    Else
+        FlipEdizm = N.Edizm2
+    End If
+End Function
+
+
+
+Private Sub FlipGrid(ByRef G As MSFlexGrid, ByRef nomnomColIdx As Long, onlyInCache As Boolean)
+Dim I As Integer, J As Integer, ColTitle As String, ColIsVisible As Boolean
+Dim Nomnom1 As Nomnom
+
+    If Not G.Visible Then
+        Exit Sub
+    End If
+    
+    With G
+        For J = 1 To .Rows - 1
+            Set Nomnom1 = New Nomnom
+            If onlyInCache Then
+                Set Nomnom1 = nomnomCache.onlyInCache(.TextMatrix(J, nomnomColIdx))
+            Else
+                Set Nomnom1 = nomnomCache.getNomnom(.TextMatrix(J, nomnomColIdx))
+            End If
+            If Not Nomnom1.IsInited Then
+                For I = 1 To .Cols - 1
+                    ColTitle = .TextMatrix(0, I)
+                    ColIsVisible = Not .ColWidth(I) = 0
+                    If ColIsVisible Then
+                        If Left(ColTitle, 4) = "Цена" Then
+                            .TextMatrix(J, I) = FlipCurrency(.TextMatrix(J, I), Nomnom1)
+                        ElseIf Left(ColTitle, 4) = "Ед.и" Then
+                            .TextMatrix(J, I) = FlipEdizm(Nomnom1)
+                        ElseIf Mid(ColTitle, 2, 3) = "ол-" Then
+                            .TextMatrix(J, I) = FlipQuantity(.TextMatrix(J, I), Nomnom1)
+                        ElseIf Mid(ColTitle, 2, 4) = ".ост" Then
+                            .TextMatrix(J, I) = FlipQuantity(.TextMatrix(J, I), Nomnom1)
+                        End If
+                    End If
+                Next I
+                
+            End If
+        Next J
+    End With
+End Sub
+
+Private Sub ckList_Click()
+    If noClick Then Exit Sub
+    asWhole = ckList.Value
+    gAsWhole = asWhole
+    
+    FlipGrid Grid, nkNomer, False
+    FlipGrid Grid2, 1, False
+    FlipGrid Grid5, prId, True
+    'Form_Load
+End Sub
+
 Private Sub cmExel_Click()
-If opNomenk.value Then
+If opNomenk.Value Then
     GridToExcel Grid, laGrid1.Caption
 Else
     GridToExcel Grid, laGrid.Caption
@@ -599,7 +681,7 @@ Private Sub cmHide_Click()
 Dim I As Integer
 If quantity = 0 Then Exit Sub
 For I = Grid.row To Grid.RowSel
-    Grid.removeItem Grid.row
+    Grid.RemoveItem Grid.row
     quantity = quantity - 1
 Next I
 Grid.SetFocus
@@ -607,14 +689,14 @@ Grid_EnterCell
 End Sub
 
 Private Sub cmSel_Click() '<Добавить>
-Dim befColor As Long, il As Long, nl As Long, N As Integer, str As String
+Dim befColor As Long, IL As Long, NL As Long, N As Integer, str As String
 Dim per As Double
+Dim Nomnom1 As Nomnom
 
-sql = "SELECT perList From sGuideNomenk " & _
-"WHERE (((nomNom)='" & gNomNom & "'));"
-byErrSqlGetValues "##355", sql, per
+Set Nomnom1 = nomnomCache.getNomnom(gNomNom)
+per = Nomnom1.perlist
 
-If Regim = "fromDocs" And per = 1# Then   'необрезная ном-ра м.б. только на складе -1001
+If Regim = "fromDocs" And per = 1 Then   'необрезная ном-ра м.б. только на складе -1001
     str = sDocs.lbInside.List(1) '-1002 - Обрезки
     If sDocs.Grid.TextMatrix(sDocs.mousRow, dcSour) = str Or _
     sDocs.Grid.TextMatrix(sDocs.mousRow, dcDest) = str Then
@@ -634,30 +716,43 @@ If Regim = "" Then
     End If
 End If
 
-If opProduct.value Then
-  'проверка комплектации изделия ***********
-  befColor = 0: bilo = False
-  Grid.col = nkQuant
-  For il = Grid.Rows - 1 To 0 Step -1 'так в цикле м. выявить концы всех групп т.к. всегда есть Row=0 c другим цветом
-     Grid.row = il
-     grColor = Grid.CellBackColor
-     If grColor <> befColor Then
-        If (befColor = groupColor1 Or befColor = groupColor2) And Not bilo Then
-            MsgBox "Одним цветом в колонке 'Кол-во' подсвеченны позиции, " & _
-            "среди которых надо выбрать(двойной клик или <Enter>) только " & _
-            "одну, которая войдет в изделие.", , "Изделие '" & gProduct & _
-            "' не укомплектовано!"
+If opProduct.Value Then
+    Dim hasDrobnProc As Integer
+    If idWerk = 1 Then
+        sql = "select count(*) from wf_izdeliaForSell where prId = " & gProductId
+        byErrSqlGetValues "##aaa", sql, hasDrobnProc
+        If hasDrobnProc = 0 Then
+            MsgBox "Нельзя продавать изделия, в которые может входить мерная номенклатура." _
+            & vbCr & "Продавайте их как набор отдельных позиций номенклатуры.", , _
+            "Добавить позицию нельзя!"
             Exit Sub
         End If
-        bilo = False
-     End If
-     If Grid.CellFontBold Then
-        If grColor = groupColor1 Or grColor = groupColor2 Then bilo = True 'выбрана
-     End If
-     befColor = grColor
-  Next il '*********************************
-   
-  dostupOstatkiToGrid "multiN"
+        
+    End If
+    
+    'проверка комплектации изделия ***********
+    befColor = 0: bilo = False
+    Grid.col = nkQuant
+    For IL = Grid.Rows - 1 To 0 Step -1 'так в цикле м. выявить концы всех групп т.к. всегда есть Row=0 c другим цветом
+       Grid.row = IL
+       grColor = Grid.CellBackColor
+       If grColor <> befColor Then
+          If (befColor = groupColor1 Or befColor = groupColor2) And Not bilo Then
+              MsgBox "Одним цветом в колонке 'Кол-во' подсвеченны позиции, " & _
+              "среди которых надо выбрать(двойной клик или <Enter>) только " & _
+              "одну, которая войдет в изделие.", , "Изделие '" & gProduct & _
+              "' не укомплектовано!"
+              Exit Sub
+          End If
+          bilo = False
+       End If
+       If Grid.CellFontBold Then
+          If grColor = groupColor1 Or grColor = groupColor2 Then bilo = True 'выбрана
+       End If
+       befColor = grColor
+    Next IL '*********************************
+     
+    dostupOstatkiToGrid "multiN"
 Else
   dostupOstatkiToGrid
 End If
@@ -681,15 +776,6 @@ Private Sub Command3_Click()
 gridOrGrid3Hide
 End Sub
 
-Private Sub Form_Activate()
-Dim I As Integer
-
-End Sub
-
-Private Sub Form_GotFocus()
-Dim I As Integer
-
-End Sub
 
 Private Sub Form_Load()
 Dim str As String, I As Integer, delta As Double
@@ -701,38 +787,68 @@ noClick = False
 msgBilo = False
 isLoad = False
 
-Grid.FormatString = "|<Номер|<Описание|<Ед.измерения|Кол-во|Ф.остатки|Д.остатки"
+noClick = True
+If idWerk = 1 Then
+    ckList.Enabled = True
+Else
+    ckList.Enabled = False
+End If
+
+If asWhole = 1 Then
+    ckList.Value = 1
+Else
+    ckList.Value = 0
+End If
+noClick = False
+
+Grid.FormatString = "|<Номер|<Описание|<Ед.измерения|Кол-во|Ф.остатки|Д.остатки|kvop"
 
 Grid.ColWidth(0) = 0
 Grid.ColWidth(nkNomer) = 0 '900
+Grid.ColWidth(nkName) = 2230  'ostat
 Grid.ColWidth(nkEdIzm) = 630 'ostat
 Grid.ColWidth(nkCurOstat) = 0
+Grid.ColWidth(nkQuantPricise) = 0
+
+Grid3.FormatString = "|<Номер|<Размер|<Описание|id"
 
 Grid2.FormatString = "|<Номер|<Описание|<Ед.измерения|кол-во"
 Grid2.ColWidth(0) = 0
 Grid2.ColWidth(fnNomNom) = 0 '900
+Grid2.ColWidth(fnNomName) = 2200  '900
 Grid2.ColWidth(fnEdIzm) = 435
 Grid2.ColWidth(fnQuant) = 585
 
-Grid3.FormatString = "|<Номер|<Размер|<Описание|id"
 
-Grid5.FormatString = "|Тип|<Код|<Описание|<Ед.измерения|Цена за ед." & _
-"|Кол-во|Сумма|Этапы суммарно|Кол-во по тек.этапу"
-Grid5.ColWidth(prId) = 0
-Grid5.ColWidth(prName) = 1185
-Grid5.ColWidth(prType) = 0
-Grid5.ColWidth(prEdizm) = 420
-Grid5.ColWidth(prCenaEd) = 495
-Grid5.ColWidth(prEtap) = 660
-Grid5.ColWidth(prEQuant) = 675
-
+If idWerk <> 1 Then ' мерж продаж в приор
+    Grid5.FormatString = "|Тип|<Код|<Описание|<Ед.измерения|Цена за ед." & _
+    "|Кол-во|Сумма|Этапы суммарно|Кол-во по тек.этапу"
+    Grid5.ColWidth(prId) = 0
+    Grid5.ColWidth(prName) = 1185
+    Grid5.ColWidth(prType) = 0
+    Grid5.ColWidth(prEdizm) = 420
+    Grid5.ColWidth(prCenaEd) = 495
+    Grid5.ColWidth(prEtap) = 660
+    Grid5.ColWidth(prEQuant) = 675
+Else
+'   Grid2.Visible = False
+'   laGrid2.Visible = False
+    Grid5.FormatString = "|Тип|<Код|<Описание|<Ед.измерения|Цена за ед." & _
+    "|Кол-во|Сумма|Вес"
+    Grid5.ColWidth(prId) = 0
+    Grid5.ColWidth(prName) = 1185
+    Grid5.ColWidth(prType) = 0
+    Grid5.ColWidth(prEdizm) = 420
+    Grid5.ColWidth(prCenaEd) = 495
+    Grid5.ColWidth(prVes) = 500
+End If
 cmExel.Visible = False
 If Regim = "ostatP" Then
     Regim = "ostat"
-    opProduct.value = True: opProduct_Click
+    opProduct.Value = True: opProduct_Click
     GoTo AA
 ElseIf Regim = "ostat" Then
-    opNomenk.value = True: opNomenk_Click
+    opNomenk.Value = True: opNomenk_Click
 AA: Me.Caption = "Ведомость остатков"
     cmExel.Visible = True
     laGrid.Visible = False
@@ -754,14 +870,14 @@ AA: Me.Caption = "Ведомость остатков"
     cmExit.Left = Me.Width - cmExit.Width - 200
     
     sql = "SELECT sourceId, sourceName From sGuideSource " & _
-    "WHERE (((sourceId)<-1000)) ORDER BY sourceId DESC;"
-    Set table = myOpenRecordSet("##359", sql, dbOpenDynaset)
-    If table Is Nothing Then myBase.Close: End
-    While Not table.EOF
-        cbInside.AddItem table!SourceName
-        table.MoveNext
+    "WHERE sourceId <-1000 ORDER BY sourceId DESC"
+    Set Table = myOpenRecordSet("##359", sql, dbOpenDynaset)
+    If Table Is Nothing Then myBase.Close: End
+    While Not Table.EOF
+        cbInside.AddItem Table!SourceName
+        Table.MoveNext
     Wend
-    table.Close
+    Table.Close
     cbInside.ListIndex = 0
     'cbInside.Visible = True
     isLoad = True
@@ -783,7 +899,7 @@ gSeriaId = 0 'необходим  для добавления класса
 quantity2 = 0
 loadProducts 'номенклатурный состав
 If Regim = "" Or Regim = "closeZakaz" Then
-    loadPredmeti Me, orderRate ' состав предметов
+    loadPredmeti Me, orderRate, idWerk, Me.asWhole  ' состав предметов
 End If
 
 If quantity2 > 0 Then
@@ -809,29 +925,33 @@ If Regim = "closeZakaz" Then
     laGrid1.Visible = False
     laGrid.Visible = False
 Else
-    opNomenk.value = True ': opNomenk_Click
+    opProduct.Value = True ': opProduct_Click
 End If
 
 EN1:
 splLeftH.Visible = False
 oldHeight = Me.Height
 oldWidth = Me.Width
-tvVes = tv.Width / (tv.Width + Grid.Width + Grid2.Width)
-gridVes = Grid.Width / (tv.Width + Grid.Width + Grid2.Width)
-grid2Ves = Grid2.Width / (tv.Width + Grid.Width + Grid2.Width)
+tvVes = tv.Width / (tv.Width + Grid.Width + Grid5.Width)
+gridVes = Grid.Width / (tv.Width + Grid.Width + Grid5.Width)
+grid2Ves = Grid5.Width / (tv.Width + Grid.Width + Grid5.Width)
 isLoad = True
 End Sub
 
+
 Sub loadProducts() ' номенклатура заказа или накладной
+
+
 MousePointer = flexHourglass
 Grid2.Visible = False
+
 Dragging = False
 quantity2 = 0
 clearGrid Grid2
 If numExt = 254 Then
     sql = "SELECT n.nomNom, n.nomName, n.perList" _
     & " ,n.ed_Izmer, n.ed_Izmer2, d.quant as quantity  " _
-    & " ,n.Size, n.cod" _
+    & " ,n.Size, n.cod, n.ves" _
     & " FROM sDMC d" _
     & " JOIN sGuideNomenk n ON n.nomNom = d.nomNom" _
     & " WHERE d.numDoc = " & numDoc & " And d.numExt =" & numExt
@@ -846,24 +966,27 @@ ElseIf numExt = 0 And sDocs.reservNoNeed Then ' без резервирования
 Else ' ном-ра заказа или выписанная из Цеха с Целого склада
 AA: sql = "SELECT n.nomNom, n.nomName, n.perList " _
     & " ,n.ed_Izmer, n.ed_Izmer2, d.quantity" _
-    & " ,n.Size, n.cod" _
+    & " ,n.Size, n.cod, ves" _
     & " FROM sDMCrez d " _
     & " JOIN sGuideNomenk n ON n.nomNom = d.nomNom" _
     & " WHERE d.numDoc =" & numDoc
 End If
 'MsgBox sql
 
+Dim Nomnom1 As Nomnom
 Set tbNomenk = myOpenRecordSet("##118", sql, dbOpenForwardOnly)
 If tbNomenk Is Nothing Then GoTo EN1
 If Not tbNomenk.BOF Then
   While Not tbNomenk.EOF
+    Set Nomnom1 = nomnomCache.getNomnom(tbNomenk!Nomnom, True)
+    
     quantity2 = quantity2 + 1
-    Grid2.TextMatrix(quantity2, fnNomNom) = tbNomenk!nomNom
+    Grid2.TextMatrix(quantity2, fnNomNom) = tbNomenk!Nomnom
 '    Grid2.TextMatrix(quantity2, dnNomName) = tbNomenk!nomName
     Grid2.TextMatrix(quantity2, fnNomName) = tbNomenk!cod & " " & _
         tbNomenk!nomName & " " & tbNomenk!Size
-    Grid2.TextMatrix(quantity2, fnEdIzm) = tbNomenk!ed_Izmer
-    Grid2.TextMatrix(quantity2, fnQuant) = Round(tbNomenk!quantity, 2)
+    Grid2.TextMatrix(quantity2, fnEdIzm) = Nomnom1.getEdizm(asWhole)
+    Grid2.TextMatrix(quantity2, fnQuant) = Nomnom1.getQuantity(tbNomenk!quantity, asWhole)
     If Regim = "fromDocs" Then
       If sDocs.isIntMove() Then
         Grid2.TextMatrix(quantity2, fnEdIzm) = tbNomenk!ed_Izmer2
@@ -874,7 +997,7 @@ If Not tbNomenk.BOF Then
     Grid2.AddItem ""
     tbNomenk.MoveNext
   Wend
-  Grid2.removeItem quantity2 + 1
+  Grid2.RemoveItem quantity2 + 1
 End If
 tbNomenk.Close
 EN1:
@@ -895,7 +1018,7 @@ If begWidth = 0 Then ' т.е. только один раз
     begWidth2 = Grid2.Width
     begLeft = Grid2.Left
 End If
-If opProduct.value Then
+If opProduct.Value Then
     delta = 2000 ' Product
 Else
     delta = 1200 ' Nomenk
@@ -924,7 +1047,7 @@ Private Sub Form_MouseMove(Button As Integer, Shift As Integer, X As Single, Y A
 End Sub
 
 Private Sub Form_Resize()
-Dim h As Integer, w As Integer, hh As Double, ww As Double, Left As Long
+Dim H As Integer, W As Integer, hh As Double, ww As Double, Left As Long
 
 If Not isLoad Then Exit Sub
 If Me.WindowState = vbMinimized Then Exit Sub
@@ -938,35 +1061,35 @@ End If
 setNameColWidth 'в Grid3 и Grid
 
 On Error Resume Next
-h = Me.Height - oldHeight
+H = Me.Height - oldHeight
 oldHeight = Me.Height
-w = Me.Width - oldWidth
+W = Me.Width - oldWidth
 oldWidth = Me.Width
 
-tv.Height = tv.Height + h
-tv.Width = tv.Width + w * tvVes
+tv.Height = tv.Height + H
+tv.Width = tv.Width + W * tvVes
 
-Grid.Left = Grid.Left + w * tvVes
+Grid.Left = Grid.Left + W * tvVes
 laGrid.Left = Grid.Left
 cbInside.Left = laGrid1.Left + laGrid1.Width
-Grid.Height = Grid.Height + h
-Grid.Width = Grid.Width + w * gridVes
+Grid.Height = Grid.Height + H
+Grid.Width = Grid.Width + W * gridVes
 Grid3.Left = Grid.Left
 laGrid1.Left = Grid3.Left
 laBegin.Left = tv.Left + tv.Width + 100
 Grid3.Width = Grid.Width
 
-Grid2.Left = Grid2.Left + w * (tvVes + gridVes)
+Grid2.Left = Grid2.Left + W * (tvVes + gridVes)
 laGrid2.Left = Grid2.Left
-laGrid2.Top = laGrid2.Top + h / 2
+laGrid2.Top = laGrid2.Top + H / 2
 
-Grid2.Top = Grid2.Top + h / 2
-Grid2.Height = Grid2.Height + h / 2
-Grid2.Width = Grid2.Width + w * grid2Ves
+Grid2.Top = Grid2.Top + H / 2
+Grid2.Height = Grid2.Height + H / 2
+Grid2.Width = Grid2.Width + W * grid2Ves
 Grid5.Left = Grid2.Left
-Grid5.Height = Grid5.Height + h / 2
+Grid5.Height = Grid5.Height + H / 2
 
-laGrid5.Left = laGrid5.Left + w * (tvVes + gridVes)
+laGrid5.Left = laGrid5.Left + W * (tvVes + gridVes)
 Grid5.Width = Grid2.Width
 
 splLeftV.Top = Grid5.Top
@@ -985,21 +1108,60 @@ splRightH.Top = Grid5.Top + Grid5.Height + 5
 splRightH.Left = splRightV.Left + splRightV.Width
 splRightH.Width = Grid5.Width
 
+' по заданию шефа таблицы выравнивать так, чтобы между сплиттерами не было свободных мест.
+Dim frameWidth As Long ' ширина пространства между сплиттерами
+Dim CIndex As Long     ' индекс колонки, которая будет меняться
+Dim WidthDelta As Long ' На сколько изменить ширину колонки
 
+frameWidth = splRightV.Left - splLeftV.Left + splLeftV.Width
+With Grid
+    CIndex = nkName
+    WidthDelta = .Width - frameWidth
+    .Width = .Width - WidthDelta
+End With
 
-cmSel.Top = cmSel.Top + h
-cmSel.Left = cmSel.Left + w
-tbQuant.Top = tbQuant.Top + h
-tbQuant.Left = tbQuant.Left + w
-laQuant.Top = laQuant.Top + h
-laQuant.Left = laQuant.Left + w
-cmExit.Top = cmExit.Top + h
-cmExit.Left = cmExit.Left + w
-cmExel2.Top = cmExel2.Top + h
-cmExel2.Left = cmExel2.Left + w
-cmExel.Top = cmExel.Top + h
-cmHide.Top = cmHide.Top + h
+Grid.ColWidth(CIndex) = Grid.ColWidth(CIndex) - WidthDelta
+With Grid3
+    CIndex = fnNomName
+    WidthDelta = .Width - frameWidth
+    .Width = .Width - WidthDelta
+    '.ColWidth(CIndex) = .ColWidth(CIndex) + WidthDelta
+End With
+Grid3.ColWidth(CIndex) = Grid3.ColWidth(CIndex) - WidthDelta
+
+frameWidth = Me.Width - splRightV.Left + splRightV.Width
+With Grid2
+    CIndex = fnNomName
+    WidthDelta = .Width - frameWidth
+    .Width = .Width - WidthDelta
+    '.ColWidth(CIndex) = .ColWidth(CIndex) + WidthDelta
+End With
+Grid2.ColWidth(CIndex) = Grid2.ColWidth(CIndex) - WidthDelta
+
+With Grid5
+    CIndex = prName
+    WidthDelta = .Width - frameWidth
+    .Width = .Width - WidthDelta
+    '.ColWidth(CIndex) = .ColWidth(CIndex) + WidthDelta
+End With
+Grid5.ColWidth(CIndex) = Grid5.ColWidth(CIndex) - WidthDelta
+
+laQuant.Top = laQuant.Top + H
+laQuant.Left = laQuant.Left + W
+cmExit.Top = cmExit.Top + H
+cmExit.Left = cmExit.Left + W
+cmExel2.Top = cmExel2.Top + H
+cmExel2.Left = cmExel2.Left + W
+cmExel.Top = cmExel.Top + H
+cmHide.Top = cmHide.Top + H
 laBegin.Top = tv.Top
+ckList.Top = ckList.Top + H
+
+cmSel.Top = cmSel.Top + H
+tbQuant.Top = tbQuant.Top + H
+
+cmSel.Left = Grid3.Left + Grid3.Width / 2 - cmSel.Width - 50
+tbQuant.Left = cmSel.Left + cmSel.Width + 50
 
 End Sub
 
@@ -1013,12 +1175,12 @@ If Regim = "" Then 'предметы заказа
         Orders.Grid.CellForeColor = vbBlack
     End If
 ElseIf Regim = "fromDocs" Then
-   If sDocs.isIntMove() Then sDocs.ckPerList.value = 1 Else sDocs.ckPerList.value = 0
+   If sDocs.isIntMove() Then sDocs.ckPerList.Value = 1 Else sDocs.ckPerList.Value = 0
 End If
 End Sub
 
 Sub dostupOstatkiToGrid(Optional reg As String)
-Dim S As Double, sum As Double, rr As Long, il As Long
+Dim S As Double, sum As Double, rr As Long, IL As Long
 
 Me.MousePointer = flexHourglass
 If numExt = 254 Or (Regim = "fromDocs" And sDocs.Regim = "fromCeh") Then
@@ -1035,17 +1197,17 @@ Grid4.ColWidth(frEdIzm) = 645
 Grid4.ColWidth(frOstat) = 885
 
 If reg = "multiN" Then
-    Grid.col = nkQuant: il = 0
+    Grid.col = nkQuant: IL = 0
     For rr = 1 To Grid.Rows - 1
         Grid.row = rr
         If Grid.CellFontBold Then
-            il = il + 1
+            IL = IL + 1
             gNomNom = Grid.TextMatrix(rr, nkNomer)
-            nomencOstatkiToGrid il
+            nomencOstatkiToGrid IL
             Grid4.AddItem ""
         End If
     Next rr
-    Grid4.removeItem Grid4.Rows - 1
+    Grid4.RemoveItem Grid4.Rows - 1
 Else
     nomencOstatkiToGrid 1
 End If
@@ -1058,24 +1220,25 @@ gridFrame.ZOrder
 End Sub
 'ед.измер зависит от складов
 'заголововок Grid4 формируется в dostupOstatkiToGrid
-Public Function nomencOstatkiToGrid(row As Long) As Double
+Public Function nomencOstatkiToGrid(row As Long, Optional hasLiveRowset As Boolean = False) As Double
 Dim S As Double, str As String, str2 As String, str3 As String, z As Double
 
 'Ф.остатки
-sql = "SELECT  nomName, Ed_Izmer, Ed_Izmer2, perList From sGuideNomenk " & _
-"WHERE (((nomNom)='" & gNomNom & "'));"
-'Debug.Print sql
-byErrSqlGetValues "##144", sql, str, str2, str3, tmpSng
+Dim Nomnom1 As Nomnom
+
 If row > 0 Then
     Grid4.TextMatrix(row, frNomNom) = gNomNom
-    Grid4.TextMatrix(row, frNomName) = str
-    Grid4.TextMatrix(row, frEdIzm) = str2
+    Set Nomnom1 = nomnomCache.getNomnom(gNomNom, hasLiveRowset)
+    Grid4.TextMatrix(row, frNomName) = Nomnom1.nomName
+    Grid4.TextMatrix(row, frEdIzm) = Nomnom1.getEdizm(asWhole)
 End If
+
 If Regim = "fromDocs" Then
     nomencOstatkiToGrid = PrihodRashod("+", skladId) - PrihodRashod("-", skladId) 'Ф. остатки по складу
     If sDocs.isIntMove() Then
         If row > 0 Then Grid4.TextMatrix(row, frEdIzm) = str3
-        nomencOstatkiToGrid = nomencOstatkiToGrid / tmpSng
+        Set Nomnom1 = nomnomCache.getNomnom(gNomNom, hasLiveRowset)
+        nomencOstatkiToGrid = nomencOstatkiToGrid / Nomnom1.perlist
     End If
 Else
 'вычисляем доступные остатки
@@ -1086,14 +1249,14 @@ Else
     FO = PrihodRashod("+", -1001) - PrihodRashod("-", -1001) ' обрезки не показываем
     sql = "SELECT Sum(quantity) AS Sum_quantity, " & _
     "Sum(Sum_quant) AS Sum_Sum_quant From wCloseNomenk " & _
-    "WHERE (((nomNom)='" & gNomNom & "'));"
+    "WHERE nomNom ='" & gNomNom & "'"
 '    Debug.Print sql
     If Not byErrSqlGetValues("##145", sql, z, S) Then myBase.Close: End
-    nomencOstatkiToGrid = FO - (z - S) ' минус, что несписано
-End If
+        nomencOstatkiToGrid = FO - (z - S) ' минус, что несписано
+    End If
 End If
 If row > 0 Then _
-    Grid4.TextMatrix(row, frOstat) = Round(nomencOstatkiToGrid, 2)
+    Grid4.TextMatrix(row, frOstat) = Nomnom1.getQuantity(nomencOstatkiToGrid, asWhole)
 
 End Function
 
@@ -1105,7 +1268,7 @@ If quantity = 0 Then Exit Sub
 End Sub
 
 Private Sub Grid_DblClick()
-Dim il As Long, curRow As Long
+Dim IL As Long, curRow As Long
 
 grColor = Grid.CellBackColor
 If grColor = &H88FF88 Then
@@ -1115,16 +1278,16 @@ ElseIf grColor = groupColor1 Or grColor = groupColor2 Then
         curRow = Grid.row
         Grid.CellFontBold = True
     '    Grid.col = nkQuant
-        For il = curRow - 1 To 1 Step -1  'вверх от клика
-            Grid.row = il
+        For IL = curRow - 1 To 1 Step -1  'вверх от клика
+            Grid.row = IL
             If Grid.CellBackColor <> grColor Then Exit For
             Grid.CellFontBold = False
-        Next il
-        For il = curRow + 1 To Grid.Rows - 1 'вниз от клика
-            Grid.row = il
+        Next IL
+        For IL = curRow + 1 To Grid.Rows - 1 'вниз от клика
+            Grid.row = IL
             If Grid.CellBackColor <> grColor Then Exit For
             Grid.CellFontBold = False
-        Next il
+        Next IL
         Grid.row = curRow
     Else
         
@@ -1422,7 +1585,9 @@ End Sub
 Private Sub Grid5_EnterCell()
 Static prevRow As Long, prevCol As Long
 ' EnterCell срабатывает до MouseDown
-
+    If Not Grid5.Visible Then
+        Exit Sub
+    End If
     If hasSelection(Grid5) Then Exit Sub
     
     If Not selectNomenkFlag And Not isCtrlDown Then
@@ -1468,9 +1633,10 @@ Static prevRow As Long, prevCol As Long
 End Sub
 '$odbc14$
 Sub productNomenkToGrid2(quant As Double)
-Dim il As Long, str As String, str2 As String, str3 As String, str4 As String
+Dim IL As Long, str As String, str2 As String, str3 As String, str4 As String
 
 If quantity5 = 0 Then Exit Sub
+
 
 Grid2.Visible = False
 clearGrid Grid2
@@ -1482,22 +1648,20 @@ If Grid5.TextMatrix(mousRow5, prType) = "изделие" Then
 '    Set tbNomenk = myOpenRecordSet("##193", "select * from sGuideNomenk", dbOpenForwardOnly)
 '    If tbNomenk Is Nothing Then Exit Sub
 '    tbNomenk.index = "PrimaryKey"
-    For il = 1 To UBound(NN)
+    Dim Nomnom1 As Nomnom
+    For IL = 1 To UBound(NN)
         quantity2 = quantity2 + 1
         Grid2.AddItem ""
-        Grid2.TextMatrix(il, fnNomNom) = NN(il)
-        Dim Equip As String
-        sql = "SELECT n.Size, n.ed_Izmer, n.cod, n.nomName" _
-            & " from sGuideNomenk n " _
-            & " WHERE nomNom ='" & NN(il) & "'"
-        byErrSqlGetValues "##413", sql, str, str2, str3, str4
+        Grid2.TextMatrix(IL, fnNomNom) = NN(IL)
+        Set Nomnom1 = New Nomnom
+        Set Nomnom1 = nomnomCache.getNomnom(NN(IL))
         
-        Grid2.TextMatrix(il, fnNomName) = str3 & " " & str4 & " " & str
-        Grid2.TextMatrix(il, fnEdIzm) = str2
-        Grid2.TextMatrix(il, fnQuant) = Round(QQ(il), 2)
-    Next il
+        Grid2.TextMatrix(IL, fnNomName) = Nomnom1.cod & " " & Nomnom1.nomName & " " & Nomnom1.Size
+        Grid2.TextMatrix(IL, fnEdIzm) = Nomnom1.getEdizm(asWhole)
+        Grid2.TextMatrix(IL, fnQuant) = Nomnom1.getQuantity(QQ(IL), asWhole)
+    Next IL
     
-    If quantity2 > 0 Then Grid2.removeItem Grid2.Rows - 1
+    If quantity2 > 0 Then Grid2.RemoveItem Grid2.Rows - 1
   End If
 Else
     laGrid2.Caption = "Отдельная номенклатура"
@@ -1584,26 +1748,26 @@ Dim sz As Integer
             useMaxSelection = selectedItems(I)
         End If
     Next I
-    removeItem (CStr(useMaxSelection))
+    RemoveItem (CStr(useMaxSelection))
 End Function
 
-Private Sub appendItem(item As String)
+Private Sub appendItem(Item As String)
 Dim I As Integer
 Dim found As Boolean: found = False
 Dim sz As Integer
 
     sz = UBound(selectedItems)
     For I = 1 To sz
-        If selectedItems(I) = item Then found = True: Exit For
+        If selectedItems(I) = Item Then found = True: Exit For
     Next I
     If Not found Then
         ReDim Preserve selectedItems(sz + 1)
-        selectedItems(sz + 1) = item
+        selectedItems(sz + 1) = Item
     End If
     
 End Sub
 
-Private Sub removeItem(item As String)
+Private Sub RemoveItem(Item As String)
 Dim I As Integer
 Dim found As Boolean: found = False
 Dim sz As Integer
@@ -1613,7 +1777,7 @@ Dim sz As Integer
         If found Then
             ' сдвинуть хвост
             selectedItems(I - 1) = selectedItems(I)
-        ElseIf selectedItems(I) = item Then
+        ElseIf selectedItems(I) = Item Then
             found = True
         End If
     Next I
@@ -1642,7 +1806,7 @@ Dim currentCol As Integer, currentLeft As Integer
     Else
         fColorSel = vbBlack
         bColorSel = Grd.BackColor
-        removeItem (CStr(Grd.row))
+        RemoveItem (CStr(Grd.row))
     End If
 
     For I = 0 To Grd.Cols - 1
@@ -1706,7 +1870,6 @@ Private Sub Grid5_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As
             End If
             
             Me.PopupMenu mnContext
-            noClick = True 'для Grid5_Click
         End If
     End If
     If Button = 1 And Shift = 2 Then
@@ -1741,10 +1904,12 @@ If hasSelection(Grid5) Then
     For I = 1 To UBound(selectedItems)
         str2 = str2 & comma & Grid5.TextMatrix(CInt(selectedItems(I)), prName)
         comma = ", "
-        str = Grid5.TextMatrix(CInt(selectedItems(I)), prEQuant)
-        If IsNumeric(str) Then
-            If CDbl(str) > 0 Then _
-                hasEtap = True
+        If idWerk <> 1 Then
+            str = Grid5.TextMatrix(CInt(selectedItems(I)), prEQuant)
+            If IsNumeric(str) Then
+                If CDbl(str) > 0 Then _
+                    hasEtap = True
+            End If
         End If
     Next I
     
@@ -1778,7 +1943,7 @@ Orders.openOrdersRowToGrid "##220":    tqOrders.Close
 For J = 1 To UBound(selectedItems)
     lIndex = useMaxSelection()
     quantity5 = quantity5 - 1
-    Grid5.removeItem lIndex
+    Grid5.RemoveItem lIndex
     If quantity5 <= 0 Then
         clearGridRow Grid5, lIndex
     End If
@@ -1842,14 +2007,9 @@ Dim pQuant As Double
             
             'удаления ном-ры из состава
             sql = "SELECT quant from xPredmetyByNomenk " & _
-            "WHERE (((numOrder)=" & gNzak & ") AND ((nomNom)='" & gNomNom & "'));"
-        'MsgBox sql
-        '    Set tbNomenk = myOpenRecordSet("##198", "select * from xPredmetyByNomenk", dbOpenForwardOnly)
+            "WHERE numOrder = " & gNzak & " AND nomNom = '" & gNomNom & "'"
             Set tbNomenk = myOpenRecordSet("##198", sql, dbOpenForwardOnly)
-        '    If tbNomenk Is Nothing Then GoTo ER1
-        '    tbNomenk.index = "Key"
-        '    tbNomenk.Seek "=", numDoc, gNomNom
-        '    If tbNomenk.NoMatch Then tbNomenk.Close: GoTo ER1
+            
             If tbNomenk.BOF Then tbNomenk.Close: Exit Sub
             pQuant = tbNomenk!quant
             tbNomenk.Delete
@@ -1910,7 +2070,7 @@ quantity2 = quantity2 - 1
 If quantity2 = 0 Then
     clearGridRow Grid2, 1
 Else
-    Grid2.removeItem mousRow2
+    Grid2.RemoveItem mousRow2
 End If
 
 EN1: Grid2.SetFocus
@@ -1919,7 +2079,7 @@ End Sub
 Private Sub mnOnfly_Click()
     OnFly.Show vbModal
     If convertToIzdelie Then
-        loadPredmeti Me, orderRate
+        loadPredmeti Me, orderRate, idWerk, asWhole
         loadProducts
         convertToIzdelie = False
     End If
@@ -1966,13 +2126,13 @@ laGrid1.Caption = ""
 cbInside.Enabled = True
 End Sub
 
-Sub controlEnable(EN As Boolean)
-If Not EN Then ' только гасим
+Sub controlEnable(en As Boolean)
+If Not en Then ' только гасим
     Grid.Visible = False
     Grid3.Visible = False
     splLeftH.Visible = False
 End If
-If Regim <> "closeZakaz" Then cmSel.Enabled = EN
+If Regim <> "closeZakaz" Then cmSel.Enabled = en
 End Sub
 
 Private Sub opProduct_Click()
@@ -2023,11 +2183,11 @@ End Sub
 Sub setNameColWidth()
 If Me.WindowState = vbMaximized And Me.Width > cDELLwidth Then 'экран DELL
     Grid3.ColWidth(gpDescript) = 5055
-    Grid.ColWidth(nkName) = 4350 + 900
+    Grid.ColWidth(nkName) = 4200
 ElseIf Regim = "ostat" Then
     Grid3.ColWidth(gpDescript) = 3495
 Else
-    Grid.ColWidth(nkName) = 2100 + 900
+    Grid.ColWidth(nkName) = 2100
     Grid3.ColWidth(gpDescript) = 2200
 End If
 
@@ -2040,23 +2200,8 @@ nomenkToDMC = False
 
 If noLock = "" Then
     If Not lockSklad Then Exit Function
-'    Set tbDMC = myOpenRecordSet("##123", "select * from sDMC", dbOpenForwardOnly)
-'    If tbDMC Is Nothing Then GoTo EN1
-'    tbDMC.index = "NomDoc"
 End If
 
-'tbDMC.Seek "=", numDoc, numExt, gNomNom
-'If tbDMC.NoMatch Then
-'    tbDMC.AddNew
-'    tbDMC!numDoc = numDoc
-'    tbDMC!numExt = numExt
-'    tbDMC!nomNom = gNomNom
-'    tbDMC!quant = Round(delta, 2)
-'Else
-'    tbDMC.Edit
-'    tbDMC!quant = Round(tbDMC!quant + delta, 2)
-'End If
-'tbDMC.Update
 sql = "UPDATE sDMC SET quant = quant + " & delta & _
 " WHERE numDoc=" & numDoc & " AND numExt=" & numExt & _
 " AND nomNom='" & gNomNom & "';"
@@ -2084,6 +2229,9 @@ Sub nomenkToPredmeti(ByRef needToRefresh As Boolean)
 Dim delta As Double, S As Double, quant As Double
 
     quant = tbQuant.Text
+    Dim Nomnom1 As Nomnom
+    Set Nomnom1 = nomnomCache.getNomnom(gNomNom)
+    quant = Nomnom1.getQuantityRevert(quant, asWhole)
     S = nomencOstatkiToGrid(1) - quant ' одновременно обновляем таблицу
   
     If S < -0.005 Then 'в 2х местах
@@ -2098,7 +2246,7 @@ On Error GoTo errr
 
     wrkDefault.BeginTrans
     sql = "select * from xPredmetyByNomenk where numOrder = " & numDoc & _
-            " and nomNom = '" & gNomNom & "';"
+            " and nomNom = '" & gNomNom & "'"
     'Debug.Print sql
     Set tbNomenk = myOpenRecordSet("##117", sql, dbOpenForwardOnly)
     If tbNomenk Is Nothing Then End
@@ -2106,14 +2254,14 @@ On Error GoTo errr
     If Not tbNomenk.BOF Then
         tbNomenk.Edit
         tbNomenk!quant = tbNomenk!quant + quant
-        needToRefresh = True
     Else
         tbNomenk.AddNew
         tbNomenk!Numorder = numDoc
-        tbNomenk!nomNom = gNomNom
+        tbNomenk!Nomnom = gNomNom
         tbNomenk!quant = quant
     End If
     tbNomenk.update
+    needToRefresh = True
 
     If Not nomenkToDMCrez(quant) Then GoTo ER1
 
@@ -2271,12 +2419,12 @@ If KeyCode = vbKeyReturn Then
     getIdFromGrid5Row Me
     str = Grid5.TextMatrix(mousRow5, prType)
     If str = "изделие" Then
-        strWhere = " WHERE (((xPredmetyByIzdelia.numOrder)=" & gNzak & _
-        ") AND ((xPredmetyByIzdelia.prId)=" & gProductId & _
-        ") AND ((xPredmetyByIzdelia.prExt)=" & prExt & "));"
+        strWhere = " WHERE xPredmetyByIzdelia.numOrder = " & gNzak & _
+        " AND xPredmetyByIzdelia.prId = " & gProductId & _
+        " AND xPredmetyByIzdelia.prExt = " & prExt
     Else
-        strWhere = " WHERE (((xPredmetyByNomenk.numOrder)=" & gNzak & _
-        ") AND ((xPredmetyByNomenk.nomNom)='" & gNomNom & "'));"
+        strWhere = " WHERE xPredmetyByNomenk.numOrder = " & gNzak & _
+        " AND xPredmetyByNomenk.nomNom = '" & gNomNom & "'"
     End If
     If mousCol5 = prEQuant Then 'prEtap
         If str = "изделие" Then
@@ -2302,12 +2450,12 @@ If KeyCode = vbKeyReturn Then
 '        If tbProduct Is Nothing Then myBase.Close: End
 '        tbProduct.index = "Key"
         If str = "изделие" Then
-            sql = "SELECT * from xEtapByIzdelia WHERE (((numOrder)=" & _
-            gNzak & ") AND ((prId)=" & gProductId & ") AND ((prExt)=" & prExt & "));"
+            sql = "SELECT * from xEtapByIzdelia WHERE numOrder = " & _
+            gNzak & " AND prId = " & gProductId & " AND prExt = " & prExt
 '            tbProduct.Seek "=", gNzak, gProductId, prExt
         Else
-            sql = "SELECT * from xEtapByNomenk WHERE (((numOrder)=" & _
-            gNzak & ") AND ((nomNom)='" & gNomNom & "'));"
+            sql = "SELECT * from xEtapByNomenk WHERE numOrder = " & _
+            gNzak & " AND nomNom = '" & gNomNom & "'"
 '            tbProduct.Seek "=", gNzak, gNomNom
         End If
         Set tbProduct = myOpenRecordSet("##316", sql, dbOpenTable)
@@ -2328,7 +2476,7 @@ If KeyCode = vbKeyReturn Then
                 tbProduct!prId = gProductId
                 tbProduct!prExt = prExt
             Else
-                tbProduct!nomNom = gNomNom
+                tbProduct!Nomnom = gNomNom
             End If
 AA:         tbProduct!eQuant = S
             tbProduct.update
@@ -2343,23 +2491,40 @@ AA:         tbProduct!eQuant = S
     
     If Not Me.convertToIzdelie Then
         If Not isNumericTbox(tbMobile, 0) Then Exit Sub
-    
-        Dim tunedCenaEd As Double
+
+        Dim tunedCenaEd As Double, preciseQuantity As Double
+        If Grid5.TextMatrix(mousRow5, prType) = "изделие" Then
+            preciseQuantity = Grid5.TextMatrix(mousRow5, prQuant)
+        Else
+            If asWhole = 1 Then
+                sql = "select pn.quant / n.perlist from xPredmetyByNomenk pn join sguidenomenk n on n.nomnom = pn.nomnom where pn.numorder = " & gNzak & " AND pn.nomnom = '" & gNomNom & "'"
+            Else
+                sql = "select pn.quant from xPredmetyByNomenk pn where pn.numorder = " & gNzak & " AND pn.nomnom = '" & gNomNom & "'"
+            End If
+            byErrSqlGetValues "##500", sql, preciseQuantity
+        End If
+
         If mousCol5 = prSumm Then
-            S = tuneCurencyAndGranularity(tbMobile.Text, orderRate, sessionCurrency, Grid5.TextMatrix(mousRow5, prQuant))
-            tunedCenaEd = S / CDbl(Grid5.TextMatrix(mousRow5, prQuant)) 'не округлять
+            S = tuneCurencyAndGranularity(tbMobile.Text, orderRate, sessionCurrency, preciseQuantity)
+            tunedCenaEd = S / preciseQuantity 'не округлять
         Else
             tunedCenaEd = tuneCurencyAndGranularity(tbMobile.Text, orderRate, sessionCurrency, 1)
-            S = tunedCenaEd * CDbl(Grid5.TextMatrix(mousRow5, prQuant))
+            S = tunedCenaEd * preciseQuantity
         End If
         
         If str = "изделие" Then
             sql = "UPDATE xPredmetyByIzdelia SET cenaEd = " & tunedCenaEd & _
-            "  WHERE (((numOrder)=" & gNzak & ") AND ((prId)=" & gProductId & _
-            ") AND ((prExt)=" & prExt & "));"
+            "  WHERE numOrder = " & gNzak & " AND prId = " & gProductId & _
+            " AND prExt = " & prExt
         Else
-            sql = "UPDATE xPredmetyByNomenk SET cenaEd = " & tunedCenaEd & _
-            " WHERE (((numOrder)=" & gNzak & ") AND ((nomNom)='" & gNomNom & "'));"
+            If idWerk <> 1 Or asWhole = 0 Then
+                sql = "UPDATE xPredmetyByNomenk SET cenaEd = " & tunedCenaEd & _
+                " WHERE numOrder = " & gNzak & " AND nomNom = '" & gNomNom & "'"
+            Else
+                sql = "UPDATE xPredmetyByNomenk SET cenaEd = " & tunedCenaEd & "/ n.perList" _
+                & " FROM sGuideNomenk n " _
+                & " WHERE n.nomnom = xPredmetyByNomenk.nomnom and xPredmetyByNomenk.numOrder = " & gNzak & " AND xPredmetyByNomenk.nomNom = '" & gNomNom & "'"
+            End If
         End If
 '        MsgBox sql
         
@@ -2392,11 +2557,11 @@ End Sub
 'ед.измер delta и Дефицита зависит от наличия в накладной целых складов
 'т.о. значение для delta может напрямую браться из tbQuant
 Function deficitAndNoIgnore(delta As Double) As Boolean
-Dim S As Double, il As Long
+Dim S As Double, IL As Long
 
 
 deficitAndNoIgnore = False
-S = nomencOstatkiToGrid(il) - delta ' одновременно обновляем таблицу
+S = nomencOstatkiToGrid(IL) - delta ' одновременно обновляем таблицу
 If S < -0.005 Then
     If numExt = 254 Or numExt = 0 Then ' накладная или выпис. из Цеха
         tmpStr = "' по подразделению '" & sDocs.getGridColSour() & "'"
@@ -2412,14 +2577,19 @@ End Function
 
 '$odbc15$
 Private Sub tbQuant_KeyDown(KeyCode As Integer, Shift As Integer)
-Dim rr As Long, il As Long, pQuant As Double, S As Double, str As String
+Dim rr As Long, IL As Long, pQuant As Double, S As Double, str As String
 Dim I As Integer, NN2() As String
 Dim needToRefresh As Boolean ' показывает, нужно ли обновить сумму в поле ordered
+
+
+
 If KeyCode = vbKeyReturn Then
-   
+Dim Nomnom1 As Nomnom
+
+
     
  
-If opNomenk.value Then
+If opNomenk.Value Then
   If Not isNumericTbox(tbQuant, 0.01) Then Exit Sub
   S = Round(tbQuant.Text, 2)
   If S <> tbQuant.Text Then
@@ -2428,7 +2598,7 @@ If opNomenk.value Then
     Exit Sub
   End If
   If Regim = "" Then 'предметы к заказу т.е 0<numExt<254
-    nomenkToPredmeti False
+    nomenkToPredmeti needToRefresh
   Else
     S = Round(tbQuant.Text, 2)
     If sDocs.isIntMove() Then
@@ -2437,10 +2607,9 @@ If opNomenk.value Then
             MsgBox "Количество должно быть целым!", , "Повторите ввод"
             tbQuant.Text = "1": Exit Sub
         End If
-  
-        sql = "SELECT perList From sGuideNomenk " & _
-        "WHERE (((sGuideNomenk.nomNom)='" & gNomNom & "'));"
-        byErrSqlGetValues "##343", sql, S
+        
+        Set Nomnom1 = nomnomCache.getNomnom(gNomNom)
+        S = Nomnom1.perlist
         S = Round(I * S, 2)
     End If
     If deficitAndNoIgnore(tbQuant.Text) Then Exit Sub
@@ -2463,13 +2632,14 @@ Else ' здесь только предметы заказы, поэтому всегда в одной(мелкой) ed.izmer
   
   If Not lockSklad Then Exit Sub
   
-  Grid.col = nkQuant: il = 0
+  Grid.col = nkQuant: IL = 0
   For rr = 1 To Grid.Rows - 1
     Grid.row = rr
     If Grid.CellFontBold Then
-      il = il + 1
+      IL = IL + 1
       gNomNom = Grid.TextMatrix(rr, nkNomer)
-      S = CDbl(Grid.TextMatrix(rr, nkQuant)) * pQuant
+      
+      S = Grid.TextMatrix(rr, nkQuantPricise) * pQuant
       If deficitAndNoIgnore(S) Then GoTo ER2
     End If
   Next rr
@@ -2490,10 +2660,9 @@ Else ' здесь только предметы заказы, поэтому всегда в одной(мелкой) ed.izmer
     If Grid.CellFontBold Then
       gNomNom = Grid.TextMatrix(rr, nkNomer)
       If Grid.CellBackColor = groupColor1 Or Grid.CellBackColor = groupColor2 Then
-'      If Grid.CellBackColor <> Grid.BackColor Then
         I = I + 1: ReDim Preserve NN(I): NN(I) = gNomNom 'вариантная ном-ра
       End If
-      S = CDbl(Grid.TextMatrix(rr, nkQuant)) * pQuant
+      S = Grid.TextMatrix(rr, nkQuantPricise) * pQuant
       If numExt = 254 Then ' номенклатура  накладной
         If Not nomenkToDMC(S, "noLock") Then GoTo ER0 '
       Else '   резервирование заказа либо предметов накладной из для цеха(межскладские здесь невозможны)
@@ -2517,7 +2686,7 @@ End If
 End If ' opNomenk.value
 
 If Regim = "" Then
-    loadPredmeti Me, orderRate, , needToRefresh ' состав
+    loadPredmeti Me, orderRate, idWerk, asWhole, , needToRefresh ' состав
 End If
     
 loadProducts ' ном-ра заказа
@@ -2577,14 +2746,14 @@ nomenkToDMCrez = False
 '        tbDMC.Update
 
 ' выписанные межскладские не резервируем
-strWhere = " WHERE (((numDoc)=" & numDoc & ") AND ((nomNom)='" & gNomNom & "'));"
+strWhere = " WHERE numDoc = " & numDoc & " AND nomNom='" & gNomNom & "'"
 
 If mov = "" Then mov = "rez"
 
 sql = "SELECT quantity FROM sDMC" & mov & strWhere
 If Not byErrSqlGetValues("W##423", sql, S) Then Exit Function
 
-If S = 0 Then ' такой ном-ры нет
+If S < 0.01 Then ' такой ном-ры еще в таблице sDMCRez нет
   If delta >= 0.01 Then
     sql = "INSERT INTO sDMC" & mov & " ( numDoc, nomNom, quantity ) " & _
     "SELECT " & numDoc & ", '" & gNomNom & "', " & delta & ";"
@@ -2593,7 +2762,7 @@ If S = 0 Then ' такой ном-ры нет
 Else
     delta = S + delta
 
-    If Round(delta, 2) > 0 Then
+    If Round(delta, 3) >= 0.01 Then
         sql = "UPDATE sDMC" & mov & " SET quantity = " & delta & strWhere
         If myExecute("##152", sql) <> 0 Then Exit Function
     Else
@@ -2636,6 +2805,7 @@ sql = "SELECT * from xPredmetyByIzdelia " & _
 Set tbProduct = myOpenRecordSet("##185", sql, dbOpenForwardOnly)
 On Error GoTo errr
 
+
 wrkDefault.BeginTrans
 
 'Debug.Print sql
@@ -2657,7 +2827,7 @@ If tbProduct.BOF Then
         tbNomenk!Numorder = numDoc
         tbNomenk!prId = gProductId
         tbNomenk!prExt = prExt
-        tbNomenk!nomNom = NN(I)
+        tbNomenk!Nomnom = NN(I)
         tbNomenk.update
     Next I
     tbNomenk.Close
@@ -2673,6 +2843,9 @@ Else
 End If
 'EP:
 tbProduct.Close
+
+
+
 wrkDefault.CommitTrans
 addToPredmetiTable = True
 Exit Function
@@ -2723,7 +2896,7 @@ If Not tbNomenk.BOF Then
 
 CC: J = J + 1
     If J <= UBound(NN) Then
-        NN2(J) = tbNomenk!nomNom
+        NN2(J) = tbNomenk!Nomnom
     End If
     prevExt = tbNomenk!prExt
     tbNomenk.MoveNext
@@ -2735,7 +2908,7 @@ AA:     If J = UBound(NN) Then ' совпадает-ли кол-во(Нет - если поменяли состав)
                 If NN(I) <> NN2(I) Then GoTo BB
             Next I
             getPrExtByNomenk = prevExt
-            GoTo EN
+            GoTo en
         End If
 BB:     J = 0
     End If
@@ -2743,7 +2916,7 @@ BB:     J = 0
 
     getPrExtByNomenk = -prevExt
 End If
-EN:
+en:
 tbNomenk.Close
 End Function
 
@@ -2782,7 +2955,7 @@ If Not tbKlass.BOF Then
 NXT1:
     tbKlass.MoveNext
  Wend
-  tv.Nodes.item("all").Text = "Весь перечень"
+  tv.Nodes.Item("all").Text = "Весь перечень"
 End If
 tbKlass.Close
 
@@ -2799,7 +2972,7 @@ While bilo ' необходимы еще проходы
 NXT:
   Next I
 Wend
-tv.Nodes.item("k0").Expanded = True
+tv.Nodes.Item("k0").Expanded = True
 Exit Sub
 ERR1:
  iErr = iErr + 1: bilo = True
@@ -2830,19 +3003,22 @@ quantity = 0
 Grid.Visible = False
 clearGrid Grid
 
-sql = "SELECT sProducts.nomNom, sProducts.quantity, sProducts.xGroup, " & _
-"sGuideNomenk.Size, sGuideNomenk.cod, " & _
-" sGuideNomenk.nomName, sGuideNomenk.ed_Izmer  " & _
-"FROM sGuideNomenk INNER JOIN sProducts ON sGuideNomenk.nomNom = sProducts.nomNom " & _
-"WHERE (((sProducts.ProductId)=" & v_productId & ")) ORDER BY sProducts.xGroup DESC;"
-'MsgBox sql
+sql = "SELECT p.nomNom, p.quantity, p.xGroup, " & _
+" n.Size, n.cod, n.nomName, n.ed_Izmer, n.ed_Izmer2, n.perList, n.cod, n.size, n.ves" & _
+" FROM sGuideNomenk n " & _
+" JOIN sProducts p ON n.nomNom = p.nomNom " & _
+" WHERE p.ProductId =" & v_productId & _
+" ORDER BY p.xGroup DESC"
+
+Dim Nomnom1 As Nomnom
+
 Set tbNomenk = myOpenRecordSet("##108", sql, dbOpenForwardOnly)
 If tbNomenk Is Nothing Then Exit Sub
 If Not tbNomenk.BOF Then
   Grid.col = buntColumn
    grBef = ""
   While Not tbNomenk.EOF
-  
+    
     Grid.row = quantity 'возможно пред. строку н.б. окрасить
     Dim str As String: str = Grid.Text
     quantity = quantity + 1
@@ -2867,15 +3043,20 @@ If Not tbNomenk.BOF Then
     End If
     grBef = tbNomenk!xGroup
         
-    gNomNom = tbNomenk!nomNom
+    gNomNom = tbNomenk!Nomnom
+    nomnomCache.evict (tbNomenk!Nomnom)
+    Set Nomnom1 = nomnomCache.getNomnom(tbNomenk!Nomnom, True)
+    
     Grid.TextMatrix(quantity, nkNomer) = gNomNom
     Grid.TextMatrix(quantity, nkName) = tbNomenk!cod & " " & _
         tbNomenk!nomName & " " & tbNomenk!Size
-    Grid.TextMatrix(quantity, nkEdIzm) = tbNomenk!ed_Izmer
-'    ReDim Preserve QP(quantity): QP(quantity) = tbNomenk!quantity
-        Grid.TextMatrix(quantity, nkQuant) = tbNomenk!quantity
+    Grid.TextMatrix(quantity, nkEdIzm) = Nomnom1.getEdizm(asWhole)
+    Grid.TextMatrix(quantity, nkQuant) = Nomnom1.getQuantity(tbNomenk!quantity, asWhole)
+    Grid.TextMatrix(quantity, nkQuantPricise) = Round(tbNomenk!quantity, 5)
+    
+    Nomnom1.quantInProduct = tbNomenk!quantity
     'доступные остатки:
-    Grid.TextMatrix(quantity, nkDostup) = Round(nomencOstatkiToGrid(-1), 2)
+    Grid.TextMatrix(quantity, nkDostup) = Nomnom1.getQuantity(nomencOstatkiToGrid(-1, True), asWhole)
     If Regim = "ostat" Then
         Grid.TextMatrix(quantity, nkCurOstat) = Round(FO, 2)
     End If
@@ -2883,7 +3064,7 @@ If Not tbNomenk.BOF Then
     Grid.AddItem ""
     tbNomenk.MoveNext
   Wend
-  Grid.removeItem quantity + 1
+  Grid.RemoveItem quantity + 1
 End If
 tbNomenk.Close
 Grid.Visible = True
@@ -2892,8 +3073,11 @@ Me.MousePointer = flexDefault
 
 End Sub
 
+
+
+
 Sub loadKlassNomenk()
-Dim il As Long, S As Double, strWhere As String
+Dim IL As Long, S As Double, strWhere As String
 Dim beg As Double, prih As Double, rash As Double, oldNow As Double
 buntColumn = 0
 
@@ -2903,7 +3087,7 @@ If tv.SelectedItem.Key = "all" Then
     strWhere = ""
     quantity = 0
 Else
-  strWhere = "WHERE (((klassId)=" & gKlassId & "))"
+    strWhere = "WHERE klassId = " & gKlassId
 End If
 
 laGrid1.Caption = "Номенклатура из группы '" & tv.SelectedItem.Text & "'"
@@ -2925,33 +3109,38 @@ Else
 End If
 
 
-sql = "SELECT nomNom, nomName, Size, cod, ed_Izmer, ed_Izmer2, perList " & _
-"From sGuideNomenk " & strWhere & " ORDER BY sGuideNomenk.nomNom ;"
+sql = "SELECT nomNom, nomName, Size, cod, ed_Izmer, ed_Izmer2, perList, ves " & _
+"From sGuideNomenk " & strWhere & " ORDER BY sGuideNomenk.nomNom"
 
 'Debug.Print sql
+Dim Nomnom1 As Nomnom
 
 Set tbNomenk = myOpenRecordSet("##103", sql, dbOpenDynaset)
 If tbNomenk Is Nothing Then GoTo EN1
 If Not tbNomenk.BOF Then
- tbNomenk.MoveFirst
- While Not tbNomenk.EOF
-    gNomNom = tbNomenk!nomNom
+  tbNomenk.MoveFirst
+  While Not tbNomenk.EOF
+
+    gNomNom = tbNomenk!Nomnom
+    Set Nomnom1 = nomnomCache.getNomnom(gNomNom, True)
+    
     quantity = quantity + 1
     Grid.TextMatrix(quantity, nkNomer) = gNomNom
     Grid.TextMatrix(quantity, nkName) = tbNomenk!cod & " " & _
         tbNomenk!nomName & " " & tbNomenk!Size
     
-    S = nomencOstatkiToGrid(-1) 'доступные остатки
-    Grid.TextMatrix(quantity, nkEdIzm) = tbNomenk!ed_Izmer
+    S = nomencOstatkiToGrid(-1, True)  'доступные остатки
+    Grid.TextMatrix(quantity, nkEdIzm) = Nomnom1.getEdizm(asWhole)
+    
     If Regim = "fromDocs" Then
         If sDocs.isIntMove() Then GoTo AA
         GoTo NXT:
     End If
-    Grid.TextMatrix(quantity, nkCurOstat) = Round(FO, 2)
-    Grid.TextMatrix(quantity, nkDostup) = Round(S, 2)
+    Grid.TextMatrix(quantity, nkCurOstat) = Nomnom1.getQuantity(FO, asWhole)
+    Grid.TextMatrix(quantity, nkDostup) = Nomnom1.getQuantity(S, asWhole)
     If Regim = "ostat" Then
       If cbInside.ListIndex = 0 Then 'склад1
-        Grid.TextMatrix(quantity, nkDostup) = Round(nomencOstatkiToGrid(-1) / tbNomenk!perlist, 2)
+        Grid.TextMatrix(quantity, nkDostup) = Round(nomencOstatkiToGrid(-1, True) / tbNomenk!perlist, 2)
         Grid.TextMatrix(quantity, nkCurOstat) = Round(FO / tbNomenk!perlist, 2)
 AA:     Grid.TextMatrix(quantity, nkEdIzm) = tbNomenk!ed_Izmer2
       End If
@@ -2959,8 +3148,9 @@ AA:     Grid.TextMatrix(quantity, nkEdIzm) = tbNomenk!ed_Izmer2
 NXT:
     Grid.AddItem ""
     tbNomenk.MoveNext
+    'Unload Nomnom1
  Wend
- If quantity > 0 Then Grid.removeItem quantity + 1
+ If quantity > 0 Then Grid.RemoveItem quantity + 1
 End If
 tbNomenk.Close
 
@@ -2970,7 +3160,7 @@ Me.MousePointer = flexDefault
 End Sub
 
 Sub loadSeriaProduct()
-Dim il As Long, strWhere As String
+Dim IL As Long, strWhere As String
 
 If tv.SelectedItem.Key = "k0" Then
     gSeriaId = 0
@@ -2986,7 +3176,7 @@ quantity3 = 0
 Grid3.Visible = False
 splLeftH.Visible = False
 clearGrid Grid3
-il = 0
+IL = 0
 
 strWhere = " WHERE sGuideProducts.prSeriaId = " & gSeriaId _
     & " and exists (select 1 from sproducts where sproducts.productid = sGuideProducts.prId)"
@@ -3010,7 +3200,7 @@ If Not tbProduct.BOF Then
     Grid3.AddItem ""
     tbProduct.MoveNext
  Wend
- Grid3.removeItem quantity3 + 1
+ Grid3.RemoveItem quantity3 + 1
 End If
 tbProduct.Close
 Grid3.Visible = True
@@ -3047,7 +3237,7 @@ End If
 tbQuant.Enabled = False
 laQuant.Enabled = False
 laBegin.Visible = False
-If opProduct.value Then
+If opProduct.Value Then
     gSeriaId = Mid$(tv.SelectedItem.Key, 2)
     loadSeriaProduct
     Grid3.Visible = True
