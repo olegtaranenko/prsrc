@@ -858,6 +858,9 @@ Set meForm = frmRemark.Parent
             frmRemark.Left = meForm.Width - frmRemark.Width
         End If
     End If
+    If frmRemark.Left < 0 Then
+        frmRemark.Left = 0
+    End If
 
 End Sub
 

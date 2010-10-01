@@ -1078,6 +1078,10 @@ Private Sub Form_Unload(Cancel As Integer)
 End Sub
 
 
+Private Sub Frame_DragDrop(Index As Integer, Source As Control, X As Single, Y As Single)
+
+End Sub
+
 Private Sub Grid_Click()
 mousCol = Grid.MouseCol
 mousRow = Grid.MouseRow
@@ -1140,22 +1144,7 @@ ElseIf mousCol = bfBayInfo Then
     If tbFirms Is Nothing Then End
     BayInfoInit
     
-    If Grid.CellTop + Frame(1).Height < Grid.Height Then
-        Frame(1).Top = Grid.CellTop + Grid.Top + Grid.CellHeight
-    Else
-        Frame(1).Top = Grid.CellTop + Grid.Top - Frame(1).Height '+ Grid.CellHeight
-    End If
-    Dim shiftRight As Long
-    If Frame(1).Top < 0 Then
-        Frame(1).Top = 0
-        shiftRight = Grid.CellWidth
-    End If
-    
-    Frame(1).Left = Grid.CellLeft + Grid.Left + shiftRight
-    If Frame(1).Left + Frame(1).Width > Me.Width Then
-        Frame(1).Left = Me.Width - Frame(1).Width
-    End If
-    tbFirms.Close
+    positionMemoFrame Me.Grid, Frame(1)
     
     Frame(1).Visible = True
     Frame(1).ZOrder

@@ -25,6 +25,7 @@ CREATE VIEW vw_Reestr (
 	,StatO
 	,equip
 	,equipId
+	,remark
 ) as
 SELECT 
 	o.numOrder
@@ -48,6 +49,7 @@ SELECT
 	,oe.StatO
 	,e.equipName
 	,oe.equipId
+	,o.remark
 FROM Orders o
 	JOIN OrdersEquip       oe ON o.numOrder = oe.numOrder
 	JOIN GuideEquip         e ON e.equipId  = oe.equipId

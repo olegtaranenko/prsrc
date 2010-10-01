@@ -13,6 +13,56 @@ Begin VB.Form WerkOrders
    ScaleHeight     =   5784
    ScaleWidth      =   11880
    StartUpPosition =   2  'CenterScreen
+   Begin VB.Frame frmRemark 
+      BorderStyle     =   0  'None
+      Caption         =   "Frame1"
+      Height          =   3675
+      Left            =   6840
+      TabIndex        =   18
+      Top             =   1080
+      Visible         =   0   'False
+      Width           =   4755
+      Begin VB.TextBox tbType 
+         Height          =   2835
+         Left            =   120
+         MultiLine       =   -1  'True
+         ScrollBars      =   2  'Vertical
+         TabIndex        =   21
+         Top             =   240
+         Width           =   4515
+      End
+      Begin VB.CommandButton cmCancel 
+         Caption         =   "Cancel"
+         Height          =   315
+         Left            =   3600
+         TabIndex        =   20
+         Top             =   3240
+         Width           =   795
+      End
+      Begin VB.CommandButton cmOk 
+         Caption         =   "Ok"
+         Height          =   315
+         Left            =   660
+         TabIndex        =   19
+         Top             =   3240
+         Width           =   915
+      End
+      Begin VB.Label Label3 
+         Caption         =   "Примечание к заказу"
+         Height          =   252
+         Left            =   360
+         TabIndex        =   23
+         Top             =   0
+         Width           =   1872
+      End
+      Begin VB.Label laNumorderRemark 
+         Height          =   252
+         Left            =   2280
+         TabIndex        =   22
+         Top             =   0
+         Width           =   912
+      End
+   End
    Begin VB.ComboBox cbEquips 
       Height          =   288
       Left            =   6000
@@ -259,6 +309,24 @@ sDocs.idWerk = idWerk
 sDocs.Show vbModal
 End Sub
 
+Private Sub cmCancel_Click()
+    frmRemark.Visible = False
+    Grid.Enabled = True
+    Grid.SetFocus
+End Sub
+
+
+Private Sub cmOk_Click()
+    orderUpdate "##19.3", "'" & tbType.Text & "'", "Orders", "Remark"
+    openOrdersRowToGrid "##activate", True
+    tqOrders.Close
+    frmRemark.Visible = False
+    Grid.Enabled = True
+    Grid.col = orRemark
+    Grid.SetFocus
+End Sub
+
+
 Private Sub cmPrint_Click()
 Me.PrintForm
 'Me.Height = 20000 это дает Err384, если форма уже максимизирована
@@ -317,7 +385,13 @@ colWdth(chDataVid) = Grid.ColWidth(chDataVid)
 colWdth(chVrVid) = Grid.ColWidth(chVrVid)
 colWdth(chFirma) = Grid.ColWidth(chFirma)
 colWdth(chIzdelia) = Grid.ColWidth(chIzdelia)
-colWdth(chLogo) = Grid.ColWidth(chLogo) + Grid.ColWidth(chDataRes)
+
+If chDetail.Value = 1 Then
+    colWdth(chLogo) = Grid.ColWidth(chLogo) + Grid.ColWidth(chDataRes)
+Else
+    colWdth(chLogo) = Grid.ColWidth(chLogo)
+End If
+
 
 Grid.Visible = False
 For IL = Grid.Rows To 3 Step -1
@@ -570,8 +644,12 @@ Grid.TextMatrix(werkRows, chNomZak) = gNzak & str
 If str <> "" Then colorGridRow Grid, werkRows, &HCCCCCC 'маркируем МО
 Grid.TextMatrix(werkRows, chM) = tbCeh!Manag
 Grid.TextMatrix(werkRows, chFirma) = tbCeh!Name
-Grid.TextMatrix(werkRows, chLogo) = tbCeh!Logo
-Grid.TextMatrix(werkRows, chIzdelia) = tbCeh!Product
+If idWerk = 1 Then
+    Grid.TextMatrix(werkRows, chRemark) = tbCeh!Remark
+Else
+    Grid.TextMatrix(werkRows, chLogo) = tbCeh!Logo
+    Grid.TextMatrix(werkRows, chIzdelia) = tbCeh!Product
+End If
 If tbCeh!StatusId = 5 Then ' отложен
     Grid.TextMatrix(werkRows, chProblem) = Problems(tbCeh!ProblemId)
 End If
@@ -622,8 +700,21 @@ For I = begWerkProblemId To lenProblem
     lbProblem.AddItem Problems(I)
 Next I
 
-Grid.FormatString = "    |<№ заказа|^М|Оборуд|Статус |>Вр.вып|>%вы|Проблемы|" & _
-"<Дата выдачи|<Вр.выд|<дата ресурса|<Заказчик|<Лого|<Изделия|№Дня|equipid"
+Dim gridHeaderStr As String
+gridHeaderStr = "    |<№ заказа|^М|Оборуд|Статус |>Вр.вып|>%вы|Проблемы|<Дата выдачи|<Вр.выд|<дата ресурса|<Заказчик" _
+
+If idWerk = 1 Then
+    gridHeaderStr = gridHeaderStr _
+        & "||<Примечание"
+Else
+    gridHeaderStr = gridHeaderStr _
+        & "|<Лого|<Изделия"
+End If
+
+gridHeaderStr = gridHeaderStr _
+    & "|№Дня|equipid"
+    
+Grid.FormatString = gridHeaderStr
 
 Grid.ColWidth(chM) = 270
 Grid.ColWidth(chVrVip) = 388
@@ -635,14 +726,19 @@ Grid.ColWidth(chDataRes) = 735
 Grid.ColWidth(chVrVid) = 330
 Grid.ColWidth(chDataVid) = 735
 Grid.ColWidth(chFirma) = 2000
-Grid.ColWidth(chLogo) = 1200
 Grid.ColWidth(chKey) = 0 ' ДЛЯ СОРТИРОВКИ по дате
 Grid.ColWidth(chEquipId) = 0
 Grid.ColWidth(0) = 0
 Grid.ColWidth(chNomZak) = 1000
-Grid.ColWidth(chIzdelia) = 2450
 
-    
+If idWerk = 1 Then
+    Grid.ColWidth(chLogo) = 0
+    Grid.ColWidth(chRemark) = 3650
+Else
+    Grid.ColWidth(chLogo) = 1200
+    Grid.ColWidth(chIzdelia) = 2450
+End If
+
 
 
 Timer1.Interval = 500
@@ -689,6 +785,7 @@ If Not (dostup = "a" Or dostup = "m" Or dostup = "" Or dostup = "b") Then
 End If
 isWerkOrders = False
 End Sub
+
 
 
 Private Sub Grid_Click()
