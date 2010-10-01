@@ -185,7 +185,7 @@ Me.MousePointer = flexHourglass
 
 If Not periodValid(tbStartDate, tbEndDate) Then Exit Sub
 
-If opKK.value Then
+If opKK.Value Then
     Report.Regim = "KK"
 Else
     Report.Regim = "RA"
