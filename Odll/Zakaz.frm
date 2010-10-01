@@ -13,6 +13,7 @@ Begin VB.Form Zakaz
    LinkTopic       =   "Form2"
    MaxButton       =   0   'False
    MinButton       =   0   'False
+   Picture         =   "Zakaz.frx":0000
    ScaleHeight     =   5904
    ScaleWidth      =   9468
    ShowInTaskbar   =   0   'False
@@ -22,7 +23,7 @@ Begin VB.Form Zakaz
       Height          =   315
       Index           =   0
       Left            =   360
-      TabIndex        =   30
+      TabIndex        =   29
       Top             =   5520
       Visible         =   0   'False
       Width           =   510
@@ -31,16 +32,16 @@ Begin VB.Form Zakaz
       BackColor       =   &H8000000A&
       Caption         =   "Цех"
       Height          =   255
-      Left            =   6480
-      TabIndex        =   29
-      Top             =   5280
+      Left            =   6720
+      TabIndex        =   28
+      Top             =   0
       Visible         =   0   'False
       Width           =   675
    End
    Begin MSFlexGridLib.MSFlexGrid Grid 
       Height          =   4572
       Left            =   120
-      TabIndex        =   27
+      TabIndex        =   26
       Top             =   360
       Visible         =   0   'False
       Width           =   6312
@@ -49,22 +50,12 @@ Begin VB.Form Zakaz
       _Version        =   393216
       AllowUserResizing=   1
    End
-   Begin VB.CommandButton cmNewUklad 
-      BackColor       =   &H8000000A&
-      Caption         =   "Новая укладка"
-      Height          =   375
-      Left            =   6480
-      TabIndex        =   26
-      Top             =   5640
-      Visible         =   0   'False
-      Width           =   1335
-   End
    Begin VB.ComboBox cbO 
       Enabled         =   0   'False
       Height          =   315
-      ItemData        =   "Zakaz.frx":0000
+      ItemData        =   "Zakaz.frx":0342
       Left            =   8160
-      List            =   "Zakaz.frx":000D
+      List            =   "Zakaz.frx":034F
       Style           =   2  'Dropdown List
       TabIndex        =   6
       Top             =   2940
@@ -73,9 +64,9 @@ Begin VB.Form Zakaz
    Begin VB.ComboBox cbM 
       Enabled         =   0   'False
       Height          =   315
-      ItemData        =   "Zakaz.frx":0026
+      ItemData        =   "Zakaz.frx":0368
       Left            =   6660
-      List            =   "Zakaz.frx":0033
+      List            =   "Zakaz.frx":0375
       Style           =   2  'Dropdown List
       TabIndex        =   5
       Top             =   2940
@@ -276,20 +267,37 @@ Begin VB.Form Zakaz
       Height          =   252
       Index           =   0
       Left            =   120
-      TabIndex        =   31
+      TabIndex        =   30
       Top             =   5520
       Visible         =   0   'False
       Width           =   252
    End
-   Begin VB.Label Label1 
+   Begin VB.Label lbEquip 
       BackColor       =   &H8000000A&
       Caption         =   "Label1"
-      Height          =   195
-      Left            =   8340
-      TabIndex        =   28
-      Top             =   5760
-      Visible         =   0   'False
-      Width           =   1095
+      BeginProperty Font 
+         Name            =   "MS Sans Serif"
+         Size            =   12
+         Charset         =   204
+         Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   312
+      Left            =   1680
+      TabIndex        =   31
+      Top             =   5100
+      Width           =   3852
+   End
+   Begin VB.Label Label1 
+      BackColor       =   &H8000000A&
+      Caption         =   "Оборудование"
+      Height          =   192
+      Left            =   120
+      TabIndex        =   27
+      Top             =   5160
+      Width           =   1212
    End
    Begin VB.Label laMO 
       BackColor       =   &H8000000A&
@@ -415,11 +423,11 @@ Begin VB.Form Zakaz
    End
    Begin VB.Label laMess 
       BackColor       =   &H8000000A&
-      Height          =   432
-      Left            =   420
+      Height          =   732
+      Left            =   5820
       TabIndex        =   16
-      Top             =   4980
-      Width           =   5832
+      Top             =   5160
+      Width           =   2472
    End
 End
 Attribute VB_Name = "Zakaz"
@@ -992,18 +1000,18 @@ Dim noClick As Boolean
 
 'If FormIsActiv Then Zakaz.cmZapros.Enabled = True
 Dim I As Integer
-
+'Exit Sub
 statusIdNew = statId(cbStatus.ListIndex)
 
-cmZapros.Enabled = statusIdOld <> statusIdNew
+'cmZapros.Enabled = statusIdOld <> statusIdNew
 
-For I = 0 To UBound(Equip) - 1
-    If ckCehDone(I).Tag = CStr(statusIdNew) Then
-        ckCehDone(I).Value = 1
-    Else
-        ckCehDone(I).Value = 0
-    End If
-Next I
+'For I = 0 To UBound(Equip) - 1
+'    If ckCehDone(I).Tag = CStr(statusIdNew) Then
+'        ckCehDone(I).Value = 1
+'    Else
+'        ckCehDone(I).Value = 0
+'    End If
+'Next I
 
 tbWorktime.Text = zakazBean.Worktime
 If Not IsNull(zakazBean.DateRS) Then
@@ -1902,8 +1910,8 @@ Private Sub Timer1_Timer()
 tiki = tiki - 1
 If tiki > 0 Then
     laMess.ForeColor = 0
-    laMess.Caption = "Для нажатия на кнопку <Ok>" & Chr(13) & Chr(10) & _
-    "у Вас осталось несколько секунд: " & tiki
+    laMess.Caption = "Для нажатия на кнопку <Ok>" & _
+    " у Вас осталось несколько секунд: " & tiki
     Timer1.Interval = 1000 ' 1c
 Else
     Timer1.Enabled = False
@@ -1970,16 +1978,18 @@ Else
     
 End If
     
-    zagruzFromCeh idEquip, gNzak '              1| в delta(), Ostatki() !!! кроме текущего
-    getResurs idEquip
-    Me.lvAddDays  ' добавляем стороки и даты
-    For I = 1 To maxDay
-        Me.lv.ListItems("k" & I).SubItems(zkPrinato) = Round(getNevip(I, idEquip), 1)
-        Me.lv.ListItems("k" & I).SubItems(zkResurs) = Round(nomRes(I) * KPD * Nstan, 1)
-    Next I
-    Me.lv.ListItems("k1").SubItems(zkResurs) = Round(nr * Nstan * KPD, 1)
+zagruzFromCeh idEquip, gNzak '              1| в delta(), Ostatki() !!! кроме текущего
+getResurs idEquip
+
+Me.lvAddDays  ' добавляем стороки и даты
+For I = 1 To maxDay
+    Me.lv.ListItems("k" & I).SubItems(zkPrinato) = Round(getNevip(I, idEquip), 1)
+    Me.lv.ListItems("k" & I).SubItems(zkResurs) = Round(nomRes(I) * KPD * Nstan, 1)
+Next I
+Me.lv.ListItems("k1").SubItems(zkResurs) = Round(nr * Nstan * KPD, 1)
 
    
+lbEquip.Caption = EquipFullName(idEquip)
 If statusIdOld = 0 Or statusIdOld = 7 Then 'принят или аннулир
     neVipolnen = 0
     neVipolnen_O = 0
@@ -2059,7 +2069,7 @@ Next I
 cbBuildStatuses Me.cbStatus, statusIdOld
 
 For I = 0 To Me.cbStatus.ListCount
-    If statId(I) = statusIdOld Then
+    If statId(I) = zakazBean.statusEquipID Then
         Me.cbStatus.ListIndex = I
         GoTo NN
     End If
@@ -2068,7 +2078,7 @@ Next I
 MsgBox "Err in Zakaz\startParams"
 NN:
 
-Me.cmZapros.Enabled = IsNumeric(tbWorktime.Text) And IsDate(tbReadyDate)
+Me.cmZapros.Enabled = (IsNumeric(tbWorktime.Text) And IsDate(tbReadyDate)) Or statusIdNew = 0
 
 Me.lv.ListItems("k" & stDay).ForeColor = &HBB00&
 Me.lv.ListItems("k" & stDay).Bold = True

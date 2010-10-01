@@ -36,7 +36,7 @@ Public StatM As Variant         'String OrdersInCeh
 Public StatO As Variant         'String OrdersEquip
 Public nevip As Variant         'Double OrdersInCeh
 Public urgent As String         'Variant OrdersInCeh
-Public equipStatusSync As Integer     ' показывает, что статусы по оборудованиям рассогласованы
+Public equipStatusSync As Integer     ' 1 - статусы по оборудованиям рассогласованы, 0 - согласованы
 
 Public m_lastModified As Variant        ' Date
 Public m_lastModifiedEquip As Variant   ' Date
@@ -122,6 +122,7 @@ Dim currentLastModified As Date
         m_lastManagId = tbOrders!lastManagId
         m_lastManagEquipId = tbOrders!lastManagEquipId
         
+' PresentationFormat = 1 сокращенный, для чтения информации по Оборудованию?
         If tbOrders!presentationFormat = 1 Then
             
             If Not IsNull(tbOrders!lastModifiedEquip) Then
