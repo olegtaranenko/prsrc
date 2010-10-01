@@ -5,7 +5,7 @@ Begin VB.Form Zakaz
    BackColor       =   &H8000000A&
    BorderStyle     =   3  'Fixed Dialog
    Caption         =   "Перемещение заказа в цеховую сводку"
-   ClientHeight    =   5904
+   ClientHeight    =   5892
    ClientLeft      =   48
    ClientTop       =   336
    ClientWidth     =   9468
@@ -14,7 +14,7 @@ Begin VB.Form Zakaz
    MaxButton       =   0   'False
    MinButton       =   0   'False
    Picture         =   "Zakaz.frx":0000
-   ScaleHeight     =   5904
+   ScaleHeight     =   5892
    ScaleWidth      =   9468
    ShowInTaskbar   =   0   'False
    StartUpPosition =   2  'CenterScreen
@@ -272,6 +272,33 @@ Begin VB.Form Zakaz
       Visible         =   0   'False
       Width           =   252
    End
+   Begin VB.Label laStatusId 
+      BackColor       =   &H8000000A&
+      Caption         =   "Статус заказа"
+      Height          =   432
+      Left            =   3240
+      TabIndex        =   33
+      Top             =   5040
+      Width           =   732
+   End
+   Begin VB.Label laStatusText 
+      BackColor       =   &H8000000A&
+      Caption         =   "Label1"
+      BeginProperty Font 
+         Name            =   "MS Sans Serif"
+         Size            =   12
+         Charset         =   204
+         Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   312
+      Left            =   4080
+      TabIndex        =   32
+      Top             =   5040
+      Width           =   1692
+   End
    Begin VB.Label lbEquip 
       BackColor       =   &H8000000A&
       Caption         =   "Label1"
@@ -285,19 +312,19 @@ Begin VB.Form Zakaz
          Strikethrough   =   0   'False
       EndProperty
       Height          =   312
-      Left            =   1680
+      Left            =   1200
       TabIndex        =   31
-      Top             =   5100
-      Width           =   3852
+      Top             =   5040
+      Width           =   1932
    End
    Begin VB.Label Label1 
       BackColor       =   &H8000000A&
-      Caption         =   "Оборудование"
-      Height          =   192
-      Left            =   120
+      Caption         =   "Обору- дование"
+      Height          =   432
+      Left            =   240
       TabIndex        =   27
-      Top             =   5160
-      Width           =   1212
+      Top             =   5040
+      Width           =   852
    End
    Begin VB.Label laMO 
       BackColor       =   &H8000000A&
@@ -484,7 +511,7 @@ Dim Left As String, Rollback As String, Worktime As String, Outdatetime As Strin
 
 Dim Item As ListItem, str As String
     str = Format(DateAdd("d", I - 1, curDate), "dd/mm/yy")
-    Set Item = Zakaz.lv.ListItems.Add(, "k" & I, str)
+    Set Item = lv.ListItems.Add(, "k" & I, str)
     day = Weekday(DateAdd("d", I - 1, curDate))
     If day = vbSunday Or day = vbSaturday Then Item.ForeColor = &HFF
 End Sub
@@ -509,7 +536,7 @@ End Sub
 Private Sub cbM_Click()
 cmZapros.Enabled = True
 If cbM.Text = "в работе" Or cbM.Text = "готов" Then
-    If FormIsActiv Then Zakaz.cmZapros.Enabled = True
+    If FormIsActiv Then cmZapros.Enabled = True
     laDateMO.Enabled = True
     tbDateMO.Enabled = True
 ElseIf Not (cbO.Text = "в работе" Or cbO.Text = "готов") Then
@@ -522,7 +549,7 @@ End Sub
 Private Sub cbO_Click()
 cmZapros.Enabled = True
 If cbO.Text = "в работе" Or cbO.Text = "готов" Then
-    If FormIsActiv Then Zakaz.cmZapros.Enabled = True
+    If FormIsActiv Then cmZapros.Enabled = True
     laDateMO.Enabled = True
     tbDateMO.Enabled = True
     laVrVipO.Enabled = True
@@ -981,12 +1008,13 @@ If Grid.MouseRow = 0 And Shift = 2 Then _
 
 End Sub
 
+
 Private Sub laNomZak_Click()
     Dim Left As String, Worktime As String, tbWorktime As String, Rollback As String, Value
 End Sub
 
 Private Sub tbDateMO_GotFocus()
-'If FormIsActiv Then Zakaz.cmZapros.Enabled = True
+'If FormIsActiv Then cmZapros.Enabled = True
 If tbDateMO.Text = "" Then
     tbDateMO.Text = Format(curDate, "dd/mm/yy")
 End If
@@ -1000,10 +1028,10 @@ Private Sub cbStatus_Click()
 If noClick Then
     Exit Sub
 End If
-'If FormIsActiv Then Zakaz.cmZapros.Enabled = True
+'If FormIsActiv Then cmZapros.Enabled = True
 Dim I As Integer
 'Exit Sub
-statusIdNew = statId(cbStatus.ListIndex)
+statusIdNew = cbStatus.ItemData(cbStatus.ListIndex)
 
 'cmZapros.Enabled = statusIdOld <> statusIdNew
 
@@ -1024,8 +1052,15 @@ If Not IsNull(zakazBean.Outdatetime) Then
     tbReadyDate.Text = Format(zakazBean.Outdatetime, "dd.mm.yy")
 End If
 
+setTheControls cbStatus.ItemData(cbStatus.ListIndex)
 
-If cbStatus.Text = "в работе" Then
+End Sub
+
+
+
+Private Sub setTheControls(equipStatusId As Integer)
+
+If equipStatusId = 1 Then 'cbStatus.Text = "в работе" Then
     laMO.Enabled = False
     cbM.Enabled = False
     cbO.Enabled = False
@@ -1035,7 +1070,7 @@ If cbStatus.Text = "в работе" Then
     tbWorktime.SelStart = 0
     tbWorktime.SelLength = Len(tbWorktime.Text)
     'tbWorktime.SetFocus
-ElseIf cbStatus.Text = "согласов" Then
+ElseIf equipStatusId = 3 Then 'cbStatus.Text = "согласов" Then
     cbM.Enabled = True
     cbO.Enabled = True
     laMO.Enabled = True
@@ -1048,20 +1083,20 @@ Else
     tbVrVipO.Enabled = False
 End If
 
-If cbStatus.Text = "согласов" Or cbStatus.Text = "резерв" Then
+If equipStatusId = 2 Or equipStatusId = 3 Then 'cbStatus.Text = "согласов" Or cbStatus.Text = "резерв" Then
     tbDateRS.Enabled = True             ' резерв согласование
     laDateRS.Enabled = True
-    Zakaz.laWorkTime.Enabled = True
-    Zakaz.laReadyDate.Enabled = True
-    Zakaz.tbReadyDate.Enabled = True
-    Zakaz.tbWorktime.Enabled = True
-ElseIf cbStatus.Text = "в работе" Or cbStatus.Text = "отложен" Then
+    laWorkTime.Enabled = True
+    laReadyDate.Enabled = True
+    tbReadyDate.Enabled = True
+    tbWorktime.Enabled = True
+ElseIf equipStatusId = 1 Or equipStatusId = 5 Then ' cbStatus.Text = "в работе" Or cbStatus.Text = "отложен" Then
     tbDateRS.Enabled = False
     laDateRS.Enabled = False
-    Zakaz.laWorkTime.Enabled = True
-    Zakaz.laReadyDate.Enabled = True
-    Zakaz.tbReadyDate.Enabled = True
-    Zakaz.tbWorktime.Enabled = True
+    laWorkTime.Enabled = True
+    laReadyDate.Enabled = True
+    tbReadyDate.Enabled = True
+    tbWorktime.Enabled = True
     If tbWorktime.Enabled And tbWorktime.Visible Then tbWorktime.SetFocus
 Else
     laWorkTime.Enabled = False
@@ -1464,7 +1499,7 @@ laMess.Caption = ""
 laMess.Visible = True
 isTimeZakaz = True
 perenos = 0
-I = statId(cbStatus.ListIndex)
+I = cbStatus.ItemData(cbStatus.ListIndex)
 
 If I = 7 Then ' аннулир.
     If Not Orders.do_Annul("no_Do") Then Exit Sub
@@ -1694,7 +1729,7 @@ laMess.Caption = ""
 zagruzFromCeh idEquip, gNzak ' в delta(), Ostatki()  !!!кроме gNzak
 
 tmpMaxDay = getResurs(idEquip)  ' выч-е nomRes()
-Zakaz.lvAddDays tmpMaxDay 'удаляем или добавляем последние строки(дни) в
+lvAddDays tmpMaxDay 'удаляем или добавляем последние строки(дни) в
 'таблице загрузки т.к. Менеджер м. пробывать разные даты выдачи
     
 For I = 1 To tmpMaxDay
@@ -1859,14 +1894,14 @@ startParams
 End Sub
 
 Private Sub tbDateRS_GotFocus()
-If FormIsActiv Then Zakaz.cmZapros.Enabled = True
+If FormIsActiv Then cmZapros.Enabled = True
 tbDateRS.SelStart = 0
 tbDateRS.SelLength = 2
 
 End Sub
 
 Private Sub tbReadyDate_GotFocus()
-'If FormIsActiv Then Zakaz.cmZapros.Enabled = True
+'If FormIsActiv Then cmZapros.Enabled = True
 tbReadyDate.SelStart = 0
 tbReadyDate.SelLength = 2
 
@@ -1899,13 +1934,13 @@ End Sub
 
 Private Sub tbVrVipO_Change()
 If FormIsActiv Then
-    Zakaz.cmZapros.Enabled = True
+    cmZapros.Enabled = True
 End If
 End Sub
 
 Private Sub tbWorktime_Change()
 If FormIsActiv Then
-    Zakaz.cmZapros.Enabled = True
+    cmZapros.Enabled = True
     workChange = True
 End If
 End Sub
@@ -2011,6 +2046,8 @@ Me.lv.ListItems("k1").SubItems(zkResurs) = Round(nr * Nstan * KPD, 1)
 
    
 lbEquip.Caption = EquipFullName(idEquip)
+laStatusText.Caption = Status(zakazBean.StatusId)
+
 Me.tbWorktime.Text = zakazBean.Worktime
 
 If statusIdOld = 0 Or statusIdOld = 7 Then 'принят или аннулир
@@ -2028,10 +2065,11 @@ Else
     Me.tbReadyDate.Text = Format(zakazBean.Outdatetime, "dd.mm.yy")
           
     V = zakazBean.StatM
+    noClick = True
     If cbMOsetByText(Me.cbM, V) Then
         Me.tbDateMO.Text = Format(zakazBean.DateTimeMO, "dd.mm.yy")
     End If
-    
+    noClick = False
      
     V = zakazBean.StatO
     If cbMOsetByText(Me.cbO, V) Then
@@ -2091,7 +2129,7 @@ Next I
 cbBuildStatuses Me.cbStatus, zakazBean.StatusId
 
 For I = 0 To Me.cbStatus.ListCount
-    If statId(I) = zakazBean.statusEquipID Then
+    If cbStatus.ItemData(I) = zakazBean.statusEquipID Then
         noClick = True
         Me.cbStatus.ListIndex = I
         noClick = False

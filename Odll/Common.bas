@@ -43,7 +43,7 @@ Public werkSourceId() As Integer
 Public gWerkId As Integer
 Public gEquipId As Integer
 Public Const lenStatus = 20
-Public statId(lenStatus) As Integer
+
 Public Status(lenStatus) As String
 Public lenProblem As Integer
 Public Problems(20) As String
@@ -2171,15 +2171,15 @@ End Function
 
 
 Sub visits(oper As String, Optional firm As String = "") '$$3
-Dim str As String, I As Integer, statId As Integer
+Dim str As String, I As Integer, myStatId As Integer
 
 sql = "SELECT Orders.inDate, Orders.StatusId , Orders.FirmId From Orders " & _
 "WHERE Orders.numOrder = " & gNzak
 'MsgBox sql
-If Not byErrSqlGetValues("##88", sql, tmpDate, statId, I) Then GoTo ER1
+If Not byErrSqlGetValues("##88", sql, tmpDate, myStatId, I) Then GoTo ER1
 
 If I = 0 Then Exit Sub
-If firm <> "" And (statId = 0 Or statId = 7) Then Exit Sub ' если меняем фирму
+If firm <> "" And (myStatId = 0 Or myStatId = 7) Then Exit Sub ' если меняем фирму
 
 str = getYearField(tmpDate)
 
@@ -2761,17 +2761,15 @@ Dim I As Integer
     End If
 End Function
 
-Private Sub addToCbStatus(ByRef statusComboBox As ComboBox, id, Optional begin As String = "")
+Private Sub addToCbStatus(ByRef statusComboBox As ComboBox, id)
 
-    Static I As Integer
-    If begin <> "" Then I = 0
+    'Static I As Integer
     If id > lenStatus Then
         MsgBox "Err в Orders\addToCbStatus"
     End If
 
     statusComboBox.AddItem Status(id)
-    statId(I) = id
-    I = I + 1
+    statusComboBox.ItemData(statusComboBox.ListCount - 1) = id
 
 End Sub
     
@@ -2785,7 +2783,7 @@ Public Sub cbBuildStatuses(ByRef statusComboBox As ComboBox, ByRef statusIdOld A
         addToCbStatus statusComboBox, 6 '"закрыт"
     End If
     
-    addToCbStatus statusComboBox, 7, "b" '"аннулир."
+    addToCbStatus statusComboBox, 7 ', "b" '"аннулир."
     If statusIdOld = 5 Then
         addToCbStatus statusComboBox, 5    '"отложен"
     ElseIf statusIdOld = 8 Then
@@ -2804,8 +2802,9 @@ Public Sub cbBuildStatuses(ByRef statusComboBox As ComboBox, ByRef statusIdOld A
 End Sub
 
 Public Function cbMOsetByText(cb As ComboBox, Status As Variant, Optional baseIndex As Integer = 1) As Boolean
-    cbMOsetByText = False
 Dim I As Integer, txt As String
+    If noClick Then Exit Function
+    cbMOsetByText = False
     txt = ""
     If Not IsNull(Status) Then txt = CStr(Status)
     If txt = "готов" Then

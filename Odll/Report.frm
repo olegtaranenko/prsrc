@@ -535,14 +535,14 @@ Table.Close
 End Sub
 '$odbc15$
 Function getCountAndSumm(id As Integer, Stat As String) As Integer
-Dim strWhere As String, statId As String, str As String, I As Integer, J As Integer
+Dim strWhere As String, myStatId As String, str As String, I As Integer, J As Integer
 getCountAndSumm = 0
 workSum = 0
 paidSum = 0
 If Stat = "All" Then
-    statId = 7
+    myStatId = 7
 Else
-    statId = 6
+    myStatId = 6
 End If
 
 str = Reports.tbStartDate2.Text
@@ -560,7 +560,7 @@ strWhere = strWhere & " And (Orders.inDate)< '" & Format(J, "0000") & _
 
 sql = "SELECT Count(Orders.numOrder) AS Kolvo, Sum(Orders.workTime) " & _
 "AS Sum_workTime, Sum(Orders.paid) AS Sum_paid   From Orders " & _
-"WHERE (((Orders.ManagId)=" & id & ") AND ((Orders.StatusId)<" & statId & _
+"WHERE (((Orders.ManagId)=" & id & ") AND ((Orders.StatusId)<" & myStatId & _
 ") AND ((Orders.inDate)>=" & strWhere & "));"
 'MsgBox sql
 Set tbOrders = myOpenRecordSet("##74", sql, dbOpenForwardOnly)

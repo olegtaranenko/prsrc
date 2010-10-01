@@ -373,53 +373,6 @@ Private Sub cbM_Change()
 Dim I As Integer
 End Sub
 
-Private Sub cbStatus_Click_weg()
-Dim I As Integer
-
-    
-    currStatusId = statId(cbStatus.ListIndex)
-
-    laMO.Enabled = False
-    cbM.Enabled = False
-    cbO.Enabled = False
-    tbDateMO.Enabled = False
-    tbDateRS.Enabled = False
-    laDateRS.Enabled = False
-    If currStatusId = 1 Then ' "в работе"
-    
-    ElseIf currStatusId = 2 Then ' "резерв"
-        laDateRS.Enabled = True
-        tbDateRS.Enabled = True
-    ElseIf currStatusId = 3 Then ' "согласов"
-'        cbM.Enabled = True
-'        cbO.Enabled = True
-        laMO.Enabled = True
-        laDateRS.Enabled = True
-        tbDateRS.Enabled = True
-    Else
-        laMO.Enabled = False
-        cbM.Enabled = False
-        cbO.Enabled = False
-        tbDateMO.Enabled = False
-    End If
-    
-    Dim hasVisible As Boolean, isVisible As Boolean
-    For I = 0 To cbEquipment.UBound
-        isVisible = setVisibleByEquipment(I, False)
-        If Not hasVisible Then
-            hasVisible = isVisible
-        End If
-    Next I
-    
-    'If hasVisible Then
-    '    laWorktimeO.Visible = True
-    'Else
-    '    laWorktimeO.Visible = False
-    'End If
-    
-End Sub
-
-
 
 Private Sub cmApply_Click()
     Dim I As Integer

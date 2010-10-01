@@ -3674,6 +3674,7 @@ sql = rowFromOrdersSQL & Where & " ORDER BY o.inDate"
 
 'MsgBox getSqlWhere
 'Debug.Print sql
+ noClick = True
 Set tqOrders = myOpenRecordSet("##08", sql, dbOpenForwardOnly)
 If tqOrders Is Nothing Then myBase.Close: End
 If Not tqOrders.BOF Then
@@ -3689,7 +3690,6 @@ While Not tqOrders.EOF
  zakazNum = zakazNum + 1
  
  Grid.TextMatrix(zakazNum, orNomZak) = numZak
- noClick = True
     If Not IsNull(tqOrders!id_bill) Then
          Grid.col = orFirma
          Grid.row = zakazNum
@@ -3736,7 +3736,6 @@ While Not tqOrders.EOF
         Grid.CellForeColor = &H8800& ' т.зел.
     End If
  End If '*************************************
- noClick = False
 
  Dim zakIndex As Long
  zakIndex = getZakazVOIndex(numZak)
@@ -3751,6 +3750,7 @@ End If 'Not tqOrders.BOF
 loadBaseTimestamp = Now()
 NXT2:
 tqOrders.Close '*********************************************
+ noClick = False
 
 laInform.Caption = " кол-во зап.: " & zakazNum
 rowViem zakazNum, Grid
