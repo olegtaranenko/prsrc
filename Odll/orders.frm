@@ -2222,23 +2222,6 @@ ElseIf mousCol = orStatus Then
    ElseIf StatusId = 7 Then ' "аннулирован"
      listBoxInGridCell lbDel, Grid, "select"
    ElseIf Grid.TextMatrix(mousRow, orEquip) <> "" Then
-        If StatusId = 1 Then 'в работе                                 $$1
-            Dim hasRecord As Integer, WerkId As Integer
-            sql = "SELECT 1, sum(isnull(oe.Nevip, 1) * oe.worktime) as nevip, o.werkId " _
-                & "   from Orders o " _
-                & " JOIN OrdersEquip oe on oe.Numorder = o.Numorder" _
-                & " WHERE o.Numorder = " & gNzak _
-                & " GROUP BY o.numorder, o.werkId"
-                
-            
-            byErrSqlGetValues "W#373", sql, hasRecord, neVipolnen
-            If hasRecord = 1 Then
-                neVipolnen = Round(neVipolnen, 2)    '$$1
-            Else
-                neVipolnen = 0
-            End If
-            
-        End If
         
         Zakaz.Regim = ""
         Zakaz.festStatusId = StatusId

@@ -53,7 +53,6 @@ Public Managers() As MapEntry
 
 Public insideId() As String
 Public Const begWerkProblemId = 10 ' начало цеховых проблем в справочнике
-Public neVipolnen As Double, neVipolnen_O As Double
 Public maxDay As Integer ' число дней в реестре
 Public befDays As Integer ' число дней до даты реестра (когда сменилась дата), вычисляется как разница между текущим днем, и днем из последнего сохраненного System.lastNumorder
 Public webSvodkaPath As String
@@ -1584,11 +1583,11 @@ Set Grid = Orders.Grid
 If redraw Then
     Grid.col = orStatus
     Grid.row = row
-    'If tqOrders!equipStatusSync <> 0 Then
-    '    Grid.CellForeColor = vbRed
-    'Else
-    '    Grid.CellForeColor = vbBlack
-    'End If
+    If orderBean.equipStatusSync <> 0 Then
+        Grid.CellForeColor = vbRed
+    Else
+        Grid.CellForeColor = vbBlack
+    End If
 End If
 
  log = Format(Now(), "dd.mm.yy hh:nn") & vbTab & Orders.cbM.Text & " " & gNzak ' именно vbTab
