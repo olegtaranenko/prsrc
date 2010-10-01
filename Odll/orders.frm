@@ -15,6 +15,56 @@ Begin VB.Form Orders
    ScaleHeight     =   5952
    ScaleWidth      =   11880
    StartUpPosition =   2  'CenterScreen
+   Begin VB.Frame frmRemark 
+      BorderStyle     =   0  'None
+      Caption         =   "Frame1"
+      Height          =   3675
+      Left            =   6960
+      TabIndex        =   39
+      Top             =   1440
+      Visible         =   0   'False
+      Width           =   4755
+      Begin VB.CommandButton cmOk 
+         Caption         =   "Ok"
+         Height          =   315
+         Left            =   660
+         TabIndex        =   42
+         Top             =   3240
+         Width           =   915
+      End
+      Begin VB.CommandButton cmCancel 
+         Caption         =   "Cancel"
+         Height          =   315
+         Left            =   3600
+         TabIndex        =   41
+         Top             =   3240
+         Width           =   795
+      End
+      Begin VB.TextBox tbType 
+         Height          =   2835
+         Left            =   120
+         MultiLine       =   -1  'True
+         ScrollBars      =   2  'Vertical
+         TabIndex        =   40
+         Top             =   240
+         Width           =   4515
+      End
+      Begin VB.Label laNumorderRemark 
+         Height          =   252
+         Left            =   2280
+         TabIndex        =   44
+         Top             =   0
+         Width           =   912
+      End
+      Begin VB.Label Label3 
+         Caption         =   "Примечание к заказу"
+         Height          =   252
+         Left            =   360
+         TabIndex        =   43
+         Top             =   0
+         Width           =   1872
+      End
+   End
    Begin VB.ComboBox cbWerks 
       Height          =   288
       Left            =   8160
@@ -25,10 +75,10 @@ Begin VB.Form Orders
    Begin VB.ListBox lbSklad 
       Height          =   1008
       ItemData        =   "Orders.frx":030A
-      Left            =   9480
+      Left            =   5640
       List            =   "Orders.frx":031D
       TabIndex        =   36
-      Top             =   1920
+      Top             =   1680
       Visible         =   0   'False
       Width           =   1095
    End
@@ -885,12 +935,27 @@ ERR1:
 End Sub
 
 
-
-
 Private Sub cmExvel_Click()
-GridToExcel Grid
+    GridToExcel Grid
 End Sub
 
+
+Private Sub cmCancel_Click()
+    frmRemark.Visible = False
+    Grid.Enabled = True
+    Grid.SetFocus
+End Sub
+
+
+Private Sub cmOk_Click()
+    orderUpdate "##19.2", "'" & tbType.Text & "'", "Orders", "Remark"
+    openOrdersRowToGrid "##activate", True
+    tqOrders.Close
+    frmRemark.Visible = False
+    Grid.Enabled = True
+    Grid.col = orRemark
+    Grid.SetFocus
+End Sub
 
 Private Sub cmReestr_Click()
     Dim currentWerkId As Integer, newWerkId As Integer
@@ -1719,6 +1784,7 @@ Private Sub Form_Unload(Cancel As Integer)
 
 End Sub
 
+
 Private Sub Grid_Compare(ByVal Row1 As Long, ByVal Row2 As Long, Cmp As Integer)
 Dim date1 As Date, date2 As Date ' в 2 х местах
 Dim date1S, date2S As String
@@ -2254,8 +2320,24 @@ ElseIf mousCol = orTema Then
 ElseIf mousCol = orVrVid Or mousCol = orMOVrVid Or mousCol = orLogo _
 Or mousCol = orIzdelia Or mousCol = orType Or mousCol = orInvoice Then
     textBoxInGridCell tbMobile, Grid
+ElseIf orRemark = mousCol Then
+    '
+    Grid.Enabled = False
+
+    positionMemoFrame Me.Grid, frmRemark
+    Dim myRemark As String
+    laNumorderRemark.Caption = gNzak
+    
+    sql = "select remark from orders where numorder = " & gNzak
+    byErrSqlGetValues "##19.1", sql, myRemark
+    tbType.Text = myRemark
+    
+    frmRemark.Visible = True
+    tbType.SetFocus
+    frmRemark.ZOrder
+
 ElseIf mousCol = orOplacheno Or mousCol = orZalog Or mousCol = orNal Or mousCol = orRate _
-        Or orRemark = mousCol Or orPlaces = mousCol Or orSize = mousCol _
+        Or orPlaces = mousCol Or orSize = mousCol _
 Then
     textBoxInGridCell tbMobile, Grid
 ElseIf mousCol = orZakazano Then
@@ -2432,6 +2514,7 @@ If Grid.MouseRow = 0 And Shift = 2 Then
         MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
 End If
 End Sub
+
 
 
 Private Sub lbAnnul_DblClick()
@@ -3975,6 +4058,17 @@ Function copyRowToGrid(row As Long, ByVal Numorder As Long, ByVal zakIndex As Lo
     'Grid.col = saveCol
  End If
 End Function
+
+Private Sub tbType_KeyDown(KeyCode As Integer, Shift As Integer)
+    If KeyCode = vbKeyEscape Then
+        cmCancel_Click
+        Exit Sub
+    End If
+    If KeyCode = vbKeyReturn And Shift = 2 Then
+        cmOk_Click
+        Exit Sub
+    End If
+End Sub
 
 Private Sub Timer1_Timer()
 minut = minut - 1

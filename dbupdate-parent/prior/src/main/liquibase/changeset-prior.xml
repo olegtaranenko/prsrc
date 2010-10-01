@@ -2811,5 +2811,13 @@ where firmguide.werkid not in (1,2 )
 		]]></sql>
 	</changeSet>
 
+	<changeSet id="1" author="mantis-216" runOnChange="false">
+		<modifyColumn tableName="Orders">
+			<column name="Remark" type="long varchar"/>
+		</modifyColumn>
+	</changeSet>
+
+
+
 </databaseChangeLog>
 

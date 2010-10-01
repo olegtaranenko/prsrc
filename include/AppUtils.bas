@@ -829,3 +829,35 @@ Function makeCsvFilePath(csvFileName As String) As String
     makeCsvFilePath = csvPath
 End Function
 
+
+
+' динамически располагает форму мемо так, чтобы была видна и ячейка грида
+Sub positionMemoFrame(ByRef Grid As MSFlexGrid, ByRef frmRemark As Frame)
+
+Dim meForm As VB.Form
+Set meForm = frmRemark.Parent
+
+    If Grid.CellTop + frmRemark.Height < Grid.Height Then
+        frmRemark.Top = Grid.CellTop + Grid.Top + Grid.CellHeight
+    Else
+        frmRemark.Top = Grid.CellTop + Grid.Top - frmRemark.Height '+ Grid.CellHeight
+    End If
+    Dim shiftRight As Long
+    If frmRemark.Top < 0 Then
+        frmRemark.Top = 0
+        shiftRight = Grid.CellWidth
+    Else
+    
+    End If
+    
+    frmRemark.Left = Grid.CellLeft + Grid.Left + shiftRight
+    If frmRemark.Left + frmRemark.Width > meForm.Width Then
+        If frmRemark.Top = 0 Then
+            frmRemark.Left = Grid.CellLeft + Grid.Left - frmRemark.Width
+        Else
+            frmRemark.Left = meForm.Width - frmRemark.Width
+        End If
+    End If
+
+End Sub
+
