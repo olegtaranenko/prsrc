@@ -13,6 +13,15 @@ Begin VB.Form WerkOrders
    ScaleHeight     =   5784
    ScaleWidth      =   11880
    StartUpPosition =   2  'CenterScreen
+   Begin VB.CommandButton cmNakladZakaz 
+      Caption         =   "Накладная под заказ"
+      Enabled         =   0   'False
+      Height          =   315
+      Left            =   3480
+      TabIndex        =   24
+      Top             =   5340
+      Width           =   1932
+   End
    Begin VB.Frame frmRemark 
       BorderStyle     =   0  'None
       Caption         =   "Frame1"
@@ -65,15 +74,15 @@ Begin VB.Form WerkOrders
    End
    Begin VB.ComboBox cbEquips 
       Height          =   288
-      Left            =   6000
+      Left            =   6840
       TabIndex        =   16
       Top             =   5400
       Width           =   2652
    End
    Begin VB.CommandButton cmNaklad 
-      Caption         =   "Выписанные накладные"
+      Caption         =   "Накладные НЕ по заказу"
       Height          =   315
-      Left            =   1440
+      Left            =   1200
       TabIndex        =   15
       Top             =   5340
       Width           =   2175
@@ -115,7 +124,7 @@ Begin VB.Form WerkOrders
    Begin VB.CommandButton cmZagruz 
       Caption         =   "Загрузка"
       Height          =   315
-      Left            =   8760
+      Left            =   9480
       TabIndex        =   11
       Top             =   5340
       Visible         =   0   'False
@@ -213,12 +222,12 @@ Begin VB.Form WerkOrders
    Begin VB.Label lbEquips 
       Alignment       =   1  'Right Justify
       BackColor       =   &H8000000A&
-      Caption         =   "Выбор оборудования:"
+      Caption         =   "Оборудования:"
       Height          =   252
-      Left            =   3960
+      Left            =   5400
       TabIndex        =   17
       Top             =   5400
-      Width           =   1932
+      Width           =   1332
    End
    Begin VB.Label Label1 
       Caption         =   "<F1>"
@@ -264,6 +273,7 @@ Dim idEquip As Integer
 
 Private Sub cbEquips_Click()
     If noClick Then Exit Sub
+    cmNakladZakaz.Enabled = False
     idEquip = cbEquips.ItemData(cbEquips.ListIndex)
     werkBegin
     gridIsLoad = True
@@ -315,6 +325,21 @@ Private Sub cmCancel_Click()
     Grid.SetFocus
 End Sub
 
+Private Sub callNaklad()
+    Dim myWerkId As Integer
+    numDoc = gNzak
+    numExt = 0
+    Nakladna.Regim = "predmeti"
+    
+    Nakladna.idWerk = Grid.TextMatrix(mousRow, chWerkId)
+    Nakladna.Show vbModal
+
+End Sub
+
+
+Private Sub cmNakladZakaz_Click()
+    callNaklad
+End Sub
 
 Private Sub cmOk_Click()
     orderUpdate "##19.3", "'" & tbType.Text & "'", "Orders", "Remark"
@@ -333,6 +358,7 @@ Me.PrintForm
 End Sub
 
 Private Sub cmRefresh_Click()
+cmNakladZakaz.Enabled = False
 werkBegin
 gridIsLoad = True
 Grid.col = 1
@@ -341,6 +367,7 @@ End Sub
 Private Sub cmZagruz_Click()
 Zagruz.Show
 End Sub
+
 
 Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
 If KeyCode = vbKeyEscape Then lbHide
@@ -650,6 +677,8 @@ Else
     Grid.TextMatrix(werkRows, chLogo) = tbCeh!Logo
     Grid.TextMatrix(werkRows, chIzdelia) = tbCeh!Product
 End If
+Grid.TextMatrix(werkRows, chWerkId) = tbCeh!WerkId
+
 If tbCeh!StatusId = 5 Then ' отложен
     Grid.TextMatrix(werkRows, chProblem) = Problems(tbCeh!ProblemId)
 End If
@@ -712,7 +741,7 @@ Else
 End If
 
 gridHeaderStr = gridHeaderStr _
-    & "|№Дня|equipid"
+    & "|№Дня|equipid|werkid"
     
 Grid.FormatString = gridHeaderStr
 
@@ -730,6 +759,7 @@ Grid.ColWidth(chKey) = 0 ' ДЛЯ СОРТИРОВКИ по дате
 Grid.ColWidth(chEquipId) = 0
 Grid.ColWidth(0) = 0
 Grid.ColWidth(chNomZak) = 1000
+Grid.ColWidth(chWerkId) = 0
 
 If idWerk = 1 Then
     Grid.ColWidth(chLogo) = 0
@@ -765,6 +795,8 @@ cmZagruz.Top = cmZagruz.Top + H
 cmZagruz.Left = cmZagruz.Left + W
 cmPrint.Left = cmPrint.Left + W
 cmNaklad.Top = cmNaklad.Top + H
+cmNakladZakaz.Top = cmNakladZakaz.Top + H
+
 lbEquips.Top = lbEquips.Top + H
 cbEquips.Top = cbEquips.Top + H
 Dim RightLine As Integer
@@ -845,12 +877,8 @@ dostup = "b") Then Me.PopupMenu mnNomZak
 
 getNumFromStr (Grid.TextMatrix(mousRow, chNomZak))
 
-If mousCol = chIzdelia And Grid.CellForeColor = 200 Then
-    numDoc = gNzak
-    numExt = 0
-    Nakladna.Regim = "predmeti"
-    Nakladna.idWerk = Me.idWerk
-    Nakladna.Show vbModal
+If Grid.TextMatrix(mousRow, chWerkId) = 1 And mousCol = chRemark And cmNakladZakaz.Enabled Then
+    callNaklad
 End If
 
 If dostup = "" Then Exit Sub
@@ -877,12 +905,25 @@ tbNomZak.Text = gNzak
 If dostup = "" Then Exit Sub
 marker = Grid.TextMatrix(mousRow, 0)
 oldCellColor = Grid.CellBackColor
-If (mousCol = chStatus And marker <> "") Or _
-(mousCol = chIzdelia And Grid.CellForeColor = 200) Then
+If (mousCol = chStatus And marker <> "") Then
     Grid.CellBackColor = &H88FF88
 Else
     Grid.CellBackColor = vbYellow
 End If
+
+
+cmNakladZakaz.Enabled = False
+Dim I As Integer
+If IsNumeric(gNzak) Then
+    For I = 1 To UBound(tmpL) 'отмечаем заказы с выписанными накладными
+        If tmpL(I) = gNzak Then
+            cmNakladZakaz.Enabled = True
+            Exit For
+        End If
+    Next I
+End If
+
+
 
 End Sub
 
@@ -895,6 +936,7 @@ Private Sub Grid_LeaveCell()
 If Not gridIsLoad Then Exit Sub
 Grid.CellBackColor = oldCellColor
 End Sub
+
 
 Private Sub lbMaket_DblClick()
 Dim I As Integer

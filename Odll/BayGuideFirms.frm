@@ -1078,10 +1078,6 @@ Private Sub Form_Unload(Cancel As Integer)
 End Sub
 
 
-Private Sub Frame_DragDrop(Index As Integer, Source As Control, X As Single, Y As Single)
-
-End Sub
-
 Private Sub Grid_Click()
 mousCol = Grid.MouseCol
 mousRow = Grid.MouseRow
