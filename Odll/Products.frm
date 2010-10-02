@@ -1108,43 +1108,43 @@ splRightH.Top = Grid5.Top + Grid5.Height + 5
 splRightH.Left = splRightV.Left + splRightV.Width
 splRightH.Width = Grid5.Width
 
-' по заданию шефа таблицы выравнивать так, чтобы между сплиттерами не было свободных мест.
-Dim frameWidth As Long ' ширина пространства между сплиттерами
-Dim CIndex As Long     ' индекс колонки, которая будет меняться
-Dim WidthDelta As Long ' На сколько изменить ширину колонки
+'' по заданию шефа таблицы выравнивать так, чтобы между сплиттерами не было свободных мест.
+'Dim frameWidth As Long ' ширина пространства между сплиттерами
+'Dim CIndex As Long     ' индекс колонки, которая будет меняться
+'Dim WidthDelta As Long ' На сколько изменить ширину колонки'
 
-frameWidth = splRightV.Left - splLeftV.Left + splLeftV.Width
-With Grid
-    CIndex = nkName
-    WidthDelta = .Width - frameWidth
-    .Width = .Width - WidthDelta
-End With
+'frameWidth = splRightV.Left - splLeftV.Left + splLeftV.Width
+'With Grid
+'    CIndex = nkName
+'    WidthDelta = .Width - frameWidth
+'    .Width = .Width - WidthDelta
+'End With
 
-Grid.ColWidth(CIndex) = Grid.ColWidth(CIndex) - WidthDelta
-With Grid3
-    CIndex = fnNomName
-    WidthDelta = .Width - frameWidth
-    .Width = .Width - WidthDelta
-    '.ColWidth(CIndex) = .ColWidth(CIndex) + WidthDelta
-End With
-Grid3.ColWidth(CIndex) = Grid3.ColWidth(CIndex) - WidthDelta
+'Grid.ColWidth(CIndex) = Grid.ColWidth(CIndex) - WidthDelta
+'With Grid3
+'    CIndex = fnNomName
+'    WidthDelta = .Width - frameWidth
+'    .Width = .Width - WidthDelta
+'    '.ColWidth(CIndex) = .ColWidth(CIndex) + WidthDelta
+'End With
+'Grid3.ColWidth(CIndex) = Grid3.ColWidth(CIndex) - WidthDelta
 
-frameWidth = Me.Width - splRightV.Left + splRightV.Width
-With Grid2
-    CIndex = fnNomName
-    WidthDelta = .Width - frameWidth
-    .Width = .Width - WidthDelta
-    '.ColWidth(CIndex) = .ColWidth(CIndex) + WidthDelta
-End With
-Grid2.ColWidth(CIndex) = Grid2.ColWidth(CIndex) - WidthDelta
-
-With Grid5
-    CIndex = prName
-    WidthDelta = .Width - frameWidth
-    .Width = .Width - WidthDelta
-    '.ColWidth(CIndex) = .ColWidth(CIndex) + WidthDelta
-End With
-Grid5.ColWidth(CIndex) = Grid5.ColWidth(CIndex) - WidthDelta
+'frameWidth = Me.Width - splRightV.Left + splRightV.Width
+'With Grid2
+'    CIndex = fnNomName
+'    WidthDelta = .Width - frameWidth
+'    .Width = .Width - WidthDelta
+'    '.ColWidth(CIndex) = .ColWidth(CIndex) + WidthDelta
+'End With
+'Grid2.ColWidth(CIndex) = Grid2.ColWidth(CIndex) - WidthDelta
+'
+'With Grid5
+'    CIndex = prName
+'    WidthDelta = .Width - frameWidth
+'    .Width = .Width - WidthDelta
+'    '.ColWidth(CIndex) = .ColWidth(CIndex) + WidthDelta
+'End With
+'Grid5.ColWidth(CIndex) = Grid5.ColWidth(CIndex) - WidthDelta
 
 laQuant.Top = laQuant.Top + H
 laQuant.Left = laQuant.Left + W
