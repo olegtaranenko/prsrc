@@ -2275,6 +2275,16 @@ where
 	</changeSet>
 
 
+	<changeSet id="2" author="mantis-216" runOnChange="true">
+		<comment>Изменения в накладной</comment>
+		<sqlFile path="views/itemBranOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="views/isumSellOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="views/isumBranOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="views/itemWareOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="views/orderWareOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback/>
+	</changeSet>
+
 	<changeSet id="54" author="mantis-141" runOnChange="true">
 		<comment>Отладка Анализа продаж</comment>
 		<sqlFile path="views/itemSellOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>

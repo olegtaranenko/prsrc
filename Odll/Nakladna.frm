@@ -976,7 +976,7 @@ If idWerk = 1 And Regim = "sklad" Then
         quantity2 = quantity2 + 1
             If Not IsNull(tbNomenk!code) Then Grid2(ind).TextMatrix(quantity2, nkNomNom) = tbNomenk!code
             If Not IsNull(tbNomenk!itemName) Then Grid2(ind).TextMatrix(quantity2, nkNomName) = tbNomenk!itemName
-            If Not IsNull(tbNomenk!edizm) Then Grid2(ind).TextMatrix(quantity2, nkEdIzm) = tbNomenk!edizmList
+            If Not IsNull(tbNomenk!edizm) Then Grid2(ind).TextMatrix(quantity2, nkEdIzm) = tbNomenk!edIzmList
             If Not IsNull(tbNomenk!itemName) Then Grid2(ind).TextMatrix(quantity2, nkTreb) = tbNomenk!quant
             If Not IsNull(tbNomenk!Type) Then Grid2(ind).TextMatrix(quantity2, nkType) = tbNomenk!Type
             If Not IsNull(tbNomenk!prId) Then Grid2(ind).TextMatrix(quantity2, nkPrId) = tbNomenk!prId
@@ -1012,7 +1012,7 @@ Else
             Grid2(ind).TextMatrix(quantity2, nkEdIzm) = tbNomenk!ed_Izmer
             If Regim = "" Then
                 If laDest(ind).Caption = "Продажа" Then
-                  Grid2(ind).TextMatrix(quantity2, nkEdIzm) = tbNomenk!ed_Izmer2
+                  Grid2(ind).TextMatrix(quantity2, nkEdIzm) = tbNomenk!ed_izmer2
                   Grid2(ind).TextMatrix(quantity2, nkQuant) = Round(QQ(I) / tbNomenk!perlist, 2)
                 Else
                   Grid2(ind).TextMatrix(quantity2, nkQuant) = Round(QQ(I), 2)
@@ -1030,7 +1030,7 @@ Else
                 If Regim <> "" And Regim <> "sklad" Then
                   If tbNomenk!perlist <> 1 Then 'для обрезной доп. колонка для целых
                     beSUO = True
-                    Grid2(ind).TextMatrix(quantity2, nkIntEdIzm) = tbNomenk!ed_Izmer2
+                    Grid2(ind).TextMatrix(quantity2, nkIntEdIzm) = tbNomenk!ed_izmer2
                   End If
                   S = 0: S2 = 0
                   sql = "SELECT curQuant, intQuant from sDMCrez " & _
@@ -1139,7 +1139,7 @@ AA:         MsgBox "Сначала проставте значение в колонке 'кол-во'", , "Предупреж
      
     ' продаем отдельную номенклатуру (по умолчанию)
     mysql = "select ipo.*, n.perList, n.ed_izmer as edizm, n.ed_izmer2 as edizmList, n.nomName" _
-        & " from isumProdOrde ipo" _
+        & " from isumBranOrde ipo" _
         & " join sGuideNomenk n on n.nomnom = ipo.nomnom" _
         & " where ipo.numorder = " & gNzak _
         & " and ipo.nomnom = '" & Grid2(Index).TextMatrix(mousRow2, nkNomNom) & "'"
@@ -1149,9 +1149,12 @@ AA:         MsgBox "Сначала проставте значение в колонке 'кол-во'", , "Предупреж
     If Grid2(Index).TextMatrix(mousRow2, nkType) = "p" Then
         
             ' продаем изделие
-        mysql = "select * from orderProdOrde where numorder = " & gNzak _
-            & " and prId = " & Grid2(Index).TextMatrix(mousRow2, nkPrId) _
-            & " and prExt = " & Grid2(Index).TextMatrix(mousRow2, nkPrExt)
+        mysql = "select iwo.*, n.ed_izmer as edIzm, n.ed_izmer2 as edIzmList, n.nomName, n.perList " _
+            & " from itemWareOrde iwo " _
+            & " join sGuideNomenk n on n.nomnom = iwo.nomnom " _
+            & " where numorder = " & gNzak _
+            & " and iwo.prId = " & Grid2(Index).TextMatrix(mousRow2, nkPrId) _
+            & " and iwo.prExt = " & Grid2(Index).TextMatrix(mousRow2, nkPrExt)
         asIzdelie = True
         laGrid4.Caption = "факт. остатки по готовому изделию " & Grid2(Index).TextMatrix(mousRow2, nkNomNom)
         
@@ -1174,6 +1177,7 @@ AA:         MsgBox "Сначала проставте значение в колонке 'кол-во'", , "Предупреж
     Else
         Grid4.ColWidth(5) = 0
     End If
+    Debug.Print mysql
     Set tbDMC = myOpenRecordSet("##364", mysql, dbOpenForwardOnly)
     If Not tbDMC Is Nothing Then
         I = 0
@@ -1182,7 +1186,7 @@ AA:         MsgBox "Сначала проставте значение в колонке 'кол-во'", , "Предупреж
             Grid4.TextMatrix(I, 1) = tbDMC!Nomnom
             Grid4.TextMatrix(I, 2) = tbDMC!nomName
             If (idWerk = 1 Or myAsWhole) And Regim = "sklad" Then
-                ed_Izmer = tbDMC!edizmList
+                ed_Izmer = tbDMC!edIzmList
                 per = tbDMC!perlist
             Else
                 ed_Izmer = tbDMC!edizm
@@ -1190,7 +1194,7 @@ AA:         MsgBox "Сначала проставте значение в колонке 'кол-во'", , "Предупреж
             End If
             Grid4.TextMatrix(I, 3) = ed_Izmer
             If asIzdelie Then
-                Grid4.TextMatrix(I, 5) = Round(tbDMC!quantEd / per, 2)
+                Grid4.TextMatrix(I, 5) = Round(tbDMC!quant / per, 2)
             End If
             gNomNom = tbDMC!Nomnom
             Grid4.TextMatrix(I, 4) = Round((PrihodRashod("+", skladId) - PrihodRashod("-", skladId)) / per, 2) 'Ф. остатки по складу
