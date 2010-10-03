@@ -18,7 +18,11 @@ begin
 
 		update sdmcrez 
 			join xPredmetyByIzdelia pi on pi.numorder = p_numorder and pi.prId = p_prId and pi.prExt = p_prExt
-			join itemProdOrde ipo on ipo.numorder = p_numorder and ipo.nomnom = sDmcRez.nomnom and ipo.prId = p_prId and ipo.prExt = p_prExt
+			join isumWareOrde ipo on 
+				ipo.numorder = p_numorder 
+				and ipo.nomnom = sDmcRez.nomnom 
+				and ipo.prId = p_prId 
+				and ipo.prExt = p_prExt
 		set sdmcrez.curQuant = (p_new_quant - p_old_quant) * ipo.quantEd + sdmcrez.curQuant
 		where sDmcRez.numdoc = p_numorder;
 

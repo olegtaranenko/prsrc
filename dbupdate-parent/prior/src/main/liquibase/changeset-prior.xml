@@ -2281,6 +2281,7 @@ where
 		<sqlFile path="views/isumSellOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="views/isumBranOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="views/itemWareOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="views/isumWareOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="views/orderWareOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<rollback/>
 	</changeSet>

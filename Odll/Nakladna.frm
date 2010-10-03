@@ -499,7 +499,7 @@ For L = 1 To quantity2
         NN2(J) = gNomNom: QQ2(J) = str: QQ3(J) = 0
         skladId = -1002
         If IsNumeric(Grid2(0).TextMatrix(L, nkIntQuant)) Then 'нужна межскладска€
-            sql = "SELECT perList, ed_izmer2 from sGuideNomenk " & _
+            sql = "SELECT perList, ed_Izmer2 from sGuideNomenk " & _
             "WHERE (((sGuideNomenk.nomNom)='" & gNomNom & "'));"
             If Not byErrSqlGetValues("##366", sql, per, str2) Then Exit Sub
             
@@ -907,7 +907,8 @@ End Sub
 'ind=1 м.б. только при Regim = ""
 Sub loadToGrid(ind As Integer)
 Dim I As Integer, S As Double, S2 As Double, str As String, str2 As String
-
+Dim Nomnom1 As Nomnom
+Dim myAsWhole As Integer, revertAsWhole As Integer
 
 ReDim NN(0): ReDim QQ(0): ReDim QQ2(0): QQ2(0) = 0: ReDim QQ3(0)
 
@@ -917,7 +918,7 @@ If Regim = "toNaklad" Then
 ElseIf Regim = "" Then
   sql = "SELECT sGuideSource.sourceName, sGuideDest.sourceName AS destName " & _
   " FROM sDocs " _
-  & "INNER JOIN sGuideSource ON sGuideSource.sourceId = sDocs.sourId " _
+  & " INNER JOIN sGuideSource ON sGuideSource.sourceId = sDocs.sourId " _
   & " INNER JOIN sGuideSource AS sGuideDest ON sGuideDest.sourceId = sDocs.destId " & _
   "WHERE sDocs.numDoc = " & numDoc & " AND sDocs.numExt = " & numExt
   'Debug.Print sql
@@ -968,39 +969,74 @@ beSUO = False
 ' тогда списываетс€ по готовым издели€м
 ' если же из цеха тогда - по отдельным номенклатурам
 
-If idWerk = 1 And Regim = "sklad" Then
-    sql = "select * from itemWallOrde where numorder = " & gNzak & " order by type desc, nomnom,prext"
-'Debug.Print sql
+If idWerk = 1 Then
+    If Regim = "sklad" Then
+        sql = "select iwo.*" _
+        & " ,'' as vmt" _
+        & " from itemWallOrde iwo" _
+        & " where iwo.numorder = " & gNzak _
+        & " order by iwo.type desc, iwo.nomnom, iwo.prext"
+    Else                'ElseIf Regim = "predmeti" then
+        sql = "select iwo.nomnom as code, iwo.quant " _
+        & " ,n.perList, isnull(n.web, '') as vmt" _
+        & " ,n.ed_izmer as edizm, n.ed_Izmer2 as edizmList" _
+        & " ,n.nomName as itemName" _
+        & " ,null as prId, null as prExt, 'n' as Type" _
+        & " , n.nomName, n.nomnom, n.perlist, n.ed_Izmer, n.ed_Izmer2" _
+        & " , n.cod, n.size, n.ves" _
+        & " from isumWareOrde iwo " _
+        & " join sGuideNomenk n on n.nomnom = iwo.nomnom " _
+        & " where iwo.numorder = " & gNzak _
+        & " order by iwo.nomnom"
+    End If
+    
+    'Debug.Print sql
     Set tbNomenk = myOpenRecordSet("##129.1", sql, dbOpenForwardOnly)
     While Not tbNomenk.EOF
         quantity2 = quantity2 + 1
-            If Not IsNull(tbNomenk!code) Then Grid2(ind).TextMatrix(quantity2, nkNomNom) = tbNomenk!code
-            If Not IsNull(tbNomenk!itemName) Then Grid2(ind).TextMatrix(quantity2, nkNomName) = tbNomenk!itemName
-            If Not IsNull(tbNomenk!edizm) Then Grid2(ind).TextMatrix(quantity2, nkEdIzm) = tbNomenk!edIzmList
-            If Not IsNull(tbNomenk!itemName) Then Grid2(ind).TextMatrix(quantity2, nkTreb) = tbNomenk!quant
-            If Not IsNull(tbNomenk!Type) Then Grid2(ind).TextMatrix(quantity2, nkType) = tbNomenk!Type
-            If Not IsNull(tbNomenk!prId) Then Grid2(ind).TextMatrix(quantity2, nkPrId) = tbNomenk!prId
-            If Not IsNull(tbNomenk!prExt) Then Grid2(ind).TextMatrix(quantity2, nkPrExt) = tbNomenk!prExt
-            
-            sql = "call wf_sell_rest(" _
-                & setNullableParamStr(tbNomenk!Type) _
-                & ", " & gNzak _
-                & ", " & setNullableParamStr(tbNomenk!Nomnom) _
-                & ", " & setNullableParamInt(tbNomenk!prId) _
-                & ", " & setNullableParamInt(tbNomenk!prExt) _
-            & ")"
-            
-            If byErrSqlGetValues("W#194.1", sql, S, S2) Then
-                LoadNumeric Grid2(ind), quantity2, nkClos, S
-                LoadNumeric Grid2(ind), quantity2, nkQuant, S2
+        
+        If Not IsNull(tbNomenk!Code) Then Grid2(ind).TextMatrix(quantity2, nkNomNom) = tbNomenk!Code
+        If Not IsNull(tbNomenk!itemName) Then Grid2(ind).TextMatrix(quantity2, nkNomName) = tbNomenk!itemName
+        If Not IsNull(tbNomenk!Type) Then Grid2(ind).TextMatrix(quantity2, nkType) = tbNomenk!Type
+        If Not IsNull(tbNomenk!prId) Then Grid2(ind).TextMatrix(quantity2, nkPrId) = tbNomenk!prId
+        If Not IsNull(tbNomenk!prExt) Then Grid2(ind).TextMatrix(quantity2, nkPrExt) = tbNomenk!prExt
+        
+        sql = "call wf_sell_rest(" _
+            & setNullableParamStr(tbNomenk!Type) _
+            & ", " & gNzak _
+            & ", " & setNullableParamStr(tbNomenk!Nomnom) _
+            & ", " & setNullableParamInt(tbNomenk!prId) _
+            & ", " & setNullableParamInt(tbNomenk!prExt) _
+        & ")"
+        Debug.Print sql
+        
+        byErrSqlGetValues "W#194.1", sql, S, S2
+        
+        If Regim = "sklad" Then
+            If Not IsNull(tbNomenk!edizm) Then Grid2(ind).TextMatrix(quantity2, nkEdIzm) = tbNomenk!edizmList
+            If Not IsNull(tbNomenk!quant) Then Grid2(ind).TextMatrix(quantity2, nkTreb) = tbNomenk!quant
+            LoadNumeric Grid2(ind), quantity2, nkClos, S
+            LoadNumeric Grid2(ind), quantity2, nkQuant, S2
+        Else
+            Set Nomnom1 = nomnomCache.getNomnom(tbNomenk!Code, True)
+            myAsWhole = IIf(tbNomenk!vmt = "vmt", 0, 1)
+            revertAsWhole = IIf(myAsWhole = 1, 0, 1)
+            If Not myAsWhole Then
+                beSUO = True
             End If
+            If Not IsNull(tbNomenk!edizm) Then Grid2(ind).TextMatrix(quantity2, nkEdIzm) = Nomnom1.getEdizm(myAsWhole)
+            If Not IsNull(tbNomenk!itemName) Then Grid2(ind).TextMatrix(quantity2, nkTreb) = Nomnom1.getQuantity(tbNomenk!quant, myAsWhole)
+            LoadNumeric Grid2(ind), quantity2, nkClos, Nomnom1.getQuantityRevert(S, revertAsWhole)
+            LoadNumeric Grid2(ind), quantity2, nkQuant, Nomnom1.getQuantityRevert(S2, revertAsWhole)
+        End If
+
         Grid2(ind).AddItem ""
         tbNomenk.MoveNext
     Wend
     tbNomenk.Close
 Else
     For I = 1 To UBound(NN)
-        sql = "SELECT nomName, ed_Izmer, perList, Size, ed_Izmer2, cod " & _
+        sql = "SELECT nomName, ed_Izmer, perList, Size, ed_Izmer2, cod, web " & _
         "from sGuideNomenk WHERE nomNom = '" & NN(I) & "'"
         Set tbNomenk = myOpenRecordSet("##129.2", sql, dbOpenForwardOnly)
         If Not tbNomenk.BOF Then
@@ -1012,7 +1048,7 @@ Else
             Grid2(ind).TextMatrix(quantity2, nkEdIzm) = tbNomenk!ed_Izmer
             If Regim = "" Then
                 If laDest(ind).Caption = "ѕродажа" Then
-                  Grid2(ind).TextMatrix(quantity2, nkEdIzm) = tbNomenk!ed_izmer2
+                  Grid2(ind).TextMatrix(quantity2, nkEdIzm) = tbNomenk!ed_Izmer2
                   Grid2(ind).TextMatrix(quantity2, nkQuant) = Round(QQ(I) / tbNomenk!perlist, 2)
                 Else
                   Grid2(ind).TextMatrix(quantity2, nkQuant) = Round(QQ(I), 2)
@@ -1030,7 +1066,7 @@ Else
                 If Regim <> "" And Regim <> "sklad" Then
                   If tbNomenk!perlist <> 1 Then 'дл€ обрезной доп. колонка дл€ целых
                     beSUO = True
-                    Grid2(ind).TextMatrix(quantity2, nkIntEdIzm) = tbNomenk!ed_izmer2
+                    Grid2(ind).TextMatrix(quantity2, nkIntEdIzm) = tbNomenk!ed_Izmer2
                   End If
                   S = 0: S2 = 0
                   sql = "SELECT curQuant, intQuant from sDMCrez " & _
@@ -1138,7 +1174,8 @@ AA:         MsgBox "—начала проставте значение в колонке 'кол-во'", , "ѕредупреж
     gNomNom = Grid2(Index).TextMatrix(mousRow2, fnNomNom)
      
     ' продаем отдельную номенклатуру (по умолчанию)
-    mysql = "select ipo.*, n.perList, n.ed_izmer as edizm, n.ed_izmer2 as edizmList, n.nomName" _
+    mysql = "select ipo.*, n.perList, n.ed_izmer as edizm, n.ed_Izmer2 as edizmList, n.nomName" _
+        & " , isnull(n.web, '') as vmt" _
         & " from isumBranOrde ipo" _
         & " join sGuideNomenk n on n.nomnom = ipo.nomnom" _
         & " where ipo.numorder = " & gNzak _
@@ -1149,7 +1186,8 @@ AA:         MsgBox "—начала проставте значение в колонке 'кол-во'", , "ѕредупреж
     If Grid2(Index).TextMatrix(mousRow2, nkType) = "p" Then
         
             ' продаем изделие
-        mysql = "select iwo.*, n.ed_izmer as edIzm, n.ed_izmer2 as edIzmList, n.nomName, n.perList " _
+        mysql = "select iwo.*, n.ed_izmer as edIzm, n.ed_Izmer2 as edIzmList, n.nomName, n.perList" _
+            & " , isnull(n.web, '') as vmt" _
             & " from itemWareOrde iwo " _
             & " join sGuideNomenk n on n.nomnom = iwo.nomnom " _
             & " where numorder = " & gNzak _
@@ -1185,8 +1223,11 @@ AA:         MsgBox "—начала проставте значение в колонке 'кол-во'", , "ѕредупреж
             I = I + 1
             Grid4.TextMatrix(I, 1) = tbDMC!Nomnom
             Grid4.TextMatrix(I, 2) = tbDMC!nomName
-            If (idWerk = 1 Or myAsWhole) And Regim = "sklad" Then
-                ed_Izmer = tbDMC!edIzmList
+            If tbDMC!vmt = "vmt" Then
+                myAsWhole = False
+            End If
+            If idWerk = 1 And myAsWhole Then
+                ed_Izmer = tbDMC!edizmList
                 per = tbDMC!perlist
             Else
                 ed_Izmer = tbDMC!edizm
@@ -1281,48 +1322,50 @@ If KeyCode = vbKeyReturn Then
         Exit Sub
     End If
     
-    If idWerk = 1 And Regim = "sklad" Then
+    If mousCol2 = nkQuant Then
         quant = CInt(tbMobile2.Text)
-        sql = "call wf_update_sell_rez (" _
-        & gNzak _
-        & "," & tbMobile2.Text _
-        & "," & Grid2(0).TextMatrix(mousRow2, nkQuant) _
-        & ",'" & Grid2(0).TextMatrix(mousRow2, nkType) & "'" _
-        & ",'" & Grid2(0).TextMatrix(mousRow2, nkNomNom) & "'" _
-        & "," & setNullableParamInt(Grid2(0).TextMatrix(mousRow2, nkPrId)) _
-        & "," & setNullableParamInt(Grid2(0).TextMatrix(mousRow2, nkPrExt)) _
-        & ")"
-Debug.Print sql
-        isOk = myExecute("W#363.2", sql)
-    Else
-        If mousCol2 = nkQuant Then
-          If QQ2(0) = 0 Then 'нет этапа
-              quant = Grid2(0).TextMatrix(mousRow2, nkTreb)
-              quant = Round(quant - Grid2(0).TextMatrix(mousRow2, nkClos), 2)
-          Else
-              quant = Grid2(0).TextMatrix(mousRow2, nkEtap)
-              quant = Round(quant - Grid2(0).TextMatrix(mousRow2, nkEClos), 2)
-          End If
-          
-          If Not isNumericTbox(tbMobile2, 0, quant) Then Exit Sub
-          
-          quant = Round(tbMobile2.Text, 2)
-          str = "cur"
-        Else 'nkIntQuant
-            If Not isNumericTbox(tbMobile2, 0) Then Exit Sub
-            quant = Round(tbMobile2.Text, 0)
-            If quant <> CDbl(tbMobile2.Text) Then
-                MsgBox " оличество должно быть целым!", , "ѕредупреждение"
-                Exit Sub
+        If idWerk = 1 Then
+            sql = "call wf_update_sell_rez (" _
+                & gNzak _
+                & "," & quant _
+                & "," & Grid2(0).TextMatrix(mousRow2, nkQuant) _
+                & ",'" & Grid2(0).TextMatrix(mousRow2, nkType) & "'" _
+                & ",'" & Grid2(0).TextMatrix(mousRow2, nkNomNom) & "'" _
+                & "," & setNullableParamInt(Grid2(0).TextMatrix(mousRow2, nkPrId)) _
+                & "," & setNullableParamInt(Grid2(0).TextMatrix(mousRow2, nkPrExt)) _
+                & ")"
+        Else
+            If QQ2(0) = 0 Then 'нет этапа
+                quant = Grid2(0).TextMatrix(mousRow2, nkTreb)
+                quant = Round(quant - Grid2(0).TextMatrix(mousRow2, nkClos), 2)
+            Else
+                quant = Grid2(0).TextMatrix(mousRow2, nkEtap)
+                quant = Round(quant - Grid2(0).TextMatrix(mousRow2, nkEClos), 2)
             End If
-            str = "int"
+            
+            If Not isNumericTbox(tbMobile2, 0, quant) Then Exit Sub
+            
+            quant = Round(tbMobile2.Text, 2)
+            sql = "UPDATE sDmcRez SET curQuant = " & quant & _
+            " WHERE numDoc = " & numDoc _
+                & " AND nomNom = '" & Grid2(0).TextMatrix(mousRow2, nkNomNom) & "'"
         End If
+        isOk = myExecute("##363", sql)
+    Else 'nkIntQuant
+        If Not isNumericTbox(tbMobile2, 0) Then Exit Sub
+        quant = Round(tbMobile2.Text, 0)
+        If quant <> CDbl(tbMobile2.Text) Then
+            MsgBox " оличество должно быть целым!", , "ѕредупреждение"
+            Exit Sub
+        End If
+        str = "int"
         
-        sql = "UPDATE sDmcRez SET " & str & "Quant = " & quant & _
+        sql = "UPDATE sDmcRez SET intQuant = " & quant & _
         " WHERE numDoc = " & numDoc _
             & " AND nomNom = '" & Grid2(0).TextMatrix(mousRow2, nkNomNom) & "'"
         isOk = myExecute("##363", sql)
     End If
+        
     
     If isOk = 0 Then
     

@@ -754,7 +754,15 @@ If opProduct.Value Then
      
     dostupOstatkiToGrid "multiN"
 Else
-  dostupOstatkiToGrid
+    sql = "select count(*) from sGuideNomenk " _
+    & " where web = 'vmt' AND nomnom = '" & gNomNom & "'"
+    byErrSqlGetValues "##p.1", sql, hasDrobnProc
+    If hasDrobnProc = 1 Then
+        MsgBox "Вспомогательные материалы продавать нельзя", , "Добавить позицию нельзя!"
+        Exit Sub
+    End If
+    
+    dostupOstatkiToGrid
 End If
 tbQuant.Enabled = True
 laQuant.Enabled = True
