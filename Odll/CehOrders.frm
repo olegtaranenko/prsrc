@@ -342,13 +342,13 @@ Private Sub cmNakladZakaz_Click()
 End Sub
 
 Private Sub cmOk_Click()
-    orderUpdate "##19.3", "'" & tbType.Text & "'", "Orders", "Remark"
-    openOrdersRowToGrid "##activate", True
-    tqOrders.Close
-    frmRemark.Visible = False
-    Grid.Enabled = True
-    Grid.col = orRemark
-    Grid.SetFocus
+'    orderUpdate "##19.3", "'" & tbType.Text & "'", "Orders", "Remark"
+'    openOrdersRowToGrid "##activate", True
+'    tqOrders.Close
+'    frmRemark.Visible = False
+'    Grid.Enabled = True
+'    Grid.col = orRemark
+'    Grid.SetFocus
 End Sub
 
 
