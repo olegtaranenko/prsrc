@@ -973,21 +973,21 @@ If idWerk = 1 Then
     If Regim = "sklad" Then
         sql = "select iwo.*" _
         & " ,'' as vmt" _
-        & " from itemWallOrde iwo" _
-        & " where iwo.numorder = " & gNzak _
-        & " order by iwo.type desc, iwo.nomnom, iwo.prext"
+        & vbCr & " from itemWallOrde iwo" _
+        & vbCr & " where iwo.numorder = " & gNzak _
+        & vbCr & " order by iwo.type desc, iwo.nomnom, iwo.prext"
     Else                'ElseIf Regim = "predmeti" then
         sql = "select iwo.nomnom as code, iwo.quant " _
         & " ,n.perList, isnull(n.web, '') as vmt" _
-        & " ,n.ed_izmer as edizm, n.ed_Izmer2 as edizmList" _
+        & vbCr & " ,n.ed_izmer as edizm, n.ed_Izmer2 as edizmList" _
         & " ,n.nomName as itemName" _
-        & " ,null as prId, null as prExt, 'n' as Type" _
+        & vbCr & " ,null as prId, null as prExt, 'n' as Type" _
         & " , n.nomName, n.nomnom, n.perlist, n.ed_Izmer, n.ed_Izmer2" _
         & " , n.cod, n.size, n.ves" _
-        & " from isumWareOrde iwo " _
-        & " join sGuideNomenk n on n.nomnom = iwo.nomnom " _
-        & " where iwo.numorder = " & gNzak _
-        & " order by iwo.nomnom"
+        & vbCr & " from isumWareOrde iwo " _
+        & vbCr & " join sGuideNomenk n on n.nomnom = iwo.nomnom " _
+        & vbCr & " where iwo.numorder = " & gNzak _
+        & vbCr & " order by iwo.nomnom"
     End If
     
     'Debug.Print sql
@@ -1013,7 +1013,7 @@ If idWerk = 1 Then
         byErrSqlGetValues "W#194.1", sql, S, S2
         
         If Regim = "sklad" Then
-            If Not IsNull(tbNomenk!edizm) Then Grid2(ind).TextMatrix(quantity2, nkEdIzm) = tbNomenk!edizmList
+            If Not IsNull(tbNomenk!edizm) Then Grid2(ind).TextMatrix(quantity2, nkEdIzm) = tbNomenk!edIzmList
             If Not IsNull(tbNomenk!quant) Then Grid2(ind).TextMatrix(quantity2, nkTreb) = tbNomenk!quant
             LoadNumeric Grid2(ind), quantity2, nkClos, S
             LoadNumeric Grid2(ind), quantity2, nkQuant, S2
@@ -1227,7 +1227,7 @@ AA:         MsgBox "Сначала проставте значение в колонке 'кол-во'", , "Предупреж
                 myAsWhole = False
             End If
             If idWerk = 1 And myAsWhole Then
-                ed_Izmer = tbDMC!edizmList
+                ed_Izmer = tbDMC!edIzmList
                 per = tbDMC!perlist
             Else
                 ed_Izmer = tbDMC!edizm
@@ -1350,6 +1350,7 @@ If KeyCode = vbKeyReturn Then
             " WHERE numDoc = " & numDoc _
                 & " AND nomNom = '" & Grid2(0).TextMatrix(mousRow2, nkNomNom) & "'"
         End If
+        Debug.Print sql
         isOk = myExecute("##363", sql)
     Else 'nkIntQuant
         If Not isNumericTbox(tbMobile2, 0) Then Exit Sub
@@ -1364,17 +1365,21 @@ If KeyCode = vbKeyReturn Then
         " WHERE numDoc = " & numDoc _
             & " AND nomNom = '" & Grid2(0).TextMatrix(mousRow2, nkNomNom) & "'"
         isOk = myExecute("##363", sql)
+        If isOk = 0 Then
+        
+            If quant = 0 Then
+                Grid2(0).TextMatrix(mousRow2, mousCol2) = ""
+            Else
+                Grid2(0).TextMatrix(mousRow2, mousCol2) = quant
+            End If
+        End If
+    End If
+    
+    If isOk = 0 Then
+        Grid2(0).TextMatrix(mousRow2, mousCol2) = quant
     End If
         
     
-    If isOk = 0 Then
-    
-        If quant = 0 Then
-            Grid2(0).TextMatrix(mousRow2, mousCol2) = ""
-        Else
-            Grid2(0).TextMatrix(mousRow2, mousCol2) = quant
-        End If
-    End If
     'Debug.Print sql
     lbHide2
     Grid2(0).SetFocus

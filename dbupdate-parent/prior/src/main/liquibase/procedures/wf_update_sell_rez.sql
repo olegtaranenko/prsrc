@@ -18,7 +18,7 @@ begin
 
 		update sdmcrez 
 			join xPredmetyByIzdelia pi on pi.numorder = p_numorder and pi.prId = p_prId and pi.prExt = p_prExt
-			join isumWareOrde ipo on 
+			join itemWareOrde ipo on 
 				ipo.numorder = p_numorder 
 				and ipo.nomnom = sDmcRez.nomnom 
 				and ipo.prId = p_prId 
