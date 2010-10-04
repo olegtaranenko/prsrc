@@ -599,10 +599,10 @@ If moveNum = "yes" Then
     tbDocs!destId = -1002
     tbDocs.update
     For K = 1 To J
-      If QQ3(K) > 0 Then
-        gNomNom = NN2(K)
-        If Not sProducts.nomenkToDMC(QQ3(K), "noLock") Then GoTo ER2
-      End If
+        If QQ3(K) > 0 Then
+            gNomNom = NN2(K)
+            If Not sProducts.nomenkToDMC(QQ3(K), "noLock") Then GoTo ER2
+        End If
     Next K
     tmpDate = DateAdd("S", 1, tmpDate)
 End If
