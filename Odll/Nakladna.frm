@@ -907,6 +907,7 @@ End Sub
 'ind=1 м.б. только при Regim = ""
 Sub loadToGrid(ind As Integer)
 Dim I As Integer, S As Double, S2 As Double, str As String, str2 As String
+Dim intQuant As Double
 Dim Nomnom1 As Nomnom
 Dim myAsWhole As Integer, revertAsWhole As Integer
 
@@ -980,7 +981,7 @@ If idWerk = 1 Then
         sql = "select iwo.nomnom as code, iwo.quant " _
         & " ,n.perList, isnull(n.web, '') as vmt" _
         & vbCr & " ,n.ed_izmer as edizm, n.ed_Izmer2 as edizmList" _
-        & " ,n.nomName as itemName" _
+        & ", wf_make_invnm(n.nomName, n.size, n.cod) as itemName" _
         & vbCr & " ,null as prId, null as prExt, 'n' as Type" _
         & " , n.nomName, n.nomnom, n.perlist, n.ed_Izmer, n.ed_Izmer2" _
         & " , n.cod, n.size, n.ves" _
@@ -1008,9 +1009,9 @@ If idWerk = 1 Then
             & ", " & setNullableParamInt(tbNomenk!prId) _
             & ", " & setNullableParamInt(tbNomenk!prExt) _
         & ")"
-        Debug.Print sql
+        'Debug.Print sql
         
-        byErrSqlGetValues "W#194.1", sql, S, S2
+        byErrSqlGetValues "W#194.1", sql, S, S2, intQuant
         
         If Regim = "sklad" Then
             If Not IsNull(tbNomenk!edizm) Then Grid2(ind).TextMatrix(quantity2, nkEdIzm) = tbNomenk!edIzmList
@@ -1021,11 +1022,16 @@ If idWerk = 1 Then
             Set Nomnom1 = nomnomCache.getNomnom(tbNomenk!Code, True)
             myAsWhole = IIf(tbNomenk!vmt = "vmt", 0, 1)
             revertAsWhole = IIf(myAsWhole = 1, 0, 1)
-            If Not myAsWhole Then
+            If myAsWhole = 0 Then
                 beSUO = True
+                Grid2(ind).TextMatrix(quantity2, nkIntEdIzm) = tbNomenk!ed_Izmer2
+                Grid2(ind).TextMatrix(quantity2, 0) = "Да" 'обрезная
+                If intQuant > 0 Then
+                    LoadNumeric Grid2(ind), quantity2, nkIntQuant, intQuant
+                End If
             End If
-            If Not IsNull(tbNomenk!edizm) Then Grid2(ind).TextMatrix(quantity2, nkEdIzm) = Nomnom1.getEdizm(myAsWhole)
-            If Not IsNull(tbNomenk!itemName) Then Grid2(ind).TextMatrix(quantity2, nkTreb) = Nomnom1.getQuantity(tbNomenk!quant, myAsWhole)
+            Grid2(ind).TextMatrix(quantity2, nkEdIzm) = Nomnom1.getEdizm(myAsWhole)
+            Grid2(ind).TextMatrix(quantity2, nkTreb) = Nomnom1.getQuantity(tbNomenk!quant, myAsWhole)
             LoadNumeric Grid2(ind), quantity2, nkClos, Nomnom1.getQuantityRevert(S, revertAsWhole)
             LoadNumeric Grid2(ind), quantity2, nkQuant, Nomnom1.getQuantityRevert(S2, revertAsWhole)
         End If
@@ -1041,7 +1047,9 @@ Else
         Set tbNomenk = myOpenRecordSet("##129.2", sql, dbOpenForwardOnly)
         If Not tbNomenk.BOF Then
             quantity2 = quantity2 + 1
-            If tbNomenk!perlist > 1 Then Grid2(ind).TextMatrix(quantity2, 0) = "Да" 'обрезная
+            If tbNomenk!perlist > 1 Then
+                Grid2(ind).TextMatrix(quantity2, 0) = "Да" 'обрезная
+            End If
             Grid2(ind).TextMatrix(quantity2, nkNomNom) = NN(I)
             Grid2(ind).TextMatrix(quantity2, nkNomName) = tbNomenk!cod & " " & _
                 tbNomenk!nomName & " " & tbNomenk!Size
