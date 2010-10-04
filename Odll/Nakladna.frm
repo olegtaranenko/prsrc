@@ -479,28 +479,39 @@ Private Sub cmClose_Click()
 Dim I As Integer, J As Integer, NN2() As String, K As Integer
 Dim numExtO As Integer, id As Integer, L As Long, S As Double
 Dim mov As Double, moveNum As String, per As Double, str As String, str2 As String
+Dim SS() As Integer
 
 If Not lockSklad Then Exit Sub
 
 ReDim NN(0): ReDim NN2(0): ReDim NN3(0): ReDim QQ(0): ReDim QQ2(0): ReDim QQ3(0)
+ReDim SS(0)
+
 I = 0: J = 0: moveNum = ""
 For L = 1 To quantity2
   str = Grid2(0).TextMatrix(L, nkQuant)
-  If IsNumeric(str) Then
+  If IsNumeric(str) And str <> "" Then
     mov = 0
     gNomNom = Grid2(0).TextMatrix(L, nkNomNom)
-    If Grid2(0).TextMatrix(L, 0) = "" Then 'штучная
+    If Grid2(0).TextMatrix(L, 0) = "0" Then 'штучная
         I = I + 1: ReDim Preserve NN(I): ReDim Preserve QQ(I)
         NN(I) = gNomNom: QQ(I) = str
         skladId = -1001: GoTo AA
     Else ' обрезную списываем со склада обрезков
-        J = J + 1: ReDim Preserve NN2(J)
-        ReDim Preserve QQ2(J): ReDim Preserve QQ3(J)
-        NN2(J) = gNomNom: QQ2(J) = str: QQ3(J) = 0
-        skladId = -1002
+        J = J + 1
+        ReDim Preserve NN2(J)
+        ReDim Preserve QQ2(J)
+        ReDim Preserve QQ3(J)
+        NN2(J) = gNomNom
+        QQ2(J) = CDbl(str) * Grid2(0).TextMatrix(L, 0)
+        QQ3(J) = 0
+        If Grid2(0).TextMatrix(L, nkIntEdIzm) <> "" Then
+            skladId = -1002
+        Else
+            skladId = -1001
+        End If
         If IsNumeric(Grid2(0).TextMatrix(L, nkIntQuant)) Then 'нужна межскладская
             sql = "SELECT perList, ed_Izmer2 from sGuideNomenk " & _
-            "WHERE (((sGuideNomenk.nomNom)='" & gNomNom & "'));"
+            "WHERE sGuideNomenk.nomNom = '" & gNomNom & "'"
             If Not byErrSqlGetValues("##366", sql, per, str2) Then Exit Sub
             
             QQ3(J) = per * Grid2(0).TextMatrix(L, nkIntQuant)
@@ -520,7 +531,7 @@ For L = 1 To quantity2
         End If
         
 AA:     S = PrihodRashod("+", skladId) - PrihodRashod("-", skladId) 'Ф. остатки по складу
-        S = Round(mov + S - str, 2)
+        S = Round(mov + S - quant, 2)
         If S < 0 Then
           If MsgBox("Дефицит товара '" & gNomNom & "' в факт. остатках " & _
           "в подразделении '" & sDocs.lbInside.List(-1001 - skladId) & _
@@ -587,7 +598,7 @@ If J > 0 Then
   tbDocs!numExt = numExtO
   tbDocs!xDate = tmpDate
   tbDocs!Note = moveNum
-  tbDocs!sourId = -1002
+  tbDocs!sourId = skladId
   tbDocs!destId = id
   tbDocs.update
   For K = 1 To J
@@ -1025,10 +1036,12 @@ If idWerk = 1 Then
             If myAsWhole = 0 Then
                 beSUO = True
                 Grid2(ind).TextMatrix(quantity2, nkIntEdIzm) = tbNomenk!ed_Izmer2
-                Grid2(ind).TextMatrix(quantity2, 0) = "Да" 'обрезная
+                Grid2(ind).TextMatrix(quantity2, 0) = "1" 'обрезная
                 If intQuant > 0 Then
                     LoadNumeric Grid2(ind), quantity2, nkIntQuant, intQuant
                 End If
+            Else
+                Grid2(ind).TextMatrix(quantity2, 0) = tbNomenk!perlist 'обрезная
             End If
             Grid2(ind).TextMatrix(quantity2, nkEdIzm) = Nomnom1.getEdizm(myAsWhole)
             Grid2(ind).TextMatrix(quantity2, nkTreb) = Nomnom1.getQuantity(tbNomenk!quant, myAsWhole)
@@ -1048,7 +1061,9 @@ Else
         If Not tbNomenk.BOF Then
             quantity2 = quantity2 + 1
             If tbNomenk!perlist > 1 Then
-                Grid2(ind).TextMatrix(quantity2, 0) = "Да" 'обрезная
+                Grid2(ind).TextMatrix(quantity2, 0) = "1" 'обрезная
+            Else
+                Grid2(ind).TextMatrix(quantity2, 0) = "0" 'штучная, но это признак не умножать
             End If
             Grid2(ind).TextMatrix(quantity2, nkNomNom) = NN(I)
             Grid2(ind).TextMatrix(quantity2, nkNomName) = tbNomenk!cod & " " & _
@@ -1204,7 +1219,7 @@ AA:         MsgBox "Сначала проставте значение в колонке 'кол-во'", , "Предупреж
         asIzdelie = True
         laGrid4.Caption = "факт. остатки по готовому изделию " & Grid2(Index).TextMatrix(mousRow2, nkNomNom)
         
-    ElseIf Grid2(Index).TextMatrix(mousRow2, 0) = "" Or mousCol2 = nkIntQuant Then 'штучная
+    ElseIf Grid2(Index).TextMatrix(mousRow2, 0) = "1" Or mousCol2 = nkIntQuant Then 'штучная
         laGrid4.Caption = tmpStr & sDocs.lbInside.List(0) & "'"
         myAsWhole = True
     Else ' обрезная
@@ -1284,7 +1299,7 @@ mousCol2 = Grid2(Index).col
 If Not (quantity2 <> 0 And Regim = "predmeti" And dostup <> "") And Regim <> "sklad" Then Exit Sub
 
 If mousCol2 = nkQuant Or (mousCol2 = nkIntQuant And _
-Grid2(Index).TextMatrix(mousRow2, 0) <> "") Then
+Grid2(Index).TextMatrix(mousRow2, nkIntEdIzm) <> "") Then
     Grid2(Index).CellBackColor = &H88FF88
 Else
     Grid2(Index).CellBackColor = vbYellow
@@ -1333,9 +1348,6 @@ If KeyCode = vbKeyReturn Then
     If mousCol2 = nkQuant Then
         quant = CInt(tbMobile2.Text)
         If idWerk = 1 Then
-            ' пометить, в каком режиме начался забор материалов
-            sql = "update OrdersInCeh set nakladRegim = '" & Regim & "' where numorder = " & gNzak
-            myExecute "##363.3", sql
             
             sql = "call wf_update_sell_rez (" _
                 & gNzak _

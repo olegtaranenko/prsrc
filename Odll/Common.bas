@@ -2411,28 +2411,15 @@ ostatCorr = False
 
 sql = "SELECT sDocs.sourId, sDocs.destId, sDocs.numDoc, sDocs.numExt " & _
 "From sDocs " & _
-"WHERE (((sDocs.numDoc)=" & numDoc & ") AND ((sDocs.numExt)=" & numExt & "));"
+"WHERE sDocs.numDoc = " & numDoc & " AND sDocs.numExt = " & numExt
 If Not byErrSqlGetValues("##180", sql, sId, dId) Then Exit Function
 
 If sId < -1000 And dId < -1000 Then ' для межскладских не корректируем
         ostatCorr = True
 Else
     'корректируем остатки
-'    ostatCorr = False
-'    Set tbNomenk = myOpenRecordSet("##163", "select * from sGuideNomenk", dbOpenForwardOnly)
-'    If tbNomenk Is Nothing Then Exit Function
-'    tbNomenk.index = "PrimaryKey"
-'    tbNomenk.Seek "=", gNomNom
-'    If Not tbNomenk.NoMatch Then
-'        tbNomenk.Edit
-'        tbNomenk!nowOstatki = Round(tbNomenk!nowOstatki - delta, 2)
-'        tbNomenk.Update
-'        ostatCorr = True
-'    End If
-'    tbNomenk.Close
-    
     sql = "UPDATE sGuideNomenk SET nowOstatki = [nowOstatki]-" & delta & _
-    " WHERE (((sGuideNomenk.nomNom)='" & gNomNom & "'));"
+    " WHERE sGuideNomenk.nomNom = '" & gNomNom & "'"
     If myExecute("##163", sql) <> 0 Then Exit Function
     ostatCorr = True
 End If

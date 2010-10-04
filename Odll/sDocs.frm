@@ -526,11 +526,8 @@ lbZakaz.Clear
 
 sql = "SELECT bo.numorder " & _
 "FROM BayOrders bo JOIN sDMCrez r ON r.numDoc = bo.numOrder " & _
-" GROUP BY bo.numorder HAVING Max(r.curQuant) > 0" _
-& "       UNION " _
-& " SELECT bo.numorder " & _
-"FROM BayOrders bo JOIN xPredmetyByIzdelia pi ON pi.numorder = bo.numOrder " & _
-" where pi.curQuant > 0"
+" GROUP BY bo.numorder HAVING Max(r.curQuant) > 0"
+
 
 Set tbDocs = myOpenRecordSet("##346", sql, dbOpenForwardOnly)
 If tbDocs Is Nothing Then Exit Sub
@@ -772,7 +769,7 @@ gNzak = numDoc
 frZakaz.Visible = False
 
 If cmOrder.Enabled Then ' кто погашен тот и вызвал
-    bayZakazi
+    workZakazi
 Else
     workZakazi
 End If
