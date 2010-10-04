@@ -2341,19 +2341,12 @@ ElseIf mousCol = orOplacheno Or mousCol = orZalog Or mousCol = orNal Or mousCol 
 Then
     textBoxInGridCell tbMobile, Grid
 ElseIf mousCol = orZakazano Then
-    If idWerk = 1 Then
-        Nakladna.Regim = "sklad"
-        Nakladna.idWerk = idWerk
-        numDoc = Grid.TextMatrix(mousRow, orNomZak)
-        Nakladna.Show vbModal
+    If havePredmetiNew Then
+        MsgBox "Значение в этом поле не редактируется, т.к. у заказа есть " & _
+        "предметы (для просмотра кликните на поле '№ заказа')", , "Предупреждение"
+        Exit Sub
     Else
-        If havePredmetiNew Then
-            MsgBox "Значение в этом поле не редактируется, т.к. у заказа есть " & _
-            "предметы (для просмотра кликните на поле '№ заказа')", , "Предупреждение"
-            Exit Sub
-        Else
-          textBoxInGridCell tbMobile, Grid
-        End If
+         textBoxInGridCell tbMobile, Grid
     End If
 ElseIf mousCol = orOtgrugeno Then
     If IsNumeric(Grid.TextMatrix(mousRow, orInvoice)) Or _

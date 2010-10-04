@@ -816,12 +816,12 @@ Next I
 sql = "UPDATE sDMCrez SET curQuant = 0 WHERE numDoc = " & numDoc
 If myExecute("##367", sql) <> 0 Then GoTo ER3
 
-sql = "update xPredmetyByIzdelia set" _
+'sql = "update xPredmetyByIzdelia set" _
 & " doneQuant = isnull(doneQuant, 0) + isnull(curQuant,0)" _
 & ", curQuant = null" _
 & " where numorder = " & numDoc
 
-myExecute "W#367.2", sql, -1
+'myExecute "W#367.2", sql, -1
 
 wrkDefault.CommitTrans
 EN1: lockSklad "un"
