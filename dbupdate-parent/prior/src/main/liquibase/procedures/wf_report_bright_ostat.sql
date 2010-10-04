@@ -48,14 +48,35 @@ begin
 
 	create table #itogo(nomnom varchar(20), debit float null, kredit float null);
 
+	create table #products(prId int);
+
+	insert into #products(prId)
+	select prId
+	from sGuideProducts ph
+	where ph.prodCategoryId = 2 and isnumeric(ph.page) = 1 
+		and isnull(p_prId, ph.prId) = ph.prId 
+	;
+
+	
+	delete from #products 
+	from sProducts  p 
+	where p.productId = #products.prId
+		and exists (
+			select 1 from sGuideNomenk n
+			where n.nomnom = p.nomnom and n.web = 'mat'
+		);
+
+--	select * from #products p join sGuideProducts ph on p.prId = ph.prId order by ph.prName;
+
 	insert into #nomenk(nomnom, perList)
 	select distinct
 		p.nomnom, k.perList
-	from sGuideProducts ph
+	from #products         tp
+	join sGuideProducts    ph on ph.prId = tp.prId
 	join #sGuideSeries_ord os on os.id = ph.prSeriaId
 	join sProducts          p on p.productId = ph.prId
-	join sGuideNomenk       k on k.nomnom = p.nomnom
-	where ph.prodCategoryId = 2 and isnumeric(ph.page) = 1
+	join sGuidenomenk       k on k.nomnom = p.nomnom
+	where ph.prodCategoryId = 2 and isnumeric(ph.page) = 1 
 		and isnull(p_prId, ph.prId) = ph.prId 
 	;
 --select * from #nomenk;
@@ -100,7 +121,8 @@ begin
 	from isumBranRsrv 
 	where isumBranRsrv.nomnom = #nomenk.nomnom;
 --select * from #nomenk;
-	
+
+
 	select 
 		  ph.prId, ph.prName, ph.prSeriaId, ph.prSize, ph.prDescript 
 		, ph.vremObr, ph.formulaNom, ph.cena4, ph.page, ph.sortNom
@@ -114,14 +136,15 @@ begin
 		, n.cena_W, n.rabbat, n.margin,  n.kolonok, n.CenaOpt2, n.CenaOpt3, n.CenaOpt4
 		, s.gain2, s.gain3, s.gain4
 		, f.formula, w.prId as hasWeb, p.quantity as quantEd
-	from sGuideProducts ph
-	join #sGuideSeries_ord os on os.id       = ph.prSeriaId
-	left join wf_izdeliaWithWeb w on w.prId  = ph.prId
-	join sProducts          p on p.productId = ph.prId
-	join sGuideNomenk       n on n.nomnom    = p.nomnom
-	join sGuideSeries       s on s.seriaId   = ph.prSeriaId
-	left join #nomenk       k on k.nomnom    = p.nomnom
-	left join sGuideFormuls f on f.nomer     = ph.formulaNom
+	from #products              tp
+	join sGuideProducts         ph on tp.prId     = ph.prId
+	join #sGuideSeries_ord      os on os.id       = ph.prSeriaId
+	left join wf_izdeliaWithWeb  w on w.prId      = ph.prId
+	join sProducts               p on p.productId = ph.prId
+	join sGuideNomenk            n on n.nomnom    = p.nomnom
+	join sGuideSeries            s on s.seriaId   = ph.prSeriaId
+	left join #nomenk            k on k.nomnom    = p.nomnom
+	left join sGuideFormuls      f on f.nomer     = ph.formulaNom
 	where 
 			ph.prodCategoryId = 2 
 		and isnumeric(ph.page) = 1
