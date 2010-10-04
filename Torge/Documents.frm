@@ -1868,6 +1868,9 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
                     exRow = exRow + 1
                     cErr = setVertBorders(objExel, xlThin, lastColInt)
 
+                    With .Range("A" & exRow & ":" & lastCol & exRow)
+                        .Font.Italic = True
+                    End With
                     .Cells(exRow, 1).Value = "Код"
                     .Cells(exRow, 2).Value = "Описание"
                     .Cells(exRow, 3).Value = "Размер"
@@ -1940,14 +1943,14 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
         With .Range("A" & exRow & ":" & lastCol & exRow)
             .Borders(xlEdgeTop).Weight = xlMedium
         End With
-        exRow = exRow + 1
-        .Cells(exRow, 1).Value = "Примечание *)"
-        With .Range("B" & CStr(exRow) & ":" & lastCol & CStr(exRow))
-            .Merge (True)
-            .Value = "В скобках указано количество позиций в одном готовом изделии. Цена позиции - за одну единицу."
-            .HorizontalAlignment = xlHAlignLeft
-        End With
-        .Rows(exRow).Font.Italic = True
+        'exRow = exRow + 1
+        '.Cells(exRow, 1).value = "Примечание *)"
+        'With .Range("B" & CStr(exRow) & ":" & lastCol & CStr(exRow))
+        '    .Merge (True)
+        '    .value = "В скобках указано количество позиций в одном готовом изделии. Цена позиции - за одну единицу."
+        '    .HorizontalAlignment = xlHAlignLeft
+        'End With
+        '.Rows(exRow).Font.Italic = True
     
         exRow = exRow + 1
         .Cells(exRow, 1).Value = "Цены на изделия каталога Bright Awards 2010-11, не указанные в данном прайс-листе - "

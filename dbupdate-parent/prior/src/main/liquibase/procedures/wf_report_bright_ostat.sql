@@ -150,6 +150,7 @@ begin
 			ph.prodCategoryId = 2 
 		and isnumeric(ph.page) = 1
 		and isnull(p_prId, ph.prId) = ph.prId 
+		and isnull(n.web, '') <> 'vmt'
 	order by os.ord, ph.sortNom, n.nomnom;
 
 
