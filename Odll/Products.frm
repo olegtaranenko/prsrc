@@ -2221,7 +2221,7 @@ If I > 0 Then
 ElseIf I < 0 Then ' записи нет, поэтому добавляем
     sql = "INSERT INTO sDMC ( numDoc, numExt, nomNom, quant )" & _
     "SELECT " & numDoc & ", " & numExt & ", '" & gNomNom & "', " & delta & ";"
-    Debug.Print sql
+    'Debug.Print sql
     If myExecute("##348", sql) <> 0 Then GoTo EN1
 End If
 'If noLock = "" Then tbDMC.Close

@@ -479,7 +479,7 @@ Private Sub cmClose_Click()
 Dim I As Integer, J As Integer, NN2() As String, K As Integer
 Dim numExtO As Integer, id As Integer, L As Long, S As Double
 Dim mov As Double, moveNum As String, per As Double, str As String, str2 As String
-Dim SS() As Integer
+Dim SS() As Integer, skladHasSpis(2) As Integer
 
 If Not lockSklad Then Exit Sub
 
@@ -489,27 +489,39 @@ ReDim SS(0)
 I = 0: J = 0: moveNum = ""
 For L = 1 To quantity2
   str = Grid2(0).TextMatrix(L, nkQuant)
-  If IsNumeric(str) And str <> "" Then
+  If IsNumeric(str) And str <> "" And str <> "0" Then
     mov = 0
     gNomNom = Grid2(0).TextMatrix(L, nkNomNom)
     If Grid2(0).TextMatrix(L, 0) = "0" Then 'штучная
-        I = I + 1: ReDim Preserve NN(I): ReDim Preserve QQ(I)
-        NN(I) = gNomNom: QQ(I) = str
-        skladId = -1001: GoTo AA
+        I = I + 1
+        ReDim Preserve NN(I)
+        ReDim Preserve QQ(I)
+        NN(I) = gNomNom
+        QQ(I) = str
+        skladId = -1001
+        skladHasSpis(1) = skladId
+        GoTo AA
     Else ' обрезную списываем со склада обрезков
         J = J + 1
         ReDim Preserve NN2(J)
         ReDim Preserve QQ2(J)
         ReDim Preserve QQ3(J)
+        ReDim Preserve SS(J)
         NN2(J) = gNomNom
         QQ2(J) = CDbl(str) * Grid2(0).TextMatrix(L, 0)
         QQ3(J) = 0
+        
         If Grid2(0).TextMatrix(L, nkIntEdIzm) <> "" Then
-            skladId = -1002
+            SS(J) = -1002
+            skladId = SS(J)
+            skladHasSpis(2) = skladId
         Else
-            skladId = -1001
+            SS(J) = -1001
+            skladId = SS(J)
+            skladHasSpis(1) = skladId
         End If
         If IsNumeric(Grid2(0).TextMatrix(L, nkIntQuant)) Then 'нужна межскладская
+            
             sql = "SELECT perList, ed_Izmer2 from sGuideNomenk " & _
             "WHERE sGuideNomenk.nomNom = '" & gNomNom & "'"
             If Not byErrSqlGetValues("##366", sql, per, str2) Then Exit Sub
@@ -531,7 +543,7 @@ For L = 1 To quantity2
         End If
         
 AA:     S = PrihodRashod("+", skladId) - PrihodRashod("-", skladId) 'Ф. остатки по складу
-        S = Round(mov + S - quant, 2)
+        S = Round(mov + S - str, 2)
         If S < 0 Then
           If MsgBox("Дефицит товара '" & gNomNom & "' в факт. остатках " & _
           "в подразделении '" & sDocs.lbInside.List(-1001 - skladId) & _
@@ -544,6 +556,7 @@ AA:     S = PrihodRashod("+", skladId) - PrihodRashod("-", skladId) 'Ф. остатки 
     End If
   End If
 Next L
+
 If I + J = 0 Then
   If Regim = "predmeti" Then
     MsgBox "Проставте количества для тех позиций, которые Вы хотите списать.", , "Нечего списывать!"
@@ -568,8 +581,11 @@ Else
     tmpDate = Now
 End If
 
+
 numExtO = 0
 If J > 0 Then numExtO = getNextNumExt()
+
+' межсклад
 If moveNum = "yes" Then
     numDoc = getNextDocNum()
     moveNum = numDoc
@@ -591,39 +607,49 @@ If moveNum = "yes" Then
     tmpDate = DateAdd("S", 1, tmpDate)
 End If
 
+
+'списание обрезной
 numDoc = gNzak
+Dim II As Integer
 If J > 0 Then
-  tbDocs.AddNew
-  tbDocs!numDoc = numDoc
-  tbDocs!numExt = numExtO
-  tbDocs!xDate = tmpDate
-  tbDocs!Note = moveNum
-  tbDocs!sourId = skladId
-  tbDocs!destId = id
-  tbDocs.update
-  For K = 1 To J
-    gNomNom = NN2(K): numExt = numExtO
-    If Not sProducts.nomenkToDMC(QQ2(K), "noLock") Then GoTo ER2
-    If Not clrCehQuant Then GoTo ER2
-  Next K
-  tmpDate = DateAdd("S", 1, tmpDate)
+    For II = 1 To 2
+        If skladHasSpis(II) <> 0 Then
+            tbDocs.AddNew
+            tbDocs!numDoc = numDoc
+            tbDocs!numExt = numExtO
+            tbDocs!xDate = tmpDate
+            tbDocs!Note = moveNum
+            tbDocs!sourId = skladHasSpis(II)
+            tbDocs!destId = id
+            tbDocs.update
+            For K = 1 To J
+                If SS(K) = skladHasSpis(II) Then
+                    gNomNom = NN2(K)
+                    numExt = numExtO
+                    If Not sProducts.nomenkToDMC(QQ2(K), "noLock") Then GoTo ER2
+                    If Not clrCehQuant Then GoTo ER2
+                End If
+            Next K
+            numExtO = numExtO + 1
+        End If
+    Next II
 End If
 
-numExt = 0
+'списание штучной
 If I > 0 Then
-  numExt = getNextNumExt()
-  tbDocs.AddNew
-  tbDocs!numDoc = numDoc
-  tbDocs!numExt = numExt
-  tbDocs!xDate = tmpDate
-  tbDocs!sourId = -1001
-  tbDocs!destId = id
-  tbDocs.update
-  For K = 1 To I
-    gNomNom = NN(K)
-    If Not sProducts.nomenkToDMC(QQ(K), "noLock") Then GoTo ER2
-    If Not clrCehQuant Then GoTo ER2
-  Next K
+    numExt = getNextNumExt()
+    tbDocs.AddNew
+    tbDocs!numDoc = numDoc
+    tbDocs!numExt = numExt
+    tbDocs!xDate = tmpDate
+    tbDocs!sourId = -1001
+    tbDocs!destId = id
+    tbDocs.update
+    For K = 1 To I
+        gNomNom = NN(K)
+        If Not sProducts.nomenkToDMC(QQ(K), "noLock") Then GoTo ER2
+        If Not clrCehQuant Then GoTo ER2
+    Next K
 End If
 'tbDMC.Close
 tbDocs.Close
