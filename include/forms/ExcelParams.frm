@@ -354,7 +354,7 @@ Private Sub Form_Load()
     tbCommonRabbat.Visible = False
     tbCommonRabbat.Text = CStr(commonRabbat)
     
-    If Regim = "awards" Then
+    If Regim = "awards" Or Regim = "awardsWeb" Then
         lbPriceType.Visible = True
         cbPriceType.Visible = True
         

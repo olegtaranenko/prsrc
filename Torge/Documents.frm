@@ -402,10 +402,11 @@ Begin VB.Form Documents
          Caption         =   "Прайс и остатки по складу материалов"
       End
       Begin VB.Menu mnBrightAwards 
-         Caption         =   "Прайс и остатки по складу Bright Awards (РПФ)"
+         Caption         =   "Прайс и остатки по складу Bright Awards"
       End
       Begin VB.Menu mnBrightAwardsPrice 
          Caption         =   "Прайс-лист Bright Awards технический"
+         Visible         =   0   'False
       End
       Begin VB.Menu mnSep5 
          Caption         =   "-"
@@ -1365,11 +1366,13 @@ Private Sub mnBrightAwards_Click()
         Exit Sub
     End If
     BrightAwardsRestToExcel myRegim, , ExcelParamDialog.mainReportTitle, _
-        ExcelParamDialog.kegl, 0, ExcelParamDialog.commonRabbat
+        ExcelParamDialog.kegl, ExcelParamDialog.priceType, ExcelParamDialog.commonRabbat
     
 End Sub
 
 Private Sub mnBrightAwardsPrice_Click()
+' Прайс технический
+
     Dim myRegim As String
     myRegim = "awards"
     ExcelParamDialog.mainReportTitle = getEffectiveSetting(myRegim & ".title", "Остатки по складу Bright Awards")
@@ -1820,7 +1823,7 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
         priceRegim = "default"
     End If
 
-    On Error GoTo ERR2
+    'On Error GoTo ERR2
     Set objExel = New Excel.Application
     objExel.Visible = True
     objExel.SheetsInNewWorkbook = 1
@@ -1840,6 +1843,10 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
         .Columns(7).columnWidth = priceColWidth
         .Columns(8).columnWidth = priceColWidth
         .Columns(9).columnWidth = priceColWidth
+        .Columns(6).HorizontalAlignment = xlHAlignRight
+        .Columns(7).HorizontalAlignment = xlHAlignRight
+        .Columns(8).HorizontalAlignment = xlHAlignRight
+        .Columns(9).HorizontalAlignment = xlHAlignRight
 
         ' печать стандартной шапки
         exRow = excelStdSchapka(objExel, RubRate, mainReportTitle, lastCol, "МАРКМАСТЕР", , ExcelParamDialog.contact1, ExcelParamDialog.contact2)
@@ -1866,10 +1873,14 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
                     .Cells(exRow, 3).Value = "Размер"
                     .Cells(exRow, 4).Value = "Ед.изм."
                     .Cells(exRow, 5).Value = "Дост.ост"
-                    .Cells(exRow, 6).Value = "Цена 1"
-                    .Cells(exRow, 7).Value = "Цена 2"
-                    .Cells(exRow, 8).Value = "Цена 3"
-                    .Cells(exRow, 9).Value = "Цена 4"
+                    .Cells(exRow, 6).Value = tbProduct!head1
+                    .Cells(exRow, 7).Value = tbProduct!head2
+                    .Cells(exRow, 8).Value = tbProduct!head3
+                    .Cells(exRow, 9).Value = tbProduct!head4
+                    .Cells(exRow, 6).Font.Bold = True
+                    .Cells(exRow, 7).Font.Bold = True
+                    .Cells(exRow, 8).Font.Bold = True
+                    .Cells(exRow, 9).Font.Bold = True
                     exRow = exRow + 1
                 End If
 
@@ -1938,6 +1949,13 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
         End With
         .Rows(exRow).Font.Italic = True
     
+        exRow = exRow + 1
+        .Cells(exRow, 1).Value = "Цены на изделия каталога Bright Awards 2010-11, не указанные в данном прайс-листе - "
+        .Cells(exRow, 1).Font.Bold = True
+        
+        exRow = exRow + 1
+        .Cells(exRow, 1).Value = "см. прайс-лист на ""Материалы и комплектующие"""
+        .Cells(exRow, 1).Font.Bold = True
     
     End With
 EN1:
