@@ -2829,9 +2829,25 @@ where firmguide.werkid not in (1,2 )
 	</changeSet>
 
 	<changeSet id="3" author="mantis-216" runOnChange="false">
+		<comment>определяет в каком режим была начато редактирование накладной на забор материалов со склада</comment>
 		<addColumn tableName="OrdersInCeh">
 			<column name="nakladRegim" type="varchar(8)"><constraints nullable="true"/></column>
 		</addColumn>
+	</changeSet>
+
+	<changeSet id="1" author="mantis-219" runOnChange="false">
+		<comment>определяет в каком режим была начато редактирование накладной на забор материалов со склада</comment>
+		<dropColumn tableName="OrdersInCeh" columnName="nakladRegim"/>
+	</changeSet>
+
+	<changeSet id="2" author="mantis-219" runOnChange="false">
+		<comment>Хранить число зарезервированнх гот.изделий (для продаж)</comment>
+		<dropColumn tableName="xPredmetyByIzdelia" columnName="curQuant"/>
+	</changeSet>
+
+	<changeSet id="3" author="mantis-219" runOnChange="false">
+		<comment>Хранить число зарезервированнх гот.изделий (для продаж)</comment>
+		<dropColumn tableName="xPredmetyByIzdelia" columnName="doneQuant"/>
 	</changeSet>
 
 
