@@ -754,12 +754,14 @@ If opProduct.Value Then
      
     dostupOstatkiToGrid "multiN"
 Else
-    sql = "select count(*) from sGuideNomenk " _
-    & " where web = 'vmt' AND nomnom = '" & gNomNom & "'"
-    byErrSqlGetValues "##p.1", sql, hasDrobnProc
-    If hasDrobnProc = 1 Then
-        MsgBox "Вспомогательные материалы продавать нельзя", , "Добавить позицию нельзя!"
-        Exit Sub
+    If Regim = "" And idWerk = 1 Then
+        sql = "select count(*) from sGuideNomenk " _
+        & " where web = 'vmt' AND nomnom = '" & gNomNom & "'"
+        byErrSqlGetValues "##p.1", sql, hasDrobnProc
+        If hasDrobnProc = 1 Then
+            MsgBox "Вспомогательные материалы продавать нельзя", , "Добавить позицию нельзя!"
+            Exit Sub
+        End If
     End If
     
     dostupOstatkiToGrid

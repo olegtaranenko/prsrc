@@ -466,7 +466,7 @@ Dim I As Long
             sql = "UPDATE sDMCrez SET curQuant = " & quant & _
                 " WHERE numDoc = " & numDoc & " AND nomNom = '" & _
                 Grid2(0).TextMatrix(I, nkNomNom) & "'"
-            myExecute "##363.1", sql
+            myExecute "##363.2", sql
                 
 
             
@@ -1325,6 +1325,10 @@ If KeyCode = vbKeyReturn Then
     If mousCol2 = nkQuant Then
         quant = CInt(tbMobile2.Text)
         If idWerk = 1 Then
+            ' пометить, в каком режиме начался забор материалов
+            sql = "update OrdersInCeh set nakladRegim = '" & Regim & "' where numorder = " & gNzak
+            myExecute "##363.3", sql
+            
             sql = "call wf_update_sell_rez (" _
                 & gNzak _
                 & "," & quant _
@@ -1334,6 +1338,7 @@ If KeyCode = vbKeyReturn Then
                 & "," & setNullableParamInt(Grid2(0).TextMatrix(mousRow2, nkPrId)) _
                 & "," & setNullableParamInt(Grid2(0).TextMatrix(mousRow2, nkPrExt)) _
                 & ")"
+            
         Else
             If QQ2(0) = 0 Then 'нет этапа
                 quant = Grid2(0).TextMatrix(mousRow2, nkTreb)
@@ -1364,7 +1369,7 @@ If KeyCode = vbKeyReturn Then
         sql = "UPDATE sDmcRez SET intQuant = " & quant & _
         " WHERE numDoc = " & numDoc _
             & " AND nomNom = '" & Grid2(0).TextMatrix(mousRow2, nkNomNom) & "'"
-        isOk = myExecute("##363", sql)
+        isOk = myExecute("##363.1", sql)
         If isOk = 0 Then
         
             If quant = 0 Then

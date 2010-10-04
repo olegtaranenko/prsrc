@@ -2828,6 +2828,12 @@ where firmguide.werkid not in (1,2 )
 		</modifyColumn>
 	</changeSet>
 
+	<changeSet id="3" author="mantis-216" runOnChange="false">
+		<addColumn tableName="OrdersInCeh">
+			<column name="nakladRegim" type="varchar(8)"><constraints nullable="true"/></column>
+		</addColumn>
+	</changeSet>
+
 
 
 </databaseChangeLog>
