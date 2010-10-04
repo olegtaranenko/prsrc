@@ -2,12 +2,12 @@ if exists (select 1 from sysviews where viewname = 'isumWareOrde' and vcreator =
 	drop view isumWareOrde;
 end if;
 
-create view isumWareOrde (numorder, nomnom, quant, quantEd)
+create view isumWareOrde (numorder, nomnom, quant)
 as 
 select 
-	numorder, nomnom, sum(quant) as quant, quantEd
+	numorder, nomnom, sum(quant) as quant
 from itemWareOrde
-group by numorder, nomnom, quantEd
+group by numorder, nomnom
 ;
 
 

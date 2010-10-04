@@ -15,20 +15,23 @@ begin
 
 	if p_type = 'p' then
 
-		select pi.doneQuant, pi.curQuant
+		select pi.doneQuant, pi.curQuant, 1
 		from xPredmetyByIzdelia pi 
 		where
 			p_prid = pi.prId and p_PrExt = pi.PrExt and pi.numorder = p_numorder;
 
 	elseif p_type = 'n' then
 
-		select sum(isnull(d.quant,0) / n.perlist) as doneQuant, dr.curQuant / n.perlist as curQuant
+		select 
+			sum(isnull(d.quant,0) / n.perlist) as doneQuant
+			, dr.curQuant / n.perlist as curQuant
+			, dr.intQuant
 		from sDmcRez dr  
 		join sGuideNomenk n on n.nomnom = dr.nomnom
 		left join sdmc d on d.numdoc = dr.numdoc and d.nomnom = dr.nomnom
 		where
 			dr.nomnom = p_nomnom and dr.numdoc = p_numorder
 		group by
-			dr.nomnom, dr.curQuant, n.perlist;
+			dr.nomnom, dr.curQuant, n.perlist, dr.intQuant;
 	end if;
 end;
