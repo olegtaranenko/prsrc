@@ -129,18 +129,48 @@ Begin VB.Form Nakladna
       AllowUserResizing=   1
    End
    Begin MSFlexGridLib.MSFlexGrid Grid2 
-      Height          =   4095
+      Height          =   3852
       Index           =   0
       Left            =   120
       TabIndex        =   0
-      Top             =   780
-      Width           =   9615
+      Top             =   1020
+      Width           =   9612
       _ExtentX        =   16955
-      _ExtentY        =   7218
+      _ExtentY        =   6795
       _Version        =   393216
       AllowBigSelection=   0   'False
       MergeCells      =   3
       AllowUserResizing=   1
+   End
+   Begin VB.Label ltRemark 
+      AutoSize        =   -1  'True
+      BackColor       =   &H8000000A&
+      Caption         =   "ltRemark"
+      BeginProperty Font 
+         Name            =   "MS Sans Serif"
+         Size            =   7.8
+         Charset         =   204
+         Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   192
+      Left            =   1320
+      TabIndex        =   33
+      Top             =   720
+      Visible         =   0   'False
+      Width           =   756
+   End
+   Begin VB.Label laRemark 
+      BackColor       =   &H8000000A&
+      Caption         =   "Примечание:"
+      Height          =   252
+      Left            =   120
+      TabIndex        =   32
+      Top             =   720
+      Visible         =   0   'False
+      Width           =   1092
    End
    Begin VB.Label laPageSize 
       Alignment       =   1  'Right Justify
@@ -240,7 +270,7 @@ Begin VB.Form Nakladna
       Index           =   0
       Left            =   180
       TabIndex        =   22
-      Top             =   480
+      Top             =   360
       Width           =   255
    End
    Begin VB.Label laNakl 
@@ -275,8 +305,8 @@ Begin VB.Form Nakladna
       Height          =   195
       Left            =   5700
       TabIndex        =   12
-      Top             =   420
-      Width           =   1155
+      Top             =   360
+      Width           =   1152
    End
    Begin VB.Label laFirm 
       BackColor       =   &H8000000A&
@@ -321,8 +351,8 @@ Begin VB.Form Nakladna
       Index           =   0
       Left            =   3600
       TabIndex        =   9
-      Top             =   480
-      Width           =   2055
+      Top             =   360
+      Width           =   2052
    End
    Begin VB.Label laKomu 
       BackColor       =   &H8000000A&
@@ -331,7 +361,7 @@ Begin VB.Form Nakladna
       Index           =   0
       Left            =   3060
       TabIndex        =   8
-      Top             =   480
+      Top             =   360
       Width           =   495
    End
    Begin VB.Label laSours 
@@ -350,7 +380,7 @@ Begin VB.Form Nakladna
       Index           =   0
       Left            =   540
       TabIndex        =   7
-      Top             =   480
+      Top             =   360
       Width           =   2295
    End
    Begin VB.Label laOt 
@@ -408,7 +438,7 @@ Public prvoCaption As String
 'Public idEquip As Integer
 Public idWerk As Integer
 Public asWhole As Boolean
-Public nakladRemark As String
+Public nakladRemark As String, shiftForRemark As Long
 
 Dim secondNaklad As String, beSUO As Boolean ' была листовая ном-ра
 
@@ -751,6 +781,23 @@ Dim notBay As Long, I As Long, delta As Long
 oldHeight = Me.Height
 oldWidth = Me.Width
 
+If nakladRemark <> "" And idWerk = 1 Then
+    laRemark.Visible = True
+    ltRemark.Visible = True
+    ltRemark.Caption = nakladRemark
+    shiftForRemark = 0
+Else
+    laRemark.Visible = False
+    ltRemark.Visible = False
+    shiftForRemark = Grid2(0).Top - laRemark.Top
+    Grid2(0).Top = laRemark.Top
+    cmPrint.Top = cmPrint.Top - shiftForRemark
+    cmExel.Top = cmExel.Top - shiftForRemark
+    cmSostav.Top = cmSostav.Top - shiftForRemark
+    cmClose.Top = cmClose.Top - shiftForRemark
+    cmExit.Top = cmExit.Top - shiftForRemark
+    Me.Height = Me.Height - shiftForRemark
+End If
 
 laTitle.Caption = "    Заказ №"
 Grid2(0).MergeRow(0) = True
@@ -1194,10 +1241,10 @@ Dim H As Integer, W As Integer
     cmExel.Top = cmExel.Top + H
     cmSostav.Top = cmSostav.Top + H
     cmClose.Top = cmClose.Top + H
+    cmExit.Top = cmExit.Top + H
     cmClose.Left = cmClose.Left + W
     cmCheckout.Top = cmPrint.Top
     cmCheckout.Left = cmPrint.Left + cmPrint.Width + 150
-    cmExit.Top = cmExit.Top + H
     cmExit.Left = cmExit.Left + W
     laDate.Left = laDate.Left + W
     tbPageSize.Left = cmExit.Left - tbPageSize.Width - 150
@@ -1371,6 +1418,7 @@ If Grid4.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid4.ColWidth(Grid4.MouseCol)
 
 End Sub
+
 
 Private Sub tbMobile2_KeyDown(KeyCode As Integer, Shift As Integer)
 Dim delta As Double, quant As Double, S As Double, str As String

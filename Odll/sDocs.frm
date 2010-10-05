@@ -840,6 +840,7 @@ Sub workZakazi()
 'сделать, чтобы по "Ok" сразу не появлялись пока  накладные(пустые), а только
 'по закрытию Nakladna.frm
 cmOrder.Enabled = True
+cmBay.Enabled = True
 sql = "SELECT werkId from orders where numorder = " & numDoc
 If Not byErrSqlGetValues("##98", sql, idWerk) Then Exit Sub
  
@@ -1029,7 +1030,7 @@ Dim strWhere As String, moveWhere As String, I As Integer, str As String
  "FROM sDocs INNER JOIN sGuideSource ON sDocs.sourId = sGuideSource.sourceId " & _
  "INNER JOIN sGuideSource AS GS ON sDocs.destId = GS.sourceId " & _
  "left JOIN guideVenture v ON v.ventureId = sDocs.ventureId " & _
- "WHERE " & moveWhere & " " & strWhere & " ORDER BY sDocs.xDate;"
+ "WHERE " & moveWhere & " " & strWhere & " ORDER BY sDocs.xDate, numdoc, numext"
 ' Debug.Print sql
  
  'MsgBox sql

@@ -332,6 +332,11 @@ Private Sub callNaklad()
     Nakladna.Regim = "predmeti"
     
     Nakladna.idWerk = Grid.TextMatrix(mousRow, chWerkId)
+    If Nakladna.idWerk = 1 Then
+        Nakladna.nakladRemark = Grid.TextMatrix(mousRow, chRemark)
+    Else
+        Nakladna.nakladRemark = ""
+    End If
     Nakladna.Show vbModal
 
 End Sub
@@ -671,7 +676,7 @@ Grid.TextMatrix(werkRows, chNomZak) = gNzak & str
 If str <> "" Then colorGridRow Grid, werkRows, &HCCCCCC 'маркируем МО
 Grid.TextMatrix(werkRows, chM) = tbCeh!Manag
 Grid.TextMatrix(werkRows, chFirma) = tbCeh!Name
-If idWerk = 1 Then
+If tbCeh!WerkId = 1 Then
     Grid.TextMatrix(werkRows, chRemark) = tbCeh!Remark
 Else
     Grid.TextMatrix(werkRows, chLogo) = tbCeh!Logo
@@ -877,7 +882,7 @@ dostup = "b") Then Me.PopupMenu mnNomZak
 
 getNumFromStr (Grid.TextMatrix(mousRow, chNomZak))
 
-If Grid.TextMatrix(mousRow, chWerkId) = 1 And mousCol = chRemark And cmNakladZakaz.Enabled Then
+If mousCol = chRemark And cmNakladZakaz.Enabled Then
     callNaklad
 End If
 
