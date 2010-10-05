@@ -2128,7 +2128,7 @@ Next I
 
 cbBuildStatuses Me.cbStatus, zakazBean.StatusId
 
-For I = 0 To Me.cbStatus.ListCount
+For I = 0 To Me.cbStatus.ListCount - 1
     If cbStatus.ItemData(I) = zakazBean.statusEquipID Then
         noClick = True
         Me.cbStatus.ListIndex = I
