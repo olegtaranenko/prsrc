@@ -1663,7 +1663,7 @@ Sub rowViem(numRow As Long, Grid As MSFlexGrid)
 Dim I As Long
 
 I = Grid.Height \ Grid.RowHeight(1) - 1 ' столько умещается строк
-I = numRow - I \ 2 ' в центр
+I = numRow - I + 2
 If I < 1 Then I = 1
 Grid.TopRow = I
 End Sub
@@ -2721,7 +2721,7 @@ While bilo ' необходимы еще проходы
 NXT:
   Next I
 Wend
-p_tv.Nodes.Item("k0").Expanded = True
+p_tv.Nodes.item("k0").Expanded = True
 Exit Sub
 ERR1:
  iErr = iErr + 1: bilo = True
