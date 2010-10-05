@@ -2128,6 +2128,8 @@ Next I
 
 cbBuildStatuses Me.cbStatus, zakazBean.StatusId
 
+
+' M227 -
 For I = 0 To Me.cbStatus.ListCount - 1
     If cbStatus.ItemData(I) = zakazBean.statusEquipID Then
         noClick = True
@@ -2137,7 +2139,10 @@ For I = 0 To Me.cbStatus.ListCount - 1
     End If
 Next I
 
-MsgBox "Err in Zakaz\startParams"
+    noClick = True
+    Me.cbStatus.ListIndex = 1
+    noClick = False
+
 NN:
 
 Me.cmZapros.Enabled = (IsNumeric(tbWorktime.Text) And IsDate(tbReadyDate)) Or statusIdNew = 0

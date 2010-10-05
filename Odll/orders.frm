@@ -1,18 +1,18 @@
 VERSION 5.00
-Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCTL.OCX"
+Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "mscomctl.ocx"
 Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Orders 
    Appearance      =   0  'Flat
    BackColor       =   &H8000000A&
    Caption         =   "Приор"
-   ClientHeight    =   5955
+   ClientHeight    =   5952
    ClientLeft      =   60
-   ClientTop       =   630
+   ClientTop       =   636
    ClientWidth     =   11880
    Icon            =   "Orders.frx":0000
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
-   ScaleHeight     =   5955
+   ScaleHeight     =   5952
    ScaleWidth      =   11880
    StartUpPosition =   2  'CenterScreen
    Begin VB.Frame frmRemark 
@@ -73,7 +73,7 @@ Begin VB.Form Orders
       Width           =   1932
    End
    Begin VB.ListBox lbSklad 
-      Height          =   1230
+      Height          =   1200
       ItemData        =   "Orders.frx":030A
       Left            =   5640
       List            =   "Orders.frx":031D
@@ -96,7 +96,7 @@ Begin VB.Form Orders
       Width           =   852
    End
    Begin VB.ListBox lbEquip 
-      Height          =   645
+      Height          =   624
       ItemData        =   "Orders.frx":034D
       Left            =   3120
       List            =   "Orders.frx":035A
@@ -107,14 +107,14 @@ Begin VB.Form Orders
    End
    Begin VB.ListBox lbVenture 
       Appearance      =   0  'Flat
-      Height          =   225
+      Height          =   216
       Left            =   5500
       TabIndex        =   33
       Top             =   1000
       Width           =   1095
    End
    Begin VB.ListBox lbAnnul 
-      Height          =   1035
+      Height          =   1008
       ItemData        =   "Orders.frx":036D
       Left            =   240
       List            =   "Orders.frx":037D
@@ -141,7 +141,7 @@ Begin VB.Form Orders
    Begin VB.TextBox tbInform 
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   9.75
+         Size            =   9.6
          Charset         =   204
          Weight          =   400
          Underline       =   0   'False
@@ -156,7 +156,7 @@ Begin VB.Form Orders
       Width           =   9015
    End
    Begin VB.ListBox lbClose 
-      Height          =   450
+      Height          =   432
       ItemData        =   "Orders.frx":03A5
       Left            =   240
       List            =   "Orders.frx":03AF
@@ -166,7 +166,7 @@ Begin VB.Form Orders
       Width           =   1212
    End
    Begin VB.ListBox lbTema 
-      Height          =   2010
+      Height          =   1968
       Left            =   3960
       TabIndex        =   28
       Top             =   1020
@@ -278,7 +278,7 @@ Begin VB.Form Orders
          Caption         =   "Включен фильтр !"
          BeginProperty Font 
             Name            =   "MS Sans Serif"
-            Size            =   8.25
+            Size            =   7.8
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -295,7 +295,7 @@ Begin VB.Form Orders
       End
    End
    Begin VB.ListBox lbType 
-      Height          =   1035
+      Height          =   1008
       ItemData        =   "Orders.frx":03CC
       Left            =   1560
       List            =   "Orders.frx":03DF
@@ -305,7 +305,7 @@ Begin VB.Form Orders
       Width           =   372
    End
    Begin VB.ListBox lbDel 
-      Height          =   450
+      Height          =   432
       ItemData        =   "Orders.frx":03F4
       Left            =   240
       List            =   "Orders.frx":03FE
@@ -323,7 +323,7 @@ Begin VB.Form Orders
       Width           =   1515
    End
    Begin VB.ListBox lbM 
-      Height          =   255
+      Height          =   240
       Left            =   1500
       TabIndex        =   21
       Top             =   1020
@@ -339,7 +339,7 @@ Begin VB.Form Orders
       Width           =   852
    End
    Begin VB.ListBox lbStat 
-      Height          =   645
+      Height          =   624
       ItemData        =   "Orders.frx":0418
       Left            =   240
       List            =   "Orders.frx":0425
@@ -358,7 +358,7 @@ Begin VB.Form Orders
       Width           =   975
    End
    Begin VB.ListBox lbProblem 
-      Height          =   2400
+      Height          =   2352
       Left            =   2460
       TabIndex        =   17
       Top             =   1020
@@ -366,7 +366,7 @@ Begin VB.Form Orders
       Width           =   1332
    End
    Begin VB.ListBox lbWerk 
-      Height          =   255
+      Height          =   240
       ItemData        =   "Orders.frx":0440
       Left            =   2100
       List            =   "Orders.frx":0442
@@ -381,8 +381,8 @@ Begin VB.Form Orders
       TabIndex        =   2
       Top             =   780
       Width           =   11895
-      _ExtentX        =   20981
-      _ExtentY        =   7858
+      _ExtentX        =   20976
+      _ExtentY        =   7853
       _Version        =   393216
       BackColor       =   16777215
       ForeColorFixed  =   0
@@ -393,7 +393,7 @@ Begin VB.Form Orders
       FormatString    =   $"Orders.frx":0444
       BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
          Name            =   "MS Sans Serif"
-         Size            =   9.75
+         Size            =   9.6
          Charset         =   204
          Weight          =   400
          Underline       =   0   'False
@@ -419,13 +419,13 @@ Begin VB.Form Orders
    End
    Begin MSComctlLib.Toolbar Toolbar1 
       Align           =   1  'Align Top
-      Height          =   660
+      Height          =   636
       Left            =   0
       TabIndex        =   32
       Top             =   0
       Width           =   11880
       _ExtentX        =   20955
-      _ExtentY        =   1164
+      _ExtentY        =   1122
       ButtonWidth     =   609
       ButtonHeight    =   1005
       Appearance      =   1
@@ -680,8 +680,8 @@ Const rowFromOrdersEquip = "select " _
 
 
 Private Sub changeCaseOfTheVariables()
-'Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim
-Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim
+'Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim, Item
+Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim, Item
 
 End Sub
 
@@ -2548,10 +2548,12 @@ BB: wrkDefault.BeginTrans
     managerId = manId(cbM.ListIndex)
     If orderUpdate("##50", id, "Orders", "StatusId") = 0 Then
         Grid.TextMatrix(mousRow, mousCol) = newStatus
-'        If newStatus = "принят" Then - !!! если открыт этап этого не надо
+        If newStatus = "принят" Then
+            sql = "update ordersEquip set statusEquipId = 0 where numorder = " & gNzak
+            myExecute "##50.1", sql
 '            orderUpdate "##329", 0, "Orders", "WerkId" 'нужно при откате
 '            Grid.TextMatrix(mousRow, orWerk) = "" ' это незаметно поэтому опасно
-'        End If
+        End If
         orderUpdate "##50", managerId, "Orders", "lastManagId"
         wrkDefault.CommitTrans
     Else
@@ -3736,6 +3738,7 @@ Dim sqlShort As String, sqlCount As String
 laInform.Caption = ""
 Grid.Visible = False
 clearGrid Grid
+'Grid.RowIsVisible
 
 getNakladnieList
 zakazNum = 0
@@ -4154,7 +4157,7 @@ sql = "SELECT Max([eQuant]-[prevQuant]) as max From xEtapByIzdelia " & _
 "WHERE ((Numorder)=" & gNzak & ")  " & _
 "UNION SELECT Max([eQuant]-[prevQuant]) as max From xEtapByNomenk " & _
 "WHERE ((Numorder)=" & gNzak & ");"
-'Debug.Print sql
+Debug.Print sql
  Set Table = myOpenRecordSet("##385", sql, dbOpenDynaset) 'dbOpenTable)
  If Table Is Nothing Then Exit Function
  S = -1

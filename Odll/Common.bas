@@ -2363,7 +2363,7 @@ predmetiIsClose = False
 If Not sProducts.zakazNomenkToNNQQ() Then Exit Function
 For I = 1 To UBound(NN)
     sql = "SELECT Sum(quant) AS Sum_quant From sDMC " & _
-    "WHERE (((sDMC.numDoc)=" & gNzak & ") AND ((nomNom)='" & NN(I) & "'));"
+    "WHERE sDMC.numDoc =" & gNzak & " AND nomNom = '" & NN(I) & "'"
     If Not byErrSqlGetValues("##164", sql, S) Then Exit Function
     If reg = "prev" Then
         If Abs(QQ3(I) - S) > 0.005 Then Exit Function
@@ -2721,7 +2721,7 @@ While bilo ' необходимы еще проходы
 NXT:
   Next I
 Wend
-p_tv.Nodes.item("k0").Expanded = True
+p_tv.Nodes.Item("k0").Expanded = True
 Exit Sub
 ERR1:
  iErr = iErr + 1: bilo = True
