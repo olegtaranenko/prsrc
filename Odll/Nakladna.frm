@@ -461,15 +461,17 @@ Dim I As Long
             
         If nomRequest > nomCheckouted Then
             Dim quant As Double
+            Dim perList As Double
             quant = nomRequest - nomCheckouted
             Grid2(0).TextMatrix(I, nkQuant) = CStr(quant)
-            sql = "UPDATE sDMCrez SET curQuant = " & quant & _
+            perList = Grid2(0).TextMatrix(I, 0)
+            If perList = 0 Then
+                perList = 1
+            End If
+            sql = "UPDATE sDMCrez SET curQuant = " & quant * perList & _
                 " WHERE numDoc = " & numDoc & " AND nomNom = '" & _
                 Grid2(0).TextMatrix(I, nkNomNom) & "'"
             myExecute "##363.2", sql
-                
-
-            
         End If
     Next I
 End Sub
@@ -946,7 +948,7 @@ Sub loadToGrid(ind As Integer)
 Dim I As Integer, S As Double, S2 As Double, str As String, str2 As String
 Dim intQuant As Double
 Dim Nomnom1 As Nomnom
-Dim myAsWhole As Integer, revertAsWhole As Integer
+Dim asList As Integer, revertAsWhole As Integer
 
 ReDim NN(0): ReDim QQ(0): ReDim QQ2(0): QQ2(0) = 0: ReDim QQ3(0)
 
@@ -1057,20 +1059,27 @@ If idWerk = 1 Then
             LoadNumeric Grid2(ind), quantity2, nkQuant, S2
         Else
             Set Nomnom1 = nomnomCache.getNomnom(tbNomenk!Code, True)
-            myAsWhole = IIf(tbNomenk!vmt = "vmt", 0, 1)
-            revertAsWhole = IIf(myAsWhole = 1, 0, 1)
-            If myAsWhole = 0 Then
-                beSUO = True
-                Grid2(ind).TextMatrix(quantity2, nkIntEdIzm) = tbNomenk!ed_Izmer2
-                Grid2(ind).TextMatrix(quantity2, 0) = "1" 'обрезная
-                If intQuant > 0 Then
-                    LoadNumeric Grid2(ind), quantity2, nkIntQuant, intQuant
+            asList = IIf(tbNomenk!vmt = "vmt", 0, 1)
+            revertAsWhole = IIf(asList = 1, 0, 1)
+            If asList = 0 Then
+                If tbNomenk!perList > 1 Then
+                    ' обрезная, нужно показывать дробную единицу
+                    beSUO = True
+                    Grid2(ind).TextMatrix(quantity2, nkIntEdIzm) = tbNomenk!ed_Izmer2
+                    Grid2(ind).TextMatrix(quantity2, 0) = "1"
+                    If intQuant > 0 Then
+                        LoadNumeric Grid2(ind), quantity2, nkIntQuant, intQuant
+                    End If
+                Else
+                    'штучная номенклатура
+                    Grid2(ind).TextMatrix(quantity2, 0) = 0
                 End If
             Else
-                Grid2(ind).TextMatrix(quantity2, 0) = tbNomenk!perlist 'обрезная
+                'обрезная, ужно показывать как лист
+                Grid2(ind).TextMatrix(quantity2, 0) = tbNomenk!perList
             End If
-            Grid2(ind).TextMatrix(quantity2, nkEdIzm) = Nomnom1.getEdizm(myAsWhole)
-            Grid2(ind).TextMatrix(quantity2, nkTreb) = Nomnom1.getQuantity(tbNomenk!quant, myAsWhole)
+            Grid2(ind).TextMatrix(quantity2, nkEdIzm) = Nomnom1.getEdizm(asList)
+            Grid2(ind).TextMatrix(quantity2, nkTreb) = Nomnom1.getQuantity(tbNomenk!quant, asList)
             LoadNumeric Grid2(ind), quantity2, nkClos, Nomnom1.getQuantityRevert(S, revertAsWhole)
             LoadNumeric Grid2(ind), quantity2, nkQuant, Nomnom1.getQuantityRevert(S2, revertAsWhole)
         End If
@@ -1086,7 +1095,7 @@ Else
         Set tbNomenk = myOpenRecordSet("##129.2", sql, dbOpenForwardOnly)
         If Not tbNomenk.BOF Then
             quantity2 = quantity2 + 1
-            If tbNomenk!perlist > 1 Then
+            If tbNomenk!perList > 1 Then
                 Grid2(ind).TextMatrix(quantity2, 0) = "1" 'обрезная
             Else
                 Grid2(ind).TextMatrix(quantity2, 0) = "0" 'штучная, но это признак не умножать
@@ -1098,7 +1107,7 @@ Else
             If Regim = "" Then
                 If laDest(ind).Caption = "Продажа" Then
                   Grid2(ind).TextMatrix(quantity2, nkEdIzm) = tbNomenk!ed_Izmer2
-                  Grid2(ind).TextMatrix(quantity2, nkQuant) = Round(QQ(I) / tbNomenk!perlist, 2)
+                  Grid2(ind).TextMatrix(quantity2, nkQuant) = Round(QQ(I) / tbNomenk!perList, 2)
                 Else
                   Grid2(ind).TextMatrix(quantity2, nkQuant) = Round(QQ(I), 2)
                 End If
@@ -1113,7 +1122,7 @@ Else
                     Grid2(ind).TextMatrix(quantity2, nkEClos) = Round(S - QQ3(I), 2)
                 End If
                 If Regim <> "" And Regim <> "sklad" Then
-                  If tbNomenk!perlist <> 1 Then 'для обрезной доп. колонка для целых
+                  If tbNomenk!perList <> 1 Then 'для обрезной доп. колонка для целых
                     beSUO = True
                     Grid2(ind).TextMatrix(quantity2, nkIntEdIzm) = tbNomenk!ed_Izmer2
                   End If
@@ -1277,7 +1286,7 @@ AA:         MsgBox "Сначала проставте значение в колонке 'кол-во'", , "Предупреж
             End If
             If idWerk = 1 And myAsWhole Then
                 ed_Izmer = tbDMC!edIzmList
-                per = tbDMC!perlist
+                per = tbDMC!perList
             Else
                 ed_Izmer = tbDMC!edizm
                 per = 1

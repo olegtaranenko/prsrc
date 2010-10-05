@@ -1083,7 +1083,8 @@ Me.MousePointer = flexDefault
 End Sub
 
 Function getGridColSour() As String
-getGridColSour = Grid.TextMatrix(mousRow, dcSour)
+'getGridColSour = Grid.TextMatrix(mousRow, dcSour)
+getGridColSour = 0
 End Function
 
 
@@ -1191,9 +1192,9 @@ If Not tbNomenk.BOF Then
    If bilo Then
         If Not byClick Then ckPerList.Value = 1
         Grid2.TextMatrix(quantity2, dnEdIzm) = tbNomenk!ed_Izmer2
-        If IsNumeric(tbNomenk!perlist) Then ' dnLists
-          If tbNomenk!perlist > 0.01 Then Grid2.TextMatrix(quantity2, dnQuant) _
-                                = Round(tbNomenk!quant / tbNomenk!perlist, 2)
+        If IsNumeric(tbNomenk!perList) Then ' dnLists
+          If tbNomenk!perList > 0.01 Then Grid2.TextMatrix(quantity2, dnQuant) _
+                                = Round(tbNomenk!quant / tbNomenk!perList, 2)
         End If
     Else
         If Not byClick Then ckPerList.Value = 0
