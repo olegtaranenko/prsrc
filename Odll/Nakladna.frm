@@ -408,6 +408,7 @@ Public prvoCaption As String
 'Public idEquip As Integer
 Public idWerk As Integer
 Public asWhole As Boolean
+Public nakladRemark As String
 
 Dim secondNaklad As String, beSUO As Boolean ' была листовая ном-ра
 
@@ -1254,7 +1255,7 @@ AA:         MsgBox "Сначала проставте значение в колонке 'кол-во'", , "Предупреж
         asIzdelie = True
         laGrid4.Caption = "факт. остатки по готовому изделию " & Grid2(Index).TextMatrix(mousRow2, nkNomNom)
         
-    ElseIf Grid2(Index).TextMatrix(mousRow2, 0) = "1" Or mousCol2 = nkIntQuant Then 'штучная
+    ElseIf Grid2(Index).TextMatrix(mousRow2, 0) = "0" Or mousCol2 = nkIntQuant Then 'штучная
         laGrid4.Caption = tmpStr & sDocs.lbInside.List(0) & "'"
         myAsWhole = True
     Else ' обрезная
@@ -1284,7 +1285,7 @@ AA:         MsgBox "Сначала проставте значение в колонке 'кол-во'", , "Предупреж
             If tbDMC!vmt = "vmt" Then
                 myAsWhole = False
             End If
-            If idWerk = 1 And myAsWhole Then
+            If idWerk = 1 And myAsWhole Or mousCol2 = nkIntQuant Then
                 ed_Izmer = tbDMC!edIzmList
                 per = tbDMC!perList
             Else
