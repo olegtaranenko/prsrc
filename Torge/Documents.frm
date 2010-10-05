@@ -1823,7 +1823,7 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
         priceRegim = "default"
     End If
 
-    'On Error GoTo ERR2
+    On Error GoTo ERR2
     Set objExel = New Excel.Application
     objExel.Visible = True
     objExel.SheetsInNewWorkbook = 1
@@ -1849,7 +1849,9 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
         .Columns(9).HorizontalAlignment = xlHAlignRight
 
         ' печать стандартной шапки
-        exRow = excelStdSchapka(objExel, RubRate, mainReportTitle, lastCol, "МАРКМАСТЕР", , ExcelParamDialog.contact1, ExcelParamDialog.contact2)
+        exRow = excelStdSchapka(objExel, RubRate, mainReportTitle, lastCol, "МАРКМАСТЕР" _
+            , IIf(ExcelParamDialog.priceType = 0, True, False) _
+            , ExcelParamDialog.contact1, ExcelParamDialog.contact2)
     
         sql = "call wf_report_bright_ostat"
         Set tbProduct = myOpenRecordSet("##331", sql, dbOpenDynaset)
@@ -1870,12 +1872,14 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
 
                     With .Range("A" & exRow & ":" & lastCol & exRow)
                         .Font.Italic = True
+                        .HorizontalAlignment = xlHAlignCenter
+                        .Borders(xlEdgeBottom).Weight = xlMedium
                     End With
                     .Cells(exRow, 1).Value = "Код"
                     .Cells(exRow, 2).Value = "Описание"
                     .Cells(exRow, 3).Value = "Размер"
                     .Cells(exRow, 4).Value = "Ед.изм."
-                    .Cells(exRow, 5).Value = "Дост.ост"
+                    .Cells(exRow, 5).Value = "Кол-во"
                     .Cells(exRow, 6).Value = tbProduct!head1
                     .Cells(exRow, 7).Value = tbProduct!head2
                     .Cells(exRow, 8).Value = tbProduct!head3
