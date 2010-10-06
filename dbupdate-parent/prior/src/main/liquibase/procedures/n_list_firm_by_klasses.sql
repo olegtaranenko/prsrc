@@ -29,8 +29,8 @@ begin
 	create table #sale_item (
 		 numorder    integer
 		,nomnom      varchar(20)
-		,materialQty float
-		,sm          float
+		,materialQty float null
+		,sm          float null
 		,inDate      date
 		,firmId      integer
 		,klassid     integer

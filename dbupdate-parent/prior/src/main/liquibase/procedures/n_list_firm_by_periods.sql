@@ -131,7 +131,7 @@ begin
 		 numorder    integer
 		,nomnom      varchar(20)
 		,materialQty         float null
-		,sm          float
+		,sm          float null
 		,inDate      date
 		,firmId      integer
 		,klassid     integer
