@@ -19,11 +19,11 @@ begin
 		and date1 between isnull(now() - p_days_start, date1) and isnull(now() - p_days_end, date1)
 	;
 
-	select r.numorder, r.nomnom, r.quant, r.date1, r.manager, r.client, r.note, r.werk, isnull(r.sm_zakazano, s.cena) as sm_zakazano
+	select r.numorder, r.nomnom, r.quant, r.date1, r.manager, r.client, r.note, r.werk, r.sm_zakazano as sm_zakazano
 	, r.sm_paid, r.scope, r.status
 	from orderBranRsrv r
 	join #order_list o on o.numorder = r.numorder
-	left join orderSellOrde s on s.numorder = r.numorder
+--	left join orderSellOrde s on s.numorder = r.numorder
 	where r.nomnom = p_nomnom
 	order by r.date1 desc;
 
