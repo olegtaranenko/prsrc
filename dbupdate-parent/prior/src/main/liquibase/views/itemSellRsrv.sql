@@ -5,9 +5,9 @@ end if;
 create view itemSellRsrv (numorder, nomnom, quant, quant_rele, date1)
 as
 select 
-r.numorder, r.nomnom, r.quant, sum(isnull(d.quant, 0)), o.indate
-from baynomenk r
-left join sdmc d on d.numdoc = r.numorder and d.nomnom = r.nomnom
-join bayorders o on o.numorder = r.numorder 
-group by r.numorder, r.nomnom, r.quant, o.indate
+r.numdoc, r.nomnom, r.quantity, sum(isnull(d.quant, 0)), o.indate
+from sdmcrez r
+left join sdmc d on d.numdoc = r.numdoc and d.nomnom = r.nomnom
+join bayorders o on o.numorder = r.numdoc 
+group by r.numdoc, r.nomnom, r.quantity, o.indate
 ;
