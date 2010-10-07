@@ -2520,9 +2520,10 @@ If Not tbNomenk.BOF Then
     Frm.Grid5.TextMatrix(Frm.quantity5 + I, prEdizm) = Nomnom1.getEdizm(myAsWhole)
     
     Dim myQuant As Double
-    
-    Frm.Grid5.TextMatrix(Frm.quantity5 + I, prVes) = Nomnom1.getVesEd(myAsWhole) * Nomnom1.getQuantity(quant, myAsWhole)
-    sumVes = sumVes + Nomnom1.getVesEd(myAsWhole) * Nomnom1.getQuantity(quant, myAsWhole)
+    If idWerk = 1 Then
+        Frm.Grid5.TextMatrix(Frm.quantity5 + I, prVes) = Nomnom1.getVesEd(myAsWhole) * Nomnom1.getQuantity(quant, myAsWhole)
+        sumVes = sumVes + Nomnom1.getVesEd(myAsWhole) * Nomnom1.getQuantity(quant, myAsWhole)
+    End If
 
     If Not IsNull(cenaEd) Then
         Frm.Grid5.TextMatrix(Frm.quantity5 + I, prCenaEd) = Nomnom1.getCenaEd(rated(cenaEd, orderRate), myAsWhole)
@@ -2557,9 +2558,11 @@ If Frm.quantity5 > 0 Then
     Frm.Grid5.Text = Round(rated(sProducts.saveOrdered(orderRate, needToRefresh), orderRate), 2)
     Frm.Grid5.CellFontBold = True
     
-    Frm.Grid5.col = prVes
-    Frm.Grid5.CellFontBold = True
-    Frm.Grid5.Text = Round(sumVes)
+    If idWerk = 1 Then
+        Frm.Grid5.col = prVes
+        Frm.Grid5.CellFontBold = True
+        Frm.Grid5.Text = Round(sumVes)
+    End If
     
     If reg = "fromOtgruz" Then
         Frm.Grid5.col = prOutSum
