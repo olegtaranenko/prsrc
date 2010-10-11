@@ -516,10 +516,10 @@ Begin VB.Form Orders
          Visible         =   0   'False
       End
       Begin VB.Menu mnBrightBlanks 
-         Caption         =   "BrightBlanks.ru (brightblanks.csv)"
+         Caption         =   "BrightBlanks.ru (brightblanks_ru_.csv)"
       End
       Begin VB.Menu mnBrightAwards 
-         Caption         =   "BrightAwards.ru (brightawards.csv)"
+         Caption         =   "BrightAwards.ru (brightawards_ru_.csv)"
       End
       Begin VB.Menu mnPetmasCsv 
          Caption         =   "Петровские Мастерские (petmas.csv)"
@@ -2976,7 +2976,7 @@ End Sub
 
 Private Sub mnBrightBlanks_Click()
 
-    Const csvFileName = "brightblanks.csv"
+    Const csvFileName = "brightblanks_ru_.csv"
     Dim myRegim As String
     Dim csvFile As String
     
@@ -3017,7 +3017,7 @@ done:
 End Sub
 
 Private Sub mnBrightAwards_Click()
-    Const csvFileName = "brightawards.csv"
+    Const csvFileName = "brightawards_ru_.csv"
     Dim myRegim As String
     
     myRegim = "default"
