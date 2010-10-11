@@ -2268,7 +2268,14 @@ ElseIf mousCol = orStatus Then
 '       tbOrders.Update ' снимаем блокировку
        wrkDefault.CommitTrans ' снимаем блокировку
        tbOrders.Close
-       MsgBox "Заказ " & gNzak & " временно занят другим менеджером (" & str & ")"
+       Dim action As VbMsgBoxResult
+       action = MsgBox("Либо заказ занят другим менеджером (" & str & "), либо произошел сбой в работе программы." _
+       & vbCr & "Вы можете снять блокировку, если нажмете на кнопку 'Отмена'." _
+       , vbYesNoCancel, "Заказ " & gNzak & " заблокирован")
+       
+       If action = vbCancel Then
+          
+       End If
        Exit Sub
     End If
     tbOrders.Edit

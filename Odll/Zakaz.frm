@@ -711,7 +711,7 @@ vbCr & " FROM Orders o " & _
 " Where (o.StatusId = 1 Or o.StatusId = 5) " & _
 vbCr & " UNION ALL " _
 & vbCr & " SELECT o.numOrder, oe.workTime, DateDiff(day,Now(),oe.outDateTime) AS endDay, " & _
-" DateDiff(day,Now(),o.DateRS) AS begDay, dateadd(hour, isnull(o.outtime, 12), oe.outDateTime) as outdatetime, " & _
+" DateDiff(day,Now(),isnull(o.DateRS, oe.outdatetime)) AS begDay, dateadd(hour, isnull(o.outtime, 12), oe.outDateTime) as outdatetime, " & _
 " o.DateRS, o.StatusId, isnull(oe.nevip, 1) as nevip, oc.urgent " & _
 vbCr & " FROM Orders o " & _
 " JOIN OrdersEquip oe ON oe.numorder = o.numorder AND oe.equipId = " & vEquipId & _
