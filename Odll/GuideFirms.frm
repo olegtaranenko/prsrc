@@ -326,37 +326,44 @@ Grid.SetFocus
 Grid_EnterCell
 End Sub
 
-Sub loadGuide()
+Sub loadGuide(Optional lookAtSearch As Boolean = True)
 Dim I As Long, strWhere As String, str As String
 
 Me.MousePointer = flexHourglass
 Grid.Visible = False
 clearGrid Grid
-strWhere = trimAll(tbFind.Text)
-If Not strWhere = "" Then
-    strWhere = "(FirmGuide.Name) = '" & strWhere & "'"
+strWhere = ""
+If Not trimAll(tbFind.Text) = "" And lookAtSearch Then
+    strWhere = "f.Name = '" & trimAll(tbFind.Text) & "'"
 End If
 str = ""
-If cbM.ListIndex > 0 Then str = "(FirmGuide.ManagId) = " & _
-    manId(cbM.ListIndex - 1)
+If cbM.ListIndex > 0 Then
+    str = "f.ManagId = " & manId(cbM.ListIndex - 1)
+End If
 If strWhere <> "" And str <> "" Then
     strWhere = strWhere & " AND " & str
 Else
     strWhere = strWhere & str
 End If
-If strWhere <> "" Then strWhere = "Where ((" & strWhere & ")) "
+
+If strWhere <> "" Then strWhere = " AND " & strWhere
+
 'MsgBox "strWhere = " & strWhere
 quantity = 0
 
-sql = "SELECT FirmGuide.FirmId, FirmGuide.Name, FirmGuide.xLogin, " & _
-"FirmGuide.Address, FirmGuide.Phone, FirmGuide.Kategor, FirmGuide.Sale, " & _
-"FirmGuide.year01, FirmGuide.year02, FirmGuide.year03, FirmGuide.year04, " & _
-"GuideManag.Manag, FirmGuide.FIO, FirmGuide.Fax, FirmGuide.Email, " & _
-"FirmGuide.Atr1, FirmGuide.Atr2, FirmGuide.Atr3, FirmGuide.Pass, " & _
-"FirmGuide.Level, FirmGuide.Type, FirmGuide.Katalog " & _
-"FROM GuideManag RIGHT JOIN FirmGuide ON GuideManag.ManagId = FirmGuide.ManagId " & _
-strWhere & "ORDER BY FirmGuide.Name;"
+sql = "SELECT f.FirmId, f.Name, f.xLogin, " & _
+" f.Address, f.Phone, f.Kategor, f.Sale, " & _
+" f.year01, f.year02, f.year03, f.year04, " & _
+" m.Manag, f.FIO, f.Fax, f.Email, " & _
+" f.Atr1, f.Atr2, f.Atr3, f.Pass, " & _
+" f.Level, f.Type, f.Katalog " & _
+" FROM FirmGuide f " & _
+" LEFT JOIN GuideManag m ON m.ManagId = f.ManagId " & _
+" WHERE f.firmId > 0 AND werkId = 2 " & strWhere & " ORDER BY f.Name"
+
+'str = Grid.TextMatrix(mousRow, mousCol)
 'MsgBox sql
+
 Set tbFirms = myOpenRecordSet("##15", sql, dbOpenForwardOnly) 'dbOpenSnapshot)
 If tbFirms Is Nothing Then GoTo EN1
 
@@ -399,6 +406,7 @@ tbFirms.Close
 EN1:
 Grid.Visible = True
 laQuant.Caption = quantity
+
 Me.MousePointer = flexDefault
 
 End Sub
@@ -664,6 +672,8 @@ End Sub
 Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
     Dim Rows As String
     Dim col As String
+    Dim destRowNumber As Long, numberDecr As Integer
+    
     If isAdmin Then
         Dim Err As Integer
         If searchDestFirm Then
@@ -703,27 +713,37 @@ Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As 
                 MsgBox "Заказы успешно переведены с одной фирмы на другую. " & vbCr _
                     & "Список фирм будет обновлен."
                 
-                loadGuide
-                
                 If MsgBox("Вы так же можете из базы полностью удалить информацию о фирме '" & moveSrcFirmName & "'" _
                 & vbCr & "Нажмите Да[Yes], если вы действительно хотите удалить, или Нет[No], тогда это можно будет сделать позже.", vbYesNo) = vbYes Then
                     sql = "delete from FirmGuide where firmId = " & moveSrcFirmId
+                    wrkDefault.CommitTrans
                     wrkDefault.BeginTrans
                     Err = myExecute("##moveF.2", sql)
                     wrkDefault.CommitTrans
                     If Err <> 1 Then
                         Dim I As Long
-                        For I = 1 To Grid.Rows - 1
+                        I = 1
+                        While I + numberDecr < Grid.Rows - 1
                             If Grid.TextMatrix(I, gfId) = moveSrcFirmId Then
                                 Grid.RemoveItem (I)
-                                Exit For
+                                numberDecr = 1
                             End If
-                        Next I
+                            
+                            If Grid.TextMatrix(I, gfId) = dstFirmId Then
+                                destRowNumber = I
+                            End If
+                            I = I + 1
+                        Wend
                         MsgBox "Информация о фирме успешно удалена." & vbCr & "Не забудьте обновить список заказов."
                     End If
                 End If
             End If
+            loadGuide False
+            rowViem destRowNumber, Grid
+            Grid.row = destRowNumber
         End If
+                
+                
     
         If Button = 2 Then
             Grid.row = Grid.MouseRow
