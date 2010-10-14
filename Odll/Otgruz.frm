@@ -298,7 +298,7 @@ End Sub
 Sub loadUslug()
 Dim S As Double
 
-sql = "SELECT ordered From Orders WHERE (((Orders.numOrder)=" & gNzak & "));"
+sql = "SELECT ordered, 1 as cenaEd From Orders WHERE Orders.numOrder =" & gNzak
 If byErrSqlGetValues("##227", sql, S) Then _
     Grid5.TextMatrix(1, usSumm) = Round(rated(S, orderRate), 2)
 uslugOrdered = S
@@ -396,7 +396,8 @@ End If
 byErrSqlGetValues "W##203", sql, S
 Dim itemSumma As Double
 
-itemSumma = tbNomenk!cenaEd * S
+
+itemSumma = myCenaEd * S
 If myAsWhole = 1 And isNomnom Then
     S = Nomnom1.getQuantity(S, myAsWhole)
 End If
@@ -427,7 +428,7 @@ End If
 'MsgBox sql
 byErrSqlGetValues "W##204", sql, S
 
-itemSumma = tbNomenk!cenaEd * S
+itemSumma = myCenaEd * S
 If myAsWhole = 1 And isNomnom Then
     S = Nomnom1.getQuantity(S, myAsWhole)
 End If
