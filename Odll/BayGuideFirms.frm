@@ -1178,6 +1178,9 @@ ElseIf mousCol = bfBayInfo Or mousCol = bfRegion Then
 mousCol = bfFax Or mousCol = bfEmail Then
     'tbInform.MaxLength = 50
     'tbMobile.MaxLength = 50
+ElseIf mousCol = bfDirector Then
+    tbMobile.MaxLength = 128
+    tbInform.MaxLength = 128
 Else
     tbInform.MaxLength = 10
     tbMobile.MaxLength = 10

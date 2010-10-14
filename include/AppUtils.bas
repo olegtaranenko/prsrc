@@ -51,6 +51,12 @@ Const DLM = vbTab
 ' Этот файл разделяется между prior, stime и rowmat.
 ' не использовать в cfg
 
+Private Sub changeCaseOfTheVariables()
+'Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim, Item
+Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim, Item
+
+End Sub
+
 
 Sub GridToExcel(Grid As MSFlexGrid, Optional title As String = "")
 Dim ColWidth As String, Note As String

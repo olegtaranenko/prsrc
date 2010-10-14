@@ -679,12 +679,6 @@ Const rowFromOrdersEquip = "select " _
     & vbCr & " LEFT JOIN OrdersEquip oe ON oe.Numorder = o.Numorder " _
 
 
-Private Sub changeCaseOfTheVariables()
-'Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim, Item
-Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim, Item
-
-End Sub
-
 ' нужно вызывать уже после того, как новая Валюта сменена.
 Private Sub adjustHotMoney()
 Dim I As Long, J As Integer
