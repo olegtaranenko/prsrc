@@ -61,7 +61,7 @@ Begin VB.Form Zakaz
       Top             =   2940
       Width           =   1035
    End
-   Begin VB.ComboBox cbM 
+   Begin VB.ComboBox cbMaket 
       Enabled         =   0   'False
       Height          =   315
       ItemData        =   "Zakaz.frx":0368
@@ -533,9 +533,9 @@ ElseIf newLen < J Then
     End If
 End Sub
 
-Private Sub cbM_Click()
+Private Sub cbMaket_Click()
 cmZapros.Enabled = True
-If cbM.Text = "в работе" Or cbM.Text = "готов" Then
+If cbMaket.Text = "в работе" Or cbMaket.Text = "готов" Then
     If FormIsActiv Then cmZapros.Enabled = True
     laDateMO.Enabled = True
     tbDateMO.Enabled = True
@@ -560,7 +560,7 @@ If cbO.Text = "в работе" Or cbO.Text = "готов" Then
         tbVrVipO.Text = ""
     End If
 Else
-    If Not (cbM.Text = "в работе" Or cbM.Text = "готов") Then
+    If Not (cbMaket.Text = "в работе" Or cbMaket.Text = "готов") Then
         laDateMO.Enabled = False
         tbDateMO.Enabled = False
         tbDateMO.Text = ""
@@ -960,7 +960,7 @@ tbReadyDate.Left = tbReadyDate.Left + W
 laDateRS.Left = laDateRS.Left + W
 tbDateRS.Left = tbDateRS.Left + W
 laMO.Left = laMO.Left + W
-cbM.Left = cbM.Left + W
+cbMaket.Left = cbMaket.Left + W
 cbO.Left = cbO.Left + W
 laDateMO.Left = laDateMO.Left + W
 tbDateMO.Left = tbDateMO.Left + W
@@ -1062,7 +1062,7 @@ Private Sub setTheControls(equipStatusId As Integer)
 
 If equipStatusId = 1 Then 'cbStatus.Text = "в работе" Then
     laMO.Enabled = False
-    cbM.Enabled = False
+    cbMaket.Enabled = False
     cbO.Enabled = False
     tbDateMO.Enabled = False
     laVrVipO.Enabled = False
@@ -1071,12 +1071,12 @@ If equipStatusId = 1 Then 'cbStatus.Text = "в работе" Then
     tbWorktime.SelLength = Len(tbWorktime.Text)
     'tbWorktime.SetFocus
 ElseIf equipStatusId = 3 Then 'cbStatus.Text = "согласов" Then
-    cbM.Enabled = True
+    cbMaket.Enabled = True
     cbO.Enabled = True
     laMO.Enabled = True
 Else
     laMO.Enabled = False
-    cbM.Enabled = False
+    cbMaket.Enabled = False
     cbO.Enabled = False
     tbDateMO.Enabled = False
     laVrVipO.Enabled = False
@@ -1253,7 +1253,7 @@ bilo = Not Table.BOF
 Table.Close
 
  If statusIdNew = 3 Then ' согласов
-  If cbM.Text = "в работе" Or cbM.Text = "готов" Or _
+  If cbMaket.Text = "в работе" Or cbMaket.Text = "готов" Or _
     cbO.Text = "в работе" Or cbO.Text = "готов" Then
     str = tbDateMO.Text
     str = "'" & "20" & Mid$(str, 7, 2) & Mid$(str, 4, 2) & Left$(str, 2)
@@ -1272,12 +1272,12 @@ Table.Close
     Worktime = "Null"
   End If
   If bilo Then      '
-    sql = "UPDATE OrdersInCeh SET StatM = '" & cbM.Text & "'" _
+    sql = "UPDATE OrdersInCeh SET StatM = '" & cbMaket.Text & "'" _
     & ", DateTimeMO = " & str & _
     " WHERE numOrder = " & gNzak
   Else
     sql = "INSERT INTO OrdersInCeh ( numOrder, StatM, DatetimeMO ) " & _
-    "SELECT " & gNzak & ", '" & cbM.Text & "', " & str
+    "SELECT " & gNzak & ", '" & cbMaket.Text & "', " & str
   End If
   'Debug.Print sql
   If myExecute("##397", sql) <> 0 Then GoTo ER1
@@ -1620,11 +1620,11 @@ End If 'tbDateRS.Enabled = True
 '*********************************************************
 If cbStatus.Text = "согласов" Then
     title = "Ќедопустимый статус ћќ"
-    If (cbM.Text = "в работе" Or cbM.Text = "готов") And _
+    If (cbMaket.Text = "в работе" Or cbMaket.Text = "готов") And _
     (cbO.Text = "в работе" Or cbO.Text = "готов") Then
         MsgBox "ћакет и образец не могут одновременно быть переданы в цех", , title
         Exit Sub
-    ElseIf cbM.Text = "" And cbO.Text = "" Then
+    ElseIf cbMaket.Text = "" And cbO.Text = "" Then
         MsgBox "ƒл€ заказа 'согласование' необходимо установить статус макета и(или) образца", , title
         Exit Sub
     End If
@@ -1632,7 +1632,7 @@ ElseIf cbStatus.Text = "отложен" Then
     GoTo EE
 ElseIf cbStatus.Text = "в работе" Then
     If ((cbO.Text <> "" And cbO.Text <> "утвержден") _
-    Or (cbM.Text <> "" And cbM.Text <> "утвержден")) And FormIsActiv Then
+    Or (cbMaket.Text <> "" And cbMaket.Text <> "утвержден")) And FormIsActiv Then
         MsgBox "ƒл€ перевода заказа в работу необходимо, чтобы макет " & _
         "и(или) образец были утверждены.", , "Ќедопустимый статус!"
         cbStatus.Text = "согласов"
@@ -1642,7 +1642,7 @@ EE:     tbDateRS.Text = ""
     GoTo DD
     End If
 Else
-DD: cbM.ListIndex = 0
+DD: cbMaket.ListIndex = 0
     cbO.ListIndex = 0
     tbVrVipO.Text = ""
     tbDateMO.Text = ""
@@ -1650,7 +1650,7 @@ End If
 
 endDayMO = 0 ' номер дн€ MO
 begDayMO = 0
-If cbM.Text = "в работе" Then GoTo AA  'ћакет
+If cbMaket.Text = "в работе" Then GoTo AA  'ћакет
 If cbO.Text = "в работе" Then          'образец
     If Not isNumericTbox(tbVrVipO, 0.1, 2000) Then Exit Sub
     tbVrVipO.Text = Round(tbVrVipO.Text, 1)
@@ -2065,11 +2065,12 @@ Else
     Me.tbReadyDate.Text = Format(zakazBean.Outdatetime, "dd.mm.yy")
           
     V = zakazBean.StatM
-    noClick = True
-    If cbMOsetByText(Me.cbM, V) Then
+    'noClick = True
+    If cbMOsetByText(Me.cbMaket, V) Then
         Me.tbDateMO.Text = Format(zakazBean.DateTimeMO, "dd.mm.yy")
+        cbMaket.Enabled = True
     End If
-    noClick = False
+    'noClick = False
      
     V = zakazBean.StatO
     If cbMOsetByText(Me.cbO, V) Then
