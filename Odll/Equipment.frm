@@ -604,13 +604,13 @@ Private Sub loadEquipment()
     End If
     
     If Not IsNull(DateTimeMO) Then
-        tbDateMO = Format(DateRS, "dd.mm.yy")
+        tbDateMO = Format(DateTimeMO, "dd.mm.yy")
     Else
         tbDateMO = ""
     End If
     
     sql = "select oe.worktime, oe.worktimeMO, oe.Stat, oe.StatO" _
-    & " , oe.EquipId, oe.Outdatetime, (1 - isnull(nevip, 1)) * 100 as nevip " _
+    & " , oe.EquipId, isnull(oc.datetimemo, oe.Outdatetime) as outdatetime, (1 - isnull(nevip, 1)) * 100 as nevip " _
     & " , s.status as statusEquip " _
     & " , isnull(oc.urgent, '') as urgent" _
     & " FROM OrdersEquip oe " _
@@ -619,6 +619,7 @@ Private Sub loadEquipment()
     & " WHERE oe.numorder = " & gNzak
 
     Set tbOrders = myOpenRecordSet("##eq02", sql, dbOpenForwardOnly)
+    'Debug.Print sql
     If Not tbOrders Is Nothing Then
         If Not tbOrders.BOF Then
             '
@@ -639,7 +640,7 @@ Private Sub loadEquipment()
                     End If
                     
                     If Not IsNull(tbOrders!Outdatetime) Then
-                        lbDateOut(EquipId).Caption = tbOrders!Outdatetime
+                        lbDateOut(EquipId).Caption = Format(tbOrders!Outdatetime, "dd.mm.yyyy hh:mm")
                     Else
                         lbDateOut(EquipId).Caption = ""
                     End If
