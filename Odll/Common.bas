@@ -1427,10 +1427,10 @@ sql = "select convert(varchar(10), now(), 104)"
 byErrSqlGetValues "##chksrvdate", sql, serverDate
 
 If serverDate <> curDate Then
-    fatalError "Время на компьютере очень сильно отличается от времени сервера." _
+    fatalError "Время на компьютере очень сильно отличается от времени сервера. " _
     & vbCr & "Дата на сервере: " & serverDate _
     & vbCr & "Работа программы будет завершена.", _
-    "Если не получается или вы не знаете как, обратитесь к администратору"
+    "Исправьте дату на Вашем компьютере. Если не получается или вы не знаете как это сделать, обратитесь к администратору."
 End If
 
 dNow = strNow
@@ -1642,10 +1642,10 @@ End If
  Else
     Orders.Grid.TextMatrix(row, orO) = orderBean.StatO
     If orderBean.StatO = "в работе" Or orderBean.StatO = "готов" Then
-        If IsNull(tqOrders!DateTimeMO) Then
-            msgOfZakaz "##313", "Отсутствует 'Дата MO'."
-            str = " !Нет Даты MO! "
-        End If
+        'If IsNull(orderBean.DateTimeMO) Then
+        '    msgOfZakaz "##313", "Отсутствует 'Дата MO'."
+        '    str = " !Нет Даты MO! "
+        'End If
         log = log & " Oб(" & orderBean.StatO & "):" & str ' Дата выд
         If IsNull(orderBean.WorktimeMO) Then
             msgOfZakaz "##314", "Отсутствует 'Время выполнения MO'."
@@ -2803,6 +2803,7 @@ Dim I As Integer, txt As String
         If cb.List(baseIndex + 2) <> "готов" Then cb.AddItem "готов", baseIndex + 2
         If cb.List(baseIndex + 3) <> "утвержден" Then cb.AddItem "утвержден", baseIndex + 3
         cb.ListIndex = baseIndex + 2
+        cb.Enabled = True
         cbMOsetByText = True
     ElseIf txt = "утвержден" Then
         If cb.List(baseIndex + 2) = "готов" Then

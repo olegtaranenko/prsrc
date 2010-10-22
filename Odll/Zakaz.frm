@@ -507,7 +507,6 @@ Const zgOtlad = 7
 
 
 Sub lvAddDay(I As Integer)
-Dim Left As String, Rollback As String, Worktime As String, Outdatetime As String, Value
 
 Dim Item As ListItem, str As String
     str = Format(DateAdd("d", I - 1, curDate), "dd/mm/yy")
@@ -534,9 +533,11 @@ ElseIf newLen < J Then
 End Sub
 
 Private Sub cbMaket_Click()
-cmZapros.Enabled = True
+'cmZapros.Enabled = True
 If cbMaket.Text = "в работе" Or cbMaket.Text = "готов" Then
-    If FormIsActiv Then cmZapros.Enabled = True
+    If FormIsActiv Then
+        cmZapros.Enabled = True
+    End If
     laDateMO.Enabled = True
     tbDateMO.Enabled = True
 ElseIf Not (cbO.Text = "в работе" Or cbO.Text = "готов") Then
@@ -547,9 +548,11 @@ End If
 End Sub
 
 Private Sub cbO_Click()
-cmZapros.Enabled = True
+'cmZapros.Enabled = True
 If cbO.Text = "в работе" Or cbO.Text = "готов" Then
-    If FormIsActiv Then cmZapros.Enabled = True
+    If FormIsActiv Then
+        cmZapros.Enabled = True
+    End If
     laDateMO.Enabled = True
     tbDateMO.Enabled = True
     laVrVipO.Enabled = True
@@ -1014,7 +1017,9 @@ Private Sub laNomZak_Click()
 End Sub
 
 Private Sub tbDateMO_GotFocus()
-'If FormIsActiv Then cmZapros.Enabled = True
+If FormIsActiv Then
+    cmZapros.Enabled = True
+End If
 If tbDateMO.Text = "" Then
     tbDateMO.Text = Format(curDate, "dd/mm/yy")
 End If
@@ -1028,7 +1033,9 @@ Private Sub cbStatus_Click()
 If noClick Then
     Exit Sub
 End If
-'If FormIsActiv Then cmZapros.Enabled = True
+If FormIsActiv Then
+    cmZapros.Enabled = True
+End If
 Dim I As Integer
 'Exit Sub
 statusIdNew = cbStatus.ItemData(cbStatus.ListIndex)
@@ -1045,7 +1052,13 @@ statusIdNew = cbStatus.ItemData(cbStatus.ListIndex)
 
 tbWorktime.Text = zakazBean.Worktime
 If Not IsNull(zakazBean.DateRS) Then
-    tbDateRS.Text = Format(zakazBean.DateRS, "dd.mm.yy")
+    If statusIdNew > 1 Then
+        'если не в работе и не принят
+        tbDateRS.Text = Format(zakazBean.DateRS, "dd.mm.yy")
+    Else
+        ' переводим в работу
+        tbDateRS.Text = ""
+    End If
 End If
 
 If Not IsNull(zakazBean.Outdatetime) Then
@@ -1164,11 +1177,11 @@ End If
 
 
 
-If tbDateRS.Enabled = True Then
+If Not tbDateRS.Enabled And tbDateRS.Text = "" Then
+    str = "Null"
+Else
     str = tbDateRS.Text
     str = "'" & "20" & Mid$(str, 7, 2) & "-" & Mid$(str, 4, 2) & "-" & Left$(str, 2) & "'"
-Else
-    str = "Null"
 End If
 
 sql = "UPDATE Orders SET dateRS = " & str & " WHERE Orders.numOrder = " & gNzak
@@ -1656,13 +1669,13 @@ If cbO.Text = "в работе" Then          'образец
     tbVrVipO.Text = Round(tbVrVipO.Text, 1)
 AA:
     If Not isDateTbox(tbDateMO, "fri") Then Exit Sub
-    tmpDate = CDate(tbDateMO.Text)
+    'tmpDate = CDate(tbDateMO.Text)
     endDayMO = DateDiff("d", curDate, tmpDate) + 1
     If endDayMO < 1 Then GoTo ErrDate
-    If endDayMO > begDay_ Then ' не подправленное
-        MsgBox "Дата Mак.\Обр. не может быть позже Даты Р\С"
-        Exit Sub
-    End If
+    'If endDayMO > begDay_ Then ' не подправленное
+    '    MsgBox "Дата Mак.\Обр. не может быть позже Даты Р\С"
+    '    Exit Sub
+    'End If
     endDayMO = getPrev2DayRes(endDayMO)
     begDayMO = 1
     I = getNextDayRes(begDayMO)
@@ -1894,14 +1907,15 @@ startParams
 End Sub
 
 Private Sub tbDateRS_GotFocus()
-If FormIsActiv Then cmZapros.Enabled = True
+If FormIsActiv Then
+    cmZapros.Enabled = True
+End If
 tbDateRS.SelStart = 0
 tbDateRS.SelLength = 2
 
 End Sub
 
 Private Sub tbReadyDate_GotFocus()
-'If FormIsActiv Then cmZapros.Enabled = True
 tbReadyDate.SelStart = 0
 tbReadyDate.SelLength = 2
 
@@ -1938,12 +1952,6 @@ If FormIsActiv Then
 End If
 End Sub
 
-Private Sub tbWorktime_Change()
-If FormIsActiv Then
-    cmZapros.Enabled = True
-    workChange = True
-End If
-End Sub
 
 Private Sub tbWorktime_KeyDown(KeyCode As Integer, Shift As Integer)
 Dim S As Double, I As Integer
@@ -1962,6 +1970,15 @@ If KeyCode = vbKeyReturn Then
         tbReadyDate.Text = "00." & Format(tmpDate, "mm.yy")
      End If
   End If
+Else
+    cmZapros.Enabled = IsNumeric(tbWorktime.Text)
+    If cmZapros.Enabled Then
+        If CDbl(tbWorktime.Text) = zakazBean.Worktime Then
+            workChange = True
+        Else
+            workChange = False
+        End If
+    End If
 End If
 
 End Sub
@@ -2048,7 +2065,7 @@ Me.lv.ListItems("k1").SubItems(zkResurs) = Round(nr * Nstan * KPD, 1)
 lbEquip.Caption = EquipFullName(idEquip)
 laStatusText.Caption = Status(zakazBean.StatusId)
 
-Me.tbWorktime.Text = zakazBean.Worktime
+tbWorktime.Text = zakazBean.Worktime
 
 If statusIdOld = 0 Or statusIdOld = 7 Then 'принят или аннулир
     neVipolnen = 0
@@ -2080,14 +2097,14 @@ Else
             Me.tbDateMO = ""
         End If
         If Me.cbO.Text = "готов" Then
-            'Me.tbVrVipO.Text = Orders.Grid.TextMatrix(Orders.mousRow, orOVrVip)
-            Me.tbVrVipO.Text = zakazBean.Worktime
-            Me.tbVrVipO.Enabled = False
-            Me.tbDateMO.Enabled = False
-        Else 'AS nevipO
+            'tbVrVipO.Text = Orders.Grid.TextMatrix(Orders.mousRow, orOVrVip)
+            tbVrVipO.Text = zakazBean.Worktime
+            tbVrVipO.Enabled = False
+            tbDateMO.Enabled = False
+        Else
             neVipolnen_O = zakazBean.WorktimeMO
-            Me.tbVrVipO.Text = neVipolnen_O
-            'Me.tbVrVipO.Text = zakazBean.workTimeMO
+            tbVrVipO.Text = neVipolnen_O
+            'tbVrVipO.Text = zakazBean.workTimeMO
         End If
     End If
 End If

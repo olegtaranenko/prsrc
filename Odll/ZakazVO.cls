@@ -165,7 +165,9 @@ Dim currentLastModified As Date
             StatusInCeh = tbOrders!StatusInCeh
             DateRS = tbOrders!DateRS
             DateTimeMO = tbOrders!DateTimeMO
-            WorktimeMO = tbOrders!WorktimeMO
+            If Not IsNull(tbOrders!WorktimeMO) Then
+                WorktimeMO = tbOrders!WorktimeMO
+            End If
             StatM = tbOrders!StatM
             StatO = tbOrders!StatO
             nevip = tbOrders!nevip
@@ -249,13 +251,14 @@ Public Sub clean()
     equipStatusSync = 0
 
     Worktime = 0
+    WorktimeMO = 0
+    
     Outdatetime = Null
     statusEquipID = Null
     StatusInCeh = Null
     
     DateRS = Null
     DateTimeMO = Null
-    WorktimeMO = Null
     StatM = Null
     StatO = Null
     nevip = Null
