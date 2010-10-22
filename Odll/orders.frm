@@ -1330,6 +1330,16 @@ AA:     Value = InputBox("Введите номер заказа", "Поиск", Value)
         If MsgBox("Выполнить расширенный поиск фирмы '" & Value & "' ?", vbYesNo, _
         "Среди загруженных заказ этой фирмы не найден!") = vbNo Then Exit Sub
         If tbEnable.Visible Then
+            If setIdWerk Then
+                FindFirm.idWerk = idWerk
+            Else
+                If gWerkId = 0 Then
+                    MsgBox "Выберите подразделение у заказа", , "Некорректный ввод"
+                    Exit Sub
+                Else
+                    FindFirm.idWerk = gWerkId
+                End If
+            End If
             FindFirm.cmAllOrders.Visible = True
             FindFirm.cmNoClose.Visible = True
             FindFirm.cmNoCloseFiltr.Visible = True
