@@ -2161,6 +2161,7 @@ where id_scet = -1
 	</changeSet>
 
 	<changeSet id="31" author="mantis-141" runOnChange="true">
+		<validCheckSum>11111</validCheckSum>
 		<comment>Восстанавливаем дату выдачи заказа</comment>
 		<executeCommand executable="dbisqlc.exe">
 			<arg value="-c"/>
@@ -2275,10 +2276,17 @@ where
 	</changeSet>
 
 
+	<changeSet id="1" author="mantis-240" runOnChange="true">
+		<comment>itemSellOrde должен компилироваться раньше isumSellOrde</comment>
+		<sqlFile path="views/itemSellOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback/>
+	</changeSet>
+
 	<changeSet id="2" author="mantis-216" runOnChange="true">
 		<comment>Изменения в накладной</comment>
 		<sqlFile path="views/itemBranOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="views/isumSellOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="views/isumProdOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="views/isumBranOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="views/itemWareOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="views/isumWareOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
@@ -2288,7 +2296,6 @@ where
 
 	<changeSet id="54" author="mantis-141" runOnChange="true">
 		<comment>Отладка Анализа продаж</comment>
-		<sqlFile path="views/itemSellOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="views/itemSellRequ.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="views/itemWallShip.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<sqlFile path="views/itemSellRsrv.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
@@ -2850,6 +2857,12 @@ where firmguide.werkid not in (1,2 )
 		<dropColumn tableName="xPredmetyByIzdelia" columnName="doneQuant"/>
 	</changeSet>
 
+
+	<changeSet id="2" author="mantis-240" runOnChange="true">
+		<comment>В продажах нужно показывать вес не только отдельной номенклатуры, но и готовых изделий</comment>
+		<sqlFile path="procedures/wf_sell_ordered_ves.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<rollback/>
+	</changeSet>
 
 
 </databaseChangeLog>

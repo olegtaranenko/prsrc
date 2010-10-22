@@ -2430,6 +2430,8 @@ End Function
 Sub loadPredmeti(Frm As Form, orderRate As Double, idWerk As Integer, asWhole As Integer, Optional reg As String = "", Optional needToRefresh As Boolean = False)
 Dim I As Integer
 Dim Nomnom1 As Nomnom, myAsWhole As Integer
+Dim sumVes As Double
+
 
 Screen.MousePointer = flexHourglass
 Frm.Grid5.Visible = False
@@ -2439,12 +2441,7 @@ I = 0: If reg = "fromOtgruz" Then I = 1
 clearGrid Frm.Grid5, 1 + I
 
 '******** изделия ************************************************
-sql = "SELECT gp.prName, gp.prDescript" & _
-", i.*, ei.eQuant, ei.prevQuant " & _
-" FROM sGuideProducts gp " & _
-" INNER JOIN xPredmetyByIzdelia i ON gp.prId = i.prId " & _
-" LEFT JOIN xEtapByIzdelia ei ON i.prExt = ei.prExt AND i.prId = ei.prId AND i.Numorder = ei.Numorder" & _
-" WHERE i.Numorder = " & gNzak
+sql = "call wf_sell_ordered_ves (" & gNzak & ")"
 'Debug.Print sql
 
 Set tbNomenk = myOpenRecordSet("##183", sql, dbOpenForwardOnly)
@@ -2463,6 +2460,16 @@ If Not tbNomenk.BOF Then
                                 Round(rated(tbNomenk!cenaEd * tbNomenk!quant, orderRate), 2)
     End If
     Frm.Grid5.TextMatrix(Frm.quantity5 + I, prQuant) = Round(tbNomenk!quant, 2)
+    
+    If idWerk = 1 Then
+        Dim Ves As Variant 'null
+        Ves = tbNomenk("totVes").Value
+        If Not IsNull(Ves) Then
+            Frm.Grid5.TextMatrix(Frm.quantity5 + I, prVes) = Round(Ves, 2)
+            sumVes = sumVes + Ves
+        End If
+    End If
+    
 ' все изменения проделать и для ном-ры (см. ниже)
     If reg = "fromOtgruz" Then
         Otgruz.getOtgrugeno Frm.quantity5 + I, tbNomenk!cenaEd
@@ -2488,8 +2495,6 @@ sql = "SELECT n.nomNom, n.nomName" & _
 " LEFT JOIN xEtapByNomenk en ON (k.nomNom = en.nomNom) AND (k.Numorder = en.Numorder) " & _
 " WHERE k.Numorder =" & gNzak
 
-Dim sumVes As Double
-
 
 'Debug.Print sql
 Set tbNomenk = myOpenRecordSet("##184", sql, dbOpenForwardOnly)
@@ -2500,8 +2505,7 @@ If Not tbNomenk.BOF Then
     Frm.Grid5.TextMatrix(Frm.quantity5 + I, prId) = tbNomenk!Nomnom
     Frm.Grid5.TextMatrix(Frm.quantity5 + I, prType) = "номенклатура"
     Frm.Grid5.TextMatrix(Frm.quantity5 + I, prName) = tbNomenk!cod
-    Frm.Grid5.TextMatrix(Frm.quantity5 + I, prDescript) = _
-        tbNomenk!nomName & " " & tbNomenk!Size
+    Frm.Grid5.TextMatrix(Frm.quantity5 + I, prDescript) = tbNomenk!nomName & " " & tbNomenk!Size
     
     Dim quant As Double, cenaEd As Double
     quant = tbNomenk!quant
@@ -2536,8 +2540,7 @@ If Not tbNomenk.BOF Then
         Otgruz.getOtgrugeno Frm.quantity5 + I, tbNomenk!cenaEd, "byNomenk"
     ElseIf Not IsNull(tbNomenk!eQuant) Then
         Frm.Grid5.TextMatrix(Frm.quantity5 + I, prEtap) = Round(tbNomenk!eQuant, 2)
-        Frm.Grid5.TextMatrix(Frm.quantity5 + I, prEQuant) = _
-                            Round(tbNomenk!eQuant - tbNomenk!prevQuant, 2)
+        Frm.Grid5.TextMatrix(Frm.quantity5 + I, prEQuant) = Round(tbNomenk!eQuant - tbNomenk!prevQuant, 2)
     End If
     
     
@@ -2553,6 +2556,11 @@ If Frm.quantity5 > 0 Then
     Frm.Grid5.col = prQuant
     Frm.Grid5.Text = "Итого:"
     Frm.Grid5.CellFontBold = True
+    Frm.Grid5.MergeCol(prQuant) = True
+    'Frm.Grid5.col = prQuant - 1
+    'Frm.Grid5.Text = "Итого:"
+    'Frm.Grid5.CellFontBold = True
+    'Frm.Grid5.MergeCol(prQuant - 1) = True
     
     Frm.Grid5.col = prSumm
     Frm.Grid5.Text = Round(rated(sProducts.saveOrdered(orderRate, needToRefresh), orderRate), 2)
@@ -2561,7 +2569,7 @@ If Frm.quantity5 > 0 Then
     If idWerk = 1 Then
         Frm.Grid5.col = prVes
         Frm.Grid5.CellFontBold = True
-        Frm.Grid5.Text = Round(sumVes)
+        Frm.Grid5.Text = Round(sumVes, 2)
     End If
     
     If reg = "fromOtgruz" Then
