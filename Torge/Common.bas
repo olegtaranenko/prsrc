@@ -767,7 +767,7 @@ End Function
 '          либо "error" если даты не пересекаютс€
 'reg<>"" - выдает аргумент дл€ WHERE дл€ промежутка ƒо startDate
 '          либо "" если startDate раньше begDate(не следует запускать SQL)
-Function getWhereByDateBoxes(frm As Form, dateField As String, _
+Function getWhereByDateBoxes(Frm As Form, dateField As String, _
 begDate As Date, Optional reg As String = "") As String
 
 Dim str As String, ckStart As Boolean, ckEnd  As Boolean
@@ -776,20 +776,20 @@ getWhereByDateBoxes = "": str = "":
 
 ckStart = False: ckEnd = False
 On Error Resume Next ' на случай, если в этой форме у дат нет флажков
-If frm.ckEndDate.Value > 0 Then ckEnd = True  'то они как бы установлены
-If frm.ckStartDate.Value > 0 And frm.ckStartDate.Visible Then ckStart = True
+If Frm.ckEndDate.Value > 0 Then ckEnd = True  'то они как бы установлены
+If Frm.ckStartDate.Value > 0 And Frm.ckStartDate.Visible Then ckStart = True
 On Error GoTo 0
 
 If ckStart Then
-    If Not isDateTbox(frm.tbStartDate) Then GoTo ERRd  'tmpDate
+    If Not isDateTbox(Frm.tbStartDate) Then GoTo ERRd  'tmpDate
 End If
 If reg = "" Then ' если период ћежду
     If DateDiff("d", begDate, tmpDate) > 0 And ckStart Then _
         str = "(" & dateField & ") >='" & Format(tmpDate, "yyyy-mm-dd") & "'"
     If ckEnd Then
-      If Not isDateTbox(frm.tbEndDate) Then GoTo ERRd
+      If Not isDateTbox(Frm.tbEndDate) Then GoTo ERRd
       If ckStart Then
-        If DateDiff("d", frm.tbStartDate.Text, tmpDate) < 0 Then
+        If DateDiff("d", Frm.tbStartDate.Text, tmpDate) < 0 Then
           MsgBox "Ќачальна€ дата периода загрузки не должна превышать конечную ", , "ѕредупреждение"
 ERRd:     getWhereByDateBoxes = "error"
           Exit Function
@@ -1104,22 +1104,6 @@ Set Table = myOpenRecordSet("##59.1", sql, dbOpenForwardOnly)
 If Table Is Nothing Then Exit Function
 If Not Table.BOF Then getValueFromTable = Table!fff
 Table.Close
-End Function
-
-Function calcKolonValue(ByVal freight As Double, ByVal marginProc As Double, ByVal rabbat As Double, ByVal kolonok As Double, ByVal curentKolon As Integer)
-    Dim marginRate As Double, MarginValue As Double, maxUstupka As Double, stepUstupka As Double
-    
-    'marginRate = marginProc / 100
-    'maxUstupka =
-    MarginValue = freight * rabbat / 100
-    If kolonok > 1 Then
-        stepUstupka = MarginValue / (kolonok - 1)
-    Else
-        stepUstupka = 0
-    End If
-    
-    calcKolonValue = freight - stepUstupka * (curentKolon - 1)
-    
 End Function
 
 Function excelDealerSchapka(ByRef objExel, ByVal RubRate As Double, ByVal mainTitle As String, ByVal leftBound As String) As Integer

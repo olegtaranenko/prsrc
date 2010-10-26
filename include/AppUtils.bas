@@ -331,7 +331,7 @@ Function myIsDate(ByVal str As String) As Variant
     End If
 End Function
 
-Public Sub initListbox(ByVal InitSql As String, ByVal lb As listBox, keyField As String, valueField As String, Optional ListBoxMode As Integer = 0)
+Public Sub initListbox(ByVal InitSql As String, ByVal lb As ListBox, keyField As String, valueField As String, Optional ListBoxMode As Integer = 0)
 
     If ListBoxMode = 0 Then
         ' Сначала удаляем старые значения
@@ -380,6 +380,77 @@ Public Sub initCombobox(ByVal InitSql As String, ByVal lb As ComboBox, keyField 
     Table.Close
 
 End Sub
+
+
+Function OstatToCSV(ByRef Frm As VB.Form, Regim As String, csvFile As String, curRate As Double) As String
+Dim prices(4) As Double, I As Integer
+Dim csvRow As String, RPF_Rate As Single
+Dim ret As String
+
+
+Frm.MousePointer = flexHourglass
+
+
+  sql = "call wf_report_mat_ost(1)"
+    
+    'Debug.Print sql
+
+    Set tbNomenk = myOpenRecordSet("##415", sql, dbOpenDynaset)
+    If Not tbNomenk Is Nothing Then
+        
+        'On Error GoTo ERR1
+                
+        If Not tbNomenk.BOF Then
+            Open csvFile For Output As #1
+            Print #1, "cod" & DLM & "description" & DLM & "size" _
+                     & DLM & "quantity" & DLM & "edizm" _
+                     & DLM & "price1" & DLM & "price2" & DLM & "price3" & DLM & "price4"
+            
+            While Not tbNomenk.EOF
+            
+            
+                csvRow = tbNomenk!cod & DLM & tbNomenk!nomenk _
+                    & DLM & tbNomenk!Size & DLM & tbNomenk!qty_dost & DLM & tbNomenk!ed_Izmer2
+    
+                CalcKolonPrices prices, curRate
+    
+                For I = 0 To UBound(prices) - 1
+                    csvRow = csvRow & DLM & Round(prices(I), 2)
+                Next I
+    
+                Print #1, csvRow
+                
+                tbNomenk.MoveNext
+            Wend
+            Close #1
+        End If
+        tbNomenk.Close
+    End If
+GoTo EN2
+        
+ERR1:
+If Err = 76 Then
+    MsgBox "Невозможно создать файл " & csvFile, , "Error: Не обнаружен ПК или Путь к файлу"
+ElseIf Err = 53 Then
+    Resume Next ' файла м.не быть
+ElseIf Err = 47 Then
+    MsgBox "Невозможно создать файл " & csvFile, , "Error: Нет доступа на запись."
+Else
+    MsgBox Error, , "Ошибка 47-" & Err '##47
+    
+End If
+GoTo done
+
+
+EN2:
+On Error Resume Next 'нужен, если фокус после нажатия передали другому приложению
+MsgBox "Файл " & csvFile & " успешно сформирован.", , "Файлы для WEB"
+
+done:
+    Frm.MousePointer = flexDefault
+
+End Function
+
 
 Function PriceToCSV(ByRef Frm As VB.Form, Regim As String, csvFile As String, curRate As Double, Optional prodCategoryId As Integer = 0, Optional commonRabbat As Single = 1) As String
 Dim izdeliePrices(4) As Single, I As Integer
@@ -570,6 +641,59 @@ Public Function calcBaseCenaAndRpfRate(Regim As String, ByRef baseCena As String
     
 End Function
 
+Function calcKolonValue(ByVal freight As Double, ByVal marginProc As Double, ByVal rabbat As Double, ByVal kolonok As Double, ByVal curentKolon As Integer)
+    Dim marginRate As Double, MarginValue As Double, maxUstupka As Double, stepUstupka As Double
+    
+    'marginRate = marginProc / 100
+    'maxUstupka =
+    MarginValue = freight * rabbat / 100
+    If kolonok > 1 Then
+        stepUstupka = MarginValue / (kolonok - 1)
+    Else
+        stepUstupka = 0
+    End If
+    
+    calcKolonValue = freight - stepUstupka * (curentKolon - 1)
+    
+End Function
+
+
+
+' Используется при вычислении цен и остатков по складу материалов
+Private Sub CalcKolonPrices(ByRef prices() As Double, RubRate As Double, Optional RPF_Rate As Single = 1)
+Dim I As Integer
+
+    For I = 1 To UBound(prices) - 1
+        prices(I) = 0
+    Next I
+    
+    prices(0) = RPF_Rate * tbNomenk!CENA_W * RubRate
+    
+    Dim kolonok As Integer, optBasePrice As Double, margin As Double, iKolon As Integer, manualOpt As Boolean
+    kolonok = tbNomenk!kolonok
+    margin = tbNomenk!margin
+    optBasePrice = tbNomenk!CENA_W
+    
+    If kolonok > 0 Then
+        manualOpt = False
+    Else
+        manualOpt = True
+    End If
+    
+    For iKolon = 1 To Abs(kolonok) - 1
+        If manualOpt Then
+            If iKolon = 1 Then
+                prices(iKolon) = RPF_Rate * tbNomenk("Cena_W") * RubRate
+            Else
+                prices(iKolon) = RPF_Rate * tbNomenk("CenaOpt" & CStr(iKolon + 1)) * RubRate
+            End If
+        Else
+            prices(iKolon) = prices(iKolon) + RPF_Rate * RubRate * calcKolonValue(optBasePrice, margin, tbNomenk!rabbat, Abs(kolonok), iKolon + 1)
+        End If
+    Next iKolon
+
+End Sub
+
 
 
 
@@ -587,7 +711,7 @@ If noOpen = "" Then
 End If
 
 SumCenaFreight = getSumCena(tbProduct!prId)
-If InStr(tbProduct!Formula, "SumCenaFreight") > 0 Then
+If InStr(tbProduct!formula, "SumCenaFreight") > 0 Then
   If IsNumeric(SumCenaFreight) Then
     sc.ExecuteStatement "SumCenaFreight=" & SumCenaFreight
     SumCenaFreight = Round(CSng(SumCenaFreight), 2)
@@ -599,7 +723,7 @@ If InStr(tbProduct!Formula, "SumCenaFreight") > 0 Then
 End If
 
 SumCenaSale = getSumCena(tbProduct!prId, "Sale")
-If InStr(tbProduct!Formula, "SumCenaSale") > 0 Then
+If InStr(tbProduct!formula, "SumCenaSale") > 0 Then
   If IsNumeric(SumCenaSale) Then
     sc.ExecuteStatement "SumCenaSale=" & SumCenaSale
     SumCenaSale = Round(CSng(SumCenaSale), 2)
@@ -612,7 +736,7 @@ End If
 
 On Error GoTo ERR2
 sc.ExecuteStatement "VremObr = " & tbProduct!VremObr
-productFormula = Round(sc.Eval(tbProduct!Formula), 2)
+productFormula = Round(sc.Eval(tbProduct!formula), 2)
 GoTo EN1
 ERR2:
     productFormula = "error: " & Error
@@ -620,7 +744,7 @@ ERR2:
 '    "' для изделия '" & tbProduct!prName & "' (" & tmpStr & ")", , _
 '    "Ошибка 316 - " & Err & ":  " '##316
 EN1:
-tmpStr = tbProduct!Formula
+tmpStr = tbProduct!formula
 If noOpen = "" Then tbProduct.Close
 End Function
 
@@ -664,8 +788,8 @@ While Not tbNomenk.EOF
 '        GoTo ER
 '    End If
     If reg = "" Then
-        If tbNomenk!Formula = "" Then
-            getSumCena = "Error: Не определена формула для номенклатуры '" & tbNomenk!Nomnom & "'"
+        If tbNomenk!formula = "" Then
+            getSumCena = "Error: Не определена формула для номенклатуры '" & tbNomenk!nomnom & "'"
             GoTo er
         End If
         V = nomenkFormula("noOpen") 'Цена2
@@ -674,7 +798,7 @@ While Not tbNomenk.EOF
     End If
         
     If IsNumeric(V) Then
-        S = V * tbNomenk!quantity / tbNomenk!perlist
+        S = V * tbNomenk!quantity / tbNomenk!perList
         If tbNomenk!xGroup = "" Then
             sum = sum + S
             prevGroup = tbNomenk!xGroup
@@ -686,7 +810,7 @@ While Not tbNomenk.EOF
             prevGroup = tbNomenk!xGroup
         End If
     Else
-        getSumCena = V & " в формуле для  '" & tbNomenk!Nomnom & "'"
+        getSumCena = V & " в формуле для  '" & tbNomenk!nomnom & "'"
         GoTo er
     End If
 
@@ -719,7 +843,7 @@ If noOpen = "" Then
     If tbNomenk Is Nothing Then Exit Function
     If tbNomenk.BOF Then tbNomenk.Close: Exit Function
 End If
-tmpStr = tbNomenk!Formula
+tmpStr = tbNomenk!formula
 tmpStr = tbNomenk.fields("formula" & Web)
 'If tbNomenk!formula = "" Then
 If tmpStr = "" Then
@@ -790,7 +914,7 @@ Dim Name As String
     Wend
     Table.Close
     
-    If TypeOf lbPrWeb Is listBox Then
+    If TypeOf lbPrWeb Is ListBox Then
         lbPrWeb.Height = 225 * lbPrWeb.ListCount
     End If
 

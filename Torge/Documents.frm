@@ -1720,9 +1720,9 @@ Private Sub mnToExcel_Click()
         Exit Sub
     End If
     If ExcelParamDialog.outputUE Then
-        ostatToWeb myRegim, , ExcelParamDialog.mainReportTitle, ExcelParamDialog.kegl
+        ostatToWeb , ExcelParamDialog.mainReportTitle, ExcelParamDialog.kegl
     Else
-        ostatToWeb myRegim, ExcelParamDialog.RubRate, ExcelParamDialog.mainReportTitle, ExcelParamDialog.kegl
+        ostatToWeb ExcelParamDialog.RubRate, ExcelParamDialog.mainReportTitle, ExcelParamDialog.kegl
     End If
 End Sub
 
@@ -1754,7 +1754,7 @@ Private Sub mnToExcelWeb_Click()
     If Not ExcelParamDialog.exitCode = vbOK Then
         Exit Sub
     End If
-    ostatToWeb myRegim, , ExcelParamDialog.mainReportTitle, ExcelParamDialog.kegl
+    ostatToWeb , ExcelParamDialog.mainReportTitle, ExcelParamDialog.kegl
 End Sub
 
 Private Sub mnVentureOrder_Click()
@@ -1989,7 +1989,7 @@ End Sub
 'Классификатор реализован на табл. sGuideKlass а Справочник на sGuideNomenk.
 'Их и их поля klassId parentKlassId и klassName надо заменить аналогами из
 'базы Comtec(недостающие колонки можно добавить) $comtec$
-Sub ostatToWeb(Optional toExel As String = "", Optional RubRate As Double = 1, Optional mainReportTitle As String, Optional reportKegl As Integer = 10)
+Sub ostatToWeb(Optional RubRate As Double = 1, Optional mainReportTitle As String, Optional reportKegl As Integer = 10)
 Dim tmpFile As String, I As Integer, findId As Integer, str As String
 Dim lastCol As String, lastColInt As Integer
 Dim minusQuant   As Integer
@@ -2169,31 +2169,6 @@ Private Sub ExcelKolonPrices(exRow As Long, exCol As Long, RubRate As Double, Op
 
 End Sub
 
-
-
-Private Sub CalcKolonPrices(ByRef prices() As Double, RubRate As Double, Optional RPF_Rate As Single = 1)
-    prices(0) = prices(0) + RPF_Rate * tbNomenk!CENA_W * RubRate
-    
-    Dim kolonok As Integer, optBasePrice As Double, margin As Double, iKolon As Integer, manualOpt As Boolean
-    kolonok = tbNomenk!kolonok
-    margin = tbNomenk!margin
-    optBasePrice = tbNomenk!CENA_W
-    
-    If kolonok > 0 Then
-        manualOpt = False
-    Else
-        manualOpt = True
-    End If
-    
-    For iKolon = 1 To Abs(kolonok) - 1
-        If manualOpt Then
-            prices(iKolon - 1) = prices(iKolon - 1) + RPF_Rate * tbNomenk("CenaOpt" & CStr(iKolon)) * RubRate
-        Else
-            prices(iKolon - 1) = prices(iKolon - 1) + RPF_Rate * RubRate * calcKolonValue(optBasePrice, margin, tbNomenk!rabbat, Abs(kolonok), iKolon)
-        End If
-    Next iKolon
-
-End Sub
 
 
 

@@ -524,6 +524,9 @@ Begin VB.Form Orders
       Begin VB.Menu mnPetmasCsv 
          Caption         =   "Петровские Мастерские (petmas.csv)"
       End
+      Begin VB.Menu mnMaterials 
+         Caption         =   "Materials (materials_ru_.csv)"
+      End
    End
    Begin VB.Menu mnSklad 
       Caption         =   "Склад"
@@ -681,7 +684,7 @@ Const rowFromOrdersEquip = "select " _
 
 ' нужно вызывать уже после того, как новая Валюта сменена.
 Private Sub adjustHotMoney()
-Dim I As Long, j As Integer
+Dim I As Long, J As Integer
 
     For I = 1 To Grid.Rows - 1
         Dim Value As Double, rate As Double
@@ -690,8 +693,8 @@ Dim I As Long, j As Integer
         If rateStr <> "" Then
             rate = CDbl(rateStr)
         End If
-        For j = 0 To MCILength - 1 ' колонки с деньгами (залог, нал, заказано, оплачено, отгружено)
-            valueStr = Grid.TextMatrix(I, moneyColIdx(j))
+        For J = 0 To MCILength - 1 ' колонки с деньгами (залог, нал, заказано, оплачено, отгружено)
+            valueStr = Grid.TextMatrix(I, moneyColIdx(J))
             If IsNumeric(valueStr) Then
                 Value = CDbl(valueStr)
                 If sessionCurrency = CC_RUBLE Then
@@ -699,28 +702,28 @@ Dim I As Long, j As Integer
                 Else
                     Value = Value / rate
                 End If
-                LoadNumeric Grid, I, moneyColIdx(j), Value, , "###0.00"
+                LoadNumeric Grid, I, moneyColIdx(J), Value, , "###0.00"
             End If
 skip:
-        Next j
+        Next J
         
     Next I
     
 End Sub
     
 Private Sub adjustMoneyColumnWidth(inStartup As Boolean)
-Dim I As Long, j As Integer
+Dim I As Long, J As Integer
 
-    For j = 0 To MCILength - 1 ' колонки с деньгами (залог, нал, заказано, оплачено, отгружено)
+    For J = 0 To MCILength - 1 ' колонки с деньгами (залог, нал, заказано, оплачено, отгружено)
         If sessionCurrency = CC_RUBLE Then
-            Grid.colWidth(moneyColIdx(j)) = Grid.colWidth(moneyColIdx(j)) * ColWidthForRuble
-            gridsColumn(moneyColIdx(j) - 1).columnWidth = Grid.colWidth(moneyColIdx(j))
+            Grid.ColWidth(moneyColIdx(J)) = Grid.ColWidth(moneyColIdx(J)) * ColWidthForRuble
+            gridsColumn(moneyColIdx(J) - 1).columnWidth = Grid.ColWidth(moneyColIdx(J))
         ElseIf Not inStartup Then
-            Grid.colWidth(moneyColIdx(j)) = Grid.colWidth(moneyColIdx(j)) / ColWidthForRuble
-            gridsColumn(moneyColIdx(j) - 1).columnWidth = Grid.colWidth(moneyColIdx(j))
+            Grid.ColWidth(moneyColIdx(J)) = Grid.ColWidth(moneyColIdx(J)) / ColWidthForRuble
+            gridsColumn(moneyColIdx(J) - 1).columnWidth = Grid.ColWidth(moneyColIdx(J))
         End If
 skip:
-    Next j
+    Next J
 End Sub
     
     
@@ -877,7 +880,7 @@ tbOrders.AddNew
 tbOrders!StatusId = 0
 tbOrders!Numorder = valueorder.val
 tbOrders!inDate = Now
-tbOrders!managId = manId(Orders.cbM.ListIndex)
+tbOrders!ManagId = manId(Orders.cbM.ListIndex)
 tbOrders!WerkId = gWerkId
 str = getSystemField("Kurs")
 
@@ -1452,17 +1455,17 @@ For I = 0 To UBound(gridsColumn)
     End If
     
     If werkToViewId > 0 And gWerkId > 0 And gWerkId <> werkToViewId Then
-        Grid.colWidth(GridColIndex) = 0
+        Grid.ColWidth(GridColIndex) = 0
     Else
-        Grid.colWidth(gCol.GridColIndex) = gCol.columnWidth
+        Grid.ColWidth(gCol.GridColIndex) = gCol.columnWidth
     End If
 Next I
 
 
 End Sub
 
-Sub initOrCol(ByRef colNum As Integer, ColName As String, Optional colWidth As Integer = -1, _
-        Optional field As String = "", Optional alingment As Integer = flexAlignGeneral, _
+Sub initOrCol(ByRef colNum As Integer, ColName As String, Optional ColWidth As Integer = -1, _
+        Optional Field As String = "", Optional alingment As Integer = flexAlignGeneral, _
         Optional werkToView As Integer = 0)
 
 Static currentCol As Integer
@@ -1471,7 +1474,7 @@ ReDim Preserve gridsColumn(currentCol)
 
 If orColNumber = 0 Then
     Grid.Cols = 2
-    Grid.colWidth(0) = 0
+    Grid.ColWidth(0) = 0
 Else
     Grid.Cols = Grid.Cols + 1
 End If
@@ -1482,24 +1485,24 @@ Grid.TextMatrix(0, orColNumber) = ColName
 Grid.ColAlignment(orColNumber) = alingment
 
 ReDim Preserve orSqlFields(orColNumber + 1)
-orSqlFields(orColNumber) = field
+orSqlFields(orColNumber) = Field
 
-If colWidth >= 0 Then
-    Grid.colWidth(orColNumber) = colWidth
+If ColWidth >= 0 Then
+    Grid.ColWidth(orColNumber) = ColWidth
     gridsColumn(currentCol).Visible = True
 Else
-    Grid.colWidth(orColNumber) = 0
+    Grid.ColWidth(orColNumber) = 0
     gridsColumn(currentCol).Visible = False
 End If
 
 
-gridsColumn(currentCol).columnWidth = colWidth
+gridsColumn(currentCol).columnWidth = ColWidth
 gridsColumn(currentCol).WerkId = werkToView
 
 Dim pnt As Integer
-pnt = InStr(1, field, ".")
+pnt = InStr(1, Field, ".")
 If pnt > 0 Then
-    gridsColumn(currentCol).field = Mid(field, pnt + 1)
+    gridsColumn(currentCol).Field = Mid(Field, pnt + 1)
 End If
 
 gridsColumn(currentCol).GridColIndex = orColNumber
@@ -1517,7 +1520,7 @@ If tbEnable.Visible Then mnAllOrders.Visible = True
 oldHeight = Me.Height
 oldWidth = Me.Width
 
-If Not isEmpty(otlad) Then
+If Not IsEmpty(otlad) Then
     Frame1.BackColor = otladColor
     Me.BackColor = otladColor
 
@@ -1614,7 +1617,7 @@ managLoad 'загрузка Manag() cbM lbM и Filtr.lbM
 lbM.Height = lbM.Height + 195 * (lbM.ListCount - 1)
 Filtr.lbM.Height = Filtr.lbM.Height + 195 * (Filtr.lbM.ListCount - 1)
 
-If Not isEmpty(otlad) Then cbM.ListIndex = cbM.ListCount - 1
+If Not IsEmpty(otlad) Then cbM.ListIndex = cbM.ListCount - 1
 
 Set Table = myOpenRecordSet("##72", "GuideTema", dbOpenForwardOnly)
 If Table Is Nothing Then myBase.Close: End
@@ -1650,40 +1653,40 @@ End Sub
 
  
 Public Sub managLoad(Optional fromWerk As String = "")
-Dim I As Integer, str As String, j As String
+Dim I As Integer, str As String, J As String
 
 sql = "SELECT * From GuideManag where manag <> '' ORDER BY forSort"
 Set Table = myOpenRecordSet("##03", sql, dbOpenForwardOnly)
 If Table Is Nothing Then myBase.Close: End
-I = 0: ReDim manId(0): ReDim Managers(0): j = 0
+I = 0: ReDim manId(0): ReDim Managers(0): J = 0
 Dim imax As Integer: imax = 0: ReDim Manag(0)
 Dim theManager As MapEntry
 While Not Table.EOF
     str = Table!Manag
-    theManager.Key = Table!managId
+    theManager.Key = Table!ManagId
     theManager.Value = str
-    Managers(j) = theManager
+    Managers(J) = theManager
     
     If str = "not" Then
         GoTo AA
     ElseIf LCase(Table!forSort) <> "unused" Then
         If fromWerk = "" Then
-          If Table!managId <> 0 Then cbM.AddItem str
+          If Table!ManagId <> 0 Then cbM.AddItem str
           lbM.AddItem str
           Filtr.lbM.AddItem str
         End If
-        manId(I) = Table!managId
+        manId(I) = Table!ManagId
         I = I + 1
         ReDim Preserve manId(I):
-AA:     If imax < Table!managId Then
-            imax = Table!managId
+AA:     If imax < Table!ManagId Then
+            imax = Table!ManagId
             ReDim Preserve Manag(imax)
         End If
-        Manag(Table!managId) = str
+        Manag(Table!ManagId) = str
     End If
     Table.MoveNext
-    j = j + 1
-    ReDim Preserve Managers(j)
+    J = J + 1
+    ReDim Preserve Managers(J)
 Wend
 Table.Close
 
@@ -1873,7 +1876,7 @@ On Error GoTo sqle
     
     Exit Function
 sqle:
-    wrkDefault.rollback
+    wrkDefault.Rollback
     errorCodAndMsg "checkInvoiceBusy"
 End Function
 
@@ -1892,7 +1895,7 @@ On Error GoTo sqle
     
     Exit Function
 sqle:
-    wrkDefault.rollback
+    wrkDefault.Rollback
     errorCodAndMsg "checkInvoiceMerge"
 End Function
 
@@ -1918,12 +1921,12 @@ On Error GoTo sqle
     If MsgBox(mText, vbOKCancel, "Вы уверены?") = vbOK Then
         myBase.Execute sql
     Else
-        wrkDefault.rollback
+        wrkDefault.Rollback
         tryInvoiceMove = False
     End If
     Exit Function
 sqle:
-    wrkDefault.rollback
+    wrkDefault.Rollback
     errorCodAndMsg "tryInvoiceMove"
     tryInvoiceMove = False
 End Function
@@ -1940,12 +1943,12 @@ On Error GoTo sqle
         sql = "call wf_split_jscet (" & p_numOrder & ")"
         myBase.Execute sql
     Else
-        wrkDefault.rollback
+        wrkDefault.Rollback
         tryInvoiceSplit = False
     End If
     Exit Function
 sqle:
-    wrkDefault.rollback
+    wrkDefault.Rollback
     errorCodAndMsg "tryInvoiceSplit"
     tryInvoiceSplit = False
 End Function
@@ -1962,13 +1965,13 @@ On Error GoTo sqle
             Debug.Print sql
             myBase.Execute sql
         Else
-            wrkDefault.rollback
+            wrkDefault.Rollback
             tryInvoiceMerge = False
         End If
     End If
     Exit Function
 sqle:
-    wrkDefault.rollback
+    wrkDefault.Rollback
     errorCodAndMsg "tryInvoiceSplit"
     tryInvoiceMerge = False
     
@@ -2238,7 +2241,7 @@ ElseIf mousCol = orWerk Then
     '    , , "Изменение подразделения недопустимо!"
     '    Exit Sub
     'End If
-    listBoxInGridCell lbWerk, Grid, "yes", Grid.colWidth(mousCol)
+    listBoxInGridCell lbWerk, Grid, "yes", Grid.ColWidth(mousCol)
 ElseIf mousCol = orEquip Then
     'Equipment.orderStatusStr = Grid.TextMatrix(mousRow, orStatus)
     Equipment.readonlyFlag = StatusId > 0
@@ -2514,9 +2517,9 @@ Grid.CellBackColor = Grid.BackColor
 End Sub
 
 
-Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then
-        MsgBox "ColWidth = " & Grid.colWidth(Grid.MouseCol)
+        MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
 End If
 End Sub
 
@@ -2569,7 +2572,7 @@ BB: wrkDefault.BeginTrans
         orderUpdate "##50", managerId, "Orders", "lastManagId"
         wrkDefault.CommitTrans
     Else
-        wrkDefault.rollback
+        wrkDefault.Rollback
     End If
 End If
 EN1:
@@ -2646,7 +2649,7 @@ Dim str As String
         Grid.TextMatrix(mousRow, mousCol) = "аннулирован"
         wrkDefault.CommitTrans
     Else
-        wrkDefault.rollback
+        wrkDefault.Rollback
     End If
 
 End Function
@@ -2669,7 +2672,7 @@ Sub do_Del()
         delZakazFromGrid
         wrkDefault.CommitTrans
     Else
-ERR1:   wrkDefault.rollback
+ERR1:   wrkDefault.Rollback
     End If
   End If
 
@@ -2866,7 +2869,7 @@ End If
 lbHide
 'Exit Sub
 ER1:
- wrkDefault.rollback:
+ wrkDefault.Rollback:
 lbHide
 End Sub
 
@@ -2949,7 +2952,7 @@ End Sub
 
 Private Sub mnAnalityc_Click()
     Me.MousePointer = flexHourglass
-    Analityc.managId = Orders.cbM.Text
+    Analityc.ManagId = Orders.cbM.Text
     Analityc.applicationType = "bay"
     Analityc.Show vbModeless, Me
     Me.MousePointer = flexDefault
@@ -3060,6 +3063,43 @@ Private Sub mnBrightAwards_Click()
     End If
 
 done:
+End Sub
+
+Private Sub mnMaterials_Click()
+    Const csvFileName = "materials_ru_.csv"
+    Dim myRegim As String
+    myRegim = "toExcelWeb"
+    ExcelParamDialog.Regim = myRegim
+    ExcelParamDialog.withPrice = True
+    
+    ExcelParamDialog.mainReportTitle = "-"
+    ExcelParamDialog.contact1 = "-"
+    ExcelParamDialog.contact2 = "-"
+    ExcelParamDialog.CsvAsOutput = True
+    ExcelParamDialog.kegl = -1
+    ExcelParamDialog.Caption = csvFileName
+    
+    ExcelParamDialog.Show vbModal, Me
+    If Not ExcelParamDialog.exitCode = vbOK Then
+        Exit Sub
+    End If
+    
+    Dim csvFile As String
+    csvFile = makeCsvFilePath(csvFileName)
+    
+    Dim reportRate As Double
+    If ExcelParamDialog.outputUE Then
+        reportRate = 1
+    Else
+        reportRate = ExcelParamDialog.RubRate
+    End If
+    
+    If csvFile <> "" Then
+        OstatToCSV Me, myRegim, csvFile, reportRate
+    End If
+    
+    
+    
 End Sub
 
 Private Sub mnPetmasCsv_Click()
@@ -3345,10 +3385,10 @@ End Function
 ' 0  - нормальное завершение issue не произошло
 ' >0 - нормальное завершение, было issue, возвращаем его id.
 
-Function isFloatFromMobileWithIssue(field As String, issueMarker As String) As Integer
+Function isFloatFromMobileWithIssue(Field As String, issueMarker As String) As Integer
     If checkNumeric(tbMobile.Text, 0) Then
         Dim issueId As Variant
-        isFloatFromMobileWithIssue = orderUpdateWithIssue(issueMarker, tbMobile.Text, "Orders", field)
+        isFloatFromMobileWithIssue = orderUpdateWithIssue(issueMarker, tbMobile.Text, "Orders", Field)
         sql = "select wi_check_business_issue('" & issueMarker & "')"
         byErrSqlGetValues "##check_issue", sql, issueId
         If issueId <> 0 Then
@@ -3362,7 +3402,7 @@ Function isFloatFromMobileWithIssue(field As String, issueMarker As String) As I
     End If
 End Function
 
-Function isFloatFromMobile(field As String, Optional errorCode As String = "##23", Optional isCurrency As Boolean = False) As Boolean
+Function isFloatFromMobile(Field As String, Optional errorCode As String = "##23", Optional isCurrency As Boolean = False) As Boolean
 Dim isIssue As Integer
 
     If checkNumeric(tbMobile.Text, 0) Then
@@ -3373,7 +3413,7 @@ Dim isIssue As Integer
             ueValue = tbMobile.Text
         End If
         
-        isIssue = orderUpdate(errorCode, ueValue, "Orders", field)
+        isIssue = orderUpdate(errorCode, ueValue, "Orders", Field)
         
         Grid.TextMatrix(mousRow, mousCol) = tbMobile.Text
         isFloatFromMobile = True
@@ -3514,7 +3554,7 @@ str = tbMobile.Text
         End If
     ElseIf orRemark = mousCol Or orPlaces = mousCol Or orSize = mousCol Then
         Dim fieldName As String
-        fieldName = gridsColumn(mousCol - 1).field
+        fieldName = gridsColumn(mousCol - 1).Field
         If Not fieldName = "" Then
             If orderUpdate("##400", "'" & tbMobile.Text & "'", "Orders", fieldName) = 0 Then
                 Grid.TextMatrix(mousRow, mousCol) = tbMobile.Text
