@@ -1,18 +1,18 @@
 VERSION 5.00
-Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCTL.OCX"
+Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "mscomctl.ocx"
 Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form Orders 
    Appearance      =   0  'Flat
    BackColor       =   &H8000000A&
    Caption         =   "Приор"
-   ClientHeight    =   5955
+   ClientHeight    =   5952
    ClientLeft      =   60
-   ClientTop       =   630
+   ClientTop       =   636
    ClientWidth     =   11880
    Icon            =   "Orders.frx":0000
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
-   ScaleHeight     =   5955
+   ScaleHeight     =   5952
    ScaleWidth      =   11880
    StartUpPosition =   2  'CenterScreen
    Begin VB.Frame frmRemark 
@@ -73,7 +73,7 @@ Begin VB.Form Orders
       Width           =   1932
    End
    Begin VB.ListBox lbSklad 
-      Height          =   1230
+      Height          =   1200
       ItemData        =   "Orders.frx":030A
       Left            =   5640
       List            =   "Orders.frx":031D
@@ -96,7 +96,7 @@ Begin VB.Form Orders
       Width           =   852
    End
    Begin VB.ListBox lbEquip 
-      Height          =   645
+      Height          =   624
       ItemData        =   "Orders.frx":034D
       Left            =   3120
       List            =   "Orders.frx":035A
@@ -107,14 +107,14 @@ Begin VB.Form Orders
    End
    Begin VB.ListBox lbVenture 
       Appearance      =   0  'Flat
-      Height          =   225
+      Height          =   216
       Left            =   5500
       TabIndex        =   33
       Top             =   1000
       Width           =   1095
    End
    Begin VB.ListBox lbAnnul 
-      Height          =   1035
+      Height          =   1008
       ItemData        =   "Orders.frx":036D
       Left            =   240
       List            =   "Orders.frx":037D
@@ -141,7 +141,7 @@ Begin VB.Form Orders
    Begin VB.TextBox tbInform 
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   9.75
+         Size            =   9.6
          Charset         =   204
          Weight          =   400
          Underline       =   0   'False
@@ -156,7 +156,7 @@ Begin VB.Form Orders
       Width           =   9015
    End
    Begin VB.ListBox lbClose 
-      Height          =   450
+      Height          =   432
       ItemData        =   "Orders.frx":03A5
       Left            =   240
       List            =   "Orders.frx":03AF
@@ -166,7 +166,7 @@ Begin VB.Form Orders
       Width           =   1212
    End
    Begin VB.ListBox lbTema 
-      Height          =   2010
+      Height          =   1968
       Left            =   3960
       TabIndex        =   28
       Top             =   1020
@@ -278,7 +278,7 @@ Begin VB.Form Orders
          Caption         =   "Включен фильтр !"
          BeginProperty Font 
             Name            =   "MS Sans Serif"
-            Size            =   8.25
+            Size            =   7.8
             Charset         =   204
             Weight          =   700
             Underline       =   0   'False
@@ -295,7 +295,7 @@ Begin VB.Form Orders
       End
    End
    Begin VB.ListBox lbType 
-      Height          =   1035
+      Height          =   1008
       ItemData        =   "Orders.frx":03CC
       Left            =   1560
       List            =   "Orders.frx":03DF
@@ -305,7 +305,7 @@ Begin VB.Form Orders
       Width           =   372
    End
    Begin VB.ListBox lbDel 
-      Height          =   450
+      Height          =   432
       ItemData        =   "Orders.frx":03F4
       Left            =   240
       List            =   "Orders.frx":03FE
@@ -323,7 +323,7 @@ Begin VB.Form Orders
       Width           =   1515
    End
    Begin VB.ListBox lbM 
-      Height          =   255
+      Height          =   240
       Left            =   1500
       TabIndex        =   21
       Top             =   1020
@@ -339,7 +339,7 @@ Begin VB.Form Orders
       Width           =   852
    End
    Begin VB.ListBox lbStat 
-      Height          =   645
+      Height          =   624
       ItemData        =   "Orders.frx":0418
       Left            =   240
       List            =   "Orders.frx":0425
@@ -358,7 +358,7 @@ Begin VB.Form Orders
       Width           =   975
    End
    Begin VB.ListBox lbProblem 
-      Height          =   2400
+      Height          =   2352
       Left            =   2460
       TabIndex        =   17
       Top             =   1020
@@ -366,7 +366,7 @@ Begin VB.Form Orders
       Width           =   1332
    End
    Begin VB.ListBox lbWerk 
-      Height          =   255
+      Height          =   240
       ItemData        =   "Orders.frx":0440
       Left            =   2100
       List            =   "Orders.frx":0442
@@ -381,8 +381,8 @@ Begin VB.Form Orders
       TabIndex        =   2
       Top             =   780
       Width           =   11895
-      _ExtentX        =   20981
-      _ExtentY        =   7858
+      _ExtentX        =   20976
+      _ExtentY        =   7853
       _Version        =   393216
       BackColor       =   16777215
       ForeColorFixed  =   0
@@ -393,7 +393,7 @@ Begin VB.Form Orders
       FormatString    =   $"Orders.frx":0444
       BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
          Name            =   "MS Sans Serif"
-         Size            =   9.75
+         Size            =   9.6
          Charset         =   204
          Weight          =   400
          Underline       =   0   'False
@@ -419,13 +419,13 @@ Begin VB.Form Orders
    End
    Begin MSComctlLib.Toolbar Toolbar1 
       Align           =   1  'Align Top
-      Height          =   660
+      Height          =   636
       Left            =   0
       TabIndex        =   32
       Top             =   0
       Width           =   11880
       _ExtentX        =   20955
-      _ExtentY        =   1164
+      _ExtentY        =   1122
       ButtonWidth     =   609
       ButtonHeight    =   1005
       Appearance      =   1
@@ -681,7 +681,7 @@ Const rowFromOrdersEquip = "select " _
 
 ' нужно вызывать уже после того, как новая Валюта сменена.
 Private Sub adjustHotMoney()
-Dim I As Long, J As Integer
+Dim I As Long, j As Integer
 
     For I = 1 To Grid.Rows - 1
         Dim Value As Double, rate As Double
@@ -690,8 +690,8 @@ Dim I As Long, J As Integer
         If rateStr <> "" Then
             rate = CDbl(rateStr)
         End If
-        For J = 0 To MCILength - 1 ' колонки с деньгами (залог, нал, заказано, оплачено, отгружено)
-            valueStr = Grid.TextMatrix(I, moneyColIdx(J))
+        For j = 0 To MCILength - 1 ' колонки с деньгами (залог, нал, заказано, оплачено, отгружено)
+            valueStr = Grid.TextMatrix(I, moneyColIdx(j))
             If IsNumeric(valueStr) Then
                 Value = CDbl(valueStr)
                 If sessionCurrency = CC_RUBLE Then
@@ -699,28 +699,28 @@ Dim I As Long, J As Integer
                 Else
                     Value = Value / rate
                 End If
-                LoadNumeric Grid, I, moneyColIdx(J), Value, , "###0.00"
+                LoadNumeric Grid, I, moneyColIdx(j), Value, , "###0.00"
             End If
 skip:
-        Next J
+        Next j
         
     Next I
     
 End Sub
     
 Private Sub adjustMoneyColumnWidth(inStartup As Boolean)
-Dim I As Long, J As Integer
+Dim I As Long, j As Integer
 
-    For J = 0 To MCILength - 1 ' колонки с деньгами (залог, нал, заказано, оплачено, отгружено)
+    For j = 0 To MCILength - 1 ' колонки с деньгами (залог, нал, заказано, оплачено, отгружено)
         If sessionCurrency = CC_RUBLE Then
-            Grid.ColWidth(moneyColIdx(J)) = Grid.ColWidth(moneyColIdx(J)) * ColWidthForRuble
-            gridsColumn(moneyColIdx(J) - 1).columnWidth = Grid.ColWidth(moneyColIdx(J))
+            Grid.colWidth(moneyColIdx(j)) = Grid.colWidth(moneyColIdx(j)) * ColWidthForRuble
+            gridsColumn(moneyColIdx(j) - 1).columnWidth = Grid.colWidth(moneyColIdx(j))
         ElseIf Not inStartup Then
-            Grid.ColWidth(moneyColIdx(J)) = Grid.ColWidth(moneyColIdx(J)) / ColWidthForRuble
-            gridsColumn(moneyColIdx(J) - 1).columnWidth = Grid.ColWidth(moneyColIdx(J))
+            Grid.colWidth(moneyColIdx(j)) = Grid.colWidth(moneyColIdx(j)) / ColWidthForRuble
+            gridsColumn(moneyColIdx(j) - 1).columnWidth = Grid.colWidth(moneyColIdx(j))
         End If
 skip:
-    Next J
+    Next j
 End Sub
     
     
@@ -877,7 +877,7 @@ tbOrders.AddNew
 tbOrders!StatusId = 0
 tbOrders!Numorder = valueorder.val
 tbOrders!inDate = Now
-tbOrders!ManagId = manId(Orders.cbM.ListIndex)
+tbOrders!managId = manId(Orders.cbM.ListIndex)
 tbOrders!WerkId = gWerkId
 str = getSystemField("Kurs")
 
@@ -1329,17 +1329,18 @@ AA:     Value = InputBox("Введите номер заказа", "Поиск", Value)
         If findExValInCol(Grid, Value, orFirma) > 0 Then Exit Sub
         If MsgBox("Выполнить расширенный поиск фирмы '" & Value & "' ?", vbYesNo, _
         "Среди загруженных заказ этой фирмы не найден!") = vbNo Then Exit Sub
-        If tbEnable.Visible Then
-            If setIdWerk Then
-                FindFirm.idWerk = idWerk
+        If setIdWerk Then
+            FindFirm.idWerk = idWerk
+        Else
+            If gWerkId = 0 Then
+                MsgBox "Выберите подразделение у заказа", , "Некорректный ввод"
+                Exit Sub
             Else
-                If gWerkId = 0 Then
-                    MsgBox "Выберите подразделение у заказа", , "Некорректный ввод"
-                    Exit Sub
-                Else
-                    FindFirm.idWerk = gWerkId
-                End If
+                FindFirm.idWerk = gWerkId
             End If
+        End If
+        ' должно быть позже чем предыдущий код (начиная с if setIdWerk)
+        If tbEnable.Visible Then
             FindFirm.cmAllOrders.Visible = True
             FindFirm.cmNoClose.Visible = True
             FindFirm.cmNoCloseFiltr.Visible = True
@@ -1451,17 +1452,17 @@ For I = 0 To UBound(gridsColumn)
     End If
     
     If werkToViewId > 0 And gWerkId > 0 And gWerkId <> werkToViewId Then
-        Grid.ColWidth(GridColIndex) = 0
+        Grid.colWidth(GridColIndex) = 0
     Else
-        Grid.ColWidth(gCol.GridColIndex) = gCol.columnWidth
+        Grid.colWidth(gCol.GridColIndex) = gCol.columnWidth
     End If
 Next I
 
 
 End Sub
 
-Sub initOrCol(ByRef colNum As Integer, ColName As String, Optional ColWidth As Integer = -1, _
-        Optional Field As String = "", Optional alingment As Integer = flexAlignGeneral, _
+Sub initOrCol(ByRef colNum As Integer, ColName As String, Optional colWidth As Integer = -1, _
+        Optional field As String = "", Optional alingment As Integer = flexAlignGeneral, _
         Optional werkToView As Integer = 0)
 
 Static currentCol As Integer
@@ -1470,7 +1471,7 @@ ReDim Preserve gridsColumn(currentCol)
 
 If orColNumber = 0 Then
     Grid.Cols = 2
-    Grid.ColWidth(0) = 0
+    Grid.colWidth(0) = 0
 Else
     Grid.Cols = Grid.Cols + 1
 End If
@@ -1481,24 +1482,24 @@ Grid.TextMatrix(0, orColNumber) = ColName
 Grid.ColAlignment(orColNumber) = alingment
 
 ReDim Preserve orSqlFields(orColNumber + 1)
-orSqlFields(orColNumber) = Field
+orSqlFields(orColNumber) = field
 
-If ColWidth >= 0 Then
-    Grid.ColWidth(orColNumber) = ColWidth
+If colWidth >= 0 Then
+    Grid.colWidth(orColNumber) = colWidth
     gridsColumn(currentCol).Visible = True
 Else
-    Grid.ColWidth(orColNumber) = 0
+    Grid.colWidth(orColNumber) = 0
     gridsColumn(currentCol).Visible = False
 End If
 
 
-gridsColumn(currentCol).columnWidth = ColWidth
+gridsColumn(currentCol).columnWidth = colWidth
 gridsColumn(currentCol).WerkId = werkToView
 
 Dim pnt As Integer
-pnt = InStr(1, Field, ".")
+pnt = InStr(1, field, ".")
 If pnt > 0 Then
-    gridsColumn(currentCol).Field = Mid(Field, pnt + 1)
+    gridsColumn(currentCol).field = Mid(field, pnt + 1)
 End If
 
 gridsColumn(currentCol).GridColIndex = orColNumber
@@ -1516,7 +1517,7 @@ If tbEnable.Visible Then mnAllOrders.Visible = True
 oldHeight = Me.Height
 oldWidth = Me.Width
 
-If Not IsEmpty(otlad) Then
+If Not isEmpty(otlad) Then
     Frame1.BackColor = otladColor
     Me.BackColor = otladColor
 
@@ -1613,7 +1614,7 @@ managLoad 'загрузка Manag() cbM lbM и Filtr.lbM
 lbM.Height = lbM.Height + 195 * (lbM.ListCount - 1)
 Filtr.lbM.Height = Filtr.lbM.Height + 195 * (Filtr.lbM.ListCount - 1)
 
-If Not IsEmpty(otlad) Then cbM.ListIndex = cbM.ListCount - 1
+If Not isEmpty(otlad) Then cbM.ListIndex = cbM.ListCount - 1
 
 Set Table = myOpenRecordSet("##72", "GuideTema", dbOpenForwardOnly)
 If Table Is Nothing Then myBase.Close: End
@@ -1649,40 +1650,40 @@ End Sub
 
  
 Public Sub managLoad(Optional fromWerk As String = "")
-Dim I As Integer, str As String, J As String
+Dim I As Integer, str As String, j As String
 
 sql = "SELECT * From GuideManag where manag <> '' ORDER BY forSort"
 Set Table = myOpenRecordSet("##03", sql, dbOpenForwardOnly)
 If Table Is Nothing Then myBase.Close: End
-I = 0: ReDim manId(0): ReDim Managers(0): J = 0
+I = 0: ReDim manId(0): ReDim Managers(0): j = 0
 Dim imax As Integer: imax = 0: ReDim Manag(0)
 Dim theManager As MapEntry
 While Not Table.EOF
     str = Table!Manag
-    theManager.Key = Table!ManagId
+    theManager.Key = Table!managId
     theManager.Value = str
-    Managers(J) = theManager
+    Managers(j) = theManager
     
     If str = "not" Then
         GoTo AA
     ElseIf LCase(Table!forSort) <> "unused" Then
         If fromWerk = "" Then
-          If Table!ManagId <> 0 Then cbM.AddItem str
+          If Table!managId <> 0 Then cbM.AddItem str
           lbM.AddItem str
           Filtr.lbM.AddItem str
         End If
-        manId(I) = Table!ManagId
+        manId(I) = Table!managId
         I = I + 1
         ReDim Preserve manId(I):
-AA:     If imax < Table!ManagId Then
-            imax = Table!ManagId
+AA:     If imax < Table!managId Then
+            imax = Table!managId
             ReDim Preserve Manag(imax)
         End If
-        Manag(Table!ManagId) = str
+        Manag(Table!managId) = str
     End If
     Table.MoveNext
-    J = J + 1
-    ReDim Preserve Managers(J)
+    j = j + 1
+    ReDim Preserve Managers(j)
 Wend
 Table.Close
 
@@ -1872,7 +1873,7 @@ On Error GoTo sqle
     
     Exit Function
 sqle:
-    wrkDefault.Rollback
+    wrkDefault.rollback
     errorCodAndMsg "checkInvoiceBusy"
 End Function
 
@@ -1891,7 +1892,7 @@ On Error GoTo sqle
     
     Exit Function
 sqle:
-    wrkDefault.Rollback
+    wrkDefault.rollback
     errorCodAndMsg "checkInvoiceMerge"
 End Function
 
@@ -1917,12 +1918,12 @@ On Error GoTo sqle
     If MsgBox(mText, vbOKCancel, "Вы уверены?") = vbOK Then
         myBase.Execute sql
     Else
-        wrkDefault.Rollback
+        wrkDefault.rollback
         tryInvoiceMove = False
     End If
     Exit Function
 sqle:
-    wrkDefault.Rollback
+    wrkDefault.rollback
     errorCodAndMsg "tryInvoiceMove"
     tryInvoiceMove = False
 End Function
@@ -1939,12 +1940,12 @@ On Error GoTo sqle
         sql = "call wf_split_jscet (" & p_numOrder & ")"
         myBase.Execute sql
     Else
-        wrkDefault.Rollback
+        wrkDefault.rollback
         tryInvoiceSplit = False
     End If
     Exit Function
 sqle:
-    wrkDefault.Rollback
+    wrkDefault.rollback
     errorCodAndMsg "tryInvoiceSplit"
     tryInvoiceSplit = False
 End Function
@@ -1961,13 +1962,13 @@ On Error GoTo sqle
             Debug.Print sql
             myBase.Execute sql
         Else
-            wrkDefault.Rollback
+            wrkDefault.rollback
             tryInvoiceMerge = False
         End If
     End If
     Exit Function
 sqle:
-    wrkDefault.Rollback
+    wrkDefault.rollback
     errorCodAndMsg "tryInvoiceSplit"
     tryInvoiceMerge = False
     
@@ -2237,7 +2238,7 @@ ElseIf mousCol = orWerk Then
     '    , , "Изменение подразделения недопустимо!"
     '    Exit Sub
     'End If
-    listBoxInGridCell lbWerk, Grid, "yes", Grid.ColWidth(mousCol)
+    listBoxInGridCell lbWerk, Grid, "yes", Grid.colWidth(mousCol)
 ElseIf mousCol = orEquip Then
     'Equipment.orderStatusStr = Grid.TextMatrix(mousRow, orStatus)
     Equipment.readonlyFlag = StatusId > 0
@@ -2513,9 +2514,9 @@ Grid.CellBackColor = Grid.BackColor
 End Sub
 
 
-Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then
-        MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
+        MsgBox "ColWidth = " & Grid.colWidth(Grid.MouseCol)
 End If
 End Sub
 
@@ -2568,7 +2569,7 @@ BB: wrkDefault.BeginTrans
         orderUpdate "##50", managerId, "Orders", "lastManagId"
         wrkDefault.CommitTrans
     Else
-        wrkDefault.Rollback
+        wrkDefault.rollback
     End If
 End If
 EN1:
@@ -2645,7 +2646,7 @@ Dim str As String
         Grid.TextMatrix(mousRow, mousCol) = "аннулирован"
         wrkDefault.CommitTrans
     Else
-        wrkDefault.Rollback
+        wrkDefault.rollback
     End If
 
 End Function
@@ -2668,7 +2669,7 @@ Sub do_Del()
         delZakazFromGrid
         wrkDefault.CommitTrans
     Else
-ERR1:   wrkDefault.Rollback
+ERR1:   wrkDefault.rollback
     End If
   End If
 
@@ -2865,7 +2866,7 @@ End If
 lbHide
 'Exit Sub
 ER1:
- wrkDefault.Rollback:
+ wrkDefault.rollback:
 lbHide
 End Sub
 
@@ -2948,7 +2949,7 @@ End Sub
 
 Private Sub mnAnalityc_Click()
     Me.MousePointer = flexHourglass
-    Analityc.ManagId = Orders.cbM.Text
+    Analityc.managId = Orders.cbM.Text
     Analityc.applicationType = "bay"
     Analityc.Show vbModeless, Me
     Me.MousePointer = flexDefault
@@ -3344,10 +3345,10 @@ End Function
 ' 0  - нормальное завершение issue не произошло
 ' >0 - нормальное завершение, было issue, возвращаем его id.
 
-Function isFloatFromMobileWithIssue(Field As String, issueMarker As String) As Integer
+Function isFloatFromMobileWithIssue(field As String, issueMarker As String) As Integer
     If checkNumeric(tbMobile.Text, 0) Then
         Dim issueId As Variant
-        isFloatFromMobileWithIssue = orderUpdateWithIssue(issueMarker, tbMobile.Text, "Orders", Field)
+        isFloatFromMobileWithIssue = orderUpdateWithIssue(issueMarker, tbMobile.Text, "Orders", field)
         sql = "select wi_check_business_issue('" & issueMarker & "')"
         byErrSqlGetValues "##check_issue", sql, issueId
         If issueId <> 0 Then
@@ -3361,7 +3362,7 @@ Function isFloatFromMobileWithIssue(Field As String, issueMarker As String) As I
     End If
 End Function
 
-Function isFloatFromMobile(Field As String, Optional errorCode As String = "##23", Optional isCurrency As Boolean = False) As Boolean
+Function isFloatFromMobile(field As String, Optional errorCode As String = "##23", Optional isCurrency As Boolean = False) As Boolean
 Dim isIssue As Integer
 
     If checkNumeric(tbMobile.Text, 0) Then
@@ -3372,7 +3373,7 @@ Dim isIssue As Integer
             ueValue = tbMobile.Text
         End If
         
-        isIssue = orderUpdate(errorCode, ueValue, "Orders", Field)
+        isIssue = orderUpdate(errorCode, ueValue, "Orders", field)
         
         Grid.TextMatrix(mousRow, mousCol) = tbMobile.Text
         isFloatFromMobile = True
@@ -3513,7 +3514,7 @@ str = tbMobile.Text
         End If
     ElseIf orRemark = mousCol Or orPlaces = mousCol Or orSize = mousCol Then
         Dim fieldName As String
-        fieldName = gridsColumn(mousCol - 1).Field
+        fieldName = gridsColumn(mousCol - 1).field
         If Not fieldName = "" Then
             If orderUpdate("##400", "'" & tbMobile.Text & "'", "Orders", fieldName) = 0 Then
                 Grid.TextMatrix(mousRow, mousCol) = tbMobile.Text
