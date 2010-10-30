@@ -2864,6 +2864,31 @@ where firmguide.werkid not in (1,2 )
 		<rollback/>
 	</changeSet>
 
+	<changeSet id="1" author="mantis-229">
+		<comment>Оптимизация получения отчета Все материалы Клиента</comment>
+		<addNotNullConstraint tableName="sGuideVariant" columnName="productId"/>
+	</changeSet>
+
+	<changeSet id="2" author="mantis-229">
+		<comment>Оптимизация получения отчета Все материалы Клиента</comment>
+		<addNotNullConstraint tableName="sGuideVariant" columnName="xGroup"/>
+	</changeSet>
+
+	<changeSet id="3" author="mantis-229">
+		<comment>Оптимизация получения отчета Все материалы Клиента</comment>
+		<addPrimaryKey tableName="sGuideVariant" constraintName="pk_GuideVariant" columnNames="productId, xgroup"/>
+	</changeSet>
+
+	<changeSet id="4" author="mantis-229" runOnChange="true">
+		<comment>Оптимизация получения отчета Все материалы Клиента</comment>
+		<sqlFile path="views/itemWareFixe.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="5" author="mantis-229" runOnChange="true">
+		<comment>Ошибка в получении суммы отчета по Материалам купленным Клиентом</comment>
+		<sqlFile path="procedures/n_list_climat_by_periods.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+	</changeSet>
 
 </databaseChangeLog>
 
