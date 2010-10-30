@@ -52,8 +52,8 @@ Const DLM = vbTab
 ' не использовать в cfg
 
 Private Sub changeCaseOfTheVariables()
-'Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim, Item
-Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim, Item
+'Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim, Item, ListBox
+Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim, Item, ListBox
 
 End Sub
 
@@ -409,7 +409,7 @@ Frm.MousePointer = flexHourglass
             While Not tbNomenk.EOF
             
             
-                csvRow = tbNomenk!cod & DLM & tbNomenk!nomenk _
+                csvRow = tbNomenk!cod & DLM & tbNomenk!nomName _
                     & DLM & tbNomenk!Size & DLM & tbNomenk!qty_dost & DLM & tbNomenk!ed_Izmer2
     
                 CalcKolonPrices prices, curRate
@@ -533,7 +533,7 @@ Frm.MousePointer = flexHourglass
                     & DLM & tbProduct!prDescript
     
                 For I = 0 To 3
-                    csvRow = csvRow & DLM & Round(izdeliePrices(I), 2)
+                    csvRow = csvRow & DLM & Round(izdeliePrices(I), 1)
                     izdeliePrices(I) = 0
                 Next I
     
@@ -589,10 +589,7 @@ Public Function CsvProductPrices(ByRef izdeliePrices() As Single, ByRef RPF_Rate
     Dim baseCena As String
     
     gProductId = tbProduct!prId
-    If gProductId = 1192 Then
-        gProductId = gProductId
-    End If
-    
+
     ret = calcBaseCenaAndRpfRate(Regim, baseCena, RPF_Rate, tbProduct!Cena4, tbProduct!productRabbat, commonRabbat, tbProduct!hasWeb)
     If ret = "" Then
         izdeliePrices(0) = CSng(baseCena) * curRate
@@ -711,7 +708,7 @@ If noOpen = "" Then
 End If
 
 SumCenaFreight = getSumCena(tbProduct!prId)
-If InStr(tbProduct!formula, "SumCenaFreight") > 0 Then
+If InStr(tbProduct!Formula, "SumCenaFreight") > 0 Then
   If IsNumeric(SumCenaFreight) Then
     sc.ExecuteStatement "SumCenaFreight=" & SumCenaFreight
     SumCenaFreight = Round(CSng(SumCenaFreight), 2)
@@ -723,7 +720,7 @@ If InStr(tbProduct!formula, "SumCenaFreight") > 0 Then
 End If
 
 SumCenaSale = getSumCena(tbProduct!prId, "Sale")
-If InStr(tbProduct!formula, "SumCenaSale") > 0 Then
+If InStr(tbProduct!Formula, "SumCenaSale") > 0 Then
   If IsNumeric(SumCenaSale) Then
     sc.ExecuteStatement "SumCenaSale=" & SumCenaSale
     SumCenaSale = Round(CSng(SumCenaSale), 2)
@@ -736,7 +733,7 @@ End If
 
 On Error GoTo ERR2
 sc.ExecuteStatement "VremObr = " & tbProduct!VremObr
-productFormula = Round(sc.Eval(tbProduct!formula), 2)
+productFormula = Round(sc.Eval(tbProduct!Formula), 2)
 GoTo EN1
 ERR2:
     productFormula = "error: " & Error
@@ -744,7 +741,7 @@ ERR2:
 '    "' для изделия '" & tbProduct!prName & "' (" & tmpStr & ")", , _
 '    "Ошибка 316 - " & Err & ":  " '##316
 EN1:
-tmpStr = tbProduct!formula
+tmpStr = tbProduct!Formula
 If noOpen = "" Then tbProduct.Close
 End Function
 
@@ -788,8 +785,8 @@ While Not tbNomenk.EOF
 '        GoTo ER
 '    End If
     If reg = "" Then
-        If tbNomenk!formula = "" Then
-            getSumCena = "Error: Не определена формула для номенклатуры '" & tbNomenk!nomnom & "'"
+        If tbNomenk!Formula = "" Then
+            getSumCena = "Error: Не определена формула для номенклатуры '" & tbNomenk!Nomnom & "'"
             GoTo er
         End If
         V = nomenkFormula("noOpen") 'Цена2
@@ -798,7 +795,7 @@ While Not tbNomenk.EOF
     End If
         
     If IsNumeric(V) Then
-        S = V * tbNomenk!quantity / tbNomenk!perList
+        S = V * tbNomenk!quantity / tbNomenk!perlist
         If tbNomenk!xGroup = "" Then
             sum = sum + S
             prevGroup = tbNomenk!xGroup
@@ -810,7 +807,7 @@ While Not tbNomenk.EOF
             prevGroup = tbNomenk!xGroup
         End If
     Else
-        getSumCena = V & " в формуле для  '" & tbNomenk!nomnom & "'"
+        getSumCena = V & " в формуле для  '" & tbNomenk!Nomnom & "'"
         GoTo er
     End If
 
@@ -843,7 +840,7 @@ If noOpen = "" Then
     If tbNomenk Is Nothing Then Exit Function
     If tbNomenk.BOF Then tbNomenk.Close: Exit Function
 End If
-tmpStr = tbNomenk!formula
+tmpStr = tbNomenk!Formula
 tmpStr = tbNomenk.fields("formula" & Web)
 'If tbNomenk!formula = "" Then
 If tmpStr = "" Then
