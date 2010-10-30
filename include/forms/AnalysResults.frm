@@ -455,9 +455,16 @@ Dim periodIndex As Integer
         Me.Caption = "Отчет не содержит данных"
         GoTo cleanup
     End If
+    Dim defTimeout As Integer
+    defTimeout = myBase.QueryTimeout
+    
+    myBase.QueryTimeout = myBase.QueryTimeout * 5
     
     sql = "call n_exec_filter( " & filterId & ")"
     Set Table = myOpenRecordSet("##Results.1", sql, dbOpenDynaset)
+    
+    myBase.QueryTimeout = defTimeout
+    
     If Table Is Nothing Then
         Me.Caption = "Ошибка при загрузке данных из базы"
         GoTo cleanup
@@ -591,17 +598,17 @@ Dim ln As Integer
 End Function
 
 Private Sub appendToHeader(GridHeaderHead As String, ByRef headerColumn As columnDef, ByRef delimCount As Integer)
-Dim delim As String
+Dim Delim As String
 
     If Not headerColumn.saved Then
         Exit Sub
     End If
     If delimCount > 0 Then
-        delim = "|"
+        Delim = "|"
     Else
-        delim = ""
+        Delim = ""
     End If
-    GridHeaderHead = GridHeaderHead & delim
+    GridHeaderHead = GridHeaderHead & Delim
     delimCount = delimCount + 1
     
     If headerColumn.hidden <> 1 Then
@@ -620,7 +627,7 @@ Dim GridHeaderTail As String
 Dim titleStartStr As String, titleEndStr As String, ResultTitle As String
 Dim headerList() As columnDef
 Dim headerColumn As columnDef
-Dim delim As String, delimHead As Integer, delimTail As Integer
+Dim Delim As String, delimHead As Integer, delimTail As Integer
 Dim periodColumnName As String
 
     'Optimistic view
@@ -699,7 +706,7 @@ Dim periodColumnName As String
         colInfo.label = Table("label")
         If Not IsNull(Table!year) Then colInfo.year = Table!year
         If Not IsNull(Table!st) Then colInfo.stDate = Table!st
-        If Not IsNull(Table!EN) Then colInfo.enDate = Table!EN
+        If Not IsNull(Table!en) Then colInfo.enDate = Table!en
         colInfo.periodId = Table(periodColumnName)
         colInfo.Index = Index
         colInfo.ColWidth = getColumnWidth(Index, Table!label)
