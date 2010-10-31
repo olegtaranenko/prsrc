@@ -60,7 +60,7 @@ begin
 	)
 	select 
 		o.numorder, s.nomnom, o.indate
-		, s.quant / n.perlist, s.cenaEd
+		, s.quant / n.perlist, s.cenaEd * n.perlist
 	from 
 		bayorders o
 	join itemSellOrde s on s.numorder = o.numorder

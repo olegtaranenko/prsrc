@@ -2885,9 +2885,10 @@ where firmguide.werkid not in (1,2 )
 		<rollback/>
 	</changeSet>
 
-	<changeSet id="5" author="mantis-229" runOnChange="true">
+	<changeSet id="1" author="2010-okt-31" runOnChange="true">
 		<comment>Ошибка в получении суммы отчета по Материалам купленным Клиентом</comment>
 		<sqlFile path="procedures/n_list_climat_by_periods.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="views/orderSellOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 	</changeSet>
 
 </databaseChangeLog>

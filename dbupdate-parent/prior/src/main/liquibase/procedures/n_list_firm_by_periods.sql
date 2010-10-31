@@ -153,7 +153,7 @@ begin
 		  o.numorder as numorder
 		, i.nomnom
 		, i.quant / n.perlist as materialQty
-		, (i.quant / n.perlist) * i.cenaEd as sm
+		, (i.quant) * i.cenaEd as sm
 		, o.inDate
 		, o.firmId
 		, n.klassid

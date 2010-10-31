@@ -23,7 +23,6 @@ begin
 	, r.sm_paid, r.scope, r.status
 	from orderBranRsrv r
 	join #order_list o on o.numorder = r.numorder
---	left join orderSellOrde s on s.numorder = r.numorder
 	where r.nomnom = p_nomnom
 	order by r.date1 desc;
 
