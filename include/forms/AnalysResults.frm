@@ -449,7 +449,7 @@ Dim periodIndex As Integer
     
     setFilterParams
     
-    groupSelectorColumn = getCurrentSetting("groupSelectorColumn", filterSettings)
+    groupSelectorColumn = getMapEntry("groupSelectorColumn", filterSettings)
     If Not setGridHeaders(filterId) Then
         'MsgBox "Отчет не содержит данных", vbExclamation
         Me.Caption = "Отчет не содержит данных"
@@ -483,7 +483,7 @@ Dim periodIndex As Integer
     ReDim rowTotals(multiplyCols)
     ReDim columnTotals((periodCount + 1) * multiplyCols)
     
-    periodColumnName = getCurrentSetting("periodId4detail", filterSettings)
+    periodColumnName = getMapEntry("periodId4detail", filterSettings)
 
     rownum = 0
     prevSelector = Null
@@ -563,7 +563,7 @@ Dim periodIndex As Integer
     Next periodIndex
     
     AjustColumnWidths Me.Grid, Label1
-    totalQtyLabel = getCurrentSetting("totalQtyLabel", filterSettings)
+    totalQtyLabel = getMapEntry("totalQtyLabel", filterSettings)
     lbTotalQty.Caption = CStr(rownum) & " " & totalQtyLabel
     cmFind.Left = lbTotalQty.Left + lbTotalQty.Width + 100
     
@@ -650,7 +650,7 @@ Dim periodColumnName As String
     PostHeaderCount = UBound(GridHeaderTailDef) + 1
     multiplyCols = parseTabStrip(GridHeaderTail, TabStrip1)
 
-    ResultTitle = getCurrentSetting("resultTitle", filterSettings)
+    ResultTitle = getMapEntry("resultTitle", filterSettings)
     If ResultTitle = "" Then
         If startDate > "2000-01-01" Then
             titleStartStr = Format(startDate, "dd.mm.yyyy")
@@ -696,9 +696,9 @@ Dim periodColumnName As String
     End If
 
     'может ли получить деталировку?
-    tableSettingNoRowDetail = getCurrentSetting("noRowDetail", filterSettings)
+    tableSettingNoRowDetail = getMapEntry("noRowDetail", filterSettings)
     
-    periodColumnName = getCurrentSetting("periodId4detail", filterSettings)
+    periodColumnName = getMapEntry("periodId4detail", filterSettings)
     
     
 

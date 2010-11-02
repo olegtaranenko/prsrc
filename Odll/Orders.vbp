@@ -23,7 +23,6 @@ Form=Nakladna.frm
 Form=sDocs.frm
 Form=Otgruz.frm
 Form=cfg.frm
-Form=OnFly.frm
 Module=CmdUtils; ..\include\CmdUtils.bas
 Module=CommonUtils; ..\include\CommonUtils.bas
 Module=AppUtils; ..\include\AppUtils.bas

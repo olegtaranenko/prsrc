@@ -349,9 +349,6 @@ Begin VB.Form sProducts
       Begin VB.Menu mnDel 
          Caption         =   "Удалить"
       End
-      Begin VB.Menu mnOnfly 
-         Caption         =   "Преобразовать в изделия"
-      End
    End
    Begin VB.Menu mnContext2 
       Caption         =   "Из накладной и из цеха"
@@ -2084,17 +2081,8 @@ End If
 EN1: Grid2.SetFocus
 End Sub
 
-Private Sub mnOnfly_Click()
-    OnFly.Show vbModal
-    If convertToIzdelie Then
-        loadPredmeti Me, orderRate, idWerk, asWhole
-        loadProducts
-        convertToIzdelie = False
-    End If
-End Sub
 
 Private Sub opNomenk_Click()
-
 controlEnable False
 laQuant.Visible = False
 laQuant.Caption = ""

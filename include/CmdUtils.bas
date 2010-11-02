@@ -168,16 +168,16 @@ Sub loadEffectiveSettings()
     If Not loadCmdSettings(argumentSettings) Then
         fatalError "Ошибка аргумента в командной строке"
     End If
-    appCfgFile = getCurrentSetting("appCfgFile", argumentSettings)
+    appCfgFile = getMapEntry("appCfgFile", argumentSettings)
     If appCfgFile = "" Then
         appCfgFile = getAppCfgDefaultName
     End If
     If loadFileSettings(appCfgFile, appSettings) < 0 Then
         fatalError "Ошибка при загрузке файла конфигурации программы (appCfgFile)"
     End If
-    siteCfgFile = getCurrentSetting("siteCfgFile", argumentSettings)
+    siteCfgFile = getMapEntry("siteCfgFile", argumentSettings)
     If siteCfgFile = "" Then
-        siteCfgFile = getCurrentSetting("siteCfgFile", appSettings)
+        siteCfgFile = getMapEntry("siteCfgFile", appSettings)
     End If
     If siteCfgFile = "" Then
         siteCfgFile = getSiteCfgDefaultName
@@ -250,35 +250,35 @@ EN1:
 End Sub
 
 Function getAppCfgDefaultName() As String
-    getAppCfgDefaultName = App.path & "\" & App.EXEName & ".cfg"
+    getAppCfgDefaultName = App.path & "\" & App.ExeName & ".cfg"
 End Function
 
 Function getSiteCfgDefaultName() As String
     getSiteCfgDefaultName = App.path & "\site.cfg"
 End Function
 
-Function getCurrentSetting(Key As String, ByRef curSettings() As MapEntry) As Variant
+Function getMapEntry(Key As String, ByRef map() As MapEntry) As Variant
 Dim I As Integer
-    For I = 1 To UBound(curSettings)
-        If curSettings(I).Key = Key Then
-            getCurrentSetting = curSettings(I).Value
+    For I = 1 To UBound(map)
+        If map(I).Key = Key Then
+            getMapEntry = map(I).Value
             Exit Function
         End If
     Next I
-'    getCurrentSetting = Null
+'    getMapEntry = Null
 End Function
 
-' возвращает индекс key в массиве curSettings
+' возвращает индекс key в массиве map
 ' Empty если не найдет такой параметр
-Function getMapEntry(ByRef curSettings() As MapEntry, Key As String) As Integer
+Function getMapEntryIndex(ByRef map() As MapEntry, Key As String) As Integer
 Dim I As Integer
-    For I = 1 To UBound(curSettings)
-        If curSettings(I).Key = Key Then
-            getMapEntry = I
+    For I = 1 To UBound(map)
+        If map(I).Key = Key Then
+            getMapEntryIndex = I
             Exit Function
         End If
     Next I
-    getMapEntry = Empty
+    getMapEntryIndex = Empty
 End Function
 
 
@@ -310,7 +310,7 @@ Dim exists As Variant
     lnFrom = UBound(mergeFrom)
     For I = 1 To lnFrom
         entry = mergeFrom(I)
-        exists = getCurrentSetting(entry.Key, mergeTo)
+        exists = getMapEntry(entry.Key, mergeTo)
         If IsEmpty(exists) Then
            append mergeTo, entry
         End If
@@ -335,7 +335,7 @@ End Sub
 Public Sub setCurrentSetting(curSettings() As MapEntry, Key As String, paramVal)
 Dim I As Integer
     
-    I = getMapEntry(curSettings, Key)
+    I = getMapEntryIndex(curSettings, Key)
     If I > 0 Then
         curSettings(I).Value = paramVal
     Else
@@ -350,7 +350,7 @@ End Sub
 Function getEffectiveSetting(Key As String, Optional defaultValue) As Variant
 Dim entry As MapEntry, Value
 
-    Value = getCurrentSetting(Key, settings)
+    Value = getMapEntry(Key, settings)
     If Not IsEmpty(Value) Then
         getEffectiveSetting = Value
         Exit Function
@@ -384,7 +384,7 @@ Dim Value As Variant
                     I = I + 1
                 End If
                 
-                exists = getCurrentSetting(entry.Key, curSettings)
+                exists = getMapEntry(entry.Key, curSettings)
                 If Not IsEmpty(exists) Then
                     exists = exists & " " & Value
                     appendValue curSettings, entry.Key, Value, " "
@@ -393,7 +393,7 @@ Dim Value As Variant
                     append argumentSettings, entry
                 End If
             Else
-                exists = getCurrentSetting(rawCmdArguments(I), curSettings)
+                exists = getMapEntry(rawCmdArguments(I), curSettings)
                 If IsNull(exists) Then
                     entry.Key = rawCmdArguments(I)
                     append argumentSettings, entry
@@ -475,9 +475,9 @@ Dim reloadCfgSrc As String, reloadCfgDst As String
 
 '    MsgBox App.EXEName & ""
 
-    reloadCfgSrc = getCurrentSetting("reloadCfgSrc", argumentSettings)
+    reloadCfgSrc = getMapEntry("reloadCfgSrc", argumentSettings)
     'trace "reloadCfgSrc = " & reloadCfgSrc
-    reloadCfgDst = getCurrentSetting("reloadCfgDst", argumentSettings)
+    reloadCfgDst = getMapEntry("reloadCfgDst", argumentSettings)
     'trace "reloadCfgDst = " & reloadCfgDst
 
     If reloadCfgSrc <> "" Then

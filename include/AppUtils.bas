@@ -465,7 +465,7 @@ Frm.MousePointer = flexHourglass
     sql = "SELECT p.prId, p.prName, p.prDescript, p.prSize, p.Cena4, p.page, p.rabbat as productRabbat" _
         & vbCr & " , f.formula" _
         & vbCr & " , w.prId as hasWeb " _
-        & vbCr & " , s.gain2, s.gain3, s.gain4 " _
+        & vbCr & " , s.gain2, s.gain3, s.gain4, p.prseriaId as seriaId" _
         & vbCr & " From sGuideProducts p " _
         & vbCr & " join sGuideSeries s on p.prSeriaId = s.seriaId " _
         & vbCr & " left JOIN sGuideFormuls f on f.nomer = p.formulaNom" _
@@ -515,7 +515,7 @@ Frm.MousePointer = flexHourglass
         If Not tbProduct.BOF Then
             Open csvFile For Output As #1
             Print #1, "cod" & DLM & "size" & DLM & "description" _
-                    & DLM & "price1" & DLM & "price2" & DLM & "price3" & DLM & "price4" & DLM & "page"
+                    & DLM & "price1" & DLM & "price2" & DLM & "price3" & DLM & "price4" & DLM & "page" & DLM & "seriaid"
             
             While Not tbProduct.EOF
             
@@ -537,7 +537,7 @@ Frm.MousePointer = flexHourglass
                     izdeliePrices(I) = 0
                 Next I
     
-                csvRow = csvRow & DLM & tbProduct!Page
+                csvRow = csvRow & DLM & tbProduct!Page & DLM & tbProduct!seriaId
     
                 Print #1, csvRow
                 
