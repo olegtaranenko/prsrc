@@ -2161,7 +2161,7 @@ where id_scet = -1
 	</changeSet>
 
 	<changeSet id="31" author="mantis-141" runOnChange="true">
-		<validCheckSum>11111</validCheckSum>
+		<validCheckSum>7de5325815c9612ca2f02a3524b6892d</validCheckSum>
 		<comment>Восстанавливаем дату выдачи заказа</comment>
 		<executeCommand executable="dbisqlc.exe">
 			<arg value="-c"/>

@@ -430,30 +430,26 @@ Dim buntColumn As Integer
 Dim Dragging As Boolean
 Dim DraggingX As Single, DraggingY As Single
 
-Sub nomenkToNNQQ(pQuant As Double, eQuant As Double, prQuantity As Double)
+Sub nomenkToNNQQ(orderedProductsQuant As Double, curEtapQuant As Double, prevEtapQuant As Double)
 Dim J As Integer, leng As Integer
 
     leng = UBound(NN)
 
     For J = 1 To leng
         If NN(J) = tbNomenk!Nomnom Then
-            QQ(J) = QQ(J) + pQuant * tbNomenk!quantity
-            If eQuant > 0 Then _
-                QQ2(J) = QQ2(J) + eQuant * tbNomenk!quantity
-            If prQuantity > 0 Then _
-                QQ3(J) = QQ3(J) + prQuantity * tbNomenk!quantity
+            QQ(J) = QQ(J) + orderedProductsQuant * tbNomenk!quantity
+            If curEtapQuant > 0 Then _
+                QQ2(J) = QQ2(J) + curEtapQuant * tbNomenk!quantity
+            If prevEtapQuant > 0 Then _
+                QQ3(J) = QQ3(J) + prevEtapQuant * tbNomenk!quantity
             Exit Sub
         End If
     Next J
     leng = leng + 1
     ReDim Preserve NN(leng): NN(leng) = tbNomenk!Nomnom
-    ReDim Preserve QQ(leng): QQ(leng) = pQuant * tbNomenk!quantity
-    ReDim Preserve QQ2(leng): QQ2(leng) = eQuant * tbNomenk!quantity
-    ReDim Preserve QQ3(leng): QQ3(leng) = prQuantity * tbNomenk!quantity
-'    ReDim Preserve equip(leng)
-'    If Not IsNull(tbNomenk!Equip) Then
-'        equip(leng) = tbNomenk!Equip
-'    End If
+    ReDim Preserve QQ(leng): QQ(leng) = orderedProductsQuant * tbNomenk!quantity
+    ReDim Preserve QQ2(leng): QQ2(leng) = curEtapQuant * tbNomenk!quantity
+    ReDim Preserve QQ3(leng): QQ3(leng) = prevEtapQuant * tbNomenk!quantity
 
 End Sub
 
@@ -491,8 +487,9 @@ tbProduct.Close
 
 'отдельна€ ном-ра
 sql = "SELECT pn.nomNom, pn.quant as quantity, " & _
-"en.eQuant, en.prevQuant FROM xPredmetyByNomenk pn " & _
-"LEFT JOIN xEtapByNomenk en ON pn.nomNom = en.nomNom AND pn.numOrder = en.numOrder " & _
+" en.eQuant, en.prevQuant " & _
+" FROM xPredmetyByNomenk pn " & _
+" LEFT JOIN xEtapByNomenk en ON pn.nomNom = en.nomNom AND pn.numOrder = en.numOrder " & _
 " WHERE pn.numOrder =" & gNzak
 Set tbNomenk = myOpenRecordSet("##320", sql, dbOpenDynaset)
 If tbNomenk Is Nothing Then Exit Function
@@ -510,8 +507,9 @@ zakazNomenkToNNQQ = True
 End Function
 
 'перед исп-ем надо ReDim NN(0): ReDim QQ(0): ReDim QQ2(0) : ReDim QQ3(0):QQ2(0)=0 - не б.этапа
-Function productNomenkToNNQQ(pQuant As Double, eQuant As Double, _
-                                               prQuantity As Double) As Boolean
+Function productNomenkToNNQQ(orderedProductsQuant As Double, curEtapQuant As Double, _
+                                               prevEtapQuant As Double) As Boolean
+                                               
 Dim I As Integer, gr() As String
 
 productNomenkToNNQQ = False
@@ -527,7 +525,7 @@ Set tbNomenk = myOpenRecordSet("##192", sql, dbOpenDynaset)
 If tbNomenk Is Nothing Then Exit Function
 ReDim gr(0): I = 0
 While Not tbNomenk.EOF
-    nomenkToNNQQ pQuant, eQuant, prQuantity
+    nomenkToNNQQ orderedProductsQuant, curEtapQuant, prevEtapQuant
     I = I + 1
     ReDim Preserve gr(I): gr(I) = tbNomenk!xGroup
     tbNomenk.MoveNext
@@ -547,7 +545,7 @@ While Not tbNomenk.EOF
     For I = 1 To UBound(gr) ' если группа состоит из одной ном-ры, то она
         If gr(I) = tbNomenk!xGroup Then GoTo NXT ' Ќ≈вариантна, т.к. не
     Next I                                      ' не попала в xVariantNomenc
-    nomenkToNNQQ pQuant, eQuant, prQuantity
+    nomenkToNNQQ orderedProductsQuant, curEtapQuant, prevEtapQuant
 NXT: tbNomenk.MoveNext
 Wend
 tbNomenk.Close
