@@ -15,7 +15,8 @@ Type VersionInfo
     bld As Long
 End Type
 
-
+' возвращает значение Value в массиве по ключу Key
+' Empty если не найдено
 Function getMapEntry(ByRef map() As MapEntry, Key As String) As Variant
 Dim I As Integer
     For I = 1 To UBound(map)
@@ -28,7 +29,7 @@ Dim I As Integer
 End Function
 
 ' возвращает индекс key в массиве map
-' Empty если не найдет такой параметр
+' -1 если не найдет такой параметр
 Function getMapEntryIndex(ByRef map() As MapEntry, Key As String) As Integer
 Dim I As Integer
     For I = 1 To UBound(map)
@@ -101,7 +102,7 @@ Sub fatalError(msg As String, Optional lookAdmin As String)
 End Sub
 
 Sub getAppInfo(ByRef version As VersionInfo)
-    version.path = App.path & "\" & App.ExeName & ".exe"
+    version.path = App.path & "\" & App.exeName & ".exe"
     version.maj = App.Major
     version.min = App.Minor
     version.bld = App.Revision
