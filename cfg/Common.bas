@@ -20,10 +20,10 @@ Sub Main()
     If getEffectiveSetting("exe") <> "" Then
         localExe = getFullExeName(getEffectiveSetting("exe"))
         exeStart (localExe)
-    ElseIf getCurrentSetting("help", argumentSettings) <> "" Then
+    ElseIf getMapEntry(argumentSettings, "help") <> "" Then
         
-    ElseIf getCurrentSetting("deploy", argumentSettings) <> "" Then
-        localExe = getFullExeName(getCurrentSetting("deploy", argumentSettings))
+    ElseIf getMapEntry(argumentSettings, "deploy") <> "" Then
+        localExe = getFullExeName(getMapEntry(argumentSettings, "deploy"))
         Dim hash As String
         hash = CalculateMD5("")
         msgStyle = exeDeploy(localExe)
@@ -327,7 +327,7 @@ End Function
 Function getExePath() As String
 Dim absolute As Boolean
 
-    getExePath = getCurrentSetting("path", argumentSettings)
+    getExePath = getMapEntry(argumentSettings, "path")
     
     If getExePath <> "" Then
         ' check if path is relative or absolute
