@@ -47,7 +47,6 @@ Const DLM = vbTab
 
 
 
-
 ' Этот файл разделяется между prior, stime и rowmat.
 ' не использовать в cfg
 
@@ -452,20 +451,30 @@ done:
 End Function
 
 
-Function PriceToCSV(ByRef Frm As VB.Form, Regim As String, csvFile As String, curRate As Double, Optional prodCategoryId As Integer = 0, Optional commonRabbat As Single = 1) As String
+Function PriceToCSV(ByRef Frm As VB.Form, Regim As String, csvFile As String, curRate As Double _
+        , Optional prodCategoryId As Integer = 0, Optional commonRabbat As Single = 1 _
+        , Optional csvHeaders As String = "") As String
+        
 Dim izdeliePrices(4) As Single, I As Integer
 Dim csvRow As String, RPF_Rate As Single
 Dim ret As String
 Dim strCrit() As String, critIndex As Integer
+Dim saveHeaders As Boolean, headMap() As MapEntry
+
+ReDim headMap(0)
 
 
 Frm.MousePointer = flexHourglass
 
-
-    sql = "SELECT p.prId, p.prName, p.prDescript, p.prSize, p.Cena4, p.page, p.rabbat as productRabbat" _
+    saveHeaders = csvHeaders <> ""
+    
+    sql = "SELECT p.prId, p.prName, p.prDescript, p.prSize" _
+        & vbCr & " , p.Cena4, p.page, p.rabbat as productRabbat" _
         & vbCr & " , f.formula" _
         & vbCr & " , w.prId as hasWeb " _
-        & vbCr & " , s.gain2, s.gain3, s.gain4, p.prseriaId as seriaId" _
+        & vbCr & " , s.gain2, s.gain3, s.gain4" _
+        & vbCr & " , p.prseriaId as seriaId, s.seriaName" _
+        & vbCr & " , s.head1, s.head2, s.head3, s.head4" _
         & vbCr & " From sGuideProducts p " _
         & vbCr & " join sGuideSeries s on p.prSeriaId = s.seriaId " _
         & vbCr & " left JOIN sGuideFormuls f on f.nomer = p.formulaNom" _
@@ -507,6 +516,14 @@ Frm.MousePointer = flexHourglass
     sql = sql & " order by p.prName"
     'Debug.Print sql
 
+
+    If saveHeaders Then
+        Open csvHeaders For Output As #2
+        Print #2, "seriaId" & DLM & "seria" _
+                & DLM & "head1" & DLM & "head2" _
+                & DLM & "head3" & DLM & "head4"
+    End If
+
     Set tbProduct = myOpenRecordSet("##415", sql, dbOpenDynaset)
     If Not tbProduct Is Nothing Then
         
@@ -519,7 +536,21 @@ Frm.MousePointer = flexHourglass
             
             While Not tbProduct.EOF
             
-            
+                If saveHeaders Then
+                    Dim seriaId As String
+                    seriaId = tbProduct!seriaId
+                    If getMapEntryIndex(headMap, seriaId) = -1 Then
+                        appendKeyValue headMap, seriaId, ""
+                        Print #2, seriaId & DLM & tbProduct!seriaName _
+                                & DLM & tbProduct!head1 & DLM & tbProduct!head2 _
+                                & DLM & tbProduct!head3 & DLM & tbProduct!head4
+                                                
+                    Else
+                        
+                    End If
+                    
+                End If
+                
                 ret = CsvProductPrices(izdeliePrices, RPF_Rate, Regim, curRate, commonRabbat)
                 
                 If Not ret = "" Then
@@ -547,8 +578,13 @@ Frm.MousePointer = flexHourglass
         End If
         tbProduct.Close
     End If
-GoTo EN2
         
+    If saveHeaders Then
+        Close #2
+    End If
+
+GoTo EN2
+
 ERR1:
 If Err = 76 Then
     MsgBox "Невозможно создать файл " & csvFile, , "Error: Не обнаружен ПК или Путь к файлу"

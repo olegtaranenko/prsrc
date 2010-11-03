@@ -2985,12 +2985,15 @@ End Sub
 Private Sub mnBrightBlanks_Click()
 
     Const csvFileName = "brightblanks_ru_.csv"
+    Const csvHeadersName = "brightblanksheads_ru_.csv"
+    
     Dim myRegim As String
-    Dim csvFile As String
+    Dim csvFile As String, csvHeader As String
     
     myRegim = "agency"
     ExcelParamDialog.Regim = myRegim
     
+    ExcelParamDialog.includeHeaders = True
     ExcelParamDialog.mainReportTitle = "-"
     ExcelParamDialog.kegl = -1
     ExcelParamDialog.outputUE = getEffectiveSetting(myRegim & ".ue", True)
@@ -3000,11 +3003,17 @@ Private Sub mnBrightBlanks_Click()
     ExcelParamDialog.contact1 = "-"
     ExcelParamDialog.contact2 = "-"
     ExcelParamDialog.CsvAsOutput = True
-    ExcelParamDialog.Caption = csvFileName
+    ExcelParamDialog.csvFileName = csvFileName
+    
+    
     
     ExcelParamDialog.Show vbModal, Me
     If Not ExcelParamDialog.exitCode = vbOK Then
         GoTo done
+    End If
+    
+    If ExcelParamDialog.includeHeaders Then
+        csvHeader = makeCsvFilePath(csvHeadersName)
     End If
 
     Dim reportRate As Double
@@ -3016,12 +3025,14 @@ Private Sub mnBrightBlanks_Click()
     
     csvFile = makeCsvFilePath(csvFileName)
     
+    
     If csvFile <> "" Then
-        PriceToCSV Me, myRegim, csvFile, reportRate, 2, ExcelParamDialog.commonRabbat
+        PriceToCSV Me, myRegim, csvFile, reportRate, 2, ExcelParamDialog.commonRabbat, csvHeader
     End If
     
 done:
-
+    ExcelParamDialog.includeHeaders = False
+    
 End Sub
 
 Private Sub mnBrightAwards_Click()
@@ -3041,7 +3052,7 @@ Private Sub mnBrightAwards_Click()
     ExcelParamDialog.CsvAsOutput = True
     ExcelParamDialog.kegl = -1
     
-    ExcelParamDialog.Caption = csvFileName
+    ExcelParamDialog.csvFileName = csvFileName
     
     ExcelParamDialog.Show vbModal, Me
     If Not ExcelParamDialog.exitCode = vbOK Then
@@ -3077,7 +3088,7 @@ Private Sub mnMaterials_Click()
     ExcelParamDialog.contact2 = "-"
     ExcelParamDialog.CsvAsOutput = True
     ExcelParamDialog.kegl = -1
-    ExcelParamDialog.Caption = csvFileName
+    ExcelParamDialog.csvFileName = csvFileName
     
     ExcelParamDialog.Show vbModal, Me
     If Not ExcelParamDialog.exitCode = vbOK Then
@@ -3117,7 +3128,7 @@ Private Sub mnPetmasCsv_Click()
     ExcelParamDialog.doProdCategory = False
     ExcelParamDialog.withPrice = True
     
-    ExcelParamDialog.Caption = csvFileName
+    ExcelParamDialog.csvFileName = csvFileName
     ExcelParamDialog.Show vbModal, Me
     If Not ExcelParamDialog.exitCode = vbOK Then
         GoTo done

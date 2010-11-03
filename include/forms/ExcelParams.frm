@@ -17,6 +17,17 @@ Begin VB.Form ExcelParamDialog
    ScaleWidth      =   9744
    ShowInTaskbar   =   0   'False
    StartUpPosition =   1  'CenterOwner
+   Begin VB.CheckBox ckHeaders 
+      BackColor       =   &H8000000A&
+      Caption         =   "Включая файл заголовков"
+      Height          =   252
+      Left            =   360
+      TabIndex        =   21
+      Top             =   1920
+      Value           =   1  'Checked
+      Visible         =   0   'False
+      Width           =   3012
+   End
    Begin VB.TextBox tbOutputPath 
       Height          =   288
       Left            =   600
@@ -237,10 +248,12 @@ Public doProdCategory As Boolean
 Public prodCategoryId As Integer
 Public showRabbat As Boolean
 Public priceType As Integer
+Public includeHeaders As Boolean
 
 Public Regim As String
 Public withPrice As Boolean
 Public CsvAsOutput As Boolean
+Public csvFileName As String
 
 Dim doUnload As Boolean
 
@@ -265,6 +278,10 @@ End Sub
 
 Private Sub Form_Load()
     exitCode = vbCancel
+    If csvFileName <> "" Then
+        Me.Caption = csvFileName
+    End If
+    
     If Not withPrice Then
         rbUE.Visible = False
         rbRub.Visible = False
@@ -379,31 +396,46 @@ Private Sub Form_Load()
         laCommonRabbat.Visible = False
     End If
     
+    If includeHeaders Then
+        ckHeaders.Visible = True
+        ckHeaders.Value = getEffectiveSetting("includeHeaders", 1)
+    Else
+        ckHeaders.Visible = False
+    End If
+    
 End Sub
+
 
 Private Sub Form_Unload(Cancel As Integer)
     If exitCode = vbOK Then
-        setAppSetting Regim & ".kegl", kegl
-        setAppSetting Regim & ".title", mainReportTitle
-        setAppSetting Regim & ".ue", outputUE
-        setAppSetting Regim & ".rabbat", commonRabbat
-        setAppSetting Regim & ".pricetype", cbPriceType.ListIndex
-        If tbContact1.Visible Then
-            setAppSetting ".contact1", contact1
-        End If
-        If tbContact2.Visible Then
-            setAppSetting ".contact2", contact2
-        End If
-    
-        saveFileSettings getAppCfgDefaultName, appSettings
+        saveTheParams
     End If
     showRabbat = False
+    'includeHeaders = False
     Regim = ""
+    csvFileName = ""
 End Sub
 
-Private Sub Label1_Click()
+Private Sub saveTheParams()
 
+    setAppSetting Regim & ".kegl", kegl
+    setAppSetting Regim & ".title", mainReportTitle
+    setAppSetting Regim & ".ue", outputUE
+    setAppSetting Regim & ".rabbat", commonRabbat
+    setAppSetting Regim & ".pricetype", cbPriceType.ListIndex
+    setAppSetting Regim & ".pricetype", cbPriceType.ListIndex
+    setAppSetting Regim & ".includeHeaders", ckHeaders.Value
+    If tbContact1.Visible Then
+        setAppSetting ".contact1", contact1
+    End If
+    If tbContact2.Visible Then
+        setAppSetting ".contact2", contact2
+    End If
+
+    saveFileSettings getAppCfgDefaultName, appSettings
 End Sub
+
+
 
 Private Sub OKButton_Click()
     exitCode = vbOK
@@ -453,13 +485,15 @@ Private Sub OKButton_Click()
     End If
     contact1 = tbContact1.Text
     contact2 = tbContact2.Text
+    includeHeaders = ckHeaders.Visible And ckHeaders.Value = 1
     
     
     If doUnload Then
         Unload Me
     End If
-    
+
 End Sub
+
 
 Private Sub rbRub_Click()
     tbRate.Enabled = True

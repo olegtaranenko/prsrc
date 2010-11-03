@@ -16,6 +16,79 @@ Type VersionInfo
 End Type
 
 
+Function getMapEntry(ByRef map() As MapEntry, Key As String) As Variant
+Dim I As Integer
+    For I = 1 To UBound(map)
+        If map(I).Key = Key Then
+            getMapEntry = map(I).Value
+            Exit Function
+        End If
+    Next I
+'    getMapEntry = Null
+End Function
+
+' возвращает индекс key в массиве map
+' Empty если не найдет такой параметр
+Function getMapEntryIndex(ByRef map() As MapEntry, Key As String) As Integer
+Dim I As Integer
+    For I = 1 To UBound(map)
+        If map(I).Key = Key Then
+            getMapEntryIndex = I
+            Exit Function
+        End If
+    Next I
+    getMapEntryIndex = -1
+End Function
+
+
+Sub append(map() As MapEntry, entry As MapEntry)
+Dim ln As Integer
+    
+    ln = UBound(map) + 1
+    ReDim Preserve map(ln)
+    map(ln) = entry
+End Sub
+
+Sub appendKeyValue(map() As MapEntry, Key As String, ByRef Value)
+Dim entry As MapEntry
+
+    entry.Key = Key
+    entry.Value = Value
+    append map, entry
+End Sub
+
+Sub appendUnique(map() As MapEntry, Key As String, ByRef Value)
+Dim Index As Integer
+
+    Index = getMapEntryIndex(map, Key)
+    If Index = -1 Then
+        Dim entry As MapEntry
+        entry.Key = Key
+        Set entry.Value = Value
+        append map, entry
+    End If
+End Sub
+
+
+Function setMapEntry(ByRef map() As MapEntry, Key As String, Value As Variant) As Variant
+Dim exists As MapEntry
+
+    'Set exists = getMapEntry(map, Key)
+    'If Not IsEmpty(exists) Then
+    '    exists.Value = Value
+    '    setMapEntry = exists
+    'Else
+    '    Dim Entry As MapEntry
+    '    Entry = New MapEntry
+    '    Entry.Key = Key
+    '    Entry.Value = Value
+    '    append map, Entry
+    '    setMapEntry = Empty
+    'End If
+
+End Function
+
+
 Sub fatalError(msg As String, Optional lookAdmin As String)
     Dim adminMsg As String
     If IsMissing(lookAdmin) Then

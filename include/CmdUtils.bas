@@ -14,10 +14,6 @@ Public appCfgFile As String
 Public siteCfgFile As String
 
 
-Sub dummy()
-Dim IsEmpty, Value
-End Sub
-
 Sub parseCommandLine(Optional MaxArgs)
    'Declare variables.
    Dim c, CmdLine, CmdLnLen, InArg, I, NumArgs
@@ -168,16 +164,16 @@ Sub loadEffectiveSettings()
     If Not loadCmdSettings(argumentSettings) Then
         fatalError "Ошибка аргумента в командной строке"
     End If
-    appCfgFile = getMapEntry("appCfgFile", argumentSettings)
+    appCfgFile = getMapEntry(argumentSettings, "appCfgFile")
     If appCfgFile = "" Then
         appCfgFile = getAppCfgDefaultName
     End If
     If loadFileSettings(appCfgFile, appSettings) < 0 Then
         fatalError "Ошибка при загрузке файла конфигурации программы (appCfgFile)"
     End If
-    siteCfgFile = getMapEntry("siteCfgFile", argumentSettings)
+    siteCfgFile = getMapEntry(argumentSettings, "siteCfgFile")
     If siteCfgFile = "" Then
-        siteCfgFile = getMapEntry("siteCfgFile", appSettings)
+        siteCfgFile = getMapEntry(appSettings, "siteCfgFile")
     End If
     If siteCfgFile = "" Then
         siteCfgFile = getSiteCfgDefaultName
@@ -198,7 +194,7 @@ Sub loadEffectiveSettingsApp()
 End Sub
 
 Function loadFileSettings(filePath As String, ByRef curSettings() As MapEntry) As Integer
-Dim entry As MapEntry
+Dim Entry As MapEntry
 
     Dim str As String, str2 As String, I As Integer, J As Integer
     str = filePath
@@ -212,8 +208,8 @@ Dim entry As MapEntry
       Open str For Input As #1
       While Not EOF(1)
         Line Input #1, str
-        entry = tokenizeKeyValue(str)
-        append curSettings, entry
+        Entry = tokenizeKeyValue(str)
+        append curSettings, Entry
       Wend
       Close #1
       
@@ -257,29 +253,7 @@ Function getSiteCfgDefaultName() As String
     getSiteCfgDefaultName = App.path & "\site.cfg"
 End Function
 
-Function getMapEntry(Key As String, ByRef map() As MapEntry) As Variant
-Dim I As Integer
-    For I = 1 To UBound(map)
-        If map(I).Key = Key Then
-            getMapEntry = map(I).Value
-            Exit Function
-        End If
-    Next I
-'    getMapEntry = Null
-End Function
 
-' возвращает индекс key в массиве map
-' Empty если не найдет такой параметр
-Function getMapEntryIndex(ByRef map() As MapEntry, Key As String) As Integer
-Dim I As Integer
-    For I = 1 To UBound(map)
-        If map(I).Key = Key Then
-            getMapEntryIndex = I
-            Exit Function
-        End If
-    Next I
-    getMapEntryIndex = Empty
-End Function
 
 
 
@@ -304,15 +278,15 @@ Sub mergeWithPreference(ByRef mergeTo() As MapEntry, mergeFrom() As MapEntry)
 
 Dim lnFrom As Integer
 Dim I As Integer
-Dim entry As MapEntry
+Dim Entry As MapEntry
 Dim exists As Variant
 
     lnFrom = UBound(mergeFrom)
     For I = 1 To lnFrom
-        entry = mergeFrom(I)
-        exists = getMapEntry(entry.Key, mergeTo)
+        Entry = mergeFrom(I)
+        exists = getMapEntry(mergeTo, Entry.Key)
         If IsEmpty(exists) Then
-           append mergeTo, entry
+           append mergeTo, Entry
         End If
     Next I
 
@@ -339,18 +313,18 @@ Dim I As Integer
     If I > 0 Then
         curSettings(I).Value = paramVal
     Else
-        Dim entry As MapEntry
-        entry.Key = Key
-        entry.Value = paramVal
-        append curSettings, entry
+        Dim Entry As MapEntry
+        Entry.Key = Key
+        Entry.Value = paramVal
+        append curSettings, Entry
     End If
     
 End Sub
 
 Function getEffectiveSetting(Key As String, Optional defaultValue) As Variant
-Dim entry As MapEntry, Value
+Dim Entry As MapEntry, Value
 
-    Value = getMapEntry(Key, settings)
+    Value = getMapEntry(settings, Key)
     If Not IsEmpty(Value) Then
         getEffectiveSetting = Value
         Exit Function
@@ -369,14 +343,14 @@ Function loadCmdSettings(curSettings() As MapEntry) As Boolean
 'Если же stime -dostup a -devel, то тогда параметр otlad имеет значение Empty.
 
 Dim I As Integer
-Dim entry As MapEntry, exists As Variant
+Dim Entry As MapEntry, exists As Variant
 Dim Value As Variant
 
     ReDim argumentSettings(0)
     For I = 1 To UBound(rawCmdArguments)
-        entry.Value = Null
+        Entry.Value = Null
         If isKey(rawCmdArguments(I)) Then
-            entry.Key = Mid(rawCmdArguments(I), 2)
+            Entry.Key = Mid(rawCmdArguments(I), 2)
             If isNotKey(I + 1) Then
                 Value = Null
                 If I + 1 <= UBound(rawCmdArguments) Then
@@ -384,21 +358,21 @@ Dim Value As Variant
                     I = I + 1
                 End If
                 
-                exists = getMapEntry(entry.Key, curSettings)
+                exists = getMapEntry(curSettings, Entry.Key)
                 If Not IsEmpty(exists) Then
                     exists = exists & " " & Value
-                    appendValue curSettings, entry.Key, Value, " "
+                    appendValue curSettings, Entry.Key, Value, " "
                 Else
-                    entry.Value = Value
-                    append argumentSettings, entry
+                    Entry.Value = Value
+                    append argumentSettings, Entry
                 End If
             Else
-                exists = getMapEntry(rawCmdArguments(I), curSettings)
+                exists = getMapEntry(curSettings, rawCmdArguments(I))
                 If IsNull(exists) Then
-                    entry.Key = rawCmdArguments(I)
-                    append argumentSettings, entry
-                ElseIf Not IsEmpty(entry.Key) Then
-                    append argumentSettings, entry
+                    Entry.Key = rawCmdArguments(I)
+                    append argumentSettings, Entry
+                ElseIf Not IsEmpty(Entry.Key) Then
+                    append argumentSettings, Entry
                 End If
             End If
         End If
@@ -426,14 +400,6 @@ Dim sz As Integer
     End If
 End Function
 
-
-Sub append(curSettings() As MapEntry, entry As MapEntry)
-Dim ln As Integer
-    
-    ln = UBound(curSettings) + 1
-    ReDim Preserve curSettings(ln)
-    curSettings(ln) = entry
-End Sub
 
 Sub appendValue(curSettings() As MapEntry, Key As String, Value As Variant, separator As String)
 Dim sz As Integer, I As Integer
@@ -475,9 +441,9 @@ Dim reloadCfgSrc As String, reloadCfgDst As String
 
 '    MsgBox App.EXEName & ""
 
-    reloadCfgSrc = getMapEntry("reloadCfgSrc", argumentSettings)
+    reloadCfgSrc = getMapEntry(argumentSettings, "reloadCfgSrc")
     'trace "reloadCfgSrc = " & reloadCfgSrc
-    reloadCfgDst = getMapEntry("reloadCfgDst", argumentSettings)
+    reloadCfgDst = getMapEntry(argumentSettings, "reloadCfgDst")
     'trace "reloadCfgDst = " & reloadCfgDst
 
     If reloadCfgSrc <> "" Then
