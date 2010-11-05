@@ -1084,10 +1084,10 @@ AA:
 If myExecute(myErrCod, sql) = 0 Then ValueToTableField = True
 End Function
 
-Public Function vo_deleteNomnom(nomnom As String, numDoc As String) As Boolean
+Public Function vo_deleteNomnom(Nomnom As String, numDoc As String) As Boolean
     vo_deleteNomnom = False
     sql = " delete from sDmcVenture where " _
-        & " nomnom = '" & nomnom & "'" _
+        & " nomnom = '" & Nomnom & "'" _
         & " and sdv_id = " & numDoc
     If myExecute("##122.2", sql) = 0 Then
         vo_deleteNomnom = True
@@ -1340,7 +1340,7 @@ With objExel.ActiveSheet
         & vbCr & " left JOIN wf_izdeliaWithWeb w on w.prId  = p.prId" _
         & vbCr & " Where p.prSeriaId = " & findId & " AND p.prodCategoryId = " & prodCategoryId
     
-    If Not Regim = "default" Then
+    If Regim = "dealer" Or Regim = "agency" Then
         sql = sql & " and w.prId is null"
     End If
     
