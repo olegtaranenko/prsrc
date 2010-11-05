@@ -51,8 +51,8 @@ Const DLM = vbTab
 ' не использовать в cfg
 
 Private Sub changeCaseOfTheVariables()
-'Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim, Item, ListBox
-Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim, Item, ListBox
+'Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim, Item, ListBox, Nomname, Formula, Nomnom
+Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim, Item, ListBox, Nomname, Formula, Nomnom
 
 End Sub
 
@@ -408,7 +408,7 @@ Frm.MousePointer = flexHourglass
             While Not tbNomenk.EOF
             
             
-                csvRow = tbNomenk!cod & DLM & tbNomenk!nomName _
+                csvRow = tbNomenk!cod & DLM & tbNomenk!Nomname _
                     & DLM & tbNomenk!Size & DLM & tbNomenk!qty_dost & DLM & tbNomenk!ed_Izmer2
     
                 CalcKolonPrices prices, curRate
@@ -831,7 +831,7 @@ While Not tbNomenk.EOF
     End If
         
     If IsNumeric(V) Then
-        S = V * tbNomenk!quantity / tbNomenk!perlist
+        S = V * tbNomenk!quantity / tbNomenk!perList
         If tbNomenk!xGroup = "" Then
             sum = sum + S
             prevGroup = tbNomenk!xGroup

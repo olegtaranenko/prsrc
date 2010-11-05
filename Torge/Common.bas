@@ -1339,16 +1339,18 @@ With objExel.ActiveSheet
         & vbCr & " left JOIN sGuideFormuls f on f.nomer = p.formulaNom" _
         & vbCr & " left JOIN wf_izdeliaWithWeb w on w.prId  = p.prId" _
         & vbCr & " Where p.prSeriaId = " & findId & " AND p.prodCategoryId = " & prodCategoryId
-    If Regim = "default" Then
+    
+    If Not Regim = "default" Then
         sql = sql & " and w.prId is null"
     End If
-    'Debug.Print sql
     
     If Not Regim = "pricePM" Then
         sql = sql & " and isnumeric(p.page) = 1"
     End If
     
     sql = sql & " ORDER BY p.SortNom"
+    
+    'Debug.Print sql
     
       Set tbProduct = myOpenRecordSet("##415", sql, dbOpenDynaset)
       If Not tbProduct Is Nothing Then
