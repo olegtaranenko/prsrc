@@ -2891,5 +2891,11 @@ where firmguide.werkid not in (1,2 )
 		<sqlFile path="views/orderSellOrde.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 	</changeSet>
 
+	<changeSet id="1" author="mantis-249" runOnChange="true">
+		<comment>Не показывать изделия у которых только Vmt номенклатура</comment>
+		<sqlFile path="views/wf_izdeliaVmtOnly.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback/>
+	</changeSet>
+
 </databaseChangeLog>
 

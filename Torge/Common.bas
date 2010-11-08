@@ -1281,7 +1281,7 @@ While Not tbProduct.EOF
     ReDim Preserve NN(I): NN(I) = Format(tbProduct!prSeriaId, "0000")
     findId = tbProduct!prSeriaId
 
-AA: ' tbGuide.Seek "=", findId
+AA:
     sql = "SELECT seriaName, parentSeriaId from sGuideSeries " & _
     "WHERE seriaId = " & findId
     If Not byErrSqlGetValues("##414", sql, str, findId) Then tbProduct.Close: Exit Sub
@@ -1338,8 +1338,12 @@ With objExel.ActiveSheet
         & vbCr & " From sGuideProducts p " _
         & vbCr & " left JOIN sGuideFormuls f on f.nomer = p.formulaNom" _
         & vbCr & " left JOIN wf_izdeliaWithWeb w on w.prId  = p.prId" _
-        & vbCr & " Where p.prSeriaId = " & findId & " AND p.prodCategoryId = " & prodCategoryId
+        & vbCr & " left join wf_izdeliaVmtOnly vmt on vmt.productid = p.prId" _
+        & vbCr & " Where p.prSeriaId = " & findId _
+        & " AND p.prodCategoryId = " & prodCategoryId _
+        & " AND vmt.productId is null "
     
+    'Debug.Print sql
     If Regim = "dealer" Or Regim = "agency" Then
         sql = sql & " and w.prId is null"
     End If
