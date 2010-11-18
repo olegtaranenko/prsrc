@@ -2278,11 +2278,12 @@ ElseIf mousCol = orStatus Then
        tbOrders.Close
        Dim action As VbMsgBoxResult
        action = MsgBox("Либо заказ занят другим менеджером (" & str & "), либо произошел сбой в работе программы." _
-       & vbCr & "Вы можете снять блокировку, если нажмете на кнопку 'Отмена'." _
-       , vbYesNoCancel, "Заказ " & gNzak & " заблокирован")
+       & vbCr & "Вы можете снять блокировку, если нажмете на кнопку 'Отмена(Cancel)'." _
+       , vbOKCancel, "Заказ " & gNzak & " заблокирован")
        
        If action = vbCancel Then
-          
+         sql = "update orders set rowlock = '' where numorder = " & gNzak
+         myExecute "##29.1", sql
        End If
        Exit Sub
     End If

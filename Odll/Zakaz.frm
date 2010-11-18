@@ -616,7 +616,7 @@ End If
 If IsDate(tbDateRS.Text) Then
     ZbDay = DateDiff("d", curDate, tbDateRS.Text)
 End If
-If tbVrVipO.Enabled Then
+If tbVrVipO.Enabled And tbDateMO.Text <> "" Then
     ObDay = DateDiff("d", curDate, priemData)
     OeDay = DateDiff("d", curDate, tbDateMO.Text)
 End If
