@@ -26,7 +26,14 @@ Dim ch As String, tenOclock As String, Midnight As String
 
 'wrkDefault.BeginTrans
 
-sql = "DELETE from OrdersInCeh WHERE EXISTS (select 1 from OrdersEquip oe where oe.Stat = 'готов' and oe.numorder = OrdersInCeh.numorder)"
+sql = "delete from OrdersInCeh" _
+& vbCr & " WHERE EXISTS (" _
+& vbCr & "     select 1 from OrdersEquip oe where oe.Stat = 'готов' and oe.numorder = OrdersInCeh.numorder" _
+& vbCr & ") and not exists (" _
+& vbCr & "     select 1 from vw_reestr r where r.numorder = ordersInCeh.numorder group by r.numorder having min(isnull(r.stat, '')) != max(isnull(r.stat, ''))" _
+& vbCr & ")"
+
+'Debug.Print sql
 If myExecute("##63", sql, 0) > 0 Then GoTo ER1
 
 tenOclock = "'" & Format(curDate, "yyyy-mm-dd 10:00:00") & "'"
