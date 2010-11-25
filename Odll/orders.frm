@@ -388,6 +388,7 @@ Begin VB.Form Orders
       ForeColorFixed  =   0
       BackColorSel    =   65535
       ForeColorSel    =   -2147483630
+      ScrollTrack     =   -1  'True
       GridLines       =   2
       AllowUserResizing=   1
       FormatString    =   $"Orders.frx":0444

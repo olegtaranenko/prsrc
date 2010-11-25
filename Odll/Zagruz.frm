@@ -166,7 +166,7 @@ Begin VB.Form Zagruz
          Object.Width           =   1455
       EndProperty
    End
-   Begin VB.Label lbEquips 
+   Begin VB.Label laEquips 
       Alignment       =   1  'Right Justify
       Caption         =   "Выбор оборудования:"
       Height          =   252
@@ -468,7 +468,8 @@ Label1.Top = Label1.Top + H
 Label2.Top = Label2.Top + H
 laVirab.Top = laVirab.Top + H
 laUsed.Top = laUsed.Top + H
-
+cbEquips.Top = cbEquips.Top + H
+laEquips.Top = laEquips.Top + H
 Dim RightLine As Integer
 
 
