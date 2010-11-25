@@ -1012,10 +1012,10 @@ If tbNomenk Is Nothing Then Exit Function
 If Not tbNomenk.BOF Then
   While Not tbNomenk.EOF
     quantity2 = quantity2 + 1
-    Grid2.TextMatrix(quantity2, dnNomNom) = tbNomenk!nomnom
+    Grid2.TextMatrix(quantity2, dnNomNom) = tbNomenk!Nomnom
     
     str = gNomNom
-    If KartaDMC.DMCnomNomCur = tbNomenk!nomnom Then Grid2.row = quantity2  ' если загружена карта тек. номенклатуры - то подсветим ее
+    If KartaDMC.DMCnomNomCur = tbNomenk!Nomnom Then Grid2.row = quantity2  ' если загружена карта тек. номенклатуры - то подсветим ее
     gNomNom = str                                                          ' это вызывает Enter_Cell т.е. мен€ет gNomNom
     Grid2.TextMatrix(quantity2, dnNomName) = tbNomenk!cod & " " & _
             tbNomenk!Nomname & " " & tbNomenk!Size
@@ -1490,7 +1490,7 @@ While Not tbNomenk.EOF
   
   sql = "SELECT sDMC.quant, sDocs.xDate, sDocs.sourId, sDocs.destId " & _
   "FROM sDocs INNER JOIN sDMC ON (sDocs.numExt = sDMC.numExt) AND " & _
-  "(sDocs.numDoc = sDMC.numDoc) WHERE (((sDMC.nomNom)='" & tbNomenk!nomnom & "')) " & _
+  "(sDocs.numDoc = sDMC.numDoc) WHERE (((sDMC.nomNom)='" & tbNomenk!Nomnom & "')) " & _
   " ORDER BY sDocs.xDate;"
   Set tbDMC = myOpenRecordSet("##135", sql, dbOpenForwardOnly)
   If tbDMC Is Nothing Then GoTo EN1
@@ -1776,7 +1776,7 @@ If tbNomenk.BOF Then
     MsgBox "«аписей с отрицательными остатками не обнаружено.", , "–езультаты проверки"
 Else
     While Not tbNomenk.EOF
-        lbBad.AddItem tbNomenk!nomnom & "  " & tbNomenk!Nomname
+        lbBad.AddItem tbNomenk!Nomnom & "  " & tbNomenk!Nomname
         tbNomenk.MoveNext
     Wend
     tbNomenk.Close
@@ -1853,13 +1853,22 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
             , IIf(ExcelParamDialog.priceType = 0, True, False) _
             , ExcelParamDialog.contact1, ExcelParamDialog.contact2)
     
+    
+        ' если в »зделии нет вариативных изделий, то не печатать комплектацию,
+        ' а только кол-во доступных, определ€емых по наименьшему числу доступных
+        Dim izdeliaQty As Long, lastIzdeliaType As String
+        Dim dostOstatok As String, nomDostOst As Integer
+        izdeliaQty = -1
+        
         sql = "call wf_report_bright_ostat"
         Set tbProduct = myOpenRecordSet("##331", sql, dbOpenDynaset)
         If tbProduct Is Nothing Then GoTo EN1
         If Not tbProduct.BOF Then
             While Not tbProduct.EOF
                 If tbProduct!prSeriaId <> currentSeriaId Then
-                    .Cells(exRow, 2).Value = tbProduct!serianame
+                
+                    exRow = exRow + 1
+                    .Cells(exRow, 2).Value = tbProduct!seriaName
                     .Cells(exRow, 2).Font.Bold = True
                     With .Range("A" & exRow & ":" & lastCol & exRow)
                         .Borders(xlEdgeTop).Weight = xlMedium
@@ -1875,6 +1884,9 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
                         .HorizontalAlignment = xlHAlignCenter
                         .Borders(xlEdgeBottom).Weight = xlMedium
                     End With
+                    For I = 5 To 9
+                        .Cells(exRow, I).Font.Bold = True
+                    Next I
                     .Cells(exRow, 1).Value = " од"
                     .Cells(exRow, 2).Value = "ќписание"
                     .Cells(exRow, 3).Value = "–азмер"
@@ -1884,70 +1896,89 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
                     .Cells(exRow, 7).Value = tbProduct!head2
                     .Cells(exRow, 8).Value = tbProduct!head3
                     .Cells(exRow, 9).Value = tbProduct!head4
-                    .Cells(exRow, 6).Font.Bold = True
-                    .Cells(exRow, 7).Font.Bold = True
-                    .Cells(exRow, 8).Font.Bold = True
-                    .Cells(exRow, 9).Font.Bold = True
-                    exRow = exRow + 1
                 End If
 
+                If Not IsNull(tbProduct!qty_dost) Then
+                    nomDostOst = tbProduct!qty_dost
+                Else
+                    nomDostOst = 0
+                End If
+                
                 If currentProductId <> tbProduct!prId Then
+                    exRow = exRow + 1
+                    ' при смене издели€ - обнул€ем дл€ нового цикла
+                    izdeliaQty = -1
                     cErr = setVertBorders(objExel, xlThin, lastColInt)
-                    For I = 1 To 4
+                    For I = 1 To 9
                         .Cells(exRow, I).Font.Bold = True
                     Next I
+                    
                     .Cells(exRow, 1).Value = tbProduct!prName
                     .Cells(exRow, 2).Value = tbProduct!prDescript
                     .Cells(exRow, 3).Value = tbProduct!prSize
                     .Cells(exRow, 4).Value = "стр " & tbProduct!Page & "."
 
-                    For I = 6 To 9
-                        .Cells(exRow, I).Font.Bold = True
-                    Next I
                     gain2 = tbProduct!gain2
                     gain3 = tbProduct!gain3
                     gain4 = tbProduct!gain4
                     ExcelProductPrices RPF_Rate, priceRegim, RubRate, exRow, 6, commonRabbat
 
                     productRow = exRow
-                    exRow = exRow + 1
+                    
                 End If
-
-
-                cErr = setVertBorders(objExel, xlThin, lastColInt)
-
-                .Cells(exRow, 1).Value = tbProduct!Ncod
-                .Cells(exRow, 1).HorizontalAlignment = xlHAlignRight
-                .Cells(exRow, 2).Value = tbProduct!Nomname
-                .Cells(exRow, 3).Value = tbProduct!Nsize
-                .Cells(exRow, 4).Value = tbProduct!ed_Izmer2
-                Dim dostOstatok As String
-                If Not IsNull(tbProduct!qty_dost) Then
-                    dostOstatok = tbProduct!qty_dost
-                Else
-                    dostOstatok = 0
-                End If
+                    
                 If tbProduct!quantEd <> 1 Then
-                    dostOstatok = "*) " & Round(dostOstatok, 2) & "(" & tbProduct!quantEd & ")"
+                    nomDostOst = nomDostOst * tbProduct!quantEd
                 End If
-                .Cells(exRow, 5).Value = dostOstatok
-
-                If Regim = "awards" Then
-                    ExcelKolonPrices exRow, 6, RubRate, RPF_Rate
+                
+                If tbProduct!variative = "V" Then
+                    exRow = exRow + 1
+                
+                    cErr = setVertBorders(objExel, xlThin, lastColInt)
+    
+                    .Cells(exRow, 1).Value = tbProduct!Ncod
+                    .Cells(exRow, 1).HorizontalAlignment = xlHAlignRight
+                    .Cells(exRow, 2).Value = tbProduct!Nomname
+                    .Cells(exRow, 2).HorizontalAlignment = xlHAlignRight
+                    .Cells(exRow, 3).Value = tbProduct!Nsize
+                    .Cells(exRow, 4).Value = tbProduct!ed_Izmer2
+                    If tbProduct!quantEd <> 1 Then
+                        dostOstatok = "*) " & Round(dostOstatok, 2) & "(" & tbProduct!quantEd & ")"
+                    Else
+                        dostOstatok = nomDostOst
+                    End If
+                    .Cells(exRow, 5).Value = dostOstatok
+    
+                    If Regim = "awards" Then
+                        ExcelKolonPrices exRow, 6, RubRate, RPF_Rate
+                    End If
+                
+                Else
+                
+                    If nomDostOst < izdeliaQty Or izdeliaQty = -1 Then
+                        If nomDostOst >= 0 Then
+                            .Cells(exRow, 5) = nomDostOst
+                        Else
+                            .Cells(exRow, 5) = 0
+                        End If
+                    End If
+                    izdeliaQty = nomDostOst
                 End If
+                
 
                 currentSeriaId = tbProduct!prSeriaId
                 currentProductId = tbProduct!prId
+                lastIzdeliaType = tbProduct!variative
 
-                exRow = exRow + 1
                 tbProduct.MoveNext
             Wend
         End If
         tbProduct.Close
+        exRow = exRow + 1
         With .Range("A" & exRow & ":" & lastCol & exRow)
             .Borders(xlEdgeTop).Weight = xlMedium
         End With
-        'exRow = exRow + 1
+        
         '.Cells(exRow, 1).value = "ѕримечание *)"
         'With .Range("B" & CStr(exRow) & ":" & lastCol & CStr(exRow))
         '    .Merge (True)
@@ -1956,7 +1987,7 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
         'End With
         '.Rows(exRow).Font.Italic = True
     
-        exRow = exRow + 1
+        exRow = exRow + 2
         .Cells(exRow, 1).Value = "÷ены на издели€ каталога Bright Awards 2010-11, не указанные в данном прайс-листе - "
         .Cells(exRow, 1).Font.Bold = True
         

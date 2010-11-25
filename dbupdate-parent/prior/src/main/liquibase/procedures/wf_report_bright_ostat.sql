@@ -6,7 +6,6 @@ create procedure wf_report_bright_ostat (
 	p_prId integer default null 
 )
 begin
-
 	
 	
 	declare v_ord_table varchar(64);
@@ -125,6 +124,8 @@ begin
 
 	select 
 		  ph.prId, ph.prName, ph.prSeriaId, ph.prSize, ph.prDescript 
+		, case isnull(vp.prId, 0) when 0 then 'M' else 'V' end as variative
+		, p.xgroup
 		, ph.vremObr, ph.formulaNom, ph.cena4, ph.page, ph.sortNom
 		, ph.rabbat as productRabbat
     	, wf_breadcrump_seria(ph.prseriaid) as serianame
@@ -137,21 +138,23 @@ begin
 		, s.gain2, s.gain3, s.gain4
 		, f.formula, w.prId as hasWeb, p.quantity as quantEd
 		, s.head1, s.head2, s.head3, s.head4 
-	from #products              tp
-	join sGuideProducts         ph on tp.prId     = ph.prId
-	join #sGuideSeries_ord      os on os.id       = ph.prSeriaId
-	left join wf_izdeliaWithWeb  w on w.prId      = ph.prId
-	join sProducts               p on p.productId = ph.prId
-	join sGuideNomenk            n on n.nomnom    = p.nomnom
-	join sGuideSeries            s on s.seriaId   = ph.prSeriaId
-	left join #nomenk            k on k.nomnom    = p.nomnom
-	left join sGuideFormuls      f on f.nomer     = ph.formulaNom
+
+	from #products                tp
+	join sGuideProducts           ph on tp.prId     = ph.prId
+	join #sGuideSeries_ord        os on os.id       = ph.prSeriaId
+	left join wf_izdeliaWithWeb    w on w.prId      = ph.prId
+	join sProducts                 p on p.productId = ph.prId
+	join sGuideNomenk              n on n.nomnom    = p.nomnom
+	join sGuideSeries              s on s.seriaId   = ph.prSeriaId
+	left join #nomenk              k on k.nomnom    = p.nomnom
+	left join sGuideFormuls        f on f.nomer     = ph.formulaNom
+	left join vw_VariativeProduct vp on vp.prId   = tp.prId
 	where 
 			ph.prodCategoryId = 2 
 		and isnumeric(ph.page) = 1
 		and isnull(p_prId, ph.prId) = ph.prId 
 		and isnull(n.web, '') <> 'vmt'
-	order by os.ord, ph.sortNom, n.nomnom;
+	order by os.ord, ph.sortNom, p.xgroup, n.nomName;
 
 
 	drop table #sGuideKlass_ord;

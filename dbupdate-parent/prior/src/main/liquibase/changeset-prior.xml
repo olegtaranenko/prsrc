@@ -1054,6 +1054,13 @@ where pc.sysname = sGuideProducts.web
 		<sqlFile path="procedures/wf_report_bright_rpf.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 	</changeSet>
 
+	<changeSet id="1" author="2010-nov-25" runOnChange="true">
+		<comment>Отчет прайс и остатки по готовым изделиям - не показывать номенклатуру, если не вариативное. 
+		Только строчку с изделием и к-во доступных для заказа, как минимальное по номенклатуре</comment>
+		<sqlFile path="views/vw_VariativeProduct.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback/>
+	</changeSet>
+
 	<changeSet id="1" author="mantis-139" runOnChange="true">
 		<comment>M139 процедура для отчета по остаткам ном-ры, входящей в каталог BrightAwards.</comment>
 		<sqlFile path="procedures/wf_report_bright_ostat.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
