@@ -125,7 +125,7 @@ begin
 	select 
 		  ph.prId, ph.prName, ph.prSeriaId, ph.prSize, ph.prDescript 
 		, case isnull(vp.prId, 0) when 0 then 'M' else 'V' end as variative
-		, p.xgroup
+		, p.xgroup, isnull(n.web, '') as vmtFlag
 		, ph.vremObr, ph.formulaNom, ph.cena4, ph.page, ph.sortNom
 		, ph.rabbat as productRabbat
     	, wf_breadcrump_seria(ph.prseriaid) as serianame
@@ -148,12 +148,12 @@ begin
 	join sGuideSeries              s on s.seriaId   = ph.prSeriaId
 	left join #nomenk              k on k.nomnom    = p.nomnom
 	left join sGuideFormuls        f on f.nomer     = ph.formulaNom
-	left join vw_VariativeProduct vp on vp.prId   = tp.prId
+	left join vw_VariativeProduct vp on vp.prId     = tp.prId and vp.xgroup = p.xgroup
 	where 
 			ph.prodCategoryId = 2 
 		and isnumeric(ph.page) = 1
 		and isnull(p_prId, ph.prId) = ph.prId 
-		and isnull(n.web, '') <> 'vmt'
+		--and isnull(n.web, '') <> 'vmt'
 	order by os.ord, ph.sortNom, p.xgroup, n.nomName;
 
 

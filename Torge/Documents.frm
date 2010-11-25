@@ -1857,7 +1857,7 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
         ' если в Изделии нет вариативных изделий, то не печатать комплектацию,
         ' а только кол-во доступных, определяемых по наименьшему числу доступных
         Dim izdeliaQty As Long, lastIzdeliaType As String
-        Dim dostOstatok As String, nomDostOst As Integer
+        Dim dostOstatok As String, nomDostOst As Integer, xGroupNum As Integer
         izdeliaQty = -1
         
         sql = "call wf_report_bright_ostat"
@@ -1890,7 +1890,7 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
                     .Cells(exRow, 1).Value = "Код"
                     .Cells(exRow, 2).Value = "Описание"
                     .Cells(exRow, 3).Value = "Размер"
-                    .Cells(exRow, 4).Value = "Ед.изм."
+                    .Cells(exRow, 4).Value = "Каталог"
                     .Cells(exRow, 5).Value = "Кол-во"
                     .Cells(exRow, 6).Value = tbProduct!head1
                     .Cells(exRow, 7).Value = tbProduct!head2
@@ -1908,6 +1908,7 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
                     exRow = exRow + 1
                     ' при смене изделия - обнуляем для нового цикла
                     izdeliaQty = -1
+                    xGroupNum = 1
                     cErr = setVertBorders(objExel, xlThin, lastColInt)
                     For I = 1 To 9
                         .Cells(exRow, I).Font.Bold = True
@@ -1931,38 +1932,50 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
                     nomDostOst = nomDostOst * tbProduct!quantEd
                 End If
                 
-                If tbProduct!variative = "V" Then
+                If tbProduct!variative = "V" And tbProduct!xGroup <> "" Then
                     exRow = exRow + 1
                 
                     cErr = setVertBorders(objExel, xlThin, lastColInt)
     
-                    .Cells(exRow, 1).Value = tbProduct!Ncod
                     .Cells(exRow, 1).HorizontalAlignment = xlHAlignRight
-                    .Cells(exRow, 2).Value = tbProduct!Nomname
+                    .Cells(exRow, 1).Value = "Вариант " & UCase(tbProduct!xGroup) & ":" & xGroupNum
+                    xGroupNum = xGroupNum + 1
+                    
                     .Cells(exRow, 2).HorizontalAlignment = xlHAlignRight
-                    .Cells(exRow, 3).Value = tbProduct!Nsize
-                    .Cells(exRow, 4).Value = tbProduct!ed_Izmer2
-                    If tbProduct!quantEd <> 1 Then
-                        dostOstatok = "*) " & Round(dostOstatok, 2) & "(" & tbProduct!quantEd & ")"
-                    Else
-                        dostOstatok = nomDostOst
+                    .Cells(exRow, 2).Value = tbProduct!Nomname & " (" & tbProduct!Ncod & ")"
+                    '.Cells(exRow, 3).Value = tbProduct!Nsize
+                    '.Cells(exRow, 4).Value = tbProduct!ed_Izmer2
+                    If tbProduct!vmtFlag <> "vmt" Then
+                        If tbProduct!quantEd <> 1 Then
+                            dostOstatok = "*) " & Round(dostOstatok, 2) & "(" & tbProduct!quantEd & ")"
+                        Else
+                            dostOstatok = nomDostOst
+                        End If
+                        If nomDostOst < izdeliaQty Then
+                            .Cells(exRow, 5).Value = nomDostOst
+                        Else
+                            .Cells(exRow, 5).Value = izdeliaQty
+                        End If
                     End If
-                    .Cells(exRow, 5).Value = dostOstatok
     
                     If Regim = "awards" Then
                         ExcelKolonPrices exRow, 6, RubRate, RPF_Rate
                     End If
                 
                 Else
-                
-                    If nomDostOst < izdeliaQty Or izdeliaQty = -1 Then
-                        If nomDostOst >= 0 Then
-                            .Cells(exRow, 5) = nomDostOst
-                        Else
-                            .Cells(exRow, 5) = 0
+                    If tbProduct!vmtFlag <> "vmt" Then
+                        If nomDostOst < izdeliaQty Or izdeliaQty = -1 Then
+                            If nomDostOst >= 0 Then
+                                izdeliaQty = nomDostOst
+                            Else
+                                izdeliaQty = 0
+                            End If
+                            
+                            If tbProduct!variative = "M" Then
+                                .Cells(exRow, 5) = izdeliaQty
+                            End If
                         End If
                     End If
-                    izdeliaQty = nomDostOst
                 End If
                 
 
