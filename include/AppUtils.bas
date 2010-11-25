@@ -51,8 +51,8 @@ Const DLM = vbTab
 ' не использовать в cfg
 
 Private Sub changeCaseOfTheVariables()
-'Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim, Item, ListBox, Nomname, Formula, Nomnom
-Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim, Item, ListBox, Nomname, Formula, Nomnom
+'Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, Fields, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim, Item, ListBox, Nomname, Formula, Nomnom, perList, Ves
+Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, Fields, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim, Item, ListBox, Nomname, Formula, Nomnom, perList, Ves
 
 End Sub
 
@@ -877,7 +877,7 @@ If noOpen = "" Then
     If tbNomenk.BOF Then tbNomenk.Close: Exit Function
 End If
 tmpStr = tbNomenk!Formula
-tmpStr = tbNomenk.fields("formula" & Web)
+tmpStr = tbNomenk.Fields("formula" & Web)
 'If tbNomenk!formula = "" Then
 If tmpStr = "" Then
     nomenkFormula = "error: Формула не задана"
@@ -893,7 +893,7 @@ End If
 
 If Web = "" Then
     str = "CENA1=" & vCena1 & ": VES=" & _
-    tbNomenk!ves & ": STAVKA=" & tbNomenk!STAVKA
+    tbNomenk!Ves & ": STAVKA=" & tbNomenk!STAVKA
     sc.ExecuteStatement (str)
 Else
     str = "CenaFreight=" & CenaFreight & ": CenaFact=" & CenaFact

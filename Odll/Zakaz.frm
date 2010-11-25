@@ -756,7 +756,6 @@ While Not tbOrders.EOF
             dayCorrect ObDay, OeDay
             ukladka ost, OeDay, ObDay, tbVrVipO.Text 'обратная укладка  (в bef не попадает)
             If Not zakazToGrid(reg, "образец", tbVrVipO.Text) Then GoTo EN1
-'            OeDay = maxDay + 1 ' чтобы более не срабатывал
             ObDay = -32000 ' чтобы более не срабатывал
         End If
 '        If eDay > ZeDay Or (eDay = ZeDay And bDay <= ZbDay) Then ' не нарушаем сортировку
@@ -764,10 +763,8 @@ While Not tbOrders.EOF
             dayCorrect ZbDay, ZeDay, CStr(Me.urgent)
             ukladka ost, ZeDay, ZbDay, tbWorktime.Text 'обратная укладка (в bef не попадает)
             If Not zakazToGrid(reg, cbStatus.Text, tbWorktime.Text) Then GoTo EN1
-            'ZeDay = maxDay + 1 ' чтобы более не срабатывал
             ZbDay = -32000 ' чтобы более не срабатывал
         End If
-'        If tbOrders!numOrder = laNomZak.Caption Then GoTo NXT 'а не из базы
     End If
     
     If eDay > maxDay Then

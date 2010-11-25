@@ -2901,10 +2901,22 @@ where firmguide.werkid not in (1,2 )
 		<comment>Пропал заказ из реестра. Изза того, что по одному из оборудованию заказ удалился из таблицы цеховой сводки.</comment>
 		<insert tableName="OrdersInCeh">
 			<column name="rowlock" value=""/>
-			<column name="numorder" value="10102806"/>
+			<column name="numorder" value="10100115"/>
+			<column name="urgent" value=""/>
+		</insert>
+		<insert tableName="OrdersInCeh">
+			<column name="rowlock" value=""/>
+			<column name="numorder" value="10111619"/>
+			<column name="urgent" value=""/>
+		</insert>
+		<insert tableName="OrdersInCeh">
+			<column name="rowlock" value=""/>
+			<column name="numorder" value="10111718"/>
 			<column name="urgent" value=""/>
 		</insert>
 	</changeSet>
+
+
 
 </databaseChangeLog>
 

@@ -291,7 +291,7 @@ Function dummy()
 
 End Function
 
-Function tuneCurencyAndGranularity(tunedValue, currentRate, valueCurrency As Integer, Optional quantity As Double = 1, Optional perlist As Long = 1) As Double
+Function tuneCurencyAndGranularity(tunedValue, currentRate, valueCurrency As Integer, Optional quantity As Double = 1, Optional perList As Long = 1) As Double
     '
     Dim totalInRubles As Double
     Dim singleInRubles As Double
@@ -373,15 +373,15 @@ End If
 For I = 2 To maxi
     str = TypeName(val(I))
     If (str = "Single" Or str = "Integer" Or str = "Long" Or str = "Double") _
-    And IsNull(tabl.fields(I - 2)) Then
+    And IsNull(tabl.Fields(I - 2)) Then
         val(I) = 0
-    ElseIf str = "String" And IsNull(tabl.fields(I - 2)) Then
+    ElseIf str = "String" And IsNull(tabl.Fields(I - 2)) Then
         val(I) = ""
-    ElseIf str = "Date" And IsNull(tabl.fields(I - 2)) Then
+    ElseIf str = "Date" And IsNull(tabl.Fields(I - 2)) Then
         'do nothing the date remain quasi-null
 '        val(I) = tabl.Fil
     Else
-        val(I) = tabl.fields(I - 2)
+        val(I) = tabl.Fields(I - 2)
     End If
 Next I
 EN1:
@@ -628,47 +628,29 @@ tbSystem.Close
 
 sql = "SELECT nomRes from Resurs where equipId = " & EquipId & " ORDER BY xDate"
 Set Table = myOpenRecordSet("##10", sql, dbOpenForwardOnly)
-'If table Is Nothing Then Exit Function
 
-'j = -1
-'If flEdit <> "" Then _
-'    j = Mid$(Zagruz.lv.SelectedItem.key, 2)
 rMaxDay = 0
 On Error GoTo ERR1
-'If Not table.BOF Then
-' table.MoveFirst
-' Do
 While Not Table.EOF
     rMaxDay = rMaxDay + 1
     If rMaxDay = J Then
-'        table.Edit
-'            table!nomRes = Zagruz.tbMobile.Text
-'        table.Update
     End If
     nomRes(rMaxDay) = Table!nomRes
     Table.MoveNext
-' Loop While Not table.EOF
 Wend
 Table.Close
-'End If
 
 addDays max(stDay, rMaxDay) 'добавл€ем дни, если ƒата ¬ыдачи всех заказов
                             'ближе чем stDay или rMaxDay(например заказов нет)
 For I = rMaxDay + 1 To maxDay
-'    table.AddNew
     tmpDate = DateAdd("d", I - 1, curDate)
     day = Weekday(tmpDate)
-'    table!Date = Format(tmpDate, "dd.mm.yy")
     If day = vbSunday Or day = vbSaturday Then
-'        table!nomRes = 0
         nomRes(I) = 0
     Else
-'        table!nomRes = newRes
         nomRes(I) = newRes
     End If
-'    table.Update
 Next I
-'table.Close
 
 '*********************** убывающий ресурс **************************
 S = Timer / 3600:
@@ -763,7 +745,7 @@ Sub textBoxInGridCell(tb As TextBox, Grid As MSFlexGrid)
     Grid.Enabled = False 'иначе курсор по ней бегает
 End Sub
 
-Sub listBoxSelectByText(lb As listBox, obrazec As String)
+Sub listBoxSelectByText(lb As ListBox, obrazec As String)
 Dim I As Integer
     
     For I = 0 To lb.ListCount - 1 '
@@ -778,27 +760,27 @@ Dim I As Integer
 
 End Sub
 
-Sub lbDeSelectAll(listBox As listBox)
+Sub lbDeSelectAll(ListBox As ListBox)
 Dim I As Integer
 
-For I = 0 To listBox.ListCount - 1
-    listBox.Selected(I) = False
+For I = 0 To ListBox.ListCount - 1
+    ListBox.Selected(I) = False
 Next I
 End Sub
 '$NOodbc$
-Function lbToOrSqlWhere(listBox As listBox, col As Integer, Optional _
+Function lbToOrSqlWhere(ListBox As ListBox, col As Integer, Optional _
 notAll As String = "") As String
 Dim str As String, I As Integer, strWhere As String, beAll As Boolean
 Dim beNothing As Boolean
 strWhere = ""
 beAll = True
 beNothing = True
-For I = 0 To listBox.ListCount - 1
-    If listBox.Selected(I) Then
+For I = 0 To ListBox.ListCount - 1
+    If ListBox.Selected(I) Then
         If notAll = "byId" Then
             str = I
         Else
-            str = listBox.List(I)
+            str = ListBox.List(I)
         End If
         str = Orders.strWhereByValCol(str, col)
         If strWhere = "" Then
@@ -823,7 +805,7 @@ End If
 End Function
 
 
-Sub listBoxInGridCell(lb As listBox, Grid As MSFlexGrid, Optional sel As String = "", Optional ColWidth As Long = -1)
+Sub listBoxInGridCell(lb As ListBox, Grid As MSFlexGrid, Optional sel As String = "", Optional ColWidth As Long = -1)
 Dim I As Integer
     If Grid.CellTop + lb.Height < Grid.Height Then
         lb.Top = Grid.CellTop + Grid.Top
@@ -2128,11 +2110,11 @@ End If
 End Sub
 
 Function getNevip(day As Integer, EquipId As Integer)
-sql = "SELECT Sum(oe.workTime * oe.Nevip) AS wSum " & _
+sql = "SELECT Sum(oe.workTime * isnull(oe.Nevip, 1)) AS wSum " & _
 "FROM OrdersEquip oe " & _
 "WHERE DateDiff(day,'" & Format(curDate, "yyyy-mm-dd") & "',oe.outDateTime) =" & day - 1 _
 & " AND oe.equipId =" & EquipId
-'MsgBox sql
+'Debug.Print sql
 getNevip = 0
 byErrSqlGetValues "W##382", sql, getNevip
 End Function
@@ -2505,7 +2487,7 @@ If Not tbNomenk.BOF Then
     Frm.Grid5.TextMatrix(Frm.quantity5 + I, prId) = tbNomenk!Nomnom
     Frm.Grid5.TextMatrix(Frm.quantity5 + I, prType) = "номенклатура"
     Frm.Grid5.TextMatrix(Frm.quantity5 + I, prName) = tbNomenk!cod
-    Frm.Grid5.TextMatrix(Frm.quantity5 + I, prDescript) = tbNomenk!nomName & " " & tbNomenk!Size
+    Frm.Grid5.TextMatrix(Frm.quantity5 + I, prDescript) = tbNomenk!Nomname & " " & tbNomenk!Size
     
     Dim quant As Double, cenaEd As Double
     quant = tbNomenk!quant
