@@ -361,7 +361,7 @@ end;
 			<arg value="-c"/>
 			<arg value="DSN=prior;UID=dba;PWD=sql"/>
 			<arg value="-q"/>
-			<arg value="C:\dev\prsrc\trunk\dbupdate-parent\prior\target\classes\mainteinance\update_margin_for_sale.sql"/>
+			<arg value="\dev\prsrc\trunk\dbupdate-parent\prior\target\classes\mainteinance\update_margin_for_sale.sql"/>
 		</executeCommand>
 		<rollback/>
 	</changeSet>
@@ -423,7 +423,7 @@ end;
 		<sqlFile path="triggers/wf_update_firm.bayguidefirms.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<rollback/>
 	</changeSet>
-
+<!--
 	<changeSet id="2" author="mantis-55" runOnChange="true">
 		<comment>Ошибка при заведении заказа для фирмы Фараон</comment>
 		<executeCommand executable="dbisqlc.exe">
@@ -434,7 +434,7 @@ end;
 		</executeCommand>
 		<rollback/>
 	</changeSet>
-
+-->
 	<changeSet id="1" author="mantis-58" runOnChange="false">
 		<comment>Изменить алгоритм взятия цены из Комтеха</comment>
 		<sqlFile path="procedures/wf_cost_bulk_change.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
@@ -805,7 +805,7 @@ where pc.sysname = sGuideProducts.web
 			<sqlFile path="rollback\xPredmetyByNomenk.wf_update_nomenk.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 		</rollback>
 	</changeSet>
-
+<!--
 	<changeSet id="1" author="mantis-91" runOnChange="true">
 		<comment>При добавление подгруппы с названием "таблички" в 25 группу возник Run-time error.</comment>
 		<update tableName="sGuideNomenk">
@@ -821,7 +821,7 @@ where pc.sysname = sGuideProducts.web
 			<where>kolonok is null</where>
 		</update>
 	</changeSet>
-
+-->
 	<changeSet id="2" author="mantis-87" runOnChange="true">
 		<comment>изменить точность денежных столбцов</comment>
 		<modifyColumn tableName="xPredmetyByIzdelia">
