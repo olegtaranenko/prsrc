@@ -1947,7 +1947,11 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
                     Else
                         dostOstatok = nomDostOst
                     End If
-                    .Cells(exRow, 5).Value = dostOstatok
+                    If dostOstatok > 0 Then
+                        .Cells(exRow, 5).Value = dostOstatok
+                    Else
+                        .Cells(exRow, 5).Value = 0
+                    End If
     
                     If Regim = "awards" Then
                         ExcelKolonPrices exRow, 6, RubRate, RPF_Rate

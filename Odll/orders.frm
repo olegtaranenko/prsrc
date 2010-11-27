@@ -3029,7 +3029,8 @@ Private Sub mnBrightBlanks_Click()
     
     
     If csvFile <> "" Then
-        PriceToCSV Me, myRegim, csvFile, reportRate, 2, ExcelParamDialog.commonRabbat, csvHeader
+        BrightAwardsRestToCsv csvFile, csvHeader, myRegim, reportRate, ExcelParamDialog.commonRabbat
+        'PriceToCSV Me, myRegim, csvFile, reportRate, 2, ExcelParamDialog.commonRabbat, csvHeader
     End If
     
 done:

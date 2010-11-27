@@ -2,6 +2,7 @@ Attribute VB_Name = "AppUtils"
 Option Explicit
 
 Dim quantity As Long
+Public gain2 As Single, gain3 As Single, gain4 As Single
 
 'константы для whoReserved
 Public Const rtNomZak = 1
@@ -51,8 +52,8 @@ Const DLM = vbTab
 ' не использовать в cfg
 
 Private Sub changeCaseOfTheVariables()
-'Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, Fields, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim, Item, ListBox, Nomname, Formula, Nomnom, perList, Ves
-Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, Fields, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim, Item, ListBox, Nomname, Formula, Nomnom, perList, Ves
+'Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, Fields, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim, Item, ListBox, Nomname, Formula, Nomnom, perList, Ves, prSeriaId
+Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, Fields, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim, Item, ListBox, Nomname, Formula, Nomnom, perList, Ves, prSeriaId
 
 End Sub
 
@@ -451,6 +452,248 @@ done:
 End Function
 
 
+Private Function convertToCsv(Cells() As Variant) As String
+
+Dim I As Integer
+Dim ret As String
+    ret = CStr(Cells(1))
+    For I = 2 To UBound(Cells)
+        ret = ret & DLM & Cells(I)
+    Next I
+    convertToCsv = ret
+    
+End Function
+
+Public Sub BrightAwardsRestToCsv(csvFile As String, csvHeaders As String, Optional Regim As String = "", Optional RubRate As Double = 1, Optional commonRabbat As Single = 0)
+
+Dim currentSeriaId As Integer
+Dim currentProductId As Integer
+Dim currentVariative As String
+Dim csvRow As String, RPF_Rate As Single
+Dim priceType As Integer
+Dim izdeliePrices(4) As Single, I As Integer
+Dim saveHeaders As Boolean, headMap() As MapEntry
+
+' да, если строку уже вывели в файл. Встречается у вариативных изделий
+Dim submitted As Boolean
+
+
+'будем хранить значения таблицы, аналог ячейки экселя
+' для изделий
+Dim Cells(10) As Variant
+' для вариантной комплектации
+Dim vCells(10) As Variant
+
+    
+    ReDim headMap(0)
+    saveHeaders = csvHeaders <> ""
+    
+    priceType = 1
+    
+    ' Если изделие состоит из номенклатуры типа "web",
+    ' то его цена для дилеров определяется как сумма по справочнику номенклатуры
+    Dim WebIzdelie() As Double
+    
+    Dim priceRegim As String
+    
+    
+    Screen.MousePointer = flexHourglass
+    On Error GoTo ERR1
+    
+    
+    If priceType = 0 Then     ' RPF
+        priceRegim = "agency"
+    ElseIf priceType = 1 Then ' dealer
+        priceRegim = "dealer"
+    Else
+        priceRegim = "default"
+    End If
+
+    'On Error GoTo ERR2
+        
+    If saveHeaders Then
+        Open csvHeaders For Output As #2
+        Print #2, "seriaId" & DLM & "seria" _
+                & DLM & "head1" & DLM & "head2" _
+                & DLM & "head3" & DLM & "head4"
+    End If
+        
+    ' если в Изделии нет вариативных изделий, то не печатать комплектацию,
+    ' а только кол-во доступных, определяемых по наименьшему доступному из всех комплектующих
+    Dim izdeliaQty As Long, lastIzdeliaType As String
+    Dim dostOstatok As String, nomDostOst As Integer
+    izdeliaQty = -1
+    
+    
+    sql = "call wf_report_bright_ostat"
+    Set tbProduct = myOpenRecordSet("##331", sql, dbOpenDynaset)
+    
+    If Not tbProduct.BOF Then
+        Open csvFile For Output As #1
+        
+        Print #1, "cod" & DLM & "description" & DLM & "size" & DLM & "page" & DLM & "quantity" _
+                & DLM & "price1" & DLM & "price2" & DLM & "price3" & DLM & "price4" & DLM & "seriaid"
+                
+        While Not tbProduct.EOF
+
+            If saveHeaders Then
+                Dim seriaId As String
+                seriaId = tbProduct!prSeriaId
+                If getMapEntryIndex(headMap, seriaId) = -1 Then
+                    appendKeyValue headMap, seriaId, ""
+                    Print #2, seriaId & DLM & tbProduct!seriaName _
+                            & DLM & tbProduct!head1 & DLM & tbProduct!head2 _
+                            & DLM & tbProduct!head3 & DLM & tbProduct!head4
+                                            
+                Else
+                    
+                End If
+                
+            End If
+            
+            
+            If Not IsNull(tbProduct!qty_dost) Then
+                nomDostOst = tbProduct!qty_dost
+            Else
+                nomDostOst = 0
+            End If
+            
+            If currentProductId <> tbProduct!prId Then
+            
+                ' первый проход пропускаем
+                If currentProductId > 0 And Not submitted Then
+                    csvRow = convertToCsv(Cells)
+                    Print #1, csvRow
+                End If
+                
+                ' при смене изделия - обнуляем для нового цикла
+                izdeliaQty = -1
+                submitted = False
+                
+                Cells(1) = CStr(tbProduct!prName)
+                Cells(2) = CStr(tbProduct!prDescript)
+                Cells(3) = CStr(tbProduct!prSize)
+                Cells(4) = CInt(tbProduct!Page)
+                Cells(5) = izdeliaQty
+                Cells(10) = tbProduct!prSeriaId
+
+                'gain2 = tbProduct!gain2
+                'gain3 = tbProduct!gain3
+                'gain4 = tbProduct!gain4
+                'ExcelProductPrices RPF_Rate, priceRegim, RubRate,  6, commonRabbat
+                csvRow = CsvProductPrices(izdeliePrices, RPF_Rate, priceRegim, RubRate, commonRabbat)
+                If Not csvRow = "" Then
+                    MsgBox "Ошибка при вычислении цены для изделия " _
+                    & vbCr & "Текст ошибки: " & csvRow, , "Изделие " & tbProduct!prName & "  " & tbProduct!prDescript
+                    MsgBox "Генерация файла прервана. Сначала нужно исправить ошибку", , csvFile
+                    Close #1
+                    GoTo done
+                End If
+                
+                For I = 0 To 3
+                    Cells(I + 6) = Round(izdeliePrices(I), 1)
+                    izdeliePrices(I) = 0
+                Next I
+                
+            End If
+                
+            If tbProduct!quantEd <> 1 Then
+                nomDostOst = nomDostOst * tbProduct!quantEd
+            End If
+            
+            currentVariative = tbProduct!variative
+            If currentVariative = "V" Then
+                
+                If Not submitted Then
+                    submitted = True
+                    csvRow = convertToCsv(Cells)
+                    Print #1, csvRow
+                End If
+                
+                vCells(1) = tbProduct!Ncod
+                vCells(2) = tbProduct!Nomname
+                vCells(3) = tbProduct!Nsize
+                'vCells(4) = tbProduct!ed_Izmer2
+                If tbProduct!quantEd <> 1 Then
+                    dostOstatok = nomDostOst / tbProduct!quantEd
+                Else
+                    dostOstatok = nomDostOst
+                End If
+                If dostOstatok > 0 Then
+                    vCells(5) = dostOstatok
+                Else
+                    vCells(5) = 0
+                End If
+
+                csvRow = convertToCsv(vCells)
+                Print #1, csvRow
+
+
+'                    If Regim = "awards" Then
+'                        ExcelKolonPrices  6, RubRate, RPF_Rate
+'                    End If
+            
+            Else
+            
+                If nomDostOst < izdeliaQty Or izdeliaQty = -1 Then
+                    If nomDostOst >= 0 Then
+                        Cells(5) = nomDostOst
+                   Else
+                        Cells(5) = 0
+                    End If
+                End If
+                izdeliaQty = nomDostOst
+            End If
+            
+
+            currentSeriaId = tbProduct!prSeriaId
+            currentProductId = tbProduct!prId
+            lastIzdeliaType = tbProduct!variative
+
+            tbProduct.MoveNext
+        Wend
+    
+        ' если последняя строчка не была V, тогда последнее изделие выводим только сейчас
+        If currentVariative <> "V" Then
+            csvRow = convertToCsv(Cells)
+            Print #1, csvRow
+        End If
+        
+        Close #1
+    
+    End If
+    
+    tbProduct.Close
+
+    If saveHeaders Then
+        Close #2
+    End If
+
+GoTo EN2
+ERR1:
+    If Err = 76 Then
+        MsgBox "Невозможно создать файл " & csvFile, , "Error: Не обнаружен ПК или Путь к файлу"
+    ElseIf Err = 53 Then
+        Resume Next ' файла м.не быть
+    ElseIf Err = 47 Then
+        MsgBox "Невозможно создать файл " & csvFile, , "Error: Нет доступа на запись."
+    Else
+        MsgBox Error, , "Ошибка 47-" & Err '##47
+        
+    End If
+    GoTo done
+
+EN2:
+    MsgBox "Файл " & csvFile & " успешно сформирован.", , "Файлы для WEB"
+
+done:
+    Screen.MousePointer = flexDefault
+        
+        
+End Sub
+
+
+
 Function PriceToCSV(ByRef Frm As VB.Form, Regim As String, csvFile As String, curRate As Double _
         , Optional prodCategoryId As Integer = 0, Optional commonRabbat As Single = 1 _
         , Optional csvHeaders As String = "") As String
@@ -461,11 +704,12 @@ Dim ret As String
 Dim strCrit() As String, critIndex As Integer
 Dim saveHeaders As Boolean, headMap() As MapEntry
 
-ReDim headMap(0)
 
 
-Frm.MousePointer = flexHourglass
+    Frm.MousePointer = flexHourglass
+    On Error GoTo ERR1
 
+    ReDim headMap(0)
     saveHeaders = csvHeaders <> ""
     
     sql = "SELECT p.prId, p.prName, p.prDescript, p.prSize" _
@@ -527,7 +771,6 @@ Frm.MousePointer = flexHourglass
     Set tbProduct = myOpenRecordSet("##415", sql, dbOpenDynaset)
     If Not tbProduct Is Nothing Then
         
-        On Error GoTo ERR1
                 
         If Not tbProduct.BOF Then
             Open csvFile For Output As #1
@@ -583,26 +826,26 @@ Frm.MousePointer = flexHourglass
         Close #2
     End If
 
-GoTo EN2
-
-ERR1:
-If Err = 76 Then
-    MsgBox "Невозможно создать файл " & csvFile, , "Error: Не обнаружен ПК или Путь к файлу"
-ElseIf Err = 53 Then
-    Resume Next ' файла м.не быть
-ElseIf Err = 47 Then
-    MsgBox "Невозможно создать файл " & csvFile, , "Error: Нет доступа на запись."
-Else
-    MsgBox Error, , "Ошибка 47-" & Err '##47
+    GoTo EN2
     
-End If
-GoTo done
+ERR1:
+    If Err = 76 Then
+        MsgBox "Невозможно создать файл " & csvFile, , "Error: Не обнаружен ПК или Путь к файлу"
+    ElseIf Err = 53 Then
+        Resume Next ' файла м.не быть
+    ElseIf Err = 47 Then
+        MsgBox "Невозможно создать файл " & csvFile, , "Error: Нет доступа на запись."
+    Else
+        MsgBox Error, , "Ошибка 47-" & Err '##47
+        
+    End If
+    GoTo done
 
 
 EN2:
-On Error Resume Next 'нужен, если фокус после нажатия передали другому приложению
-MsgBox "Файл " & csvFile & " успешно сформирован.", , "Файлы для WEB"
-
+    On Error Resume Next 'нужен, если фокус после нажатия передали другому приложению
+    MsgBox "Файл " & csvFile & " успешно сформирован.", , "Файлы для WEB"
+    
 done:
     Frm.MousePointer = flexDefault
 
@@ -619,6 +862,8 @@ Dim S As String
 
 End Function
 
+' если при расчете возникла ошибка, то функция возвращает сообщение об ошибке
+' в этом случае цены в массив izdeliePrices не выставляются
 
 Public Function CsvProductPrices(ByRef izdeliePrices() As Single, ByRef RPF_Rate As Single, Regim As String, curRate As Double, commonRabbat As Single) As String
     Dim ret As String

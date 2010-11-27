@@ -3,7 +3,6 @@ Option Explicit
 
 Private Const dhcMissing = -2 'нужна для quickSort
 Public objExel As Excel.Application, exRow As Long
-Public gain2 As Single, gain3 As Single, gain4 As Single
 Public head1 As String, head2 As String, head3 As String, head4 As String
 
 Public sql As String, strWhere As String
@@ -755,7 +754,7 @@ valueToSystemField = False
 Set tbSystem = myOpenRecordSet("##148", "System", dbOpenTable)
 If tbSystem Is Nothing Then Exit Function
 tbSystem.Edit
-tbSystem.fields(Field) = val
+tbSystem.Fields(Field) = val
 tbSystem.Update
 tbSystem.Close
 valueToSystemField = True
@@ -901,12 +900,12 @@ End If
 For I = 2 To maxi
     str = TypeName(val(I))
     If (str = "Single" Or str = "Integer" Or str = "Long" Or str = "Double") _
-    And IsNull(tabl.fields(I - 2)) Then
+    And IsNull(tabl.Fields(I - 2)) Then
         val(I) = 0
-    ElseIf str = "String" And IsNull(tabl.fields(I - 2)) Then
+    ElseIf str = "String" And IsNull(tabl.Fields(I - 2)) Then
         val(I) = ""
     Else
-        val(I) = tabl.fields(I - 2)
+        val(I) = tabl.Fields(I - 2)
     End If
 Next I
 EN1:

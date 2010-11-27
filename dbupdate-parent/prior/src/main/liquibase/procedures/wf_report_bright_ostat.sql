@@ -55,7 +55,7 @@ begin
 	where ph.prodCategoryId = 2 and isnumeric(ph.page) = 1 
 		and isnull(p_prId, ph.prId) = ph.prId 
 	;
-
+--select * from #products p join sGuideProducts ph on p.prId = ph.prId order by ph.prName;
 	
 	delete from #products 
 	from sProducts  p 
@@ -65,7 +65,7 @@ begin
 			where n.nomnom = p.nomnom and n.web = 'mat'
 		);
 
---	select * from #products p join sGuideProducts ph on p.prId = ph.prId order by ph.prName;
+--select * from #products p join sGuideProducts ph on p.prId = ph.prId order by ph.prName;
 
 	insert into #nomenk(nomnom, perList)
 	select distinct
@@ -78,7 +78,7 @@ begin
 	where ph.prodCategoryId = 2 and isnumeric(ph.page) = 1 
 		and isnull(p_prId, ph.prId) = ph.prId 
 	;
---select * from #nomenk;
+--select * from #nomenk t join sguidenomenk n on n.nomnom = t.nomnom;
 
 
 	insert into #saldo (nomnom, debit)
@@ -119,8 +119,7 @@ begin
 	update #nomenk set quant = #nomenk.quant - isumBranRsrv.quant
 	from isumBranRsrv 
 	where isumBranRsrv.nomnom = #nomenk.nomnom;
---select * from #nomenk;
-
+--select * from #nomenk t join sguidenomenk n on n.nomnom = t.nomnom;
 
 	select 
 		  ph.prId, ph.prName, ph.prSeriaId, ph.prSize, ph.prDescript 
@@ -154,7 +153,6 @@ begin
 		and isnull(p_prId, ph.prId) = ph.prId 
 		and isnull(n.web, '') <> 'vmt'
 	order by os.ord, ph.sortNom, p.xgroup, n.nomName;
-
 
 	drop table #sGuideKlass_ord;
 	drop table #sGuideSeries_ord;
