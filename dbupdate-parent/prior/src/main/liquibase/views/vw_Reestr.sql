@@ -31,7 +31,7 @@ SELECT
 	o.numOrder
 	,o.werkId
 	,m.Manag
-	,o.StatusId
+	,oe.StatusEquipId
 	,oe.StatusEquipId
 	,o.ProblemId
 	,o.DateRS
