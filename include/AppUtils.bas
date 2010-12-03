@@ -741,7 +741,7 @@ Dim saveHeaders As Boolean, headMap() As MapEntry
         critIndex = critIndex + 1
     End If
     
-    If Regim = "agency" Or Regim = "default" Then
+    If Regim = "agency" Then
         ReDim Preserve strCrit(critIndex)
         strCrit(critIndex) = "w.prId is null"
         critIndex = critIndex + 1
