@@ -1021,9 +1021,12 @@ If noClick Then Exit Sub
 wrkDefault.BeginTrans   ' начало транзакции
 
 gEquipId = Grid.TextMatrix(mousRow, chEquipId)
-I = ValueToTableField("W##41", "'в работе'", "OrdersEquip", "Stat", "byEquipId") 'т.к если оставить Stat=готов, то на завтра он удалиться
-If I = 0 Then
-    If ValueToTableField("##41", "5", "Orders", "StatusId") <> 0 Then GoTo ER1
+'I = ValueToTableField("W##41", "'в работе'", "OrdersEquip", "Stat", "byEquipId") 'т.к если оставить Stat=готов, то на завтра он удалиться
+'If I = 0 Then
+    If ValueToTableField("##41.1", "5", "Orders", "StatusId") <> 0 Then GoTo ER1
+    If ValueToTableField("W#41.2", "5", "OrdersEquip", "StatusEquipId", "byEquipId") <> 0 Then GoTo ER1
+    'sql = "update ordersEquips set StatusEquipId = 5 where Numorder = " & gNzak & " and equipId = " & gEquipId
+    'myExecute "##41.2", sql
 
     str = lbProblem.ListIndex + begWerkProblemId
     If ValueToTableField("##41", str, "Orders", "ProblemId") = 0 Then
@@ -1032,10 +1035,10 @@ If I = 0 Then
     Else
 ER1:    wrkDefault.Rollback    ' отммена транзакции
     End If
-ElseIf I = -1 Then
-    wrkDefault.Rollback
-    msgZakazDeleted
-End If
+'ElseIf I = -1 Then
+'    wrkDefault.Rollback
+'    msgZakazDeleted
+'End If
 
 lbHide ' в т.ч. подсветка
 End Sub
@@ -1152,6 +1155,7 @@ Else '  пусто, "*" и "в работе"
     wrkDefault.BeginTrans
     If makeProcReady("0%", Grid.TextMatrix(mousRow, chEquipId)) Then
         If ValueToTableField("##41", "'" & str & "'", "OrdersEquip", "Stat", "byEquipId") <> 0 Then GoTo ER1
+        If ValueToTableField("##39.3", "1", "OrdersEquip", "StatusEquipId", "byEquipId") <> 0 Then GoTo ER1
         If ValueToTableField("##39", "1", "Orders", "StatusId") <> 0 Then GoTo ER1
 AA:     If ValueToTableField("##39", "0", "Orders", "ProblemId") = 0 Then
             wrkDefault.CommitTrans
