@@ -3473,18 +3473,31 @@ Dim next_nu As String
 If KeyCode = vbKeyReturn Then
 DNM = Format(Now(), "dd.mm.yy hh:nn") & vbTab & cbM.Text & " " & gNzak ' именно vbTab
 str = tbMobile.Text
+Dim hour As Integer
+    
     If mousCol = orMOVrVid Then
+        If str = "" Then
+            hour = 0
+        Else
+            If Not isNumericTbox(tbMobile, 0, 23) Then Exit Sub
+            hour = Round(CDbl(str))
+        End If
         Dim dt As Variant
         dt = RuDate2Date(Grid.TextMatrix(mousRow, orMOData))
-        If IsNumeric(str) And IsDate(dt) Then
-            dt = DateAdd("h", CInt(str), dt)
+        If IsDate(dt) Then
+            dt = DateAdd("h", hour, dt)
             orderUpdate "##23", Format(dt, "'yyyymmdd hh:00'"), "OrdersInCeh", "DateTimeMO"
-            Grid.TextMatrix(mousRow, mousCol) = str
+            Grid.TextMatrix(mousRow, mousCol) = hour
         End If
     ElseIf mousCol = orVrVid Then
-        'If Not isFloatFromMobile("outTime") Then Exit Sub
-        orderUpdate "##24", str, "Orders", "outTime"
-        Grid.TextMatrix(mousRow, mousCol) = str
+        If str = "" Then
+            hour = 0
+        Else
+            If Not isNumericTbox(tbMobile, 8, 18) Then Exit Sub
+            hour = Round(CDbl(str))
+        End If
+        orderUpdate "##24", hour, "Orders", "outTime"
+        Grid.TextMatrix(mousRow, mousCol) = hour
     ElseIf mousCol = orDataVid Then
         If Not isDateTbox(tbMobile, "fri") Then Exit Sub
         orderUpdate "##24", Format(RuDate2Date(str), "yyyymmdd"), "Orders", "outDatetime"
