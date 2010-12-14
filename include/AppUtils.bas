@@ -488,7 +488,7 @@ Dim vCells(10) As Variant
     ReDim headMap(0)
     saveHeaders = csvHeaders <> ""
     
-    priceType = 1
+    priceType = 0
     
     ' Если изделие состоит из номенклатуры типа "web",
     ' то его цена для дилеров определяется как сумма по справочнику номенклатуры

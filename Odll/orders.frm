@@ -3496,7 +3496,7 @@ Dim hour As Integer
             If Not isNumericTbox(tbMobile, 8, 18) Then Exit Sub
             hour = Round(CDbl(str))
         End If
-        orderUpdate "##24", hour, "Orders", "outTime"
+        orderUpdate "##24", CStr(hour), "Orders", "outTime"
         Grid.TextMatrix(mousRow, mousCol) = hour
     ElseIf mousCol = orDataVid Then
         If Not isDateTbox(tbMobile, "fri") Then Exit Sub
