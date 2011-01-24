@@ -2930,7 +2930,7 @@ where firmguide.werkid not in (1,2 )
 			<arg value="-c"/>
 			<arg value="DSN=prior;UID=dba;PWD=sql"/>
 			<arg value="-q"/>
-			<arg value="${basedir}\target\classes\mainteinance\mantis-254.sql"/>
+			<arg value="${basedir}\target\classes\mainteinance\mantis-265.sql"/>
 		</executeCommand>
 	</changeSet>
 
