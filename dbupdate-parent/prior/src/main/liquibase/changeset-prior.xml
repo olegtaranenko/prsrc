@@ -2924,6 +2924,16 @@ where firmguide.werkid not in (1,2 )
 	</changeSet>
 
 
+	<changeSet id="1" author="mantis-254" runOnChange="false">
+		<comment>execute proc</comment>
+		<executeCommand executable="dbisqlc.exe">
+			<arg value="-c"/>
+			<arg value="DSN=prior;UID=dba;PWD=sql"/>
+			<arg value="-q"/>
+			<arg value="${basedir}\target\classes\mainteinance\mantis-254.sql"/>
+		</executeCommand>
+	</changeSet>
+
 
 </databaseChangeLog>
 
