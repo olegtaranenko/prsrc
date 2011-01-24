@@ -717,5 +717,15 @@ end;
 		</update>
 	</changeSet>
 
+	<changeSet id="1" author="mantis-243" runOnChange="false">
+		<comment>Убрать КЛАДР из базы</comment>
+		<sql splitStatements="false" stripComments="false"><![CDATA[
+truncate table KLADR_SOCRBASE;
+truncate table KLADR_DOMA;
+truncate table KLADR_STREET;
+truncate table KLADR_KLADR;
+		]]></sql>
+	</changeSet>
+
 </databaseChangeLog>
 
