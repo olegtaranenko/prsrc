@@ -49,7 +49,7 @@ begin
 		, nomnom   varchar(20)
 		, indate   date
 		, quant    float
-		, cenaEd   float
+		, cenaEd   float          null
 		, periodid integer        null
 	);
 
@@ -81,7 +81,7 @@ begin
 	create table #sale_isum (
 		  nomnom      varchar(20)
 		, materialQty float
-		, materialSm  float
+		, materialSm  float    null
 		, periodid    integer  null
 	);
 

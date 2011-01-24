@@ -2924,7 +2924,7 @@ where firmguide.werkid not in (1,2 )
 	</changeSet>
 
 
-	<changeSet id="1" author="mantis-254" runOnChange="false">
+	<changeSet id="1" author="mantis-265" runOnChange="false">
 		<comment>execute proc</comment>
 		<executeCommand executable="dbisqlc.exe">
 			<arg value="-c"/>
