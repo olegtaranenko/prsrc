@@ -53,7 +53,7 @@ Const DLM = vbTab
 
 Private Sub changeCaseOfTheVariables()
 'Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, Fields, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim, Item, ListBox, Nomname, Formula, Nomnom, perList, Ves, prSeriaId
-Dim isEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, field, Fields, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim, Item, ListBox, nomName, Formula, Nomnom, perlist, ves, prSeriaId
+Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, Fields, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim, Item, ListBox, Nomname, Formula, Nomnom, perList, Ves, prSeriaId
 
 End Sub
 
@@ -150,7 +150,7 @@ Dim valueorder As Numorder
 
     Set valueorder = New Numorder
     valueorder.val = getSystemField("lastDocNum")
-    If valueorder.isEmpty Then
+    If valueorder.IsEmpty Then
         valueorder.docs = True
     End If
     If Not valueorder.isCurrentDay Then
@@ -409,7 +409,7 @@ Frm.MousePointer = flexHourglass
             While Not tbNomenk.EOF
             
             
-                csvRow = tbNomenk!cod & DLM & tbNomenk!nomName _
+                csvRow = tbNomenk!cod & DLM & tbNomenk!Nomname _
                     & DLM & tbNomenk!Size & DLM & Int(tbNomenk!qty_dost) & DLM & tbNomenk!ed_Izmer2
     
                 CalcKolonPrices prices, curRate
@@ -611,7 +611,7 @@ Dim vCells(10) As Variant
                 End If
                 
                 vCells(1) = tbProduct!Ncod
-                vCells(2) = tbProduct!nomName
+                vCells(2) = tbProduct!Nomname
                 vCells(3) = tbProduct!Nsize
                 'vCells(4) = tbProduct!ed_Izmer2
                 If tbProduct!quantEd <> 1 Then
@@ -1076,7 +1076,7 @@ While Not tbNomenk.EOF
     End If
         
     If IsNumeric(V) Then
-        S = V * tbNomenk!quantity / tbNomenk!perlist
+        S = V * tbNomenk!quantity / tbNomenk!perList
         If tbNomenk!xGroup = "" Then
             sum = sum + S
             prevGroup = tbNomenk!xGroup
@@ -1138,7 +1138,7 @@ End If
 
 If Web = "" Then
     str = "CENA1=" & vCena1 & ": VES=" & _
-    tbNomenk!ves & ": STAVKA=" & tbNomenk!STAVKA
+    tbNomenk!Ves & ": STAVKA=" & tbNomenk!STAVKA
     sc.ExecuteStatement (str)
 Else
     str = "CenaFreight=" & CenaFreight & ": CenaFact=" & CenaFact

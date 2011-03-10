@@ -150,10 +150,10 @@ Begin VB.Form Nomenklatura
       Width           =   1335
    End
    Begin VB.ListBox lbWeb 
-      Height          =   624
+      Height          =   816
       ItemData        =   "Nomenclatura.frx":0047
       Left            =   3240
-      List            =   "Nomenclatura.frx":0054
+      List            =   "Nomenclatura.frx":0057
       TabIndex        =   28
       Top             =   1260
       Visible         =   0   'False
@@ -189,9 +189,9 @@ Begin VB.Form Nomenklatura
    End
    Begin VB.ListBox lbMark 
       Height          =   432
-      ItemData        =   "Nomenclatura.frx":0064
+      ItemData        =   "Nomenclatura.frx":006C
       Left            =   3000
-      List            =   "Nomenclatura.frx":006E
+      List            =   "Nomenclatura.frx":0076
       TabIndex        =   23
       Top             =   3660
       Visible         =   0   'False
@@ -199,9 +199,9 @@ Begin VB.Form Nomenklatura
    End
    Begin VB.ListBox lbYesNo 
       Height          =   432
-      ItemData        =   "Nomenclatura.frx":0080
+      ItemData        =   "Nomenclatura.frx":0088
       Left            =   3060
-      List            =   "Nomenclatura.frx":008A
+      List            =   "Nomenclatura.frx":0092
       TabIndex        =   22
       Top             =   1920
       Visible         =   0   'False
@@ -1207,8 +1207,8 @@ Set tbNomenk = myOpenRecordSet(myErr, sql, dbOpenForwardOnly)
 'If Not tbNomenk.NoMatch Then
 If Not tbNomenk.BOF Then
     tbNomenk.Edit
-    If TypeName(val) = "Single" And IsNumeric(tbNomenk.fields(Field)) Then
-        tmpSingle = Round(val - tbNomenk.fields(Field), 2) 'delta
+    If TypeName(val) = "Single" And IsNumeric(tbNomenk.Fields(Field)) Then
+        tmpSingle = Round(val - tbNomenk.Fields(Field), 2) 'delta
     End If
 '    If field = "begOstatki" Then
 '        tbNomenk!nowOstatki = Round(tbNomenk!nowOstatki + tmpSingle, 2)
@@ -1216,7 +1216,7 @@ If Not tbNomenk.BOF Then
         tbNomenk!normZapas = Round(nomencDostupOstatki, 2) 'Д.О -> Min запас
         tbNomenk!zakup = FO 'Ф.О -> Max запас
     End If
-    tbNomenk.fields(Field) = val
+    tbNomenk.Fields(Field) = val
     tbNomenk.Update
     valueToNomencField = True
 End If
@@ -1471,11 +1471,11 @@ ERR2: bilo = True: Resume NXT
 End Sub
 
 
-Private Sub showNomenkPath(nomnom As String)
+Private Sub showNomenkPath(Nomnom As String)
 Dim klassName As String, ret As String, KlassId As Integer, parentKlassId As Integer
 
     bilo = True
-    sql = "select KlassId, nomnom from sguidenomenk where nomnom = '" & nomnom & "'"
+    sql = "select KlassId, nomnom from sguidenomenk where nomnom = '" & Nomnom & "'"
 
     byErrSqlGetValues "##102.2", sql, KlassId
     
@@ -1926,9 +1926,9 @@ If valueToNomencField("##153", lbMark.Text, "mark") Then
         If lbMark.Text = lbMark.List(0) Then
             'used
             
-            Dim ves As Variant, normZapas As Variant, zakup As Variant, Cena1 As Variant
+            Dim Ves As Variant, normZapas As Variant, zakup As Variant, Cena1 As Variant
             sql = "select ves, normZapas, zakup, cena1 from sguidenomenk where nomnom = '" & Grid.TextMatrix(mousRow, nkNomer) & "'"
-            byErrSqlGetValues "##102.2", sql, ves, normZapas, zakup, Cena1
+            byErrSqlGetValues "##102.2", sql, Ves, normZapas, zakup, Cena1
 
             Dim outcome As Single, strOutcome As String
             strOutcome = Grid.TextMatrix(mousRow, nkAvgOutcome)
@@ -1942,7 +1942,7 @@ If valueToNomencField("##153", lbMark.Text, "mark") Then
             End If
             
             recaluculateZakup mousRow, outcome, CSng(Grid.TextMatrix(mousRow, nkDostup)) _
-                , Cena1, CVar(lbMark.Text), ves, normZapas, zakup
+                , Cena1, CVar(lbMark.Text), Ves, normZapas, zakup
             
         Else
             Grid.TextMatrix(mousRow, nkZakupBax) = ""
@@ -2533,7 +2533,7 @@ End If
 Set tbDMC = myOpenRecordSet("##117", "sDMC", dbOpenTable) '
 If tbDMC Is Nothing Then Exit Sub
 tbDMC.AddNew
-tbDMC!nomnom = gNomNom
+tbDMC!Nomnom = gNomNom
 tbDMC!numDoc = numDoc
 tbDMC!numExt = numExt
 On Error GoTo ERR1
@@ -2566,7 +2566,7 @@ Set tbProduct = myOpenRecordSet("##117", "sProducts", dbOpenTable) '
 If tbProduct Is Nothing Then Exit Function
 tbProduct.AddNew
 tbProduct!productId = gProductId
-tbProduct!nomnom = gNomNom
+tbProduct!Nomnom = gNomNom
 On Error GoTo ERR1
 tbProduct.Update
 tbProduct.Close
@@ -2634,7 +2634,7 @@ If KeyCode = vbKeyReturn Then
         tbNomenk!Pack = Grid.TextMatrix(mousRow, nkPack)
         tbNomenk!cost = Grid.TextMatrix(mousRow, nkCena)
         tbNomenk!Cena1 = Grid.TextMatrix(mousRow, nkCENA1)
-        tbNomenk!ves = Grid.TextMatrix(mousRow, nkVES)
+        tbNomenk!Ves = Grid.TextMatrix(mousRow, nkVES)
         tbNomenk!STAVKA = Grid.TextMatrix(mousRow, nkSTAVKA)
         tbNomenk!FormulaNom = Grid.TextMatrix(mousRow, nkFormulaNom)
 '        tbNomenk! = Grid.TextMatrix(mousRow, nkCenaFreight)
@@ -2653,7 +2653,7 @@ If KeyCode = vbKeyReturn Then
         tbNomenk.Edit
     End If
     On Error GoTo ERR1
-    tbNomenk!nomnom = str
+    tbNomenk!Nomnom = str
     tbNomenk!KlassId = gKlassId
     tbNomenk!margin = Grid.TextMatrix(mousRow, nkMargin)
     tbNomenk!rabbat = Grid.TextMatrix(mousRow, nkRabbat)
@@ -3231,7 +3231,7 @@ If tbNomenk Is Nothing Then GoTo EN1
 If Not tbNomenk.BOF Then
  tbNomenk.MoveFirst
  While Not tbNomenk.EOF
-    gNomNom = tbNomenk!nomnom
+    gNomNom = tbNomenk!Nomnom
 '    beg = tbNomenk!begOstatki
     CenaFact = tbNomenk!cost 'цена фактическая
     CenaFreight = nomenkFormula("noOpen")
@@ -3300,7 +3300,7 @@ If Not tbNomenk.BOF Then
         Dim saled As Double, saledProcent As Double
         Dim avgOutcome As Double, missedDays As Integer
         
-        getAvgOutcome tbNomenk!nomnom, startDate, endDate, avgOutcome, missedDays, saled, prih, rash
+        getAvgOutcome tbNomenk!Nomnom, startDate, endDate, avgOutcome, missedDays, saled, prih, rash
 '        prih = PrihodRashod2("+", strWhere)
 '        rash = PrihodRashod2("-", strWhere)
         If befWhere = "" Then
@@ -3320,7 +3320,7 @@ If Not tbNomenk.BOF Then
         Cena1 = tbNomenk!Cena1
         
         recaluculateZakup quantity, avgOutcome, dOst, Cena1, _
-                tbNomenk!mark, tbNomenk!ves, tbNomenk!normZapas, tbNomenk!zakup
+                tbNomenk!mark, tbNomenk!Ves, tbNomenk!normZapas, tbNomenk!zakup
                 
         'Dim z As Boolean: z = calcZacup(quantity, "load")
         Grid.TextMatrix(quantity, nkDostup) = dOst
@@ -3378,9 +3378,9 @@ If Not tbNomenk.BOF Then
             End If
             Cena1 = tbNomenk!Cena1
             Grid.TextMatrix(quantity, nkCENA1) = Format(Cena1, "0.00")
-            Grid.TextMatrix(quantity, nkVES) = tbNomenk!ves
+            Grid.TextMatrix(quantity, nkVES) = tbNomenk!Ves
             Grid.TextMatrix(quantity, nkSTAVKA) = tbNomenk!STAVKA
-            Grid.TextMatrix(quantity, 0) = tbNomenk!formula
+            Grid.TextMatrix(quantity, 0) = tbNomenk!Formula
             Grid.TextMatrix(quantity, nkCenaFreight) = Format(CenaFreight, "0.00")
             Grid.TextMatrix(quantity, nkFormulaNom) = tbNomenk!FormulaNom
             Grid.TextMatrix(quantity, nkYesNo) = tbNomenk!YesNo
@@ -3493,7 +3493,7 @@ Dim Kolon4 As String
 End Sub
 
 Private Sub recaluculateZakup(ByVal row As Long, ByVal avgOutcome As Single, ByVal dOst As Single, ByVal CenaFact As String _
-        , ByVal mark As Variant, ByVal ves As Variant, ByVal normZapas As Variant, ByVal zakup As Variant _
+        , ByVal mark As Variant, ByVal Ves As Variant, ByVal normZapas As Variant, ByVal zakup As Variant _
 )
         
     If avgOutcome > 0 Then
@@ -3536,7 +3536,7 @@ Private Sub recaluculateZakup(ByVal row As Long, ByVal avgOutcome As Single, ByV
 '            Grid.TextMatrix(row, nkDeficit) = Round(kZajav, 0)
             If onDemand2 > 0 Then
                 Grid.TextMatrix(row, nkZakupBax) = Round(onDemand2 * CenaFact, 2)
-                Grid.TextMatrix(row, nkZakupWeight) = Round(onDemand2 * ves, 1)
+                Grid.TextMatrix(row, nkZakupWeight) = Round(onDemand2 * Ves, 1)
             End If
         End If
     Else

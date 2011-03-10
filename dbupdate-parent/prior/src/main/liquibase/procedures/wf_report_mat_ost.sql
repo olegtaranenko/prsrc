@@ -30,7 +30,7 @@ begin
 	select distinct
 		k.nomnom, k.perList
 	from sGuideNomenk       k
-	where k.web = 'mat' ;
+	where k.web in ('mat', 'plq') ;
 
 	if p_with_ost = 1 then
 		create table #saldo(nomnom varchar(20), debit float null, kredit float null);
