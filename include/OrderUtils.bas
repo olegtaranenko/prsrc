@@ -22,6 +22,15 @@ Dim Werk As String
 
 Dim I As Integer, str As String, str1 As String, J As Integer, S As Double
 Dim ch As String, tenOclock As String, Midnight As String
+Dim checkNextDay As Boolean
+
+
+checkNextDay = getEffectiveSetting("checkNextDay", True)
+If Not checkNextDay Then
+    Exit Sub
+End If
+
+
 'MsgBox "переход на новую дату"
 
 'wrkDefault.BeginTrans

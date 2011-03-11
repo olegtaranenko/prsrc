@@ -640,7 +640,8 @@ Const ShortSelectSqlStr = "" _
     & vbCr & "   , o.Numorder, o.inDate, o.StatusId, o.WerkId, o.FirmId" _
     & vbCr & "   , o.lastModified, o.lastManagId" _
     & vbCr & "   , oe.lastModified as lastModifiedEquip, oe.lastManagId as lastManagEquipId" _
-    & vbCr & "   , oe.equipId, oe.workTime, oe.workTimeMO, oe.StatO, oe.statusEquipId"
+    & vbCr & "   , oe.equipId, oe.workTime, oe.workTimeMO, oe.StatO, oe.statusEquipId" _
+    & vbCr & "   , oc.Numorder as StatusInCeh"
 
 Const MainSelectSqlStr = "" _
     & vbCr & "     0 as presentationFormat" _

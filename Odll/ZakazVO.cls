@@ -151,6 +151,8 @@ Dim currentLastModified As Date
                 End If
                 statusEquipID = tbOrders!statusEquipID
             End If
+            
+            StatusInCeh = tbOrders!StatusInCeh
 
         ElseIf tbOrders!presentationFormat = 0 Then
 

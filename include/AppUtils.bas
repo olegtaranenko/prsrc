@@ -1272,3 +1272,57 @@ Set meForm = frmRemark.Parent
 
 End Sub
 
+Public Sub FlexGridColumnColor(FlexGrid As MSFlexGrid, ByVal lngColumn As Long, ByVal lngColor As Long)
+    Dim lngPrevCol As Long
+    Dim lngPrevColSel As Long
+    Dim lngPrevRow As Long
+    Dim lngPrevRowSel As Long
+    Dim lngPrevFillStyle As Long
+    If lngColumn > FlexGrid.Cols - 1 Then
+        Exit Sub
+    End If
+    lngPrevCol = FlexGrid.col
+    lngPrevRow = FlexGrid.row
+    lngPrevColSel = FlexGrid.ColSel
+    lngPrevRowSel = FlexGrid.RowSel
+    lngPrevFillStyle = FlexGrid.FillStyle
+    FlexGrid.col = lngColumn
+    FlexGrid.row = FlexGrid.FixedRows
+    FlexGrid.ColSel = lngColumn
+    FlexGrid.RowSel = FlexGrid.Rows - 1
+    FlexGrid.FillStyle = flexFillRepeat
+    FlexGrid.CellBackColor = lngColor
+    FlexGrid.col = lngPrevCol
+    FlexGrid.row = lngPrevRow
+    FlexGrid.ColSel = lngPrevColSel
+    FlexGrid.RowSel = lngPrevRowSel
+    FlexGrid.FillStyle = lngPrevFillStyle
+End Sub
+
+Public Sub FlexGridRowColor(FlexGrid As MSFlexGrid, ByVal lngRow As Long, ByVal lngColor As Long)
+    Dim lngPrevCol As Long
+    Dim lngPrevColSel As Long
+    Dim lngPrevRow As Long
+    Dim lngPrevRowSel As Long
+    Dim lngPrevFillStyle As Long
+    If lngRow > FlexGrid.Rows - 1 Then
+        Exit Sub
+    End If
+    lngPrevCol = FlexGrid.col
+    lngPrevRow = FlexGrid.row
+    lngPrevColSel = FlexGrid.ColSel
+    lngPrevRowSel = FlexGrid.RowSel
+    lngPrevFillStyle = FlexGrid.FillStyle
+    FlexGrid.col = FlexGrid.FixedCols
+    FlexGrid.row = lngRow
+    FlexGrid.ColSel = FlexGrid.Cols - 1
+    FlexGrid.RowSel = lngRow
+    FlexGrid.FillStyle = flexFillRepeat
+    FlexGrid.CellBackColor = lngColor
+    FlexGrid.col = lngPrevCol
+    FlexGrid.row = lngPrevRow
+    FlexGrid.ColSel = lngPrevColSel
+    FlexGrid.RowSel = lngPrevRowSel
+    FlexGrid.FillStyle = lngPrevFillStyle
+End Sub
+

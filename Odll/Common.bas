@@ -1401,9 +1401,17 @@ Sub nextDayDetect() 'см также Orders.cmAdd_Click
 Dim str As String ', intNum As Integer
 Dim strNow As String, dNow As Date
 Dim serverDate As String
+Dim checkNextDay As Boolean
+
 
 strNow = Format(Now, "dd.mm.yyyy")
 curDate = strNow 'без часов и минут
+
+checkNextDay = getEffectiveSetting("checkNextDay", True)
+If Not checkNextDay Then
+    Exit Sub
+End If
+   
 
 sql = "select convert(varchar(10), now(), 104)"
 byErrSqlGetValues "##chksrvdate", sql, serverDate
@@ -1573,7 +1581,14 @@ If redraw Then
         Grid.CellForeColor = vbBlack
     End If
 End If
-
+ If IsNull(orderBean.StatusInCeh) And orderBean.StatusId = 1 Then
+    '
+    '
+    FlexGridRowColor Grid, row, vbRed
+    
+    
+ End If
+ 
  log = Format(Now(), "dd.mm.yy hh:nn") & vbTab & Orders.cbM.Text & " " & gNzak ' именно vbTab
  If tqOrders!WerkId = 1 And IsNull(tqOrders!Equip) Then
     str = tqOrders!Status
