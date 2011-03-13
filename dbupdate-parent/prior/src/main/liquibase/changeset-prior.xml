@@ -2166,8 +2166,8 @@ where id_scet = -1
 		<sqlFile path="triggers/OrdersEquip.wf_update.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<rollback/>
 	</changeSet>
-
-	<changeSet id="31" author="mantis-141" runOnChange="true">
+<!--
+	<changeSet id="31" author="mantis-141" runOnChange="false">
 		<validCheckSum>7de5325815c9612ca2f02a3524b6892d</validCheckSum>
 		<comment>Восстанавливаем дату выдачи заказа</comment>
 		<executeCommand executable="dbisqlc.exe">
@@ -2178,6 +2178,7 @@ where id_scet = -1
 		</executeCommand>
 		<rollback/>
 	</changeSet>
+-->
 
 	<changeSet id="32" author="mantis-141" runOnChange="false">
 		<comment>Статус, который зависит от цеха</comment>

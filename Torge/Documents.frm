@@ -1823,7 +1823,7 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
         priceRegim = "default"
     End If
 
-    On Error GoTo ERR2
+    'On Error GoTo ERR2
     Set objExel = New Excel.Application
     objExel.Visible = True
     objExel.SheetsInNewWorkbook = 1
@@ -1927,9 +1927,9 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
                     
                 End If
                     
-                If tbProduct!quantEd <> 1 Then
-                    nomDostOst = nomDostOst * tbProduct!quantEd
-                End If
+'                If tbProduct!quantEd <> 1 Then
+'                    nomDostOst = nomDostOst * tbProduct!quantEd
+'                End If
                 
                 If tbProduct!variative = "V" Then
                     exRow = exRow + 1
@@ -1942,12 +1942,13 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
                     .Cells(exRow, 2).HorizontalAlignment = xlHAlignRight
                     .Cells(exRow, 3).Value = tbProduct!Nsize
                     .Cells(exRow, 4).Value = tbProduct!ed_Izmer2
+                    dostOstatok = nomDostOst
                     If tbProduct!quantEd <> 1 Then
-                        dostOstatok = "*) " & Round(dostOstatok, 2) & "(" & tbProduct!quantEd & ")"
-                    Else
-                        dostOstatok = nomDostOst
+                        .Cells(exRow, 4).Value = tbProduct!ed_Izmer2 & " x " & CStr(Round(tbProduct!quantEd, 1))
                     End If
-                    If dostOstatok > 0 Then
+                    If Not IsNumeric(dostOstatok) Then
+                        .Cells(exRow, 5).Value = dostOstatok
+                    ElseIf dostOstatok > 0 Then
                         .Cells(exRow, 5).Value = dostOstatok
                     Else
                         .Cells(exRow, 5).Value = 0

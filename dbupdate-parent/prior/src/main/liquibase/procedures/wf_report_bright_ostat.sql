@@ -134,7 +134,7 @@ begin
 		, wf_breadcrump_klass(n.klassid) as klassname, n.klassid
 		, n.cena_W, n.rabbat, n.margin,  n.kolonok, n.CenaOpt2, n.CenaOpt3, n.CenaOpt4
 		, s.gain2, s.gain3, s.gain4
-		, f.formula, w.prId as hasWeb, p.quantity as quantEd
+		, f.formula, w.prId as hasWeb, p.quantity / n.perlist as quantEd
 		, s.head1, s.head2, s.head3, s.head4 
 
 	from #products                tp
