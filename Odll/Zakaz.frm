@@ -1207,6 +1207,8 @@ If Not tbOrders.BOF Then
        If myExecute("##403", sql) <> 0 Then GoTo ER1
        GoTo DD
     Else
+        'sql = "select count(*) from vw_Reestr"
+    
         sql = "DELETE from OrdersInCeh WHERE numOrder = " & gNzak
         If myExecute("##394", sql) <> 0 Then GoTo ER1
         Worktime = 0
@@ -1736,7 +1738,7 @@ wrkDefault.CommitTrans
 'tbSystem.Close
 laMess.Caption = ""
 
-zagruzFromCeh idEquip, gNzak ' в delta(), Ostatki()  !!!кроме gNzak
+zagruzFromCeh idEquip, gNzak ' в otstup(), Ostatki()  !!!кроме gNzak
 
 tmpMaxDay = getResurs(idEquip)  ' выч-е nomRes()
 lvAddDays tmpMaxDay 'удаляем или добавляем последние строки(дни) в
@@ -2048,7 +2050,7 @@ Else
     
 End If
     
-zagruzFromCeh idEquip, gNzak '              1| в delta(), Ostatki() !!! кроме текущего
+zagruzFromCeh idEquip, gNzak '              1| в otstup(), Ostatki() !!! кроме текущего
 getResurs idEquip
 
 Me.lvAddDays  ' добавляем стороки и даты
@@ -2113,32 +2115,33 @@ Me.laZapas.Caption = Round(nomRes(I) * KPD * Nstan + V, 1)
 
 'количесво фирм по дням выдачи
 For I = 1 To maxDay
-    delta(I) = 0
+    otstup(I) = 0
 Next I
 str = "DateDiff(day, now(), oe.outDateTime)"
 sql = "SELECT " & str & " AS day, o.FirmId" _
 & " From Orders o" _
 & " join OrdersEquip oe on oe.numorder = o.numorder and oe.equipId = " & idEquip _
+& " join OrdersInCeh oc on oc.numorder = o.numorder" _
 & " Where o.StatusId < 4" _
 & " GROUP BY " & str & ", o.FirmId" _
 & " HAVING " & str & " >= 0"
 
 'MsgBox str & Chr(13) & Chr(13) & sql
-'Debug.Print sql
+Debug.Print sql
 
 Set tbOrders = myOpenRecordSet("##76", sql, dbOpenForwardOnly)
 If Not tbOrders Is Nothing Then
  If Not tbOrders.BOF Then
  While Not tbOrders.EOF
     I = tbOrders!day + 1
-    delta(I) = delta(I) + 1
+    otstup(I) = otstup(I) + 1
     tbOrders.MoveNext
  Wend
  End If
  tbOrders.Close
 End If
 For I = 1 To maxDay
-    Me.lv.ListItems("k" & I).SubItems(zkFirmKolvo) = Round(delta(I), 1)
+    Me.lv.ListItems("k" & I).SubItems(zkFirmKolvo) = Round(otstup(I), 1)
 Next I
 
 cbBuildStatuses Me.cbStatus, zakazBean.StatusId

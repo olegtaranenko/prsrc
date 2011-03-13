@@ -269,7 +269,7 @@ Public stDays() As Integer        ' включая дни пропуска (Сб,Вс,праздники)
 Public stDay As Integer 'равен последнему stDays(Сегодня)
                             
 Public nomRes() As Double
-Public delta() As Double
+Public otstup() As Double
 Public tmp() As Double
 Public tmpL() As Long
 Public ost() As Double, befOst() As Double
@@ -285,11 +285,6 @@ Public Const CC_UE As Integer = 2
 ' на сколько нужно увеличивать ширину колонок, если выбраны рубли
 Public Const ColWidthForRuble As Single = 1.3
 
-Function dummy()
-    Dim Left, StatusId, Outdatetime, Rollback, IsEmpty, ExeName
-    Dim WorktimeMO
-
-End Function
 
 Function tuneCurencyAndGranularity(tunedValue, currentRate, valueCurrency As Integer, Optional quantity As Double = 1, Optional perList As Long = 1) As Double
     '
@@ -441,7 +436,7 @@ On Error GoTo 0
         MsgBox "Ресурсы программы превысили 500 дней? Сообщите Администратору!", , "Err в dayMassLenght()"
     ReDim Preserve stDays(maxLen)
     ReDim Preserve nomRes(maxLen)
-    ReDim Preserve delta(maxLen)
+    ReDim Preserve otstup(maxLen)
     ReDim Preserve tmp(maxLen)
 Exit Sub
 
@@ -2139,7 +2134,7 @@ Dim J As Integer
         If maxDay < outDay Then
             dayMassLenght outDay + 1 'если дольше , корректируем размерности
             For J = maxDay + 1 To outDay 'новые дни
-                delta(J) = 0
+                otstup(J) = 0
             Next J
             maxDay = outDay
         End If
