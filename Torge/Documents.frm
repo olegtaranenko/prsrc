@@ -1943,7 +1943,7 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
                     .Cells(exRow, 3).Value = tbProduct!Nsize
                     .Cells(exRow, 4).Value = tbProduct!ed_Izmer2
                     dostOstatok = nomDostOst
-                    If tbProduct!quantEd <> 1 Then
+                    If Round(tbProduct!quantEd, 1) <> 1 Then
                         .Cells(exRow, 4).Value = tbProduct!ed_Izmer2 & " x " & CStr(Round(tbProduct!quantEd, 1))
                     End If
                     If Not IsNumeric(dostOstatok) Then

@@ -1339,16 +1339,15 @@ With objExel.ActiveSheet
         & vbCr & " left JOIN wf_izdeliaWithWeb w on w.prId  = p.prId" _
         & vbCr & " left join wf_izdeliaVmtOnly vmt on vmt.productid = p.prId" _
         & vbCr & " Where p.prSeriaId = " & findId _
-        & " AND p.prodCategoryId = " & prodCategoryId _
-        & " AND vmt.productId is null "
+        & " AND p.prodCategoryId = " & prodCategoryId
     
     'Debug.Print sql
     If Regim = "dealer" Or Regim = "agency" Then
-        sql = sql & " and w.prId is null"
+        sql = sql & " AND vmt.productId is null AND w.prId is null"
     End If
     
     If Not Regim = "pricePM" Then
-        sql = sql & " and isnumeric(p.page) = 1"
+        sql = sql & " AND isnumeric(p.page) = 1"
     End If
     
     sql = sql & " ORDER BY p.SortNom"
