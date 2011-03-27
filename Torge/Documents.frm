@@ -1366,7 +1366,7 @@ Private Sub mnBrightAwards_Click()
         Exit Sub
     End If
     BrightAwardsRestToExcel myRegim, , ExcelParamDialog.mainReportTitle, _
-        ExcelParamDialog.kegl, ExcelParamDialog.priceType, ExcelParamDialog.commonRabbat
+        ExcelParamDialog.kegl, 0, ExcelParamDialog.commonRabbat
     
 End Sub
 

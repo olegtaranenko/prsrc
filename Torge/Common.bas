@@ -1342,7 +1342,7 @@ With objExel.ActiveSheet
         & " AND p.prodCategoryId = " & prodCategoryId
     
     'Debug.Print sql
-    If Regim = "dealer" Or Regim = "agency" Then
+    If Regim = "dealer" Then
         sql = sql & " AND vmt.productId is null AND w.prId is null"
     End If
     

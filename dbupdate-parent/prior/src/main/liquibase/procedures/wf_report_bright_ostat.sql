@@ -56,7 +56,8 @@ begin
 		and isnull(p_prId, ph.prId) = ph.prId 
 	;
 --select * from #products p join sGuideProducts ph on p.prId = ph.prId order by ph.prName;
-	
+
+/*	
 	delete from #products 
 	from sProducts  p 
 	where p.productId = #products.prId
@@ -64,7 +65,7 @@ begin
 			select 1 from sGuideNomenk n
 			where n.nomnom = p.nomnom and n.web = 'mat'
 		);
-
+*/
 --select * from #products p join sGuideProducts ph on p.prId = ph.prId order by ph.prName;
 
 	insert into #nomenk(nomnom, perList)
@@ -151,11 +152,10 @@ begin
 			ph.prodCategoryId = 2 
 		and isnumeric(ph.page) = 1
 		and isnull(p_prId, ph.prId) = ph.prId 
-		and isnull(n.web, '') <> 'vmt'
+--		and isnull(n.web, '') <> 'vmt'
 	order by os.ord, ph.sortNom, p.xgroup, n.nomName;
 
 	drop table #sGuideKlass_ord;
 	drop table #sGuideSeries_ord;
-
 
 end;

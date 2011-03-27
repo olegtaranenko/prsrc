@@ -910,7 +910,12 @@ Public Function calcBaseCenaAndRpfRate(Regim As String, ByRef baseCena As String
             rbt = tProductRabbat
         End If
         baseCena = tCena4 * (1 - rbt / 100)
-        RPF_Rate = baseCena / RPF_Rate
+        If RPF_Rate > 0 Then
+            RPF_Rate = baseCena / RPF_Rate
+        Else
+            RPF_Rate = RPF_Rate
+            
+        End If
 
 
     ElseIf Regim = "default" Or Regim = "pricePM" Then
