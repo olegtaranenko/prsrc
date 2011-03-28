@@ -894,15 +894,17 @@ Public Function calcBaseCenaAndRpfRate(Regim As String, ByRef baseCena As String
     End If
     
     RPF_Rate = 1
-    If Regim = "dealer" Or Regim = "agency" Or hasWeb Then
+    If Regim = "dealer" Or hasWeb Then
         productFormula SumCenaFreight, baseCena, "noOpen"
         If Not IsNumeric(SumCenaFreight) Then
             calcBaseCenaAndRpfRate = SumCenaFreight
             Exit Function
         End If
+    ElseIf Regim = "agency" Then
+        baseCena = tCena4
     End If
     
-    If Regim = "agency" And Not hasWeb Then
+    If Regim = "agency" Then
         RPF_Rate = baseCena 'temp storage
         If tProductRabbat = 0 Then
             rbt = commonRabbat
@@ -916,7 +918,6 @@ Public Function calcBaseCenaAndRpfRate(Regim As String, ByRef baseCena As String
             RPF_Rate = RPF_Rate
             
         End If
-
 
     ElseIf Regim = "default" Or Regim = "pricePM" Then
         baseCena = tCena4
