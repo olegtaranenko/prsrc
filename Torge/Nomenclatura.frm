@@ -2195,6 +2195,9 @@ Dim msgOk As VbMsgBoxResult
 Dim tvNode As Node
 Dim KlassId As String
 Dim groupText As String
+Dim CenaFreight As Variant
+Dim I As Integer
+Dim searchNomnom As String, fndNomnom As Long
     
     Set tvNode = tv.Nodes(tv.SelectedItem.Index)
     KlassId = Mid(tvNode.Key, 2)
@@ -2213,6 +2216,39 @@ Dim groupText As String
     End If
     
     MousePointer = flexHourglass
+    
+    
+    sql = "select n.*, f.Formula from sGuideNomenk n" _
+    & vbCr & "  JOIN sGuideFormuls f ON n.formulaNom = f.nomer "
+    If KlassId > 0 Then
+        sql = sql _
+            & vbCr & " where n.klassId = " & KlassId
+    End If
+    Set tbNomenk = myOpenRecordSet("##165.1", sql, dbOpenForwardOnly) ' dbOpenDynaset)
+    If tbNomenk Is Nothing Then End
+    If Not tbNomenk.BOF Then
+         tbNomenk.MoveFirst
+         While Not tbNomenk.EOF
+            
+            searchNomnom = tbNomenk!Nomnom
+            
+            CenaFreight = nomenkFormula("noOpen")
+            If IsNumeric(CenaFreight) Then
+                sql = "update sGuideNomenk set cost = " & CenaFreight _
+                & " where Nomnom = '" & searchNomnom & "'"
+                myExecute "##165.2", sql
+            End If
+            tbNomenk.MoveNext
+        Wend
+    End If
+    tbNomenk.Close
+    
+    If Grid.Visible And KlassId > 0 Then
+        gKlassId = KlassId
+        gKlassType = Mid$(tv.SelectedItem.Key, 1, 1)
+        gSourceId = gKlassId
+        loadKlassNomenk
+    End If
     
     MousePointer = flexDefault
     
