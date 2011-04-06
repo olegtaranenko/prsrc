@@ -3794,7 +3794,7 @@ Sub prepareOrderByEquipment(Where As String)
     If tbOrders Is Nothing Then myBase.Close: End
     ReDim OrdersEquipStat(0)
     
-    Dim I As Integer
+    Dim I As Long
 
     If Not tbOrders.BOF Then
         Dim orderBean As New ZakazVO

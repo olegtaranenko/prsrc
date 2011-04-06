@@ -16,6 +16,7 @@ create view itemWallOrde (
 	, itemName
 	, edIzm
 	, edIzmList
+	, firmId
 ) as
 select 
 	 o.numorder
@@ -30,6 +31,7 @@ select
 	,wf_make_invnm(p.prDescript, p.prSize)
 	, 'רע.'
 	, 'רע.'
+	,o.FirmId
 from
 	orders o
 join xpredmetybyizdelia pi on pi.numorder = o.numorder
@@ -50,6 +52,7 @@ select
 	,wf_make_invnm(n.nomName, n.size, n.cod)
 	,ed_izmer
 	,ed_izmer2
+	,o.FirmId
 from
 	orders o
 join xpredmetybynomenk pn on pn.numorder = o.numorder

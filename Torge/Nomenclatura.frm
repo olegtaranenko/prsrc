@@ -491,6 +491,10 @@ Begin VB.Form Nomenklatura
       Begin VB.Menu mnCost 
          Caption         =   "Себестоимость (из Komtex)"
       End
+      Begin VB.Menu mnCostFact 
+         Caption         =   "Цена с достакой => фактическая"
+         Visible         =   0   'False
+      End
    End
    Begin VB.Menu mnContext2 
       Caption         =   "Context2"
@@ -2184,6 +2188,37 @@ Private Sub mnCopy_Click()
 nomenkAdd "obraz"
 End Sub
 
+
+Private Sub mnCostFact_Click()
+
+Dim msgOk As VbMsgBoxResult
+Dim tvNode As Node
+Dim KlassId As String
+Dim groupText As String
+    
+    Set tvNode = tv.Nodes(tv.SelectedItem.Index)
+    KlassId = Mid(tvNode.Key, 2)
+
+
+    If KlassId <> "0" Then
+        groupText = " группе " + tvNode.Text
+    Else
+        groupText = " всей номенклатуре "
+    End If
+
+    msgOk = MsgBox("Вы уверены, что хотите перенести цену с доставкой в цену фактическую по " & groupText & "?" _
+        , vbOKCancel, "Предупреждение")
+    If msgOk <> vbOK Then
+        Exit Sub
+    End If
+    
+    MousePointer = flexHourglass
+    
+    MousePointer = flexDefault
+    
+End Sub
+
+
 Private Sub mnCost_Click()
 Dim msgOk As VbMsgBoxResult
 Dim tvKlass As String
@@ -2215,7 +2250,7 @@ Dim queryTimeout As Variant
         If KlassId <> "0" Then
             groupText = " по группе " + tvNode.Text
         Else
-            groupText = " по всей номенклатуре группе "
+            groupText = " по всей номенклатуре "
         End If
         Set tvNode = tv.Nodes.Add("p0", tvwChild, "p" + newKey, CStr(xDate) + groupText)
         
@@ -3705,6 +3740,7 @@ If mousRight = 2 Then
     If bulkChangEnabled And Mid(str, 1, 1) <> "p" Then
         mnSep11.Visible = True
         mnCost.Visible = True
+        mnCostFact.Visible = True
     Else
         mnSep11.Visible = False
         mnCost.Visible = False
