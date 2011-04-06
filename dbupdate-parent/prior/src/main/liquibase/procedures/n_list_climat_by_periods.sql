@@ -87,7 +87,7 @@ begin
 		o.numorder, gp.prName, o.indate
 		, s.quant , s.cenaEd
 		, 'Изд.', gp.Cena4
-		, trim(gp.prName + ' ' + gp.prDescript + ' ' + gp.prSize)             -- название
+		, trim(gp.prDescript + ' ' + gp.prSize)             -- название
 	from 
 		orders o
 	join itemIzdeOrde s on s.numorder = o.numorder
