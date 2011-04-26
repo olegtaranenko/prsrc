@@ -1368,7 +1368,7 @@ Private Sub mnBrightAwards_Click()
     If Not ExcelParamDialog.exitCode = vbOK Then
         Exit Sub
     End If
-    BrightAwardsRestToExcel myRegim, ExcelParamDialog.RubRate, ExcelParamDialog.mainReportTitle, _
+    BrightAwardsRestToExcel myRegim, IIf(ExcelParamDialog.outputUE, 1, ExcelParamDialog.RubRate), ExcelParamDialog.mainReportTitle, _
         ExcelParamDialog.kegl, 0, ExcelParamDialog.commonRabbat
     
 End Sub
@@ -1391,7 +1391,9 @@ Private Sub mnBrightAwardsClient_Click()
     If Not ExcelParamDialog.exitCode = vbOK Then
         Exit Sub
     End If
-    BrightAwardsRestToExcel myRegim, ExcelParamDialog.RubRate, ExcelParamDialog.mainReportTitle, _
+    
+    
+    BrightAwardsRestToExcel myRegim, IIf(ExcelParamDialog.outputUE, 1, ExcelParamDialog.RubRate), ExcelParamDialog.mainReportTitle, _
         ExcelParamDialog.kegl, -1, 0
 End Sub
 
@@ -1413,13 +1415,9 @@ Private Sub mnBrightAwardsPrice_Click()
     If Not ExcelParamDialog.exitCode = vbOK Then
         Exit Sub
     End If
-    If ExcelParamDialog.outputUE Then
-        BrightAwardsRestToExcel myRegim, , ExcelParamDialog.mainReportTitle, ExcelParamDialog.kegl, _
-            ExcelParamDialog.priceType, ExcelParamDialog.commonRabbat
-    Else
-        BrightAwardsRestToExcel myRegim, ExcelParamDialog.RubRate, ExcelParamDialog.mainReportTitle, _
-            ExcelParamDialog.kegl, ExcelParamDialog.priceType, ExcelParamDialog.commonRabbat
-    End If
+    
+    BrightAwardsRestToExcel myRegim, IIf(ExcelParamDialog.outputUE, 1, ExcelParamDialog.RubRate), ExcelParamDialog.mainReportTitle, ExcelParamDialog.kegl, _
+        ExcelParamDialog.priceType, ExcelParamDialog.commonRabbat
 End Sub
 
 Private Sub mnConstants_Click()
