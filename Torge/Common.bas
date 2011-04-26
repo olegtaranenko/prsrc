@@ -1191,7 +1191,7 @@ Function excelStdSchapka(ByRef objExel, ByVal RubRate As Double, ByVal mainTitle
     , Optional contact1 As String = "", Optional contact2 As String = "") As Integer
 
     Const titleUE = "цены указаны в у.е. и исчисляются в USD по курсу ЦБ (НДС не облагается)"
-    Const titleRub = "цены указаны в рублях (НДС не облагается"
+    Const titleRub = "цены указаны в рублях (НДС не облагается)"
     
     excelStdSchapka = 7
     With objExel.ActiveSheet.Cells(1, 1)
@@ -1232,6 +1232,48 @@ Function excelStdSchapka(ByRef objExel, ByVal RubRate As Double, ByVal mainTitle
             End If
             .HorizontalAlignment = xlHAlignRight
             .Font.Bold = True
+        End With
+    End If
+End Function
+
+Function excelSchapkaBAClient(ByRef objExel, ByVal RubRate As Double, ByVal mainTitle As String _
+    , ByVal leftBound As String, Optional paymentType = False) As Integer
+
+    Const titleUE = "Цены на готовые изделия с нанесением указаны в у.е., исчисляются в USD по курсу ЦБ"
+    Const titleRub = "Цены на готовые изделия с нанесением указаны в рублях"
+    
+    excelSchapkaBAClient = 7
+    With objExel.ActiveSheet.Cells(1, 1)
+        .Value = Format(Now(), "dd.mm.yyyy")
+        .HorizontalAlignment = xlHAlignCenter
+    End With
+    
+    
+    With objExel.ActiveSheet.Range("A2:" & leftBound & "2")
+        .Merge (True)
+        .Value = mainTitle
+        .Font.Bold = True
+        .Font.Size = 14
+        .HorizontalAlignment = xlHAlignCenter
+    End With
+    
+    With objExel.ActiveSheet.Range("A3:" & leftBound & "3")
+        .Merge (True)
+        .Value = "КОРПОРАТИВНЫЕ ПРИЗЫ И НАГРАДЫ"
+        .HorizontalAlignment = xlHAlignCenter
+        .Font.Size = 10
+        .Font.Bold = True
+    End With
+    
+    If paymentType Then
+        With objExel.ActiveSheet.Range("A5:" & leftBound & "5")
+            .Merge (True)
+            If RubRate = 1 Then
+                .Value = titleUE
+            Else
+                .Value = titleRub
+            End If
+            .HorizontalAlignment = xlHAlignCenter
         End With
     End If
 End Function

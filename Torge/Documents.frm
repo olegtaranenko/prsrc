@@ -402,7 +402,10 @@ Begin VB.Form Documents
          Caption         =   "Прайс и остатки по складу материалов"
       End
       Begin VB.Menu mnBrightAwards 
-         Caption         =   "Прайс и остатки по складу Bright Awards"
+         Caption         =   "Прайс и остатки Bright Awards - ДИЛЕРЫ"
+      End
+      Begin VB.Menu mnBrightAwardsClient 
+         Caption         =   "Прайс и остатки Bright Awards - КОНЕЧНИКИ"
       End
       Begin VB.Menu mnBrightAwardsPrice 
          Caption         =   "Прайс-лист Bright Awards технический"
@@ -1357,8 +1360,8 @@ Private Sub mnBrightAwards_Click()
     ExcelParamDialog.Regim = myRegim
     ExcelParamDialog.withPrice = True
     ExcelParamDialog.showRabbat = True
-    ExcelParamDialog.contact1 = getEffectiveSetting(".contact1", DefaultContact1)
-    ExcelParamDialog.contact2 = getEffectiveSetting(".contact2", DefaultContact2)
+    ExcelParamDialog.contact1 = getEffectiveSetting(myRegim & ".contact1", DefaultContact1)
+    ExcelParamDialog.contact2 = getEffectiveSetting(myRegim & ".contact2", DefaultContact2)
     ExcelParamDialog.commonRabbat = getEffectiveSetting(myRegim & ".rabbat", 0)
     
     ExcelParamDialog.Show vbModal, Me
@@ -1368,6 +1371,28 @@ Private Sub mnBrightAwards_Click()
     BrightAwardsRestToExcel myRegim, , ExcelParamDialog.mainReportTitle, _
         ExcelParamDialog.kegl, 0, ExcelParamDialog.commonRabbat
     
+End Sub
+
+Private Sub mnBrightAwardsClient_Click()
+    Dim myRegim As String
+    myRegim = "awardsWebClient"
+    ExcelParamDialog.mainReportTitle = getEffectiveSetting(myRegim & ".title", "BRIGHT AWARS CATALOG 2010-2011")
+    ExcelParamDialog.kegl = getEffectiveSetting(myRegim & ".kegl", 8)
+    ExcelParamDialog.outputUE = getEffectiveSetting(myRegim & ".ue", True)
+    ExcelParamDialog.Regim = myRegim
+    ExcelParamDialog.withPrice = True
+    ExcelParamDialog.showRabbat = False
+    ExcelParamDialog.contact1 = "-"
+    ExcelParamDialog.contact2 = "-"
+    ExcelParamDialog.doProdCategory = False
+    'ExcelParamDialog.commonRabbat = getEffectiveSetting(myRegim & ".rabbat", 0)
+    
+    ExcelParamDialog.Show vbModal, Me
+    If Not ExcelParamDialog.exitCode = vbOK Then
+        Exit Sub
+    End If
+    BrightAwardsRestToExcel myRegim, , ExcelParamDialog.mainReportTitle, _
+        ExcelParamDialog.kegl, -1, 0
 End Sub
 
 Private Sub mnBrightAwardsPrice_Click()
@@ -1819,6 +1844,8 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
         priceRegim = "agency"
     ElseIf priceType = 1 Then ' dealer
         priceRegim = "dealer"
+    ElseIf priceType = 1 Then ' dealer
+        priceRegim = "dealer"
     Else
         priceRegim = "default"
     End If
@@ -1849,10 +1876,16 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
         .Columns(9).HorizontalAlignment = xlHAlignRight
 
         ' печать стандартной шапки
-        exRow = excelStdSchapka(objExel, RubRate, mainReportTitle, lastCol, "МАРКМАСТЕР" _
-            , IIf(ExcelParamDialog.priceType = 0, True, False) _
-            , ExcelParamDialog.contact1, ExcelParamDialog.contact2)
+        If Regim = "awardsWebClient" Then
+            exRow = excelSchapkaBAClient(objExel, RubRate, mainReportTitle, lastCol _
+                , IIf(ExcelParamDialog.priceType = 0, True, False))
+        Else
+        
+            exRow = excelStdSchapka(objExel, RubRate, mainReportTitle, lastCol, "МАРКМАСТЕР" _
+                , IIf(ExcelParamDialog.priceType = 0, True, False) _
+                , ExcelParamDialog.contact1, ExcelParamDialog.contact2)
     
+        End If
     
         ' если в Изделии нет вариативных изделий, то не печатать комплектацию,
         ' а только кол-во доступных, определяемых по наименьшему числу доступных
