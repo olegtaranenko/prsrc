@@ -1368,7 +1368,7 @@ Private Sub mnBrightAwards_Click()
     If Not ExcelParamDialog.exitCode = vbOK Then
         Exit Sub
     End If
-    BrightAwardsRestToExcel myRegim, , ExcelParamDialog.mainReportTitle, _
+    BrightAwardsRestToExcel myRegim, ExcelParamDialog.RubRate, ExcelParamDialog.mainReportTitle, _
         ExcelParamDialog.kegl, 0, ExcelParamDialog.commonRabbat
     
 End Sub
@@ -1391,7 +1391,7 @@ Private Sub mnBrightAwardsClient_Click()
     If Not ExcelParamDialog.exitCode = vbOK Then
         Exit Sub
     End If
-    BrightAwardsRestToExcel myRegim, , ExcelParamDialog.mainReportTitle, _
+    BrightAwardsRestToExcel myRegim, ExcelParamDialog.RubRate, ExcelParamDialog.mainReportTitle, _
         ExcelParamDialog.kegl, -1, 0
 End Sub
 
@@ -2024,14 +2024,15 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
         '    .HorizontalAlignment = xlHAlignLeft
         'End With
         '.Rows(exRow).Font.Italic = True
-    
-        exRow = exRow + 2
-        .Cells(exRow, 1).Value = "Цены на изделия каталога Bright Awards 2010-11, не указанные в данном прайс-листе - "
-        .Cells(exRow, 1).Font.Bold = True
-        
-        exRow = exRow + 1
-        .Cells(exRow, 1).Value = "см. прайс-лист на ""Материалы и комплектующие"""
-        .Cells(exRow, 1).Font.Bold = True
+        If Regim = "awardsWeb" Then
+            exRow = exRow + 2
+            .Cells(exRow, 1).Value = "Цены на изделия каталога Bright Awards 2010-11, не указанные в данном прайс-листе - "
+            .Cells(exRow, 1).Font.Bold = True
+            
+            exRow = exRow + 1
+            .Cells(exRow, 1).Value = "см. прайс-лист на ""Материалы и комплектующие"""
+            .Cells(exRow, 1).Font.Bold = True
+        End If
     
     End With
 EN1:
