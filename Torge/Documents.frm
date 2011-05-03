@@ -1742,11 +1742,8 @@ Private Sub mnToExcel_Click()
     If Not ExcelParamDialog.exitCode = vbOK Then
         Exit Sub
     End If
-    If ExcelParamDialog.outputUE Then
-        ostatToWeb , ExcelParamDialog.mainReportTitle, ExcelParamDialog.kegl
-    Else
-        ostatToWeb ExcelParamDialog.RubRate, ExcelParamDialog.mainReportTitle, ExcelParamDialog.kegl
-    End If
+    
+    ostatToWeb IIf(ExcelParamDialog.outputUE, 1, ExcelParamDialog.RubRate), ExcelParamDialog.mainReportTitle, ExcelParamDialog.kegl
 End Sub
 
 Private Sub mnToExcelWeb_Click()
@@ -1771,13 +1768,13 @@ Private Sub mnToExcelWeb_Click()
     ExcelParamDialog.Regim = myRegim
     ExcelParamDialog.contact1 = getEffectiveSetting(".contact1", DefaultContact1)
     ExcelParamDialog.contact2 = getEffectiveSetting(".contact2", DefaultContact2)
-    ExcelParamDialog.withPrice = False
+    ExcelParamDialog.withPrice = True
     
     ExcelParamDialog.Show vbModal, Me
     If Not ExcelParamDialog.exitCode = vbOK Then
         Exit Sub
     End If
-    ostatToWeb , ExcelParamDialog.mainReportTitle, ExcelParamDialog.kegl
+    ostatToWeb IIf(ExcelParamDialog.outputUE, 1, ExcelParamDialog.RubRate), ExcelParamDialog.mainReportTitle, ExcelParamDialog.kegl
 End Sub
 
 Private Sub mnVentureOrder_Click()
@@ -2210,8 +2207,19 @@ End Sub
 
 Private Sub ExcelKolonPrices(exRow As Long, exCol As Long, RubRate As Double, Optional RPF_Rate As Single = 1)
 
-    Dim cena2W As String
-    cena2W = Chr(160) & Format(RPF_Rate * tbProduct!CENA_W * RubRate, "0.00") ' выводим как текст, т.к. "3.00" все равностанет "3"
+
+Dim cena2W As String
+Dim RoundNum As Integer
+
+    If Round(RubRate - 1, 2) = 0 Then
+        ' для УЕ округляем до центов, ...
+        RoundNum = 2
+    Else
+        ' ... для рублей до 10-ков копеек
+        RoundNum = 1
+    End If
+    
+    cena2W = Chr(160) & Format(Round(RPF_Rate * tbProduct!CENA_W * RubRate, RoundNum), "0.00") ' выводим как текст, т.к. "3.00" все равностанет "3"
     objExel.ActiveSheet.Cells(exRow, exCol).Value = cena2W
     
     Dim kolonok As Integer, optBasePrice As Double, margin As Double, iKolon As Integer, manualOpt As Boolean
@@ -2228,10 +2236,10 @@ Private Sub ExcelKolonPrices(exRow As Long, exCol As Long, RubRate As Double, Op
     For iKolon = 2 To Abs(kolonok)
         If manualOpt Then
             objExel.ActiveSheet.Cells(exRow, exCol - 1 + iKolon).Value = _
-                Chr(160) & Format(RPF_Rate * tbProduct("CenaOpt" & CStr(iKolon)) * RubRate, "0.00")
+                Chr(160) & Format(Round(RPF_Rate * tbProduct("CenaOpt" & CStr(iKolon)) * RubRate, RoundNum), "0.00")
         Else
             objExel.ActiveSheet.Cells(exRow, exCol - 1 + iKolon).Value = _
-                Chr(160) & Format(RPF_Rate * RubRate * calcKolonValue(optBasePrice, margin, tbProduct!rabbat, Abs(kolonok), iKolon), "0.00")
+                Chr(160) & Format(Round(RPF_Rate * RubRate * calcKolonValue(optBasePrice, margin, tbProduct!rabbat, Abs(kolonok), iKolon), RoundNum), "0.00")
         End If
     Next iKolon
 
