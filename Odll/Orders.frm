@@ -1107,7 +1107,7 @@ If paid - ordered > 0.01 Then
   Exit Function
 End If
 
-If IsNumeric(zalog) And CInt(zalog) > 0 Then
+If IsNumeric(zalog) And CDbl(zalog) > 0 Then
     isConflict = True
     If msg <> "" Then MsgBox msg & " имеет не отданный залог.", , titl
   Exit Function
