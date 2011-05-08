@@ -1746,7 +1746,7 @@ Else                         '********************************
  End If
  orSqlWhere(orData) = strWhere & addNullDate
  
- If cbClose.Value = 0 Or Not tbEnable.Visible Then
+ If cbClose.Value = 0 Then 'Or Not tbEnable.Visible Then
     orSqlWhere(orStatus) = "(o.StatusId)<>6" 'закрыт
  Else
     orSqlWhere(orStatus) = ""

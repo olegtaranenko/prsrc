@@ -9,25 +9,27 @@ create view orderWallShip (
 	, type
 	, cena
 	, cost
-	, quant
 	, name
 	, ventureId
-	, statusid
 	, werkid
-	, edIzm
 ) as
 select 
-	  outdate
-	, numorder
-	, sum(distinct(type))
-	, sum(isnull(round(quant * cenaEd , 2), 0))
-	, sum(isnull(round(quant * costEd, 2), 0))
-	, firmname
-	, ventureid
+	  po.outdate
+	, po.numorder
+	, sum(distinct(po.type))
+	, sum(isnull(round(po.quant * po.cenaEd , 2), 0))
+	, sum(isnull(round(po.quant * po.costEd, 2), 0))
+	, po.firmname
+	, po.ventureid
+	, o.werkId
 from 
 	itemWallShip po
+join 	
+	orders o
+		on o.numorder = po.numorder
 group by 
-	  outdate
-	, numorder
-	, firmname
-	, ventureid
+	  po.outdate
+	, po.numorder
+	, po.firmname
+	, po.ventureid
+	, o.werkId

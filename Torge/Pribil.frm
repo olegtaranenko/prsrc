@@ -1009,7 +1009,7 @@ End Sub
 
 
 Private Sub cmManag_Click() 'кнопка "применить" из отчета "–еализаци€"
-Dim oborot As Single, dohod As Single, s2 As Single, s As Single
+Dim oborot As Single, dohod As Single, s2 As Single, S As Single
 Dim ventureMat() As Single, ventureRealiz() As Single
 Dim mainCosts() As Single, addCosts() As Single, turnCosts() As Single
 Dim mat As Single, realiz As Single
@@ -1050,7 +1050,7 @@ If Not tbProduct.BOF Then
     gProductId = tbProduct!prId
     prExt = tbProduct!prExt
     mat = getProductNomenkSum * tbProduct!quant
-    realiz = tbProduct!cenaEd * tbProduct!quant
+    realiz = tbProduct!cenaed * tbProduct!quant
     
     oborot = oborot + mat
     dohod = dohod + realiz
@@ -1082,7 +1082,7 @@ If tbNomenk Is Nothing Then GoTo EN1
 If Not tbNomenk.BOF Then
   While Not tbNomenk.EOF
     mat = tbNomenk!cost * tbNomenk!quant / tbNomenk!perList
-    realiz = tbNomenk!cenaEd * tbNomenk!quant
+    realiz = tbNomenk!cenaed * tbNomenk!quant
     
     oborot = oborot + mat
     dohod = dohod + realiz
@@ -1111,7 +1111,7 @@ sql = "SELECT Sum(u.quant) AS Sum_quant " _
     & " group by isnull(o.ventureid, 1)"
     
     
-Debug.Print sql
+'Debug.Print sql
 
 s2 = 0
 Set tbNomenk = myOpenRecordSet("##380", sql, dbOpenForwardOnly)
@@ -1143,7 +1143,7 @@ sql = "select sum(cenaed * quant) as bSum, sum(costEd * quant) as cSum, isnull(v
 
 'Debug.Print sql
 
-s = 0
+S = 0
 s2 = 0
 Set tbNomenk = myOpenRecordSet("##431", sql, dbOpenForwardOnly)
 If tbNomenk Is Nothing Then GoTo EN1
@@ -1151,7 +1151,7 @@ If Not tbNomenk.BOF Then
   While Not tbNomenk.EOF
     realiz = tbNomenk!bSum
     mat = tbNomenk!cSum
-    s = s + realiz
+    S = S + realiz
     s2 = s2 + mat
     oborot = oborot + mat
     ventureRealiz(tbNomenk!venture_Id - 1) = ventureRealiz(tbNomenk!venture_Id - 1) + realiz
@@ -1162,9 +1162,9 @@ If Not tbNomenk.BOF Then
 End If
 tbNomenk.Close
 
-laRealiz2.Caption = Format(s, "## ##0.00")
+laRealiz2.Caption = Format(S, "## ##0.00")
 laMaterials2.Caption = Format(Round(s2, 2), "## ##0.00")
-laClear2.Caption = Format(Round(s, 2) - Round(s2, 2), "## ##0.00")
+laClear2.Caption = Format(Round(S, 2) - Round(s2, 2), "## ##0.00")
 
 laRealiz.Caption = Format(Round(dohod, 2), "## ##0.00")
 laMaterials.Caption = Format(Round(oborot, 2), "## ##0.00")
@@ -1197,8 +1197,8 @@ sql = "SELECT Sum(sDMC.quant*n.cost/n.perList) AS sum " & _
 
 'Debug.Print sql
 
-If byErrSqlGetValues("##404", sql, s) Then
-    laOther.Caption = Format(s, "## ##0.00")
+If byErrSqlGetValues("##404", sql, S) Then
+    laOther.Caption = Format(S, "## ##0.00")
 End If
 
 ReDim mainCosts(2)
@@ -1349,7 +1349,7 @@ ReDim gr(0): I = 0: sum = 0
 While Not tbNomenk.EOF
     I = I + 1
     sum = sum + tbNomenk!sum
-    ReDim Preserve gr(I): gr(I) = tbNomenk!xgroup
+    ReDim Preserve gr(I): gr(I) = tbNomenk!xGroup
     tbNomenk.MoveNext
 Wend
 tbNomenk.Close
@@ -1368,7 +1368,7 @@ Set tbNomenk = myOpenRecordSet("##177", sql, dbOpenDynaset)
 If tbNomenk Is Nothing Then Exit Function
 While Not tbNomenk.EOF
     For J = 1 To UBound(gr) ' если группа состоит из одной ном-ры, то она
-        If gr(J) = tbNomenk!xgroup Then GoTo NXT ' Ќ≈вариантна, т.к. не
+        If gr(J) = tbNomenk!xGroup Then GoTo NXT ' Ќ≈вариантна, т.к. не
     Next J                                      ' не попала в xVariantNomenc
     I = I + 1
     sum = sum + tbNomenk!sum
