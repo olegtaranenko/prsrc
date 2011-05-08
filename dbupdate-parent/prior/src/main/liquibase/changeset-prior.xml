@@ -2955,6 +2955,12 @@ where firmguide.werkid not in (1,2 )
 		<rollback/>
 	</changeSet>
 
+	<changeSet id="3" author="mantis-271" runOnChange="true">
+		<comment>M271 Некоректные данные в отчете "Реализация" подчистить за собой</comment>
+		<sqlFile path="drop/wf_nomenk_saled.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<rollback/>
+	</changeSet>
+
 
 </databaseChangeLog>
 
