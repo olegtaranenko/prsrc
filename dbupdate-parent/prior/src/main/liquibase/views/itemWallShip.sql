@@ -16,6 +16,7 @@ create view itemWallShip (
 	, firmName
 	, ventureId
 	, statusid
+	, werkId
 )
 -- единым списком выводится суммы по затратам и реализации заказов, которые можно рассматривать как отгруженные
 -- по всем направлениям деятельности: производственные (изделия и отдельная ном-ра), услуги, продажи.
@@ -32,8 +33,9 @@ select
 	, po.quant
 	, io.costEd
 	, f.name
-	, o.ventureid
+	, isnull(o.ventureId, 3) as ventureId -- спихиваем все на аналитику
 	, o.statusid
+	, o.werkId 
 from 
 	xpredmetybyizdeliaout po
 join 
@@ -42,7 +44,7 @@ join
 		and p.prid      = po.prid 
 		and p.prext     = po.prext
 join 
-	orderProdShip io 
+	orderWareShip io 
 		on  io.outdate  = po.outdate 
 		and io.numorder = po.numorder 
 		and io.prid     = po.prid 
@@ -52,7 +54,7 @@ join
 		on o.numorder   = po.numorder 
 		and o.numorder  = p.numorder
 join 
-	guidefirms f 
+	FirmGuide f 
 		on f.firmid = o.firmid
 
 	union all 
@@ -67,24 +69,25 @@ select
 	, po.quant
 	, round(round(n.cost, 2) / n.perlist, 2) as costEd
 	, f.name
-	, o.ventureid
+	, isnull(o.ventureId, 3) as ventureId -- спихиваем все на аналитику
 	, o.statusid
+	, o.werkId
 from 
 	xpredmetybynomenkout po
 join 
-	xpredmetybynomenk p on 
-			p.numorder = po.numorder 
+	xpredmetybynomenk p 
+		on p.numorder = po.numorder 
 		and p.nomnom = po.nomnom
 join 
-	sguidenomenk n on 
-			n.nomnom = po.nomnom 
+	sguidenomenk n 
+		on n.nomnom = po.nomnom 
 		and n.nomnom = p.nomnom
 join 
 	orders o 
 		on o.numorder = po.numorder 
 		and o.numorder = p.numorder
 join 
-	guidefirms f 
+	FirmGuide f 
 		on f.firmid = o.firmid
 
 
@@ -98,15 +101,16 @@ select
 	, null
 	, 1.0
 	, u.quant
-	, null
+	, 0
 	, f.name
-	, o.ventureid
+	, isnull(o.ventureId, 3) as ventureId -- спихиваем все на аналитику
 	, o.statusid
+	, o.werkId
 from 
 	xuslugout u
 join 
 	orders o 
 		on o.numorder = u.numorder 
 join 
-	guidefirms f 
+	FirmGuide f 
 		on f.firmid = o.firmid

@@ -7,8 +7,8 @@ create view orderWallShip (
 	  outdate
 	, numorder
 	, type
-	, cena
-	, cost
+	, cenaTotal
+	, costTotal
 	, name
 	, ventureId
 	, werkid

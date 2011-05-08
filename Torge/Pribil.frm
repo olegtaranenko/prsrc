@@ -327,7 +327,7 @@ Begin VB.Form Pribil
          Top             =   120
          Width           =   1212
       End
-      Begin VB.Label laRealiz1 
+      Begin VB.Label laClearU 
          Alignment       =   1  'Right Justify
          BackStyle       =   0  'Transparent
          BorderStyle     =   1  'Fixed Single
@@ -337,7 +337,7 @@ Begin VB.Form Pribil
          Top             =   120
          Width           =   1200
       End
-      Begin VB.Label laUslug 
+      Begin VB.Label laRealizU 
          Alignment       =   1  'Right Justify
          BackStyle       =   0  'Transparent
          BorderStyle     =   1  'Fixed Single
@@ -630,7 +630,7 @@ Begin VB.Form Pribil
          Top             =   120
          Width           =   1215
       End
-      Begin VB.Label laProduct 
+      Begin VB.Label laRealizT 
          Alignment       =   1  'Right Justify
          BackStyle       =   0  'Transparent
          BorderStyle     =   1  'Fixed Single
@@ -919,7 +919,7 @@ End Sub
 Private Sub cmDetail1_Click()
     'Report.param1 = laRealiz1.Caption
     Set Report.Caller = Me
-    Report.param1 = laProduct.Caption
+    Report.param1 = laRealizT.Caption
     Report.param2 = laMaterials1.Caption
     
     If rbOrders.Value = True Then
@@ -940,7 +940,7 @@ End Sub
 
 
 Private Sub cmDetail3_Click()
-    Report.param1 = laUslug.Caption
+    Report.param1 = laRealizU.Caption
     If rbOrders.Value = True Then
         Report.Regim = "uslug"
     ElseIf rbStatistic.Value = True Then
@@ -956,8 +956,15 @@ Private Sub cmDetail3_Click()
 End Sub
 
 Private Sub cmDetailAN_Click()
-    Report.param2 = laAnMainCosts.Caption
-    Report.param1 = laAnAddCosts.Caption
+    If rbDetailMode.Value Then
+        Report.param1 = laAnAddCosts.Caption
+        Report.param2 = laAnMainCosts.Caption
+        Report.param3 = laAnturnCosts.Caption
+    Else
+        Report.param1 = laRealizAn.Caption
+        Report.param2 = laMaterialsAn.Caption
+        Report.param3 = cmDetailAN.Caption
+    End If
     setVentureRegim
     ventureId = 3
     Report.Sortable = True
@@ -966,8 +973,15 @@ Private Sub cmDetailAN_Click()
 End Sub
 
 Private Sub cmDetailMM_Click()
-    Report.param2 = laMmMainCosts.Caption
-    Report.param1 = laMmAddCosts.Caption
+    If rbDetailMode.Value Then
+        Report.param1 = laMmAddCosts.Caption
+        Report.param2 = laMmMainCosts.Caption
+        Report.param3 = laMmturnCosts.Caption
+    Else
+        Report.param1 = laRealizMM.Caption
+        Report.param2 = laMaterialsMM.Caption
+        Report.param3 = cmDetailMM.Caption
+    End If
     setVentureRegim
     ventureId = 2
     Report.Sortable = True
@@ -976,8 +990,16 @@ Private Sub cmDetailMM_Click()
 End Sub
 
 Private Sub cmDetailPM_Click()
-    Report.param2 = laPmMainCosts.Caption
-    Report.param1 = laPmAddCosts.Caption
+    If rbDetailMode.Value Then
+        Report.param1 = laPmAddCosts.Caption
+        Report.param2 = laPmMainCosts.Caption
+        Report.param3 = laPmturnCosts.Caption
+    Else
+        Report.param1 = laRealizPM.Caption
+        Report.param2 = laMaterialsPM.Caption
+        Report.param3 = cmDetailPM.Caption
+    End If
+    
     setVentureRegim
     ventureId = 1
     Report.Sortable = True
@@ -986,9 +1008,15 @@ Private Sub cmDetailPM_Click()
 End Sub
 
 Private Sub cmItogo_Click()
-    Report.param2 = laTotalMainCosts.Caption
-    Report.param1 = laTotalAddCosts.Caption
-    Report.param3 = laTotalturnCosts.Caption
+    If rbDetailMode.Value Then
+        Report.param1 = laTotalAddCosts.Caption
+        Report.param2 = laTotalMainCosts.Caption
+        Report.param3 = laTotalturnCosts.Caption
+    Else
+        Report.param1 = laRealiz.Caption
+        Report.param2 = laMaterials.Caption
+        Report.param3 = cmItogo.Caption
+    End If
     setVentureRegim
     ventureId = 0
     Report.Sortable = True
@@ -1011,6 +1039,7 @@ End Sub
 Private Sub cmManag_Click() 'кнопка "применить" из отчета "Реализация"
 Dim oborot As Single, dohod As Single, s2 As Single, S As Single
 Dim ventureMat() As Single, ventureRealiz() As Single
+Dim werkMat() As Single, werkRealiz() As Single
 Dim mainCosts() As Single, addCosts() As Single, turnCosts() As Single
 Dim mat As Single, realiz As Single
 Dim mainCostsTotal As Single, addCostsTotal As Single, turnCostsTotal As Single
@@ -1021,24 +1050,25 @@ Me.MousePointer = flexHourglass
 
 ReDim ventureMat(2)
 ReDim ventureRealiz(2)
+ReDim werkMat(1)
+ReDim werkRealiz(1)
 
 setStartEndDates tbStartDate, tbEndDate
 
 strWhere = getWhereByDateBoxes(Me, "outDate", begDateHron) ' между
 If strWhere = "error" Then GoTo EN1
+nDateWhere = strWhere
+
 If strWhere <> "" Then strWhere = " WHERE " & strWhere
 pDateWhere = strWhere
 
 'хронология по изделиям
-sql = "SELECT r.*, p.cenaEd" _
-    & ", isnull(o.ventureid, 1) as ventureid" _
-    & " FROM xPredmetyByIzdeliaOut r " _
-    & " JOIN xPredmetyByIzdelia p ON (p.prExt = r.prExt) AND (p.prId = r.prId) AND (p.numOrder = r.numOrder)" _
-    & " join orders o on r.numorder = o.numorder and p.numorder = o.numorder" _
+sql = "SELECT *" _
+    & " FROM itemWallShip " _
     & strWhere
 
 
-' Debug.Print sql
+'Debug.Print sql
 
 Set tbProduct = myOpenRecordSet("##306", sql, dbOpenForwardOnly)
 If tbProduct Is Nothing Then GoTo EN1
@@ -1047,55 +1077,27 @@ oborot = 0: dohod = 0:
 If Not tbProduct.BOF Then
  While Not tbProduct.EOF
     gNzak = tbProduct!Numorder
-    gProductId = tbProduct!prId
-    prExt = tbProduct!prExt
-    mat = getProductNomenkSum * tbProduct!quant
+    'gProductId = tbProduct!prId
+    'prExt = tbProduct!prExt
+    mat = tbProduct!costEd * tbProduct!quant
     realiz = tbProduct!cenaed * tbProduct!quant
     
     oborot = oborot + mat
     dohod = dohod + realiz
     ventureMat(tbProduct!ventureId - 1) = ventureMat(tbProduct!ventureId - 1) + mat
     ventureRealiz(tbProduct!ventureId - 1) = ventureRealiz(tbProduct!ventureId - 1) + realiz
+    werkMat(tbProduct!WerkId - 1) = werkMat(tbProduct!WerkId - 1) + mat
+    werkRealiz(tbProduct!WerkId - 1) = werkRealiz(tbProduct!WerkId - 1) + realiz
     
     tbProduct.MoveNext
  Wend
 End If
 tbProduct.Close
 
-'хронология по отд.номеклатурам
-strWhere = getWhereByDateBoxes(Me, "outDate", begDateHron) ' между
-nDateWhere = strWhere
-If strWhere <> "" Then strWhere = " WHERE " & strWhere
-
-sql = "SELECT r.quant, n.cost, n.perList, p.cenaEd " _
-    & " , isnull(o.ventureid, 1) as ventureid" _
-    & " FROM xPredmetyByNomenkOut r " _
-    & " JOIN xPredmetyByNomenk p ON p.nomNom = r.nomNom AND p.numOrder = r.numOrder" _
-    & " join orders o on r.numorder = o.numorder" _
-    & " JOIN sGuideNomenk n ON n.nomNom = r.nomNom " _
-    & strWhere & " and werkid = 2"
-
-'Debug.Print sql
-
-Set tbNomenk = myOpenRecordSet("##307", sql, dbOpenForwardOnly)
-If tbNomenk Is Nothing Then GoTo EN1
-If Not tbNomenk.BOF Then
-  While Not tbNomenk.EOF
-    mat = tbNomenk!cost * tbNomenk!quant / tbNomenk!perList
-    realiz = tbNomenk!cenaed * tbNomenk!quant
     
-    oborot = oborot + mat
-    dohod = dohod + realiz
-    ventureMat(tbNomenk!ventureId - 1) = ventureMat(tbNomenk!ventureId - 1) + mat
-    ventureRealiz(tbNomenk!ventureId - 1) = ventureRealiz(tbNomenk!ventureId - 1) + realiz
-    tbNomenk.MoveNext
-  Wend
-End If
-tbNomenk.Close
-    
-laProduct.Caption = Format(Round(dohod, 2), "## ##0.00")
-laMaterials1.Caption = Format(Round(oborot, 2), "## ##0.00")
-laClear1.Caption = Format(Round(dohod - oborot, 2), "## ##0.00")
+laRealizT.Caption = Format(Round(werkRealiz(1), 2), "## ##0.00")
+laMaterials1.Caption = Format(Round(werkMat(1), 2), "## ##0.00")
+laClear1.Caption = Format(Round(werkRealiz(1) - werkMat(1), 2), "## ##0.00")
 
 
 ' ------------------ услуги -------------------
@@ -1127,44 +1129,14 @@ If Not tbNomenk.BOF Then
 End If
 tbNomenk.Close
 
-laUslug.Caption = Format(Round(s2, 2), "## ##0.00")
-laRealiz1.Caption = laUslug.Caption
+laRealizU.Caption = Format(Round(s2, 2), "## ##0.00")
+laClearU.Caption = laRealizU.Caption
 
 
 
-' ------------------ Отгружено по заказам продаж -------------------
-strWhere = getWhereByDateBoxes(Me, "outDate", begDateHron) ' между
-bDateWhere = strWhere
-
-sql = "select sum(cenaed * quant) as bSum, sum(costEd * quant) as cSum, isnull(ventureid, 1) as venture_id" _
-    & " from itemWallShip " _
-    & " where type = 8 and " & strWhere _
-    & " group by venture_id "
-
-'Debug.Print sql
-
-S = 0
-s2 = 0
-Set tbNomenk = myOpenRecordSet("##431", sql, dbOpenForwardOnly)
-If tbNomenk Is Nothing Then GoTo EN1
-If Not tbNomenk.BOF Then
-  While Not tbNomenk.EOF
-    realiz = tbNomenk!bSum
-    mat = tbNomenk!cSum
-    S = S + realiz
-    s2 = s2 + mat
-    oborot = oborot + mat
-    ventureRealiz(tbNomenk!venture_Id - 1) = ventureRealiz(tbNomenk!venture_Id - 1) + realiz
-    ventureMat(tbNomenk!venture_Id - 1) = ventureMat(tbNomenk!venture_Id - 1) + mat
-    dohod = dohod + realiz
-    tbNomenk.MoveNext
-  Wend
-End If
-tbNomenk.Close
-
-laRealiz2.Caption = Format(S, "## ##0.00")
-laMaterials2.Caption = Format(Round(s2, 2), "## ##0.00")
-laClear2.Caption = Format(Round(S, 2) - Round(s2, 2), "## ##0.00")
+laRealiz2.Caption = Format(werkRealiz(0), "## ##0.00")
+laMaterials2.Caption = Format(Round(werkMat(0), 2), "## ##0.00")
+laClear2.Caption = Format(Round(werkRealiz(0), 2) - Round(werkMat(0), 2), "## ##0.00")
 
 laRealiz.Caption = Format(Round(dohod, 2), "## ##0.00")
 laMaterials.Caption = Format(Round(oborot, 2), "## ##0.00")

@@ -145,6 +145,9 @@ Dim quantity As Long
 Dim Cena()  As Single
 Dim isLoad As Boolean
 
+Const C_WERK_PRODUCTION = 2
+Const C_WERK_SALE = 1
+
 
 Const rrNumOrder = 1
 Const rrDate = 2
@@ -422,8 +425,8 @@ ElseIf Regim = "relizStatistic" Then 'отчет Реализация - заказы производства
     param1 & "(Реализация) по фирмам."
     relizDetail "statistic"
 ElseIf Regim = "relizNomenk" Then
-    laHeader.Caption = "Статистика по проданной номенклатуры " & param2
-    byNomenk "reliz"
+    laHeader.Caption = "Статистика по проданной номенклатуре " & param2
+    byNomenk C_WERK_PRODUCTION
 ElseIf Regim = "uslug" Then 'отчет Реализация - заказы производства
     laHeader.Caption = "Детализация суммы " & param1 & "(Услуги)" & _
     " по датам отгрузок заказов производства."
@@ -438,7 +441,7 @@ ElseIf Regim = "bay" Then 'отчет Реализация - заказы продаж
     relizDetailBay
 ElseIf Regim = "bayNomenk" Then
     laHeader.Caption = "Статистика по проданной номенклатуры " & param2
-    byNomenk "saled"
+    byNomenk C_WERK_SALE
 ElseIf Regim = "bayStatistic" Then 'отчет Реализация - заказы продаж
     laHeader.Caption = "Детализация сумм " & param2 & "(Материалы) и " & _
     param1 & "(Реализация) по фирмам."
@@ -449,7 +452,7 @@ ElseIf Regim = "mat" Then 'отчет Реализация - материалы не под заказы
     relizDetailMat
 ElseIf Regim = "venture" Then 'детализация и статистика по предприятиям
     laHeader.Caption = "Детализация сумм " & param2 & "(Материалы) и " & _
-    param1 & "(Реализация) по """ & Pribil.ventureId & """"
+    param1 & "(Реализация) по """ & param3 & """"
     ventureReport Pribil.ventureId
 ElseIf Regim = "ventureZatrat" Then 'статистика по предприятиям
     Sortable = False
@@ -481,7 +484,7 @@ Me.Caller.MousePointer = flexDefault
 isLoad = True
 End Sub
 
-Sub byNomenk(saled As String)
+Sub byNomenk(WerkId As Integer)
 Dim restrictDate As Variant
 Dim historyStart As Variant
 Dim groupklassid As Integer, headerRowIndex As Long
@@ -499,8 +502,9 @@ Dim groupQty As Single, groupSum As Single, groupSumRealiz As Single
     Grid.ColWidth(sbnSumma) = 1000
     'Grid.ColWidth() =
 
-    sql = "call wf_nomenk_" & saled & "(convert(datetime, " & startDate & "), convert(datetime, " & endDate & "))"
-    'Debug.Print sql
+    sql = "call wf_nomenk_reliz" & "(" & WerkId _
+        & ", convert(datetime, " & startDate & "), convert(datetime, " & endDate & "))"
+    Debug.Print sql
     
     Set tbOrders = myOpenRecordSet("##vnt_det", sql, dbOpenForwardOnly)
     If tbOrders Is Nothing Then Exit Sub
@@ -537,8 +541,8 @@ Dim groupQty As Single, groupSum As Single, groupSumRealiz As Single
                 Grid.TextMatrix(headerRowIndex, 8) = Format(groupSumRealiz, "## ##0.00")
             End If
             
-            Grid.AddItem Chr(9) & tbOrders!nomnom _
-                & Chr(9) & tbOrders!name _
+            Grid.AddItem Chr(9) & tbOrders!Nomnom _
+                & Chr(9) & tbOrders!Name _
             & Chr(9) & tbOrders!ed_Izmer2 _
             & Chr(9) & Format(tbOrders!quant, "## ##0.00") _
             & Chr(9) & Format(tbOrders!cost, "## ##0.00") _
@@ -616,7 +620,7 @@ Dim header As String
             Grid.TextMatrix(quantity, zdDate) = tbOrders!xDate
             Grid.TextMatrix(quantity, zdSumm) = Format(tbOrders!uesumm, "## ##0.00")
             Grid.TextMatrix(quantity, zdProvodka) = tbOrders!provodka
-            If Not IsNull(tbOrders!name) Then Grid.TextMatrix(quantity, zdAgent) = tbOrders!name
+            If Not IsNull(tbOrders!Name) Then Grid.TextMatrix(quantity, zdAgent) = tbOrders!Name
             If Not IsNull(tbOrders!nazn) Then Grid.TextMatrix(quantity, zdNazn) = tbOrders!nazn
             If Not IsNull(tbOrders!utochn) Then Grid.TextMatrix(quantity, zdUtochn) = tbOrders!utochn
             If ventureId = 0 Then
@@ -717,22 +721,29 @@ Dim whereToken As String
     Grid.ColWidth(rrMater) = 1005
     Grid.ColWidth(rrReliz) = 1005
     
-    whereToken = " where"
-    If ventureId <> 0 Then
-        whereVenture = " ventureid = " & ventureId
-    End If
+    whereToken = ""
     
     
     sql = "SELECT * from orderWallShip"
-    If whereVenture <> "" Then
-        sql = sql & whereToken & whereVenture
-        whereToken = " and "
+    
+    If ventureId <> 0 Then
+        whereToken = " ventureid = " & ventureId
     End If
     
     If Pribil.nDateWhere <> "" Then
-        sql = sql & whereToken & Pribil.nDateWhere
+        If Len(whereToken) > 0 Then
+            whereToken = whereToken & " and "
+        End If
+        whereToken = whereToken & Pribil.nDateWhere
     End If
+    If Len(whereToken) > 0 Then
+        sql = sql & " where " & whereToken
+    End If
+    
     sql = sql & " order by outdate"
+    
+'Debug.Print sql
+
     Set tbOrders = myOpenRecordSet("##vnt_det", sql, dbOpenForwardOnly)
     If tbOrders Is Nothing Then Exit Sub
     quantity = 0: sum = 0
@@ -741,7 +752,7 @@ Dim whereToken As String
             quantity = quantity + 1
             Grid.TextMatrix(quantity, rrNumOrder) = tbOrders!Numorder
             Grid.TextMatrix(quantity, rrDate) = Format(tbOrders!outDate, "dd/mm/yy hh:nn:ss")
-            Grid.TextMatrix(quantity, rrFirm) = tbOrders!firmName
+            Grid.TextMatrix(quantity, rrFirm) = tbOrders!Name
             'Grid.TextMatrix(quantity, rrProduct) = tbOrders!Text
             If tbOrders!Type = 1 Then
                 Grid.TextMatrix(quantity, 0) = "p"
@@ -815,8 +826,8 @@ Dim p_days_start As Integer, p_days_end As Integer
                 groupklassid = tbOrders!KlassId
             End If
             rowStr = tbOrders!ord _
-                & Chr(9) & tbOrders!nomnom _
-                & Chr(9) & tbOrders!name _
+                & Chr(9) & tbOrders!Nomnom _
+                & Chr(9) & tbOrders!Name _
                 & Chr(9) & tbOrders!ed_Izmer2 _
                 & Chr(9) & Format(tbOrders!quant, "## ##0.00") _
                 & Chr(9) & Format(tbOrders!sm, "## ##0.00") _
@@ -992,8 +1003,8 @@ If p_rowid = 1 Then
 
             
             rowStr = tbOrders!klassOrdered _
-                & Chr(9) & tbOrders!nomnom _
-                & Chr(9) & tbOrders!name _
+                & Chr(9) & tbOrders!Nomnom _
+                & Chr(9) & tbOrders!Name _
                 & Chr(9) & tbOrders!ed_Izmer2 _
                 & Chr(9) & Format(tbOrders!cost, "## ##0.00") _
                 & Chr(9) & Format(tbOrders!qty_fact, "## ##0.00") _
@@ -1014,7 +1025,7 @@ ElseIf p_rowid = 2 Then
 ElseIf p_rowid = 7 Then
             rowStr = tbOrders!Type _
                 & Chr(9) & tbOrders!Numorder _
-                & Chr(9) & Format(tbOrders!name, "## ##0.00") _
+                & Chr(9) & Format(tbOrders!Name, "## ##0.00") _
                 & Chr(9) & Format(tbOrders!debit, "## ##0.00") _
                 & Chr(9) & Format(tbOrders!kredit, "## ##0.00") _
 
@@ -1139,7 +1150,7 @@ If param1 = "n" Or param1 = "w" Then
   If tbNomenk Is Nothing Then Exit Sub
   While Not tbNomenk.EOF
     Grid.AddItem _
-          Chr(9) & tbNomenk!nomnom _
+          Chr(9) & tbNomenk!Nomnom _
         & Chr(9) & tbNomenk!cod & " " & tbNomenk!Nomname & " " & tbNomenk!Size _
         & Chr(9) & "<--Номенклатура" _
         & Chr(9) & tbNomenk!quant _
@@ -1179,13 +1190,13 @@ sql = "select po.outDate, o.numOrder, po.nomnom, r.intQuant AS cenaed, po.quant,
   
   While Not tbNomenk.EOF '!!!
     Grid.AddItem _
-        Chr(9) & tbNomenk!nomnom _
-        & Chr(9) & tbNomenk!name _
+        Chr(9) & tbNomenk!Nomnom _
+        & Chr(9) & tbNomenk!Name _
         & Chr(9) & "<--Номенклатура" _
         & Chr(9) & Format(tbNomenk!quant, "## ##0.00") _
         & Chr(9) & tbNomenk!ed_Izmer2 _
-        & Chr(9) & Format(tbNomenk!costed, "## ##0.00") _
-        & Chr(9) & Format(tbNomenk!quant * tbNomenk!costed, "## ##0.00") _
+        & Chr(9) & Format(tbNomenk!costEd, "## ##0.00") _
+        & Chr(9) & Format(tbNomenk!quant * tbNomenk!costEd, "## ##0.00") _
         & Chr(9) & Format(tbNomenk!quant * tbNomenk!cenaEd, "## ##0.00")
     tbNomenk.MoveNext
   Wend
@@ -1206,7 +1217,7 @@ If param1 = "m" Then
   If tbNomenk Is Nothing Then Exit Sub
   While Not tbNomenk.EOF '!!!
     Grid.AddItem _
-          Chr(9) & tbNomenk!nomnom _
+          Chr(9) & tbNomenk!Nomnom _
         & Chr(9) & tbNomenk!cod & " " & tbNomenk!Nomname & " " & tbNomenk!Size _
         & Chr(9) _
         & Chr(9) & Format(tbNomenk!quant / tbNomenk!perList, "## ##0.00") _
@@ -1228,7 +1239,7 @@ Dim J As Integer, leng As Integer
 leng = UBound(NN)
 
     For J = 1 To leng
-        If NN(J) = tbNomenk!nomnom Then
+        If NN(J) = tbNomenk!Nomnom Then
             QQ(J) = QQ(J) + pQuant * tbNomenk!quantity
             If eQuant > 0 Then _
                 QQ2(J) = QQ2(J) + eQuant * tbNomenk!quantity
@@ -1238,7 +1249,7 @@ leng = UBound(NN)
         End If
     Next J
     leng = leng + 1
-    ReDim Preserve NN(leng): NN(leng) = tbNomenk!nomnom
+    ReDim Preserve NN(leng): NN(leng) = tbNomenk!Nomnom
     ReDim Preserve Cena(leng): Cena(leng) = tbNomenk!cost
     ReDim Preserve QQ(leng): QQ(leng) = pQuant * tbNomenk!quantity
     ReDim Preserve QQ2(leng): QQ2(leng) = eQuant * tbNomenk!quantity
@@ -1277,7 +1288,7 @@ sql = "SELECT sGuideNomenk.nomNom, sGuideNomenk.cost, sGuideNomenk.perList, " & 
 Set tbNomenk = myOpenRecordSet("##385", sql, dbOpenDynaset)
 If tbNomenk Is Nothing Then Exit Function
 While Not tbNomenk.EOF
-  Dim str As String: str = tbNomenk!nomnom
+  Dim str As String: str = tbNomenk!Nomnom
   nomenkToNNQQ 0, 0, tbNomenk!cost / tbNomenk!perList '!!!
   tbNomenk.MoveNext
 Wend
@@ -1311,7 +1322,7 @@ ReDim gr(0): I = 0
 While Not tbNomenk.EOF
     nomenkToNNQQ pQuant, eQuant, eQuant * tbNomenk!cost / tbNomenk!perList '!!!
     I = I + 1
-    ReDim Preserve gr(I): gr(I) = tbNomenk!xgroup
+    ReDim Preserve gr(I): gr(I) = tbNomenk!xGroup
     tbNomenk.MoveNext
 Wend
 tbNomenk.Close
@@ -1328,7 +1339,7 @@ Set tbNomenk = myOpenRecordSet("##177", sql, dbOpenDynaset)
 If tbNomenk Is Nothing Then Exit Function
 While Not tbNomenk.EOF
     For I = 1 To UBound(gr) ' если группа состоит из одной ном-ры, то она
-        If gr(I) = tbNomenk!xgroup Then GoTo NXT ' НЕвариантна, т.к. не
+        If gr(I) = tbNomenk!xGroup Then GoTo NXT ' НЕвариантна, т.к. не
     Next I                                      ' не попала в xVariantNomenc
     nomenkToNNQQ pQuant, eQuant, eQuant * tbNomenk!cost / tbNomenk!perList '!!!
 NXT: tbNomenk.MoveNext
@@ -1378,28 +1389,26 @@ End Sub
 
 Sub relizDetailBay(Optional statistic As String = "")
 
-strWhere = Pribil.bDateWhere
+strWhere = Pribil.nDateWhere
 
 
 If statistic = "" Then
-    sql = "select d.numorder, d.outdate as xdate, f.name as name, d.costTotal, d.cenaTotal" _
+    sql = "select d.numorder, d.outdate as xdate, d.name as name, d.costTotal, d.cenaTotal" _
         & " from orderWallShip d" _
-        & " join bayorders o on o.numorder = d.numorder" _
-        & " join bayguidefirms f on o.firmid = f.firmid" _
-        & " WHERE d.type = 8 and " _
+        & " WHERE d.werkId = 1 and " _
         & strWhere _
-        & " ORDER BY o.numOrder, outDate"
+        & " ORDER BY numOrder, outDate"
 Else
-    sql = "select count(*) as numOrder, f.name as name, sum(d.costTotal) as costTotal, sum(d.cenaTotal) as cenaTotal" _
+    sql = "select count(*) as numOrder, d.name as name," _
+        & " sum(d.costTotal) as costTotal, sum(d.cenaTotal) as cenaTotal" _
         & " from orderWallShip d" _
-        & " join bayorders o on o.numorder = d.numorder" _
-        & " join bayguidefirms f on o.firmid = f.firmid" _
-        & " WHERE d.type = 8 and " _
+        & " WHERE d.werkId = 1 and " _
         & strWhere _
-        & " group BY f.Name order by cenaTotal desc"
+        & " group BY d.Name" _
+        & " order by cenaTotal desc"
 End If
 
-Debug.Print sql
+'Debug.Print sql
 Set tbProduct = myOpenRecordSet("##433", sql, dbOpenForwardOnly)
 If tbProduct Is Nothing Then Exit Sub
 If statistic = "" Then
@@ -1422,7 +1431,7 @@ While Not tbProduct.EOF
   Grid.AddItem _
     Chr(9) & tbProduct!Numorder _
     & Chr(9) _
-    & Chr(9) & tbProduct!name _
+    & Chr(9) & tbProduct!Name _
     & Chr(9) _
     & Chr(9) & Format(tbProduct!costTotal, "## ##0.00") _
     & Chr(9) & Format(tbProduct!CenaTotal, "## ##0.00") _
@@ -1478,7 +1487,7 @@ Grid.ColWidth(rrMater) = 0 '1005
 quantity = 0: prevName = "$$$$#####@@@@"
 While Not tbProduct.EOF
   gNzak = tbProduct!Numorder
-  If statistic = "" Or tbProduct!name <> prevName Then
+  If statistic = "" Or tbProduct!Name <> prevName Then
   'If 1 = 1 Then
     quantity = quantity + 1
     If statistic = "" Then
@@ -1487,7 +1496,7 @@ While Not tbProduct.EOF
         Grid.TextMatrix(quantity, rrNumOrder) = 1
     End If
     Grid.TextMatrix(quantity, rrDate) = Format(tbProduct!outDate, "dd/mm/yy hh:nn:ss")
-    Grid.TextMatrix(quantity, rrFirm) = tbProduct!name
+    Grid.TextMatrix(quantity, rrFirm) = tbProduct!Name
     Grid.TextMatrix(quantity, rrProduct) = tbProduct!Product
     cSum = tbProduct!cenaEd * tbProduct!quant
     Grid.TextMatrix(quantity, rrReliz) = Format(cSum, "0.00")
@@ -1498,7 +1507,7 @@ While Not tbProduct.EOF
     cSum = cSum + tbProduct!cenaEd * tbProduct!quant
     Grid.TextMatrix(quantity, rrReliz) = Format(cSum, "0.00") ' сумма цен вход.номенклатур в пересчете на целые
   End If
-  prevName = tbProduct!name
+  prevName = tbProduct!Name
   prevNom = gNzak
   tbProduct.MoveNext
 Wend
@@ -1575,7 +1584,7 @@ AA:     r = tbProduct!cenaEd * tbProduct!quant
   If statistic = "" Then
       bilo = (prevNom <> gNzak Or prevDate <> tbProduct!outDate)
   Else
-      bilo = (prevName <> tbProduct!name)
+      bilo = (prevName <> tbProduct!Name)
   End If
 '  bilo = True
   If bilo Or quantity = 0 Then
@@ -1587,7 +1596,7 @@ AA:     r = tbProduct!cenaEd * tbProduct!quant
         Grid.TextMatrix(quantity, rrNumOrder) = 1 'кол-во заказов
     End If
     Grid.TextMatrix(quantity, rrDate) = Format(tbProduct!outDate, "dd/mm/yy hh:nn:ss")
-    Grid.TextMatrix(quantity, rrFirm) = tbProduct!name
+    Grid.TextMatrix(quantity, rrFirm) = tbProduct!Name
     Grid.TextMatrix(quantity, rrProduct) = tbProduct!Product
     Grid.AddItem ""
     prevReliz = r
@@ -1604,7 +1613,7 @@ AA:     r = tbProduct!cenaEd * tbProduct!quant
   Grid.TextMatrix(quantity, rrReliz) = Format(prevReliz, "0.00")
   Grid.TextMatrix(quantity, rrMater) = Format(prevMater, "0.00")
   prevNom = gNzak: prevDate = tbProduct!outDate
-  prevName = tbProduct!name
+  prevName = tbProduct!Name
   tbProduct.MoveNext
 Wend
 tbProduct.Close
@@ -2005,7 +2014,7 @@ Grid.CellBackColor = Grid.BackColor
 End Sub
 
 
-Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then
         MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
 Else
