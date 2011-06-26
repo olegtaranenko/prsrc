@@ -2961,6 +2961,20 @@ where firmguide.werkid not in (1,2 )
 		<rollback/>
 	</changeSet>
 
+	<changeSet id="1" author="mantis-273" runOnChange="true">
+		<comment>Восстановить фирму APR</comment>
+		<loadData tableName="FirmGuide" file="data/FirmGuide.csv"/>
+
+	</changeSet>
+	<changeSet id="2" author="mantis-273" runOnChange="false">
+		<comment>Восстановить фирму APR</comment>
+		<sql splitStatements="false" stripComments="false"><![CDATA[
+update orders set firmid = 2045 where numorder = 4012811
+		]]></sql>
+		<sql splitStatements="false" stripComments="false"><![CDATA[
+update firmguide set year01 = 1 where firmid = 4728
+		]]></sql>
+	</changeSet>
 
 </databaseChangeLog>
 
