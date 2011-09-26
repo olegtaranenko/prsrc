@@ -2060,7 +2060,7 @@ Dim lastCol As String, lastColInt As Integer
 Dim minusQuant   As Integer
 minusQuant = 0
 
-    'On Error GoTo ERR2
+    On Error GoTo ERR2
     Set objExel = New Excel.Application
     objExel.Visible = True
     objExel.SheetsInNewWorkbook = 1
@@ -2157,7 +2157,11 @@ With objExel.ActiveSheet
         .Cells(exRow, 2).value = tbProduct!Nomname
         .Cells(exRow, 3).value = tbProduct!Size
         .Cells(exRow, 4).value = str
-        tmpSng = Round(tbProduct!qty_dost - 0.499)
+        If Not IsNull(tbProduct!qty_dost) Then
+            tmpSng = Round(tbProduct!qty_dost - 0.499)
+        Else
+            tmpSng = 0
+        End If
         If tmpSng < -0.01 Then
             minusQuant = minusQuant + 1
         End If

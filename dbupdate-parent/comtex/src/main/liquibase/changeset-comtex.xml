@@ -727,5 +727,21 @@ truncate table KLADR_KLADR;
 		]]></sql>
 	</changeSet>
 
+    <changeSet id="1" author="20 Sep 2011">
+    	<comment>После какого-то апдейта комтеха перестали удаляться пустые каталоги из справочника sGuideSeries.
+    	В foreign constraint-х не было разрешено каскадное удаление</comment>
+        <dropForeignKeyConstraint baseTableName="mat" constraintName="mat_id_inv"/>
+        <dropForeignKeyConstraint baseTableName="scet" constraintName="fk_scet_inv"/>
+
+        <addForeignKeyConstraint constraintName="mat_id_inv"
+            baseTableName="mat" baseColumnNames="id_inv"
+            referencedTableName="inv" referencedColumnNames="id" onDelete="CASCADE" onUpdate="CASCADE"
+        />
+        <addForeignKeyConstraint constraintName="fk_scet_inv"
+            baseTableName="scet" baseColumnNames="id_inv"
+            referencedTableName="inv" referencedColumnNames="id" onDelete="CASCADE" onUpdate="CASCADE"
+        />
+    </changeSet>
+
 </databaseChangeLog>
 

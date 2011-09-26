@@ -23,5 +23,21 @@
         />
     </changeSet>
 
+    <changeSet id="2" author="ddl-comtex.sql">
+    	<comment>После какого-то апдейта комтеха перестали удаляться пустые каталоги из справочника sGuideSeries.
+    	В foreign constraint-х не было разрешено каскадное удаление</comment>
+        <dropForeignKey baseTableName="mat" constraintName="mat_id_inv"/>
+        <dropForeignKey baseTableName="scet" constraintName="fk_scet_inv"/>
+
+        <addForeignKeyConstraint constraintName="mat_id_inv"
+            baseTableName="mat" baseColumnNames="id_inv"
+            referencedTableName="inv" referencedColumnNames="id" onDelete="CASCADE" onUpdate="CASCADE"
+        />
+        <addForeignKeyConstraint constraintName="fk_scet_inv"
+            baseTableName="scet" baseColumnNames="id_inv"
+            referencedTableName="inv" referencedColumnNames="id" onDelete="CASCADE" onUpdate="CASCADE"
+        />
+    </changeSet>
+
 
 </databaseChangeLog>
