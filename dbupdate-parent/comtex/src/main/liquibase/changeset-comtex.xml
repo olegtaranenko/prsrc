@@ -726,7 +726,7 @@ truncate table KLADR_STREET;
 truncate table KLADR_KLADR;
 		]]></sql>
 	</changeSet>
-
+<!--
     <changeSet id="1" author="20 Sep 2011">
     	<comment>После какого-то апдейта комтеха перестали удаляться пустые каталоги из справочника sGuideSeries.
     	В foreign constraint-х не было разрешено каскадное удаление</comment>
@@ -742,6 +742,6 @@ truncate table KLADR_KLADR;
             referencedTableName="inv" referencedColumnNames="id" onDelete="CASCADE" onUpdate="CASCADE"
         />
     </changeSet>
-
+-->
 </databaseChangeLog>
 
