@@ -129,14 +129,14 @@ Dim rownum As Integer
 
     sql = "call n_exec_filter( " & filterId & ", " & byRowId & ", " & byColumnId & ")"
 '    Debug.Print sql
-    Set table = myOpenRecordSet("##Results.1", sql, dbOpenDynaset)
-    If table Is Nothing Then
-        table.Close
+    Set Table = myOpenRecordSet("##Results.1", sql, dbOpenDynaset)
+    If Table Is Nothing Then
+        Table.Close
         MsgBox "Ошибка при загрузки данных из базы", vbCritical
         Exit Sub
     End If
-    If table.BOF Then
-        table.Close
+    If Table.BOF Then
+        Table.Close
         MsgBox "Отчет не содержит данных", vbExclamation
         Exit Sub
     End If
@@ -144,26 +144,26 @@ Dim rownum As Integer
     clearGrid Me.Grid
     Me.Grid.FormatString = "|Номер зак.|Дата зак.|>Заказано|>Оплачено|>К-во.мат.|>Сумма мат."
     rownum = 1
-    table.MoveFirst
+    Table.MoveFirst
     Dim I As Integer ' номер столбца
-    While Not table.EOF
+    While Not Table.EOF
         
         I = 1
         If rownum > 1 Then
             Grid.AddItem ""
         End If
-        Grid.TextMatrix(rownum, I) = table!Numorder: I = I + 1
-        Grid.TextMatrix(rownum, I) = table!inDate: I = I + 1
-        Grid.TextMatrix(rownum, I) = Format(table!orderOrdered, "# ###.00"): I = I + 1
-        Grid.TextMatrix(rownum, I) = Format(table!orderPaid, "# ###.00"): I = I + 1
-        Grid.TextMatrix(rownum, I) = Format(table!materialQty, "# ###.00"): I = I + 1
-        Grid.TextMatrix(rownum, I) = Format(table!materialSaled, "# ###.00"): I = I + 1
+        Grid.TextMatrix(rownum, I) = Table!Numorder: I = I + 1
+        Grid.TextMatrix(rownum, I) = Table!inDate: I = I + 1
+        Grid.TextMatrix(rownum, I) = Format(Table!orderOrdered, "# ###.00"): I = I + 1
+        Grid.TextMatrix(rownum, I) = Format(Table!orderPaid, "# ###.00"): I = I + 1
+        Grid.TextMatrix(rownum, I) = Format(Table!materialQty, "# ###.00"): I = I + 1
+        Grid.TextMatrix(rownum, I) = Format(Table!materialSaled, "# ###.00"): I = I + 1
         
-        table.MoveNext
+        Table.MoveNext
         rownum = rownum + 1
         
     Wend
-    table.Close
+    Table.Close
 
 End Sub
 
@@ -208,7 +208,7 @@ Private Sub Grid_LeaveCell()
     Grid.CellBackColor = Grid.BackColor
 End Sub
 
-Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
     If Grid.MouseRow = 0 And Shift = vbKeyShift Then
         MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
     End If
