@@ -325,12 +325,19 @@ End Sub
 Private Sub Grid_DblClick()
 Dim columnNo As Long, periodNo As Long
 Dim FirmId As Long, periodId As Integer
+Dim cellContent As String
+
     'Dim PreHeaderCount As Integer, PostHeaderCount As Integer, multiplyCols As Integer
     If Grid.CellBackColor = vbYellow Then Exit Sub
 
     columnNo = Grid.col
     Portrait.filterId = filterId
-    FirmId = CInt(Grid.TextMatrix(Grid.row, 0))
+    cellContent = Grid.TextMatrix(Grid.row, 0)
+    If Not IsNumeric(cellContent) Then
+        Exit Sub
+    End If
+    
+    FirmId = CInt(cellContent)
     If columnNo = 1 Then
         ' название фирмы (главного атрибута, по которому происходит группировка
         '

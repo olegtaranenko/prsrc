@@ -3006,6 +3006,14 @@ update firmguide set year01 = 1 where firmid = 4728
 
 	</changeSet>
 
+	<changeSet id="2" author="mantis-275" runOnChange="true">
+		<comment>Временно отключить отчет (чтобы вернуть - value=bay)</comment>
+		<update tableName="nAnalys">
+			<column name="application" value="null"/>
+			<where>id = 6</where>
+		</update>
+
+	</changeSet>
 
 	
 
