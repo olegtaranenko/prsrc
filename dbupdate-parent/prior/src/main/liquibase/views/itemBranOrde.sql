@@ -8,6 +8,9 @@ create view itemBranOrde (numorder, nomnom, quant, cenaEd, prid, prext, quantEd)
 -- Изделия (включая вариантные) разбираются на составные номенклатуры.
 -- quantEd - количество вхождений составной номенклатуры в одно изделие
 -- в производственных единицах!
+
+
+
 as 
 select numorder, nomnom, round(fn.quantity * io.quant, 5), null, io.prid, io.prext, fn.quantity
 from xPredmetyByIzdelia io 

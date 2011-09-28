@@ -70,7 +70,7 @@ begin
 	if v_parent_token is not null then
 		set v_proc_token = v_parent_token;
 		set v_sub_token = v_column_token;
-	else 		
+	else
 		set v_proc_token = v_column_token;
 		set v_sub_token = null;
 	end if;

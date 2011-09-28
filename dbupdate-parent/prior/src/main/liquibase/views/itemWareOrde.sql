@@ -2,7 +2,15 @@ if exists (select 1 from sysviews where viewname = 'itemWareOrde' and vcreator =
 	drop view itemWareOrde;
 end if;
 
+
+
+
 create view itemWareOrde (numorder, nomnom, quant, cenaEd, prid, prext, quantEd)
+
+
+
+
+
 as 
 select numorder, nomnom, round(fn.quantity * io.quant, 5), null, io.prid, io.prext, fn.quantity
 from xpredmetybyizdelia io 

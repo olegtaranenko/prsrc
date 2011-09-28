@@ -2966,6 +2966,7 @@ where firmguide.werkid not in (1,2 )
 		<loadData tableName="FirmGuide" file="data/FirmGuide.csv"/>
 
 	</changeSet>
+
 	<changeSet id="2" author="mantis-273" runOnChange="false">
 		<comment>Восстановить фирму APR</comment>
 		<sql splitStatements="false" stripComments="false"><![CDATA[
@@ -2975,6 +2976,38 @@ update orders set firmid = 2045 where numorder = 4012811
 update firmguide set year01 = 1 where firmid = 4728
 		]]></sql>
 	</changeSet>
+
+	<changeSet id="1" author="mantis-275" runOnChange="true">
+		<comment>Поменять порядок столбцов отчета фирмы/период</comment>
+		<update tableName="nResultColumnDef">
+			<column name="format" value="# ###"/>
+			<where>id = 20</where>
+		</update>
+
+		<update tableName="nResultColumns">
+			<column name="sort" value="600"/>
+			<where>id = 6</where>
+		</update>
+
+		<update tableName="nResultColumns">
+			<column name="sort" value="550"/>
+			<where>id = 7</where>
+		</update>
+
+		<update tableName="nResultColumns">
+			<column name="sort" value="700"/>
+			<where>id = 37</where>
+		</update>
+
+		<update tableName="nResultColumns">
+			<column name="sort" value="800"/>
+			<where>id = 9</where>
+		</update>
+
+	</changeSet>
+
+
+	
 
 </databaseChangeLog>
 

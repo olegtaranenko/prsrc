@@ -2,7 +2,7 @@ if exists (select 1 from sysviews where viewname = 'itemBranRequ' and vcreator =
 	drop view itemBranRequ;
 end if;
 
-
+/*
 create view itemBranRequ (
 	  numorder
 	, nomnom
@@ -23,3 +23,14 @@ from sDmcRez r
 join Orders o on r.numdoc = o.numorder
 join sGuideNomenk n on r.nomnom = n.nomnom
 where r.curQuant > 0;
+
+
+ALTER VIEW "DBA"."itemBranRequ" (numorder, nomnom, quant, scope, statusid)
+as 
+select r.numorder, r.nomnom, r.quant, 'p', r.statusid
+from itemProdRequ r
+		union all
+select r.numorder, r.nomnom, r.quant, 'p', r.statusid
+from itemSellRequ r
+
+*/
