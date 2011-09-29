@@ -9,22 +9,23 @@ CREATE procedure n_internal_klasses (
 	, p_table_name    varchar(64)
 	, p_firmId        integer
 	, p_klassId       integer
+	, do_calc         integer
 )
 begin
-	declare v_region_flag integer;
+	declare v_region_flag    integer;
 	declare v_bayStatus_flag integer;
 	declare v_tool_flag      integer;
-	declare v_sql long varchar;
+	declare v_sql            long varchar;
 
 	declare v_ord_table varchar(64);
-	declare p_id_name varchar(64);       
+	declare p_id_name   varchar(64);       
 	declare p_parent_id_name varchar(64);
-	declare p_order_by_name varchar(256);
+	declare p_order_by_name  varchar(256);
 
 	declare v_cnt integer;
 
 	declare v_material_flag integer;
-	declare v_firmId           integer;
+	declare v_firmId        integer;
 
 
 	if isnull(p_klassId, 0) != 0 then
@@ -57,46 +58,42 @@ begin
 		set v_firmId = null;
 	end if;
 
---	message 'v_region_flag = ', v_region_flag to client;
---	message 'v_material_flag = ', v_material_flag to client;
---	message 'v_firmId = ', v_firmId to client;
---	message 'p_klassId = ', p_klassId to client;
---	message 'p_end = ', p_end to client;
+	message 'v_region_flag = ', v_region_flag to client;
+	message 'v_material_flag = ', v_material_flag to client;
+	message 'v_firmId = ', v_firmId to client;
+	message 'p_klassId = ', p_klassId to client;
 
---	message 'p_begin = ', p_begin to client;
---	message 'p_end = ', p_end to client;
+	message 'p_begin = ', p_begin to client;
+	message 'p_end = ', p_end to client;
 
-	insert into #sale_item (
-		 numorder
-		,nomnom
-		,materialQty
-		,sm
-		,inDate
-		,firmId      
-		,klassid
+	create table #orders(
+		  numorder   integer primary key
+		, orderPaid       float	null
+		, orderOrdered    float null
+		, indate     date
+		, periodid   integer	null
+		, firmId     integer
+	);
+
+	insert into #orders (
+		numorder, 
+		indate, 
+		firmId, 
+		orderPaid, 
+		orderOrdered
 	)
-	select
-		  o.numorder as numorder
-		, i.nomnom
-		, i.quant / n.perlist as materialQty
-		, (i.quant / n.perlist) * i.cenaEd as sm
-		, o.inDate
-		, o.firmId
-		, n.klassid
-	from itemSellOrde i
-	join bayorders o on o.numorder = i.numorder 
-	join sguidenomenk n on i.nomnom = n.nomnom
-	join bayGuideFirms f on o.firmId = f.firmId and isnull(v_firmId, f.firmId) = f.firmId
+	select 
+		o.numorder, 
+		o.indate, 
+		o.firmId, 
+		o.paid, 
+		o.ordered
+	from 
+		bayorders o
 	where 
-			(p_begin is null or o.indate >= p_begin) and (p_end is null or o.inDate < p_end)
-		and (v_material_flag = 0 or exists (select 1 from #materials m where n.klassid = m.klassid))
-		and (v_region_flag = 0 
-			or exists (
-				select 1 
-				from #regions r 
-				where r.regionid = f.regionId
-			)
-		)
+			o.indate >= isnull(p_begin, o.inDate) and (p_end is null or o.inDate < p_end)
+		and (v_region_flag = 0 or exists (select 1 from #regions r, bayguidefirms f where f.firmid = o.firmid and r.regionid = f.regionid))
+		and (isnull(v_firmId, o.firmId) = o.firmId)
 		and (v_tool_flag = 0 
 			or (v_tool_flag = -1 and not exists (
 				select 1  
@@ -129,11 +126,39 @@ begin
 			)
 		)
 	;
+
+	if v_material_flag = 0 then
+
+		truncate table #materials;
+
+		insert into #materials (
+			klassId
+		)
+		select
+			k.klassId	
+		from 
+			sGuideKlass k 
+		where 
+			isnull(k.klassName, '') != '';
+	end if;		
+
+	call n_sell_item_cost(p_begin, p_end, do_calc);
 --	message 'count of #sale_item = ', @@rowcount to client;
 
-	delete from #materials where not exists (select 1 from #sale_item i where i.klassId = #materials.klassId);
+	delete from #materials 
+	where 
+		not exists 
+		(
+			select 
+				1 
+			from 
+				#sale_item i 
+			where 
+				i.klassId = #materials.klassId
+		)
+	;
 
-	select count(*) into v_cnt from #materials;
+--	select count(*) into v_cnt from #materials;
 --	message 'count(*) from #materials = ', v_cnt to client;
 
 	set p_id_name = 'klassId';
@@ -144,25 +169,20 @@ begin
 
 	call wf_sort_klassificator(p_table_name, p_id_name, p_parent_id_name, p_order_by_name);
 
-	if v_material_flag = 0 then
-		insert into #periods (klassId, label)
-		select k.klassId as r_klassId, k.klassName as r_klassName
-		from sGuideKlass k 
-		join #sGuideKlass_ord o on o.id = k.klassId
-		where isnull(k.klassName, '') != ''
-		order by o.ord, k.klassName;
-	else
-		insert into #periods (klassId, label)
-		select k.klassId as r_klassId, k.klassName as r_klassName
-		from sGuideKlass k 
-		join #sGuideKlass_ord o on o.id = k.klassId
-		join #materials m on m.klassId = k.klassId
-		where isnull(k.klassName, '') != ''
-		order by o.ord, k.klassName;
-	end if;		
-
+	insert into #periods (klassId, label)
+	select 
+		k.klassId as r_klassId
+		,k.klassName as r_klassName
+	from 
+		sGuideKlass k 
+	join 
+		#materials m on m.klassId = k.klassId
+	join 
+		#sGuideKlass_ord o on o.id = k.klassId
+	where 
+		isnull(k.klassName, '') != ''
+	order by 
+		o.ord, k.klassName;
 
 
 end;
-
-

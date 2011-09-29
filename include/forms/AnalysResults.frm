@@ -447,8 +447,8 @@ Dim periodIndex As Integer
     
     If checkResult <> "ok" Then
         MsgBox "При проверке фильтра возника ошибка: " _
-        & " '" & checkResult & "'." _
-        & vbCr & "Исправьте и попробуйте снова." _
+        & vbCr & " '" & checkResult & "'." _
+        & vbCr & vbCr & "Исправьте и попробуйте снова." _
         , vbExclamation, "Ошибка"
         
         GoTo cleanup

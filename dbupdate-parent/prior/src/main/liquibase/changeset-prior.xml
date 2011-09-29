@@ -725,6 +725,13 @@ end;
 		</update>
 	</changeSet>
 
+	<changeSet id="3" author="mantis-275" runOnChange="true">
+		<comment>Высчет себестоимости номенклатуры, входящей в изделия - отдельная процедура</comment>
+		<sqlFile path="procedures/n_sell_item_cost.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<rollback/>
+
+	</changeSet>
+
 	<changeSet id="2" author="mantis-72" runOnChange="true">
 		<comment>Исправить оснвную процедуру отчета Анализ продаж по фирмы/года-месяцы-...</comment>
 		<sqlFile path="procedures/n_list_firm_by_periods.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
@@ -2504,8 +2511,8 @@ where
 		<comment>Исправления, связанные с новым оборудованием и статусом покупателей</comment>
 		<sqlFile path="procedures/n_exec_header.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 		<sqlFile path="procedures/n_exec_filter.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
-		<sqlFile path="procedures/n_list_firm_by_klasses.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 		<sqlFile path="procedures/n_internal_klasses.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<sqlFile path="procedures/n_list_firm_by_klasses.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 	</changeSet>
 
 	<changeSet id="19" author="mantis-175" runOnChange="false">
@@ -3009,13 +3016,31 @@ update firmguide set year01 = 1 where firmid = 4728
 	<changeSet id="2" author="mantis-275" runOnChange="true">
 		<comment>Временно отключить отчет (чтобы вернуть - value=bay)</comment>
 		<update tableName="nAnalys">
-			<column name="application" value="null"/>
+			<column name="application" value="bay"/>
 			<where>id = 6</where>
 		</update>
-
 	</changeSet>
 
-	
+	<changeSet id="4" author="mantis-275" runOnChange="true">
+		<comment>Высчет себестоимости номенклатуры, входящей в изделия - отдельная процедура</comment>
+		<sqlFile path="procedures/n_check_filter.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="5" author="mantis-275" runOnChange="true">
+		<comment>Переделка отчета фирмы/материалы</comment>
+		<sqlFile path="procedures/n_fill_klasses.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="6" author="mantis-275" runOnChange="true">
+		<comment>исправить заголовок колонки</comment>
+		<update tableName="nResultColumnDef">
+			<column name="name_ru" value="К-во"/>
+			<where>id = 8</where>
+		</update>
+	</changeSet>
+
 
 </databaseChangeLog>
 

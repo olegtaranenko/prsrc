@@ -18,7 +18,7 @@ begin
 	declare v_firmId      integer;
 	declare v_klassId     integer;
 
-	message 'p_begin       = ', p_begin       to client;
+ 	message 'p_begin       = ', p_begin       to client;
 	message 'p_end         = ', p_end         to client;
 	message 'p_period_type = ', p_period_type to client;
 	message 'p_rowId       = ', p_rowId       to client;
@@ -29,11 +29,16 @@ begin
 	create table #sale_item (
 		 numorder    integer
 		,nomnom      varchar(20)
+		,prId        integer null
+		,prExt       integer null
 		,materialQty float null
-		,sm          float null
+		,cenaEd      float null
 		,inDate      date
 		,firmId      integer
 		,klassid     integer
+		,periodid    integer null
+		,priceToDate float null
+		,quantEd     float null
 	);
 
 	set v_table_name = 'sGuideKlass';
@@ -41,7 +46,7 @@ begin
 	execute immediate get_tmp_ord_create_sql(v_ord_table); -- #sGuideKlass_ord
 
 
-	call n_internal_klasses (p_begin, p_end, v_table_name, p_rowId, p_columnId);
+	call n_internal_klasses (p_begin, p_end, v_table_name, p_rowId, p_columnId, 1);
 
 	set v_firmId = p_rowId;
 
@@ -69,12 +74,18 @@ begin
 			, f.tools as oborud
 		from #periods p 
 		join (
-			select sum(sm) as materialSaled, sum(materialQty) as materialQty, firmid, klassId
-			from #sale_item
-			group by firmid, klassId
+
+			select 
+				sum(si.cenaEd * si.materialQty) as materialSaled
+				, sum(si.materialQty) as materialQty
+				, si.firmid
+				, si.klassId
+			from #sale_item si
+			group by 
+				si.firmid, si.klassId
 		) i on 
 			i.klassId = p.klassId
-		join bayguidefirms f on f.firmid = i.firmid
+		join firmguide f on f.firmid = i.firmid
 		join bayregion r on r.regionid = f.regionid
 		;
 	else
@@ -91,9 +102,9 @@ begin
 			, o.numorder
 		from bayorders o 
 		join (
-			select sum(sm) as materialSaled, sum(materialQty) as materialQty, numorder
-			from #sale_item
-			group by numorder
+			select sum(si.cenaEd * si.materialQty) as materialSaled, sum(si.materialQty) as materialQty, numorder
+			from #sale_item si
+			group by si.numorder
 		) i on 
 			i.numorder = o.numorder
 		;

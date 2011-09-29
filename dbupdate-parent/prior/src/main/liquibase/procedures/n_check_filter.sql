@@ -1,7 +1,13 @@
-ALTER FUNCTION "DBA"."n_check_filter" (
+if exists (select 1 from sysprocedure where proc_name = 'n_check_filter') then
+	drop function n_check_filter;
+end if;
+
+
+CREATE function n_check_filter (
 	  p_filterid    integer
 	, p_managId     varchar(16)
-) returns varchar(254)
+) 
+	returns varchar(254)
 begin
 	declare v_byrow_id       integer;
 	declare v_bycolumn_id    integer;
@@ -26,7 +32,7 @@ begin
 		return;
 	end if;
 
-
+/*
 	if v_byrow = 'firm' and v_bycolumn = 'klasses' then
 		set v_passed = 0;
 		for x as xc dynamic scroll cursor for
@@ -42,4 +48,5 @@ begin
 			return;
 		end if
 	end if;
+*/
 end

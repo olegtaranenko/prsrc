@@ -147,7 +147,7 @@ Begin VB.Form Analityc
          ToolTipText     =   "Позволяет одновременно сдвинуть даты на одинаковый период"
          Top             =   480
          Width           =   312
-         _ExtentX        =   445
+         _ExtentX        =   550
          _ExtentY        =   868
          _Version        =   393216
          Enabled         =   0   'False
@@ -189,7 +189,7 @@ Begin VB.Form Analityc
          _ExtentX        =   2138
          _ExtentY        =   508
          _Version        =   393216
-         Format          =   16515073
+         Format          =   50003969
          CurrentDate     =   39599
       End
       Begin MSComCtl2.DTPicker tbEndDate 
@@ -201,7 +201,7 @@ Begin VB.Form Analityc
          _ExtentX        =   2138
          _ExtentY        =   508
          _Version        =   393216
-         Format          =   16515073
+         Format          =   50003969
          CurrentDate     =   39599
       End
       Begin VB.Label Label5 

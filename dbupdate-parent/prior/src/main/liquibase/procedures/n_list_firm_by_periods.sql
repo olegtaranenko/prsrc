@@ -60,12 +60,13 @@ begin
 
 	call n_fill_periods(p_begin, p_end, p_period_type, p_columnId);
 
-	set v_begin = p_begin;
-	set v_end   = p_end;
 	if v_detail_fine = 1 then 
 		select st, en 
 		into v_begin, v_end
 		from #periods where periodId = p_columnId;
+	else
+		set v_begin = p_begin;
+		set v_end   = p_end;
 	end if;
 
 
@@ -83,16 +84,16 @@ begin
 	create table #sale_item (
 		 numorder    integer
 		,nomnom      varchar(20)
-		,prId        integer null
-		,prExt       integer null
-		,materialQty float null
-		,cenaEd      float null
+		,prId        integer  null
+		,prExt       integer  null
+		,materialQty float    null
+		,cenaEd      float    null
 		,inDate      date
 		,firmId      integer
 		,klassid     integer
-		,periodid    integer
-		,priceToDate float null
-		,quantEd     float null
+		,periodid    integer  null
+		,priceToDate float    null
+		,quantEd     float    null
 	);
     
 	create table #firm_has_mat (
@@ -115,7 +116,6 @@ begin
 		o.ordered
 	from 
 		bayorders o
---	join orderSellOrde s on s.numorder = o.numorder
 	where 
 			o.indate >= isnull(v_begin, o.inDate) and (v_end is null or o.inDate < v_end)
 		and (v_region_flag = 0 or exists (select 1 from #regions r, bayguidefirms f where f.firmid = o.firmid and r.regionid = f.regionid))
@@ -165,37 +165,7 @@ begin
 	
 	if v_material_flag > 0 then
     
-		insert into #sale_item (
-			 numorder
-			,nomnom
-			,prId
-			,prExt
-			,materialQty
---			,sm
-			,inDate
-			,firmId      
-			,klassid
-			,periodId
-		)
-		select
-			  o.numorder as numorder
-			, i.nomnom
-			, i.prId
-			, i.prExt
-			, i.quant / n.perlist as materialQty
---			, (i.quant) * i.cenaEd as sm
-			, o.inDate
-			, o.firmId
-			, n.klassid
-			, o.periodId
-		from #orders o 
-		join itemSellOrde i on o.numorder = i.numorder
-		join sguidenomenk n on i.nomnom = n.nomnom
-		where 
-				o.indate >= v_begin and o.inDate < v_end 
-			and exists (select 1 from #materials m where n.klassid = m.klassid)
-		;
-    
+		call n_sell_item_cost(v_begin, v_end, 1);
 
 		update #orders s set s.hasMaterial = 1
 		where 
@@ -207,112 +177,6 @@ begin
 		from #orders s
 		where s.hasMaterial = 1
 		;
-
-
-		create table #cost_to_date(
-			nomnom varchar(20)
---			,cost float null
-			,change_date datetime
-		)
-		;
-
-		insert into #cost_to_date(
-			nomnom
---			,cost
-			,change_date
-		)
-		select 
-			p.nomnom 
-			,min(p.change_date)
-		from 
-			sPriceHistory p
-		join 
-			#sale_item si on si.nomnom = p.nomnom
-		where
-			p.change_date >= si.inDate
-		group by p.nomnom
-		;
-
-		
-		update #sale_item
-		set priceToDate = p.cost
-		from sPriceHistory p
-			,#cost_to_date as ptd
-		where 
-			p.nomnom = #sale_item.nomnom
-		and p.change_date = ptd.change_date
-		;
-
-		update #sale_item
-		set priceToDate =  p.cost
-		from sGuideNomenk p
-		where p.nomnom = #sale_item.nomnom
-			and #sale_item.priceToDate is null
-		;
-
-		update	#sale_item 
-		set cenaEd = k.cenaEd
-		from xPredmetyByNomenk k
-		where 
-			k.nomnom = #sale_item.nomnom 
-		and k.numorder = #sale_item.numorder
-		and #sale_item.prId is null
-		;
-
-		update	#sale_item 
-		set quantEd = i.quantEd
-		from itemBranOrde i
-		where 
-			i.numorder = #sale_item.numorder
-		and i.prId = #sale_item.prId
-		and i.prExt = #sale_item.prExt
-		and #sale_item.prId is not null
-		;
-
-
-		create table #k_cost (
-			numorder int
-			,prId int
-			,prExt int
-			,k_cost float null
-		)
-		;		
-
-
-		insert into #k_cost(
-			numorder
-			,prId
-			,prExt
-			,k_cost
-		)
-		select
-			i.numorder 
-			,i.prId
-			,i.prExt
-			,cur.total / i.cenaEd --/  as k_cost
-		from
-		(
-			select numorder, prId, prExt, sum(priceToDate * quantEd) as total
-			from #sale_item si
-			where prId is not null
-			group by numorder, prId, prExt
-		) as cur
-		,xPredmetyByIzdelia i 
-		where cur.numorder = i.numorder and cur.prId = i.prId and cur.prExt = i.prExt
-			and isnull(i.cenaEd, 0) > 0
-		;
-
-
-		update	#sale_item 
-		set cenaEd = priceToDate / k.k_cost
-		from #k_cost k
-		where 
-			k.numorder = #sale_item.numorder
-		and k.prId = #sale_item.prId
-		and k.prExt = #sale_item.prExt
-		and k.k_cost > 0
-		;
-
 
 	else
 		insert into #firm_has_mat
@@ -355,11 +219,15 @@ begin
 		from #periods p 
 		join (
 			select sum(isnull(orderPaid, 0)) as orderPaid
-				, count(*) as orderQty, firmId, periodId
+				, count(*) as orderQty
+				, firmId
+				, periodId
 				, sum(orderOrdered) as orderOrdered
 				, sum(hasMaterial) as orderMatQty
-			from #orders
-			group by firmId, periodId
+			from 
+				#orders
+			group by 
+				firmId, periodId
 		) o on 
 			o.periodid = p.periodId
 		join #firm_has_mat fm on fm.firmid  = o.firmid
@@ -376,7 +244,8 @@ begin
 				firmid
 				, periodId
 		) i on 
-			o.firmId = i.firmId and o.periodId = i.periodId
+				o.firmId = i.firmId 
+			and o.periodId = i.periodId
 		;
 	elseif v_detail = 1 then
 		insert into #results (
