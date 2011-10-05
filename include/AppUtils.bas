@@ -536,6 +536,7 @@ Dim vCells(10) As Variant
                 
         While Not tbProduct.EOF
 
+            Cells(4) = Null
             If saveHeaders Then
                 Dim seriaId As String
                 seriaId = tbProduct!prSeriaId
@@ -573,21 +574,20 @@ Dim vCells(10) As Variant
                 Cells(1) = CStr(tbProduct!prName)
                 Cells(2) = CStr(tbProduct!prDescript)
                 Cells(3) = CStr(tbProduct!prSize)
-                Cells(4) = CInt(tbProduct!Page)
+                If Not IsNumeric(tbProduct!Page) Then
+                    Cells(4) = CInt(tbProduct!Page)
+                Else
+                    Cells(4) = tbProduct!Page
+                End If
                 Cells(5) = izdeliaQty
                 Cells(10) = tbProduct!prSeriaId
 
-                'gain2 = tbProduct!gain2
-                'gain3 = tbProduct!gain3
-                'gain4 = tbProduct!gain4
-                'ExcelProductPrices RPF_Rate, priceRegim, RubRate,  6, commonRabbat
                 csvRow = CsvProductPrices(izdeliePrices, RPF_Rate, priceRegim, RubRate, commonRabbat)
                 If Not csvRow = "" Then
                     MsgBox "Ошибка при вычислении цены для изделия " _
                     & vbCr & "Текст ошибки: " & csvRow, , "Изделие " & tbProduct!prName & "  " & tbProduct!prDescript
                     MsgBox "Генерация файла прервана. Сначала нужно исправить ошибку", , csvFile
-                    Close #1
-                    GoTo done
+                    GoTo closedone
                 End If
                 
                 For I = 0 To 3
@@ -658,18 +658,13 @@ Dim vCells(10) As Variant
             csvRow = convertToCsv(Cells)
             Print #1, csvRow
         End If
-        
-        Close #1
     
     End If
     
     tbProduct.Close
-
-    If saveHeaders Then
-        Close #2
-    End If
-
-GoTo EN2
+    GoTo EN2
+    
+    
 ERR1:
     If Err = 76 Then
         MsgBox "Невозможно создать файл " & csvFile, , "Error: Не обнаружен ПК или Путь к файлу"
@@ -679,16 +674,23 @@ ERR1:
         MsgBox "Невозможно создать файл " & csvFile, , "Error: Нет доступа на запись."
     Else
         MsgBox Error, , "Ошибка 47-" & Err '##47
-        
+        'errorCodAndMsg "##AppUtils"
+        GoTo closedone
     End If
     GoTo done
 
 EN2:
     MsgBox "Файл " & csvFile & " успешно сформирован.", , "Файлы для WEB"
-
+    'GoTo done
+    
+closedone:
+    Close #1
+    If saveHeaders Then
+        Close #2
+    End If
+    
 done:
     Screen.MousePointer = flexDefault
-        
         
 End Sub
 
