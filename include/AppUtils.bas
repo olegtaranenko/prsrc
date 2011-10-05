@@ -579,7 +579,6 @@ Dim vCells(10) As Variant
                 Else
                     MsgBox "У изделия выставлен признак 'award', но нет ни страницы каталога, ни признака 'web'" _
                     & vbCr & "Исправьте и попробуйте вывести отчет снова", , "Изделие " & tbProduct!prName & "  " & tbProduct!prDescript
-                    MsgBox "Генерация файла прервана. Сначала нужно исправить ошибку", , csvFile
                     GoTo BREAK
                 End If
                 Cells(5) = izdeliaQty
@@ -589,7 +588,6 @@ Dim vCells(10) As Variant
                 If Not csvRow = "" Then
                     MsgBox "Ошибка при вычислении цены для изделия " _
                     & vbCr & "Текст ошибки: " & csvRow, , "Изделие " & tbProduct!prName & "  " & tbProduct!prDescript
-                    MsgBox "Генерация файла прервана. Сначала нужно исправить ошибку", , csvFile
                     GoTo BREAK
                 End If
                 
