@@ -439,14 +439,14 @@ Else
     MsgBox Error, , "Ошибка 47-" & Err '##47
     
 End If
-GoTo done
+GoTo DONE
 
 
 EN2:
 On Error Resume Next 'нужен, если фокус после нажатия передали другому приложению
 MsgBox "Файл " & csvFile & " успешно сформирован.", , "Файлы для WEB"
 
-done:
+DONE:
     Frm.MousePointer = flexDefault
 
 End Function
@@ -574,10 +574,13 @@ Dim vCells(10) As Variant
                 Cells(1) = CStr(tbProduct!prName)
                 Cells(2) = CStr(tbProduct!prDescript)
                 Cells(3) = CStr(tbProduct!prSize)
-                If Not IsNumeric(tbProduct!Page) Then
+                If IsNumeric(tbProduct!Page) Then
                     Cells(4) = CInt(tbProduct!Page)
                 Else
-                    Cells(4) = tbProduct!Page
+                    MsgBox "У изделия выставлен признак 'award', но нет ни страницы каталога, ни признака 'web'" _
+                    & vbCr & "Исправьте и попробуйте вывести отчет снова", , "Изделие " & tbProduct!prName & "  " & tbProduct!prDescript
+                    MsgBox "Генерация файла прервана. Сначала нужно исправить ошибку", , csvFile
+                    GoTo BREAK
                 End If
                 Cells(5) = izdeliaQty
                 Cells(10) = tbProduct!prSeriaId
@@ -587,7 +590,7 @@ Dim vCells(10) As Variant
                     MsgBox "Ошибка при вычислении цены для изделия " _
                     & vbCr & "Текст ошибки: " & csvRow, , "Изделие " & tbProduct!prName & "  " & tbProduct!prDescript
                     MsgBox "Генерация файла прервана. Сначала нужно исправить ошибку", , csvFile
-                    GoTo closedone
+                    GoTo BREAK
                 End If
                 
                 For I = 0 To 3
@@ -675,21 +678,25 @@ ERR1:
     Else
         MsgBox Error, , "Ошибка 47-" & Err '##47
         'errorCodAndMsg "##AppUtils"
-        GoTo closedone
+        GoTo CLOSEDONE
     End If
-    GoTo done
+    GoTo DONE
 
+BREAK:
+    MsgBox "Генерация файла прервана. Сначала нужно исправить ошибку", , csvFile
+    GoTo CLOSEDONE
+    
 EN2:
     MsgBox "Файл " & csvFile & " успешно сформирован.", , "Файлы для WEB"
     'GoTo done
     
-closedone:
+CLOSEDONE:
     Close #1
     If saveHeaders Then
         Close #2
     End If
     
-done:
+DONE:
     Screen.MousePointer = flexDefault
         
 End Sub
@@ -803,7 +810,7 @@ Dim saveHeaders As Boolean, headMap() As MapEntry
                     & vbCr & "Текст ошибки: " & ret, , "Изделие " & tbProduct!prName & "  " & tbProduct!prDescript
                     MsgBox "Генерация файла прервана. Сначала нужно исправить ошибку", , csvFile
                     Close #1
-                    GoTo done
+                    GoTo DONE
                 End If
                 csvRow = tbProduct!prName & DLM & tbProduct!prSize _
                     & DLM & tbProduct!prDescript
@@ -841,14 +848,14 @@ ERR1:
         MsgBox Error, , "Ошибка 47-" & Err '##47
         
     End If
-    GoTo done
+    GoTo DONE
 
 
 EN2:
     On Error Resume Next 'нужен, если фокус после нажатия передали другому приложению
     MsgBox "Файл " & csvFile & " успешно сформирован.", , "Файлы для WEB"
     
-done:
+DONE:
     Frm.MousePointer = flexDefault
 
 End Function
