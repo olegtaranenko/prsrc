@@ -459,9 +459,10 @@ Const nkEClos = 7
 Const nkQuant = 8
 Const nkIntEdIzm = 9
 Const nkIntQuant = 10
-Const nkType = 11
-Const nkPrId = 12
-Const nkPrExt = 13
+Const nkFact = 11
+Const nkType = 12
+Const nkPrId = 13
+Const nkPrExt = 14
 
 Private Sub cmCheckout_Click()
 Dim I As Long
@@ -801,7 +802,7 @@ End If
 
 laTitle.Caption = "    Заказ №"
 Grid2(0).MergeRow(0) = True
-Grid2(0).FormatString = "|<Номер|<Описание|<Ед.измерения|Затребовано по заказу|Отпущено|Затребовано по этапу|Отпущено по этапу|кол-во|Перемещение|Перемещение|||"
+Grid2(0).FormatString = "|<Номер|<Описание|<Ед.измерения|Затребовано по заказу|Отпущено|Затребовано по этапу|Отпущено по этапу|кол-во|Перемещение|Перемещение|Ф.остат|||"
 Grid2(0).ColWidth(0) = 0
 Grid2(0).ColWidth(nkNomNom) = 945
 Grid2(0).ColWidth(nkNomName) = 4500 '5265
@@ -819,12 +820,13 @@ Grid2(0).ColWidth(nkEtap) = 780
 Grid2(0).ColWidth(nkEClos) = 765
 Grid2(0).ColWidth(nkIntEdIzm) = 700
 Grid2(0).ColWidth(nkIntQuant) = 700
+Grid2(0).ColWidth(nkFact) = 850
 Grid2(0).ColWidth(nkType) = 0
 Grid2(0).ColWidth(nkPrId) = 0
 Grid2(0).ColWidth(nkPrExt) = 0
 
 Grid2(1).FormatString = "|<Номер|<Описание|<Ед.измерения|Затребовано по " & _
-"заказу|Отпущено|Затребовано по этапу|Отпущено по этапу|кол-во|Перемещение|Перемещение"
+"заказу|Отпущено|Затребовано по этапу|Отпущено по этапу|кол-во|Перемещение|Перемещение|Ф.остат"
 Grid2(1).ColWidth(0) = 0
 Grid2(1).ColWidth(nkNomNom) = 945
 Grid2(1).ColWidth(nkNomName) = 5265
@@ -836,6 +838,7 @@ Grid2(1).ColWidth(nkTreb) = 0
 Grid2(1).ColWidth(nkClos) = 0
 Grid2(1).ColWidth(nkIntEdIzm) = 0
 Grid2(1).ColWidth(nkIntQuant) = 0
+Grid2(1).ColWidth(nkFact) = 850
 
 cmExit.Caption = "Выход"
 secondNaklad = ""
@@ -1150,7 +1153,7 @@ Else
             End If
             Grid2(ind).TextMatrix(quantity2, nkNomNom) = NN(I)
             Grid2(ind).TextMatrix(quantity2, nkNomName) = tbNomenk!cod & " " & _
-                tbNomenk!nomName & " " & tbNomenk!Size
+                tbNomenk!Nomname & " " & tbNomenk!Size
             Grid2(ind).TextMatrix(quantity2, nkEdIzm) = tbNomenk!ed_Izmer
             If Regim = "" Then
                 If laDest(ind).Caption = "Продажа" Then
@@ -1190,6 +1193,24 @@ Else
     Next I
 End If
 
+' сюда вставим получение факт. остатков по складу 1 (см. Мантис 279)
+sql = "call wf_naklad_mat_ost (" & gNzak & ")"
+
+Set tbNomenk = myOpenRecordSet("##129.2", sql, dbOpenForwardOnly)
+If Not tbNomenk.BOF Then
+    While Not tbNomenk.EOF
+        gNomNom = tbNomenk!Nomnom
+        For I = 1 To Grid2(ind).Rows - 1
+            str = Grid2(ind).TextMatrix(I, nkNomNom)
+            If str = gNomNom Then
+                Grid2(ind).TextMatrix(I, nkFact) = tbNomenk!qty_sklad1
+                Exit For
+            End If
+        Next I
+        tbNomenk.MoveNext
+    Wend
+End If
+tbNomenk.Close
 
 If quantity2 > 0 Then
     Grid2(ind).RemoveItem quantity2 + 1
@@ -1328,7 +1349,7 @@ AA:         MsgBox "Сначала проставте значение в колонке 'кол-во'", , "Предупреж
         While Not tbDMC.EOF
             I = I + 1
             Grid4.TextMatrix(I, 1) = tbDMC!Nomnom
-            Grid4.TextMatrix(I, 2) = tbDMC!nomName
+            Grid4.TextMatrix(I, 2) = tbDMC!Nomname
             If tbDMC!vmt = "vmt" Then
                 myAsWhole = False
             End If

@@ -1073,6 +1073,11 @@ where pc.sysname = sGuideProducts.web
 		<sqlFile path="procedures/wf_report_bright_ostat.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 	</changeSet>
 
+	<changeSet id="1" author="mantis-279" runOnChange="true">
+		<comment>Подсчет факт. и дост. остатков по выбранной номенклатуре</comment>
+		<sqlFile path="procedures/wf_calculate_ost_fact_dost.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+	</changeSet>
+
 	<changeSet id="2" author="mantis-139" runOnChange="true">
 		<comment>Рефакторинг отчета остатки по материалам</comment>
 		<sqlFile path="procedures/wf_report_mat_ost.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
@@ -3039,6 +3044,11 @@ update firmguide set year01 = 1 where firmid = 4728
 			<column name="name_ru" value="К-во"/>
 			<where>id = 8</where>
 		</update>
+	</changeSet>
+
+	<changeSet id="2" author="mantis-279" runOnChange="true">
+		<comment>Подсчет факт. остатков по номенклатуре заказа по складу 1 (целых)</comment>
+		<sqlFile path="procedures/wf_naklad_mat_ost.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 	</changeSet>
 
 
