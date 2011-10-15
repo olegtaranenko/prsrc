@@ -782,7 +782,7 @@ Dim notBay As Long, I As Long, delta As Long
 oldHeight = Me.Height
 oldWidth = Me.Width
 
-If nakladRemark <> "    " And idWerk = 1 Then
+If nakladRemark <> "" And idWerk = 1 Then
     laRemark.Visible = True
     ltRemark.Visible = True
     ltRemark.Caption = nakladRemark
