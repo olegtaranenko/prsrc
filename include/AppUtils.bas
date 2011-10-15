@@ -439,14 +439,14 @@ Else
     MsgBox Error, , "Ошибка 47-" & Err '##47
     
 End If
-GoTo DONE
+GoTo done
 
 
 EN2:
 On Error Resume Next 'нужен, если фокус после нажатия передали другому приложению
 MsgBox "Файл " & csvFile & " успешно сформирован.", , "Файлы для WEB"
 
-DONE:
+done:
     Frm.MousePointer = flexDefault
 
 End Function
@@ -678,7 +678,7 @@ ERR1:
         'errorCodAndMsg "##AppUtils"
         GoTo CLOSEDONE
     End If
-    GoTo DONE
+    GoTo done
 
 BREAK:
     MsgBox "Генерация файла прервана. Сначала нужно исправить ошибку", , csvFile
@@ -694,7 +694,7 @@ CLOSEDONE:
         Close #2
     End If
     
-DONE:
+done:
     Screen.MousePointer = flexDefault
         
 End Sub
@@ -808,7 +808,7 @@ Dim saveHeaders As Boolean, headMap() As MapEntry
                     & vbCr & "Текст ошибки: " & ret, , "Изделие " & tbProduct!prName & "  " & tbProduct!prDescript
                     MsgBox "Генерация файла прервана. Сначала нужно исправить ошибку", , csvFile
                     Close #1
-                    GoTo DONE
+                    GoTo done
                 End If
                 csvRow = tbProduct!prName & DLM & tbProduct!prSize _
                     & DLM & tbProduct!prDescript
@@ -846,14 +846,14 @@ ERR1:
         MsgBox Error, , "Ошибка 47-" & Err '##47
         
     End If
-    GoTo DONE
+    GoTo done
 
 
 EN2:
     On Error Resume Next 'нужен, если фокус после нажатия передали другому приложению
     MsgBox "Файл " & csvFile & " успешно сформирован.", , "Файлы для WEB"
     
-DONE:
+done:
     Frm.MousePointer = flexDefault
 
 End Function

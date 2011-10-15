@@ -782,7 +782,7 @@ Dim notBay As Long, I As Long, delta As Long
 oldHeight = Me.Height
 oldWidth = Me.Width
 
-If nakladRemark <> "" And idWerk = 1 Then
+If nakladRemark <> "    " And idWerk = 1 Then
     laRemark.Visible = True
     ltRemark.Visible = True
     ltRemark.Caption = nakladRemark
@@ -820,7 +820,7 @@ Grid2(0).ColWidth(nkEtap) = 780
 Grid2(0).ColWidth(nkEClos) = 765
 Grid2(0).ColWidth(nkIntEdIzm) = 700
 Grid2(0).ColWidth(nkIntQuant) = 700
-Grid2(0).ColWidth(nkFact) = 850
+Grid2(0).ColWidth(nkFact) = 700
 Grid2(0).ColWidth(nkType) = 0
 Grid2(0).ColWidth(nkPrId) = 0
 Grid2(0).ColWidth(nkPrExt) = 0
@@ -838,7 +838,7 @@ Grid2(1).ColWidth(nkTreb) = 0
 Grid2(1).ColWidth(nkClos) = 0
 Grid2(1).ColWidth(nkIntEdIzm) = 0
 Grid2(1).ColWidth(nkIntQuant) = 0
-Grid2(1).ColWidth(nkFact) = 850
+Grid2(1).ColWidth(nkFact) = 700
 
 cmExit.Caption = "Выход"
 secondNaklad = ""
