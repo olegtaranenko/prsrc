@@ -1514,7 +1514,7 @@ Private Sub Grid3_MouseDown(Button As Integer, Shift As Integer, X As Single, Y 
 
 If Grid3.MouseRow = 0 Then
     Grid3.CellBackColor = Grid3.BackColor
-    SortCol Grid3, mousCol3
+    SortCol Grid3, Grid3.MouseCol
     Grid3.row = 1    ' только чтобы снять выделение
     gridOrGrid3Hide "grid"
 Else

@@ -991,7 +991,7 @@ checkNextYear '$$3 если сменился год - пересчет статистики посещений
 'If Not (dostup = "c" Or dostup = "y") Then
 If dostup = "a" Or dostup = "m" Or dostup = "" Or dostup = "b" Then
  'logFile = "C:\Windows\Orders" ' без расширения
- logFile = App.path & "\" & App.ExeName
+ logFile = App.path & "\" & App.EXEName
  str2 = logFile & "$.log" ' временный файл
  logFile = logFile & ".log"
  
@@ -1547,6 +1547,9 @@ Grid.MousePointer = flexHourglass
     Else
         ascSort = 3
         dscSort = 4
+    End If
+    If Grid.col <> col Then
+        Debug.Print "Grid.col <> col: Grid.col = " & Grid.col & ", col = " & col
     End If
     Grid.col = col
     Grid.ColSel = col
