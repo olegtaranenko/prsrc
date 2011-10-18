@@ -16,7 +16,7 @@ begin
 	create table #nomenk(nomnom varchar(20), quant double null, quantDost double null, perList integer null, primary key(nomnom));
 	
 	insert into #nomenk(nomnom)
-	select 
+	select distinct
 		k.nomnom
 	from  itemBranOrde k
 	where numorder = p_numorder;
