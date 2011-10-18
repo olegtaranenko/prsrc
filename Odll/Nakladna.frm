@@ -737,8 +737,12 @@ Unload Me
 End Sub
 
 Private Sub cmPrint_Click()
-Dim I As Integer
+Dim I As Integer, W As Integer
 
+' M279 - не выводить на принтер колонку с фактическими остатками _
+' во избежание ошибки кладовщика
+W = Grid2(0).ColWidth(nkFact)
+Grid2(0).ColWidth(nkFact) = 0
 laDate.Visible = True
 laDate.Caption = Format(Now(), "dd.mm.yy hh:nn")
 
@@ -746,6 +750,8 @@ For I = 1 To pageNum
     setPage (I)
     Me.PrintForm
 Next I
+
+Grid2(0).ColWidth(nkFact) = W
 
 End Sub
 
@@ -802,7 +808,7 @@ End If
 
 laTitle.Caption = "    Заказ №"
 Grid2(0).MergeRow(0) = True
-Grid2(0).FormatString = "|<Номер|<Описание|<Ед.измерения|Затребовано по заказу|Отпущено|Затребовано по этапу|Отпущено по этапу|кол-во|Перемещение|Перемещение|Ф.остат|||"
+Grid2(0).FormatString = "|<Номер|<Описание|<Ед.измерения|Затребовано по заказу|Отпущено|Затребовано по этапу|Отпущено по этапу|К выдаче|Перемещение|Перемещение|Ф.остат|||"
 Grid2(0).ColWidth(0) = 0
 Grid2(0).ColWidth(nkNomNom) = 945
 Grid2(0).ColWidth(nkNomName) = 4500 '5265
@@ -826,7 +832,7 @@ Grid2(0).ColWidth(nkPrId) = 0
 Grid2(0).ColWidth(nkPrExt) = 0
 
 Grid2(1).FormatString = "|<Номер|<Описание|<Ед.измерения|Затребовано по " & _
-"заказу|Отпущено|Затребовано по этапу|Отпущено по этапу|кол-во|Перемещение|Перемещение|Ф.остат"
+"заказу|Отпущено|Затребовано по этапу|Отпущено по этапу|К выдаче|Перемещение|Перемещение|Ф.остат"
 Grid2(1).ColWidth(0) = 0
 Grid2(1).ColWidth(nkNomNom) = 945
 Grid2(1).ColWidth(nkNomName) = 5265
@@ -1056,6 +1062,11 @@ clearGrid Grid2(ind)
 beSUO = False
 
 
+Grid2(ind).col = nkQuant
+Grid2(ind).row = 0
+Grid2(ind).CellFontBold = True
+
+
 ' режим склад, если менеджер из окна заказов вызывает накладную
 ' тогда списывается по готовым изделиям
 ' если же из цеха тогда - по отдельным номенклатурам
@@ -1188,6 +1199,10 @@ Else
                 End If
             End If
             Grid2(ind).AddItem ""
+            'Grid2(ind).col = nkQuant
+            Grid2(ind).row = Grid2(ind).Rows - 2
+            Grid2(ind).CellFontBold = True
+            
         End If
         tbNomenk.Close
     Next I
@@ -1236,7 +1251,7 @@ Next I
 sum = sum + 680 '650
 If sum < 8300 Then sum = 8300
 Me.Width = sum
-Grid2(ind).col = nkQuant
+Grid2(ind).row = 1
 EN1:
 Grid2(ind).Visible = True
 
