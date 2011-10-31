@@ -742,7 +742,7 @@ Dim I As Integer, W As Integer
 ' M279 - не выводить на принтер колонку с фактическими остатками _
 ' во избежание ошибки кладовщика
 W = Grid2(0).ColWidth(nkFact)
-Grid2(0).ColWidth(nkFact) = 0
+'Grid2(0).ColWidth(nkFact) = 0
 laDate.Visible = True
 laDate.Caption = Format(Now(), "dd.mm.yy hh:nn")
 
@@ -751,7 +751,7 @@ For I = 1 To pageNum
     Me.PrintForm
 Next I
 
-Grid2(0).ColWidth(nkFact) = W
+'Grid2(0).ColWidth(nkFact) = W
 
 End Sub
 
