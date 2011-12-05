@@ -60,6 +60,9 @@
 					<include>**/*.sql</include>
 					<include>**/*.csv</include>
 				</includes>
+				<excludes>
+					<exclude>**/mainteinance/*.sql</exclude>
+				</excludes>
 			</resource>
 			<resource>
 				<directory>${basedir}/../src/main/liquibase</directory>
@@ -68,6 +71,13 @@
 					<include>**/*.xml</include>
 					<include>**/*.sql</include>
 					<include>**/*.csv</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>${basedir}/src/main/liquibase/mainteinance</directory>
+       		    <filtering>true</filtering>
+				<includes>
+					<include>**/*.sql</include>
 				</includes>
 			</resource>
 		</resources>

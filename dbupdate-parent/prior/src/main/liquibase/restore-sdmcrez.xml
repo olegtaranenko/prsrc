@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="cp1251"?>
+ 
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd"
+  logicalFilePath="comtex-id-correction.xml"
+>
+
+         
+
+	<changeSet id="1" author="restore-sdmcrez" runAlways="true">
+		<comment>Если вдруг из таблицы sDmcRez пропало резервирование... то восстановим.</comment>
+		<executeCommand executable="dbisqlc.exe">
+			<arg value="-c"/>
+			<arg value="DSN=prior;UID=dba;PWD=sql"/>
+			<arg value="-q"/>
+			<arg value="${basedir}\target\classes\restore-sdmcrez.sql"/>
+		</executeCommand>
+		<rollback/>
+	</changeSet>
+
+</databaseChangeLog>
+

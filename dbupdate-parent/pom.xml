@@ -86,6 +86,15 @@
 				<changelog.file>${changelog.PATH}/comtex-id-correction.xml</changelog.file>
 			</properties>
 		</profile>
+		<profile>
+			<id>restore-sdmcrez</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<changelog.file>${changelog.PATH}/restore-sdmcrez.xml</changelog.file>
+			</properties>
+		</profile>
 	</profiles>
 
 	<build>
