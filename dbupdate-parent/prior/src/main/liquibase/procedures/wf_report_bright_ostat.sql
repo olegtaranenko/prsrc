@@ -153,7 +153,11 @@ begin
 		and isnumeric(ph.page) = 1
 		and isnull(p_prId, ph.prId) = ph.prId 
 		  and isnull(n.web, '') <> 'vmt'
-	order by os.ord, ph.sortNom, p.xgroup, n.nomName;
+	order by 
+		os.ord, ph.sortNom, 
+		ph.prName, p.xgroup, 
+		n.nomName
+	;
 
 	drop table #sGuideKlass_ord;
 	drop table #sGuideSeries_ord;
