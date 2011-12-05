@@ -434,7 +434,7 @@ end;
 		</executeCommand>
 		<rollback/>
 	</changeSet>
--->
+
 	<changeSet id="1" author="mantis-58" runOnChange="false">
 		<comment>Изменить алгоритм взятия цены из Комтеха</comment>
 		<sqlFile path="procedures/wf_cost_bulk_change.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
@@ -450,6 +450,7 @@ end;
 		</executeCommand>
 		<rollback/>
 	</changeSet>
+-->
 
 	<changeSet id="1" author="mantis-62" runOnChange="false">
 		<comment>Таблицу констант для расчета формул</comment>
@@ -3051,6 +3052,15 @@ update firmguide set year01 = 1 where firmid = 4728
 		<sqlFile path="procedures/wf_naklad_mat_ost.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 	</changeSet>
 
+
+	<changeSet id="1" author="mantis-281" runOnChange="false">
+		<executeCommand executable="dbisqlc.exe">
+			<arg value="-c"/>
+			<arg value="DSN=prior;UID=dba;PWD=sql"/>
+			<arg value="-q"/>
+			<arg value="${basedir}\target\classes\mainteinance\mantis-281.sql"/>
+		</executeCommand>
+	</changeSet>
 
 </databaseChangeLog>
 
