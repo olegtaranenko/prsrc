@@ -35,7 +35,8 @@ SELECT
 	,oe.StatusEquipId
 	,o.ProblemId
 	,o.DateRS
-	,dateadd(hour, isnull(o.outtime, 0), oe.outDateTime)
+--	,oe.outDateTime
+	,dateadd(hour, isnull(o.outtime, 0), convert(datetime, convert(varchar(10), oe.outDateTime,102)))
 	,oe.workTime
 	,f.Name
 	,o.Logo
