@@ -2361,11 +2361,11 @@ For I = 1 To UBound(NN)
     "WHERE sDMC.numDoc =" & gNzak & " AND nomNom = '" & NN(I) & "'"
     If Not byErrSqlGetValues("##164", sql, S) Then Exit Function
     If reg = "prev" Then
-        If Abs(QQ3(I) - S) > 0.005 Then Exit Function
+        If Abs(QQ3(I) - S) > 0.0099 Then Exit Function
     ElseIf reg = "" Or QQ2(0) = 0 Then 'вызов не из цеха или для неэтапного заказа
-        If QQ(I) - S > 0.005 Then Exit Function
+        If Abs(QQ(I) - S) > 0.0099 Then Exit Function
     Else
-        If QQ2(I) - S > 0.005 Then Exit Function
+        If Abs(QQ2(I) - S) > 0.0099 Then Exit Function
     End If
 Next I
 predmetiIsClose = True
