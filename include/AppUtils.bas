@@ -52,8 +52,8 @@ Const DLM = vbTab
 ' не использовать в cfg
 
 Private Sub changeCaseOfTheVariables()
-'Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, Fields, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim, Item, ListBox, Nomname, Formula, Nomnom, perList, Ves, prSeriaId, cenaEd
-Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, Fields, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim, Item, ListBox, Nomname, Formula, Nomnom, perList, Ves, prSeriaId, cenaEd
+'Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, Fields, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim, Item, ListBox, Nomname, Formula, Nomnom, perList, Ves, prSeriaId, cenaEd, str
+Dim IsEmpty, Numorder, StatusId, Rollback, Outdatetime, p_numOrder, tbWorktime, Left, RemoveItem, J, Value, X, Y, Table, IL, Name, L, Equip, Worktime, ManagId, ColWidth, Index, W, K, Visible, Field, Fields, WerkId, FirmId, Edizm2, V, Key, RemoveAll, Remove, Frm, xGroup, Delim, Item, ListBox, Nomname, Formula, Nomnom, perList, Ves, prSeriaId, cenaEd, str
 
 End Sub
 

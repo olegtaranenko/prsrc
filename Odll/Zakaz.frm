@@ -1500,7 +1500,7 @@ If getPrev2Day < 1 Then getPrev2Day = 1
 End Function
 
 Private Sub cmZapros_Click() ' zagruzFromCeh использует глобальные end(beg)Day(MO)
-Dim I As Integer, str As String, num As Integer, V As Variant
+Dim I As Integer, varstr As String, num As Integer, V As Variant
 Dim begDay As Integer, endDay As Integer, begDayMO As Integer, endDayMO As Integer
 Dim begDay_ As Integer, endDay_ As Integer ', begDayMO_ As Integer, endDayMO_ As Integer
 Dim title As String, msg As String
@@ -1544,8 +1544,24 @@ ErrDate: MsgBox "Одна из дат уже в прошлом.", , "Недопустимое значение"
         Exit Sub
 End If
 
-If endDay > 100 Then _
-    If MsgBox("Получается дата выдачи  через " & endDay & " дней. " & _
+Const den = "день"
+Const dney = "дней"
+Const dnya = "дня"
+
+Dim lastDigit As Integer, varDay
+lastDigit = endDay Mod 10
+If lastDigit = 1 Then
+    varDay = den
+ElseIf lastDigit > 4 Then
+    varDay = dney
+ElseIf lastDigit = 0 Then
+    varDay = dney
+Else
+    varDay = dnya
+End If
+
+If endDay > 40 Then _
+    If MsgBox("Получается дата выдачи  через " & endDay & " " & varDay & ". " & _
         "Подтверждаете?", vbYesNo, "Внимание!!!") = vbNo Then Exit Sub
         
 If tbDateRS.Enabled = True Then
@@ -1559,14 +1575,14 @@ If tbDateRS.Enabled = True Then
         Exit Sub
     End If
                 
-    str = "Между Датой Р\С и Датой выдачи должен быть по крайней " & _
+    varstr = "Между Датой Р\С и Датой выдачи должен быть по крайней " & _
         "мере два рабочих дня!" & Chr(13) & "Иначе при дальнейшем переводе заказа " & _
         "в работу, он станет срочным." & Chr(13) & Chr(13) & "Если вы уверены, что " & _
             "это нарушение не затруднит выполнение Заказов, нажмите - <Да>"
     sql = "Нарушен Коридор:"
 Else ' " в работу
     begDay = 1
-    str = "Вы задали Срочный заказ. Подтверждаете?"
+    varstr = "Вы задали Срочный заказ. Подтверждаете?"
     sql = "Внимание!!!"
 End If
 begDay_ = begDay
@@ -1575,7 +1591,7 @@ endDay = getPrev2DayRes(endDay)
 
 urgent = ""
 If endDay_ <= begDay_ Then
-    If MsgBox(str, vbYesNo, sql) = vbNo Then Exit Sub
+    If MsgBox(varstr, vbYesNo, sql) = vbNo Then Exit Sub
     urgent = "y"
 End If
 begDay = getNextDayRes(begDay)
@@ -1591,9 +1607,10 @@ If DateDiff("d", tmpDate, tbDateRS.Text) <> 0 Then        '
 tmpDate = Orders.Grid.TextMatrix(Orders.mousRow, orData)         ' и Сегодня не
 If DateDiff("d", tmpDate, curDate) > 0 Then               ' день приема заказа
   title = "Перенос № 1  Подтвеждаете?"
-  str = "Всего допустимо только 2 переноса Даты РС (и даты выдачи)." & _
+  varstr = "Всего допустимо только 2 переноса Даты РС (и даты выдачи)." & _
   Chr(10) & "На 3-й раз необходимо аннулировать заказ!" & Chr(10)
-  msg = str & Chr(10) & "Если перенос еще допустим нажмите <Да>"
+  
+  msg = varstr & Chr(10) & "Если перенос еще допустим нажмите <Да>"
   
   sql = "SELECT ReplaceRS.newDateIn, ReplaceRS.newDateRS, ReplaceRS.newDateOut " & _
   "From ReplaceRS  Where (((ReplaceRS.numOrder) = " & gNzak & ")) " & _
@@ -1612,13 +1629,13 @@ If DateDiff("d", tmpDate, curDate) > 0 Then               ' день приема заказа
       Wend
       Table.MoveLast
       If DateDiff("d", Table!newDateIn, curDate) > 0 Then ' Дата РС изменилась
-         str = I                                      ' первый раз за
-         Mid(title, 11) = str                             ' за сегодня
+         varstr = I                                      ' первый раз за
+         Mid(title, 11) = varstr                             ' за сегодня
          If MsgBox(msg, vbYesNo, title) = vbNo Then Exit Sub
          perenos = 2
       Else
          title = "Перенос № " & I - 1
-         MsgBox str, , title
+         MsgBox varstr, , title
          perenos = 3
       End If
     End If 'Table.BOF
@@ -1682,12 +1699,13 @@ AA:
     If endDayMO < begDayMO Then endDayMO = begDayMO
 End If
 
-If endDayMO - begDayMO + endDay - begDay > 40 Then
-    MsgBox "Заказ сильно растянут, что превышает возможности системы. " & _
+'If endDayMO - begDayMO + endDay - begDay > 40 Then
+
+    'MsgBox "Заказ сильно растянут, что превышает возможности системы. " & _
     "Если такой интервал действительно необходим, сообщите администратору!" _
       , , "Система не может разместить этот Заказ!"
-    Exit Sub
-End If
+'    Exit Sub
+'End If
 
 wrkDefault.BeginTrans
 myBase.Execute ("update system set resursLock = resursLock")
@@ -1698,9 +1716,9 @@ myBase.Execute ("update system set resursLock = resursLock")
 'tbSystem.Edit
 I = 0
      be_cmRepit = False
-      str = getSystemField("resursLock")
-'     str = tbSystem!resursLock
-     If str = "nextDay" Then
+      varstr = getSystemField("resursLock")
+'     varstr = tbSystem!resursLock
+     If varstr = "nextDay" Then
 '        tbSystem.Update
         wrkDefault.Rollback
         MsgBox "Обнаружено, что был сбой при переводе базы на новый день. " & _
@@ -1709,13 +1727,13 @@ I = 0
         "Доступ к ресурсам заблокирован!"
         GoTo CC
      End If
-     While str <> "" And str <> Orders.cbM.Text
+     While varstr <> "" And varstr <> Orders.cbM.Text
 '        tbSystem.Update
         wrkDefault.Rollback
         cmZapros.Enabled = False
         laMess.ForeColor = 200
         laMess.Caption = I & " сек: Доступ к ресурсам временно занят " & _
-        "менеджером " & Chr(34) & str & Chr(34) & Chr(13) _
+        "менеджером " & Chr(34) & varstr & Chr(34) & Chr(13) _
         & Chr(10) & ". Ждите."
         delay (1)
         I = I + 1
@@ -1727,8 +1745,8 @@ CC:         'tbSystem.Close
         wrkDefault.BeginTrans
         myBase.Execute ("update system set resursLock = resursLock")
 '        tbSystem.Edit
-        str = getSystemField("resursLock")
-        'str = tbSystem!resursLock
+        varstr = getSystemField("resursLock")
+        'varstr = tbSystem!resursLock
      Wend
      'cmZapros.Enabled = True
      myBase.Execute ("update system set resursLock = '" & Orders.cbM.Text & "'")
