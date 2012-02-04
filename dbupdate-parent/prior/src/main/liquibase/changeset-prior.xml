@@ -3054,6 +3054,7 @@ update firmguide set year01 = 1 where firmid = 4728
 
 
 	<changeSet id="1" author="mantis-281" runOnChange="false">
+		<validCheckSum>b359e26a40c9e221cf86b45f9b4a9</validCheckSum>
 		<executeCommand executable="dbisqlc.exe">
 			<arg value="-c"/>
 			<arg value="DSN=prior;UID=dba;PWD=sql"/>
@@ -3061,6 +3062,21 @@ update firmguide set year01 = 1 where firmid = 4728
 			<arg value="${basedir}\target\classes\mainteinance\mantis-281.sql"/>
 		</executeCommand>
 	</changeSet>
+
+	<changeSet id="1" author="mantis-283" runOnChange="true">
+		<comment>Проблемы со справочником фирм заказчиков: потерялись к-ва по годам</comment>
+		<sqlFile path="procedures/n_production_visitors_rebuild.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+	</changeSet>
+
+	<changeSet id="2" author="mantis-283" runOnChange="false">
+		<executeCommand executable="dbisqlc.exe">
+			<arg value="-c"/>
+			<arg value="DSN=prior;UID=dba;PWD=sql"/>
+			<arg value="-q"/>
+			<arg value="${basedir}\target\classes\mainteinance\mantis-283.sql"/>
+		</executeCommand>
+	</changeSet>
+
 
 </databaseChangeLog>
 
