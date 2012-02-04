@@ -85,7 +85,7 @@ begin
 
 -- 	select * from #summary;
 	
---	update FirmGuide set year01 = 0, year02 = 0, year03 = 0, year04 = 0;
+	update FirmGuide set year01 = 0, year02 = 0, year03 = 0, year04 = 0;
 
 	update FirmGuide 
 	set year01 = visits
@@ -106,6 +106,4 @@ begin
 	from #summary
 	where FirmGuide.firmId = #summary.firmId and #summary.periodId = 4;
 
-
-commit;
 end;
