@@ -1084,7 +1084,7 @@ mousRow = Grid.MouseRow
 If quantity = 0 Then Exit Sub
 If Grid.MouseRow = 0 Then
     Grid.CellBackColor = Grid.BackColor
-    If mousCol = bf2004 Then
+    If mousCol >= bf2001 And mousCol <= bf2004 Then
         SortCol Grid, mousCol, "numeric"
     Else
         SortCol Grid, mousCol

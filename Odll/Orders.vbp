@@ -45,14 +45,14 @@ Startup="Sub Main"
 HelpFile=""
 Title="Prior"
 ExeName32="PriorN.exe"
-Path32="..\..\..\..\Documents and Settings\otaranenko.OTARANENKO-DELL\Local Settings"
-Command32="-dostup a -dbUrl prior -otlad 1"
+Path32="..\.."
+Command32="-dbUrl prior -otlad 1"
 Name="PriorProd"
 HelpContextID="0"
 CompatibleMode="0"
 MajorVer=2
 MinorVer=1
-RevisionVer=83
+RevisionVer=84
 AutoIncrementVer=0
 ServerSupportFiles=0
 VersionCompanyName="Петровские  мастерские"
@@ -71,6 +71,7 @@ Unattended=0
 Retained=0
 ThreadPerObject=0
 MaxNumberOfThreads=1
+RemoveUnusedControlInfo=0
 DebugStartupOption=0
 
 [MS Transaction Server]

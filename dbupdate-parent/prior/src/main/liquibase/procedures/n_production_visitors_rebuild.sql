@@ -4,7 +4,7 @@ end if;
 
 
 CREATE PROCEDURE n_production_visitors_rebuild (
---	  p_year         date
+	  p_werk_id         int
 )
 begin
 
@@ -59,7 +59,7 @@ begin
 		o.firmId
 	from 
 		orders o
-	where werkId = 2;
+	where werkId = p_werk_id;
 
 --	select count(*) from #orders;
 

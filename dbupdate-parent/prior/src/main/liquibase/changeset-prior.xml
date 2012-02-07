@@ -3069,6 +3069,16 @@ update firmguide set year01 = 1 where firmid = 4728
 	</changeSet>
 
 	<changeSet id="2" author="mantis-283" runOnChange="false">
+		<validCheckSum>4a5f8ef1b90aa504fd91efd4a6fd9c</validCheckSum>
+		<executeCommand executable="dbisqlc.exe">
+			<arg value="-c"/>
+			<arg value="DSN=prior;UID=dba;PWD=sql"/>
+			<arg value="-q"/>
+			<arg value="${basedir}\target\classes\mainteinance\mantis-283.sql"/>
+		</executeCommand>
+	</changeSet>
+
+	<changeSet id="3" author="mantis-283" runOnChange="false">
 		<executeCommand executable="dbisqlc.exe">
 			<arg value="-c"/>
 			<arg value="DSN=prior;UID=dba;PWD=sql"/>
