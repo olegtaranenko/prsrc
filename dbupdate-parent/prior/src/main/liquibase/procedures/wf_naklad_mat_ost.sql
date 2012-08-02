@@ -30,10 +30,10 @@ begin
 		 n.nomnom, trim(n.cod + ' ' + n.nomname + ' ' + n.size) as nomenk, n.ed_izmer2 
 		, n.cod as cod, n.nomname, n.size as size
 		, round(n.nowOstatki / n.perlist - 0.499, 0) as qty_fact
-		, round(k.quant / n.perlist, 2) as qty_sklad1
-		, round(k.quantDost / n.perlist, 2) as qty_dost
-	from     #nomenk          k
-		join sGuideNomenk     n on k.nomnom = n.nomnom;
+		, isnull(round(k.quant / n.perlist, 2), 0) as qty_sklad1
+		, isnull(round(k.quantDost / n.perlist, 2), 0) as qty_dost
+	from     #nomenk        k
+		join sGuideNomenk   n on k.nomnom = n.nomnom;
 
 
 end;

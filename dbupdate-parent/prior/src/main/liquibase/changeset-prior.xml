@@ -3078,7 +3078,7 @@ update firmguide set year01 = 1 where firmid = 4728
 		</executeCommand>
 	</changeSet>
 
-	<changeSet id="3" author="mantis-283" runOnChange="false">
+	<changeSet id="3" author="mantis-283" runOnChange="true">
 		<executeCommand executable="dbisqlc.exe">
 			<arg value="-c"/>
 			<arg value="DSN=prior;UID=dba;PWD=sql"/>
