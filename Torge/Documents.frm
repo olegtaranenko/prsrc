@@ -591,7 +591,7 @@ Private Sub cbM_Change()
 End Sub
 
 Private Sub ckEndDate_Click()
-If ckEndDate.value = 1 Then
+If ckEndDate.Value = 1 Then
     tbEndDate.Enabled = True
 Else
     tbEndDate.Enabled = False
@@ -600,7 +600,7 @@ End If
 End Sub
 
 Private Sub ckStartDate_Click()
-If ckStartDate.value = 1 Then
+If ckStartDate.Value = 1 Then
     tbStartDate.Enabled = True
 Else
     tbStartDate.Enabled = False
@@ -1132,7 +1132,7 @@ If Grid.col <> 0 Then Grid.CellBackColor = Grid.BackColor
 
 End Sub
 
-Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
 If Grid.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid.ColWidth(Grid.MouseCol)
 End Sub
@@ -1206,7 +1206,7 @@ Grid2.CellBackColor = Grid2.BackColor
 
 End Sub
 
-Private Sub Grid2_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Grid2_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
 If Grid2.MouseRow = 0 And Shift = 2 Then _
         MsgBox "ColWidth = " & Grid2.ColWidth(Grid2.MouseCol)
 End Sub
@@ -1281,8 +1281,8 @@ lbHide
 
 End Sub
 
-Function valueToDocsField(myErrCod As String, value As String, field As String) As Boolean
-sql = "UPDATE sDocs  SET sDocs." & field & "=" & value & _
+Function valueToDocsField(myErrCod As String, Value As String, Field As String) As Boolean
+sql = "UPDATE sDocs  SET sDocs." & Field & "=" & Value & _
 " WHERE sDocs.numDoc = " & numDoc & " AND sDocs.numExt = " & numExt
 valueToDocsField = False
 If myExecute(myErrCod, sql) = 0 Then valueToDocsField = True
@@ -1432,16 +1432,16 @@ Nomenklatura.setRegim
 End Sub
 
 Private Sub mnDocFind_Click()
-Static value
+Static Value
 
-AA:     value = InputBox("Введите номер документа (заказа)", "Поиск", value)
-        If value = "" Then Exit Sub
-        If Not IsNumeric(value) Then
+AA:     Value = InputBox("Введите номер документа (заказа)", "Поиск", Value)
+        If Value = "" Then Exit Sub
+        If Not IsNumeric(Value) Then
             MsgBox "Номер должен быть числом"
             GoTo AA
         End If
 laFiltr.Visible = False
-numDoc = value
+numDoc = Value
 loadDocs "docsFind"
 End Sub
 
@@ -1896,7 +1896,7 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
                 If tbProduct!prSeriaId <> currentSeriaId Then
                 
                     exRow = exRow + 1
-                    .Cells(exRow, 2).value = tbProduct!seriaName
+                    .Cells(exRow, 2).Value = tbProduct!seriaName
                     .Cells(exRow, 2).Font.Bold = True
                     With .Range("A" & exRow & ":" & lastCol & exRow)
                         .Borders(xlEdgeTop).Weight = xlMedium
@@ -1915,15 +1915,15 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
                     For I = 5 To 9
                         .Cells(exRow, I).Font.Bold = True
                     Next I
-                    .Cells(exRow, 1).value = "Код"
-                    .Cells(exRow, 2).value = "Описание"
-                    .Cells(exRow, 3).value = "Размер"
-                    .Cells(exRow, 4).value = "Каталог"
-                    .Cells(exRow, 5).value = "Кол-во"
-                    .Cells(exRow, 6).value = tbProduct!head1
-                    .Cells(exRow, 7).value = tbProduct!head2
-                    .Cells(exRow, 8).value = tbProduct!head3
-                    .Cells(exRow, 9).value = tbProduct!head4
+                    .Cells(exRow, 1).Value = "Код"
+                    .Cells(exRow, 2).Value = "Описание"
+                    .Cells(exRow, 3).Value = "Размер"
+                    .Cells(exRow, 4).Value = "Каталог"
+                    .Cells(exRow, 5).Value = "Кол-во"
+                    .Cells(exRow, 6).Value = tbProduct!head1
+                    .Cells(exRow, 7).Value = tbProduct!head2
+                    .Cells(exRow, 8).Value = tbProduct!head3
+                    .Cells(exRow, 9).Value = tbProduct!head4
                 End If
 
                 If Not IsNull(tbProduct!qty_dost) Then
@@ -1941,10 +1941,10 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
                         .Cells(exRow, I).Font.Bold = True
                     Next I
                     
-                    .Cells(exRow, 1).value = tbProduct!prName
-                    .Cells(exRow, 2).value = tbProduct!prDescript
-                    .Cells(exRow, 3).value = tbProduct!prSize
-                    .Cells(exRow, 4).value = "стр " & tbProduct!Page & "."
+                    .Cells(exRow, 1).Value = tbProduct!prName
+                    .Cells(exRow, 2).Value = tbProduct!prDescript
+                    .Cells(exRow, 3).Value = tbProduct!prSize
+                    .Cells(exRow, 4).Value = "стр " & tbProduct!Page & "."
 
                     gain2 = tbProduct!gain2
                     gain3 = tbProduct!gain3
@@ -1964,22 +1964,22 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
                 
                     cErr = setVertBorders(objExel, xlThin, lastColInt)
     
-                    .Cells(exRow, 1).value = tbProduct!Ncod
+                    .Cells(exRow, 1).Value = tbProduct!Ncod
                     .Cells(exRow, 1).HorizontalAlignment = xlHAlignRight
-                    .Cells(exRow, 2).value = tbProduct!Nomname
+                    .Cells(exRow, 2).Value = tbProduct!Nomname
                     .Cells(exRow, 2).HorizontalAlignment = xlHAlignRight
-                    .Cells(exRow, 3).value = tbProduct!Nsize
-                    .Cells(exRow, 4).value = tbProduct!ed_Izmer2
+                    .Cells(exRow, 3).Value = tbProduct!Nsize
+                    .Cells(exRow, 4).Value = tbProduct!ed_Izmer2
                     dostOstatok = nomDostOst
                     If Round(tbProduct!quantEd, 1) <> 1 Then
-                        .Cells(exRow, 4).value = tbProduct!ed_Izmer2 & " x " & CStr(Round(tbProduct!quantEd, 1))
+                        .Cells(exRow, 4).Value = tbProduct!ed_Izmer2 & " x " & CStr(Round(tbProduct!quantEd, 1))
                     End If
                     If Not IsNumeric(dostOstatok) Then
-                        .Cells(exRow, 5).value = dostOstatok
+                        .Cells(exRow, 5).Value = dostOstatok
                     ElseIf dostOstatok > 0 Then
-                        .Cells(exRow, 5).value = dostOstatok
+                        .Cells(exRow, 5).Value = dostOstatok
                     Else
-                        .Cells(exRow, 5).value = 0
+                        .Cells(exRow, 5).Value = 0
                     End If
     
                     If Regim = "awards" Then
@@ -2022,11 +2022,11 @@ Private Sub BrightAwardsRestToExcel(Optional Regim As String = "", Optional RubR
         '.Rows(exRow).Font.Italic = True
         If Regim = "awardsWeb" Then
             exRow = exRow + 2
-            .Cells(exRow, 1).value = "Цены на изделия каталога Bright Awards 2010-11, не указанные в данном прайс-листе - "
+            .Cells(exRow, 1).Value = "Цены на изделия каталога Bright Awards 2010-11, не указанные в данном прайс-листе - "
             .Cells(exRow, 1).Font.Bold = True
             
             exRow = exRow + 1
-            .Cells(exRow, 1).value = "см. прайс-лист на ""Материалы и комплектующие"""
+            .Cells(exRow, 1).Value = "см. прайс-лист на ""Материалы и комплектующие"""
             .Cells(exRow, 1).Font.Bold = True
         End If
     
@@ -2108,7 +2108,7 @@ With objExel.ActiveSheet
         If tbProduct!KlassId <> currentKlassId Then
             str = tbProduct!klassName
             
-            .Cells(exRow, 2).value = str
+            .Cells(exRow, 2).Value = str
             .Cells(exRow, 2).Font.Bold = True
             With .Range("A" & exRow & ":" & lastCol & exRow)
                 .Borders(xlEdgeTop).Weight = xlMedium
@@ -2120,11 +2120,11 @@ With objExel.ActiveSheet
             cErr = setVertBorders(objExel, xlThin, lastColInt)
             'If cErr <> 0 Then GoTo ERR2
             
-            .Cells(exRow, 1).value = "Код"
-            .Cells(exRow, 2).value = "Описание"
-            .Cells(exRow, 3).value = "Размер"
-            .Cells(exRow, 4).value = "Ед.изм."
-            .Cells(exRow, 5).value = "Кол-во"
+            .Cells(exRow, 1).Value = "Код"
+            .Cells(exRow, 2).Value = "Описание"
+            .Cells(exRow, 3).Value = "Размер"
+            .Cells(exRow, 4).Value = "Ед.изм."
+            .Cells(exRow, 5).Value = "Кол-во"
             exCol = 6
             With .Range("A" & exRow & ":" & lastCol & exRow)
                 .Borders(xlEdgeBottom).Weight = xlThin
@@ -2132,19 +2132,19 @@ With objExel.ActiveSheet
                 .HorizontalAlignment = xlHAlignCenter
             End With
             If Not IsNull(tbProduct!Kolon1) Then
-                .Cells(exRow, exCol).value = Chr(160) & tbProduct!Kolon1
+                .Cells(exRow, exCol).Value = Chr(160) & tbProduct!Kolon1
                 .Cells(exRow, exCol).Font.Bold = True
             End If
             If Not IsNull(tbProduct!Kolon2) Then
-                .Cells(exRow, exCol + 1).value = Chr(160) & tbProduct!Kolon2
+                .Cells(exRow, exCol + 1).Value = Chr(160) & tbProduct!Kolon2
                 .Cells(exRow, exCol + 1).Font.Bold = True
             End If
             If Not IsNull(tbProduct!Kolon3) Then
-                .Cells(exRow, exCol + 2).value = Chr(160) & tbProduct!Kolon3
+                .Cells(exRow, exCol + 2).Value = Chr(160) & tbProduct!Kolon3
                 .Cells(exRow, exCol + 2).Font.Bold = True
             End If
             If Not IsNull(tbProduct!Kolon4) Then
-                .Cells(exRow, exCol + 3).value = Chr(160) & tbProduct!Kolon4
+                .Cells(exRow, exCol + 3).Value = Chr(160) & tbProduct!Kolon4
                 .Cells(exRow, exCol + 3).Font.Bold = True
             End If
             cErr = setVertBorders(objExel, xlThin, lastColInt)
@@ -2154,10 +2154,10 @@ With objExel.ActiveSheet
 '---------------------------------------------------------------------------
 'Далее выдаются параметры по каждой номенклатуре группы
         str = tbProduct!ed_Izmer2
-        .Cells(exRow, 1).value = tbProduct!cod
-        .Cells(exRow, 2).value = tbProduct!Nomname
-        .Cells(exRow, 3).value = tbProduct!Size
-        .Cells(exRow, 4).value = str
+        .Cells(exRow, 1).Value = tbProduct!cod
+        .Cells(exRow, 2).Value = tbProduct!Nomname
+        .Cells(exRow, 3).Value = tbProduct!Size
+        .Cells(exRow, 4).Value = str
         If Not IsNull(tbProduct!qty_dost) Then
             tmpSng = Round(tbProduct!qty_dost - 0.499)
         Else
@@ -2166,7 +2166,7 @@ With objExel.ActiveSheet
         If tmpSng < -0.01 Then
             minusQuant = minusQuant + 1
         End If
-        .Cells(exRow, 5).value = Round(tmpSng, 2)
+        .Cells(exRow, 5).Value = Round(tmpSng, 2)
             
         ExcelKolonPrices exRow, exCol, RubRate
         cErr = setVertBorders(objExel, xlThin, lastColInt)
@@ -2225,7 +2225,7 @@ Dim RoundNum As Integer
     End If
     
     cena2W = Chr(160) & Format(Round(RPF_Rate * tbProduct!CENA_W * RubRate, RoundNum), "0.00") ' выводим как текст, т.к. "3.00" все равностанет "3"
-    objExel.ActiveSheet.Cells(exRow, exCol).value = cena2W
+    objExel.ActiveSheet.Cells(exRow, exCol).Value = cena2W
     
     Dim kolonok As Integer, optBasePrice As Double, margin As Double, iKolon As Integer, manualOpt As Boolean
     kolonok = tbProduct!kolonok
@@ -2240,10 +2240,10 @@ Dim RoundNum As Integer
     
     For iKolon = 2 To Abs(kolonok)
         If manualOpt Then
-            objExel.ActiveSheet.Cells(exRow, exCol - 1 + iKolon).value = _
+            objExel.ActiveSheet.Cells(exRow, exCol - 1 + iKolon).Value = _
                 Chr(160) & Format(Round(RPF_Rate * tbProduct("CenaOpt" & CStr(iKolon)) * RubRate, RoundNum), "0.00")
         Else
-            objExel.ActiveSheet.Cells(exRow, exCol - 1 + iKolon).value = _
+            objExel.ActiveSheet.Cells(exRow, exCol - 1 + iKolon).Value = _
                 Chr(160) & Format(Round(RPF_Rate * RubRate * calcKolonValue(optBasePrice, margin, tbProduct!rabbat, Abs(kolonok), iKolon), RoundNum), "0.00")
         End If
     Next iKolon
