@@ -21,7 +21,6 @@ begin
 	select id_inv into v_belong_id from sguideseries where seriaId = new_name.prSeriaId;
   	set v_id_edizm1 = wf_id_stuck();
 
-	message 'v_id_edizm1 = ', v_id_edizm1 to client;
 
 
   set v_fields = 
@@ -48,7 +47,7 @@ begin
 
 
 	if new_name.prsize is not null and length(new_name.prsize) > 0 then
-	  	set v_id_size = wf_getEdizmId(new_name.prsize);
+	  	set v_id_size = wf_getSizeId(new_name.prsize);
    	  	set v_fields = v_fields + ', id_size';
    	  	set v_values = v_values + ', '+convert(varchar(20), v_id_size);
    	end if; 

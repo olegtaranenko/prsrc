@@ -3072,6 +3072,7 @@ update firmguide set year01 = 1 where firmid = 4728
 	</changeSet>
 
 	<changeSet id="2" author="mantis-283" runOnChange="false">
+		<validCheckSum>472c60676d83c432d7dd12531111c98</validCheckSum>
 		<validCheckSum>4a5f8ef1b90aa504fd91efd4a6fd9c</validCheckSum>
 		<executeCommand executable="dbisqlc.exe">
 			<arg value="-c"/>
