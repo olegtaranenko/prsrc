@@ -3087,6 +3087,12 @@ update firmguide set year01 = 1 where firmid = 4728
 		</executeCommand>
 	</changeSet>
 
+	<changeSet id="1" author="mantis-292" runOnChange="true">
+		<comment>Некорректное перемещение гот.изделия: ошибка в триггере</comment>
+		<sqlFile path="triggers/sGuideProducts.wf_update_gproducts.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback/>
+	</changeSet>
+
 
 </databaseChangeLog>
 
