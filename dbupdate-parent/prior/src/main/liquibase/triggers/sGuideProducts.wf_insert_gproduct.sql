@@ -21,6 +21,8 @@ begin
 	select id_inv into v_belong_id from sguideseries where seriaId = new_name.prSeriaId;
   	set v_id_edizm1 = wf_id_stuck();
 
+	message 'v_id_edizm1 = ', v_id_edizm1 to client;
+
 
   set v_fields = 
   	  ' id'

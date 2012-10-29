@@ -2827,6 +2827,7 @@ where firmguide.werkid not in (1,2 )
 	</changeSet>
 
 	<changeSet id="6" author="fed.okruga" runOnChange="false">
+		<validCheckSum>4a4dfe76a797923e907124547d348ecd</validCheckSum>
 		<validCheckSum>1e82741638e91a0734b75d8a49512b0</validCheckSum>
 		<validCheckSum>a5f1debea2c3b8b67767566fa1c45b2</validCheckSum>
 		<comment>execute proc</comment>
@@ -2946,6 +2947,7 @@ where firmguide.werkid not in (1,2 )
 
 
 	<changeSet id="1" author="mantis-265" runOnChange="false">
+		<validCheckSum>13a57c91f2acc3c1e2762ee7c17417e3</validCheckSum>
 		<validCheckSum>7be5e56b8c47e3ec3f77ac7811f949db</validCheckSum>
 		<comment>execute proc</comment>
 		<executeCommand executable="dbisqlc.exe">
@@ -3054,6 +3056,7 @@ update firmguide set year01 = 1 where firmid = 4728
 
 
 	<changeSet id="1" author="mantis-281" runOnChange="false">
+		<validCheckSum>f856c3f5c4a6efe8ab2ddf1092fcf65</validCheckSum>
 		<validCheckSum>b359e26a40c9e221cf86b45f9b4a9</validCheckSum>
 		<executeCommand executable="dbisqlc.exe">
 			<arg value="-c"/>
@@ -3079,6 +3082,7 @@ update firmguide set year01 = 1 where firmid = 4728
 	</changeSet>
 
 	<changeSet id="3" author="mantis-283" runOnChange="true">
+		<validCheckSum>472c60676d83c432d7dd12531111c98</validCheckSum>
 		<executeCommand executable="dbisqlc.exe">
 			<arg value="-c"/>
 			<arg value="DSN=prior;UID=dba;PWD=sql"/>
@@ -3088,8 +3092,8 @@ update firmguide set year01 = 1 where firmid = 4728
 	</changeSet>
 
 	<changeSet id="1" author="mantis-292" runOnChange="true">
-		<comment>Некорректное перемещение гот.изделия: ошибка в триггере</comment>
-		<sqlFile path="triggers/sGuideProducts.wf_update_gproducts.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<comment>Ошибка при попытке Добавить по Образцу в спр. Готовых изделий</comment>
+		<sqlFile path="triggers/sGuideProducts.wf_insert_gproduct.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 		<rollback/>
 	</changeSet>
 
