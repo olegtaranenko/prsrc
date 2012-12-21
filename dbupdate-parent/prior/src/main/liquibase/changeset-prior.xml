@@ -3083,7 +3083,10 @@ update firmguide set year01 = 1 where firmid = 4728
 	</changeSet>
 
 	<changeSet id="3" author="mantis-283" runOnChange="true">
+		<validCheckSum>4a5f8ef1b90aa504fd91efd4a6fd9c</validCheckSum>
+		<validCheckSum>4438648b6694bd47aef7517b786264</validCheckSum>
 		<validCheckSum>472c60676d83c432d7dd12531111c98</validCheckSum>
+		
 		<executeCommand executable="dbisqlc.exe">
 			<arg value="-c"/>
 			<arg value="DSN=prior;UID=dba;PWD=sql"/>
@@ -3095,6 +3098,17 @@ update firmguide set year01 = 1 where firmid = 4728
 	<changeSet id="1" author="mantis-292" runOnChange="true">
 		<comment>Ошибка при попытке Добавить по Образцу в спр. Готовых изделий</comment>
 		<sqlFile path="triggers/sGuideProducts.wf_insert_gproduct.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<rollback/>
+	</changeSet>
+
+	<changeSet id="1" author="mantis-288" runOnChange="true">
+		<comment> Разные статусы заказов в реестре и главном окне</comment>
+		<executeCommand executable="dbisqlc.exe">
+			<arg value="-c"/>
+			<arg value="DSN=prior;UID=dba;PWD=sql"/>
+			<arg value="-q"/>
+			<arg value="${basedir}\target\classes\mainteinance\mantis-288.sql"/>
+		</executeCommand>
 		<rollback/>
 	</changeSet>
 
