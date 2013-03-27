@@ -3112,6 +3112,12 @@ update firmguide set year01 = 1 where firmid = 4728
 		<rollback/>
 	</changeSet>
 
+	<changeSet id="1" author="1c" runOnChange="true">
+		<comment>Перенос отстатков на 1 января </comment>
+		<sqlFile path="procedures/wf_1c_1jan.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+	</changeSet>
+
+
 
 </databaseChangeLog>
 
