@@ -2825,7 +2825,7 @@ where firmguide.werkid not in (1,2 )
 		<comment>prepare proc</comment>
 		<sqlFile path="procedures/temp_fedorkruga.sql" splitStatements="false" stripComments="false" encoding="cp1251"/>
 	</changeSet>
-
+<!--
 	<changeSet id="6" author="fed.okruga" runOnChange="false">
 		<validCheckSum>4a4dfe76a797923e907124547d348ecd</validCheckSum>
 		<validCheckSum>1e82741638e91a0734b75d8a49512b0</validCheckSum>
@@ -2838,7 +2838,7 @@ where firmguide.werkid not in (1,2 )
 			<arg value="${basedir}\target\classes\mainteinance\exec-fedorkruga.sql"/>
 		</executeCommand>
 	</changeSet>
-
+-->
 	<changeSet id="7" author="fed.okruga" runOnChange="false">
 		<comment>cleanup of table</comment>
 		<dropTable tableName="tempFO"/>
@@ -2945,7 +2945,7 @@ where firmguide.werkid not in (1,2 )
 		</insert>
 	</changeSet>
 
-
+<!--
 	<changeSet id="1" author="mantis-265" runOnChange="false">
 		<validCheckSum>13a57c91f2acc3c1e2762ee7c17417e3</validCheckSum>
 		<validCheckSum>7be5e56b8c47e3ec3f77ac7811f949db</validCheckSum>
@@ -2957,7 +2957,7 @@ where firmguide.werkid not in (1,2 )
 			<arg value="${basedir}\target\classes\mainteinance\mantis-265.sql"/>
 		</executeCommand>
 	</changeSet>
-
+-->
 	<changeSet id="1" author="mantis-271" runOnChange="true">
 		<comment>M271 Некоректные данные в отчете "Реализация"</comment>
 		<sqlFile path="views/orderWallShip.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
@@ -2981,7 +2981,7 @@ where firmguide.werkid not in (1,2 )
 		<loadData tableName="FirmGuide" file="data/FirmGuide.csv"/>
 
 	</changeSet>
-
+<!--
 	<changeSet id="2" author="mantis-273" runOnChange="false">
 		<comment>Восстановить фирму APR</comment>
 		<sql splitStatements="false" stripComments="false"><![CDATA[
@@ -2991,7 +2991,7 @@ update orders set firmid = 2045 where numorder = 4012811
 update firmguide set year01 = 1 where firmid = 4728
 		]]></sql>
 	</changeSet>
-
+-->
 	<changeSet id="1" author="mantis-275" runOnChange="true">
 		<comment>Поменять порядок столбцов отчета фирмы/период</comment>
 		<update tableName="nResultColumnDef">
@@ -3054,7 +3054,7 @@ update firmguide set year01 = 1 where firmid = 4728
 		<sqlFile path="procedures/wf_naklad_mat_ost.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 	</changeSet>
 
-
+<!--
 	<changeSet id="1" author="mantis-281" runOnChange="false">
 		<validCheckSum>f856c3f5c4a6efe8ab2ddf1092fcf65</validCheckSum>
 		<validCheckSum>b359e26a40c9e221cf86b45f9b4a9</validCheckSum>
@@ -3065,12 +3065,12 @@ update firmguide set year01 = 1 where firmid = 4728
 			<arg value="${basedir}\target\classes\mainteinance\mantis-281.sql"/>
 		</executeCommand>
 	</changeSet>
-
+-->
 	<changeSet id="1" author="mantis-283" runOnChange="true">
 		<comment>Проблемы со справочником фирм заказчиков: потерялись к-ва по годам</comment>
 		<sqlFile path="procedures/n_production_visitors_rebuild.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 	</changeSet>
-
+<!--
 	<changeSet id="2" author="mantis-283" runOnChange="false">
 		<validCheckSum>472c60676d83c432d7dd12531111c98</validCheckSum>
 		<validCheckSum>4a5f8ef1b90aa504fd91efd4a6fd9c</validCheckSum>
@@ -3081,7 +3081,7 @@ update firmguide set year01 = 1 where firmid = 4728
 			<arg value="${basedir}\target\classes\mainteinance\mantis-283.sql"/>
 		</executeCommand>
 	</changeSet>
-
+-->
 	<changeSet id="3" author="mantis-283" runOnChange="true">
 		<validCheckSum>4a5f8ef1b90aa504fd91efd4a6fd9c</validCheckSum>
 		<validCheckSum>4438648b6694bd47aef7517b786264</validCheckSum>
