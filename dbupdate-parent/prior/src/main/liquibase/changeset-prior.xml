@@ -3117,6 +3117,12 @@ update firmguide set year01 = 1 where firmid = 4728
 		<sqlFile path="procedures/wf_1c_1jan.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 	</changeSet>
 
+	<changeSet id="2" author="1c" runOnChange="true">
+		<comment>Перенос отстатков на 1 января с учетом предприятий</comment>
+		<sqlFile path="procedures/wf_calculate_ost_venture.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+		<sqlFile path="procedures/wf_1c_1jan_venture.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
+	</changeSet>
+
 
 
 </databaseChangeLog>
