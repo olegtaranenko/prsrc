@@ -3,7 +3,9 @@ if exists (select '*' from sysprocedure where proc_name like 'wf_calculate_ost_f
 end if;
 
 create procedure wf_calculate_ost_fact_dost (
-	p_dost int default 0
+	p_dost int default 0,
+	p_inventory_date date default null,
+	p_sklad_id int default -1001
 )
 /*
 	На входе этой процедуры должна быть подготовлена и наполнена таблица 
@@ -24,13 +26,17 @@ begin
     
 --select * from #nomenk;
     
-    
+		if p_inventory_date is null then
+			set p_inventory_date = convert(date, now());
+		end if;
+
 		insert into #saldo (nomnom, debit)
         select m.nomnom, sum(isnull(m.quant, 0)) 
         from sdocs n
 		join sdmc m on n.numdoc = m.numdoc and n.numext = m.numext
 		join #nomenk k on k.nomnom = m.nomnom
-        where n.destId = -1001
+        where n.destId = p_sklad_id
+        	and n.xDate < p_inventory_date
 		group by m.nomnom;
     
     
@@ -39,7 +45,8 @@ begin
         from sdocs n
 		join sdmc m on n.numdoc = m.numdoc and n.numext = m.numext
 		join #nomenk k on k.nomnom = m.nomnom
-        where n.sourId = -1001
+        where n.sourId = p_sklad_id
+        	and n.xDate < p_inventory_date
 		group by m.nomnom;
     
 --select * from #saldo;

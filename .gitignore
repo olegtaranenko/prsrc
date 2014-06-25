@@ -4,3 +4,5 @@
 *.scc
 *.vbw
 gitpull.bat
+*.vbp
+images

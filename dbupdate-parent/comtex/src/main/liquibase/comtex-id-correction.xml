@@ -14,7 +14,7 @@
 		<comment>корректировать id в таблице inc_table для ${table-nm}</comment>
 		<sql><![CDATA[
 update inc_table set next_id = aa.max_id
-from (select max(id) as max_id from ${table-nm}) aa
+from (select max(id) + 1 as max_id from ${table-nm}) aa
 where table_nm = '${table-nm}'
 		]]></sql>
 	</changeSet>

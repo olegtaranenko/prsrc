@@ -23,5 +23,12 @@
         />
     </changeSet>
 
+    <changeSet id="2" author="ddl-comtex.sql">
+    	<comment>
+    		May 2014. After adding additional checking in Comtex - no go with prior.
+    		Need to drop trigger jmat.Check_id_s_id_d
+    	</comment>
+        <sqlFile path="triggers/jmat.Check_id_s_id_d.sql" encoding="cp1251" splitStatements="false" stripComments="false"/>
 
+    </changeSet>
 </databaseChangeLog>
