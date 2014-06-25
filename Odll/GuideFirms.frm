@@ -574,6 +574,10 @@ End Sub
 Private Sub Grid_Click()
 mousCol = Grid.MouseCol
 mousRow = Grid.MouseRow
+Report.mousRow = mousRow
+Report.mousCol = mousCol
+Report.firmID = Grid.TextMatrix(mousRow, gfId)
+Report.firmNazv = Grid.TextMatrix(mousRow, gfNazwFirm)
 If quantity = 0 Then Exit Sub
 If Grid.MouseRow = 0 Then
     Grid.CellBackColor = Grid.BackColor

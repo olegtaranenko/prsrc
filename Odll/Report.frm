@@ -115,6 +115,9 @@ Dim zakazano As Double, Oplacheno As Double, Otgrugeno As Double
 Public nCols As Integer ' общее кол-во колонок
 Public mousRow As Long
 Public mousCol As Long
+Public firmID As Integer
+Public firmNazv As String
+
 Public Edizm2 As String
 Public Caller As Form
 
@@ -622,8 +625,8 @@ If Regim = "Orders" Or Regim = "allOrders" Then 'из FindFirm
     strWhere = "((Orders.FirmId)=" & FindFirm.FirmId & ")"
     strFrom = "FROM GuideManag INNER JOIN Orders ON GuideManag.ManagId = Orders.ManagId"
 ElseIf Regim = "FromFirms" Or Regim = "allFromFirms" Then
-    strFirm = GuideFirms.Grid.TextMatrix(GuideFirms.mousRow, gfNazwFirm)
-    strWhere = "((Orders.FirmId)=" & GuideFirms.Grid.TextMatrix(GuideFirms.mousRow, gfId) & ")"
+    strFirm = firmNazv
+    strWhere = "((Orders.FirmId)=" & FirmId & ")"
     strFrom = "FROM GuideManag INNER JOIN Orders ON GuideManag.ManagId = Orders.ManagId"
 Else                                            'из конт. меню
     strFirm = Orders.Grid.TextMatrix(Orders.mousRow, orFirma)
