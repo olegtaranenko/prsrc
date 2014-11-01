@@ -41,7 +41,7 @@ begin
 	);
 
 
-	create table #nomenk(nomnom varchar(20), quant double null, perList integer null, perIzd integer null/*, primary key(nomnom)*/);
+	create table #nomenk(nomnom varchar(20), quant double null, perList integer null, primary key(nomnom));
 	
 	create table #saldo(nomnom varchar(20), debit float null, kredit float null);
 
