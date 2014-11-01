@@ -3,6 +3,7 @@
 *.log
 *.scc
 *.vbw
+*.csv
 gitpull.bat
 *.vbp
 images

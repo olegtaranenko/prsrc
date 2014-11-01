@@ -41,7 +41,7 @@ begin
 	);
 
 
-	create table #nomenk(nomnom varchar(20), quant double null, perList integer null, primary key(nomnom));
+	create table #nomenk(nomnom varchar(20), quant double null, perList integer null, perIzd integer null/*, primary key(nomnom)*/);
 	
 	create table #saldo(nomnom varchar(20), debit float null, kredit float null);
 
@@ -131,7 +131,7 @@ begin
 		, n.nomnom, trim(n.cod + ' ' + n.nomname + ' ' + n.size) as nomenk, ed_izmer2 
 		, n.cod as ncod, n.nomname, n.size as nsize
 		, round(n.nowOstatki / n.perlist - 0.499, 0) as qty_fact
-		, round(k.quant / n.perlist, 2) as qty_dost
+		, round(k.quant / n.perlist / p.quantity, 2) as qty_dost
 		, wf_breadcrump_klass(n.klassid) as klassname, n.klassid
 		, n.cena_W, n.rabbat, n.margin,  n.kolonok, n.CenaOpt2, n.CenaOpt3, n.CenaOpt4
 		, s.gain2, s.gain3, s.gain4
