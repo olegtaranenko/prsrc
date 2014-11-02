@@ -598,7 +598,7 @@ Dim vCells(10) As Variant
                 
             End If
                 
-            If tbProduct!quantEd <> 1 Then
+            If tbProduct!quantEd <> 1 And tbProduct!perlist > 1 Then
                 nomDostOst = nomDostOst * tbProduct!quantEd
             End If
             
