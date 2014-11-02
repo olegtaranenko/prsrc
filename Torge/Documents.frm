@@ -390,22 +390,22 @@ Begin VB.Form Documents
          Caption         =   "Прайс-лист Bright Awards"
       End
       Begin VB.Menu mnPriceDealer 
-         Caption         =   "Прайс-лист дилеров"
+         Caption         =   "Прайс-лист дистрибьютора на чистые изделия"
       End
       Begin VB.Menu mnPriceRA 
-         Caption         =   "Прайс-лист РПФ"
+         Caption         =   "Прайс-лист дистрибьютора на готовые изделия"
       End
       Begin VB.Menu mnSep4 
          Caption         =   "-"
       End
       Begin VB.Menu mnToExcelWeb 
-         Caption         =   "Прайс и остатки по складу материалов"
+         Caption         =   "Прайс-лист дистрибьютора на готовые изделия"
       End
       Begin VB.Menu mnBrightAwards 
-         Caption         =   "Прайс и остатки Bright Awards - ДИЛЕРЫ"
+         Caption         =   "Прайс-лист дистрибьютора на готовые изделия с остатками"
       End
       Begin VB.Menu mnBrightAwardsClient 
-         Caption         =   "Прайс и остатки Bright Awards - КОНЕЧНИКИ"
+         Caption         =   "Прайс-лист BA с остатками"
       End
       Begin VB.Menu mnBrightAwardsPrice 
          Caption         =   "Прайс-лист Bright Awards технический"
